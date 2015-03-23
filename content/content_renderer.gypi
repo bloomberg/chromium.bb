@@ -594,6 +594,8 @@
       'renderer/pepper/v8object_var.h',
       'renderer/pepper/video_decoder_shim.cc',
       'renderer/pepper/video_decoder_shim.h',
+      'renderer/pepper/video_encoder_shim.cc',
+      'renderer/pepper/video_encoder_shim.h',
       'renderer/render_widget_fullscreen_pepper.cc',
       'renderer/render_widget_fullscreen_pepper.h',
     ],
@@ -788,6 +790,9 @@
         'renderer/java/gin_java_function_invocation_helper.cc',
         'renderer/java/gin_java_function_invocation_helper.h',
       ],
+      'dependencies': [
+        '../media/cast/cast.gyp:cast_sender',
+      ]
     }],
     # TODO(jrg): remove the OS=="android" section?
     # http://crbug.com/113172
@@ -827,6 +832,8 @@
             # Android does not build FFmpeg, which these depend on.
             'renderer/pepper/video_decoder_shim.cc',
             'renderer/pepper/video_decoder_shim.h',
+            'renderer/pepper/video_encoder_shim.cc',
+            'renderer/pepper/video_encoder_shim.h',
           ],
         }],
       ],

@@ -7,18 +7,6 @@
   -->
 <head>
   <title>Video Encoder Example</title>
-  <style type="text/css">
-    #video {
-      position: fixed;
-    }
-    #video-playback {
-      position: fixed;
-      left: 640px;
-    }
-    #plugin {
-      position: fixed;
-    }
-  </style>
   <script type="text/javascript">
     var plugin;
     var track;
@@ -33,9 +21,14 @@
       video.src = URL.createObjectURL(stream);
       video.play();
 
+      var list = $('profileList');
+      var profile = (list.length < 1) ? 'vp8'
+        : list.options[list.selectedIndex].value;
+
       plugin.postMessage({
         command: 'start',
         track: track,
+        profile: profile,
         width: 640,
         height: 480
       });
@@ -46,7 +39,7 @@
     }
 
     function startRecord() {
-      console.log("starting record");
+      $('length').innerHTML = ' Size: ' + dataArray.byteLength + ' bytes';
       navigator.webkitGetUserMedia({audio: false, video: true},
                                    success, failure);
     }
@@ -72,6 +65,14 @@
         appendData(msg.data.data);
       } else if (msg.data.name == 'stopped') {
         console.log('done recording! bytes: ' + dataArray.byteLength);
+      } else if (msg.data.name == 'supportedProfiles') {
+        console.log('profiles: ', msg.data);
+        var profileList = $('profileList');
+        for (var i = 0; i < msg.data.profiles.length; i++) {
+          var item = document.createElement('option');
+          item.label = item.value = msg.data.profiles[i];
+          profileList.appendChild(item);
+        }
       }
     }
 
@@ -114,6 +115,7 @@
   This example demonstrates receiving frames from a video MediaStreamTrack and
   encoding them in a plugin.
   <br>
+  <select id="profileList"></select>
   <input type="button" id="start" value="Start Recording"/>
   <input type="button" id="stop" value="Stop Recording"/>
   <input type="button" id="download" value="Download Recording"/>

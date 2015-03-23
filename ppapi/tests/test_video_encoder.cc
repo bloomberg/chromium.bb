@@ -32,10 +32,59 @@ std::string TestVideoEncoder::TestCreate() {
     callback.WaitForResult(
         video_encoder.GetSupportedProfiles(callback.GetCallback()));
 
-    ASSERT_GE(callback.output().size(), 0U);
+    ASSERT_EQ(PP_OK, callback.result());
+
+    const std::vector<PP_VideoProfileDescription> video_profiles =
+        callback.output();
+    ASSERT_GE(video_profiles.size(), 1U);
+
+    bool found_vp8 = false;
+    for (uint32_t i = 0; i < video_profiles.size(); ++i) {
+      const PP_VideoProfileDescription& description = video_profiles[i];
+      if (description.profile == PP_VIDEOPROFILE_VP8_ANY)
+        found_vp8 = true;
+    }
+    ASSERT_TRUE(found_vp8);
   }
-  // TODO(llandwerlin): add more tests once software video encode is
-  // available.
+  // Test that initializing the encoder with incorrect size fails.
+  {
+    pp::VideoEncoder video_encoder(instance_);
+    ASSERT_FALSE(video_encoder.is_null());
+    pp::Size video_size(0, 0);
+
+    TestCompletionCallback callback(instance_->pp_instance(), false);
+    callback.WaitForResult(
+        video_encoder.Initialize(PP_VIDEOFRAME_FORMAT_I420,
+                                 video_size,
+                                 PP_VIDEOPROFILE_VP8_ANY,
+                                 1000000,
+                                 PP_HARDWAREACCELERATION_WITHFALLBACK,
+                                 callback.GetCallback()));
+
+    ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
+  }
+  // Test that initializing the encoder with software VP8 succeeds.
+  {
+    pp::VideoEncoder video_encoder(instance_);
+    ASSERT_FALSE(video_encoder.is_null());
+    pp::Size video_size(640, 480);
+
+    TestCompletionCallback callback(instance_->pp_instance(), false);
+    callback.WaitForResult(
+        video_encoder.Initialize(PP_VIDEOFRAME_FORMAT_I420,
+                                 video_size,
+                                 PP_VIDEOPROFILE_VP8_ANY,
+                                 1000000,
+                                 PP_HARDWAREACCELERATION_WITHFALLBACK,
+                                 callback.GetCallback()));
+
+    ASSERT_EQ(PP_OK, callback.result());
+
+    pp::Size coded_size;
+    ASSERT_EQ(PP_OK, video_encoder.GetFrameCodedSize(&coded_size));
+    ASSERT_GE(coded_size.GetArea(), video_size.GetArea());
+    ASSERT_GE(video_encoder.GetFramesRequired(), 1);
+  }
 
   PASS();
 }

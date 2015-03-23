@@ -26,6 +26,7 @@ namespace content {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
 class RendererPpapiHost;
+class VideoEncoderShim;
 
 class CONTENT_EXPORT PepperVideoEncoderHost
     : public ppapi::host::ResourceHost,
@@ -38,6 +39,8 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   ~PepperVideoEncoderHost() override;
 
  private:
+  friend class VideoEncoderShim;
+
   // Shared memory buffers.
   struct ShmBuffer {
     ShmBuffer(uint32_t id, scoped_ptr<base::SharedMemory> shm);
@@ -107,6 +110,9 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   void FrameReleased(const ppapi::host::ReplyMessageContext& reply_context,
                      uint32_t frame_id);
   void NotifyPepperError(int32_t error);
+
+  // Helper method for VideoEncoderShim.
+  uint8_t* ShmHandleToAddress(int32 buffer_id);
 
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;

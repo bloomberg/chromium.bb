@@ -12,6 +12,7 @@
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_video_encoder_host.h"
+#include "content/renderer/pepper/video_encoder_shim.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
@@ -156,6 +157,8 @@ PP_VideoProfileDescription PP_FromVideoEncodeAcceleratorSupportedProfile(
 
 bool PP_HardwareAccelerationCompatible(PP_HardwareAcceleration supply,
                                        PP_HardwareAcceleration demand) {
+  // TODO(llandwerlin): Change API to use bool instead of
+  // PP_HardwareAcceleration
   switch (supply) {
     case PP_HARDWAREACCELERATION_ONLY:
       return (demand == PP_HARDWAREACCELERATION_ONLY ||
@@ -270,8 +273,7 @@ int32_t PepperVideoEncoderHost::OnHostMsgInitialize(
   int32_t error = PP_ERROR_NOTSUPPORTED;
   initialize_reply_context_ = context->MakeReplyMessageContext();
 
-  if (acceleration == PP_HARDWAREACCELERATION_ONLY ||
-      acceleration == PP_HARDWAREACCELERATION_WITHFALLBACK) {
+  if (acceleration != PP_HARDWAREACCELERATION_NONE) {
     if (InitializeHardware(media_input_format_, input_size, media_profile,
                            initial_bitrate))
       return PP_OK_COMPLETIONPENDING;
@@ -280,10 +282,23 @@ int32_t PepperVideoEncoderHost::OnHostMsgInitialize(
       error = PP_ERROR_FAILED;
   }
 
-  // TODO(llandwerlin): Software encoder.
+#if defined(OS_ANDROID)
   initialize_reply_context_ = ppapi::host::ReplyMessageContext();
   Close();
   return error;
+#else
+  if (acceleration != PP_HARDWAREACCELERATION_ONLY) {
+    encoder_.reset(new VideoEncoderShim(this));
+    if (encoder_->Initialize(media_input_format_, input_size, media_profile,
+                             initial_bitrate, this))
+      return PP_OK_COMPLETIONPENDING;
+    error = PP_ERROR_FAILED;
+  }
+
+  initialize_reply_context_ = ppapi::host::ReplyMessageContext();
+  Close();
+  return error;
+#endif
 }
 
 int32_t PepperVideoEncoderHost::OnHostMsgGetVideoFrames(
@@ -435,17 +450,25 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
     std::vector<PP_VideoProfileDescription>* pp_profiles) {
   DCHECK(RenderThreadImpl::current());
 
-  if (!EnsureGpuChannel())
-    return;
+  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
 
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles =
-      GpuVideoEncodeAcceleratorHost::ConvertGpuToMediaProfiles(
-          channel_->gpu_info().video_encode_accelerator_supported_profiles);
-  for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles)
+  if (EnsureGpuChannel()) {
+    profiles = GpuVideoEncodeAcceleratorHost::ConvertGpuToMediaProfiles(
+        channel_->gpu_info().video_encode_accelerator_supported_profiles);
+    for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
+      pp_profiles->push_back(PP_FromVideoEncodeAcceleratorSupportedProfile(
+          profile, PP_HARDWAREACCELERATION_ONLY));
+    }
+  }
+
+#if !defined(OS_ANDROID)
+  VideoEncoderShim software_encoder(this);
+  profiles = software_encoder.GetSupportedProfiles();
+  for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
     pp_profiles->push_back(PP_FromVideoEncodeAcceleratorSupportedProfile(
-        profile, PP_HARDWAREACCELERATION_ONLY));
-
-  // TODO(llandwerlin): add software supported profiles.
+        profile, PP_HARDWAREACCELERATION_NONE));
+  }
+#endif
 }
 
 bool PepperVideoEncoderHost::IsInitializationValid(
@@ -639,6 +662,13 @@ void PepperVideoEncoderHost::NotifyPepperError(int32_t error) {
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_VideoEncoder_NotifyError(encoder_last_error_));
+}
+
+uint8_t* PepperVideoEncoderHost::ShmHandleToAddress(int32 buffer_id) {
+  DCHECK(RenderThreadImpl::current());
+  DCHECK_GE(buffer_id, 0);
+  DCHECK_LT(buffer_id, static_cast<int32>(shm_buffers_.size()));
+  return static_cast<uint8_t*>(shm_buffers_[buffer_id]->shm->memory());
 }
 
 }  // namespace content

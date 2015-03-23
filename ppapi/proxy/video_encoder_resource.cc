@@ -8,6 +8,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/video_encoder_resource.h"
 #include "ppapi/proxy/video_frame_resource.h"
+#include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"
 #include "ppapi/thunk/enter.h"
@@ -249,19 +250,23 @@ void VideoEncoderResource::OnPluginMsgGetSupportedProfilesReply(
     const PP_ArrayOutput& output,
     const ResourceMessageReplyParams& params,
     const std::vector<PP_VideoProfileDescription>& profiles) {
-  void* ptr = output.GetDataBuffer(
-      output.user_data,
-      base::checked_cast<uint32_t>(profiles.size()),
-      base::checked_cast<uint32_t>(sizeof(PP_VideoProfileDescription)));
+  int32_t error = params.result();
+  if (error) {
+    NotifyError(error);
+    return;
+  }
 
-  if (!ptr) {
+  ArrayWriter writer(output);
+  if (!writer.is_valid()) {
+    RunCallback(&get_supported_profiles_callback_, PP_ERROR_BADARGUMENT);
+    return;
+  }
+
+  if (!writer.StoreVector(profiles)) {
     RunCallback(&get_supported_profiles_callback_, PP_ERROR_FAILED);
     return;
   }
 
-  if (profiles.size() > 0)
-    memcpy(ptr, &profiles[0],
-           profiles.size() * sizeof(PP_VideoProfileDescription));
   RunCallback(&get_supported_profiles_callback_, PP_OK);
 }
 

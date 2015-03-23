@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <vector>
 
@@ -24,9 +25,6 @@
 #include "ppapi/cpp/video_frame.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-// TODO(llandwerlin): turn on by default when we have software encode.
-// #define USE_VP8_INSTEAD_OF_H264
-
 // When compiling natively on Windows, PostMessage can be #define-d to
 // something else.
 #ifdef PostMessage
@@ -39,52 +37,66 @@
 #undef NDEBUG
 #include <assert.h>
 
+#define fourcc(a, b, c, d)                                               \
+  (((uint32_t)(a) << 0) | ((uint32_t)(b) << 8) | ((uint32_t)(c) << 16) | \
+   ((uint32_t)(d) << 24))
+
 namespace {
 
-std::string VideoProfileToString(PP_VideoProfile profile) {
-  switch (profile) {
-    case PP_VIDEOPROFILE_H264BASELINE:
-      return "h264baseline";
-    case PP_VIDEOPROFILE_H264MAIN:
-      return "h264main";
-    case PP_VIDEOPROFILE_H264EXTENDED:
-      return "h264extended";
-    case PP_VIDEOPROFILE_H264HIGH:
-      return "h264high";
-    case PP_VIDEOPROFILE_H264HIGH10PROFILE:
-      return "h264high10";
-    case PP_VIDEOPROFILE_H264HIGH422PROFILE:
-      return "h264high422";
-    case PP_VIDEOPROFILE_H264HIGH444PREDICTIVEPROFILE:
-      return "h264high444predictive";
-    case PP_VIDEOPROFILE_H264SCALABLEBASELINE:
-      return "h264scalablebaseline";
-    case PP_VIDEOPROFILE_H264SCALABLEHIGH:
-      return "h264scalablehigh";
-    case PP_VIDEOPROFILE_H264STEREOHIGH:
-      return "h264stereohigh";
-    case PP_VIDEOPROFILE_H264MULTIVIEWHIGH:
-      return "h264multiviewhigh";
-    case PP_VIDEOPROFILE_VP8_ANY:
-      return "vp8";
-    case PP_VIDEOPROFILE_VP9_ANY:
-      return "vp9";
-    // No default to catch unhandled profiles.
+// IVF container writer. It is possible to parse H264 bitstream using
+// NAL units but for VP8 we need a container to at least find encoded
+// pictures as well as the picture sizes.
+class IVFWriter {
+ public:
+  IVFWriter() {}
+  ~IVFWriter() {}
+
+  uint32_t GetFileHeaderSize() const { return 32; }
+  uint32_t GetFrameHeaderSize() const { return 12; }
+  uint32_t WriteFileHeader(uint8_t* mem, int32_t width, int32_t height);
+  uint32_t WriteFrameHeader(uint8_t* mem, uint64_t pts, size_t frame_size);
+
+ private:
+  void PutLE16(uint8_t* mem, int val) const {
+    mem[0] = (val >> 0) & 0xff;
+    mem[1] = (val >> 8) & 0xff;
   }
-  return "unknown";
+  void PutLE32(uint8_t* mem, int val) const {
+    mem[0] = (val >> 0) & 0xff;
+    mem[1] = (val >> 8) & 0xff;
+    mem[2] = (val >> 16) & 0xff;
+    mem[3] = (val >> 24) & 0xff;
+  }
+};
+
+uint32_t IVFWriter::WriteFileHeader(uint8_t* mem,
+                                    int32_t width,
+                                    int32_t height) {
+  mem[0] = 'D';
+  mem[1] = 'K';
+  mem[2] = 'I';
+  mem[3] = 'F';
+  PutLE16(mem + 4, 0);                               // version
+  PutLE16(mem + 6, 32);                              // header size
+  PutLE32(mem + 8, fourcc('V', 'P', '8', '0'));      // fourcc
+  PutLE16(mem + 12, static_cast<uint16_t>(width));   // width
+  PutLE16(mem + 14, static_cast<uint16_t>(height));  // height
+  PutLE32(mem + 16, 30);                             // rate
+  PutLE32(mem + 20, 1);                              // scale
+  PutLE32(mem + 24, 0xffffffff);                     // length
+  PutLE32(mem + 28, 0);                              // unused
+
+  return 32;
 }
 
-std::string HardwareAccelerationToString(PP_HardwareAcceleration acceleration) {
-  switch (acceleration) {
-    case PP_HARDWAREACCELERATION_ONLY:
-      return "hardware";
-    case PP_HARDWAREACCELERATION_WITHFALLBACK:
-      return "hardware/software";
-    case PP_HARDWAREACCELERATION_NONE:
-      return "software";
-    // No default to catch unhandled accelerations.
-  }
-  return "unknown";
+uint32_t IVFWriter::WriteFrameHeader(uint8_t* mem,
+                                     uint64_t pts,
+                                     size_t frame_size) {
+  PutLE32(mem, (int)frame_size);
+  PutLE32(mem + 4, (int)(pts & 0xFFFFFFFF));
+  PutLE32(mem + 8, (int)(pts >> 32));
+
+  return 12;
 }
 
 // This object is the global object representing this plugin library as long
@@ -106,11 +118,17 @@ class VideoEncoderInstance : public pp::Instance {
   virtual void HandleMessage(const pp::Var& var_message);
 
  private:
+  void AddVideoProfile(PP_VideoProfile profile, const std::string& profile_str);
+  void InitializeVideoProfiles();
+  PP_VideoProfile VideoProfileFromString(const std::string& str);
+  std::string VideoProfileToString(PP_VideoProfile profile);
+
   void ConfigureTrack();
   void OnConfiguredTrack(int32_t result);
   void ProbeEncoder();
   void OnEncoderProbed(int32_t result,
                        const std::vector<PP_VideoProfileDescription> profiles);
+  void StartEncoder();
   void OnInitializedEncoder(int32_t result);
   void ScheduleNextEncode();
   void GetEncoderFrameTick(int32_t result);
@@ -134,6 +152,12 @@ class VideoEncoderInstance : public pp::Instance {
   void PostDataMessage(const void* buffer, uint32_t size);
   void PostSignalMessage(const char* name);
 
+  typedef std::map<std::string, PP_VideoProfile> VideoProfileFromStringMap;
+  VideoProfileFromStringMap profile_from_string_;
+
+  typedef std::map<PP_VideoProfile, std::string> VideoProfileToStringMap;
+  VideoProfileToStringMap profile_to_string_;
+
   bool is_encoding_;
   bool is_receiving_track_frames_;
 
@@ -150,6 +174,8 @@ class VideoEncoderInstance : public pp::Instance {
   uint32_t encoded_frames_;
 
   pp::VideoFrame current_track_frame_;
+
+  IVFWriter ivf_writer_;
 };
 
 VideoEncoderInstance::VideoEncoderInstance(PP_Instance instance,
@@ -164,9 +190,50 @@ VideoEncoderInstance::VideoEncoderInstance(PP_Instance instance,
 #endif
       frame_format_(PP_VIDEOFRAME_FORMAT_I420),
       encoded_frames_(0) {
+  InitializeVideoProfiles();
+  ProbeEncoder();
 }
 
 VideoEncoderInstance::~VideoEncoderInstance() {
+}
+
+void VideoEncoderInstance::AddVideoProfile(PP_VideoProfile profile,
+                                           const std::string& profile_str) {
+  profile_to_string_.insert(std::make_pair(profile, profile_str));
+  profile_from_string_.insert(std::make_pair(profile_str, profile));
+}
+
+void VideoEncoderInstance::InitializeVideoProfiles() {
+  AddVideoProfile(PP_VIDEOPROFILE_H264BASELINE, "h264baseline");
+  AddVideoProfile(PP_VIDEOPROFILE_H264MAIN, "h264main");
+  AddVideoProfile(PP_VIDEOPROFILE_H264EXTENDED, "h264extended");
+  AddVideoProfile(PP_VIDEOPROFILE_H264HIGH, "h264high");
+  AddVideoProfile(PP_VIDEOPROFILE_H264HIGH10PROFILE, "h264high10");
+  AddVideoProfile(PP_VIDEOPROFILE_H264HIGH422PROFILE, "h264high422");
+  AddVideoProfile(PP_VIDEOPROFILE_H264HIGH444PREDICTIVEPROFILE,
+                  "h264high444predictive");
+  AddVideoProfile(PP_VIDEOPROFILE_H264SCALABLEBASELINE, "h264scalablebaseline");
+  AddVideoProfile(PP_VIDEOPROFILE_H264SCALABLEHIGH, "h264scalablehigh");
+  AddVideoProfile(PP_VIDEOPROFILE_H264STEREOHIGH, "h264stereohigh");
+  AddVideoProfile(PP_VIDEOPROFILE_H264MULTIVIEWHIGH, "h264multiviewhigh");
+  AddVideoProfile(PP_VIDEOPROFILE_VP8_ANY, "vp8");
+  AddVideoProfile(PP_VIDEOPROFILE_VP9_ANY, "vp9");
+}
+
+PP_VideoProfile VideoEncoderInstance::VideoProfileFromString(
+    const std::string& str) {
+  VideoProfileFromStringMap::iterator it = profile_from_string_.find(str);
+  if (it == profile_from_string_.end())
+    return PP_VIDEOPROFILE_VP8_ANY;
+  return it->second;
+}
+
+std::string VideoEncoderInstance::VideoProfileToString(
+    PP_VideoProfile profile) {
+  VideoProfileToStringMap::iterator it = profile_to_string_.find(profile);
+  if (it == profile_to_string_.end())
+    return "unknown";
+  return it->second;
 }
 
 void VideoEncoderInstance::ConfigureTrack() {
@@ -204,7 +271,7 @@ void VideoEncoderInstance::OnConfiguredTrack(int32_t result) {
     StartTrackFrames();
     ScheduleNextEncode();
   } else
-    ProbeEncoder();
+    StartEncoder();
 }
 
 void VideoEncoderInstance::ProbeEncoder() {
@@ -216,37 +283,24 @@ void VideoEncoderInstance::ProbeEncoder() {
 void VideoEncoderInstance::OnEncoderProbed(
     int32_t result,
     const std::vector<PP_VideoProfileDescription> profiles) {
-  bool has_required_profile = false;
-
-  Log("Available profiles:");
-  for (const PP_VideoProfileDescription& profile : profiles) {
-    std::ostringstream oss;
-    oss << " profile=" << VideoProfileToString(profile.profile)
-        << " max_resolution=" << profile.max_resolution.width << "x"
-        << profile.max_resolution.height
-        << " max_framerate=" << profile.max_framerate_numerator << "/"
-        << profile.max_framerate_denominator << " acceleration="
-        << HardwareAccelerationToString(profile.acceleration);
-    Log(oss.str());
-
-    has_required_profile |= profile.profile == video_profile_;
-  }
-
-  if (!has_required_profile) {
-    std::ostringstream oss;
-    oss << "Cannot find required video profile: ";
-    oss << VideoProfileToString(video_profile_);
-    LogError(PP_ERROR_FAILED, oss.str());
-    return;
-  }
-
-  video_encoder_ = pp::VideoEncoder(this);
-
   pp::VarDictionary dict;
-  dict.Set(pp::Var("status"), pp::Var("initializing encoder"));
-  dict.Set(pp::Var("width"), pp::Var(encoder_size_.width()));
-  dict.Set(pp::Var("height"), pp::Var(encoder_size_.height()));
+  dict.Set(pp::Var("name"), pp::Var("supportedProfiles"));
+  pp::VarArray js_profiles;
+  dict.Set(pp::Var("profiles"), js_profiles);
+
+  if (result != PP_OK) {
+    LogError(result, "Cannot get supported profiles");
+    PostMessage(dict);
+  }
+
+  int32_t idx = 0;
+  for (const PP_VideoProfileDescription& profile : profiles)
+    js_profiles.Set(idx++, pp::Var(VideoProfileToString(profile.profile)));
   PostMessage(dict);
+}
+
+void VideoEncoderInstance::StartEncoder() {
+  video_encoder_ = pp::VideoEncoder(this);
 
   int32_t error = video_encoder_.Initialize(
       frame_format_, frame_size_, video_profile_, 2000000,
@@ -266,17 +320,12 @@ void VideoEncoderInstance::OnInitializedEncoder(int32_t result) {
   }
 
   is_encoding_ = true;
+  PostSignalMessage("started");
 
   if (video_encoder_.GetFrameCodedSize(&encoder_size_) != PP_OK) {
     LogError(result, "Cannot get encoder coded frame size");
     return;
   }
-
-  pp::VarDictionary dict;
-  dict.Set(pp::Var("status"), pp::Var("encoder initialized"));
-  dict.Set(pp::Var("width"), pp::Var(encoder_size_.width()));
-  dict.Set(pp::Var("height"), pp::Var(encoder_size_.height()));
-  PostMessage(dict);
 
   video_encoder_.GetBitstreamBuffer(callback_factory_.NewCallbackWithOutput(
       &VideoEncoderInstance::OnGetBitstreamBuffer));
@@ -348,6 +397,7 @@ int32_t VideoEncoderInstance::CopyVideoFrame(pp::VideoFrame dest,
     return PP_ERROR_FAILED;
   }
 
+  dest.SetTimestamp(src.GetTimestamp());
   memcpy(dest.GetDataBuffer(), src.GetDataBuffer(), src.GetDataBufferSize());
   return PP_OK;
 }
@@ -446,6 +496,8 @@ void VideoEncoderInstance::HandleMessage(const pp::Var& var_message) {
     pp::Resource resource_track = var_track.AsResource();
     video_track_ = pp::MediaStreamVideoTrack(resource_track);
     video_encoder_ = pp::VideoEncoder();
+    video_profile_ = VideoProfileFromString(
+        dict_message.Get("profile").AsString());
     ConfigureTrack();
   } else if (command == "stop") {
     StopEncode();
@@ -460,9 +512,34 @@ void VideoEncoderInstance::PostDataMessage(const void* buffer, uint32_t size) {
 
   dictionary.Set(pp::Var("name"), pp::Var("data"));
 
-  pp::VarArrayBuffer array_buffer(size);
-  void* data_ptr = array_buffer.Map();
-  memcpy(data_ptr, buffer, size);
+  pp::VarArrayBuffer array_buffer;
+  uint8_t* data_ptr;
+  uint32_t data_offset = 0;
+  if (video_profile_ == PP_VIDEOPROFILE_VP8_ANY ||
+      video_profile_ == PP_VIDEOPROFILE_VP9_ANY) {
+    uint32_t frame_offset = 0;
+    if (encoded_frames_ == 1) {
+      array_buffer = pp::VarArrayBuffer(
+          size + ivf_writer_.GetFileHeaderSize() +
+          ivf_writer_.GetFrameHeaderSize());
+      data_ptr = static_cast<uint8_t*>(array_buffer.Map());
+      frame_offset = ivf_writer_.WriteFileHeader(
+          data_ptr, frame_size_.width(), frame_size_.height());
+    } else {
+      array_buffer = pp::VarArrayBuffer(
+          size + ivf_writer_.GetFrameHeaderSize());
+      data_ptr = static_cast<uint8_t*>(array_buffer.Map());
+    }
+    data_offset = frame_offset +
+      ivf_writer_.WriteFrameHeader(data_ptr + frame_offset,
+                                   encoded_frames_,
+                                   size);
+  } else {
+    array_buffer = pp::VarArrayBuffer(size);
+    data_ptr = static_cast<uint8_t*>(array_buffer.Map());
+  }
+
+  memcpy(data_ptr + data_offset, buffer, size);
   array_buffer.Unmap();
   dictionary.Set(pp::Var("data"), array_buffer);
 
