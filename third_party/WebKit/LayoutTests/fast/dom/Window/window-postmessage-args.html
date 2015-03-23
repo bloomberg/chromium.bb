@@ -1,26 +1,24 @@
 <html>
-<head>
-<script src="../../../resources/js-test.js"></script>
-</head>
+<head></head>
 <body>
+<div id="description"></div>
+<div id="console"></div>
 <script>
-description("Test window.postMessage() argument handling.");
-
-self.jsTestIsAsync = true;
-
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
+var console = document.getElementById("console");
+
 function onmessage(evt) {
     if (evt.ports)
-        debug("Received message '" + evt.data + "' with " + evt.ports.length + " ports.");
+        console.innerHTML += "Received message '" + evt.data + "' with " + evt.ports.length + " ports.<br>";
     else
-        debug("Received message '" + evt.data);
+        console.innerHTML += "Received message '" + evt.data + "'<br>";
 
-    if (evt.data == 'done')
-        finishJSTest();
+    if (evt.data == 'done' && window.testRunner)
+        testRunner.notifyDone();
 }
 
 window.addEventListener('message', onmessage, false);
@@ -35,10 +33,7 @@ function tryPostMessageFunction(postMessageFunction, first, second, third, shoul
         pass = shouldFail;
         reason = ": threw exception " + e;
     }
-    if (pass)
-        testPassed("Posting message ('" + first + "', " + third + ")" + reason);
-    else
-        testFailed("Posting message ('" + first + "', " + third + ")" + reason);
+    console.innerHTML += (pass ? "PASS" : "FAIL") + ": Posting message ('" + first + "', " + third + ")" + reason + "<br>";
 }
 
 function tryPostMessage(first, second, third, shouldFail) {
@@ -74,16 +69,19 @@ tryPostMessageFunction(window.postMessage, [channel5.port1, channel5.port2], '*'
 var arrayBuffer = new ArrayBuffer(30);
 var int8View = new Int8Array(arrayBuffer, 2, 10);
 tryPostMessageFunction(window.postMessage, arrayBuffer, '*', [arrayBuffer]);
-if (!(arrayBuffer.byteLength === 0))
-    testFailed("arrayBuffer not neutered; byteLength = " + arrayBuffer.byteLength);
-else
-    testPassed("arrayBuffer neutered");
+if (!(arrayBuffer.byteLength === 0)) {
+    console.innerHTML += "FAIL: arrayBuffer not neutered; byteLength = " + arrayBuffer.byteLength + "<br>";
+}
+else {
+    console.innerHTML += "PASS: arrayBuffer neutered<br>";
+}
 
-if (!(int8View.length == 0))
-    testFailed("view was not neutered; length = " + int8View.length);
-else
-    testPassed("view neutered");
-
+if (!(int8View.length == 0)) {
+    console.innerHTML += "FAIL: view was not neutered; length = " + int8View.length + "<br>";
+}
+else {
+    console.innerHTML += "PASS: view neutered<br>"
+}
 tryPostMessageFunction(window.postMessage, arrayBuffer, '*', [], true);
 tryPostMessageFunction(window.postMessage, 'data', '*', [arrayBuffer], true);
 
@@ -93,9 +91,6 @@ tryPostMessageFunction(window.postMessage, 'data', '*', [int8View], true);
 tryPostMessageFunction(window.postMessage, 'data', '*', {length:1}, true);
 tryPostMessageFunction(window.postMessage, 'data', '*', [1,,2], true);
 tryPostMessageFunction(window.postMessage, 'data', '*', [null, window.postMessage], true);
-
-shouldThrow("window.postMessage()");
-shouldThrow("window.postMessage('a')");
 
 tryPostMessageFunction(window.postMessage, 'done', '*');
 </script>
