@@ -41,12 +41,7 @@ public:
     virtual void joinSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
 
     // Called when the frame requests to close an existing session.
-    virtual void closeSession(const WebString& url, const WebString& presentationId)
-    {
-        // TODO(haibinlu): make it pure virtual once Chromium has the
-        // implementation.
-        BLINK_ASSERT_NOT_REACHED();
-    }
+    virtual void closeSession(const WebString& url, const WebString& presentationId) = 0;
 };
 
 } // namespace blink
