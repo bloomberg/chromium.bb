@@ -73,12 +73,21 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (!frame_format.IsValid())
     return;
 
-  // |chopped_{width,height} and |new_unrotated_{width,height}| are the lowest
-  // bit decomposition of {width, height}, grabbing the odd and even parts.
-  const int chopped_width = frame_format.frame_size.width() & 1;
-  const int chopped_height = frame_format.frame_size.height() & 1;
-  const int new_unrotated_width = frame_format.frame_size.width() & ~1;
-  const int new_unrotated_height = frame_format.frame_size.height() & ~1;
+  // Chopped pixels in width/height in case video capture device has odd
+  // numbers for width/height.
+  int chopped_width = 0;
+  int chopped_height = 0;
+  int new_unrotated_width = frame_format.frame_size.width();
+  int new_unrotated_height = frame_format.frame_size.height();
+
+  if (new_unrotated_width & 1) {
+    --new_unrotated_width;
+    chopped_width = 1;
+  }
+  if (new_unrotated_height & 1) {
+    --new_unrotated_height;
+    chopped_height = 1;
+  }
 
   int destination_width = new_unrotated_width;
   int destination_height = new_unrotated_height;
@@ -86,17 +95,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     destination_width = new_unrotated_height;
     destination_height = new_unrotated_width;
   }
-
-  DCHECK_EQ(rotation % 90, 0)
-      << " Rotation must be a multiple of 90, now: " << rotation;
-  libyuv::RotationMode rotation_mode = libyuv::kRotate0;
-  if (rotation == 90)
-    rotation_mode = libyuv::kRotate90;
-  else if (rotation == 180)
-    rotation_mode = libyuv::kRotate180;
-  else if (rotation == 270)
-    rotation_mode = libyuv::kRotate270;
-
   const gfx::Size dimensions(destination_width, destination_height);
   if (!VideoFrame::IsValidConfig(VideoFrame::I420,
                                  dimensions,
@@ -122,6 +120,14 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   int crop_x = 0;
   int crop_y = 0;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
+
+  libyuv::RotationMode rotation_mode = libyuv::kRotate0;
+  if (rotation == 90)
+    rotation_mode = libyuv::kRotate90;
+  else if (rotation == 180)
+    rotation_mode = libyuv::kRotate180;
+  else if (rotation == 270)
+    rotation_mode = libyuv::kRotate270;
 
   bool flip = false;
   switch (frame_format.pixel_format) {
@@ -222,76 +228,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
           frame,
           timestamp));
 }
-
-void
-VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
-    const uint8* y_data,
-    const uint8* u_data,
-    const uint8* v_data,
-    size_t y_stride,
-    size_t u_stride,
-    size_t v_stride,
-    const VideoCaptureFormat& frame_format,
-    int clockwise_rotation,
-    const base::TimeTicks& timestamp) {
-  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedYuvData");
-  DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
-  DCHECK_EQ(clockwise_rotation, 0) << "Rotation not supported";
-
-  scoped_refptr<Buffer> buffer = ReserveOutputBuffer(VideoFrame::I420,
-                                                     frame_format.frame_size);
-  if (!buffer.get())
-    return;
-
-  // Blit (copy) here from y,u,v into buffer.data()). Needed so we can return
-  // the parameter buffer synchronously to the driver.
-  const size_t y_plane_size = VideoFrame::PlaneAllocationSize(VideoFrame::I420,
-      VideoFrame::kYPlane, frame_format.frame_size);
-  const size_t u_plane_size = VideoFrame::PlaneAllocationSize(
-      VideoFrame::I420, VideoFrame::kUPlane, frame_format.frame_size);
-  uint8* const dst_y = reinterpret_cast<uint8*>(buffer->data());
-  uint8* const dst_u = dst_y + y_plane_size;
-  uint8* const dst_v = dst_u + u_plane_size;
-
-  const size_t dst_y_stride = VideoFrame::RowBytes(
-      VideoFrame::kYPlane, VideoFrame::I420, frame_format.frame_size.width());
-  const size_t dst_u_stride = VideoFrame::RowBytes(
-      VideoFrame::kUPlane, VideoFrame::I420, frame_format.frame_size.width());
-  const size_t dst_v_stride = VideoFrame::RowBytes(
-      VideoFrame::kVPlane, VideoFrame::I420, frame_format.frame_size.width());
-  DCHECK_GE(y_stride, dst_y_stride);
-  DCHECK_GE(u_stride, dst_u_stride);
-  DCHECK_GE(v_stride, dst_v_stride);
-
-  if (libyuv::I420Copy(y_data, y_stride,
-                       u_data, u_stride,
-                       v_data, v_stride,
-                       dst_y, dst_y_stride,
-                       dst_u, dst_u_stride,
-                       dst_v, dst_v_stride,
-                       frame_format.frame_size.width(),
-                       frame_format.frame_size.height())) {
-    DLOG(WARNING) << "Failed to copy buffer";
-    return;
-  }
-
-  scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      VideoFrame::I420, frame_format.frame_size,
-      gfx::Rect(frame_format.frame_size), frame_format.frame_size, y_stride,
-      u_stride, v_stride, dst_y, dst_u, dst_v, base::TimeDelta(),
-      base::Closure());
-  DCHECK(video_frame.get());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_,
-          buffer,
-          video_frame,
-          timestamp));
-};
 
 scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(VideoFrame::Format format,

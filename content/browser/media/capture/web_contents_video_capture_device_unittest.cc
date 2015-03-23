@@ -323,18 +323,6 @@ class StubClient : public media::VideoCaptureDevice::Client {
     FAIL();
   }
 
-  void OnIncomingCapturedYuvData(const uint8* y_data,
-                                 const uint8* u_data,
-                                 const uint8* v_data,
-                                 size_t y_stride,
-                                 size_t u_stride,
-                                 size_t v_stride,
-                                 const media::VideoCaptureFormat& frame_format,
-                                 int clockwise_rotation,
-                                 const base::TimeTicks& timestamp) override {
-    FAIL();
-  }
-
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
       media::VideoFrame::Format format,
       const gfx::Size& dimensions) override {

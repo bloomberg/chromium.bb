@@ -20,13 +20,11 @@
 
 namespace media {
 
-class V4L2CaptureDelegate;
-
 // Linux V4L2 implementation of VideoCaptureDevice.
 class VideoCaptureDeviceLinux : public VideoCaptureDevice {
  public:
   static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(uint32 v4l2_fourcc);
-  static std::list<uint32_t> GetListOfUsableFourCCs(bool favour_mjpeg);
+  static std::list<int> GetListOfUsableFourCCs(bool favour_mjpeg);
 
   explicit VideoCaptureDeviceLinux(const Name& device_name);
   ~VideoCaptureDeviceLinux() override;
@@ -40,11 +38,10 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   void SetRotation(int rotation);
 
  private:
-  static int TranslatePowerLineFrequencyToV4L2(int frequency);
-
   // Internal delegate doing the actual capture setting, buffer allocation and
   // circulacion with the V4L2 API. Created and deleted in the thread where
   // VideoCaptureDeviceLinux lives but otherwise operating on |v4l2_thread_|.
+  class V4L2CaptureDelegate;
   scoped_refptr<V4L2CaptureDelegate> capture_impl_;
 
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.

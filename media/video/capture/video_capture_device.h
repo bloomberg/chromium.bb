@@ -41,14 +41,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     Name();
     Name(const std::string& name, const std::string& id);
 
-#if defined(OS_LINUX)
-    // Linux/CrOS targets Capture Api type: it can only be set on construction.
-    enum CaptureApiType {
-      V4L2_SINGLE_PLANE,
-      V4L2_MULTI_PLANE,
-      API_TYPE_UNKNOWN
-    };
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
     // Windows targets Capture Api type: it can only be set on construction.
     enum CaptureApiType {
       MEDIA_FOUNDATION,
@@ -56,7 +49,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
       DIRECT_SHOW_WDM_CROSSBAR,
       API_TYPE_UNKNOWN
     };
-#elif defined(OS_MACOSX)
+#endif
+#if defined(OS_MACOSX)
     // Mac targets Capture Api type: it can only be set on construction.
     enum CaptureApiType {
       AVFOUNDATION,
@@ -70,7 +64,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
       OTHER_TRANSPORT
     };
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     Name(const std::string& name,
          const std::string& id,
          const CaptureApiType api_type);
@@ -108,7 +102,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
       return unique_id_ < other.id();
     }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     CaptureApiType capture_api_type() const {
       return capture_api_class_.capture_api_type();
     }
@@ -139,7 +133,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
    private:
     std::string device_name_;
     std::string unique_id_;
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     // This class wraps the CaptureApiType to give it a by default value if not
     // initialized.
     class CaptureApiClass {
@@ -201,21 +195,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
     virtual void OnIncomingCapturedData(const uint8* data,
                                         int length,
                                         const VideoCaptureFormat& frame_format,
-                                        int clockwise_rotation,
+                                        int rotation,  // Clockwise.
                                         const base::TimeTicks& timestamp) = 0;
-
-    // Captured a 3 planar YUV frame. Planes are possibly disjoint.
-    // |frame_format| must indicate I420.
-    virtual void OnIncomingCapturedYuvData(
-        const uint8* y_data,
-        const uint8* u_data,
-        const uint8* v_data,
-        size_t y_stride,
-        size_t u_stride,
-        size_t v_stride,
-        const VideoCaptureFormat& frame_format,
-        int clockwise_rotation,
-        const base::TimeTicks& timestamp) = 0;
 
     // Reserve an output buffer into which contents can be captured directly.
     // The returned Buffer will always be allocated with a memory size suitable

@@ -41,16 +41,6 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     const media::VideoCaptureFormat& frame_format,
                     int rotation,
                     const base::TimeTicks& timestamp));
-  MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void (const uint8* y_data,
-                     const uint8* u_data,
-                     const uint8* v_data,
-                     size_t y_stride,
-                     size_t u_stride,
-                     size_t v_stride,
-                     const media::VideoCaptureFormat& frame_format,
-                     int clockwise_rotation,
-                     const base::TimeTicks& timestamp));
   MOCK_METHOD2(ReserveOutputBuffer,
                scoped_refptr<Buffer>(media::VideoFrame::Format format,
                                      const gfx::Size& dimensions));

@@ -24,14 +24,7 @@ VideoCaptureDevice::Name::Name() {}
 VideoCaptureDevice::Name::Name(const std::string& name, const std::string& id)
     : device_name_(name), unique_id_(id) {}
 
-#if defined(OS_LINUX)
-VideoCaptureDevice::Name::Name(const std::string& name,
-                               const std::string& id,
-                               const CaptureApiType api_type)
-    : device_name_(name),
-      unique_id_(id),
-      capture_api_class_(api_type) {}
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 VideoCaptureDevice::Name::Name(const std::string& name,
                                const std::string& id,
                                const CaptureApiType api_type)
@@ -39,7 +32,9 @@ VideoCaptureDevice::Name::Name(const std::string& name,
       unique_id_(id),
       capture_api_class_(api_type),
       capabilities_id_(id) {}
-#elif defined(OS_MACOSX)
+#endif
+
+#if defined(OS_MACOSX)
 VideoCaptureDevice::Name::Name(const std::string& name,
                                const std::string& id,
                                const CaptureApiType api_type)
@@ -62,19 +57,7 @@ VideoCaptureDevice::Name::Name(const std::string& name,
 
 VideoCaptureDevice::Name::~Name() {}
 
-#if defined(OS_LINUX)
-const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
-  switch (capture_api_type()) {
-    case V4L2_SINGLE_PLANE:
-      return "V4L2 SPLANE";
-    case V4L2_MULTI_PLANE:
-      return "V4L2 MPLANE";
-    default:
-      NOTREACHED() << "Unknown Video Capture API type!";
-      return "Unknown API";
-  }
-}
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
   switch(capture_api_type()) {
     case MEDIA_FOUNDATION:
