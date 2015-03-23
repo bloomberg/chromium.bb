@@ -2387,7 +2387,8 @@ void RenderWidgetHostViewAura::Shutdown() {
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {
-  return popup_type_ == blink::WebPopupTypeSelect;
+  return popup_type_ == blink::WebPopupTypeSelect ||
+         popup_type_ == blink::WebPopupTypePage;
 }
 
 bool RenderWidgetHostViewAura::NeedsMouseCapture() {
