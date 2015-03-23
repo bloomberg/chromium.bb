@@ -122,8 +122,6 @@ public:
         }
         if (m_state == Closed)
             m_drainingStreamBuffer->close();
-        else
-            m_stream->close();
         return m_drainingStreamBuffer;
     }
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -194,16 +192,14 @@ private:
         m_state = Closed;
         if (m_drainingStreamBuffer)
             m_drainingStreamBuffer->close();
-        else
-            m_stream->close();
+        m_stream->close();
     }
     void error()
     {
         m_state = Errored;
         if (m_drainingStreamBuffer)
             m_drainingStreamBuffer->error(exception());
-        else
-            m_stream->error(exception());
+        m_stream->error(exception());
     }
     PassRefPtrWillBeRawPtr<DOMException> exception()
     {

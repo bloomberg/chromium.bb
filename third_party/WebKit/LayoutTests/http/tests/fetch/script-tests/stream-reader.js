@@ -64,17 +64,37 @@ sequential_promise_test(function(t) {
   }, 'acquiring a reader should set bodyUsed.');
 
 sequential_promise_test(function(t) {
+    var response;
     return fetch('/fetch/resources/progressive.php').then(function(res) {
+        response = res;
         // We need to access body attribute to start the stream.
         res.body;
         assert_false(res.bodyUsed);
-        res.text();
+        var p = res.arrayBuffer();
         assert_true(res.bodyUsed);
-        // FIXME: Getting a reader should throw, but it doesn't because the
-        // current implementation closes the body.
-        // assert_throws({name: 'TypeError'}, function() { res.body.getReader() });
+        assert_throws({name: 'TypeError'}, function() { res.body.getReader() });
+        return p;
+      }).then(function(buffer) {
+        assert_equals(buffer.byteLength, 190);
+        // Now we can obtain a (closed) reader.
+        return response.body.getReader().closed;
       });
   }, 'Setting bodyUsed means the body is locked.');
+
+sequential_promise_test(function(t) {
+    return fetch('/fetch/resources/slow-failure.cgi').then(function(res) {
+        // We need to access body attribute to start the stream.
+        res.body;
+
+        return res.text().then(function() {
+            assert_unreached('text() should fail');
+          }, function(e) {
+            return res.body.getReader().closed.then(function() {
+                assert_unreached('res.body should be errored');
+              }, function(e) {});
+          });
+      });
+   }, 'Error in text() should be propagated to the body stream.');
 
 sequential_promise_test(function(t) {
     var reader;
