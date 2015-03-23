@@ -24,6 +24,12 @@ def print_landmines():
   """
   ALL LANDMINES ARE EMITTED FROM HERE.
   """
+  # DO NOT add landmines as part of a regular CL. Landmines are a last-effort
+  # bandaid fix if a CL that got landed has a build dependency bug and all bots
+  # need to be cleaned up. If you're writing a new CL that causes build
+  # dependency problems, fix the dependency problems instead of adding a
+  # landmine.
+
   if (distributor() == 'goma' and platform() == 'win32' and
       builder() == 'ninja'):
     print 'Need to clobber winja goma due to backend cwd cache fix.'
