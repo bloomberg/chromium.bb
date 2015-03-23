@@ -450,9 +450,15 @@
       # -fsanitize=vptr only works with clang, but ubsan_vptr=1 implies clang=1
       'ubsan_vptr%': 0,
 
-      # Use the dynamic libraries instrumented by one of the sanitizers
-      # instead of the standard system libraries.
+      # Use dynamic libraries instrumented by one of the sanitizers
+      # instead of the standard system libraries. Set this flag to build the
+      # libraries from source.
       'use_instrumented_libraries%': 0,
+
+      # Use dynamic libraries instrumented by one of the sanitizers
+      # instead of the standard system libraries. Set this flag to download
+      # prebuilt binaries from GCS.
+      'use_prebuilt_instrumented_libraries%': 0,
 
       # Use libc++ (third_party/libc++ and third_party/libc++abi) instead of
       # stdlibc++ as standard library. This is intended to use for instrumented
@@ -1153,6 +1159,7 @@
     'ubsan_blacklist%': '<(ubsan_blacklist)',
     'ubsan_vptr%': '<(ubsan_vptr)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
+    'use_prebuilt_instrumented_libraries%': '<(use_prebuilt_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
     'use_system_libcxx%': '<(use_system_libcxx)',
     'clang_type_profiler%': '<(clang_type_profiler)',
@@ -4411,6 +4418,11 @@
           ['use_instrumented_libraries==1', {
             'dependencies': [
               '<(DEPTH)/third_party/instrumented_libraries/instrumented_libraries.gyp:instrumented_libraries',
+            ],
+          }],
+          ['use_prebuilt_instrumented_libraries==1', {
+            'dependencies': [
+              '<(DEPTH)/third_party/instrumented_libraries/instrumented_libraries.gyp:prebuilt_instrumented_libraries',
             ],
           }],
           ['use_custom_libcxx==1', {
