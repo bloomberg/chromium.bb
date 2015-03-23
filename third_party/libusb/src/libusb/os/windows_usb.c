@@ -4236,6 +4236,7 @@ static void composite_close(int sub_api, struct libusb_device_handle *dev_handle
 	struct windows_device_priv *priv = _device_priv(dev_handle->dev);
 	uint8_t i;
 	bool available[SUB_API_MAX];
+	bool has_hid = false;
 
 	for (i = 0; i<SUB_API_MAX; i++) {
 		available[i] = false;
@@ -4245,6 +4246,8 @@ static void composite_close(int sub_api, struct libusb_device_handle *dev_handle
 		if ( (priv->usb_interface[i].apib->id == USB_API_WINUSBX)
 		  && (priv->usb_interface[i].sub_api != SUB_API_NOTSET) ) {
 			available[priv->usb_interface[i].sub_api] = true;
+		} else if (priv->usb_interface[i].apib->id == USB_API_HID) {
+			has_hid = true;
 		}
 	}
 
@@ -4252,6 +4255,10 @@ static void composite_close(int sub_api, struct libusb_device_handle *dev_handle
 		if (available[i]) {
 			usb_api_backend[USB_API_WINUSBX].close(i, dev_handle);
 		}
+	}
+
+	if (has_hid) {
+		usb_api_backend[USB_API_HID].close(sub_api, dev_handle);
 	}
 }
 

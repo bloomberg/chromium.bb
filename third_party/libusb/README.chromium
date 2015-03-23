@@ -18,3 +18,4 @@ Local Modifications:
 - darwin-sigfpe.patch has been applied.
 - upstream-tick147.patch has been applied.
 - linux-udev.patch has been applied.
+- composite-hid-close.patch has been applied.
