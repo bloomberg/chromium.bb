@@ -9,16 +9,21 @@
     <p>
         http://crbug.com/226632 - CSSParser::parseFontFamily should allow
         the keyword "default" as part of a font name.
+        http://crbug.com/389148 - Invalid declaration "font-family: Times,
+        inherit" is treated as valid.
     </p>
     <p>
-        The next 7 lines should use the default font (same as this line):<br>
+        The next 11 lines should use the default font (same as this line):<br>
         Test 1<br>
         Test 2<br>
         Test 3<br>
         Test 4<br>
         Test 5<br>
         Test 6<br>
-        Test 7
+        Test 7<br>
+        Test 8<br>
+        Test 9<br>
+        Test 10
     </p>
     <p>
         The next 3 lines should use the font Arial:<br>

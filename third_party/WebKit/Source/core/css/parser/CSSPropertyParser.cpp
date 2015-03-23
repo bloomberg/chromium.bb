@@ -3198,7 +3198,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseAnimationPropertyLi
 
 static inline bool isCSSWideKeyword(CSSParserValue& value)
 {
-    return value.id == CSSValueInitial || value.id == CSSValueInherit || value.id == CSSValueDefault;
+    return value.id == CSSValueInitial || value.id == CSSValueInherit || value.id == CSSValueUnset || value.id == CSSValueDefault;
 }
 
 static inline bool isValidCustomIdentForGridPositions(CSSParserValue& value)
