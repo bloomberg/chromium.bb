@@ -264,14 +264,19 @@ void FillInHexSSIDFieldsInOncObject(const OncValueSignature& signature,
 }
 
 void FillInHexSSIDField(base::DictionaryValue* wifi_fields) {
-  if (!wifi_fields->HasKey(::onc::wifi::kHexSSID)) {
-    std::string ssid_string;
-    wifi_fields->GetStringWithoutPathExpansion(::onc::wifi::kSSID,
-                                               &ssid_string);
-    wifi_fields->SetStringWithoutPathExpansion(
-        ::onc::wifi::kHexSSID,
-        base::HexEncode(ssid_string.c_str(), ssid_string.size()));
+  std::string ssid_string;
+  if (wifi_fields->HasKey(::onc::wifi::kHexSSID) ||
+      !wifi_fields->GetStringWithoutPathExpansion(::onc::wifi::kSSID,
+                                                  &ssid_string)) {
+    return;
   }
+  if (ssid_string.empty()) {
+    ONC_LOG_ERROR("Found empty SSID field.");
+    return;
+  }
+  wifi_fields->SetStringWithoutPathExpansion(
+      ::onc::wifi::kHexSSID,
+      base::HexEncode(ssid_string.c_str(), ssid_string.size()));
 }
 
 namespace {
