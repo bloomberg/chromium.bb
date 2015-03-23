@@ -100,7 +100,7 @@ void LayoutTestMessageFilter::OnRegisterIsolatedFileSystem(
 }
 
 void LayoutTestMessageFilter::OnClearAllDatabases() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   database_tracker_->DeleteDataModifiedSince(
       base::Time(), net::CompletionCallback());
 }

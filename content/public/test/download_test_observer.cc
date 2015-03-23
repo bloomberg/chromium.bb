@@ -314,7 +314,7 @@ DownloadTestFlushObserver::DownloadTestFlushObserver(
       waiting_for_zero_inprogress_(true) {}
 
 void DownloadTestFlushObserver::WaitForFlush() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   download_manager_->AddObserver(this);
   // The wait condition may have been met before WaitForFlush() was called.
   CheckDownloadsInProgress(true);
@@ -422,7 +422,7 @@ DownloadTestItemCreationObserver::~DownloadTestItemCreationObserver() {
 }
 
 void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (called_back_count_ == 0) {
     waiting_ = true;
@@ -434,7 +434,7 @@ void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
 void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
     DownloadItem* item,
     DownloadInterruptReason interrupt_reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (item)
     download_id_ = item->GetId();

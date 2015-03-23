@@ -88,7 +88,7 @@ const int kPasswordFieldTag = 2;
 namespace content {
 
 void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   helper_ = [[ShellLoginDialogHelper alloc] init];
 
   // Show the modal dialog.
@@ -109,13 +109,13 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
 }
 
 void ShellLoginDialog::PlatformCleanUp() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   [helper_ release];
   helper_ = nil;
 }
 
 void ShellLoginDialog::PlatformRequestCancelled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   [helper_ cancel];
 }
 

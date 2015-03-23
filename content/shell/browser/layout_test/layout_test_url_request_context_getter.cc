@@ -28,7 +28,7 @@ LayoutTestURLRequestContextGetter::LayoutTestURLRequestContextGetter(
                                    request_interceptors.Pass(),
                                    net_log) {
   // Must first be created on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 LayoutTestURLRequestContextGetter::~LayoutTestURLRequestContextGetter() {

@@ -74,7 +74,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
       net_log_(net_log),
       request_interceptors_(request_interceptors.Pass()) {
   // Must first be created on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::swap(protocol_handlers_, *protocol_handlers);
 
@@ -103,7 +103,7 @@ net::ProxyService* ShellURLRequestContextGetter::GetProxyService() {
 }
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!url_request_context_) {
     const base::CommandLine& command_line =

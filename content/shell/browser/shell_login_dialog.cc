@@ -19,7 +19,7 @@ ShellLoginDialog::ShellLoginDialog(
     net::AuthChallengeInfo* auth_info,
     net::URLRequest* request) : auth_info_(auth_info),
                                 request_(request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ShellLoginDialog::PrepDialog, this,
@@ -28,7 +28,7 @@ ShellLoginDialog::ShellLoginDialog(
 }
 
 void ShellLoginDialog::OnRequestCancelled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ShellLoginDialog::PlatformRequestCancelled, this));
@@ -36,7 +36,7 @@ void ShellLoginDialog::OnRequestCancelled() {
 
 void ShellLoginDialog::UserAcceptedAuth(const base::string16& username,
                                         const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ShellLoginDialog::SendAuthToRequester, this,
@@ -44,7 +44,7 @@ void ShellLoginDialog::UserAcceptedAuth(const base::string16& username,
 }
 
 void ShellLoginDialog::UserCancelledAuth() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ShellLoginDialog::SendAuthToRequester, this,
@@ -70,7 +70,7 @@ void ShellLoginDialog::PlatformRequestCancelled() {}
 
 void ShellLoginDialog::PrepDialog(const base::string16& host,
                                   const base::string16& realm) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The realm is controlled by the remote server, so there is no reason to
   // believe it is of a reasonable length.
   base::string16 elided_realm;
@@ -92,7 +92,7 @@ void ShellLoginDialog::PrepDialog(const base::string16& host,
 void ShellLoginDialog::SendAuthToRequester(bool success,
                                            const base::string16& username,
                                            const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (success)
     request_->SetAuth(net::AuthCredentials(username, password));
   else

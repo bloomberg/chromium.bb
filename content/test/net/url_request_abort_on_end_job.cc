@@ -26,12 +26,12 @@ net::URLRequestJob* JobFactory(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return new URLRequestAbortOnEndJob(request, network_delegate);
 }
 
 void AddUrlHandlerOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddUrlHandler(GURL(URLRequestAbortOnEndJob::k400AbortOnEndUrl),
                         &JobFactory);

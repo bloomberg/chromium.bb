@@ -34,7 +34,7 @@ FakeSpeechRecognitionManager::~FakeSpeechRecognitionManager() {
 }
 
 void FakeSpeechRecognitionManager::WaitForRecognitionStarted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   recognition_started_closure_ = runner->QuitClosure();
   runner->Run();

@@ -71,7 +71,7 @@ void ClearPushRegistrationIDOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     int64 service_worker_registration_id,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context->context()->storage()->ClearUserData(
       service_worker_registration_id,
@@ -130,7 +130,7 @@ void PushMessagingService::GetSenderId(BrowserContext* browser_context,
                                        const GURL& origin,
                                        int64 service_worker_registration_id,
                                        const StringCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -147,7 +147,7 @@ void PushMessagingService::ClearPushRegistrationID(
     const GURL& origin,
     int64 service_worker_registration_id,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
