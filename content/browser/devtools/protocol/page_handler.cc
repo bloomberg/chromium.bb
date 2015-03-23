@@ -9,12 +9,10 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "content/browser/devtools/protocol/color_picker.h"
 #include "content/browser/devtools/protocol/frame_recorder.h"
-#include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -26,7 +24,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/url_constants.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
@@ -48,19 +45,6 @@ static int kDefaultScreenshotQuality = 80;
 static int kFrameRetryDelayMs = 100;
 static int kCaptureRetryLimit = 2;
 static int kMaxScreencastFramesInFlight = 2;
-
-ui::GestureProviderConfigType TouchEmulationConfigurationToType(
-    const std::string& protocol_value) {
-  ui::GestureProviderConfigType result =
-      ui::GestureProviderConfigType::CURRENT_PLATFORM;
-  if (protocol_value == "mobile") {
-    result = ui::GestureProviderConfigType::GENERIC_MOBILE;
-  }
-  if (protocol_value == "desktop") {
-    result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
-  }
-  return result;
-}
 
 std::string EncodeScreencastFrame(const SkBitmap& bitmap,
                                   const std::string& format,
@@ -104,8 +88,6 @@ typedef DevToolsProtocolClient::Response Response;
 
 PageHandler::PageHandler()
     : enabled_(false),
-      touch_emulation_enabled_(false),
-      device_emulation_enabled_(false),
       screencast_enabled_(false),
       screencast_quality_(kDefaultScreenshotQuality),
       screencast_max_width_(-1),
@@ -133,8 +115,6 @@ void PageHandler::SetRenderViewHost(RenderViewHostImpl* host) {
   color_picker_->SetRenderViewHost(host);
   frame_recorder_->SetRenderViewHost(host);
   host_ = host;
-  UpdateTouchEventEmulationState();
-  UpdateDeviceEmulationState();
 }
 
 void PageHandler::SetClient(scoped_ptr<Client> client) {
@@ -187,11 +167,7 @@ Response PageHandler::Enable() {
 
 Response PageHandler::Disable() {
   enabled_ = false;
-  touch_emulation_enabled_ = false;
   screencast_enabled_ = false;
-  device_emulation_enabled_ = false;
-  UpdateTouchEventEmulationState();
-  UpdateDeviceEmulationState();
   color_picker_->SetEnabled(false);
   if (screencast_listener_)
     screencast_listener_->ScreencastEnabledChanged();
@@ -274,59 +250,6 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
   return Response::InvalidParams("No entry with passed id");
 }
 
-Response PageHandler::SetGeolocationOverride(double* latitude,
-                                             double* longitude,
-                                             double* accuracy) {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(host_));
-  if (!web_contents)
-    return Response::InternalError("No WebContents to override");
-
-  GeolocationServiceContext* geolocation_context =
-      web_contents->GetGeolocationServiceContext();
-  scoped_ptr<Geoposition> geoposition(new Geoposition());
-  if (latitude && longitude && accuracy) {
-    geoposition->latitude = *latitude;
-    geoposition->longitude = *longitude;
-    geoposition->accuracy = *accuracy;
-    geoposition->timestamp = base::Time::Now();
-    if (!geoposition->Validate()) {
-      return Response::InternalError("Invalid geolocation");
-    }
-  } else {
-    geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-  }
-  geolocation_context->SetOverride(geoposition.Pass());
-  return Response::OK();
-}
-
-Response PageHandler::ClearGeolocationOverride() {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(host_));
-  if (!web_contents)
-    return Response::InternalError("No WebContents to override");
-
-  GeolocationServiceContext* geolocation_context =
-      web_contents->GetGeolocationServiceContext();
-  geolocation_context->ClearOverride();
-  return Response::OK();
-}
-
-Response PageHandler::SetTouchEmulationEnabled(
-    bool enabled, const std::string* configuration) {
-  touch_emulation_enabled_ = enabled;
-  touch_emulation_configuration_ =
-      configuration ? *configuration : std::string();
-  UpdateTouchEventEmulationState();
-  return Response::FallThrough();
-}
-
 Response PageHandler::CaptureScreenshot(DevToolsCommandId command_id) {
   if (!host_ || !host_->GetView())
     return Response::InternalError("Could not connect to view");
@@ -346,80 +269,6 @@ Response PageHandler::CanScreencast(bool* result) {
   return Response::OK();
 }
 
-Response PageHandler::CanEmulate(bool* result) {
-#if defined(OS_ANDROID)
-  *result = false;
-#else
-  if (host_) {
-    if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
-      *result = web_contents->GetMainFrame()->GetRenderViewHost() == host_;
-#if defined(DEBUG_DEVTOOLS)
-      *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
-#endif  // defined(DEBUG_DEVTOOLS)
-    } else {
-      *result = true;
-    }
-  } else {
-    *result = true;
-  }
-#endif  // defined(OS_ANDROID)
-  return Response::OK();
-}
-
-Response PageHandler::SetDeviceMetricsOverride(
-    int width, int height, double device_scale_factor, bool mobile,
-    bool fit_window, const double* optional_scale,
-    const double* optional_offset_x, const double* optional_offset_y) {
-  const static int max_size = 10000000;
-  const static double max_scale = 10;
-
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  if (width < 0 || height < 0 || width > max_size || height > max_size) {
-    return Response::InvalidParams(
-        "Width and height values must be positive, not greater than " +
-        base::IntToString(max_size));
-  }
-
-  if (device_scale_factor < 0)
-    return Response::InvalidParams("deviceScaleFactor must be non-negative");
-
-  if (optional_scale && (*optional_scale <= 0 || *optional_scale > max_scale)) {
-    return Response::InvalidParams(
-        "scale must be positive, not greater than " +
-        base::IntToString(max_scale));
-  }
-
-  blink::WebDeviceEmulationParams params;
-  params.screenPosition = mobile ? blink::WebDeviceEmulationParams::Mobile :
-      blink::WebDeviceEmulationParams::Desktop;
-  params.deviceScaleFactor = device_scale_factor;
-  params.viewSize = blink::WebSize(width, height);
-  params.fitToView = fit_window;
-  params.scale = optional_scale ? *optional_scale : 1;
-  params.offset = blink::WebFloatPoint(
-      optional_offset_x ? *optional_offset_x : 0.f,
-      optional_offset_y ? *optional_offset_y : 0.f);
-
-  if (device_emulation_enabled_ && params == device_emulation_params_)
-    return Response::OK();
-
-  device_emulation_enabled_ = true;
-  device_emulation_params_ = params;
-  UpdateDeviceEmulationState();
-  return Response::OK();
-}
-
-Response PageHandler::ClearDeviceMetricsOverride() {
-  if (!device_emulation_enabled_)
-    return Response::OK();
-
-  device_emulation_enabled_ = false;
-  UpdateDeviceEmulationState();
-  return Response::OK();
-}
-
 Response PageHandler::StartScreencast(const std::string* format,
                                       const int* quality,
                                       const int* max_width,
@@ -435,7 +284,6 @@ Response PageHandler::StartScreencast(const std::string* format,
   screencast_max_width_ = max_width ? *max_width : -1;
   screencast_max_height_ = max_height ? *max_height : -1;
 
-  UpdateTouchEventEmulationState();
   bool visible = !host_->is_hidden();
   NotifyScreencastVisibility(visible);
   if (visible) {
@@ -451,7 +299,6 @@ Response PageHandler::StartScreencast(const std::string* format,
 
 Response PageHandler::StopScreencast() {
   screencast_enabled_ = false;
-  UpdateTouchEventEmulationState();
   if (screencast_listener_)
     screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
@@ -509,30 +356,6 @@ Response PageHandler::SetColorPickerEnabled(bool enabled) {
 
   color_picker_->SetEnabled(enabled);
   return Response::OK();
-}
-
-void PageHandler::UpdateTouchEventEmulationState() {
-  if (!host_)
-    return;
-  bool enabled = touch_emulation_enabled_ || screencast_enabled_;
-  ui::GestureProviderConfigType config_type =
-      TouchEmulationConfigurationToType(touch_emulation_configuration_);
-  host_->SetTouchEventEmulationEnabled(enabled, config_type);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(host_));
-  if (web_contents)
-    web_contents->SetForceDisableOverscrollContent(enabled);
-}
-
-void PageHandler::UpdateDeviceEmulationState() {
-  if (!host_)
-    return;
-  if (device_emulation_enabled_) {
-    host_->Send(new ViewMsg_EnableDeviceEmulation(
-        host_->GetRoutingID(), device_emulation_params_));
-  } else {
-    host_->Send(new ViewMsg_DisableDeviceEmulation(host_->GetRoutingID()));
-  }
 }
 
 void PageHandler::NotifyScreencastVisibility(bool visible) {

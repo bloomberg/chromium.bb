@@ -12,7 +12,6 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/public/browser/readback_types.h"
-#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 
 class SkBitmap;
 
@@ -64,30 +63,9 @@ class PageHandler {
 
   Response NavigateToHistoryEntry(int entry_id);
 
-  Response SetGeolocationOverride(double* latitude,
-                                  double* longitude,
-                                  double* accuracy);
-
-  Response ClearGeolocationOverride();
-
-  Response SetTouchEmulationEnabled(bool enabled,
-                                    const std::string* configuration);
-
   Response CaptureScreenshot(DevToolsCommandId command_id);
 
-  Response CanEmulate(bool* result);
-  Response SetDeviceMetricsOverride(int width,
-                                    int height,
-                                    double device_scale_factor,
-                                    bool mobile,
-                                    bool fit_window,
-                                    const double* optional_scale,
-                                    const double* optional_offset_x,
-                                    const double* optional_offset_y);
-  Response ClearDeviceMetricsOverride();
-
   Response CanScreencast(bool* result);
-
   Response StartScreencast(const std::string* format,
                            const int* quality,
                            const int* max_width,
@@ -107,9 +85,6 @@ class PageHandler {
   Response SetColorPickerEnabled(bool enabled);
 
  private:
-  void UpdateTouchEventEmulationState();
-  void UpdateDeviceEmulationState();
-
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
   void ScreencastFrameCaptured(const cc::CompositorFrameMetadata& metadata,
@@ -130,12 +105,6 @@ class PageHandler {
       scoped_refptr<StopRecordingFramesResponse> response_data);
 
   bool enabled_;
-
-  bool touch_emulation_enabled_;
-  std::string touch_emulation_configuration_;
-
-  bool device_emulation_enabled_;
-  blink::WebDeviceEmulationParams device_emulation_params_;
 
   bool screencast_enabled_;
   std::string screencast_format_;
