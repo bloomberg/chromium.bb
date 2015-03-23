@@ -2153,14 +2153,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 .id());
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_PolicyForExtensions DISABLED_PolicyForExtensions
-#else
-#define MAYBE_PolicyForExtensions PolicyForExtensions
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_PolicyForExtensions) {
+// Test fails under MSan and is flaky on regular bots: http://crbug.com/446950
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
