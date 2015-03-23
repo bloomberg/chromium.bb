@@ -233,7 +233,7 @@ def main(argv):
         cros_build_lib.Die('Cannot find overlay: %s' % path)
       overlays[path] = []
   else:
-    cros_build_lib.Warning('Missing --overlays argument')
+    logging.warning('Missing --overlays argument')
     overlays = {
         '%s/private-overlays/chromeos-overlay' % options.srcroot: [],
         '%s/third_party/chromiumos-overlay' % options.srcroot: [],
@@ -272,7 +272,7 @@ def main(argv):
     for overlay in keys:
       ebuilds = overlays[overlay]
       if not os.path.isdir(overlay):
-        cros_build_lib.Warning('Skipping %s' % overlay)
+        logging.warning('Skipping %s' % overlay)
         continue
 
       # Note we intentionally work from the non push tracking branch;
@@ -309,7 +309,7 @@ def main(argv):
               new_package_atoms.append('=%s' % new_package)
               messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
           except (OSError, IOError):
-            cros_build_lib.Warning(
+            logging.warning(
                 'Cannot rev %s\n'
                 'Note you will have to go into %s '
                 'and reset the git repo yourself.' % (ebuild.package, overlay))

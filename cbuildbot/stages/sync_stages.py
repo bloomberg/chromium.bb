@@ -86,7 +86,7 @@ class PatchChangesStage(generic_stages.BuilderStage):
     duplicates = []
     for change in changes:
       if change.id is None:
-        cros_build_lib.Warning(
+        logging.warning(
             "Change %s lacks a usable ChangeId; duplicate checking cannot "
             "be done for this change.  If cherry-picking fails, this is a "
             "potential cause.", change)
@@ -218,8 +218,8 @@ class BootstrapStage(PatchChangesStage):
         parsed_args, filter_fn)
 
     if removed:
-      cros_build_lib.Warning('The following arguments were removed due to api: '
-                             "'%s'" % ' '.join(removed))
+      logging.warning("The following arguments were removed due to api: '%s'"
+                      % ' '.join(removed))
     return accepted
 
   @classmethod
@@ -385,7 +385,7 @@ class SyncStage(generic_stages.BuilderStage):
         try:
           old_contents = self.repo.ExportManifest()
         except cros_build_lib.RunCommandError as e:
-          cros_build_lib.Warning(str(e))
+          logging.warning(str(e))
         else:
           osutils.WriteFile(old_filename, old_contents)
           fresh_sync = False
@@ -889,7 +889,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
                              self._run.options.mock_tree_status),
             change_filter=self._ChangeFilter, builder_run=self._run)
       except validation_pool.TreeIsClosedException as e:
-        cros_build_lib.Warning(str(e))
+        logging.warning(str(e))
         return None
 
       # We must extend the builder deadline before publishing a new manifest to

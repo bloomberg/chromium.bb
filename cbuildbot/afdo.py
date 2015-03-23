@@ -128,7 +128,7 @@ def GSUploadIfNotPresent(gs_context, src, dest):
     True if file was uploaded. False otherwise.
   """
   if gs_context.Exists(dest):
-    cros_build_lib.Warning('File %s already in GS', dest)
+    logging.warning('File %s already in GS', dest)
     return False
   else:
     gs_context.Copy(src, dest, acl='public-read')

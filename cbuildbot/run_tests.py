@@ -255,7 +255,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
 
   except KeyboardInterrupt:
     # If the user wants to stop, reap all the pending children.
-    cros_build_lib.Warning('CTRL+C received; cleaning up tests')
+    logging.warning('CTRL+C received; cleaning up tests')
     aborted = True
     CleanupChildren(pids)
 
@@ -440,4 +440,4 @@ def main(argv):
       return 1
 
   if not opts.network:
-    cros_build_lib.Warning('Network tests skipped; use --network to run them')
+    logging.warning('Network tests skipped; use --network to run them')

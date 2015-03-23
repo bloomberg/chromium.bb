@@ -32,6 +32,7 @@ from chromite.cbuildbot import commands
 from chromite.lib import binpkg
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -433,7 +434,7 @@ class PrebuiltUploader(object):
     uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
     unmatched_pkgs = self._packages - self._found_packages
     if unmatched_pkgs:
-      cros_build_lib.Warning('unable to match packages: %r' % unmatched_pkgs)
+      logging.warning('unable to match packages: %r' % unmatched_pkgs)
 
     # Write Packages file.
     pkg_index.header['TTL'] = _BINPKG_TTL

@@ -26,7 +26,6 @@ import os
 import stat
 
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import filetype
 from chromite.lib import parseelf
@@ -154,8 +153,7 @@ class DepTracker(object):
     """
     portage_db = portage_util.PortageDB(sysroot)
     if not os.path.exists(portage_db.db_path):
-      cros_build_lib.Warning('PortageDB directory not found: %s',
-                             portage_db.db_path)
+      logging.warning('PortageDB directory not found: %s', portage_db.db_path)
       return
 
     for pkg in portage_db.InstalledPackages():
@@ -173,8 +171,8 @@ class DepTracker(object):
         pkg_files.append(rel_path)
         file_data = self._files[rel_path]
         if 'ebuild' in file_data:
-          cros_build_lib.Warning('Duplicated entry for %s: %s and %',
-                                 rel_path, file_data['ebuild'], cpf)
+          logging.warning('Duplicated entry for %s: %s and %',
+                          rel_path, file_data['ebuild'], cpf)
         file_data['ebuild'] = cpf
         pkg_size += file_data['size']
       # Ignore packages that don't install any file.

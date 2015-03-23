@@ -852,7 +852,7 @@ Then, to summarize builds, you can use
   $ summarize_build_stats --annotations-from-cidb [OPTIONS]
 
 """
-  cros_build_lib.Warning(warning)
+  logging.warning(warning)
 
 
 def main(argv):

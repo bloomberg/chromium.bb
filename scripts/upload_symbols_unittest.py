@@ -27,6 +27,7 @@ import urllib2
 os.environ.pop('http_proxy', None)
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -328,7 +329,7 @@ class SymbolDeduplicatorNotifyTest(cros_test_lib.MockTestCase):
 
   def testStorageException(self):
     """We want to just warn & move on when dedupe server fails"""
-    log_mock = self.PatchObject(cros_build_lib, 'Warning')
+    log_mock = self.PatchObject(logging, 'warning')
     q = mock.MagicMock()
     q.get.side_effect = (upload_symbols.FakeItem(), None,)
     self.storage_mock.side_effect = Exception
@@ -355,7 +356,7 @@ class SymbolDeduplicatorTest(cros_test_lib.MockTestCase):
 
   def testStorageException(self):
     """We want to just warn & move on when dedupe server fails"""
-    log_mock = self.PatchObject(cros_build_lib, 'Warning')
+    log_mock = self.PatchObject(logging, 'warning')
     self.storage_mock.contains.side_effect = Exception('storage error')
     sym_paths = ['/a', '/bbbbbb', '/cc.c']
     ret = upload_symbols.SymbolDeduplicator(self.storage_mock, sym_paths)

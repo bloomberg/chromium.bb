@@ -446,13 +446,12 @@ class BuildData(object):
       bd = BuildData(url, metadata_dict, sheets_version=sheets_version)
 
       if bd.build_number is None:
-        cros_build_lib.Warning('Metadata at %s was missing build number.',
-                               url)
+        logging.warning('Metadata at %s was missing build number.', url)
         m = re.match(r'.*-b([0-9]*)/.*', url)
         if m:
           inferred_number = int(m.groups()[0])
-          cros_build_lib.Warning('Inferred build number %d from metadata url.',
-                                 inferred_number)
+          logging.warning('Inferred build number %d from metadata url.',
+                          inferred_number)
           bd.metadata_dict['build-number'] = inferred_number
       if sheets_version is not None:
         logging.debug('Read %s:\n  build_number=%d, sheets v%d', url,

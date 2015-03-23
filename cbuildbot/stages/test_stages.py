@@ -254,8 +254,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('payloads_generated', pretty_name='payloads'):
       cros_build_lib.PrintBuildbotStepWarnings('missing payloads')
-      cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
-                             'failed. See UploadTestArtifacts for details.')
+      logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
+                      'See UploadTestArtifacts for details.')
       return
 
     build = '/'.join([self._bot_id, self.version])
@@ -290,8 +290,8 @@ class AUTestStage(HWTestStage):
     if not self.GetParallel('delta_payloads_generated',
                             pretty_name='delta payloads'):
       cros_build_lib.PrintBuildbotStepWarnings('missing delta payloads')
-      cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
-                             'failed. See UploadTestArtifacts for details.')
+      logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
+                      'See UploadTestArtifacts for details.')
       return
 
     with osutils.TempDir() as tempdir:

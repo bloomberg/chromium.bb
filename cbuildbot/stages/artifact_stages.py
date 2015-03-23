@@ -86,8 +86,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       raise NothingToArchiveException('No %s found!' % path_pattern)
     elif len(files) > 1:
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Warning('Expecting one result for %s package, but '
-                             'found multiple.', path_pattern)
+      logging.warning('Expecting one result for %s package, but found '
+                      'multiple.', path_pattern)
     return files[-1]
 
   def ArchiveStrippedChrome(self):

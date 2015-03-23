@@ -13,7 +13,7 @@ import os
 
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
-
+from chromite.lib import cros_logging as logging
 
 def _GetCheckpointFile(buildroot):
   return os.path.join(buildroot, '.completed_stages')
@@ -30,8 +30,7 @@ def LoadCheckpoint(buildroot):
   """Restore completed stage info from checkpoint file."""
   completed_stages_file = _GetCheckpointFile(buildroot)
   if not os.path.exists(completed_stages_file):
-    cros_build_lib.Warning('Checkpoint file not found in buildroot %s'
-                           % buildroot)
+    logging.warning('Checkpoint file not found in buildroot %s' % buildroot)
     return
 
   with open(completed_stages_file, 'r') as load_file:
@@ -158,8 +157,7 @@ class _Results(object):
     for line in out:
       record = line.strip().split(self.SPLIT_TOKEN)
       if len(record) != len(_result_fields):
-        cros_build_lib.Warning(
-            'State file does not match expected format, ignoring.')
+        logging.warning('State file does not match expected format, ignoring.')
         # Wipe any partial state.
         self._previous = {}
         break

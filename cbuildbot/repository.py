@@ -94,7 +94,7 @@ def UpdateGitRepo(working_dir, repo_url, **kwargs):
     try:
       git.CleanAndCheckoutUpstream(working_dir)
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Warning('Could not update %s', working_dir, exc_info=True)
+      logging.warning('Could not update %s', working_dir, exc_info=True)
       shutil.rmtree(working_dir)
       CloneGitRepo(working_dir, repo_url, **kwargs)
   else:
@@ -211,8 +211,8 @@ class RepoRepository(object):
         cros_build_lib.RunCommand(
             ['repo', 'manifest'], cwd=self.directory, capture_output=True)
       except cros_build_lib.RunCommandError:
-        cros_build_lib.Warning("Wiping %r due to `repo manifest` failure",
-                               self.directory)
+        logging.warning("Wiping %r due to `repo manifest` failure",
+                        self.directory)
         paths = [os.path.join(self.directory, '.repo', x) for x in
                  ('manifest.xml', 'manifests.git', 'manifests', 'repo')]
         cros_build_lib.SudoRunCommand(['rm', '-rf'] + paths)

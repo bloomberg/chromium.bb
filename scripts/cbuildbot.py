@@ -89,7 +89,7 @@ def _GetConfig(config_name):
 
 def _ConfirmBuildRoot(buildroot):
   """Confirm with user the inferred buildroot, and mark it as confirmed."""
-  cros_build_lib.Warning('Using default directory %s as buildroot', buildroot)
+  logging.warning('Using default directory %s as buildroot', buildroot)
   if not cros_build_lib.BooleanPrompt(default=False):
     print('Please specify a different buildroot via the --buildroot option.')
     sys.exit(0)
@@ -102,7 +102,7 @@ def _ConfirmBuildRoot(buildroot):
 
 def _ConfirmRemoteBuildbotRun():
   """Confirm user wants to run with --buildbot --remote."""
-  cros_build_lib.Warning(
+  logging.warning(
       'You are about to launch a PRODUCTION job!  This is *NOT* a '
       'trybot run! Are you sure?')
   if not cros_build_lib.BooleanPrompt(default=False):
@@ -1027,7 +1027,7 @@ def main(argv):
     for bot in args:
       build_config = _GetConfig(bot)
       if options.hwtest:
-        cros_build_lib.Warning(
+        logging.warning(
             'If %s is not a released platform or it is a generic overlay, '
             'the HWTest step will most likely not run; please ask the lab '
             'team for help if this is unexpected.' % build_config['boards'])

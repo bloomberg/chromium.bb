@@ -987,7 +987,7 @@ class GitRepoPatch(PatchQuery):
     try:
       self.change_id = self._ParseChangeId(commit_message)
     except BrokenChangeID:
-      cros_build_lib.Warning(
+      logging.warning(
           'Change %s, sha1 %s lacks a change-id in its commit '
           'message.  CQ-DEPEND against this rev may not work, nor '
           'will any gerrit querying.  Please add the appropriate '
@@ -1379,7 +1379,7 @@ class GerritFetchOnlyPatch(GitRepoPatch):
             % (self.change_id, self.sha1, parsed_id))
 
     except BrokenChangeID:
-      cros_build_lib.Warning(
+      logging.warning(
           'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
           'message.  This can break the ability for any children to depend on '
           'this Change as a parent.  Please add the appropriate '

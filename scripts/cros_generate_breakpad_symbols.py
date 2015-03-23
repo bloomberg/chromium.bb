@@ -100,8 +100,8 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
   def _CrashCheck(ret, msg):
     if ret < 0:
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Warning('dump_syms crashed with %s; %s',
-                             signals.StrSignal(-ret), msg)
+      logging.warning('dump_syms crashed with %s; %s',
+                      signals.StrSignal(-ret), msg)
 
   osutils.SafeMakedirs(breakpad_dir)
   with tempfile.NamedTemporaryFile(dir=breakpad_dir, bufsize=0) as temp:
@@ -133,7 +133,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
         cros_build_lib.PrintBuildbotStepWarnings()
         _CrashCheck(result.returncode, 'giving up entirely')
         if 'file contains no debugging information' in result.error:
-          cros_build_lib.Warning('no symbols found for %s', elf_file)
+          logging.warning('no symbols found for %s', elf_file)
         else:
           num_errors.value += 1
           cros_build_lib.Error('dumping symbols for %s failed:\n%s',
@@ -242,7 +242,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
         if '/.build-id/' in debug_file:
           msg = logging.debug
         else:
-          msg = cros_build_lib.Warning
+          msg = logging.warning
         msg('Skipping symbolic link %s', debug_file)
         continue
 
@@ -250,7 +250,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
       if not os.path.exists(elf_file):
         # Sometimes we filter out programs from /usr/bin but leave behind
         # the .debug file.
-        cros_build_lib.Warning('Skipping missing %s', elf_file)
+        logging.warning('Skipping missing %s', elf_file)
         continue
 
       targets.append((os.path.getsize(debug_file), elf_file, debug_file))

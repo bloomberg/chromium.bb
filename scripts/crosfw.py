@@ -441,13 +441,12 @@ def SetupBuild(options):
     # Get the correct board for cros_write_firmware
     config_mk = '%s/include/config.mk' % outdir
     if not os.path.exists(config_mk):
-      cros_build_lib.Warning('No build found for %s - dropping -i' % board)
+      logging.warning('No build found for %s - dropping -i' % board)
       options.incremental = False
 
   config_mk = 'include/config.mk'
   if os.path.exists(config_mk):
-    cros_build_lib.Warning("Warning: '%s' exists, try 'make distclean'"
-                           % config_mk)
+    logging.warning("Warning: '%s' exists, try 'make distclean'" % config_mk)
 
   # For when U-Boot supports ccache
   # See http://patchwork.ozlabs.org/patch/245079/
@@ -565,7 +564,7 @@ def WriteFirmware(options):
     # run the magic flasher script. So use the standard U-Boot in this
     # case.
     if options.small:
-      cros_build_lib.Warning('Using standard U-Boot as flasher')
+      logging.warning('Using standard U-Boot as flasher')
       flash += ['-U', '##/build/%s/firmware/u-boot.bin' % options.board]
 
   if options.mmc:
@@ -592,15 +591,15 @@ def WriteFirmware(options):
 
   if arch != 'sandbox' and not in_chroot and servo:
     if dest == 'usb':
-      cros_build_lib.Warning('Image cannot be written to board')
+      logging.warning('Image cannot be written to board')
       dest = ''
       servo = []
     elif dest == 'em100':
-      cros_build_lib.Warning('Please reset the board manually to boot firmware')
+      logging.warning('Please reset the board manually to boot firmware')
       servo = []
 
     if not servo:
-      cros_build_lib.Warning('(sadly dut-control does not work outside chroot)')
+      logging.warning('(sadly dut-control does not work outside chroot)')
 
   if dest:
     dest = ['-w', dest]
@@ -624,7 +623,7 @@ def WriteFirmware(options):
     # ebuild one as RW.
     # TODO(sjg@chromium.org): Option to build U-Boot a second time to get
     # a fresh RW U-Boot.
-    cros_build_lib.Warning('Using standard U-Boot for RW')
+    logging.warning('Using standard U-Boot for RW')
     ro_uboot = ['--add-blob', 'ro-boot', uboot_fname]
     uboot_fname = '##/build/%s/firmware/u-boot.bin' % options.board
   cbf = ['%s/platform/dev/host/cros_bundle_firmware' % src_root,

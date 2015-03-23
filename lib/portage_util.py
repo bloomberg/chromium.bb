@@ -1085,7 +1085,7 @@ def _FindUprevCandidates(files):
     cros_build_lib.Die('Found multiple unstable ebuilds in %s' % path)
 
   if not stable_ebuilds:
-    cros_build_lib.Warning('Missing stable ebuild in %s' % path)
+    logging.warning('Missing stable ebuild in %s' % path)
     return unstable_ebuilds[0]
 
   if len(stable_ebuilds) == 1:
@@ -1102,8 +1102,8 @@ def _FindUprevCandidates(files):
   uprev_ebuild = max(stable_ebuilds, key=lambda eb: eb.current_revision)
   for ebuild in stable_ebuilds:
     if ebuild != uprev_ebuild:
-      cros_build_lib.Warning('Ignoring stable ebuild revision %s in %s' %
-                             (ebuild.version, path))
+      logging.warning('Ignoring stable ebuild revision %s in %s' %
+                      (ebuild.version, path))
   return uprev_ebuild
 
 

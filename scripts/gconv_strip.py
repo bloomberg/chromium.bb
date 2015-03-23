@@ -240,7 +240,7 @@ def GconvStrip(opts):
   gconv_modules_files = glob.glob(os.path.join(opts.root, GCONV_MODULES_PATH))
 
   if not gconv_modules_files:
-    cros_build_lib.Warning('gconv-modules file not found.')
+    logging.warning('gconv-modules file not found.')
     return 1
 
   # Only one gconv-modules files should be present, either on /usr/lib or
@@ -283,7 +283,7 @@ def GconvStrip(opts):
   # strings should be listed in the gconv-modules file.
   unknown_sticky_modules = set(STICKY_MODULES) - set(charsets)
   if unknown_sticky_modules:
-    cros_build_lib.Warning(
+    logging.warning(
         'The following charsets were explicitly requested in STICKY_MODULES '
         'even though they don\'t exist: %s',
         ', '.join(unknown_sticky_modules))

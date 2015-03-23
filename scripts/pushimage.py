@@ -230,9 +230,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
   try:
     input_insns = InputInsns(board)
   except MissingBoardInstructions as e:
-    cros_build_lib.Warning('board "%s" is missing base instruction file: %s',
-                           board, e)
-    cros_build_lib.Warning('not uploading anything for signing')
+    logging.warning('board "%s" is missing base instruction file: %s', board, e)
+    logging.warning('not uploading anything for signing')
     return
   channels = input_insns.GetChannels()
 
@@ -315,7 +314,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
       try:
         ctx.Copy(os.path.join(src_path, src), os.path.join(dst_path, dst))
       except gs.GSNoSuchKey:
-        cros_build_lib.Warning('Skipping %s as it does not exist', src)
+        logging.warning('Skipping %s as it does not exist', src)
         continue
       except gs.GSContextException:
         unknown_error = True

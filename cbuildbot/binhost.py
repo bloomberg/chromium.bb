@@ -279,8 +279,7 @@ class CompatIdFetcher(object):
       self.compat_ids[(board, extra_useflags)] = \
           CalculateCompatId(board, extra_useflags)
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Warning(
-          'Ignoring error in board: %s', board, exc_info=True)
+      logging.warning('Ignoring error in board: %s', board, exc_info=True)
 
   def FetchCompatIds(self, board_keys):
     """Generate a dict mapping BoardKeys to their associated CompatId.

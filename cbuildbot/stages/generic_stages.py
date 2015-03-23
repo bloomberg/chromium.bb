@@ -355,7 +355,7 @@ class BuilderStage(object):
     """
     description = cls._StringifyException(exc_info)
     cros_build_lib.PrintBuildbotStepWarnings()
-    cros_build_lib.Warning(description)
+    logging.warning(description)
     return (results_lib.Results.FORGIVEN, description, retrying)
 
   @classmethod

@@ -252,19 +252,19 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       cros_build_lib.PrintBuildbotStepWarnings()
 
     if failing:
-      cros_build_lib.Warning('\n'.join([
+      logging.warning('\n'.join([
           'The following builders failed with this manifest:',
           ', '.join(sorted(failing)),
           'Please check the logs of the failing builders for details.']))
 
     if inflight:
-      cros_build_lib.Warning('\n'.join([
+      logging.warning('\n'.join([
           'The following builders took too long to finish:',
           ', '.join(sorted(inflight)),
           'Please check the logs of these builders for details.']))
 
     if no_stat:
-      cros_build_lib.Warning('\n'.join([
+      logging.warning('\n'.join([
           'The following builders did not start or failed prematurely:',
           ', '.join(sorted(no_stat)),
           'Please check the logs of these builders for details.']))

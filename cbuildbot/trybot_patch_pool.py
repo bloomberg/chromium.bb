@@ -9,7 +9,7 @@ from __future__ import print_function
 import functools
 
 from chromite.cbuildbot import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import patch as cros_patch
@@ -126,7 +126,7 @@ class TrybotPatchPool(object):
       gerrit_patches = gerrit.GetGerritPatchInfo(gerrit_patches)
       for patch in gerrit_patches:
         if patch.IsAlreadyMerged():
-          cros_build_lib.Warning('Patch %s has already been merged.', patch)
+          logging.warning('Patch %s has already been merged.', patch)
     else:
       gerrit_patches = ()
 

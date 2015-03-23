@@ -30,8 +30,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
 
     board = self._current_board
     if not afdo.CanGenerateAFDOData(board):
-      cros_build_lib.Warning('Board %s cannot generate its own AFDO profile.',
-                             board)
+      logging.warning('Board %s cannot generate its own AFDO profile.', board)
       return
 
     arch = self._GetCurrentArch()
@@ -57,8 +56,8 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
     # Will let system-exiting exceptions through.
     except Exception:
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Warning('AFDO profile generation failed with exception ',
-                             exc_info=True)
+      logging.warning('AFDO profile generation failed with exception ',
+                      exc_info=True)
 
       alert_msg = ('Please triage. This will become a fatal error.\n\n'
                    'arch=%s buildroot=%s\n\nURL=%s' %

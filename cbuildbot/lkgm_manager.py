@@ -514,7 +514,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       # Git returns 128 when the revision does not exist.
       if ex.result.returncode != 128:
         raise
-      cros_build_lib.Warning('Detected branch removed from local checkout.')
+      logging.warning('Detected branch removed from local checkout.')
       cros_build_lib.PrintBuildbotStepWarnings()
       return
     current_author = None

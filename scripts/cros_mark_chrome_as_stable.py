@@ -189,7 +189,7 @@ def _GetStickyEBuild(stable_ebuilds):
   if not sticky_ebuilds:
     raise Exception('No sticky ebuilds found')
   elif len(sticky_ebuilds) > 1:
-    cros_build_lib.Warning('More than one sticky ebuild found')
+    logging.warning('More than one sticky ebuild found')
 
   return portage_util.BestEBuild(sticky_ebuilds)
 
@@ -229,7 +229,7 @@ def FindChromeCandidates(package_dir):
     if path.endswith('.ebuild'):
       ebuild = ChromeEBuild(path)
       if not ebuild.chrome_version:
-        cros_build_lib.Warning('Poorly formatted ebuild found at %s' % path)
+        logging.warning('Poorly formatted ebuild found at %s' % path)
       else:
         if '9999' in ebuild.version:
           unstable_ebuilds.append(ebuild)
@@ -240,7 +240,7 @@ def FindChromeCandidates(package_dir):
   if not unstable_ebuilds:
     raise Exception('Missing 9999 ebuild for %s' % package_dir)
   if not stable_ebuilds:
-    cros_build_lib.Warning('Missing stable ebuild for %s' % package_dir)
+    logging.warning('Missing stable ebuild for %s' % package_dir)
 
   return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
 

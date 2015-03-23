@@ -138,8 +138,7 @@ class RemoteTryJob(object):
     # character limit. Validate that our description is well under the limit.
     if (len(self.user) + len(self.name) + self.PADDING >
         self.MAX_DESCRIPTION_LENGTH):
-      cros_build_lib.Warning(
-          'remote tryjob description is too long, truncating it')
+      logging.warning('remote tryjob description is too long, truncating it')
       self.name = self.name[:self.MAX_DESCRIPTION_LENGTH - self.PADDING] + '...'
 
     # Buildbot will set extra_args as a buildset 'property'.  It will store

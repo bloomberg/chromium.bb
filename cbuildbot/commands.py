@@ -963,7 +963,7 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
     try:
       cros_build_lib.RunCommand(cmd)
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Warning('AbortHWTests failed', exc_info=True)
+      logging.warning('AbortHWTests failed', exc_info=True)
 
 
 def GenerateStackTraces(buildroot, board, test_results_dir,

@@ -14,6 +14,7 @@ import sys
 from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import parallel
 
@@ -179,7 +180,7 @@ run other checks (e.g. pyflakes, etc.)
       # Running with no arguments is allowed to make the repo upload hook
       # simple, but print a warning so that if someone runs this manually
       # they are aware that nothing was linted.
-      cros_build_lib.Warning('No files provided to lint.  Doing nothing.')
+      logging.warning('No files provided to lint.  Doing nothing.')
 
     errors = multiprocessing.Value('i')
     linter_map = _BreakoutFilesByLinter(files)

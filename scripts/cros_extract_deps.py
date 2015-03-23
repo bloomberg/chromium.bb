@@ -13,7 +13,7 @@ from parallel_emerge import DepGraphGenerator
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-
+from chromite.lib import cros_logging as logging
 
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None, get_cpe=False):
   """Simplify dependency json.
@@ -148,7 +148,7 @@ def ExtractCPEList(deps_list):
                        'Repository': 'cros',
                        'Targets': sorted(record['cpes'])})
     else:
-      cros_build_lib.Warning('No CPE entry for %s', cpv)
+      logging.warning('No CPE entry for %s', cpv)
   return sorted(cpe_dump, key=lambda k: k['ComponentName'])
 
 

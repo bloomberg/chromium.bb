@@ -314,8 +314,8 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
       # uploaded.
       file_size = os.path.getsize(sym_file)
       if file_size > file_limit:
-        cros_build_lib.Warning('stripping CFI from %s due to size %s > %s',
-                               sym_file, file_size, file_limit)
+        logging.warning('stripping CFI from %s due to size %s > %s', sym_file,
+                        file_size, file_limit)
         temp_sym_file.writelines([x for x in open(sym_file, 'rb').readlines()
                                   if not x.startswith('STACK CFI')])
 
@@ -327,9 +327,9 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
     file_size = os.path.getsize(upload_item.sym_file)
     if file_size > CRASH_SERVER_FILE_LIMIT:
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Warning('upload file %s is awfully large, risking '
-                             'rejection by the symbol server (%s > %s)',
-                             sym_file, file_size, CRASH_SERVER_FILE_LIMIT)
+      logging.warning('upload file %s is awfully large, risking rejection by '
+                      'the symbol server (%s > %s)', sym_file, file_size,
+                      CRASH_SERVER_FILE_LIMIT)
 
     # Upload the symbol file.
     success = False
@@ -345,11 +345,10 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
       if passed_queue:
         passed_queue.put(sym_item)
     except urllib2.HTTPError as e:
-      cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
-                             os.path.basename(sym_file), e.code, e.reason)
+      logging.warning('could not upload: %s: HTTP %s: %s',
+                      os.path.basename(sym_file), e.code, e.reason)
     except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
-      cros_build_lib.Warning('could not upload: %s: %s',
-                             os.path.basename(sym_file), e)
+      logging.warning('could not upload: %s: %s', os.path.basename(sym_file), e)
     finally:
       if success:
         _UpdateCounter(watermark_errors, ERROR_ADJUST_PASS)
@@ -410,8 +409,8 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
     logging.info('dedupe notification finished; exiting')
   except Exception:
     sym_file = item.sym_file if (item and item.sym_file) else ''
-    cros_build_lib.Warning('posting %s to dedupe server failed',
-                           os.path.basename(sym_file), exc_info=True)
+    logging.warning('posting %s to dedupe server failed',
+                    os.path.basename(sym_file), exc_info=True)
 
     # Keep draining the queue though so it doesn't fill up.
     while dedupe_queue.get() is not None:
@@ -445,7 +444,7 @@ def SymbolDeduplicator(storage, sym_paths):
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
         items = storage.contains(items)
     except Exception:
-      cros_build_lib.Warning('talking to dedupe server failed', exc_info=True)
+      logging.warning('talking to dedupe server failed', exc_info=True)
 
   return items
 
@@ -498,7 +497,7 @@ def SymbolFinder(tempdir, paths):
         try:
           ref.SetDefault(p)
         except cros_build_lib.RunCommandError as e:
-          cros_build_lib.Warning('ignoring %s\n%s', p, e)
+          logging.warning('ignoring %s\n%s', p, e)
           continue
         for p in SymbolFinder(tempdir, [ref.path]):
           yield p
@@ -582,7 +581,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
     if official:
       upload_url = OFFICIAL_UPLOAD_URL
     else:
-      cros_build_lib.Warning('unofficial builds upload to the staging server')
+      logging.warning('unofficial builds upload to the staging server')
       upload_url = STAGING_UPLOAD_URL
   else:
     upload_url = server
@@ -614,8 +613,8 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
         storage_query = isolateserver.get_storage_api(constants.ISOLATESERVER,
                                                       dedupe_namespace)
     except Exception:
-      cros_build_lib.Warning('initializing dedupe server connection failed',
-                             exc_info=True)
+      logging.warning('initializing dedupe server connection failed',
+                      exc_info=True)
   else:
     dedupe_limit = 1
     dedupe_queue = None
@@ -699,7 +698,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
           sym_paths.append(sym_path)
 
         if sym_paths:
-          cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
+          logging.warning('retrying %i symbols', len(sym_paths))
           if counters.upload_limit is not None:
             counters.upload_limit += len(sym_paths)
           # Decrement the error count in case we recover in the second pass.
@@ -736,13 +735,13 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
 
     # The process is taking too long, so kill it and complain.
     if storage_notify_proc.is_alive():
-      cros_build_lib.Warning('notification process took too long')
+      logging.warning('notification process took too long')
       cros_build_lib.PrintBuildbotStepWarnings()
 
       # Kill it gracefully first (traceback) before tacking it down harder.
       pid = storage_notify_proc.pid
       for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):
-        cros_build_lib.Warning('sending %s to %i', signals.StrSignal(sig), pid)
+        logging.warning('sending %s to %i', signals.StrSignal(sig), pid)
         # The process might have exited between the last check and the
         # actual kill below, so ignore ESRCH errors.
         try:
@@ -758,7 +757,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
 
       # Drain the queue so we don't hang when we finish.
       try:
-        cros_build_lib.Warning('draining the notify queue manually')
+        logging.warning('draining the notify queue manually')
         with timeout_util.Timeout(60):
           try:
             while dedupe_queue.get_nowait():
@@ -766,7 +765,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
           except Queue.Empty:
             pass
       except timeout_util.TimeoutError:
-        cros_build_lib.Warning('draining the notify queue failed; trashing it')
+        logging.warning('draining the notify queue failed; trashing it')
         dedupe_queue.cancel_join_thread()
 
   logging.info('uploaded %i symbols (%i were deduped) which took: %s',

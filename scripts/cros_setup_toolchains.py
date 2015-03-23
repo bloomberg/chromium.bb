@@ -793,7 +793,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
 
       src = path = lib_data['path']
       if path is None:
-        cros_build_lib.Warning('%s: could not locate %s', elf, lib)
+        logging.warning('%s: could not locate %s', elf, lib)
         continue
       donelibs.add(lib)
 
@@ -850,8 +850,7 @@ def _ProcessBinutilsConfig(target, output_dir):
 
     # Nope, no gold support to be found.
     gold_supported = False
-    cros_build_lib.Warning('%s: binutils lacks support for the gold linker',
-                           target)
+    logging.warning('%s: binutils lacks support for the gold linker', target)
   else:
     assert len(srcpath) == 1, '%s: did not match exactly 1 path' % globpath
     gold_supported = True

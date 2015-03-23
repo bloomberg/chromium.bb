@@ -12,7 +12,7 @@ import os
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
@@ -50,16 +50,15 @@ def _AddPackagesForPrebuilt(filename):
         try:
           cpv = portage_util.SplitCPV(atom)
         except ValueError:
-          cros_build_lib.Warning('Could not split atom %r (line: %r)',
-                                 atom, line)
+          logging.warning('Could not split atom %r (line: %r)', atom, line)
           continue
         if cpv:
           cmd.extend(['--packages=%s/%s' % (cpv.category, cpv.package)])
     return cmd
   except IOError as e:
-    cros_build_lib.Warning('Problem with package file %s' % filename)
-    cros_build_lib.Warning('Skipping uploading of prebuilts.')
-    cros_build_lib.Warning('ERROR(%d): %s' % (e.errno, e.strerror))
+    logging.warning('Problem with package file %s' % filename)
+    logging.warning('Skipping uploading of prebuilts.')
+    logging.warning('ERROR(%d): %s' % (e.errno, e.strerror))
     return None
 
 

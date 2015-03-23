@@ -18,6 +18,7 @@ import re
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
@@ -99,8 +100,7 @@ def GetApprovalSummary(_opts, cls):
     for approver in cls['currentPatchSet']['approvals']:
       cats = GERRIT_APPROVAL_MAP.get(approver['type'])
       if not cats:
-        cros_build_lib.Warning('unknown gerrit approval type: %s',
-                               approver['type'])
+        logging.warning('unknown gerrit approval type: %s', approver['type'])
         continue
       cat = cats[0].strip()
       val = int(approver['value'])

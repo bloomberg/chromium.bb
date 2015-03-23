@@ -521,7 +521,7 @@ def _PostParseCheck(options, _args):
     if os.path.isfile(chrome_path):
       deps = lddtree.ParseELF(chrome_path)
       if 'libbase.so' in deps['libs']:
-        cros_build_lib.Warning(
+        logging.warning(
             'Detected a component build of Chrome.  component build is '
             'not working properly for Chrome OS.  See crbug.com/196317.  '
             'Use at your own risk!')
