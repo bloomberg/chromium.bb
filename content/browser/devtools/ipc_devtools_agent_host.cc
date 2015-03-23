@@ -16,10 +16,14 @@ void IPCDevToolsAgentHost::Detach() {
   OnClientDetached();
 }
 
-void IPCDevToolsAgentHost::DispatchProtocolMessage(
+bool IPCDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
+  if (DevToolsAgentHostImpl::DispatchProtocolMessage(message))
+    return true;
+
   SendMessageToAgent(new DevToolsAgentMsg_DispatchOnInspectorBackend(
       MSG_ROUTING_NONE, message));
+  return true;
 }
 
 void IPCDevToolsAgentHost::InspectElement(int x, int y) {

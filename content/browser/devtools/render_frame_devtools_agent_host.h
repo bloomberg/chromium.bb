@@ -24,7 +24,6 @@ namespace content {
 
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
-class DevToolsProtocolHandler;
 class RenderFrameHost;
 class RenderFrameHostImpl;
 
@@ -81,7 +80,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       RenderFrameHost* host);
 
   // IPCDevToolsAgentHost overrides.
-  void DispatchProtocolMessage(const std::string& message) override;
   void SendMessageToAgent(IPC::Message* msg) override;
   void OnClientAttached() override;
   void OnClientDetached() override;
@@ -123,7 +121,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool OnSetTouchEventEmulationEnabled(const IPC::Message& message);
 
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
-  void DispatchOnInspectorFrontend(const std::string& message);
 
   void ClientDetachedFromRenderer();
 
@@ -143,7 +140,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       service_worker_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<devtools::emulation::EmulationHandler> emulation_handler_;
-  scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   scoped_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;

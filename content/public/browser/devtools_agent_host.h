@@ -81,8 +81,8 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns true if there is a client attached.
   virtual bool IsAttached() = 0;
 
-  // Sends a message to the agent.
-  virtual void DispatchProtocolMessage(const std::string& message) = 0;
+  // Sends a message to the agent. Returns true if the message is handled.
+  virtual bool DispatchProtocolMessage(const std::string& message) = 0;
 
   // Starts inspecting element at position (|x|, |y|) in the specified page.
   virtual void InspectElement(int x, int y) = 0;

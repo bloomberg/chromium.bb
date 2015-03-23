@@ -40,10 +40,11 @@ void ForwardingAgentHost::Detach() {
     delegate_->Detach();
 }
 
-void ForwardingAgentHost::DispatchProtocolMessage(
+bool ForwardingAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   if (delegate_)
     delegate_->SendMessageToBackend(message);
+  return true;
 }
 
 DevToolsAgentHost::Type ForwardingAgentHost::GetType() {

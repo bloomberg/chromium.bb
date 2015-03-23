@@ -29,7 +29,7 @@ class ForwardingAgentHost
   // DevToolsAgentHostImpl implementation.
   void Attach() override;
   void Detach() override;
-  void DispatchProtocolMessage(const std::string& message) override;
+  bool DispatchProtocolMessage(const std::string& message) override;
 
   // DevToolsAgentHost implementation
   Type GetType() override;

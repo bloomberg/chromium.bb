@@ -9,9 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/guid.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -65,7 +67,10 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 }
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
-    : id_(base::GenerateGUID()),
+    : protocol_handler_(new DevToolsProtocolHandler(
+          base::Bind(&DevToolsAgentHostImpl::SendMessageToClient,
+                     base::Unretained(this)))),
+      id_(base::GenerateGUID()),
       client_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_instances.Get()[id_] = this;
@@ -217,6 +222,29 @@ void DevToolsAgentHostImpl::Inspect(BrowserContext* browser_context) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager->delegate())
     manager->delegate()->Inspect(browser_context, this);
+}
+
+bool DevToolsAgentHostImpl::DispatchProtocolMessage(
+    const std::string& message) {
+  scoped_ptr<base::DictionaryValue> command =
+      protocol_handler_->ParseCommand(message);
+  if (!command)
+    return true;
+
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (delegate) {
+    scoped_ptr<base::DictionaryValue> response(
+        delegate->HandleCommand(this, command.get()));
+    if (response) {
+      std::string json_response;
+      base::JSONWriter::Write(response.get(), &json_response);
+      SendMessageToClient(json_response);
+      return true;
+    }
+  }
+
+  return protocol_handler_->HandleOptionalCommand(command.Pass());
 }
 
 }  // namespace content

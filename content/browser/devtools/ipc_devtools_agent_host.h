@@ -19,7 +19,7 @@ class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
   // DevToolsAgentHostImpl implementation.
   void Attach() override;
   void Detach() override;
-  void DispatchProtocolMessage(const std::string& message) override;
+  bool DispatchProtocolMessage(const std::string& message) override;
   void InspectElement(int x, int y) override;
 
  protected:

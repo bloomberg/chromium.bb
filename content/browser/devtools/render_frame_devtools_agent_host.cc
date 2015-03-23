@@ -5,7 +5,6 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 
 #include "base/basictypes.h"
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -29,7 +28,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -147,9 +145,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
           devtools::tracing::TracingHandler::Renderer)),
       emulation_handler_(new devtools::emulation::EmulationHandler(
           page_handler_.get())),
-      protocol_handler_(new DevToolsProtocolHandler(
-          base::Bind(&RenderFrameDevToolsAgentHost::DispatchOnInspectorFrontend,
-                     base::Unretained(this)))),
       frame_trace_recorder_(new DevToolsFrameTraceRecorder()),
       reattaching_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
@@ -175,32 +170,6 @@ BrowserContext* RenderFrameDevToolsAgentHost::GetBrowserContext() {
 
 WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
   return web_contents();
-}
-
-void RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
-    const std::string& message) {
-  scoped_ptr<base::DictionaryValue> command =
-      protocol_handler_->ParseCommand(message);
-  if (!command)
-    return;
-
-  DevToolsManagerDelegate* delegate =
-      DevToolsManager::GetInstance()->delegate();
-  if (delegate) {
-    scoped_ptr<base::DictionaryValue> response(
-        delegate->HandleCommand(this, command.get()));
-    if (response) {
-      std::string json_response;
-      base::JSONWriter::Write(response.get(), &json_response);
-      DispatchOnInspectorFrontend(json_response);
-      return;
-    }
-  }
-
-  if (protocol_handler_->HandleOptionalCommand(command.Pass()))
-    return;
-
-  IPCDevToolsAgentHost::DispatchProtocolMessage(message);
 }
 
 void RenderFrameDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
@@ -555,13 +524,6 @@ void RenderFrameDevToolsAgentHost::OnDispatchOnInspectorFrontend(
   if (!IsAttached() || !render_frame_host_)
     return;
   ProcessChunkedMessageFromAgent(message);
-}
-
-void RenderFrameDevToolsAgentHost::DispatchOnInspectorFrontend(
-    const std::string& message) {
-  if (!IsAttached() || !render_frame_host_)
-    return;
-  SendMessageToClient(message);
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
