@@ -2426,6 +2426,7 @@ _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 _CreateConfigsForBoards(compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
 
 no_vmtest_pre_cq.add_config(constants.BINHOST_PRE_CQ,
+  internal,
   boards=[],
   binhost_test=True,
 )
