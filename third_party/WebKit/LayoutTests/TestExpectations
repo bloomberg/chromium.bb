@@ -2372,6 +2372,9 @@ crbug.com/462013 virtual/slimmingpaint/fast/repaint/invalidation-after-opacity-c
 
 crbug.com/467871 [ Mac ] compositing/plugins/composited-plugin.html [ NeedsRebaseline ]
 
+# This needs to be removed after chromium patch lands (crbug.com/455241)
+crbug.com/469613 http/tests/serviceworker/chromium/clients-openwindow.html [ Failure ]
+
 # These need a rebaseline after crbug.com/451346
 crbug.com/451346 tables/mozilla/bugs/bug2886-2.html [ NeedsRebaseline ]
 
