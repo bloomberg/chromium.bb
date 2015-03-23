@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
     int rv = net::tools::SynchronousHostResolver::Resolve(host, &addresses);
     if (rv != net::OK) {
       LOG(ERROR) << "Unable to resolve '" << host << "' : "
-                 << net::ErrorToString(rv);
+                 << net::ErrorToShortString(rv);
       return 1;
     }
     ip_addr = addresses[0].address();

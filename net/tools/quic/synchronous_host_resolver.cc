@@ -37,8 +37,6 @@ class ResolverThread : public base::SimpleThread {
   std::string host_;
   int rv_;
 
-  base::WaitableEvent resolved_;  // Notified when the resolution is complete.
-
   base::WeakPtrFactory<ResolverThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResolverThread);
@@ -47,7 +45,6 @@ class ResolverThread : public base::SimpleThread {
 ResolverThread::ResolverThread()
     : SimpleThread("resolver_thread"),
       rv_(ERR_UNEXPECTED),
-      resolved_(true, false),
       weak_factory_(this) {}
 
 ResolverThread::~ResolverThread() {}
@@ -56,16 +53,15 @@ void ResolverThread::Run() {
   base::AtExitManager exit_manager;
   base::MessageLoopForIO loop;
 
+  net::NetLog net_log;
   net::HostResolver::Options options;
   options.max_concurrent_resolves = 6;
   options.max_retry_attempts = 3u;
-  net::NetLog net_log;
   scoped_ptr<net::HostResolverImpl> resolver_impl(
       new net::HostResolverImpl(options, &net_log));
   SingleRequestHostResolver resolver(resolver_impl.get());
 
   HostPortPair host_port_pair(host_, 80);
-
   rv_ = resolver.Resolve(
       HostResolver::RequestInfo(host_port_pair), DEFAULT_PRIORITY,
       addresses_,
@@ -73,27 +69,26 @@ void ResolverThread::Run() {
                  weak_factory_.GetWeakPtr()),
       BoundNetLog());
 
-  if (rv_ != ERR_IO_PENDING) {
-    resolved_.Signal();
-  }
+  if (rv_ != ERR_IO_PENDING)
+    return;
 
-  while (!resolved_.IsSignaled()) {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  // Run the mesage loop until OnResolutionComplete quits it.
+  base::MessageLoop::current()->Run();
 }
 
 int ResolverThread::Resolve(const std::string& host, AddressList* addresses) {
   host_ = host;
   addresses_ = addresses;
   this->Start();
-  resolved_.Wait();
   this->Join();
   return rv_;
 }
 
 void ResolverThread::OnResolutionComplete(int rv) {
   rv_ = rv;
-  resolved_.Signal();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure());
 }
 
 }  // namespace

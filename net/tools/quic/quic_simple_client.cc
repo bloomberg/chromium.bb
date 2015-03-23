@@ -99,25 +99,25 @@ bool QuicSimpleClient::CreateUDPSocket() {
 
   int rc = socket->Connect(server_address_);
   if (rc != OK) {
-    LOG(ERROR) << "Connect failed: " << ErrorToString(rc);
+    LOG(ERROR) << "Connect failed: " << ErrorToShortString(rc);
     return false;
   }
 
   rc = socket->SetReceiveBufferSize(kDefaultSocketReceiveBuffer);
   if (rc != OK) {
-    LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToString(rc);
+    LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToShortString(rc);
     return false;
   }
 
   rc = socket->SetSendBufferSize(kDefaultSocketReceiveBuffer);
   if (rc != OK) {
-    LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToString(rc);
+    LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToShortString(rc);
     return false;
   }
 
   rc = socket->GetLocalAddress(&client_address_);
   if (rc != OK) {
-    LOG(ERROR) << "GetLocalAddress failed: " << ErrorToString(rc);
+    LOG(ERROR) << "GetLocalAddress failed: " << ErrorToShortString(rc);
     return false;
   }
 
@@ -296,7 +296,7 @@ QuicPacketWriter* QuicSimpleClient::CreateQuicPacketWriter() {
 }
 
 void QuicSimpleClient::OnReadError(int result) {
-  LOG(ERROR) << "QuicSimpleClient read failed: " << ErrorToString(result);
+  LOG(ERROR) << "QuicSimpleClient read failed: " << ErrorToShortString(result);
   Disconnect();
 }
 
