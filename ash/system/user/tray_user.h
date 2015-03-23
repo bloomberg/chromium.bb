@@ -76,9 +76,6 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
 
   void UpdateAvatarImage(user::LoginStatus status);
 
-  // Get the user index which should be used for the tray icon of this item.
-  MultiProfileIndex GetTrayIndex();
-
   // Updates the layout of this item.
   void UpdateLayoutOfItem();
 

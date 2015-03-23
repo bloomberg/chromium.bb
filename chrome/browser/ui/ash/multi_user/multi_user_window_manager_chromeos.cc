@@ -422,7 +422,7 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
   current_user_id_ = user_id;
 
   animation_.reset(
-      new UserSwichAnimatorChromeOS(
+      new UserSwitchAnimatorChromeOS(
           this, user_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
   // Call notifier here instead of observing ActiveUserChanged because
   // this must happen after MultiUserWindowManagerChromeOS is notified.

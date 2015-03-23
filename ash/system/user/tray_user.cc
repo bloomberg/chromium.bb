@@ -142,7 +142,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   // Only the active user is represented in the tray.
   if (!layout_view_)
     return;
-  if (GetTrayIndex() > 0)
+  if (multiprofile_index_ > 0)
     return;
   bool need_label = false;
   bool need_avatar = false;
@@ -259,7 +259,7 @@ void TrayUser::OnUserAddedToSession() {
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   // Only create views for user items which are logged in.
-  if (GetTrayIndex() >= session_state_delegate->NumberOfLoggedInUsers())
+  if (multiprofile_index_ >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
   // Enforce a layout change that newly added items become visible.
@@ -274,11 +274,11 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   if (!avatar_ ||
-      GetTrayIndex() >= session_state_delegate->NumberOfLoggedInUsers())
+      multiprofile_index_ >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
   const user_manager::UserInfo* user_info =
-      session_state_delegate->GetUserInfo(GetTrayIndex());
+      session_state_delegate->GetUserInfo(multiprofile_index_);
   CHECK(user_info);
   avatar_->SetImage(user_info->GetImage(),
                     gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
@@ -286,17 +286,6 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
   // Unit tests might come here with no images for some users.
   if (avatar_->size().IsEmpty())
     avatar_->SetSize(gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
-}
-
-MultiProfileIndex TrayUser::GetTrayIndex() {
-  Shell* shell = Shell::GetInstance();
-  // If multi profile is not enabled we can use the normal index.
-  if (!shell->delegate()->IsMultiProfilesEnabled())
-    return multiprofile_index_;
-  // In case of multi profile we need to mirror the indices since the system
-  // tray items are in the reverse order then the menu items.
-  return shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers() -
-             1 - multiprofile_index_;
 }
 
 void TrayUser::UpdateLayoutOfItem() {

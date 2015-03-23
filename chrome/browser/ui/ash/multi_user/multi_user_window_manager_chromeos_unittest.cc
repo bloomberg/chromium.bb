@@ -135,8 +135,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   // Returns true if the given window covers the screen.
   bool CoversScreen(aura::Window* window) {
-    return chrome::UserSwichAnimatorChromeOS::CoversScreen(
-        window);
+    return chrome::UserSwitchAnimatorChromeOS::CoversScreen(window);
   }
 
   // Create a maximize mode window manager.

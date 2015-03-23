@@ -46,7 +46,7 @@ class UserChangeActionDisabler {
 
 }  // namespace
 
-UserSwichAnimatorChromeOS::UserSwichAnimatorChromeOS(
+UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
     MultiUserWindowManagerChromeOS* owner,
     const std::string& new_user_id,
     int animation_speed_ms)
@@ -64,19 +64,19 @@ UserSwichAnimatorChromeOS::UserSwichAnimatorChromeOS(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(animation_speed_ms_),
         base::Bind(
-            &UserSwichAnimatorChromeOS::AdvanceUserTransitionAnimation,
+            &UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation,
             base::Unretained(this)),
         true));
     user_changed_animation_timer_->Reset();
   }
 }
 
-UserSwichAnimatorChromeOS::~UserSwichAnimatorChromeOS() {
+UserSwitchAnimatorChromeOS::~UserSwitchAnimatorChromeOS() {
   FinalizeAnimation();
 }
 
 // static
-bool UserSwichAnimatorChromeOS::CoversScreen(aura::Window* window) {
+bool UserSwitchAnimatorChromeOS::CoversScreen(aura::Window* window) {
   // Full screen covers the screen naturally. Since a normal window can have the
   // same size as the work area, we only compare the bounds against the work
   // area.
@@ -89,7 +89,7 @@ bool UserSwichAnimatorChromeOS::CoversScreen(aura::Window* window) {
   return work_area == bounds;
 }
 
-void UserSwichAnimatorChromeOS::AdvanceUserTransitionAnimation() {
+void UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation() {
   DCHECK_NE(animation_step_, ANIMATION_STEP_ENDED);
 
   TransitionWallpaper(animation_step_);
@@ -114,17 +114,17 @@ void UserSwichAnimatorChromeOS::AdvanceUserTransitionAnimation() {
   }
 }
 
-void UserSwichAnimatorChromeOS::CancelAnimation() {
+void UserSwitchAnimatorChromeOS::CancelAnimation() {
   animation_step_ = ANIMATION_STEP_ENDED;
 }
 
-void UserSwichAnimatorChromeOS::FinalizeAnimation() {
+void UserSwitchAnimatorChromeOS::FinalizeAnimation() {
   user_changed_animation_timer_.reset();
   while (ANIMATION_STEP_ENDED != animation_step_)
     AdvanceUserTransitionAnimation();
 }
 
-void UserSwichAnimatorChromeOS::TransitionWallpaper(
+void UserSwitchAnimatorChromeOS::TransitionWallpaper(
     AnimationStep animation_step) {
   // Handle the wallpaper switch.
   ash::UserWallpaperDelegate* wallpaper_delegate =
@@ -155,7 +155,7 @@ void UserSwichAnimatorChromeOS::TransitionWallpaper(
   }
 }
 
-void UserSwichAnimatorChromeOS::TransitionUserShelf(
+void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     AnimationStep animation_step) {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
@@ -223,7 +223,7 @@ void UserSwichAnimatorChromeOS::TransitionUserShelf(
   }
 }
 
-void UserSwichAnimatorChromeOS::TransitionWindows(
+void UserSwitchAnimatorChromeOS::TransitionWindows(
     AnimationStep animation_step) {
   // Disable the window position manager and the MRU window tracker temporarily.
   UserChangeActionDisabler disabler;
@@ -329,8 +329,8 @@ void UserSwichAnimatorChromeOS::TransitionWindows(
   }
 }
 
-UserSwichAnimatorChromeOS::TransitioningScreenCover
-UserSwichAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
+UserSwitchAnimatorChromeOS::TransitioningScreenCover
+UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
   TransitioningScreenCover cover = NO_USER_COVERS_SCREEN;
   for (MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator it_map =
            owner_->window_to_entry().begin();

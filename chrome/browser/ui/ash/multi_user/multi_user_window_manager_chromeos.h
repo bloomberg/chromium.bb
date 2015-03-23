@@ -39,7 +39,7 @@ class MultiUserWindowManagerChromeOSTest;
 namespace chrome {
 
 class AppObserver;
-class UserSwichAnimatorChromeOS;
+class UserSwitchAnimatorChromeOS;
 
 // This ChromeOS implementation of the MultiUserWindowManager interface is
 // detecting app and browser creations, tagging their windows automatically and
@@ -123,7 +123,7 @@ class MultiUserWindowManagerChromeOS
   const std::string& GetCurrentUserForTest() const;
 
  protected:
-  friend class UserSwichAnimatorChromeOS;
+  friend class UserSwitchAnimatorChromeOS;
 
   class WindowEntry {
    public:
@@ -262,7 +262,7 @@ class MultiUserWindowManagerChromeOS
   AnimationSpeed animation_speed_;
 
   // The animation between users.
-  scoped_ptr<UserSwichAnimatorChromeOS> animation_;
+  scoped_ptr<UserSwitchAnimatorChromeOS> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
 };

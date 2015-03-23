@@ -23,7 +23,7 @@ class MultiUserWindowManagerChromeOS;
 // if not done yet.
 // Specifying |animation_disabled| upon creation will perform the transition
 // without visible animations.
-class UserSwichAnimatorChromeOS {
+class UserSwitchAnimatorChromeOS {
  public:
   // The animation step for the user change animation.
   enum AnimationStep {
@@ -33,10 +33,10 @@ class UserSwichAnimatorChromeOS {
     ANIMATION_STEP_ENDED           // The animation has ended.
   };
 
-  UserSwichAnimatorChromeOS(MultiUserWindowManagerChromeOS* owner,
-                            const std::string& new_user_id,
-                            int animation_speed_ms);
-  ~UserSwichAnimatorChromeOS();
+  UserSwitchAnimatorChromeOS(MultiUserWindowManagerChromeOS* owner,
+                             const std::string& new_user_id,
+                             int animation_speed_ms);
+  ~UserSwitchAnimatorChromeOS();
 
   // Check if a window is covering the entire work area of the screen it is on.
   static bool CoversScreen(aura::Window* window);
@@ -110,7 +110,7 @@ class UserSwichAnimatorChromeOS {
   // For unit tests: Check which wallpaper was set.
   std::string wallpaper_user_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserSwichAnimatorChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(UserSwitchAnimatorChromeOS);
 };
 
 }  // namespace chrome
