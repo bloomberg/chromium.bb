@@ -94,5 +94,5 @@ if test "$ubuntu_release" = "trusty" ; then
   # libglib2.0-0 removes libelf in favor of libelfg0.
   # We let Chromium's build deps take priority. So, run Chromium's
   # install-build-deps.sh to reinstall those that have been removed.
-  $(dirname ${BASH_SOURCE[0]})/../../build/install-build-deps.sh --no-prompt
+  $(dirname ${BASH_SOURCE[0]})/../../../build/install-build-deps.sh --no-prompt
 fi
