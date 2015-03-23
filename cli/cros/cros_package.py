@@ -130,10 +130,10 @@ To enable building a package from latest or stable ebuilds:
                         makedirs=True)
 
   def _CrosWorkonAlreadyStarted(self, output):
-    return 'Already working on %s' % self.options.package_name in output
+    return 'Already working on' in output
 
   def _CrosWorkonAlreadyStopped(self, output):
-    return 'Not working on %s' % self.options.package_name in output
+    return 'Not working on' in output
 
   def _EnableBuild(self):
     """Enable latest/stable build, setting up the build sysroot as necessary."""
