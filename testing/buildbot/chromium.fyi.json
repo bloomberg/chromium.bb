@@ -1128,5 +1128,25 @@
       },
       "url_unittests"
     ]
+  },
+  "Cast Linux": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "cast_media_unittests",
+      "cast_shell_browser_test",
+      "content_unittests",
+      "crypto_unittests",
+      "gpu_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "net_unittests",
+      "sandbox_linux_unittests",
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_base_unittests",
+      "url_unittests"
+    ]
   }
 }
