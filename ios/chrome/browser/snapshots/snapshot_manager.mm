@@ -17,9 +17,9 @@
                            overlays:(NSArray*)overlays {
   DCHECK(view);
   CGSize size = rect.size;
-  DCHECK(isnormal(size.width) && (size.width > 0))
+  DCHECK(std::isnormal(size.width) && (size.width > 0))
       << ": size.width=" << size.width;
-  DCHECK(isnormal(size.height) && (size.height > 0))
+  DCHECK(std::isnormal(size.height) && (size.height > 0))
       << ": size.height=" << size.height;
   const CGFloat kScale = [SnapshotCache snapshotScaleForDevice];
   UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
