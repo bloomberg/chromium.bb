@@ -19,39 +19,43 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlselectelement
+// https://html.spec.whatwg.org/#the-select-element
 
 interface HTMLSelectElement : HTMLElement {
+    // TODO(philipj): attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute boolean disabled;
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     attribute boolean multiple;
     [Reflect] attribute DOMString name;
     [Reflect] attribute boolean required;
+    // TODO(philipj): size should be unsigned long.
     attribute long size;
 
     readonly attribute DOMString type;
 
     readonly attribute HTMLOptionsCollection options;
+    // TODO(philipj): The length setter should never throw.
     [RaisesException=Setter] attribute unsigned long length;
-
-    getter Element item(unsigned long index);
-    Element namedItem([Default=Undefined] optional DOMString name);
+    getter Element? item(unsigned long index);
+    // TODO(philipj): The name argument should not be optional.
+    HTMLOptionElement? namedItem([Default=Undefined] optional DOMString name);
     [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element,
                                                        optional (HTMLElement or long)? before = null);
     [RaisesException] void remove(); // ChildNode overload
     void remove(long index);
-    [RaisesException, TypeChecking=Interface] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
+    [RaisesException, TypeChecking=Interface] setter void (unsigned long index, HTMLOptionElement? option);
 
     readonly attribute HTMLCollection selectedOptions;
-             attribute long selectedIndex;
-             attribute DOMString value;
+    attribute long selectedIndex;
+    attribute DOMString value;
 
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
+    // TODO(philipj): The error argument should not be nullable.
     void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
 
     readonly attribute NodeList labels;

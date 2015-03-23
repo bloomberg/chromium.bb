@@ -52,6 +52,10 @@
                    [Default=Undefined] optional boolean canBubbleArg,
                    [Default=Undefined] optional boolean cancelableArg);
 
+    // Shadow DOM
+    // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-event-interface
+    [MeasureAs=EventPath] readonly attribute EventTarget[] path;
+
     // Non-standard APIs
     const unsigned short MOUSEDOWN = 1;
     const unsigned short MOUSEUP   = 2;
@@ -72,5 +76,4 @@
     [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
     [MeasureAs=EventReturnValue, CallWith=ExecutionContext, ImplementedAs=legacyReturnValue] attribute boolean returnValue;
     [MeasureAs=EventCancelBubble] attribute boolean cancelBubble;
-    [MeasureAs=EventPath] readonly attribute EventTarget[] path;
 };

@@ -18,33 +18,38 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#the-table-element
+
 interface HTMLTableElement : HTMLElement {
-    [RaisesException=Setter] attribute HTMLTableCaptionElement caption;
-    [RaisesException=Setter] attribute HTMLTableSectionElement tHead;
-    [RaisesException=Setter] attribute HTMLTableSectionElement tFoot;
-
-    readonly attribute HTMLCollection rows;
+    // TODO(philipj): The caption, tHead and tFoot setters should never throw.
+    [RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
+    HTMLElement createCaption();
+    void deleteCaption();
+    [RaisesException=Setter] attribute HTMLTableSectionElement? tHead;
+    HTMLElement createTHead();
+    void deleteTHead();
+    [RaisesException=Setter] attribute HTMLTableSectionElement? tFoot;
+    HTMLElement createTFoot();
+    void deleteTFoot();
     readonly attribute HTMLCollection tBodies;
+    HTMLElement createTBody();
+    readonly attribute HTMLCollection rows;
+    [RaisesException] HTMLElement insertRow(optional long index = -1);
+    // TODO(philipj): The index argument should not be optional.
+    [RaisesException] void deleteRow([Default=Undefined] optional long index);
+    // attribute boolean sortable;
+    // void stopSorting();
+
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLTableElement-partial
     [Reflect] attribute DOMString align;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
     [Reflect] attribute DOMString border;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString cellPadding;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString cellSpacing;
-
     [Reflect] attribute DOMString frame;
-
     [Reflect] attribute DOMString rules;
     [Reflect] attribute DOMString summary;
     [Reflect] attribute DOMString width;
 
-    HTMLElement createTHead();
-    void deleteTHead();
-    HTMLElement createTFoot();
-    void deleteTFoot();
-    HTMLElement createTBody();
-    HTMLElement createCaption();
-    void deleteCaption();
-
-    [RaisesException] HTMLElement insertRow(optional long index = -1);
-    [RaisesException] void deleteRow([Default=Undefined] optional long index);
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString cellPadding;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString cellSpacing;
 };

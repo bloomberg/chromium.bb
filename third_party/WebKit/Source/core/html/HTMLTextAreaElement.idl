@@ -19,13 +19,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#the-textarea-element
+
 interface HTMLTextAreaElement : HTMLElement {
-    attribute DOMString autocapitalize;
+    // attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
+    // TODO(philipj): cols and rows should be unsigned long.
     attribute long cols;
     [Reflect] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
+    [RuntimeEnabled=InputModeAttribute, Reflect] attribute DOMString inputMode;
     [RaisesException=Setter] attribute long maxLength;
     [RaisesException=Setter] attribute long minLength;
     [Reflect] attribute DOMString name;
@@ -34,7 +38,6 @@ interface HTMLTextAreaElement : HTMLElement {
     [Reflect] attribute boolean required;
     attribute long rows;
     [Reflect] attribute DOMString wrap;
-    [RuntimeEnabled=InputModeAttribute, Reflect] attribute DOMString inputMode;
 
     readonly attribute DOMString type;
     attribute DOMString defaultValue;
@@ -46,22 +49,29 @@ interface HTMLTextAreaElement : HTMLElement {
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
+    // FIXME: The error argument should not be nullable.
     void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
 
     readonly attribute NodeList labels;
 
     void select();
+    // TODO(philipj): selectionStart and selectionEnd should be unsigned long.
     attribute long selectionStart;
     attribute long selectionEnd;
     attribute DOMString selectionDirection;
-
     [RaisesException] void setRangeText(DOMString replacement);
+    // TODO(philipj): The selectionMode argument should be a SelectionMode enum.
     [RaisesException] void setRangeText(DOMString replacement,
-                        unsigned long start,
-                        unsigned long end,
-                        optional DOMString selectionMode = null);
-
+                                        unsigned long start,
+                                        unsigned long end,
+                                        optional DOMString selectionMode = null);
+    // TODO(philipj): The start and end arguments should be unsigned long and
+    // should not be optional.
     void setSelectionRange([Default=Undefined] optional long start,
                            [Default=Undefined] optional long end,
                            optional DOMString direction);
+
+    // HTML autocapitalize proposal
+    // https://github.com/mounirlamouri/html-autocapitalize/blob/master/proposal.md
+    attribute DOMString autocapitalize;
 };

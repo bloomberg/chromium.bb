@@ -17,6 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#the-title-element
+
 interface HTMLTitleElement : HTMLElement {
     attribute DOMString text;
 };

@@ -18,11 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#the-style-element
+
 interface HTMLStyleElement : HTMLElement {
+    // TODO(philipj): The disabled attribute has been removed from the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=14703
     attribute boolean disabled;
     [Reflect] attribute DOMString media;
     [Reflect] attribute DOMString type;
 
-    // DOM Level 2 Style
-    readonly attribute StyleSheet sheet;
+    // HTMLStyleElement implements LinkStyle
+    // http://dev.w3.org/csswg/cssom/#the-linkstyle-interface
+    readonly attribute StyleSheet? sheet;
 };

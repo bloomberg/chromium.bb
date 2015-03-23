@@ -18,11 +18,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#the-colgroup-element
+// https://html.spec.whatwg.org/#the-col-element
+
 interface HTMLTableColElement : HTMLElement {
+    // TODO(philipj): span should be unsigned long.
+    attribute long span;
+
+    // obsolete attributes
+    // https://html.spec.whatwg.org/#HTMLTableColElement-partial
     [Reflect] attribute DOMString align;
     [Reflect=char] attribute DOMString ch;
     [Reflect=charoff] attribute DOMString chOff;
-    attribute long span;
     [Reflect] attribute DOMString vAlign;
     [Reflect] attribute DOMString width;
 };

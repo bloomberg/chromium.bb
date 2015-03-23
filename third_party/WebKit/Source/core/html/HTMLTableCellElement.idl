@@ -18,20 +18,35 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#attributes-common-to-td-and-th-elements
+
 interface HTMLTableCellElement : HTMLElement {
+    // TODO(philipj): All long types should be unsigned long.
+    attribute long colSpan;
+    attribute long rowSpan;
+    // TODO(philipj): headers should be a [PutForwards=value] readonly attribute
+    // DOMSettableTokenList.
+    [Reflect, TreatNullAs=NullString] attribute DOMString headers;
     readonly attribute long cellIndex;
-    [Reflect] attribute DOMString abbr;
+
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLTableCellElement-partial
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString axis;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+    [Reflect] attribute DOMString height;
+    [Reflect] attribute DOMString width;
+
     [Reflect=char] attribute DOMString ch;
     [Reflect=charoff] attribute DOMString chOff;
-    attribute long colSpan;
-    [Reflect, TreatNullAs=NullString] attribute DOMString headers;
-    [Reflect] attribute DOMString height;
     [Reflect] attribute boolean noWrap;
-    attribute long rowSpan;
-    [Reflect] attribute DOMString scope;
     [Reflect] attribute DOMString vAlign;
-    [Reflect] attribute DOMString width;
+
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+
+    // TODO(philipj): The spec has HTMLTableHeaderCellElement and
+    // HTMLTableDataCellElement interfaces for the th and td elements
+    // respectively. HTMLTableHeaderCellElement has the abbr and scope
+    // attributes, while HTMLTableDataCellElement has only abbr.
+    [Reflect] attribute DOMString abbr;
+    [Reflect] attribute DOMString scope;
 };

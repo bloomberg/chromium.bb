@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-track-element
+
 interface HTMLTrackElement : HTMLElement {
     attribute DOMString kind;
     [Reflect, URL] attribute DOMString src;
@@ -39,5 +41,8 @@ interface HTMLTrackElement : HTMLElement {
 
     readonly attribute TextTrack track;
 
+    // Subresource Integrity
+    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
+    // FIXME: The spec does not extend HTMLTrackElement.
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

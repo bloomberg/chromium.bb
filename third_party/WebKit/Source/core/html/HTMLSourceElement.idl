@@ -23,15 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-source-element
+
 [
     RuntimeEnabled=Media
 ] interface HTMLSourceElement : HTMLElement {
     [Reflect, URL] attribute DOMString src;
     attribute DOMString type;
 
+    // https://html.spec.whatwg.org/#the-source-element-when-used-with-the-picture-element
     [Reflect, RuntimeEnabled=Picture] attribute DOMString srcset;
     [Reflect, RuntimeEnabled=Picture] attribute DOMString sizes;
     [Reflect, RuntimeEnabled=Picture] attribute DOMString media;
 
+    // Subresource Integrity
+    // https://w3c.github.io/webappsec/specs/subresourceintegrity/
+    // TODO(philipj): The spec does not extend HTMLSourceElement.
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

@@ -19,12 +19,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlinputelement
+// https://html.spec.whatwg.org/#the-input-element
 
 interface HTMLInputElement : HTMLElement {
     [Reflect] attribute DOMString accept;
     [Reflect] attribute DOMString alt;
-    attribute DOMString autocapitalize;
     [Reflect] attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
     [Reflect=checked] attribute boolean defaultChecked;
@@ -100,6 +99,10 @@ interface HTMLInputElement : HTMLElement {
     // https://html.spec.whatwg.org/#HTMLInputElement-partial
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString useMap;
+
+    // HTML autocapitalize proposal
+    // https://github.com/mounirlamouri/html-autocapitalize/blob/master/proposal.md
+    attribute DOMString autocapitalize;
 
     // HTML Media Capture
     // http://www.w3.org/TR/html-media-capture/

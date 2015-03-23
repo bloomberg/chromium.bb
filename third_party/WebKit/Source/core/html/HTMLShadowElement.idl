@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/webcomponents/spec/shadow/#the-shadow-element
+
 interface HTMLShadowElement : HTMLElement {
     NodeList getDistributedNodes();
 };
