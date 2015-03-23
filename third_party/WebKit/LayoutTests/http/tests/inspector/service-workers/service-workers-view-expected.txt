@@ -1,0 +1,64 @@
+CONSOLE MESSAGE: line 52: registerServiceWorker success
+CONSOLE MESSAGE: line 52: registerServiceWorker success
+CONSOLE MESSAGE: line 69: unregisterServiceWorker success
+CONSOLE MESSAGE: line 69: unregisterServiceWorker success
+Tests ServiceWorkersView on resources panel.
+
+Select ServiceWorkers tree element.
+Register ServiceWorker for scope1
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/scope1/
+
+
+activated
+running
+/inspector/service-workers/resources/service-worker-empty.js
+
+
+============================
+Register ServiceWorker for scope2
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/scope1/
+
+
+activated
+running
+/inspector/service-workers/resources/service-worker-empty.js
+
+
+Scope: /inspector/service-workers/resources/scope2/
+
+
+activated
+running
+/inspector/service-workers/resources/service-worker-empty.js
+
+
+============================
+Unegister ServiceWorker for scope1
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/scope1/ - deleted
+
+
+
+redundant
+running
+/inspector/service-workers/resources/service-worker-empty.js
+
+Scope: /inspector/service-workers/resources/scope2/
+
+
+activated
+running
+/inspector/service-workers/resources/service-worker-empty.js
+
+
+============================
+Unegister ServiceWorker for scope1
+

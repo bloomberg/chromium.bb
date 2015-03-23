@@ -746,6 +746,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.layerTreeModel = target.layerTreeModel;
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
+        InspectorTest.serviceWorkerManager = target.serviceWorkerManager;
         InspectorTest.tracingManager = target.tracingManager;
         InspectorTest.mainTarget = target;
     },
@@ -862,6 +863,7 @@ function runTest(enableWatchDogWhileDebugging)
             "profiler": "profiles",
             "resource-tree": "resources",
             "search": "sources",
+            "service-workers": "resources",
             "sources": "sources",
             "timeline": "timeline",
             "tracing": "timeline",
