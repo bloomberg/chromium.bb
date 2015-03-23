@@ -28,6 +28,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/PaintInvalidationState.h"
+#include "core/layout/PendingSelection.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
@@ -104,7 +105,7 @@ public:
     void setSelection(LayoutObject* start, int startPos, LayoutObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
     void clearSelection();
     void setSelection(const FrameSelection&);
-    bool hasPendingSelection() const { return m_pendingSelection->m_hasPendingSelection; }
+    bool hasPendingSelection() const { return m_pendingSelection->hasPendingSelection(); }
     void commitPendingSelection();
     LayoutObject* selectionStart();
     LayoutObject* selectionEnd();
@@ -206,28 +207,6 @@ private:
 
     unsigned m_hitTestCount;
 
-    class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
-    public:
-        static PassOwnPtrWillBeRawPtr<PendingSelection> create()
-        {
-            return adoptPtrWillBeNoop(new PendingSelection);
-        }
-
-        void setSelection(const FrameSelection&);
-        void clear();
-
-        DECLARE_TRACE();
-
-        Position m_start;
-        Position m_end;
-        Position m_extent;
-        EAffinity m_affinity;
-        bool m_hasPendingSelection : 1;
-        bool m_shouldShowBlockCursor : 1;
-
-    private:
-        PendingSelection();
-    };
     OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
 };
 

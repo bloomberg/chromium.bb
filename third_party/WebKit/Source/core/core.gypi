@@ -723,6 +723,8 @@
             'layout/MultiColumnFragmentainerGroup.cpp',
             'layout/MultiColumnFragmentainerGroup.h',
             'layout/OverflowModel.h',
+            'layout/PendingSelection.cpp',
+            'layout/PendingSelection.h',
             'layout/ScrollAlignment.cpp',
             'layout/SubtreeLayoutScope.cpp',
             'layout/SubtreeLayoutScope.h',

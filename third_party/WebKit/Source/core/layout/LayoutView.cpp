@@ -711,41 +711,6 @@ void LayoutView::setSelection(const FrameSelection& selection)
     m_pendingSelection->setSelection(selection);
 }
 
-LayoutView::PendingSelection::PendingSelection()
-    : m_affinity(SEL_DEFAULT_AFFINITY)
-    , m_hasPendingSelection(false)
-    , m_shouldShowBlockCursor(false)
-{
-    clear();
-}
-
-void LayoutView::PendingSelection::setSelection(const FrameSelection& selection)
-{
-    m_start = selection.start();
-    m_end = selection.end();
-    m_extent = selection.extent();
-    m_affinity = selection.affinity();
-    m_shouldShowBlockCursor = selection.shouldShowBlockCursor();
-    m_hasPendingSelection = true;
-}
-
-void LayoutView::PendingSelection::clear()
-{
-    m_hasPendingSelection = false;
-    m_start.clear();
-    m_end.clear();
-    m_extent.clear();
-    m_affinity = SEL_DEFAULT_AFFINITY;
-    m_shouldShowBlockCursor = false;
-}
-
-DEFINE_TRACE(LayoutView::PendingSelection)
-{
-    visitor->trace(m_start);
-    visitor->trace(m_end);
-    visitor->trace(m_extent);
-}
-
 void LayoutView::commitPendingSelection()
 {
     if (!hasPendingSelection())
@@ -753,9 +718,9 @@ void LayoutView::commitPendingSelection()
     ASSERT(!needsLayout());
 
     // Skip if pending VisibilePositions became invalid before we reach here.
-    if ((m_pendingSelection->m_start.isNotNull() && (!m_pendingSelection->m_start.inDocument() || m_pendingSelection->m_start.document() != document()))
-        || (m_pendingSelection->m_end.isNotNull() && (!m_pendingSelection->m_end.inDocument() || m_pendingSelection->m_end.document() != document()))
-        || (m_pendingSelection->m_extent.isNotNull() && (!m_pendingSelection->m_extent.inDocument() || m_pendingSelection->m_extent.document() != document()))) {
+    if ((m_pendingSelection->start().isNotNull() && (!m_pendingSelection->start().inDocument() || m_pendingSelection->start().document() != document()))
+        || (m_pendingSelection->end().isNotNull() && (!m_pendingSelection->end().inDocument() || m_pendingSelection->end().document() != document()))
+        || (m_pendingSelection->extent().isNotNull() && (!m_pendingSelection->extent().inDocument() || m_pendingSelection->extent().document() != document()))) {
         m_pendingSelection->clear();
         return;
     }
@@ -763,20 +728,20 @@ void LayoutView::commitPendingSelection()
     // Construct a new VisibleSolution, since m_selection is not necessarily valid, and the following steps
     // assume a valid selection. See <https://bugs.webkit.org/show_bug.cgi?id=69563> and <rdar://problem/10232866>.
 
-    SelectionType selectionType = VisibleSelection::selectionType(m_pendingSelection->m_start, m_pendingSelection->m_end);
-    bool paintBlockCursor = m_pendingSelection->m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(m_pendingSelection->m_end, m_pendingSelection->m_affinity));
+    SelectionType selectionType = VisibleSelection::selectionType(m_pendingSelection->start(), m_pendingSelection->end());
+    bool paintBlockCursor = m_pendingSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(m_pendingSelection->end(), m_pendingSelection->affinity()));
     VisibleSelection selection;
-    if (enclosingTextFormControl(m_pendingSelection->m_start)) {
-        Position endPosition = paintBlockCursor ? m_pendingSelection->m_extent.next() : m_pendingSelection->m_end;
-        selection.setWithoutValidation(m_pendingSelection->m_start, endPosition);
+    if (enclosingTextFormControl(m_pendingSelection->start())) {
+        Position endPosition = paintBlockCursor ? m_pendingSelection->extent().next() : m_pendingSelection->end();
+        selection.setWithoutValidation(m_pendingSelection->start(), endPosition);
     } else {
-        VisiblePosition visibleStart = VisiblePosition(m_pendingSelection->m_start, selectionType == SelectionType::RangeSelection ? DOWNSTREAM : m_pendingSelection->m_affinity);
+        VisiblePosition visibleStart = VisiblePosition(m_pendingSelection->start(), selectionType == SelectionType::RangeSelection ? DOWNSTREAM : m_pendingSelection->affinity());
         if (paintBlockCursor) {
-            VisiblePosition visibleExtent(m_pendingSelection->m_extent, m_pendingSelection->m_affinity);
+            VisiblePosition visibleExtent(m_pendingSelection->extent(), m_pendingSelection->affinity());
             visibleExtent = visibleExtent.next(CanSkipOverEditingBoundary);
             selection = VisibleSelection(visibleStart, visibleExtent);
         } else {
-            VisiblePosition visibleEnd(m_pendingSelection->m_end, selectionType == SelectionType::RangeSelection ? UPSTREAM : m_pendingSelection->m_affinity);
+            VisiblePosition visibleEnd(m_pendingSelection->end(), selectionType == SelectionType::RangeSelection ? UPSTREAM : m_pendingSelection->affinity());
             selection = VisibleSelection(visibleStart, visibleEnd);
         }
     }
