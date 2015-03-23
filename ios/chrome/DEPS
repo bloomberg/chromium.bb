@@ -4,6 +4,8 @@ include_rules = [
   "-ios/chrome",
   "+ios/chrome/grit",
 
+  "+components/autofill/core/browser",
+  "+components/autofill/ios/browser",
   "+components/dom_distiller/core",
   "+components/dom_distiller/ios",
   "+components/infobars/core",

@@ -6,6 +6,19 @@
 
 namespace web {
 
+TestWebState::TestWebState() : trust_level_(kAbsolute), content_is_html_(true) {
+}
+
+TestWebState::~TestWebState() = default;
+
+UIView* TestWebState::GetView() {
+  return nullptr;
+}
+
+WebViewType TestWebState::GetWebViewType() const {
+  return web::UI_WEB_VIEW_TYPE;
+}
+
 BrowserState* TestWebState::GetBrowserState() const {
   return nullptr;
 }
@@ -27,7 +40,7 @@ const std::string& TestWebState::GetContentLanguageHeader() const {
 }
 
 bool TestWebState::ContentIsHTML() const {
-  return true;
+  return content_is_html_;
 }
 
 const GURL& TestWebState::GetVisibleURL() const {
@@ -36,6 +49,35 @@ const GURL& TestWebState::GetVisibleURL() const {
 
 const GURL& TestWebState::GetLastCommittedURL() const {
   return url_;
+}
+
+GURL TestWebState::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
+  *trust_level = trust_level_;
+  return url_;
+}
+
+bool TestWebState::IsShowingWebInterstitial() const {
+  return false;
+}
+
+WebInterstitial* TestWebState::GetWebInterstitial() const {
+  return nullptr;
+}
+
+void TestWebState::SetContentIsHTML(bool content_is_html) {
+  content_is_html_ = content_is_html;
+}
+
+void TestWebState::SetCurrentURL(const GURL& url) {
+  url_ = url;
+}
+
+void TestWebState::SetTrustLevel(URLVerificationTrustLevel trust_level) {
+  trust_level_ = trust_level;
+}
+
+CRWWebViewProxyType TestWebState::GetWebViewProxy() const {
+  return nullptr;
 }
 
 }  // namespace web

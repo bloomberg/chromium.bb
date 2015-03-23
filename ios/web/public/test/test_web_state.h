@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
@@ -15,7 +16,12 @@ namespace web {
 // Minimal implementation of WebState, to be used in tests.
 class TestWebState : public WebState {
  public:
+  TestWebState();
+  ~TestWebState() override;
+
   // WebState implementation.
+  UIView* GetView() override;
+  WebViewType GetWebViewType() const override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const OpenURLParams& params) override {}
   NavigationManager* GetNavigationManager() override;
@@ -25,15 +31,26 @@ class TestWebState : public WebState {
   bool ContentIsHTML() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
+  GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,
                                 const std::string& command_prefix) override {}
   void RemoveScriptCommandCallback(const std::string& command_prefix) override {
   }
+  CRWWebViewProxyType GetWebViewProxy() const override;
+  bool IsShowingWebInterstitial() const override;
+  WebInterstitial* GetWebInterstitial() const override;
   void AddObserver(WebStateObserver* observer) override {}
   void RemoveObserver(WebStateObserver* observer) override {}
 
+  // Setters for test data.
+  void SetContentIsHTML(bool content_is_html);
+  void SetCurrentURL(const GURL& url);
+  void SetTrustLevel(URLVerificationTrustLevel trust_level);
+
  private:
   GURL url_;
+  URLVerificationTrustLevel trust_level_;
+  bool content_is_html_;
   std::string mime_type_;
   std::string content_language_;
 };
