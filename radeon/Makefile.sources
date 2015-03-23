@@ -4,9 +4,7 @@ LIBDRM_RADEON_FILES := \
 	radeon_cs_space.c \
 	radeon_bo.c \
 	radeon_cs.c \
-	radeon_surface.c \
-	bof.c \
-	bof.h
+	radeon_surface.c
 
 LIBDRM_RADEON_H_FILES := \
 	radeon_bo.h \
@@ -17,3 +15,7 @@ LIBDRM_RADEON_H_FILES := \
 	radeon_bo_int.h \
 	radeon_cs_int.h \
 	r600_pci_ids.h
+
+LIBDRM_RADEON_BOF_FILES := \
+	bof.c \
+	bof.h

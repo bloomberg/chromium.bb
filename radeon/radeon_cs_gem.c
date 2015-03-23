@@ -48,9 +48,12 @@
 #include "xf86drm.h"
 #include "xf86atomic.h"
 #include "radeon_drm.h"
-#include "bof.h"
 
+/* Add LIBDRM_RADEON_BOF_FILES to libdrm_radeon_la_SOURCES when building with BOF_DUMP */
 #define CS_BOF_DUMP 0
+#if CS_BOF_DUMP
+#include "bof.h"
+#endif
 
 struct radeon_cs_manager_gem {
     struct radeon_cs_manager    base;
