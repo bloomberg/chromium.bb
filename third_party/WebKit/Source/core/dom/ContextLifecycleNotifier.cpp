@@ -33,16 +33,9 @@
 
 namespace blink {
 
-void ContextLifecycleNotifier::addObserver(ContextLifecycleObserver* observer)
-{
-    LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>::addObserver(observer);
-    if (observer->observerType() == ContextLifecycleObserver::ActiveDOMObjectType)
-        RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
-}
-
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     Vector<ContextLifecycleObserver*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (ContextLifecycleObserver* observer : snapshotOfObservers) {
@@ -65,7 +58,7 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     Vector<ContextLifecycleObserver*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (ContextLifecycleObserver* observer : snapshotOfObservers) {
@@ -84,7 +77,7 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     Vector<ContextLifecycleObserver*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (ContextLifecycleObserver* observer : snapshotOfObservers) {

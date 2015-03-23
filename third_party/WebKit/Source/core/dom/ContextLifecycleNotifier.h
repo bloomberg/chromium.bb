@@ -41,8 +41,6 @@ class ExecutionContext;
 class CORE_EXPORT ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
     WTF_MAKE_NONCOPYABLE(ContextLifecycleNotifier);
 public:
-    void addObserver(ContextLifecycleObserver*);
-
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects();
     void notifyStoppingActiveDOMObjects();

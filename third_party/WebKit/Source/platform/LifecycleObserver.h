@@ -37,11 +37,6 @@ class LifecycleObserver : public WillBeGarbageCollectedMixin {
 public:
     using Context = T;
 
-    LifecycleObserver()
-        : m_lifecycleContext(nullptr)
-    {
-    }
-
 #if !ENABLE(OILPAN)
     virtual ~LifecycleObserver()
     {
@@ -64,6 +59,12 @@ public:
     void clearLifecycleContext() { m_lifecycleContext = nullptr; }
 
 protected:
+    explicit LifecycleObserver(Context* context)
+        : m_lifecycleContext(nullptr)
+    {
+        setContext(context);
+    }
+
     void setContext(Context*);
 
 private:

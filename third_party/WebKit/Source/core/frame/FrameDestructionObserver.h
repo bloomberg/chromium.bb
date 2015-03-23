@@ -38,7 +38,7 @@ class LocalFrameLifecycleNotifier;
 
 class CORE_EXPORT FrameDestructionObserver : public LifecycleObserver<LocalFrame, FrameDestructionObserver, LocalFrameLifecycleNotifier> {
 public:
-    virtual void willDetachFrameHost();
+    virtual void willDetachFrameHost() { }
     virtual void contextDestroyed()
     {
         setContext(nullptr);
@@ -47,7 +47,10 @@ public:
     LocalFrame* frame() const { return lifecycleContext(); }
 
 protected:
-    explicit FrameDestructionObserver(LocalFrame*);
+    explicit FrameDestructionObserver(LocalFrame* frame)
+        : LifecycleObserver(frame)
+    {
+    }
 };
 
 } // namespace blink

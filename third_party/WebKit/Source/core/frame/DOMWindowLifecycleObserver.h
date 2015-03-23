@@ -43,7 +43,10 @@ public:
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }
 
 protected:
-    explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
+    explicit DOMWindowLifecycleObserver(LocalDOMWindow* window)
+        : LifecycleObserver(window)
+    {
+    }
 };
 
 } // namespace blink

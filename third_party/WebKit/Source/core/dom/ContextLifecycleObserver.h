@@ -47,7 +47,11 @@ public:
     Type observerType() const { return m_observerType; }
 
 protected:
-    explicit ContextLifecycleObserver(ExecutionContext*, Type = GenericType);
+    explicit ContextLifecycleObserver(ExecutionContext* executionContext, Type type = GenericType)
+        : LifecycleObserver(executionContext)
+        , m_observerType(type)
+    {
+    }
 
 private:
     Type m_observerType;

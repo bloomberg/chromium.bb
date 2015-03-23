@@ -44,7 +44,11 @@ public:
     Page* page() const { return lifecycleContext(); }
 
 protected:
-    explicit PageLifecycleObserver(Page*);
+    explicit PageLifecycleObserver(Page* page)
+        : LifecycleObserver(page)
+    {
+    }
+
 };
 
 } // namespace blink

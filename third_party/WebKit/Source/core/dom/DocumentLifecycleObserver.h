@@ -41,7 +41,10 @@ public:
 #endif
 
 protected:
-    explicit DocumentLifecycleObserver(Document*);
+    explicit DocumentLifecycleObserver(Document* document)
+        : LifecycleObserver(document)
+    {
+    }
 };
 
 } // namespace blink

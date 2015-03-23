@@ -61,7 +61,7 @@ public:
 
     virtual void contextDestroyed() override
     {
-        LifecycleObserver<DummyContext, TestingObserver, DummyContext>::contextDestroyed();
+        LifecycleObserver::contextDestroyed();
         if (m_observerToRemoveOnDestruct) {
             lifecycleContext()->removeObserver(m_observerToRemoveOnDestruct.get());
             m_observerToRemoveOnDestruct.clear();
@@ -72,7 +72,7 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_observerToRemoveOnDestruct);
-        LifecycleObserver<DummyContext, TestingObserver, DummyContext>::trace(visitor);
+        LifecycleObserver::trace(visitor);
     }
 
     void unobserve() { setContext(nullptr); }
@@ -88,9 +88,9 @@ public:
 
 private:
     explicit TestingObserver(DummyContext* context)
-        : m_contextDestroyedCalled(false)
+        : LifecycleObserver(context)
+        , m_contextDestroyedCalled(false)
     {
-        setContext(context);
     }
 
     OwnPtrWillBeMember<TestingObserver> m_observerToRemoveOnDestruct;

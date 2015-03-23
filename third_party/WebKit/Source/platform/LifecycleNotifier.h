@@ -67,7 +67,6 @@ protected:
     enum IterationType {
         IteratingNone,
         IteratingOverAll,
-        IteratingOverActiveDOMObjects,
     };
 
     IterationType m_iterating;
