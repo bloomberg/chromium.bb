@@ -5,13 +5,10 @@
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
 
 #include "ash/test/ash_test_base.h"
-#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_error_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -102,16 +99,6 @@ class SyncErrorNotifierTest : public AshTestBase  {
     ASSERT_TRUE(profile_manager_->SetUp());
 
     profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
-
-#if !defined(OS_CHROMEOS)
-    // Preload the desktop avatar icon so it's cached for the test's execution.
-    ProfileInfoCache& cache = *profile_manager_->profile_info_cache();
-    size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-    cache.GetAvatarIconOfProfileAtIndex(index);
-    base::MessageLoop::current()->RunUntilIdle();
-    ASSERT_TRUE(base::PathExists(profiles::GetPathOfHighResAvatarAtIndex(
-        cache.GetAvatarIconIndexOfProfileAtIndex(index))));
-#endif
 
     TestingBrowserProcess::GetGlobal();
     AshTestBase::SetUp();

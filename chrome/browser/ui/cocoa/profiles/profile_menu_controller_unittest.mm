@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
 
-#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -18,7 +17,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -82,12 +80,12 @@ class ProfileMenuControllerTest : public CocoaProfileTest {
 
 TEST_F(ProfileMenuControllerTest, InitializeMenu) {
   NSMenu* menu = [controller() menu];
-  // Profile, <sep>, Edit, <sep>, New.
-  ASSERT_EQ(5, [menu numberOfItems]);
+  // <sep>, Edit, <sep>, New.
+  ASSERT_EQ(4, [menu numberOfItems]);
 
   TestBottomItems();
 
-  EXPECT_FALSE([menu_item() isHidden]);
+  EXPECT_TRUE([menu_item() isHidden]);
 }
 
 TEST_F(ProfileMenuControllerTest, CreateItemWithTitle) {
@@ -102,9 +100,9 @@ TEST_F(ProfileMenuControllerTest, CreateItemWithTitle) {
 
 TEST_F(ProfileMenuControllerTest, RebuildMenu) {
   NSMenu* menu = [controller() menu];
-  EXPECT_EQ(5, [menu numberOfItems]);
+  EXPECT_EQ(4, [menu numberOfItems]);
 
-  EXPECT_FALSE([menu_item() isHidden]);
+  EXPECT_TRUE([menu_item() isHidden]);
 
   // Create some more profiles on the manager.
   TestingProfileManager* manager = testing_profile_manager();
@@ -132,12 +130,12 @@ TEST_F(ProfileMenuControllerTest, InsertItems) {
   base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
   ASSERT_EQ(0, [menu numberOfItems]);
 
-  // Even with one profile items can still be inserted.
+  // With only one profile, insertItems should be a no-op.
   BOOL result = [controller() insertItemsIntoMenu:menu
                                          atOffset:0
                                          fromDock:NO];
-  EXPECT_TRUE(result);
-  EXPECT_EQ(1, [menu numberOfItems]);
+  EXPECT_FALSE(result);
+  EXPECT_EQ(0, [menu numberOfItems]);
   [menu removeAllItems];
 
   // Same for use in building the dock menu.

@@ -318,7 +318,7 @@ base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
 }
 
 const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
-    size_t index) {
+    size_t index) const {
   if (IsUsingGAIAPictureOfProfileAtIndex(index)) {
     const gfx::Image* image = GetGAIAPictureOfProfileAtIndex(index);
     if (image)

@@ -31,9 +31,6 @@ class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
   // Path of the profile for which the avatar is being downloaded.
   base::FilePath profile_path_;
 
-  // True if the ProfileAvatarDownloader should function; false to disable it.
-  bool downloader_active_;
-
   ProfileInfoCache* cache_;  // Weak.
 };
 

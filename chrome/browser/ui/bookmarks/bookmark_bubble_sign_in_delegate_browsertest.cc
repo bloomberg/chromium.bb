@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -23,12 +22,6 @@
 #include "content/public/test/test_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
-
-#if defined(OS_CHROMEOS)
-const bool kHasProfileChooser = false;
-#else
-const bool kHasProfileChooser = true;
-#endif
 
 class BookmarkBubbleSignInDelegateTest : public InProcessBrowserTest {
  public:
@@ -62,12 +55,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
 
   delegate->OnSignInLinkClicked();
 
-  if (kHasProfileChooser) {
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
-    EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
-  } else {
-    EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
-  }
+  // A new tab should have been opened and the browser should be visible.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
@@ -79,12 +68,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
 
   delegate->OnSignInLinkClicked();
 
-  if (kHasProfileChooser) {
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
-    EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
-  } else {
-    EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
-  }
+  // A new tab should have been opened and the browser should be visible.
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
@@ -101,15 +86,11 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
 
   delegate->OnSignInLinkClicked();
 
-  if (kHasProfileChooser) {
-    // ProfileChooser doesn't show in an incognito window.
-    EXPECT_FALSE(ProfileChooserView::IsShowing());
-  } else {
-    // A new tab should have been opened in the normal browser, which should be
-    // visible.
-    int tab_count_normal = browser()->tab_strip_model()->count();
-    EXPECT_EQ(starting_tab_count_normal + 1, tab_count_normal);
-  }
+  // A new tab should have been opened in the normal browser, which should be
+  // visible.
+  int tab_count_normal = browser()->tab_strip_model()->count();
+  EXPECT_EQ(starting_tab_count_normal + 1, tab_count_normal);
+
   // No effect is expected on the incognito browser.
   int tab_count_incognito = incognito_browser->tab_strip_model()->count();
   EXPECT_EQ(starting_tab_count_incognito, tab_count_incognito);
@@ -136,12 +117,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
 
   delegate->OnSignInLinkClicked();
 
-  if (kHasProfileChooser) {
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
-  } else {
-    // A new tab should have been opened in the extra browser, which should be
-    // visible.
-    int tab_count = extra_browser->tab_strip_model()->count();
-    EXPECT_EQ(starting_tab_count + 1, tab_count);
-  }
+  // A new tab should have been opened in the extra browser, which should be
+  // visible.
+  int tab_count = extra_browser->tab_strip_model()->count();
+  EXPECT_EQ(starting_tab_count + 1, tab_count);
 }

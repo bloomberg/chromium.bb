@@ -22,12 +22,6 @@ ProfileAvatarDownloader::ProfileAvatarDownloader(
     ProfileInfoCache* cache)
     : icon_index_(icon_index),
       profile_path_(profile_path),
-      // The downloader should only execute on desktop platforms.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
-      downloader_active_(true),
-#else
-      downloader_active_(false),
-#endif
       cache_(cache) {
   GURL url(std::string(kHighResAvatarDownloadUrlPrefix) +
            profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index));
@@ -38,9 +32,6 @@ ProfileAvatarDownloader::~ProfileAvatarDownloader() {
 }
 
 void ProfileAvatarDownloader::Start() {
-  if (!downloader_active_)
-    return;
-
   // In unit tests, the browser process can return a NULL request context.
   net::URLRequestContextGetter* request_context =
       g_browser_process->system_request_context();
@@ -55,7 +46,7 @@ void ProfileAvatarDownloader::Start() {
 // BitmapFetcherDelegate overrides.
 void ProfileAvatarDownloader::OnFetchComplete(const GURL url,
                                               const SkBitmap* bitmap) {
-  if (!bitmap || !cache_ || !downloader_active_)
+  if (!bitmap || !cache_)
     return;
 
   // Decode the downloaded bitmap. Ownership of the image is taken by |cache_|.
