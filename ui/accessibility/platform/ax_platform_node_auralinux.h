@@ -23,6 +23,7 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   static AXPlatformNode* application() { return application_; }
 
   AtkRole GetAtkRole();
+  void GetAtkState(AtkStateSet* state_set);
 
   // AXPlatformNode overrides.
   void Destroy() override;
