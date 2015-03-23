@@ -66,7 +66,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
                      self._run.config.name)
       alerts.SendEmailLog(subject_msg,
                           afdo.AFDO_ALERT_RECIPIENTS,
-                          smtp_server=constants.GOLO_SMTP_SERVER,
+                          server=alerts.SmtpServer(constants.GOLO_SMTP_SERVER),
                           message=alert_msg)
       # Re-raise whatever exception we got here. This stage will only
       # generate a warning but we want to make sure the warning is

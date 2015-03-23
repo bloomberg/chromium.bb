@@ -378,14 +378,18 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                   to be added to the message. Custom field names should begin
                   with the prefix 'X-'.
   """
-  # TODO(davidjames): Implement the ability to send emails in GCE.
-  # https://cloud.google.com/compute/docs/sending-mail
   in_golo = cros_build_lib.HostIsCIBuilder(golo_only=True)
-  if in_golo and builder_run.InProduction():
+  if builder_run.InProduction():
+    if in_golo:
+      # TODO(fdeng): Once google api is installed on golo bots,
+      # change it to use gmail.
+      server = alerts.SmtpServer(constants.GOLO_SMTP_SERVER)
+    else:
+      server = alerts.GmailServer()
     alerts.SendEmail(subject,
                      GetHealthAlertRecipients(builder_run),
+                     server=server,
                      message=body,
-                     smtp_server=constants.GOLO_SMTP_SERVER,
                      extra_fields=extra_fields)
 
 

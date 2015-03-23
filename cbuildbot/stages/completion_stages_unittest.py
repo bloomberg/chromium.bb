@@ -305,7 +305,7 @@ class CommitQueueCompletionStageTest(
         '_ToTSanity',
         return_value=True)
 
-    self.alert_email_mock = self.PatchObject(alerts, '_SendEmailHelper')
+    self.alert_email_mock = self.PatchObject(alerts, 'SendEmail')
     self.PatchObject(cbuildbot_run._BuilderRunBase,
                      'InProduction', return_value=True)
     self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
