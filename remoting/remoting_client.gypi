@@ -158,8 +158,8 @@
           'target_name': 'remoting_webapp_v2',
           'type': 'none',
           'variables': {
-            'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2_pnacl',
-            'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2_pnacl.zip',
+            'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
+            'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
             'webapp_type': 'v2_pnacl',
             'extra_files': [
               'webapp/crd/remoting_client_pnacl.nmf.jinja2',
