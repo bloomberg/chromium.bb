@@ -70,19 +70,16 @@ void TargetThread::SignalThreadToFinish() {
 }
 
 // static
-#if defined(_WIN64)
-// Disable optimizations for this function so that it gets its own stack frame.
-#pragma optimize("", off)
-#endif
-void TargetThread::SignalAndWaitUntilSignaled(
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE void TargetThread::SignalAndWaitUntilSignaled(
     WaitableEvent* thread_started_event,
     WaitableEvent* finish_event) {
   thread_started_event->Signal();
+  volatile int x = 1;
   finish_event->Wait();
+  x = 0;  // Prevent tail call to WaitableEvent::Wait().
+  ALLOW_UNUSED_LOCAL(x);
 }
-#if defined(_WIN64)
-#pragma optimize("", on)
-#endif
 
 // Called on the profiler thread when complete. Collects profiles produced by
 // the profiler, and signals an event to allow the main thread to know that that
