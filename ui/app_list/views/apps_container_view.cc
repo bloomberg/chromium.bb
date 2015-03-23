@@ -144,6 +144,20 @@ bool AppsContainerView::OnKeyPressed(const ui::KeyEvent& event) {
     return app_list_folder_view_->OnKeyPressed(event);
 }
 
+void AppsContainerView::OnWillBeShown() {
+  apps_grid_view()->ClearAnySelectedView();
+  app_list_folder_view()->items_grid_view()->ClearAnySelectedView();
+}
+
+gfx::Rect AppsContainerView::GetPageBoundsForState(
+    AppListModel::State state) const {
+  gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
+  if (state == AppListModel::STATE_APPS)
+    return onscreen_bounds;
+
+  return GetBelowContentsOffscreenBounds(onscreen_bounds.size());
+}
+
 void AppsContainerView::OnTopIconAnimationsComplete() {
   --top_icon_animation_pending_count_;
 

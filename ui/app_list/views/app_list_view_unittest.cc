@@ -136,7 +136,7 @@ class AppListViewTestContext {
   // and returns false on failure.
   bool SetAppListState(AppListModel::State state);
 
-  // Returns whether the app list showing |state|.
+  // Returns true if all of the pages are in their correct position for |state|.
   bool IsStateShown(AppListModel::State state);
 
   // Shows the app list and waits until a paint occurs.
@@ -241,12 +241,11 @@ bool AppListViewTestContext::SetAppListState(AppListModel::State state) {
 
 bool AppListViewTestContext::IsStateShown(AppListModel::State state) {
   ContentsView* contents_view = view_->app_list_main_view()->contents_view();
-  int index = contents_view->GetPageIndexForState(state);
   bool success = true;
   for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
     success = success &&
-              (i == index) == (contents_view->GetOnscreenPageBounds(i) ==
-                               contents_view->GetPageView(i)->bounds());
+              (contents_view->GetPageView(i)->GetPageBoundsForState(state) ==
+               contents_view->GetPageView(i)->bounds());
   }
   return success && state == delegate_->GetTestModel()->state();
 }
@@ -509,50 +508,23 @@ void AppListViewTestContext::RunPageSwitchingAnimationTest() {
 
     ContentsView* contents_view = main_view->contents_view();
 
-    int start_page_index =
-        contents_view->GetPageIndexForState(AppListModel::STATE_START);
-    int search_results_page_index =
-        contents_view->GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
-    int apps_page_index =
-        contents_view->GetPageIndexForState(AppListModel::STATE_APPS);
-
     contents_view->SetActiveState(AppListModel::STATE_START);
     contents_view->Layout();
 
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(start_page_index),
-              contents_view->GetPageView(start_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
-              contents_view->GetPageView(search_results_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(apps_page_index),
-              contents_view->GetPageView(apps_page_index)->bounds());
+    IsStateShown(AppListModel::STATE_START);
 
     // Change pages. View should not have moved without Layout().
     contents_view->SetActiveState(AppListModel::STATE_SEARCH_RESULTS);
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(start_page_index),
-              contents_view->GetPageView(start_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
-              contents_view->GetPageView(search_results_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(apps_page_index),
-              contents_view->GetPageView(apps_page_index)->bounds());
+    IsStateShown(AppListModel::STATE_START);
 
     // Change to a third page. This queues up the second animation behind the
     // first.
     contents_view->SetActiveState(AppListModel::STATE_APPS);
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(start_page_index),
-              contents_view->GetPageView(start_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
-              contents_view->GetPageView(search_results_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(apps_page_index),
-              contents_view->GetPageView(apps_page_index)->bounds());
+    IsStateShown(AppListModel::STATE_START);
 
     // Call Layout(). Should jump to the third page.
     contents_view->Layout();
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(start_page_index),
-              contents_view->GetPageView(start_page_index)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
-              contents_view->GetPageView(search_results_page_index)->bounds());
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(apps_page_index),
-              contents_view->GetPageView(apps_page_index)->bounds());
+    IsStateShown(AppListModel::STATE_APPS);
   }
 
   Close();

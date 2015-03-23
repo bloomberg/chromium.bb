@@ -18,6 +18,7 @@
 #include "ui/app_list/views/all_apps_tile_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
@@ -299,10 +300,32 @@ TileItemView* StartPageView::all_apps_button() const {
   return tiles_container_->all_apps_button();
 }
 
-void StartPageView::OnShow() {
+void StartPageView::OnShown() {
+  // When the start page is shown, show or hide the custom launcher page
+  // based on whether it is enabled.
+  CustomLauncherPageView* custom_page_view =
+      app_list_main_view_->contents_view()->custom_page_view();
+  if (custom_page_view) {
+    custom_page_view->SetVisible(
+        app_list_main_view_->ShouldShowCustomLauncherPage());
+  }
   tiles_container_->Update();
   tiles_container_->ClearSelectedIndex();
   custom_launcher_page_background_->SetSelected(false);
+}
+
+gfx::Rect StartPageView::GetPageBoundsForState(
+    AppListModel::State state) const {
+  gfx::Rect onscreen_bounds(GetFullContentsBounds());
+  if (state == AppListModel::STATE_START)
+    return onscreen_bounds;
+
+  return GetAboveContentsOffscreenBounds(onscreen_bounds.size());
+}
+
+gfx::Rect StartPageView::GetSearchBoxBounds() const {
+  return search_box_spacer_view_->bounds() +
+         GetPageBoundsForState(AppListModel::STATE_START).OffsetFromOrigin();
 }
 
 void StartPageView::Layout() {
@@ -315,7 +338,14 @@ void StartPageView::Layout() {
   bounds.set_height(tiles_container_->GetHeightForWidth(bounds.width()));
   tiles_container_->SetBoundsRect(bounds);
 
-  bounds = app_list_main_view_->contents_view()->GetCustomPageCollapsedBounds();
+  CustomLauncherPageView* custom_launcher_page_view =
+      app_list_main_view_->contents_view()->custom_page_view();
+  if (!custom_launcher_page_view)
+    return;
+
+  bounds = app_list_main_view_->contents_view()
+               ->custom_page_view()
+               ->GetCollapsedLauncherPageBounds();
   bounds.Intersect(GetContentsBounds());
   bounds.ClampToCenteredSize(
       gfx::Size(kLauncherPageBackgroundWidth, bounds.height()));
@@ -404,8 +434,12 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
 
 bool StartPageView::OnMousePressed(const ui::MouseEvent& event) {
   ContentsView* contents_view = app_list_main_view_->contents_view();
-  if (!contents_view->GetCustomPageCollapsedBounds().Contains(event.location()))
+  if (contents_view->custom_page_view() &&
+      !contents_view->custom_page_view()
+           ->GetCollapsedLauncherPageBounds()
+           .Contains(event.location())) {
     return false;
+  }
 
   MaybeOpenCustomLauncherPage();
   return true;
@@ -423,13 +457,18 @@ bool StartPageView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 void StartPageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
-      event->details().scroll_y_hint() < 0)
+      event->details().scroll_y_hint() < 0) {
     MaybeOpenCustomLauncherPage();
+  }
 
   ContentsView* contents_view = app_list_main_view_->contents_view();
   if (event->type() == ui::ET_GESTURE_TAP &&
-      contents_view->GetCustomPageCollapsedBounds().Contains(event->location()))
+      contents_view->custom_page_view() &&
+      contents_view->custom_page_view()
+          ->GetCollapsedLauncherPageBounds()
+          .Contains(event->location())) {
     MaybeOpenCustomLauncherPage();
+  }
 }
 
 void StartPageView::OnScrollEvent(ui::ScrollEvent* event) {
@@ -437,10 +476,6 @@ void StartPageView::OnScrollEvent(ui::ScrollEvent* event) {
   // is enabled).
   if (event->type() == ui::ET_SCROLL && event->y_offset() < 0)
     MaybeOpenCustomLauncherPage();
-}
-
-gfx::Rect StartPageView::GetSearchBoxBounds() const {
-  return search_box_spacer_view_->bounds();
 }
 
 TileItemView* StartPageView::GetTileItemView(size_t index) {

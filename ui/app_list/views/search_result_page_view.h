@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/views/view.h"
+#include "ui/app_list/views/app_list_page.h"
 
 namespace app_list {
 
@@ -20,7 +20,7 @@ class AppListViewDelegate;
 class SearchResultContainerView;
 
 // The start page for the experimental app list.
-class APP_LIST_EXPORT SearchResultPageView : public views::View {
+class APP_LIST_EXPORT SearchResultPageView : public AppListPage {
  public:
   SearchResultPageView();
   ~SearchResultPageView() override;
@@ -39,6 +39,13 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
+
+  // AppListPage overrides:
+  gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;
+  void OnAnimationUpdated(double progress,
+                          AppListModel::State from_state,
+                          AppListModel::State to_state) override;
+  int GetSearchBoxZHeight() const override;
 
  private:
   // |directional_movement| is true if the navigation was caused by directional

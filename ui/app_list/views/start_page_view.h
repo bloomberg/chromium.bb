@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/views/view.h"
+#include "ui/app_list/views/app_list_page.h"
 
 namespace app_list {
 
@@ -21,7 +21,7 @@ class SearchResultTileItemView;
 class TileItemView;
 
 // The start page for the experimental app list.
-class APP_LIST_EXPORT StartPageView : public views::View {
+class APP_LIST_EXPORT StartPageView : public AppListPage {
  public:
   StartPageView(AppListMainView* app_list_main_view,
                 AppListViewDelegate* view_delegate);
@@ -35,8 +35,10 @@ class APP_LIST_EXPORT StartPageView : public views::View {
   const std::vector<SearchResultTileItemView*>& tile_views() const;
   TileItemView* all_apps_button() const;
 
-  // Called when the start page view is displayed.
-  void OnShow();
+  // Overridden from AppListPage:
+  gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;
+  gfx::Rect GetSearchBoxBounds() const override;
+  void OnShown() override;
 
   // Overridden from views::View:
   void Layout() override;
@@ -47,8 +49,6 @@ class APP_LIST_EXPORT StartPageView : public views::View {
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-  // Returns search box bounds to use when the start page is active.
-  gfx::Rect GetSearchBoxBounds() const;
 
  private:
   class StartPageTilesContainer;

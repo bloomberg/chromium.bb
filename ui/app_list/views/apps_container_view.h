@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "ui/app_list/app_list_folder_item.h"
+#include "ui/app_list/views/app_list_page.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
-#include "ui/views/view.h"
 
 namespace gfx {
 class Rect;
@@ -29,8 +29,7 @@ class FolderBackgroundView;
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder. Only one if them is visible to user at any time.
-class AppsContainerView : public views::View,
-                          public TopIconAnimationObserver {
+class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
  public:
   AppsContainerView(AppListMainView* app_list_main_view,
                     AppListModel* model);
@@ -65,6 +64,10 @@ class AppsContainerView : public views::View,
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+
+  // AppListPage overrides:
+  void OnWillBeShown() override;
+  gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;
 
   // TopIconAnimationObserver overrides:
   void OnTopIconAnimationsComplete() override;

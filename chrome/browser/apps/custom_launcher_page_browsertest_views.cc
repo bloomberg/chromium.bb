@@ -20,6 +20,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -103,8 +104,8 @@ class CustomLauncherPageBrowserTest
 
     app_list::ContentsView* contents_view =
         GetAppListView()->app_list_main_view()->contents_view();
-    views::WebView* custom_page_view =
-        static_cast<views::WebView*>(contents_view->custom_page_view());
+    views::WebView* custom_page_view = static_cast<views::WebView*>(
+        contents_view->custom_page_view()->custom_launcher_page_contents());
     content::RenderFrameHost* custom_page_frame =
         custom_page_view->GetWebContents()->GetMainFrame();
 
@@ -161,7 +162,8 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
 
   // Find the clickzone.
-  gfx::Rect bounds = contents_view->GetCustomPageCollapsedBounds();
+  gfx::Rect bounds =
+      contents_view->custom_page_view()->GetCollapsedLauncherPageBounds();
   bounds.Intersect(contents_view->bounds());
   gfx::Point point_in_clickzone = bounds.CenterPoint();
   views::View::ConvertPointToWidget(contents_view, &point_in_clickzone);
@@ -323,8 +325,8 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
   app_list::ContentsView* contents_view =
       app_list_view->app_list_main_view()->contents_view();
 
-  views::WebView* custom_page_view =
-      static_cast<views::WebView*>(contents_view->custom_page_view());
+  views::WebView* custom_page_view = static_cast<views::WebView*>(
+      contents_view->custom_page_view()->custom_launcher_page_contents());
 
   content::RenderFrameHost* custom_page_frame =
       custom_page_view->GetWebContents()->GetMainFrame();
@@ -369,8 +371,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
   app_list::ContentsView* contents_view =
       app_list_view->app_list_main_view()->contents_view();
 
-  views::WebView* custom_page_view =
-      static_cast<views::WebView*>(contents_view->custom_page_view());
+  views::View* custom_page_view = contents_view->custom_page_view();
   ASSERT_TRUE(
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
 
