@@ -11,7 +11,7 @@ cr.define('policy', function() {
   var isMobilePage = function() {
     return document.defaultView.getComputedStyle(document.querySelector(
         '.scope-column')).display == 'none';
-  }
+  };
 
   /**
    * A box that shows the status of cloud policy for a device or user.
@@ -207,13 +207,13 @@ cr.define('policy', function() {
   /**
    * A table of policies and their values.
    * @constructor
-   * @extends {HTMLTableSectionElement}
+   * @extends {HTMLTableElement}
    */
   var PolicyTable = cr.ui.define('tbody');
 
   PolicyTable.prototype = {
     // Set up the prototype chain.
-    __proto__: HTMLTableSectionElement.prototype,
+    __proto__: HTMLTableElement.prototype,
 
     /**
      * Initialization function for the cr.ui framework.
