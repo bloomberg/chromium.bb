@@ -447,6 +447,20 @@
       <include name="IDR_WHISPERNET_PROXY_MANIFEST" file="resources\whispernet_proxy\manifest.json" type="BINDATA" />
       <include name="IDR_MD_SETTINGS_UI_HTML" file="resources\md_settings\md_settings.html" type="BINDATA" />
       <include name="IDR_MD_SETTINGS_UI_CSS" file="resources\md_settings\md_settings.css" type="BINDATA" />
+      <if expr="enable_media_router">
+        <include name="IDR_MEDIA_ROUTER_CHROMECAST_ICON" file="resources\media_router\elements\icon\chromecast-icon.png" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_CHROMECAST_2X_ICON" file="resources\media_router\elements\icon\chromecast-icon2x.png" type="BINDATA" />
+        <include name="IDR_CLOSE_GRAY_ICON" file="resources\media_router\elements\icon\close-gray.png" type="BINDATA" />
+        <include name="IDR_CLOSE_GRAY_2X_ICON" file="resources\media_router\elements\icon\close-gray2x.png" type="BINDATA" />
+        <include name="IDR_DOWN_ARROW_ICON" file="resources\media_router\elements\icon\down-arrow.png" type="BINDATA" />
+        <include name="IDR_DOWN_ARROW_HOVER_ICON" file="resources\media_router\elements\icon\down-arrow-hover.png" type="BINDATA" />
+        <include name="IDR_DOWN_ARROW_SHOWING_ICON" file="resources\media_router\elements\icon\down-arrow-showing.png" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_GENERIC_DEVICE_ICON" file="resources\media_router\elements\icon\generic-device.png" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_GENERIC_DEVICE_2X_ICON" file="resources\media_router\elements\icon\generic-device2x.png" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_HANGOUTS_ICON" file="resources\media_router\elements\icon\hangouts-icon.png" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_HANGOUTS_2X_ICON" file="resources\media_router\elements\icon\hangouts-icon2x.png" type="BINDATA" />
+        <include name="IDR_SAD_FACE_ICON" file="resources\media_router\elements\icon\sad-face.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
