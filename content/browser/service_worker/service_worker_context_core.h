@@ -75,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   static const base::FilePath::CharType kServiceWorkerDirectory[];
 
   // Iterates over ServiceWorkerProviderHost objects in a ProcessToProviderMap.
-  class ProviderHostIterator {
+  class CONTENT_EXPORT ProviderHostIterator {
    public:
     ~ProviderHostIterator();
     ServiceWorkerProviderHost* GetProviderHost();
@@ -84,10 +84,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
    private:
     friend class ServiceWorkerContextCore;
-    explicit ProviderHostIterator(ProcessToProviderMap* map);
+    using ProviderHostPredicate =
+        base::Callback<bool(ServiceWorkerProviderHost*)>;
+    ProviderHostIterator(ProcessToProviderMap* map,
+                         const ProviderHostPredicate& predicate);
     void Initialize();
+    bool ForwardUntilMatchingProviderHost();
 
     ProcessToProviderMap* map_;
+    ProviderHostPredicate predicate_;
     scoped_ptr<ProcessToProviderMap::iterator> process_iterator_;
     scoped_ptr<ProviderMap::iterator> provider_host_iterator_;
 
@@ -149,14 +154,21 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RemoveAllProviderHostsForProcess(int process_id);
   scoped_ptr<ProviderHostIterator> GetProviderHostIterator();
 
+  // Returns a ProviderHost iterator for all ServiceWorker clients for
+  // the |origin|.  This only returns ProviderHosts that are of CONTROLLEE
+  // and belong to the |origin|.
+  scoped_ptr<ProviderHostIterator> GetClientProviderHostIterator(
+      const GURL& origin);
+
   // Maintains a map from Client UUID to ProviderHost.
   // (Note: instead of maintaining 2 maps we might be able to uniformly use
   // UUID instead of process_id+provider_id elsewhere. For now I'm leaving
   // these as provider_id is deeply wired everywhere)
-  void RegisterClientIDForProviderHost(
-      const std::string& client_uuid,
-      ServiceWorkerProviderHost* provider_host);
-  void UnregisterClientIDForProviderHost(const std::string& client_uuid);
+  void RegisterProviderHostByClientID(const std::string& client_uuid,
+                                      ServiceWorkerProviderHost* provider_host);
+  void UnregisterProviderHostByClientID(const std::string& client_uuid);
+  ServiceWorkerProviderHost* GetProviderHostByClientID(
+      const std::string& client_uuid);
 
   // A child process of |source_process_id| may be used to run the created
   // worker for initial installation.

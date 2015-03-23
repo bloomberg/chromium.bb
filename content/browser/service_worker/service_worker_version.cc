@@ -996,9 +996,8 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
 
 void ServiceWorkerVersion::OnGetClients(
     int request_id,
-    const ServiceWorkerClientQueryOptions& /* options */) {
-  // TODO(kinuko): Handle ClientQueryOptions. (crbug.com/455241, 460415 etc)
-  if (controllee_map_.empty()) {
+    const ServiceWorkerClientQueryOptions& options) {
+  if (controllee_map_.empty() && !options.include_uncontrolled) {
     if (running_status() == RUNNING) {
       embedded_worker_->SendMessage(
           ServiceWorkerMsg_DidGetClients(request_id,
@@ -1010,13 +1009,23 @@ void ServiceWorkerVersion::OnGetClients(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClients");
 
+  // 4.3.1 matchAll(options)
   std::vector<Tuple<int,int,std::string>> clients_info;
-  for (auto& controllee : controllee_map_) {
-    int process_id = controllee.second->process_id();
-    int frame_id = controllee.second->frame_id();
-    const std::string& client_uuid = controllee.first;
-
-    clients_info.push_back(MakeTuple(process_id, frame_id, client_uuid));
+  if (!options.include_uncontrolled) {
+    for (auto& controllee : controllee_map_) {
+      int process_id = controllee.second->process_id();
+      int frame_id = controllee.second->frame_id();
+      const std::string& client_uuid = controllee.first;
+      clients_info.push_back(MakeTuple(process_id, frame_id, client_uuid));
+    }
+  } else {
+    for (auto it =
+             context_->GetClientProviderHostIterator(script_url_.GetOrigin());
+         !it->IsAtEnd(); it->Advance()) {
+      ServiceWorkerProviderHost* host = it->GetProviderHost();
+      clients_info.push_back(
+          MakeTuple(host->process_id(), host->frame_id(), host->client_uuid()));
+    }
   }
 
   BrowserThread::PostTask(
@@ -1236,17 +1245,17 @@ void ServiceWorkerVersion::DidOpenWindow(int request_id,
     return;
   }
 
-  for (const auto& it : controllee_map_) {
-    const ServiceWorkerProviderHost* provider_host = it.second;
+  for (auto it =
+           context_->GetClientProviderHostIterator(script_url_.GetOrigin());
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
     if (provider_host->process_id() != render_process_id ||
         provider_host->frame_id() != render_frame_id) {
       continue;
     }
-
-    // it.second is the client_uuid associated with the provider_host.
-    provider_host->GetClientInfo(
-        base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
-                   weak_factory_.GetWeakPtr(), request_id, it.first));
+    provider_host->GetClientInfo(base::Bind(
+        &ServiceWorkerVersion::OnOpenWindowFinished, weak_factory_.GetWeakPtr(),
+        request_id, provider_host->client_uuid()));
     return;
   }
 
@@ -1317,44 +1326,47 @@ void ServiceWorkerVersion::OnPostMessageToClient(
     const std::string& client_uuid,
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports) {
+  if (!context_)
+    return;
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerVersion::OnPostMessageToDocument",
                "Client id", client_uuid);
-  auto it = controllee_map_.find(client_uuid);
-  if (it == controllee_map_.end()) {
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host) {
     // The client may already have been closed, just ignore.
     return;
   }
-  if (it->second->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
     // The client does not belong to the same origin as this ServiceWorker,
     // possibly due to timing issue or bad message.
     return;
   }
-  it->second->PostMessage(message, sent_message_ports);
+  provider_host->PostMessage(message, sent_message_ports);
 }
 
 void ServiceWorkerVersion::OnFocusClient(int request_id,
                                          const std::string& client_uuid) {
+  if (!context_)
+    return;
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerVersion::OnFocusClient",
                "Request id", request_id,
                "Client id", client_uuid);
-  auto it = controllee_map_.find(client_uuid);
-  if (it == controllee_map_.end()) {
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host) {
     // The client may already have been closed, just ignore.
     return;
   }
-  if (it->second->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
     // The client does not belong to the same origin as this ServiceWorker,
     // possibly due to timing issue or bad message.
     return;
   }
-
-  it->second->Focus(
-      base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
-                 weak_factory_.GetWeakPtr(),
-                 request_id,
-                 client_uuid));
+  provider_host->Focus(base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
+                                  weak_factory_.GetWeakPtr(), request_id,
+                                  client_uuid));
 }
 
 void ServiceWorkerVersion::OnFocusClientFinished(
