@@ -756,23 +756,21 @@ importer.RuntimeLogger.prototype.error = function(content) {
 /** @override  */
 importer.RuntimeLogger.prototype.catcher = function(context) {
   var prefix = '(' + context + ') ';
+
   return function(error) {
     this.reportErrorContext_(context);
 
     var message = prefix + 'Caught error in promise chain.';
+    // Append error info, if provided, then output the error.
     if (error) {
-      // Error can be anything...maybe an Error, maybe a string.
-      var error = error.message || error;
-      this.error(message + ' Error: ' + error);
-      if (error.stack) {
-        this.write_('STACK', prefix + error.stack);
-      }
-    } else {
-      this.error(message);
-      error = new Error(message);
+      message += ' Error: ' + error.message || error;
     }
+    this.error(message);
 
-    throw error;
+    // Output a stack, if provided.
+    if (error && error.stack) {
+        this.write_('STACK', prefix + error.stack);
+    }
   }.bind(this);
 };
 
