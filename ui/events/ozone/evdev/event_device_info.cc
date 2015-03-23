@@ -343,7 +343,7 @@ EventDeviceInfo::ProbeLegacyAbsoluteDevice() const {
   if (HasKeyEvent(BTN_TOOL_FINGER) && HasKeyEvent(BTN_TOUCH))
     return LegacyAbsoluteDeviceType::LADT_TOUCHPAD;
 
-  if (HasKeyEvent(BTN_TOUCH) || HasKeyEvent(BTN_LEFT))
+  if (HasKeyEvent(BTN_TOUCH))
     return LegacyAbsoluteDeviceType::LADT_TOUCHSCREEN;
 
   return LegacyAbsoluteDeviceType::LADT_NONE;
