@@ -168,10 +168,10 @@ const CGFloat kMinimumContainerWidth = 3.0;
   if ((dX < 0.0 && !canDragLeft_) || (dX > 0.0 && !canDragRight_))
     return;
 
-  if (NSWidth(containerFrame) == kMinimumContainerWidth)
+  if (NSWidth(containerFrame) <= kMinimumContainerWidth)
     return;
 
-  grippyPinned_ = NSWidth(containerFrame) == maxAllowedWidth;
+  grippyPinned_ = NSWidth(containerFrame) >= maxAllowedWidth;
   containerFrame.origin.x += dX;
 
   [self setFrame:containerFrame];
