@@ -1095,6 +1095,18 @@ matrix_test_SOURCES =				\
 matrix_test_CPPFLAGS = -DUNIT_TEST
 matrix_test_LDADD = -lm -lrt
 
+if ENABLE_IVI_SHELL
+ivi_tests +=					\
+	ivi-shell-app.weston
+
+ivi_shell_app_weston_SOURCES = tests/ivi-shell-app-test.c
+nodist_ivi_shell_app_weston_SOURCES =		\
+	protocol/ivi-application-protocol.c	\
+	protocol/ivi-application-client-protocol.h
+ivi_shell_app_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+ivi_shell_app_weston_LDADD = libtest-client.la
+endif
+
 if BUILD_SETBACKLIGHT
 noinst_PROGRAMS += setbacklight
 setbacklight_SOURCES =				\
