@@ -182,7 +182,7 @@ importer.isEligibleEntry = function(volumeInfoProvider, entry) {
 importer.isMediaDirectory = function(entry, volumeInfoProvider) {
   if (!entry || !entry.isDirectory || !entry.fullPath)
     return false;
-  var splitPath = importer.splitPath_(entry);
+  var splitPath = importer.splitPath_(/** @type {Entry} */(entry));
   if (importer.isEligiblePath_(splitPath))
     return true;
 
