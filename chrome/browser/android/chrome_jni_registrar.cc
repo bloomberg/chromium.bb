@@ -37,6 +37,7 @@
 #include "chrome/browser/android/metrics/uma_bridge.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
+#include "chrome/browser/android/metrics/variations_session.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/omnibox/answers_image_bridge.h"
@@ -248,6 +249,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},
+    {"VariationsSession", chrome::android::RegisterVariationsSession},
     {"WarmupManager", RegisterWarmupManager},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
