@@ -33,13 +33,14 @@
 
 #include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class MemoryInfo final : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
+class CORE_EXPORT MemoryInfo final : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MemoryInfo> create()

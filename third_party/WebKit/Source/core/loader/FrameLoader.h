@@ -32,6 +32,7 @@
 #ifndef FrameLoader_h
 #define FrameLoader_h
 
+#include "core/CoreExport.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
@@ -61,7 +62,7 @@ struct FrameLoadRequest;
 
 bool isBackForwardLoadType(FrameLoadType);
 
-class FrameLoader final {
+class CORE_EXPORT FrameLoader final {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
     DISALLOW_ALLOCATION();
 public:

@@ -32,6 +32,7 @@
 #define FileError_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMError.h"
 #include "platform/heap/Handle.h"
 
@@ -39,7 +40,7 @@ namespace blink {
 
 class ExceptionState;
 
-class FileError final : public DOMError {
+class CORE_EXPORT FileError final : public DOMError {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {

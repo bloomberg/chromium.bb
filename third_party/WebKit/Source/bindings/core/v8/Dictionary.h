@@ -73,7 +73,7 @@ public:
 
     v8::Handle<v8::Value> v8Value() const { return m_options; }
 
-    class ConversionContext {
+    class CORE_EXPORT ConversionContext {
     public:
         explicit ConversionContext(ExceptionState& exceptionState)
             : m_exceptionState(exceptionState)

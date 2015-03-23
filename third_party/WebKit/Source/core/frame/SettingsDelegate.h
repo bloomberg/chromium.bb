@@ -31,6 +31,7 @@
 #ifndef SettingsDelegate_h
 #define SettingsDelegate_h
 
+#include "core/CoreExport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -38,7 +39,7 @@ namespace blink {
 
 class Settings;
 
-class SettingsDelegate {
+class CORE_EXPORT SettingsDelegate {
 public:
     explicit SettingsDelegate(PassOwnPtr<Settings>);
     virtual ~SettingsDelegate();

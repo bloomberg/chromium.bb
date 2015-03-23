@@ -26,6 +26,7 @@
 #ifndef File_h
 #define File_h
 
+#include "core/CoreExport.h"
 #include "core/fileapi/Blob.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -38,7 +39,7 @@ class ExecutionContext;
 class FileMetadata;
 class KURL;
 
-class File final : public Blob {
+class CORE_EXPORT File final : public Blob {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // AllContentTypes should only be used when the full path/name are trusted; otherwise, it could

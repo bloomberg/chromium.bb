@@ -6,11 +6,12 @@
 #define DOMRect_h
 
 #include "bindings/core/v8/Dictionary.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMRectReadOnly.h"
 
 namespace blink {
 
-class DOMRect final : public DOMRectReadOnly {
+class CORE_EXPORT DOMRect final : public DOMRectReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMRect* create(double x = 0, double y = 0, double width = 0, double height = 0);

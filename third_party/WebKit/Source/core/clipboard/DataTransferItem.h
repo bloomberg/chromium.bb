@@ -32,6 +32,7 @@
 #define DataTransferItem_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -45,9 +46,10 @@ class DataTransfer;
 class StringCallback;
 class ExecutionContext;
 
-class DataTransferItem final : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
+class CORE_EXPORT DataTransferItem final : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
     DEFINE_WRAPPERTYPEINFO();
+    WTF_MAKE_NONCOPYABLE(DataTransferItem);
 public:
     static PassRefPtrWillBeRawPtr<DataTransferItem> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObjectItem>);
 

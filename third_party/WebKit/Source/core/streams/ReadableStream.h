@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -24,7 +25,7 @@ class ExceptionState;
 class ReadableStreamReader;
 class UnderlyingSource;
 
-class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStream);
 public:

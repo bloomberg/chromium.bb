@@ -26,6 +26,7 @@
 #ifndef ProgressTracker_h
 #define ProgressTracker_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
@@ -42,7 +43,7 @@ struct ProgressItem;
 // FIXME: This is only used on Android. Android is the only Chrome
 // browser which shows a progress bar during loading.
 // We should find a better way for Android to get this data and remove this!
-class ProgressTracker final : public NoBaseWillBeGarbageCollectedFinalized<ProgressTracker> {
+class CORE_EXPORT ProgressTracker final : public NoBaseWillBeGarbageCollectedFinalized<ProgressTracker> {
     WTF_MAKE_NONCOPYABLE(ProgressTracker); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<ProgressTracker> create(LocalFrame*);

@@ -27,6 +27,7 @@
 #ifndef WorkerThread_h
 #define WorkerThread_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -57,7 +58,7 @@ enum WorkerThreadStartMode {
     PauseWorkerGlobalScopeOnStart
 };
 
-class WorkerThread : public RefCounted<WorkerThread> {
+class CORE_EXPORT WorkerThread : public RefCounted<WorkerThread> {
 public:
     virtual ~WorkerThread();
 

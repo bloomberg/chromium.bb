@@ -32,6 +32,7 @@
 #define ExceptionStatePlaceholder_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/CoreExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -55,7 +56,7 @@ public:
 
 #if ENABLE(ASSERT)
 
-class NoExceptionStateAssertionChecker final : public ExceptionState {
+class CORE_EXPORT NoExceptionStateAssertionChecker final : public ExceptionState {
 public:
     NoExceptionStateAssertionChecker(const char* file, int line);
     ExceptionState& returnThis() { return *this; }

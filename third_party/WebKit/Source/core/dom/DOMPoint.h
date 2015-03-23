@@ -5,13 +5,14 @@
 #ifndef DOMPoint_h
 #define DOMPoint_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DOMPointReadOnly.h"
 
 namespace blink {
 
 class DOMPointInit;
 
-class DOMPoint final : public DOMPointReadOnly {
+class CORE_EXPORT DOMPoint final : public DOMPointReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMPoint* create(const DOMPointInit&);

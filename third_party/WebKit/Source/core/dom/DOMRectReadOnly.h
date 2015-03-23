@@ -6,11 +6,12 @@
 #define DOMRectReadOnly_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappable {
+class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMRectReadOnly* create(double x, double y, double width, double height);

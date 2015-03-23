@@ -31,6 +31,7 @@
 #ifndef FrameHost_h
 #define FrameHost_h
 
+#include "core/CoreExport.h"
 #include "core/frame/PinchViewport.h"
 #include "core/frame/TopControls.h"
 #include "platform/heap/Handle.h"
@@ -59,7 +60,7 @@ class Visitor;
 // browser-level concept and Blink core/ only knows about its LocalFrame (and FrameHost).
 // Separating Page from the rest of core/ through this indirection
 // allows us to slowly refactor Page without breaking the rest of core.
-class FrameHost final : public NoBaseWillBeGarbageCollectedFinalized<FrameHost> {
+class CORE_EXPORT FrameHost final : public NoBaseWillBeGarbageCollectedFinalized<FrameHost> {
     WTF_MAKE_NONCOPYABLE(FrameHost); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FrameHost> create(Page&);

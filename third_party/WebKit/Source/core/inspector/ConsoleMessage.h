@@ -6,6 +6,7 @@
 #define ConsoleMessage_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -22,7 +23,7 @@ class ScriptCallStack;
 class ScriptState;
 class WorkerGlobalScopeProxy;
 
-class ConsoleMessage final: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
+class CORE_EXPORT ConsoleMessage final: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
 public:
     static PassRefPtrWillBeRawPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
     {

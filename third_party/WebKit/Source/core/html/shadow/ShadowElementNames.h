@@ -31,6 +31,7 @@
 #ifndef ShadowElementNames_h
 #define ShadowElementNames_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -41,14 +42,14 @@ const AtomicString& detailsContent();
 const AtomicString& detailsSummary();
 const AtomicString& detailsMarker();
 const AtomicString& dateTimeEdit();
-const AtomicString& spinButton();
+CORE_EXPORT const AtomicString& spinButton();
 const AtomicString& clearButton();
 const AtomicString& editingViewPort();
 const AtomicString& innerEditor();
 const AtomicString& pickerIndicator();
 const AtomicString& placeholder();
 const AtomicString& searchDecoration();
-const AtomicString& sliderThumb();
+CORE_EXPORT const AtomicString& sliderThumb();
 const AtomicString& sliderTrack();
 const AtomicString& textFieldContainer();
 const AtomicString& optGroupLabel();

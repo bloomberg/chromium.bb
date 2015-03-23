@@ -5,13 +5,14 @@
 #ifndef FetchUtils_h
 #define FetchUtils_h
 
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class HTTPHeaderMap;
 
-class FetchUtils {
+class CORE_EXPORT FetchUtils {
 public:
     static bool isSimpleMethod(const String& method);
     static bool isSimpleHeader(const AtomicString& name, const AtomicString& value);

@@ -31,9 +31,11 @@
 #ifndef UniqueIdentifier_h
 #define UniqueIdentifier_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
-unsigned long createUniqueIdentifier();
+CORE_EXPORT unsigned long createUniqueIdentifier();
 
 }
 

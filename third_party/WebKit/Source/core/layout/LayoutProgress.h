@@ -21,13 +21,14 @@
 #ifndef LayoutProgress_h
 #define LayoutProgress_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class HTMLProgressElement;
 
-class LayoutProgress final : public LayoutBlockFlow {
+class CORE_EXPORT LayoutProgress final : public LayoutBlockFlow {
 public:
     explicit LayoutProgress(HTMLElement*);
     virtual ~LayoutProgress();

@@ -26,13 +26,14 @@
 #ifndef DocumentLoadTiming_h
 #define DocumentLoadTiming_h
 
+#include "core/CoreExport.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
 
 class KURL;
 
-class DocumentLoadTiming {
+class CORE_EXPORT DocumentLoadTiming {
 public:
     DocumentLoadTiming();
 

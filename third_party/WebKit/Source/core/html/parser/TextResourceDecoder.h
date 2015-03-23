@@ -23,6 +23,7 @@
 #ifndef TextResourceDecoder_h
 #define TextResourceDecoder_h
 
+#include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/TextEncoding.h"
 
@@ -30,7 +31,7 @@ namespace blink {
 
 class HTMLMetaCharsetParser;
 
-class TextResourceDecoder {
+class CORE_EXPORT TextResourceDecoder {
 public:
     enum EncodingSource {
         DefaultEncoding,

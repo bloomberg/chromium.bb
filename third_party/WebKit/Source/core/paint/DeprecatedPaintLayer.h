@@ -45,6 +45,7 @@
 #ifndef DeprecatedPaintLayer_h
 #define DeprecatedPaintLayer_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/DeprecatedPaintLayerClipper.h"
 #include "core/paint/DeprecatedPaintLayerFilterInfo.h"
@@ -92,7 +93,7 @@ private:
 // hardware acceleration (through DeprecatedPaintLayerCompositor),
 // scrolling (through DeprecatedPaintLayerScrollableArea)
 // along with some optimizations are all handled by DeprecatedPaintLayer.
-class DeprecatedPaintLayer {
+class CORE_EXPORT DeprecatedPaintLayer {
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayer);
 public:
     DeprecatedPaintLayer(LayoutBoxModelObject*, DeprecatedPaintLayerType);

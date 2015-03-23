@@ -31,6 +31,7 @@
 #ifndef PageVisibilityState_h
 #define PageVisibilityState_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -43,7 +44,7 @@ enum PageVisibilityState {
     PageVisibilityStatePrerender,
 };
 
-String pageVisibilityStateString(PageVisibilityState);
+CORE_EXPORT String pageVisibilityStateString(PageVisibilityState);
 
 } // namespace blink
 

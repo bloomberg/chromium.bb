@@ -31,9 +31,11 @@
 #ifndef Init_h
 #define Init_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
-class CoreInitializer {
+class CORE_EXPORT CoreInitializer {
 public:
     CoreInitializer() : m_isInited(false) { }
     // Should be called by clients before trying to create Frames.

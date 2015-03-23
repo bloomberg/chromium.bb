@@ -27,6 +27,7 @@
 #ifndef CrossOriginAccessControl_h
 #define CrossOriginAccessControl_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/Forward.h"
@@ -48,14 +49,14 @@ public:
     static bool handleRedirect(SecurityOrigin*, ResourceRequest&, const ResourceResponse&, StoredCredentials, ResourceLoaderOptions&, String&);
 };
 
-bool isOnAccessControlResponseHeaderWhitelist(const String&);
+CORE_EXPORT bool isOnAccessControlResponseHeaderWhitelist(const String&);
 
 void updateRequestForAccessControl(ResourceRequest&, SecurityOrigin*, StoredCredentials);
 ResourceRequest createAccessControlPreflightRequest(const ResourceRequest&, SecurityOrigin*);
 
 bool passesAccessControlCheck(const ResourceResponse&, StoredCredentials, SecurityOrigin*, String& errorDescription);
 bool passesPreflightStatusCheck(const ResourceResponse&, String& errorDescription);
-void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet&);
+CORE_EXPORT void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet&);
 
 } // namespace blink
 

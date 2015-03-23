@@ -21,6 +21,7 @@
 #ifndef QualifiedName_h
 #define QualifiedName_h
 
+#include "core/CoreExport.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/HashTraits.h"
 #include "wtf/RefCounted.h"
@@ -41,7 +42,7 @@ struct QualifiedNameData {
     bool m_isStatic;
 };
 
-class QualifiedName {
+class CORE_EXPORT QualifiedName {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {

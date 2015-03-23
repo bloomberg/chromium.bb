@@ -31,6 +31,7 @@
 #ifndef DataObjectItem_h
 #define DataObjectItem_h
 
+#include "core/CoreExport.h"
 #include "core/fileapi/File.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
@@ -43,7 +44,7 @@ namespace blink {
 
 class Blob;
 
-class DataObjectItem : public RefCountedWillBeGarbageCollectedFinalized<DataObjectItem> {
+class CORE_EXPORT DataObjectItem : public RefCountedWillBeGarbageCollectedFinalized<DataObjectItem> {
 public:
     enum Kind {
         StringKind,

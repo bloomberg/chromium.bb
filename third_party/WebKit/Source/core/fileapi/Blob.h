@@ -32,6 +32,7 @@
 #define Blob_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/html/URLRegistry.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
@@ -45,7 +46,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
-class Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
+class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Blob* create()

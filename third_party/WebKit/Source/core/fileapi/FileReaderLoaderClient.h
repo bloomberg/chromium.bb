@@ -31,11 +31,12 @@
 #ifndef FileReaderLoaderClient_h
 #define FileReaderLoaderClient_h
 
+#include "core/CoreExport.h"
 #include "core/fileapi/FileError.h"
 
 namespace blink {
 
-class FileReaderLoaderClient {
+class CORE_EXPORT FileReaderLoaderClient {
 public:
     virtual ~FileReaderLoaderClient() {}
 

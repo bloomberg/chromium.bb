@@ -26,6 +26,7 @@
 #ifndef PageLifecycleNotifier_h
 #define PageLifecycleNotifier_h
 
+#include "core/CoreExport.h"
 #include "platform/LifecycleNotifier.h"
 
 namespace blink {
@@ -34,7 +35,7 @@ class LocalFrame;
 class Page;
 class PageLifecycleObserver;
 
-class PageLifecycleNotifier : public LifecycleNotifier<Page, PageLifecycleObserver> {
+class CORE_EXPORT PageLifecycleNotifier : public LifecycleNotifier<Page, PageLifecycleObserver> {
 public:
     void notifyPageVisibilityChanged();
     void notifyDidCommitLoad(LocalFrame*);

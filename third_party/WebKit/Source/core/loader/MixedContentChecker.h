@@ -31,6 +31,7 @@
 #ifndef MixedContentChecker_h
 #define MixedContentChecker_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
@@ -43,7 +44,7 @@ class LocalFrame;
 class KURL;
 class SecurityOrigin;
 
-class MixedContentChecker final {
+class CORE_EXPORT MixedContentChecker final {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);
     DISALLOW_ALLOCATION();
 public:

@@ -31,6 +31,7 @@
 #ifndef FileReader_h
 #define FileReader_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileError.h"
@@ -48,7 +49,7 @@ class ExceptionState;
 class ExecutionContext;
 class StringOrArrayBuffer;
 
-class FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient {
+class CORE_EXPORT FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileReader>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);

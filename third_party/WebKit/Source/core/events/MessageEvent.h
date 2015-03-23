@@ -29,6 +29,7 @@
 #define MessageEvent_h
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
@@ -47,7 +48,7 @@ struct MessageEventInit : public EventInit {
     MessagePortArray ports;
 };
 
-class MessageEvent final : public Event {
+class CORE_EXPORT MessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MessageEvent> create()

@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/streams/ReadableStream.h"
 #include "platform/heap/Handle.h"
@@ -22,7 +23,7 @@ class ScriptState;
 
 // ReadableStreamReader corresponds to the same-name class in the Streams spec
 // https://streams.spec.whatwg.org/.
-class ReadableStreamReader final : public GarbageCollectedFinalized<ReadableStreamReader>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT ReadableStreamReader final : public GarbageCollectedFinalized<ReadableStreamReader>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamReader);
 public:

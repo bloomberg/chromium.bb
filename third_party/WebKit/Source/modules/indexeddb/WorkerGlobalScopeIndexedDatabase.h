@@ -27,7 +27,9 @@
 #ifndef WorkerGlobalScopeIndexedDatabase_h
 #define WorkerGlobalScopeIndexedDatabase_h
 
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 

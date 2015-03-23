@@ -32,6 +32,7 @@
 #define WorkerThreadStartupData_h
 
 #include "bindings/core/v8/V8CacheOptions.h"
+#include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
@@ -44,7 +45,7 @@ namespace blink {
 
 class WorkerClients;
 
-class WorkerThreadStartupData final : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
+class CORE_EXPORT WorkerThreadStartupData final : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

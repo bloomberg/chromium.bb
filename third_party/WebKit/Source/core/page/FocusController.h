@@ -26,6 +26,7 @@
 #ifndef FocusController_h
 #define FocusController_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
@@ -45,7 +46,7 @@ class Node;
 class Page;
 class TreeScope;
 
-class FocusController final : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
+class CORE_EXPORT FocusController final : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
     WTF_MAKE_NONCOPYABLE(FocusController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FocusController> create(Page*);

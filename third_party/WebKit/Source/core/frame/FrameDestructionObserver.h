@@ -26,6 +26,7 @@
 #ifndef FrameDestructionObserver_h
 #define FrameDestructionObserver_h
 
+#include "core/CoreExport.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/LifecycleObserver.h"
 #include "platform/heap/Handle.h"
@@ -35,7 +36,7 @@ namespace blink {
 class LocalFrame;
 class LocalFrameLifecycleNotifier;
 
-class FrameDestructionObserver : public LifecycleObserver<LocalFrame, FrameDestructionObserver, LocalFrameLifecycleNotifier> {
+class CORE_EXPORT FrameDestructionObserver : public LifecycleObserver<LocalFrame, FrameDestructionObserver, LocalFrameLifecycleNotifier> {
 public:
     virtual void willDetachFrameHost();
     virtual void contextDestroyed()
