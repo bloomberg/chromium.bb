@@ -438,7 +438,7 @@
       # Track where uninitialized memory originates from. From fastest to
       # slowest: 0 - no tracking, 1 - track only the initial allocation site, 2
       # - track the chain of stores leading from allocation site to use site.
-      'msan_track_origins%': 1,
+      'msan_track_origins%': 2,
 
       # Enable building with UBSan (Clang's -fsanitize=undefined option).
       # -fsanitize=undefined only works with clang, but ubsan=1 implies clang=1
