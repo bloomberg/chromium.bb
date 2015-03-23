@@ -32,7 +32,7 @@ public:
     void beginScope(DisplayItemClient);
     void endScope(DisplayItemClient);
 
-    // Nust be called when a painting is finished.
+    // Must be called when a painting is finished.
     void endNewPaints() { updatePaintList(); }
 
     // Get the paint list generated after the last painting.

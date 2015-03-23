@@ -7,6 +7,7 @@
 
 #include "platform/NotImplemented.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/TraceEvent.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -174,6 +175,7 @@ void DisplayItemList::copyCachedItems(const DisplayItem& displayItem, PaintList&
 // and the average number of (Drawing|BeginSubtree)DisplayItems per client.
 void DisplayItemList::updatePaintList()
 {
+    TRACE_EVENT0("blink,benchmark", "DisplayItemList::updatePaintList");
     // These data structures are used during painting only.
 #if ENABLE(ASSERT)
     m_newDisplayItemIndicesByClient.clear();
@@ -297,6 +299,7 @@ void DisplayItemList::showDebugData() const
 
 void DisplayItemList::replay(GraphicsContext* context)
 {
+    TRACE_EVENT0("blink,benchmark", "DisplayItemList::replay");
     updatePaintList();
     for (auto& displayItem : m_paintList)
         displayItem->replay(context);
