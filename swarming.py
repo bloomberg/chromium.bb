@@ -1091,7 +1091,8 @@ def CMDquery(parser, args):
   while (
       data.get('cursor') and
       (not options.limit or len(data['items']) < options.limit)):
-    url = base_url + '?cursor=%s' % urllib.quote(data['cursor'])
+    merge_char = '&' if '?' in base_url else '?'
+    url = base_url + '%scursor=%s' % (merge_char, urllib.quote(data['cursor']))
     if options.limit:
       url += '&limit=%d' % min(CHUNK_SIZE, options.limit - len(data['items']))
     new = net.url_read_json(url)
