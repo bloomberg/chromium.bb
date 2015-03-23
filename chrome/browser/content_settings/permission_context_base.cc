@@ -125,7 +125,10 @@ void PermissionContextBase::DecidePermission(
       return;
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);
-    DCHECK(bubble_manager);
+    // TODO(mlamouri): sometimes |bubble_manager| is null. This check is meant
+    // to prevent crashes. See bug 457091.
+    if (!bubble_manager)
+      return;
     scoped_ptr<PermissionBubbleRequest> request_ptr(
         new PermissionBubbleRequestImpl(
             requesting_origin, user_gesture, permission_type_,
