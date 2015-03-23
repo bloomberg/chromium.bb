@@ -67,10 +67,10 @@ static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
     return true;
 }
 
-PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictureStream> >& tiles)
+PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictureStream>>& tiles)
 {
     ASSERT(!tiles.isEmpty());
-    Vector<RefPtr<SkPicture> > pictures;
+    Vector<RefPtr<SkPicture>> pictures;
     pictures.reserveCapacity(tiles.size());
     FloatRect unionRect;
     for (const auto& tileStream : tiles) {
@@ -96,7 +96,7 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictur
     return adoptRef(new PictureSnapshot(adoptRef(recorder.endRecordingAsPicture())));
 }
 
-PassOwnPtr<Vector<char> > PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
+PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
     SkBitmap bitmap;
@@ -108,7 +108,7 @@ PassOwnPtr<Vector<char> > PictureSnapshot::replay(unsigned fromStep, unsigned to
         canvas.resetStepCount();
         m_picture->playback(&canvas, &canvas);
     }
-    OwnPtr<Vector<char> > base64Data = adoptPtr(new Vector<char>());
+    OwnPtr<Vector<char>> base64Data = adoptPtr(new Vector<char>());
     Vector<char> encodedImage;
     if (!PNGImageEncoder::encode(bitmap, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))
         return nullptr;

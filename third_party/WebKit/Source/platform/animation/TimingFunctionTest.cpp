@@ -54,7 +54,7 @@ namespace {
 
 class TimingFunctionTest : public ::testing::Test {
 public:
-    void notEqualHelperLoop(Vector<std::pair<std::string, RefPtr<TimingFunction>> >& v)
+    void notEqualHelperLoop(Vector<std::pair<std::string, RefPtr<TimingFunction>>>& v)
     {
         for (size_t i = 0; i < v.size(); ++i) {
             for (size_t j = 0; j < v.size(); ++j) {
@@ -116,7 +116,7 @@ TEST_F(TimingFunctionTest, BaseOperatorEq)
     RefPtr<TimingFunction> stepsTiming1 = StepsTimingFunction::preset(StepsTimingFunction::End);
     RefPtr<TimingFunction> stepsTiming2 = StepsTimingFunction::create(5, StepsTimingFunction::Start);
 
-    Vector<std::pair<std::string, RefPtr<TimingFunction>> > v;
+    Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
     v.append(std::make_pair("linearTiming", linearTiming));
     v.append(std::make_pair("cubicTiming1", cubicTiming1));
     v.append(std::make_pair("cubicTiming2", cubicTiming2));
@@ -155,7 +155,7 @@ TEST_F(TimingFunctionTest, CubicOperatorEq)
     EXPECT_EQ(*cubicCustomTiming1, *cubicCustomTiming1);
     EXPECT_EQ(*cubicCustomTiming1, *cubicCustomTiming2);
 
-    Vector<std::pair<std::string, RefPtr<TimingFunction>> > v;
+    Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
     v.append(std::make_pair("cubicEaseInTiming1", cubicEaseInTiming1));
     v.append(std::make_pair("cubicEaseOutTiming1", cubicEaseOutTiming1));
     v.append(std::make_pair("cubicEaseInOutTiming1", cubicEaseInOutTiming1));
@@ -193,7 +193,7 @@ TEST_F(TimingFunctionTest, StepsOperatorEq)
     EXPECT_EQ(*StepsTimingFunction::create(7, StepsTimingFunction::Start), *stepsTimingCustom3);
     EXPECT_EQ(*StepsTimingFunction::create(7, StepsTimingFunction::End), *stepsTimingCustom4);
 
-    Vector<std::pair<std::string, RefPtr<TimingFunction>> > v;
+    Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
     v.append(std::make_pair("stepsTimingStart1", stepsTimingStart1));
     v.append(std::make_pair("stepsTimingEnd1", stepsTimingEnd1));
     v.append(std::make_pair("stepsTimingCustom1", stepsTimingCustom1));

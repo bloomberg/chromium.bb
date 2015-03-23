@@ -88,7 +88,7 @@ private:
 
     bool m_filledPrimaryPage;
     GlyphMetricsPage m_primaryPage; // We optimize for the page that contains glyph indices 0-255.
-    OwnPtr<HashMap<int, OwnPtr<GlyphMetricsPage>> > m_pages;
+    OwnPtr<HashMap<int, OwnPtr<GlyphMetricsPage>>> m_pages;
 };
 
 template<> inline float GlyphMetricsMap<float>::unknownMetrics()

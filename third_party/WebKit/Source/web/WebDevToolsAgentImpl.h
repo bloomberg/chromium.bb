@@ -154,7 +154,7 @@ private:
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;
 
-    typedef Vector<RefPtr<JSONObject> > NotificationQueue;
+    typedef Vector<RefPtr<JSONObject>> NotificationQueue;
     NotificationQueue m_notificationQueue;
     String m_stateCookie;
 

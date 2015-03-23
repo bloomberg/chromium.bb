@@ -233,7 +233,7 @@ static bool invalidateFontCache = false;
 
 WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient>>& fontCacheClients()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient>> >, clients, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient>>())));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient>>>, clients, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient>>())));
     invalidateFontCache = true;
     return *clients;
 }

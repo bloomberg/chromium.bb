@@ -520,7 +520,7 @@ private:
         while (!done()) {
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             {
-                Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>> > weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
+                Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>> weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
                 PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper>> weakMap2;
 
                 for (int i = 0; i < numberOfAllocations; i++) {
@@ -1979,7 +1979,7 @@ TEST(HeapTest, HashMapOfMembers)
             Member<IntWrapper>,
             DefaultHash<Member<IntWrapper>>::Hash,
             HashTraits<Member<IntWrapper>>,
-            HashTraits<Member<IntWrapper>> > HeapObjectIdentityMap;
+            HashTraits<Member<IntWrapper>>> HeapObjectIdentityMap;
 
         Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
 
@@ -2849,9 +2849,9 @@ void orderedSetHelper(bool strong)
 
 TEST(HeapTest, HeapWeakLinkedHashSet)
 {
-    orderedSetHelper<HeapLinkedHashSet<Member<IntWrapper>> >(true);
-    orderedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper>> >(false);
-    orderedSetHelper<HeapListHashSet<Member<IntWrapper>> >(true);
+    orderedSetHelper<HeapLinkedHashSet<Member<IntWrapper>>>(true);
+    orderedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper>>>(false);
+    orderedSetHelper<HeapListHashSet<Member<IntWrapper>>>(true);
 }
 
 class ThingWithDestructor {
@@ -3895,9 +3895,9 @@ void rawPtrInHashHelper()
 
 TEST(HeapTest, RawPtrInHash)
 {
-    rawPtrInHashHelper<HashSet<RawPtr<int>> >();
-    rawPtrInHashHelper<ListHashSet<RawPtr<int>> >();
-    rawPtrInHashHelper<LinkedHashSet<RawPtr<int>> >();
+    rawPtrInHashHelper<HashSet<RawPtr<int>>>();
+    rawPtrInHashHelper<ListHashSet<RawPtr<int>>>();
+    rawPtrInHashHelper<LinkedHashSet<RawPtr<int>>>();
 }
 
 TEST(HeapTest, HeapTerminatedArray)
@@ -4087,19 +4087,19 @@ TEST(HeapTest, DestructorsCalled)
     map.clear();
     EXPECT_TRUE(SimpleClassWithDestructor::s_wasDestructed);
 
-    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(false);
-    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(false);
-    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(false);
-    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(true);
-    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(true);
-    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(true);
+    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(false);
+    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(false);
+    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(false);
+    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(true);
+    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(true);
+    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(true);
 
-    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(false);
-    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(false);
-    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(false);
-    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(true);
-    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(true);
-    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(true);
+    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(false);
+    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(false);
+    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(false);
+    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(true);
+    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(true);
+    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(true);
 }
 
 class MixinA : public GarbageCollectedMixin {
@@ -4444,7 +4444,7 @@ static void addElementsToWeakMap(HeapHashMap<int, WeakMember<IntWrapper>>* map)
 // If it doesn't assert a concurrent modification to the map, then it's passing.
 TEST(HeapTest, RegressNullIsStrongified)
 {
-    Persistent<HeapHashMap<int, WeakMember<IntWrapper>> > map = new HeapHashMap<int, WeakMember<IntWrapper>>();
+    Persistent<HeapHashMap<int, WeakMember<IntWrapper>>> map = new HeapHashMap<int, WeakMember<IntWrapper>>();
     addElementsToWeakMap(map);
     HeapHashMap<int, WeakMember<IntWrapper>>::AddResult result = map->add(800, nullptr);
     Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
@@ -4580,7 +4580,7 @@ TEST(HeapTest, EphemeronsInEphemerons)
             Persistent<IntWrapper> deep = IntWrapper::create(42);
             Persistent<IntWrapper> home = IntWrapper::create(103);
             Persistent<IntWrapper> composite = IntWrapper::create(91);
-            Persistent<HeapVector<Member<IntWrapper>> > keepAlive = new HeapVector<Member<IntWrapper>>();
+            Persistent<HeapVector<Member<IntWrapper>>> keepAlive = new HeapVector<Member<IntWrapper>>();
             for (int i = 0; i < 10000; i++) {
                 IntWrapper* value = IntWrapper::create(i);
                 keepAlive->append(value);
@@ -4978,7 +4978,7 @@ private:
         Persistent<IntWrapper> wrapper4 = IntWrapper::create(32);
         Persistent<IntWrapper> wrapper5 = IntWrapper::create(32);
         Persistent<IntWrapper> wrapper6 = IntWrapper::create(32);
-        Persistent<HeapHashSet<WeakMember<IntWrapper>> > weakCollection = new HeapHashSet<WeakMember<IntWrapper>>;
+        Persistent<HeapHashSet<WeakMember<IntWrapper>>> weakCollection = new HeapHashSet<WeakMember<IntWrapper>>;
         weakCollection->add(wrapper1);
         weakCollection->add(wrapper2);
         weakCollection->add(wrapper3);
@@ -5010,7 +5010,7 @@ private:
         ThreadState::attach();
 
         {
-            Persistent<HeapHashSet<WeakMember<IntWrapper>> > collection = allocateCollection();
+            Persistent<HeapHashSet<WeakMember<IntWrapper>>> collection = allocateCollection();
             {
                 // Prevent weak processing with an iterator and GC.
                 HeapHashSet<WeakMember<IntWrapper>>::iterator it = collection->begin();
@@ -5250,7 +5250,7 @@ TEST(HeapTest, TraceIfNeeded)
     }
 
     {
-        TraceIfNeededTester<HeapVector<Member<SimpleObject>> >* m_vec = TraceIfNeededTester<HeapVector<Member<SimpleObject>> >::create();
+        TraceIfNeededTester<HeapVector<Member<SimpleObject>>>* m_vec = TraceIfNeededTester<HeapVector<Member<SimpleObject>>>::create();
         m_vec->obj().append(SimpleObject::create());
         visitor.reset();
         m_vec->trace(&visitor);

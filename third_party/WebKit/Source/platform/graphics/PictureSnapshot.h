@@ -45,18 +45,18 @@ class FloatRect;
 class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
 WTF_MAKE_NONCOPYABLE(PictureSnapshot);
 public:
-    typedef Vector<Vector<double> > Timings;
+    typedef Vector<Vector<double>> Timings;
 
     struct TilePictureStream : RefCounted<TilePictureStream> {
         FloatPoint layerOffset;
         Vector<char> data;
     };
 
-    static PassRefPtr<PictureSnapshot> load(const Vector<RefPtr<TilePictureStream> >&);
+    static PassRefPtr<PictureSnapshot> load(const Vector<RefPtr<TilePictureStream>>&);
 
     PictureSnapshot(PassRefPtr<SkPicture>);
 
-    PassOwnPtr<Vector<char> > replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
+    PassOwnPtr<Vector<char>> replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
     PassRefPtr<JSONArray> snapshotCommandLog() const;
 

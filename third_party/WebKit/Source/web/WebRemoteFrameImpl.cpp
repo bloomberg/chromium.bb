@@ -717,7 +717,7 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client)
 {
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));
-    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner> >::AddResult result =
+    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
         m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(child, static_cast<SandboxFlags>(sandboxFlags)));
     appendChild(child);
     // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
