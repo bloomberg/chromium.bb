@@ -172,8 +172,6 @@ class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
         browser_process, 'IOThread', filter_text , results)
 
 
-# TODO(simonhatch): Temporarily disabling (http://crbug.com/433943)
-@benchmark.Disabled
 class ServiceWorkerPerfTest(benchmark.Benchmark):
   """Performance test on public applications using ServiceWorker"""
   test = _ServiceWorkerMeasurement
