@@ -2316,11 +2316,6 @@
             'ipc_protobuf_message_test_proto',
           ],
           'conditions': [
-            ['chromeos == 1', {
-              'sources!': [
-                'browser/safe_browsing/download_protection_service_unittest.cc',
-              ],
-            }],
             ['OS == "android"', {
               'dependencies!': [
                 'ipc_protobuf_message_test_proto',
