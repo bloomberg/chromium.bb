@@ -70,7 +70,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnStartupPing();
 #if defined(FULL_SAFE_BROWSING)
   void OnAnalyzeZipFileForDownloadProtection(
-      const IPC::PlatformFileForTransit& zip_file);
+      const IPC::PlatformFileForTransit& zip_file,
+      const IPC::PlatformFileForTransit& temp_file);
 #endif
 #if defined(ENABLE_EXTENSIONS)
   void OnParseMediaMetadata(const std::string& mime_type,

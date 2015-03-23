@@ -9,19 +9,16 @@
 #define CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_H_
 
 #include "base/files/file.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
 namespace zip_analyzer {
 
-struct Results {
-  bool success;
-  bool has_executable;
-  bool has_archive;
+struct Results;
 
-  Results() : success(false), has_executable(false), has_archive(false) {}
-};
-
-void AnalyzeZipFile(base::File zip_file, Results* results);
+void AnalyzeZipFile(base::File zip_file,
+                    base::File temp_file,
+                    Results* results);
 
 }  // namespace zip_analyzer
 }  // namespace safe_browsing

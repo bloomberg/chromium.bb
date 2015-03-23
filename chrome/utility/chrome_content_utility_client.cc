@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
+#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "content/public/child/image_decoder_utils.h"
@@ -372,10 +373,12 @@ void ChromeContentUtilityClient::OnStartupPing() {
 
 #if defined(FULL_SAFE_BROWSING)
 void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
-    const IPC::PlatformFileForTransit& zip_file) {
+    const IPC::PlatformFileForTransit& zip_file,
+    const IPC::PlatformFileForTransit& temp_file) {
   safe_browsing::zip_analyzer::Results results;
   safe_browsing::zip_analyzer::AnalyzeZipFile(
-      IPC::PlatformFileForTransitToFile(zip_file), &results);
+      IPC::PlatformFileForTransitToFile(zip_file),
+      IPC::PlatformFileForTransitToFile(temp_file), &results);
   Send(new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
       results));
   ReleaseProcessIfNeeded();

@@ -9,6 +9,7 @@
 #define CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {
@@ -42,6 +43,13 @@ class BinaryFeatureExtractor
   // |image_headers| is populated with any information.
   virtual bool ExtractImageHeaders(
       const base::FilePath& file_path,
+      ExtractHeadersOption options,
+      ClientDownloadRequest_ImageHeaders* image_headers);
+
+  // As above, but works with an already-opened file. BinaryFeatureExtractor
+  // takes ownership of |file| and closes it when done.
+  virtual bool ExtractImageHeadersFromFile(
+      base::File file,
       ExtractHeadersOption options,
       ClientDownloadRequest_ImageHeaders* image_headers);
 

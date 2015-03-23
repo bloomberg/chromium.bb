@@ -42,6 +42,10 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
  private:
   ~SandboxedZipAnalyzer() override;
 
+  // Posts a fire-and-forget task to close the temporary file in the blocking
+  // pool.
+  void CloseTemporaryFile();
+
   // Creates the sandboxed utility process and tells it to start analysis.
   // Runs on a worker thread.
   void AnalyzeInSandbox();
@@ -49,6 +53,9 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
   // content::UtilityProcessHostClient implementation.
   // These notifications run on the IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
+
+  // Launches the utility process.  Must run on the IO thread.
+  void StartProcessOnIOThread();
 
   // Notification that the utility process is running, and we can now get its
   // process handle.
@@ -58,13 +65,14 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
   // with the given results.  Runs on the IO thread.
   void OnAnalyzeZipFileFinished(const zip_analyzer::Results& results);
 
-  // Launches the utility process.  Must run on the IO thread.
-  void StartProcessOnIOThread();
-
   const base::FilePath zip_file_name_;
   // Once we have opened the file, we store the handle so that we can use it
   // once the utility process has launched.
   base::File zip_file_;
+
+  // A temporary file to be used by the utility process for extracting files
+  // from the archive.
+  base::File temp_file_;
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
   const ResultCallback callback_;
   // Initialized on the UI thread, but only accessed on the IO thread.

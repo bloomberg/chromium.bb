@@ -1041,6 +1041,7 @@
       'browser/safe_browsing/safe_browsing_store_file_unittest.cc',
       'browser/safe_browsing/safe_browsing_store_unittest.cc',
       'browser/safe_browsing/safe_browsing_util_unittest.cc',
+      'browser/safe_browsing/sandboxed_zip_analyzer_unittest.cc',
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_win_unittest.cc',

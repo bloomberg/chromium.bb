@@ -6,11 +6,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/safe_browsing/zip_analyzer.h"
+#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
@@ -45,9 +46,25 @@ void SandboxedZipAnalyzer::Start() {
 SandboxedZipAnalyzer::~SandboxedZipAnalyzer() {
   // If we're using UtilityProcessHost, we may not be destroyed on
   // the UI or IO thread.
+  CloseTemporaryFile();
+}
+
+void SandboxedZipAnalyzer::CloseTemporaryFile() {
+  if (!temp_file_.IsValid())
+    return;
+  // Close the temporary file in the blocking pool since doing so will delete
+  // the file.
+  if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+          FROM_HERE, base::Bind(&base::File::Close,
+                                base::Owned(new base::File(temp_file_.Pass()))),
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
+    NOTREACHED();
+  }
 }
 
 void SandboxedZipAnalyzer::AnalyzeInSandbox() {
+  // This zip file will be closed on the IO thread once it has been handed
+  // off to the child process.
   zip_file_.Initialize(zip_file_name_,
                        base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!zip_file_.IsValid()) {
@@ -61,11 +78,22 @@ void SandboxedZipAnalyzer::AnalyzeInSandbox() {
     return;
   }
 
+  // This temp file will be closed in the blocking pool when results from the
+  // analyzer return.
+  base::FilePath temp_path;
+  if (base::CreateTemporaryFile(&temp_path)) {
+    temp_file_.Initialize(temp_path, (base::File::FLAG_CREATE_ALWAYS |
+                                      base::File::FLAG_READ |
+                                      base::File::FLAG_WRITE |
+                                      base::File::FLAG_TEMPORARY |
+                                      base::File::FLAG_DELETE_ON_CLOSE));
+  }
+  DVLOG_IF(1, !temp_file_.IsValid())
+      << "Could not open temporary output file: " << temp_path.value();
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SandboxedZipAnalyzer::StartProcessOnIOThread, this));
-  // The file will be closed on the IO thread once it has been handed
-  // off to the child process.
 }
 
 bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
@@ -79,16 +107,6 @@ bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void SandboxedZipAnalyzer::OnAnalyzeZipFileFinished(
-    const zip_analyzer::Results& results) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (callback_called_)
-    return;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback_, results));
-  callback_called_ = true;
 }
 
 void SandboxedZipAnalyzer::StartProcessOnIOThread() {
@@ -114,7 +132,21 @@ void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
   }
   utility_process_host_->Send(
       new ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection(
-          IPC::TakeFileHandleForProcess(zip_file_.Pass(), utility_process)));
+          IPC::TakeFileHandleForProcess(zip_file_.Pass(), utility_process),
+          IPC::GetFileHandleForProcess(temp_file_.GetPlatformFile(),
+                                       utility_process,
+                                       false /* !close_source_handle */)));
+}
+
+void SandboxedZipAnalyzer::OnAnalyzeZipFileFinished(
+    const zip_analyzer::Results& results) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (callback_called_)
+    return;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback_, results));
+  callback_called_ = true;
+  CloseTemporaryFile();
 }
 
 }  // namespace safe_browsing

@@ -24,4 +24,11 @@ bool BinaryFeatureExtractor::ExtractImageHeaders(
   return false;
 }
 
+bool BinaryFeatureExtractor::ExtractImageHeadersFromFile(
+    base::File file,
+    ExtractHeadersOption options,
+    ClientDownloadRequest_ImageHeaders* image_headers) {
+  return false;
+}
+
 }  // namespace safe_browsing

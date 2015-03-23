@@ -31,7 +31,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
-#include "chrome/common/safe_browsing/zip_analyzer.h"
+#include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/history_service.h"
@@ -587,6 +587,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     if (results.success) {
       zipped_executable_ = results.has_executable;
+      archived_binary_.CopyFrom(results.archived_binary);
       DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
                << ", has_executable=" << results.has_executable
                << " has_archive=" << results.has_archive;
@@ -773,7 +774,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
       FinishRequest(UNKNOWN, REASON_INVALID_REQUEST_PROTO);
       return;
     }
-
+    if (zipped_executable_)
+      request.mutable_archived_binary()->Swap(&archived_binary_);
     service_->client_download_request_callbacks_.Notify(item_, &request);
 
     DVLOG(2) << "Sending a request for URL: "
@@ -918,6 +920,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   bool zipped_executable_;
   ClientDownloadRequest_SignatureInfo signature_info_;
   scoped_ptr<ClientDownloadRequest_ImageHeaders> image_headers_;
+  google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>
+      archived_binary_;
   CheckDownloadCallback callback_;
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;

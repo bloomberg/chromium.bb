@@ -223,6 +223,8 @@
       'common/safe_browsing/protobuf_message_write_macros.h',
       'common/safe_browsing/zip_analyzer.cc',
       'common/safe_browsing/zip_analyzer.h',
+      'common/safe_browsing/zip_analyzer_results.cc',
+      'common/safe_browsing/zip_analyzer_results.h',
     ],
     'chrome_common_importer_sources': [
       'common/importer/firefox_importer_utils.cc',
