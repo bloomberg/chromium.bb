@@ -1109,8 +1109,11 @@ def CMDquery(parser, args):
     with open(options.json, 'w') as f:
       json.dump(data, f)
   else:
-    json.dump(data, sys.stdout, indent=2, sort_keys=True)
-    sys.stdout.write('\n')
+    try:
+      json.dump(data, sys.stdout, indent=2, sort_keys=True)
+      sys.stdout.write('\n')
+    except IOError:
+      pass
   return 0
 
 
