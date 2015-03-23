@@ -170,9 +170,10 @@
     {
       "name": "spideroak",
       "static_spki_hashes": [
-        "RapidSSL",
-        "SpiderOak1",
-        "SpiderOak2"
+        "GeoTrustGlobal",
+        "DigiCertEVRoot",
+        "SpiderOak2",
+        "SpiderOak3"
       ]
     }
   ],

@@ -517,13 +517,13 @@ static const char kSPKIHash_FacebookBackup[] =
     "\xd7\x0c\x3c\x13\x40\x18\xb1\x1d\xa8\x5f"
     "\x99\x67\x76\x4d\xa1\xc2\x9d\x94\xa2\xc9";
 
-static const char kSPKIHash_SpiderOak1[] =
-    "\x50\xfa\xef\x15\x44\xab\xa7\xd6\x9a\x97"
-    "\x9b\xfa\x46\x7d\x09\xbf\x76\x09\xff\x05";
-
 static const char kSPKIHash_SpiderOak2[] =
     "\x0f\x47\xd2\xfe\x1a\xae\x03\xa4\x29\xae"
     "\x5b\x9c\x8b\x23\xb5\x86\x51\x54\x03\x18";
+
+static const char kSPKIHash_SpiderOak3[] =
+    "\x97\x92\x68\x21\x7b\xf8\x97\x3b\x59\xf8"
+    "\x2e\x93\x25\x68\x31\x64\x21\xd0\xcd\x2e";
 
 // The following is static data describing the hosts that are hardcoded with
 // certificate pins or HSTS information.
@@ -650,9 +650,10 @@ static const char* const kFacebookAcceptableCerts[] = {
   NULL,
 };
 static const char* const kSpideroakAcceptableCerts[] = {
-  kSPKIHash_RapidSSL,
-  kSPKIHash_SpiderOak1,
+  kSPKIHash_GeoTrustGlobal,
+  kSPKIHash_DigiCertEVRoot,
   kSPKIHash_SpiderOak2,
+  kSPKIHash_SpiderOak3,
   NULL,
 };
 
