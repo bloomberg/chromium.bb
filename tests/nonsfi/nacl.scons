@@ -127,3 +127,12 @@ if (env.Bit('build_arm') and env.UsingEmulator() and
 node = env.CommandSelLdrTestNacl('clone_test.out', nexe, osenv=osenv)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_clone_test')
+
+
+nexe = env.ComponentProgram('rlimit_test',
+                            'rlimit_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('rlimit_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_rlimit_test')

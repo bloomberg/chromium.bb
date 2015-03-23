@@ -39,6 +39,7 @@ int syscall(int number, ...);
 # define __NR_pipe               42
 # define __NR_ioctl              54
 # define __NR_dup2               63
+# define __NR_setrlimit          75
 # define __NR_gettimeofday       78
 # define __NR_symlink            83
 # define __NR_readlink           85
@@ -57,6 +58,7 @@ int syscall(int number, ...);
 # define __NR_pread64            180
 # define __NR_pwrite64           181
 # define __NR_getcwd             183
+# define __NR_ugetrlimit         191
 # define __NR_mmap2              192
 # define __NR_truncate64         193
 # define __NR_stat64             195
@@ -97,6 +99,7 @@ int syscall(int number, ...);
 # define __NR_pipe               42
 # define __NR_ioctl              54
 # define __NR_dup2               63
+# define __NR_setrlimit          75
 # define __NR_gettimeofday       78
 # define __NR_symlink            83
 # define __NR_readlink           85
@@ -114,6 +117,7 @@ int syscall(int number, ...);
 # define __NR_pread64            180
 # define __NR_pwrite64           181
 # define __NR_getcwd             183
+# define __NR_ugetrlimit         191
 # define __NR_mmap2              192
 # define __NR_truncate64         193
 # define __NR_stat64             195

@@ -30,6 +30,7 @@
 #include "native_client/src/public/linux_syscalls/poll.h"
 #include "native_client/src/public/linux_syscalls/sched.h"
 #include "native_client/src/public/linux_syscalls/sys/prctl.h"
+#include "native_client/src/public/linux_syscalls/sys/resource.h"
 #include "native_client/src/public/linux_syscalls/sys/socket.h"
 #include "native_client/src/public/linux_syscalls/sys/syscall.h"
 #include "native_client/src/untrusted/nacl/getcwd.h"
@@ -585,6 +586,16 @@ pid_t waitpid(pid_t pid, int *status, int options) {
   return errno_value_call(
       linux_syscall4(__NR_wait4, pid, (uintptr_t) status, options,
                      0  /* rusage */));
+}
+
+int getrlimit(int resource, struct rlimit *rlim) {
+  return errno_value_call(
+      linux_syscall2(__NR_ugetrlimit, resource, (uintptr_t) rlim));
+}
+
+int setrlimit(int resource, const struct rlimit *rlim) {
+  return errno_value_call(
+      linux_syscall2(__NR_setrlimit, resource, (uintptr_t) rlim));
 }
 
 int linux_getdents64(int fd, struct linux_abi_dirent64 *dirp, int count) {
