@@ -42,6 +42,7 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
@@ -156,6 +157,12 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
+
+  // Contains time of last successful call to AudioUnitRender().
+  // Initialized first time in Start() and then updated for each valid
+  // audio buffer. Used to detect long error sequences and to take actions
+  // if length of error sequence is above a certain limit.
+  base::TimeTicks last_success_time_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };

@@ -19,6 +19,10 @@ namespace media {
 // Number of blocks of buffers used in the |fifo_|.
 const int kNumberOfBlocksBufferInFifo = 2;
 
+// Max length of sequence of TooManyFramesToProcessError errors.
+// The stream will be stopped as soon as this time limit is passed.
+const int kMaxErrorTimeoutInSeconds = 1;
+
 static std::ostream& operator<<(std::ostream& os,
                                 const AudioStreamBasicDescription& format) {
   os << "sample rate       : " << format.mSampleRate << std::endl
@@ -241,6 +245,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   }
 
   sink_ = callback;
+  last_success_time_ = base::TimeTicks::Now();
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
   if (result == noErr) {
@@ -497,15 +502,28 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
     OSSTATUS_DLOG(ERROR, result) << "AudioUnitRender() failed ";
     if (result != kAudioUnitErr_TooManyFramesToProcess) {
-      // We avoid stopping the stream for kAudioUnitErr_TooManyFramesToProcess
+      audio_input->HandleError(result);
+    } else {
+      DCHECK(!audio_input->last_success_time_.is_null());
+      // We delay stopping the stream for kAudioUnitErr_TooManyFramesToProcess
       // since it has been observed that some USB headsets can cause this error
       // but only for a few initial frames at startup and then then the stream
-      // returns to a stable state again.
-      // See b/19524368 for details.
-      audio_input->HandleError(result);
+      // returns to a stable state again. See b/19524368 for details.
+      // Instead, we measure time since last valid audio frame and call
+      // HandleError() only if a too long error sequence is detected. We do
+      // this to avoid ending up in a non recoverable bad core audio state.
+      base::TimeDelta time_since_last_success =
+          base::TimeTicks::Now() - audio_input->last_success_time_;
+      if ((time_since_last_success >
+           base::TimeDelta::FromSeconds(kMaxErrorTimeoutInSeconds))) {
+        DLOG(ERROR) << "Too long sequence of TooManyFramesToProcess errors!";
+        audio_input->HandleError(result);
+      }
     }
     return result;
   }
+  // Update time of successful call to AudioUnitRender().
+  audio_input->last_success_time_ = base::TimeTicks::Now();
 
   // Deliver recorded data to the consumer as a callback.
   return audio_input->Provide(number_of_frames,
