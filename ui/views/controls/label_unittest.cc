@@ -358,6 +358,17 @@ TEST_F(LabelTest, MultilineSmallAvailableWidthSizing) {
     EXPECT_GT(label.GetHeightForWidth(i), 0);
 }
 
+// Verifies if SetAllowCharacterBreak(true) doesn't change the preferred size.
+// See crbug.com/469559
+TEST_F(LabelTest, PreferredSizeForAllowCharacterBreak) {
+  Label label(base::ASCIIToUTF16("Example"));
+  gfx::Size preferred_size = label.GetPreferredSize();
+
+  label.SetMultiLine(true);
+  label.SetAllowCharacterBreak(true);
+  EXPECT_EQ(preferred_size, label.GetPreferredSize());
+}
+
 TEST_F(LabelTest, MultiLineSizing) {
   Label label;
   label.SetFocusable(false);

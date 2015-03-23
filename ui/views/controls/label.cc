@@ -499,10 +499,17 @@ gfx::Rect Label::GetFocusBounds() {
 
 std::vector<base::string16> Label::GetLinesForWidth(int width) const {
   std::vector<base::string16> lines;
-  const gfx::WordWrapBehavior wrap =
-      allow_character_break_ ? gfx::WRAP_LONG_WORDS : gfx::TRUNCATE_LONG_WORDS;
-  gfx::ElideRectangleText(render_text_->GetDisplayText(), font_list(), width,
-                          std::numeric_limits<int>::max(), wrap, &lines);
+  // |width| can be 0 when getting the default text size, in that case
+  // the ideal lines (i.e. broken at newline characters) are wanted.
+  if (width <= 0) {
+    base::SplitString(render_text_->GetDisplayText(), '\n', &lines);
+  } else {
+    const gfx::WordWrapBehavior wrap = allow_character_break_
+                                           ? gfx::WRAP_LONG_WORDS
+                                           : gfx::TRUNCATE_LONG_WORDS;
+    gfx::ElideRectangleText(render_text_->GetDisplayText(), font_list(), width,
+                            std::numeric_limits<int>::max(), wrap, &lines);
+  }
   return lines;
 }
 
