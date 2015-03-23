@@ -14,6 +14,7 @@
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/common_video/interface/video_frame_buffer.h"
+#include "third_party/webrtc/common_video/rotation.h"
 
 namespace content {
 namespace {
@@ -96,7 +97,7 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
                                  base::Time::kNanosecondsPerMicrosecond;
     captured_frame_.pixel_height = 1;
     captured_frame_.pixel_width = 1;
-    captured_frame_.rotation = 0;
+    captured_frame_.rotation = webrtc::kVideoRotation_0;
     captured_frame_.data = NULL;
     captured_frame_.data_size = cricket::CapturedFrame::kUnknownDataSize;
     captured_frame_.fourcc = static_cast<uint32>(cricket::FOURCC_ANY);

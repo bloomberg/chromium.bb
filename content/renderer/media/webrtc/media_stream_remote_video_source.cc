@@ -36,7 +36,6 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   // Implements webrtc::VideoRendererInterface used for receiving video frames
   // from the PeerConnection video track. May be called on a libjingle internal
   // thread.
-  void SetSize(int width, int height) override;
   void RenderFrame(const cricket::VideoFrame* frame) override;
 
   void DoRenderFrameOnIOThread(
@@ -64,24 +63,22 @@ MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 }
 
-void MediaStreamRemoteVideoSource::
-RemoteVideoSourceDelegate::SetSize(int width, int height) {
-}
-
-void MediaStreamRemoteVideoSource::
-RemoteVideoSourceDelegate::RenderFrame(
-    const cricket::VideoFrame* frame) {
+void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
+    const cricket::VideoFrame* incoming_frame) {
   TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::RenderFrame");
   base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
-      frame->GetElapsedTime() / rtc::kNumNanosecsPerMicrosec);
+      incoming_frame->GetElapsedTime() / rtc::kNumNanosecsPerMicrosec);
 
   scoped_refptr<media::VideoFrame> video_frame;
-  if (frame->GetNativeHandle() != NULL) {
+  if (incoming_frame->GetNativeHandle() != NULL) {
     NativeHandleImpl* handle =
-        static_cast<NativeHandleImpl*>(frame->GetNativeHandle());
+        static_cast<NativeHandleImpl*>(incoming_frame->GetNativeHandle());
     video_frame = static_cast<media::VideoFrame*>(handle->GetHandle());
     video_frame->set_timestamp(timestamp);
   } else {
+    const cricket::VideoFrame* frame =
+        incoming_frame->GetCopyWithRotationApplied();
+
     gfx::Size size(frame->GetWidth(), frame->GetHeight());
 
     // Non-square pixels are unsupported.
