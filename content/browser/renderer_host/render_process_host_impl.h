@@ -303,6 +303,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
  private:
   friend class VisitRelayingRenderProcessHost;
+  friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
 
   scoped_ptr<IPC::ChannelProxy> CreateChannelProxy(
       const std::string& channel_id);

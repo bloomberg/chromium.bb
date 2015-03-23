@@ -2088,6 +2088,10 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   child_process_launcher_.reset();
   channel_.reset();
+  while (!queued_messages_.empty()) {
+    delete queued_messages_.front();
+    queued_messages_.pop();
+  }
 
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(

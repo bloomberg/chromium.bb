@@ -76,6 +76,10 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // shutdown.
   void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
 
+  // Replaces the ChildProcessLauncher::Client for testing purposes. Returns the
+  // previous  client.
+  Client* ReplaceClientForTest(Client* client);
+
  private:
   class Context;
 

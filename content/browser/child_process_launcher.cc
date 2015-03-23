@@ -98,6 +98,12 @@ class ChildProcessLauncher::Context
 
   void SetProcessBackgrounded(bool background);
 
+  Client* ReplaceClientForTest(Client* client) {
+    Client* ret = client_;
+    client_ = client;
+    return ret;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncher::Context>;
 
@@ -621,6 +627,11 @@ void ChildProcessLauncher::SetTerminateChildOnShutdown(
     bool terminate_on_shutdown) {
   if (context_.get())
     context_->set_terminate_child_on_shutdown(terminate_on_shutdown);
+}
+
+ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
+    Client* client) {
+  return context_->ReplaceClientForTest(client);
 }
 
 }  // namespace content
