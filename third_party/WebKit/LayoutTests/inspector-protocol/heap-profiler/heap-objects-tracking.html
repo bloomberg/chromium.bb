@@ -60,10 +60,12 @@ function test()
 
     InspectorTest.eventHandler["HeapProfiler.heapStatsUpdate"] = function(messageObject)
     {
-         var params = messageObject["params"];
-         InspectorTest.log("HeapProfiler.heapStatsUpdate has params: " + !!params);
-         var statsUpdate = params.statsUpdate;
-        if (++heapStatsUpdateEventCount < 2) {
+        ++heapStatsUpdateEventCount
+        var params = messageObject["params"];
+        if (heapStatsUpdateEventCount <= 2)
+            InspectorTest.log("HeapProfiler.heapStatsUpdate has params: " + !!params);
+        var statsUpdate = params.statsUpdate;
+        if (heapStatsUpdateEventCount <= 2) {
             InspectorTest.log("HeapProfiler.heapStatsUpdate has statsUpdate: " + !!statsUpdate);
             InspectorTest.log("statsUpdate length is not zero: " + !!statsUpdate.length);
             InspectorTest.log("statsUpdate length is a multiple of three: " + !(statsUpdate.length % 3));
@@ -72,7 +74,7 @@ function test()
             InspectorTest.log("statsUpdate: total size of objects is not zero: " + !!statsUpdate[2]);
             InspectorTest.log("");
         }
-         fragments.push(statsUpdate);
+        fragments.push(statsUpdate);
     }
 
     InspectorTest.sendCommand("HeapProfiler.startTrackingHeapObjects", {}, trackingStarted);
