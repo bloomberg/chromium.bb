@@ -5,6 +5,7 @@
 body {
   -webkit-user-select: none;
   background: none transparent;
+  color: #323232;
   margin: 0;
   overflow: hidden;
   padding: 0;
@@ -47,7 +48,6 @@ a:visited {
   background: rgb(242,242,242);
   border: 1px solid transparent;
   border-radius: 2px;
-  color: #323232;
   display: inline-block;
   font-family: arial, sans-serif;
   font-size: 12px;
@@ -143,16 +143,18 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   border-radius: 0;
   cursor: pointer;
   display: block;
-  height: 90px;
+  height: 94px;
   left: 3px;
+  overflow: hidden;
   position: absolute;
   top: 31px;
   width: 148px;
 }
 
 .mv-thumb img {
-  height: 94px;
-  width: 148px;
+  height: auto;
+  min-height: 100%;
+  width: 100%;
 }
 
 .mv-thumb.failed-img {

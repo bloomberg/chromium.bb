@@ -62,14 +62,15 @@ body.alternate-logo #logo {
   border: 1px solid rgb(185, 185, 185);
   border-radius: 1px;
   border-top-color: rgb(160, 160, 160);
-  box-sizing: border-box;
   cursor: text;
   font-size: 18px;
   height: 36px;
   line-height: 36px;
   max-width: 672px;
   position: relative;
-  width: 300px;
+  /* #fakebox width (here and below) should be 2px less than #mv-tiles
+     to account for its border. */
+  width: 298px;
 }
 
 #fakebox:hover {

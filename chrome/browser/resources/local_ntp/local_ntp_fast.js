@@ -184,13 +184,6 @@ var MIN_TOTAL_HORIZONTAL_PADDING = 200;
 
 
 /**
- * The color of the title in RRGGBBAA format.
- * @type {?string}
- */
-var titleColor = null;
-
-
-/**
  * Heuristic to determine whether a theme should be considered to be dark, so
  * the colors of various UI elements can be adjusted.
  * @param {ThemeBackgroundInfo|undefined} info Theme background information.
@@ -225,15 +218,7 @@ function renderTheme() {
   var isThemeDark = getIsThemeDark(info);
   ntpContents.classList.toggle(CLASSES.DARK, isThemeDark);
   if (!info) {
-    titleColor = NTP_DESIGN.titleColor;
     return;
-  }
-
-  if (!info.usingDefaultTheme && info.textColorRgba) {
-    titleColor = convertToRRGGBBAAColor(info.textColorRgba);
-  } else {
-    titleColor = isThemeDark ?
-        NTP_DESIGN.titleColorAgainstDark : NTP_DESIGN.titleColor;
   }
 
   var background = [convertToRGBAColor(info.backgroundColorRgba),
@@ -246,6 +231,23 @@ function renderTheme() {
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
   updateThemeAttribution(info.attributionUrl);
   setCustomThemeStyle(info);
+
+  var themeinfo = {cmd: 'updateTheme'};
+  if (!info.usingDefaultTheme) {
+    themeinfo.tileBorderColor = convertToRGBAColor(info.sectionBorderColorRgba);
+    themeinfo.tileHoverBorderColor = convertToRGBAColor(info.headerColorRgba);
+  }
+  themeinfo.isThemeDark = isThemeDark;
+
+  var titleColor = NTP_DESIGN.titleColor;
+  if (!info.usingDefaultTheme && info.textColorRgba) {
+    titleColor = convertToRRGGBBAAColor(info.textColorRgba);
+  } else if (isThemeDark) {
+    NTP_DESIGN.titleColorAgainstDark;
+  }
+  themeinfo.tileTitleColor = convertToRGBAColor(titleColor);
+
+  $('mv-single').contentWindow.postMessage(themeinfo, '*');
 }
 
 
@@ -703,8 +705,6 @@ function init() {
   if (ntpApiHandle.isInputInProgress)
     onInputStart();
 
-  renderTheme();
-
   searchboxApiHandle = topLevelHandle.searchBox;
 
   if (fakebox) {
@@ -770,6 +770,7 @@ function init() {
 
   iframe.onload = function() {
     reloadTiles();
+    renderTheme();
   };
 
   window.addEventListener('message', handlePostMessage);

@@ -117,9 +117,46 @@ var handlePostMessage = function(event) {
   } else if (cmd == 'show') {
     showTiles();
     countLoad();
+  } else if (cmd == 'updateTheme') {
+    updateTheme(event.data);
   } else {
     console.error('Unknown command: ' + event.data);
   }
+};
+
+
+var updateTheme = function(info) {
+  var themeStyle = [];
+
+  if (info.tileBorderColor) {
+    themeStyle.push('.mv-tile {' +
+        'border: 1px solid ' + info.tileBorderColor + '; }');
+  }
+  if (info.tileHoverBorderColor) {
+    themeStyle.push('.mv-tile:hover {' +
+        'border-color: ' + info.tileHoverBorderColor + '; }');
+  }
+  if (info.isThemeDark) {
+    themeStyle.push('.mv-tile, .mv-empty-tile { background: rgb(51,51,51); }');
+    themeStyle.push('.mv-thumb.failed-img { background-color: #555; }');
+    themeStyle.push('.mv-thumb.failed-img::after { border-color: #333; }');
+    themeStyle.push('.mv-x { ' +
+        'background: linear-gradient(to left, ' +
+        'rgb(51,51,51) 60%, transparent); }');
+    themeStyle.push('html[dir=rtl] .mv-x { ' +
+        'background: linear-gradient(to right, ' +
+        'rgb(51,51,51) 60%, transparent); }');
+    themeStyle.push('.mv-x::after { ' +
+        'background-color: rgba(255,255,255,0.7); }');
+    themeStyle.push('.mv-x:hover::after { background-color: #fff; }');
+    themeStyle.push('.mv-x:active::after { ' +
+        'background-color: rgba(255,255,255,0.5); }');
+  }
+  if (info.tileTitleColor) {
+    themeStyle.push('body { color: ' + info.tileTitleColor + '; }');
+  }
+
+  document.querySelector('#custom-theme').textContent = themeStyle.join('\n');
 };
 
 
@@ -172,6 +209,8 @@ var showTiles = function() {
 var addTile = function(args) {
   if (args.rid) {
     var data = chrome.embeddedSearch.searchBox.getMostVisitedItemData(args.rid);
+    data.faviconUrl = 'chrome-search://favicon/size/16@' +
+        window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
     tiles.appendChild(renderTile(data));
     logEvent(LOG_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
   } else {
