@@ -45,9 +45,15 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   content::WebContents* web_contents() const;
 
+#if defined(UNIT_TEST)
   const View* initially_focused_view() const {
     return initially_focused_view_;
   }
+
+  static void set_auto_signin_toast_timeout(int seconds) {
+    auto_signin_toast_timeout_ = seconds;
+  }
+#endif
 
  private:
   class AccountChooserView;
@@ -100,6 +106,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // shown twice at the same time. The instance is owned by the Bubble and will
   // be deleted when the bubble closes.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
+
+  // The timeout in seconds for the auto sign-in toast.
+  static int auto_signin_toast_timeout_;
 
   ManagePasswordsIconView* anchor_view_;
 

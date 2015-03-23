@@ -37,12 +37,12 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+int ManagePasswordsBubbleView::auto_signin_toast_timeout_ = 3;
 
 // Helpers --------------------------------------------------------------------
 
 namespace {
 
-const int kAutoSigninToastTimeout = 3;
 const int kDesiredBubbleWidth = 370;
 
 enum ColumnSetType {
@@ -195,6 +195,8 @@ class ManagePasswordsBubbleView::AccountChooserView
 
   ManagePasswordsBubbleView* parent_;
   views::LabelButton* cancel_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccountChooserView);
 };
 
 ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
@@ -272,7 +274,8 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
 // in.
 class ManagePasswordsBubbleView::AutoSigninView
     : public views::View,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::WidgetObserver {
  public:
   explicit AutoSigninView(ManagePasswordsBubbleView* parent);
 
@@ -280,15 +283,28 @@ class ManagePasswordsBubbleView::AutoSigninView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::WidgetObserver:
+  // Tracks the state of the browser window.
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void OnWidgetClosing(views::Widget* widget) override;
+
   void OnTimer();
+  static base::TimeDelta GetTimeout() {
+    return base::TimeDelta::FromSeconds(
+        ManagePasswordsBubbleView::auto_signin_toast_timeout_);
+  }
 
   base::OneShotTimer<AutoSigninView> timer_;
   ManagePasswordsBubbleView* parent_;
+  ScopedObserver<views::Widget, views::WidgetObserver> observed_browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoSigninView);
 };
 
 ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
     ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
+    : parent_(parent),
+      observed_browser_(this) {
   SetLayoutManager(new views::FillLayout);
   CredentialsItemView* credential = new CredentialsItemView(
       this,
@@ -299,14 +315,31 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
   AddChildView(credential);
   parent_->set_initially_focused_view(credential);
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kAutoSigninToastTimeout),
-               this, &AutoSigninView::OnTimer);
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(parent_->web_contents());
+  DCHECK(browser);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  observed_browser_.Add(browser_view->GetWidget());
+
+  if (browser_view->IsActive())
+    timer_.Start(FROM_HERE, GetTimeout(), this, &AutoSigninView::OnTimer);
 }
 
 void ManagePasswordsBubbleView::AutoSigninView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   parent_->model()->OnAutoSignInClicked();
   parent_->Close();
+}
+
+void ManagePasswordsBubbleView::AutoSigninView::OnWidgetActivationChanged(
+    views::Widget* widget, bool active) {
+  if (active && !timer_.IsRunning())
+    timer_.Start(FROM_HERE, GetTimeout(), this, &AutoSigninView::OnTimer);
+}
+
+void ManagePasswordsBubbleView::AutoSigninView::OnWidgetClosing(
+    views::Widget* widget) {
+  observed_browser_.RemoveAll();
 }
 
 void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
@@ -343,6 +376,8 @@ class ManagePasswordsBubbleView::PendingView : public views::View,
   // delete the model _after_ the combobox itself is deleted.
   scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
   scoped_ptr<views::Combobox> refuse_combobox_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingView);
 };
 
 ManagePasswordsBubbleView::PendingView::PendingView(
@@ -534,6 +569,8 @@ class ManagePasswordsBubbleView::ConfirmNeverView
 
   views::LabelButton* confirm_button_;
   views::LabelButton* undo_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConfirmNeverView);
 };
 
 ManagePasswordsBubbleView::ConfirmNeverView::ConfirmNeverView(
@@ -622,6 +659,8 @@ class ManagePasswordsBubbleView::ManageView : public views::View,
 
   views::Link* manage_link_;
   views::LabelButton* done_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManageView);
 };
 
 ManagePasswordsBubbleView::ManageView::ManageView(
@@ -723,6 +762,8 @@ class ManagePasswordsBubbleView::ManageAccountsView
 
   views::Link* manage_link_;
   views::LabelButton* done_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManageAccountsView);
 };
 
 ManagePasswordsBubbleView::ManageAccountsView::ManageAccountsView(
@@ -814,6 +855,8 @@ class ManagePasswordsBubbleView::BlacklistedView
 
   views::BlueButton* unblacklist_button_;
   views::LabelButton* done_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlacklistedView);
 };
 
 ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
@@ -898,8 +941,9 @@ class ManagePasswordsBubbleView::SaveConfirmationView
                               int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
-
   views::LabelButton* ok_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(SaveConfirmationView);
 };
 
 ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(

@@ -296,6 +296,26 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
   ManagePasswordsBubbleView::CloseBubble();
 }
 
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredentialNoFocus) {
+  GURL origin("https://example.com");
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  test_form()->origin = origin;
+  test_form()->display_name = base::ASCIIToUTF16("Peter");
+  test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
+  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+  ScopedVector<autofill::PasswordForm> federated_credentials;
+
+  // Open another window with focus.
+  Browser* focused_window = CreateBrowser(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(browser()->window()->IsActive());
+  SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
+                         origin);
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+}
+
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   // The switch enables the new UI.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -333,4 +353,30 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
         browser()->tab_strip_model()->GetActiveWebContents(),
         ManagePasswordsBubble::USER_ACTION);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  test_form()->origin = GURL("https://example.com");;
+  test_form()->display_name = base::ASCIIToUTF16("Peter");
+  test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
+  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+
+  // Open another window with focus.
+  Browser* focused_window = CreateBrowser(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(browser()->window()->IsActive());
+  ManagePasswordsBubbleView::set_auto_signin_toast_timeout(0);
+  SetupAutoSignin(local_credentials.Pass());
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+
+  // Bring the first window back. The toast closes by timeout.
+  focused_window->window()->Close();
+  browser()->window()->Activate();
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(browser()->window()->IsActive());
+  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 }
