@@ -99,6 +99,11 @@ class RemoteDeviceTestRun(test_run.TestRun):
         timeout_counter += self.WAIT_TIME
         heartbeat_counter += self.WAIT_TIME
       self._DownloadTestResults(self._env.results_path)
+
+      if self._results['results']['exception']:
+        raise remote_device_helper.RemoteDeviceError(
+            self._results['results']['exception'], is_infra_error=True)
+
       return self._ParseTestResults()
 
   #override

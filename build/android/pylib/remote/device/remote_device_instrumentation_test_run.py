@@ -33,13 +33,6 @@ class RemoteDeviceInstrumentationTestRun(
   def _ParseTestResults(self):
     logging.info('Parsing results from stdout.')
     r = base_test_result.TestRunResults()
-
-    if self._results['results']['exception']:
-      r.AddResult(base_test_result.BaseTestResult(
-          self._results['results']['exception'],
-          base_test_result.ResultType.FAIL))
-      return r
-
     result_code, result_bundle, statuses = (
         self._test_instance.ParseAmInstrumentRawOutput(
             self._results['results']['output'].splitlines()))

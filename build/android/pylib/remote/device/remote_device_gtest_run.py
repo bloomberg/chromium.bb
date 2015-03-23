@@ -73,20 +73,15 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
   def _ParseTestResults(self):
     logging.info('Parsing results from stdout.')
     results = base_test_result.TestRunResults()
-    if self._results['results']['exception']:
+    output = self._results['results']['output'].splitlines()
+    output = (l[len(self._INSTRUMENTATION_STREAM_LEADER):] for l in output
+              if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
+    results_list = self._test_instance.ParseGTestOutput(output)
+    results.AddResults(results_list)
+    if self._env.only_output_failures:
+      logging.info('See logcat for more results information.')
+    if not self._results['results']['pass']:
       results.AddResult(base_test_result.BaseTestResult(
-          self._results['results']['exception'],
+          'Remote Service detected error.',
           base_test_result.ResultType.FAIL))
-    else:
-      output = self._results['results']['output'].splitlines()
-      output = (l[len(self._INSTRUMENTATION_STREAM_LEADER):] for l in output
-                if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
-      results_list = self._test_instance.ParseGTestOutput(output)
-      results.AddResults(results_list)
-      if self._env.only_output_failures:
-        logging.info('See logcat for more results information.')
-      if not self._results['results']['pass']:
-        results.AddResult(base_test_result.BaseTestResult(
-            'Remote Service detected error.',
-            base_test_result.ResultType.FAIL))
     return results
