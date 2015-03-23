@@ -70,6 +70,10 @@ class SmoothnessMaps(benchmark.Benchmark):
   page_set = page_sets.MapsPageSet
 
   @classmethod
+  def CreateExpectations(cls):
+    return webgl_expectations.MapsExpectations()
+
+  @classmethod
   def Name(cls):
     return 'smoothness.maps'
 

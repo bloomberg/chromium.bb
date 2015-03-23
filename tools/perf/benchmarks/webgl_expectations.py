@@ -8,3 +8,9 @@ class WebGLExpectations(test_expectations.TestExpectations):
   def SetExpectations(self):
     self.Skip('*', ['arm', 'broadcom', 'hisilicon', 'imagination', 'qualcomm',
                     'vivante'], bug=462729)
+
+
+class MapsExpectations(test_expectations.TestExpectations):
+  """Defines expectations to skip intensive tests on low-end devices."""
+  def SetExpectations(self):
+    self.Skip('*', ['arm'], bug=464731)
