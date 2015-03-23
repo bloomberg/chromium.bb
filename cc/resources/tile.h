@@ -92,7 +92,8 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
            !draw_info_.IsReadyToDraw();
   }
 
-  void AsValueInto(base::trace_event::TracedValue* dict) const;
+  void AsValueWithPriorityInto(const TilePriority& priority,
+                               base::trace_event::TracedValue* dict) const;
 
   inline bool IsReadyToDraw() const { return draw_info_.IsReadyToDraw(); }
 

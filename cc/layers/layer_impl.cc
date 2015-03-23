@@ -1439,7 +1439,8 @@ void LayerImpl::RemoveDependentNeedsPushProperties() {
       parent_->RemoveDependentNeedsPushProperties();
 }
 
-void LayerImpl::GetAllTilesForTracing(std::set<const Tile*>* tiles) const {
+void LayerImpl::GetAllTilesAndPrioritiesForTracing(
+    std::map<const Tile*, TilePriority>* tile_map) const {
 }
 
 void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {

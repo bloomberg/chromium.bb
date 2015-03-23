@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_LAYER_IMPL_H_
 #define CC_LAYERS_LAYER_IMPL_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -31,6 +32,7 @@
 #include "cc/output/filter_operations.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/tile_priority.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -561,7 +563,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);
 
-  virtual void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
+  virtual void GetAllTilesAndPrioritiesForTracing(
+      std::map<const Tile*, TilePriority>* tile_map) const;
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   virtual size_t GPUMemoryUsageInBytes() const;

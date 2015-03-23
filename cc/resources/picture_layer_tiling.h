@@ -5,7 +5,7 @@
 #ifndef CC_RESOURCES_PICTURE_LAYER_TILING_H_
 #define CC_RESOURCES_PICTURE_LAYER_TILING_H_
 
-#include <set>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -140,6 +140,8 @@ class CC_EXPORT PictureLayerTiling {
   bool IsTileRequiredForDrawIfVisible(const Tile* tile) const;
 
   void UpdateTileAndTwinPriority(Tile* tile) const;
+  TilePriority ComputePriorityForTile(const Tile* tile) const;
+  void UpdateRequiredStateForTile(Tile* tile, WhichTree tree) const;
   bool has_visible_rect_tiles() const { return has_visible_rect_tiles_; }
   bool has_skewport_rect_tiles() const { return has_skewport_rect_tiles_; }
   bool has_soon_border_rect_tiles() const {
@@ -211,7 +213,8 @@ class CC_EXPORT PictureLayerTiling {
                                 double current_frame_time_in_seconds,
                                 const Occlusion& occlusion_in_layer_space);
 
-  void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
+  void GetAllTilesAndPrioritiesForTracing(
+      std::map<const Tile*, TilePriority>* tile_map) const;
   void AsValueInto(base::trace_event::TracedValue* array) const;
   size_t GPUMemoryUsageInBytes() const;
 

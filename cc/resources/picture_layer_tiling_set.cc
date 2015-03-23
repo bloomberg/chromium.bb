@@ -328,10 +328,10 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
   return updated;
 }
 
-void PictureLayerTilingSet::GetAllTilesForTracing(
-    std::set<const Tile*>* tiles) const {
+void PictureLayerTilingSet::GetAllTilesAndPrioritiesForTracing(
+    std::map<const Tile*, TilePriority>* tile_map) const {
   for (auto* tiling : tilings_)
-    tiling->GetAllTilesForTracing(tiles);
+    tiling->GetAllTilesAndPrioritiesForTracing(tile_map);
 }
 
 PictureLayerTilingSet::CoverageIterator::CoverageIterator(

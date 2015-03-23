@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -3244,19 +3245,18 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
   MathUtil::AddToTracedValue("device_viewport_size", device_viewport_size_,
                              state);
 
-  std::set<const Tile*> tiles;
-  active_tree_->GetAllTilesForTracing(&tiles);
+  std::map<const Tile*, TilePriority> tile_map;
+  active_tree_->GetAllTilesAndPrioritiesForTracing(&tile_map);
   if (pending_tree_)
-    pending_tree_->GetAllTilesForTracing(&tiles);
+    pending_tree_->GetAllTilesAndPrioritiesForTracing(&tile_map);
 
   state->BeginArray("active_tiles");
-  for (std::set<const Tile*>::const_iterator it = tiles.begin();
-       it != tiles.end();
-       ++it) {
-    const Tile* tile = *it;
+  for (const auto& pair : tile_map) {
+    const Tile* tile = pair.first;
+    const TilePriority& priority = pair.second;
 
     state->BeginDictionary();
-    tile->AsValueInto(state);
+    tile->AsValueWithPriorityInto(priority, state);
     state->EndDictionary();
   }
   state->EndArray();

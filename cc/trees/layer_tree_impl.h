@@ -116,7 +116,8 @@ class CC_EXPORT LayerTreeImpl {
 
   // Tracing methods.
   // ---------------------------------------------------------------------------
-  void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
+  void GetAllTilesAndPrioritiesForTracing(
+      std::map<const Tile*, TilePriority>* tile_map) const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   // Other public methods

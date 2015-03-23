@@ -48,7 +48,8 @@ Tile::~Tile() {
       "cc::Tile", this);
 }
 
-void Tile::AsValueInto(base::trace_event::TracedValue* res) const {
+void Tile::AsValueWithPriorityInto(const TilePriority& priority,
+                                   base::trace_event::TracedValue* res) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), res, "cc::Tile", this);
   TracedValue::SetIDRef(raster_source_.get(), res, "picture_pile");
@@ -58,12 +59,18 @@ void Tile::AsValueInto(base::trace_event::TracedValue* res) const {
 
   res->SetInteger("layer_id", layer_id_);
 
+  // TODO(vmpstr): Remove active and pending priority once tracing is using
+  // combined priority or at least can support both.
   res->BeginDictionary("active_priority");
   priority_[ACTIVE_TREE].AsValueInto(res);
   res->EndDictionary();
 
   res->BeginDictionary("pending_priority");
   priority_[PENDING_TREE].AsValueInto(res);
+  res->EndDictionary();
+
+  res->BeginDictionary("combined_priority");
+  priority.AsValueInto(res);
   res->EndDictionary();
 
   res->BeginDictionary("draw_info");

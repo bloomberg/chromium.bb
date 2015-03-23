@@ -812,7 +812,8 @@ void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
   WhichTree tree = client_->GetTree();
   WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
 
-  UpdateTilePriorityForTree(tile, tree);
+  tile->SetPriority(tree, ComputePriorityForTile(tile));
+  UpdateRequiredStateForTile(tile, tree);
 
   const PictureLayerTiling* twin_tiling =
       client_->GetPendingOrActiveTwinTiling(this);
@@ -826,24 +827,13 @@ void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
     return;
   }
 
-  twin_tiling->UpdateTilePriorityForTree(tile, twin_tree);
+  tile->SetPriority(twin_tree, twin_tiling->ComputePriorityForTile(tile));
+  twin_tiling->UpdateRequiredStateForTile(tile, twin_tree);
 }
 
-void PictureLayerTiling::UpdateTilePriorityForTree(Tile* tile,
-                                                   WhichTree tree) const {
-  // TODO(vmpstr): This code should return the priority instead of setting it on
-  // the tile. This should be a part of the change to move tile priority from
-  // tiles into iterators.
-  TilePriority::PriorityBin max_tile_priority_bin =
-      client_->GetMaxTilePriorityBin();
-
-  DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
-  gfx::Rect tile_bounds =
-      tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
-
-  if (max_tile_priority_bin <= TilePriority::NOW &&
-      current_visible_rect_.Intersects(tile_bounds)) {
-    tile->SetPriority(tree, TilePriority(resolution_, TilePriority::NOW, 0));
+void PictureLayerTiling::UpdateRequiredStateForTile(Tile* tile,
+                                                    WhichTree tree) const {
+  if (tile->priority(tree).priority_bin == TilePriority::NOW) {
     if (tree == PENDING_TREE) {
       tile->set_required_for_activation(
           IsTileRequiredForActivationIfVisible(tile));
@@ -854,11 +844,28 @@ void PictureLayerTiling::UpdateTilePriorityForTree(Tile* tile,
     return;
   }
 
+  // Non-NOW bin tiles are not required or occluded.
   if (tree == PENDING_TREE)
     tile->set_required_for_activation(false);
   else
     tile->set_required_for_draw(false);
   tile->set_is_occluded(tree, false);
+}
+
+TilePriority PictureLayerTiling::ComputePriorityForTile(
+    const Tile* tile) const {
+  // TODO(vmpstr): See if this can be moved to iterators.
+  TilePriority::PriorityBin max_tile_priority_bin =
+      client_->GetMaxTilePriorityBin();
+
+  DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
+  gfx::Rect tile_bounds =
+      tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
+
+  if (max_tile_priority_bin <= TilePriority::NOW &&
+      current_visible_rect_.Intersects(tile_bounds)) {
+    return TilePriority(resolution_, TilePriority::NOW, 0);
+  }
 
   DCHECK_GT(current_content_to_screen_scale_, 0.f);
   float distance_to_visible =
@@ -868,21 +875,27 @@ void PictureLayerTiling::UpdateTilePriorityForTree(Tile* tile,
   if (max_tile_priority_bin <= TilePriority::SOON &&
       (current_soon_border_rect_.Intersects(tile_bounds) ||
        current_skewport_rect_.Intersects(tile_bounds))) {
-    tile->SetPriority(
-        tree,
-        TilePriority(resolution_, TilePriority::SOON, distance_to_visible));
-    return;
+    return TilePriority(resolution_, TilePriority::SOON, distance_to_visible);
   }
 
-  tile->SetPriority(
-      tree,
-      TilePriority(resolution_, TilePriority::EVENTUALLY, distance_to_visible));
+  return TilePriority(resolution_, TilePriority::EVENTUALLY,
+                      distance_to_visible);
 }
 
-void PictureLayerTiling::GetAllTilesForTracing(
-    std::set<const Tile*>* tiles) const {
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    tiles->insert(it->second.get());
+void PictureLayerTiling::GetAllTilesAndPrioritiesForTracing(
+    std::map<const Tile*, TilePriority>* tile_map) const {
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
+  for (const auto& tile_pair : tiles_) {
+    const Tile* tile = tile_pair.second.get();
+    const TilePriority& priority = ComputePriorityForTile(tile);
+    const TilePriority& twin_priority =
+        twin_tiling ? twin_tiling->ComputePriorityForTile(tile)
+                    : TilePriority();
+
+    // Store combined priority.
+    (*tile_map)[tile] = TilePriority(priority, twin_priority);
+  }
 }
 
 void PictureLayerTiling::AsValueInto(

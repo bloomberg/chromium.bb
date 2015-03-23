@@ -5,7 +5,7 @@
 #ifndef CC_LAYERS_PICTURE_LAYER_IMPL_H_
 #define CC_LAYERS_PICTURE_LAYER_IMPL_H_
 
-#include <set>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -132,7 +132,8 @@ class CC_EXPORT PictureLayerImpl
   bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
-  void GetAllTilesForTracing(std::set<const Tile*>* tiles) const override;
+  void GetAllTilesAndPrioritiesForTracing(
+      std::map<const Tile*, TilePriority>* tile_map) const override;
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   virtual void UpdateIdealScales();
