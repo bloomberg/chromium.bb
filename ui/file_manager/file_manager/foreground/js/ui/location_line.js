@@ -175,7 +175,7 @@ LocationLine.prototype.truncate = function() {
   if (!this.breadcrumbs_.firstChild)
     return;
 
-  // Assume style.width == clientWidth (items have no margins or paddings).
+  // Assume style.width == clientWidth (items have no margins).
 
   for (var item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
     item.removeAttribute('style');
@@ -219,7 +219,8 @@ LocationLine.prototype.truncate = function() {
   parentCrumb.removeAttribute('collapsed');
 
   var collapsedWidth = 0;
-  if (parentCrumb && pathWidth - maxPathWidth > parentCrumb.clientWidth) {
+  if (parentCrumb &&
+      pathWidth - parentCrumb.clientWidth + minCrumbWidth > maxPathWidth) {
     // At least one crumb is hidden completely (or almost completely).
     // Show sign of hidden crumbs like this:
     // root > some di... > ... > current directory.
