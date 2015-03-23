@@ -564,6 +564,16 @@ chrome.fileManagerPrivate.getMimeType = function(fileUrl, callback) {};
  */
 chrome.fileManagerPrivate.isUMAEnabled = function(callback) {};
 
+/**
+ * Sets a tag on a file or a directory. Only Drive files are supported.
+ * @param {string} entryURL
+ * @param {string} visibility 'private' or 'public'
+ * @param {string} key
+ * @param {string} value
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.setEntryTag = function(entryURL, visibility, key, value, callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 
