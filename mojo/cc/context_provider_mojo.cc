@@ -5,6 +5,7 @@
 #include "mojo/cc/context_provider_mojo.h"
 
 #include "base/logging.h"
+#include "mojo/gpu/mojo_gles2_impl_autogen.h"
 #include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
@@ -21,14 +22,12 @@ bool ContextProviderMojo::BindToCurrentThread() {
                                     &ContextLostThunk,
                                     this,
                                     Environment::GetDefaultAsyncWaiter());
+  context_gl_.reset(new MojoGLES2Impl(context_));
   return !!context_;
 }
 
 gpu::gles2::GLES2Interface* ContextProviderMojo::ContextGL() {
-  if (!context_)
-    return NULL;
-  return static_cast<gpu::gles2::GLES2Interface*>(
-      MojoGLES2GetGLES2Interface(context_));
+  return context_gl_.get();
 }
 
 gpu::ContextSupport* ContextProviderMojo::ContextSupport() {
@@ -57,6 +56,7 @@ bool ContextProviderMojo::IsContextLost() {
 bool ContextProviderMojo::DestroyedOnMainThread() { return !context_; }
 
 ContextProviderMojo::~ContextProviderMojo() {
+  context_gl_.reset();
   if (context_)
     MojoGLES2DestroyContext(context_);
 }

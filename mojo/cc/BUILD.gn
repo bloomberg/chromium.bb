@@ -12,6 +12,7 @@ source_set("cc") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//mojo/converters/surfaces",
+    "//mojo/gpu:mojo_gles2_implementation",
     "//skia",
     "//third_party/mojo/src/mojo/public/c/gles2",
     "//third_party/mojo/src/mojo/public/cpp/environment",

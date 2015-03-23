@@ -4202,6 +4202,46 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
 
+  def WriteMojoGLES2ImplHeader(self, func, file):
+    """Writes the Mojo GLES2 implementation header."""
+    file.Write("%s %s(%s) override;\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+
+  def WriteMojoGLES2Impl(self, func, file):
+    """Writes the Mojo GLES2 implementation."""
+    file.Write("%s MojoGLES2Impl::%s(%s) {\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    # TODO(alhaad): Add Mojo C thunk for each of the following methods and
+    # remove this.
+    func_list = ["GenQueriesEXT", "BeginQueryEXT", "MapTexSubImage2DCHROMIUM",
+                 "UnmapTexSubImage2DCHROMIUM", "DeleteQueriesEXT",
+                 "EndQueryEXT", "GetQueryObjectuivEXT", "ShallowFlushCHROMIUM"]
+    if func.original_name in func_list:
+      file.Write("return static_cast<gpu::gles2::GLES2Interface*>"
+                 "(MojoGLES2GetGLES2Interface(context_))->" +
+                 func.original_name + "(" + func.MakeOriginalArgString("") +
+                 ");")
+      file.Write("}")
+      return
+
+    extensions = ["CHROMIUM_sync_point", "CHROMIUM_texture_mailbox"]
+    if func.IsCoreGLFunction() or func.GetInfo("extension") in extensions:
+      file.Write("MojoGLES2MakeCurrent(context_);");
+      func_return = "gl" + func.original_name + "(" + \
+          func.MakeOriginalArgString("") + ");"
+      if func.return_type == "void":
+        file.Write(func_return);
+      else:
+        file.Write("return " + func_return);
+    else:
+      file.Write("NOTREACHED() << \"Unimplemented %s.\";\n" %
+                 func.original_name);
+      if func.return_type != "void":
+        file.Write("return 0;")
+    file.Write("}")
+
   def WriteGLES2InterfaceStub(self, func, file):
     """Writes the GLES2 Interface stub declaration."""
     file.Write("%s %s(%s) override;\n" %
@@ -8911,6 +8951,14 @@ class Function(object):
     """Writes the GLES2 Interface declaration."""
     self.type_handler.WriteGLES2InterfaceHeader(self, file)
 
+  def WriteMojoGLES2ImplHeader(self, file):
+    """Writes the Mojo GLES2 implementation header declaration."""
+    self.type_handler.WriteMojoGLES2ImplHeader(self, file)
+
+  def WriteMojoGLES2Impl(self, file):
+    """Writes the Mojo GLES2 implementation declaration."""
+    self.type_handler.WriteMojoGLES2Impl(self, file)
+
   def WriteGLES2InterfaceStub(self, file):
     """Writes the GLES2 Interface Stub declaration."""
     self.type_handler.WriteGLES2InterfaceStub(self, file)
@@ -9956,6 +10004,68 @@ extern const NameToFunc g_gles2_function_table[] = {
     file.Close()
     self.generated_cpp_filenames.append(file.filename)
 
+  def WriteMojoGLES2ImplHeader(self, filename):
+    """Writes the Mojo GLES2 implementation header."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_interface.h to declare the\n"
+        "// GL api functions.\n")
+
+    code = """
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+
+namespace mojo {
+
+class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
+ public:
+  explicit MojoGLES2Impl(MojoGLES2Context context) {
+    context_ = context;
+  }
+  ~MojoGLES2Impl() override {}
+    """
+    file.Write(code);
+    for func in self.original_functions:
+      func.WriteMojoGLES2ImplHeader(file)
+    code = """
+ private:
+  MojoGLES2Context context_;
+};
+
+}  // namespace mojo
+    """
+    file.Write(code);
+    file.Close()
+    self.generated_cpp_filenames.append(file.filename)
+
+  def WriteMojoGLES2Impl(self, filename):
+    """Writes the Mojo GLES2 implementation."""
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write(_DO_NOT_EDIT_WARNING)
+
+    code = """
+#include "mojo/gpu/mojo_gles2_impl_autogen.h"
+
+#include "base/logging.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_sync_point.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_texture_mailbox.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+
+namespace mojo {
+
+    """
+    file.Write(code);
+    for func in self.original_functions:
+      func.WriteMojoGLES2Impl(file)
+    code = """
+
+}  // namespace mojo
+    """
+    file.Write(code);
+    file.Close()
+    self.generated_cpp_filenames.append(file.filename)
+
   def WriteGLES2InterfaceStub(self, filename):
     """Writes the GLES2 interface stub header."""
     file = CHeaderWriter(
@@ -10474,6 +10584,10 @@ def main(argv):
     "gpu/command_buffer/common/gles2_cmd_format_test_autogen.h")
   gen.WriteGLES2InterfaceHeader(
     "gpu/command_buffer/client/gles2_interface_autogen.h")
+  gen.WriteMojoGLES2ImplHeader(
+    "mojo/gpu/mojo_gles2_impl_autogen.h")
+  gen.WriteMojoGLES2Impl(
+    "mojo/gpu/mojo_gles2_impl_autogen.cc")
   gen.WriteGLES2InterfaceStub(
     "gpu/command_buffer/client/gles2_interface_stub_autogen.h")
   gen.WriteGLES2InterfaceStubImpl(
