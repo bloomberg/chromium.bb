@@ -326,6 +326,7 @@ weston_config_parse(const char *name)
 {
 	FILE *fp;
 	char line[512], *p;
+	struct stat filestat;
 	struct weston_config *config;
 	struct weston_config_section *section = NULL;
 	int i, fd;
@@ -338,6 +339,13 @@ weston_config_parse(const char *name)
 
 	fd = open_config_file(config, name);
 	if (fd == -1) {
+		free(config);
+		return NULL;
+	}
+
+	if (fstat(fd, &filestat) < 0 ||
+	    !S_ISREG(filestat.st_mode)) {
+		close(fd);
 		free(config);
 		return NULL;
 	}
