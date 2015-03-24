@@ -13,28 +13,21 @@ cr.define('wallpapers', function() {
 
   /**
    * Creates a new wallpaper thumbnails grid item.
-   * @param {{wallpaperId: number, baseURL: string, layout: string,
-   *          source: string, availableOffline: boolean,
-   *          opt_dynamicURL: string, opt_author: string,
-   *          opt_authorWebsite: string}}
+   * @param {{baseURL: string, layout: string, source: string,
+   *          availableOffline: boolean, opt_dynamicURL: string,
+   *          opt_author: string, opt_authorWebsite: string}}
    *     wallpaperInfo Wallpaper data item in WallpaperThumbnailsGrid's data
    *     model.
    * @param {number} dataModelId A unique ID that this item associated to.
-   * @param {object} thumbnail The thumbnail image Object associated with this
-   *      grid item.
    * @param {function} callback The callback function when decoration finished.
    * @constructor
    * @extends {cr.ui.GridItem}
    */
-  function WallpaperThumbnailsGridItem(wallpaperInfo,
-                                       dataModelId,
-                                       thumbnail,
-                                       callback) {
+  function WallpaperThumbnailsGridItem(wallpaperInfo, dataModelId, callback) {
     var el = new GridItem(wallpaperInfo);
     el.__proto__ = WallpaperThumbnailsGridItem.prototype;
-    el.dataModelId_ = dataModelId;
-    el.thumbnail_ = thumbnail;
-    el.callback_ = callback;
+    el.dataModelId = dataModelId;
+    el.callback = callback;
     return el;
   }
 
@@ -45,12 +38,7 @@ cr.define('wallpapers', function() {
      * The unique ID this thumbnail grid associated to.
      * @type {number}
      */
-    dataModelId_: null,
-
-    /**
-     * The thumbnail image associated with the current grid item.
-     */
-    thumbnail_: null,
+    dataModelId: null,
 
     /**
      * Called when the WallpaperThumbnailsGridItem is decorated or failed to
@@ -58,20 +46,13 @@ cr.define('wallpapers', function() {
      * be called after image loaded.
      * @type {function}
      */
-    callback_: null,
+    callback: null,
 
     /** @override */
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       // Removes garbage created by GridItem.
       this.innerText = '';
-
-      if (this.thumbnail_) {
-        this.appendChild(this.thumbnail_);
-        this.callback_(this.dataModelId_);
-        return;
-      }
-
       var imageEl = cr.doc.createElement('img');
       imageEl.classList.add('thumbnail');
       cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
@@ -89,20 +70,18 @@ cr.define('wallpapers', function() {
           });
           // Delay dispatching the completion callback until all items have
           // begun loading and are tracked.
-          window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);
+          window.setTimeout(this.callback.bind(this, this.dataModelId), 0);
           break;
         case Constants.WallpaperSourceEnum.Custom:
           var errorHandler = function(e) {
-            self.callback_(self.dataModelId_);
+            self.callback(self.dataModelId);
             console.error('Can not access file system.');
           };
           var wallpaperDirectories = WallpaperDirectories.getInstance();
           var getThumbnail = function(fileName) {
             var setURL = function(fileEntry) {
               imageEl.src = fileEntry.toURL();
-              self.callback_(self.dataModelId_,
-                             self.dataItem.wallpaperId,
-                             imageEl);
+              self.callback(self.dataModelId);
             };
             var fallback = function() {
               wallpaperDirectories.getDirectory(
@@ -129,9 +108,7 @@ cr.define('wallpapers', function() {
                                   {'type': 'image\/png'});
               imageEl.src = window.URL.createObjectURL(blob);
               imageEl.addEventListener('load', function(e) {
-                self.callback_(self.dataModelId_,
-                               self.dataItem.wallpaperId,
-                               imageEl);
+                self.callback(self.dataModelId);
                 window.URL.revokeObjectURL(this.src);
               });
             } else if (self.dataItem.source ==
@@ -151,13 +128,11 @@ cr.define('wallpapers', function() {
                   // thumbnail. Use a placeholder like "loading" image may
                   // better.
                   imageEl.addEventListener('load', function(e) {
-                    self.callback_(self.dataModelId_,
-                                   self.dataItem.wallpaperId,
-                                   this);
+                    self.callback(self.dataModelId);
                     window.URL.revokeObjectURL(this.src);
                   });
                 } else {
-                  self.callback_(self.dataModelId_);
+                  self.callback(self.dataModelId);
                 }
               });
             }
@@ -167,7 +142,7 @@ cr.define('wallpapers', function() {
           console.error('Unsupported image source.');
           // Delay dispatching the completion callback until all items have
           // begun loading and are tracked.
-          window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);
+          window.setTimeout(this.callback.bind(this, this.dataModelId), 0);
       }
     },
   };
@@ -264,12 +239,6 @@ cr.define('wallpapers', function() {
      */
     pendingItems_: 0,
 
-    /**
-     * Maintains all grid items' thumbnail images for quickly switching between
-     * different categories.
-     */
-    thumbnailList_: undefined,
-
     /** @override */
     set dataModel(dataModel) {
       if (this.dataModel_ == dataModel)
@@ -313,19 +282,11 @@ cr.define('wallpapers', function() {
      * it does not reduce the count on a previous |dataModelId|.
      * @param {number} dataModelId A unique ID that a thumbnail item is
      *     associated to.
-     * @param {number} opt_wallpaperId The unique wallpaper ID that associated
-     *     with this thumbnail gird item.
-     * @param {object} opt_thumbnail The thumbnail image that associated with
-     *     the opt_wallpaperId.
      */
-    pendingItemComplete: function(dataModelId,
-                                  opt_wallpaperId,
-                                  opt_thumbnail) {
+    pendingItemComplete: function(dataModelId) {
       if (dataModelId != this.dataModelId_)
         return;
       this.pendingItems_--;
-      if (opt_wallpaperId != null)
-        this.thumbnailList_[opt_wallpaperId] = opt_thumbnail;
       if (this.pendingItems_ == 0) {
         this.style.visibility = 'visible';
         window.clearTimeout(this.spinnerTimeout_);
@@ -343,13 +304,11 @@ cr.define('wallpapers', function() {
       this.checkmark_ = cr.doc.createElement('div');
       this.checkmark_.classList.add('check');
       this.dataModel = new ArrayDataModel([]);
-      this.thumbnailList_ = new ArrayDataModel([]);
       var self = this;
       this.itemConstructor = function(value) {
         var dataModelId = self.dataModelId_;
         self.pendingItems_++;
         return WallpaperThumbnailsGridItem(value, dataModelId,
-            self.thumbnailList_[value.wallpaperId],
             self.pendingItemComplete.bind(self));
       };
       this.selectionModel = new ListSingleSelectionModel();
