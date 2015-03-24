@@ -16565,6 +16565,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
+  <obsolete>
+    Deprecated 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of unacknowledged ResourceMsg_DataReceived messages.  This message
@@ -16573,6 +16576,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_PendingDataCount_WhenFull">
+  <obsolete>
+    Deprecated 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of unacknowledged ResourceMsg_DataReceived messages at the point
@@ -16590,17 +16596,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_SharedIOBuffer_Alloc" units="bytes">
+  <obsolete>
+    Deprecated 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The size of a SharedIOBuffer allocation.</summary>
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_SharedIOBuffer_Used" units="bytes">
+  <obsolete>
+    Deprecated 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of bytes copied into a SharedIOBuffer.</summary>
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_SharedIOBuffer_UsedPercentage"
     units="percentage">
+  <obsolete>
+    Deprecated 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The percentage of a SharedIOBuffer allocation that is actually used.
