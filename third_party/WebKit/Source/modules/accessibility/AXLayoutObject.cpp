@@ -1197,6 +1197,9 @@ String AXLayoutObject::textUnderElement(TextUnderElementMode mode) const
     if (!m_layoutObject)
         return String();
 
+    if (m_layoutObject->isBR())
+        return String("\n");
+
     if (m_layoutObject->isFileUploadControl())
         return toLayoutFileUploadControl(m_layoutObject)->buttonValue();
 

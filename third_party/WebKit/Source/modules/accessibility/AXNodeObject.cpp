@@ -1419,6 +1419,7 @@ String AXNodeObject::title(TextUnderElementMode mode) const
     case ButtonRole:
     case ToggleButtonRole:
     case CheckBoxRole:
+    case LineBreakRole:
     case ListBoxOptionRole:
     case ListItemRole:
     case MenuButtonRole:
