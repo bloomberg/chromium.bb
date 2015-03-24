@@ -53,10 +53,6 @@ static int CallFtruncate(PlatformFile file, int64 length) {
   return HANDLE_EINTR(ftruncate(file, length));
 }
 
-static int CallFsync(PlatformFile file) {
-  return HANDLE_EINTR(fsync(file));
-}
-
 static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
 #ifdef __USE_XOPEN2K8
   // futimens should be available, but futimes might not be
@@ -95,11 +91,6 @@ static bool IsOpenAppend(PlatformFile file) {
 
 static int CallFtruncate(PlatformFile file, int64 length) {
   NOTIMPLEMENTED();  // NaCl doesn't implement ftruncate.
-  return 0;
-}
-
-static int CallFsync(PlatformFile file) {
-  NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
   return 0;
 }
 
@@ -430,7 +421,14 @@ bool File::SetLength(int64 length) {
 bool File::Flush() {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-  return !CallFsync(file_.get());
+#if defined(OS_NACL)
+  NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
+  return true;
+#elif defined(OS_LINUX) || defined(OS_ANDROID)
+  return !HANDLE_EINTR(fdatasync(file_.get()));
+#else
+  return !HANDLE_EINTR(fsync(file_.get()));
+#endif
 }
 
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
