@@ -135,7 +135,6 @@ private:
         EXPECT_EQ(expectedQueryParams.ignoreSearch, queryParams.ignoreSearch);
         EXPECT_EQ(expectedQueryParams.ignoreMethod, queryParams.ignoreMethod);
         EXPECT_EQ(expectedQueryParams.ignoreVary, queryParams.ignoreVary);
-        EXPECT_EQ(expectedQueryParams.prefixMatch, queryParams.prefixMatch);
         EXPECT_EQ(expectedQueryParams.cacheName, queryParams.cacheName);
     }
 
@@ -366,12 +365,10 @@ TEST_F(ServiceWorkerCacheTest, BatchOperationArguments)
     ASSERT(cache);
 
     WebServiceWorkerCache::QueryParams expectedQueryParams;
-    expectedQueryParams.prefixMatch = true;
     expectedQueryParams.cacheName = "this is another cache name";
     testCache->setExpectedQueryParams(&expectedQueryParams);
 
     CacheQueryOptions options;
-    options.setPrefixMatch(1);
     options.setCacheName(expectedQueryParams.cacheName);
 
     const String url = "http://batch.operations.test/";

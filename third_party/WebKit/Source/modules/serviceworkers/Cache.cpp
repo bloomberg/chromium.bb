@@ -282,7 +282,6 @@ WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptio
     webQueryParams.ignoreSearch = options.ignoreSearch();
     webQueryParams.ignoreMethod = options.ignoreMethod();
     webQueryParams.ignoreVary = options.ignoreVary();
-    webQueryParams.prefixMatch = options.prefixMatch();
     webQueryParams.cacheName = options.cacheName();
     return webQueryParams;
 }

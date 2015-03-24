@@ -28,12 +28,11 @@ public:
 
     // Options that affect the scope of searches.
     struct QueryParams {
-        QueryParams() : ignoreSearch(false), ignoreMethod(false), ignoreVary(false), prefixMatch(false) { }
+        QueryParams() : ignoreSearch(false), ignoreMethod(false), ignoreVary(false) { }
 
         bool ignoreSearch;
         bool ignoreMethod;
         bool ignoreVary;
-        bool prefixMatch;
         WebString cacheName;
     };
 

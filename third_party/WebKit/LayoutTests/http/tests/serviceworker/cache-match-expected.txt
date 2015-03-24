@@ -17,14 +17,6 @@ FAIL Cache.matchAll with URL containing fragment promise_test: Unhandled rejecti
 PASS Cache.match with URL containing fragment 
 FAIL Cache.matchAll with string fragment "http" as query promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
 PASS Cache.match with string fragment "http" as query 
-FAIL Cache.matchAll with prefixMatch option promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
-PASS Cache.match with prefixMatch option 
-FAIL Cache.matchAll with prefixMatch option (URL ending with path delimiter) promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
-FAIL Cache.match with prefixMatch option (URL ending with path delimiter) assert_equals: Cache.match should honor prefixMatch.: Response expected (object) object "[object Response]" but got (undefined) undefined
-FAIL Cache.matchAll with prefixMatch option (URL with embedded credentials) promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
-FAIL Cache.match with prefixMatch option (URL with embedded credentials) assert_equals: Cache.match should honor prefixMatch.: Response expected (object) object "[object Response]" but got (undefined) undefined
-FAIL Cache.matchAll with prefixMatch option (URL matching embedded credentials) promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
-PASS Cache.match with prefixMatch option (URL matching embedded credentials) 
 FAIL Cache.matchAll with URL containing credentials promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
 PASS Cache.match with URL containing credentials 
 FAIL Cache.matchAll with responses containing "Vary" header promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"

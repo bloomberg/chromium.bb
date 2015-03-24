@@ -5,7 +5,5 @@ PASS Cache.delete called with a string URL
 FAIL Cache.delete called with a Request object promise_test: Unhandled rejection with value: object "TypeError: Request method 'POST' is unsupported"
 FAIL Cache.delete with a Request object containing used body promise_test: Unhandled rejection with value: object "TypeError: Request method 'POST' is unsupported"
 PASS Cache.delete with a non-existent entry 
-FAIL Cache.delete with CacheQueryOptions.* assert_true: Cache.delete should resolve with "true" if an entry was successfully deleted. expected true got false
-PASS Cache.delete with CacheQueryOptions.* that don't match 
 Harness: the test ran to completion.
 
