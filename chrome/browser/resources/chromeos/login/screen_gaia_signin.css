@@ -87,6 +87,7 @@ html[dir=rtl] #close-button-item {
 }
 
 html[dir=rtl] #back-button-item {
+  -webkit-transform: scaleX(-1);
   left: auto;
   right: 14px;
 }
