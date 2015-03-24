@@ -80,6 +80,7 @@ function test()
 
     function step4()
     {
+        promisePane._dataGrid._update();
         var result = InspectorTest.dumpDataGridIntoString(promisePane._dataGrid);
         result = result.replace(/\|\s+\d+\s+\w*\s*\|/g, "| <number> ms |");
         InspectorTest.addResult(result);
