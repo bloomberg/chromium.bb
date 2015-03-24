@@ -197,8 +197,8 @@ bool ShowDumpResults(const wchar_t* dump_path,
   return succeeded;
 }
 
-static void _cdecl ShowClientConnected(void* context,
-                                       const ClientInfo* client_info) {
+static void ShowClientConnected(void* context,
+                                const ClientInfo* client_info) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
   line[0] = _T('\0');
   int result = swprintf_s(line,
@@ -214,9 +214,9 @@ static void _cdecl ShowClientConnected(void* context,
   QueueUserWorkItem(AppendTextWorker, line, WT_EXECUTEDEFAULT);
 }
 
-static void _cdecl ShowClientCrashed(void* context,
-                                     const ClientInfo* client_info,
-                                     const wstring* dump_path) {
+static void ShowClientCrashed(void* context,
+                              const ClientInfo* client_info,
+                              const wstring* dump_path) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
   line[0] = _T('\0');
   int result = swprintf_s(line,
@@ -259,8 +259,8 @@ static void _cdecl ShowClientCrashed(void* context,
   QueueUserWorkItem(AppendTextWorker, line, WT_EXECUTEDEFAULT);
 }
 
-static void _cdecl ShowClientExited(void* context,
-                                    const ClientInfo* client_info) {
+static void ShowClientExited(void* context,
+                             const ClientInfo* client_info) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
   line[0] = _T('\0');
   int result = swprintf_s(line,

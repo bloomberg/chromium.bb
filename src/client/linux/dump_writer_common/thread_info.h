@@ -40,7 +40,7 @@
 namespace google_breakpad {
 
 #if defined(__i386) || defined(__x86_64)
-typedef typeof(((struct user*) 0)->u_debugreg[0]) debugreg_t;
+typedef __typeof__(((struct user*) 0)->u_debugreg[0]) debugreg_t;
 #endif
 
 // We produce one of these structures for each thread in the crashed process.

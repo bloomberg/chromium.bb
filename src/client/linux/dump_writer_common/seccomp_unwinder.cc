@@ -74,14 +74,14 @@ void SeccompUnwinder::PopSeccompStackFrame(RawContextCPU* cpu,
         uint64_t ret;
         /* char redzone[128]; */
       } seccomp_stackframe;
-      if (top - offsetof(typeof(seccomp_stackframe), deadbeef) < old_top ||
-          top - offsetof(typeof(seccomp_stackframe), deadbeef) +
+      if (top - offsetof(__typeof__(seccomp_stackframe), deadbeef) < old_top ||
+          top - offsetof(__typeof__(seccomp_stackframe), deadbeef) +
           sizeof(seccomp_stackframe) >
           thread.stack.start_of_memory_range+thread.stack.memory.data_size) {
         break;
       }
       my_memcpy(&seccomp_stackframe,
-                bp_addr - offsetof(typeof(seccomp_stackframe), deadbeef),
+                bp_addr - offsetof(__typeof__(seccomp_stackframe), deadbeef),
                 sizeof(seccomp_stackframe));
       cpu->rbx = seccomp_stackframe.rbx;
       cpu->rcx = seccomp_stackframe.rcx;
@@ -128,14 +128,14 @@ void SeccompUnwinder::PopSeccompStackFrame(RawContextCPU* cpu,
         uint32_t fakeret;
         uint32_t ret;
       } seccomp_stackframe;
-      if (top - offsetof(typeof(seccomp_stackframe), deadbeef) < old_top ||
-          top - offsetof(typeof(seccomp_stackframe), deadbeef) +
+      if (top - offsetof(__typeof__(seccomp_stackframe), deadbeef) < old_top ||
+          top - offsetof(__typeof__(seccomp_stackframe), deadbeef) +
           sizeof(seccomp_stackframe) >
           thread.stack.start_of_memory_range+thread.stack.memory.data_size) {
         break;
       }
       my_memcpy(&seccomp_stackframe,
-                bp_addr - offsetof(typeof(seccomp_stackframe), deadbeef),
+                bp_addr - offsetof(__typeof__(seccomp_stackframe), deadbeef),
                 sizeof(seccomp_stackframe));
       cpu->ebx = seccomp_stackframe.ebx;
       cpu->ecx = seccomp_stackframe.ecx;
