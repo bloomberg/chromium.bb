@@ -37,7 +37,6 @@
 #include "gl-renderer.h"
 #include "vertex-clipping.h"
 
-#include <EGL/eglext.h>
 #include "weston-egl-ext.h"
 
 struct gl_shader {
@@ -140,9 +139,7 @@ struct gl_renderer {
 	PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
 #endif
 
-#ifdef EGL_EXT_platform_base
 	PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window;
-#endif
 
 	int has_unpack_subimage;
 
@@ -170,9 +167,7 @@ struct gl_renderer {
 	struct wl_signal destroy_signal;
 };
 
-#ifdef EGL_EXT_platform_base
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
-#endif
 
 static inline struct gl_output_state *
 get_output_state(struct weston_output *output)
@@ -2006,19 +2001,18 @@ gl_renderer_output_create(struct weston_output *output,
 	if (go == NULL)
 		return -1;
 
-#ifdef EGL_EXT_platform_base
 	if (gr->create_platform_window) {
 		go->egl_surface =
 			gr->create_platform_window(gr->egl_display,
 						   egl_config,
 						   window_for_platform,
 						   NULL);
-	} else
-#endif
+	} else {
 		go->egl_surface =
 			eglCreateWindowSurface(gr->egl_display,
 					       egl_config,
 					       window_for_legacy, NULL);
+	}
 
 	if (go->egl_surface == EGL_NO_SURFACE) {
 		weston_log("failed to create egl surface\n");
@@ -2138,7 +2132,6 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 			   "supported. Performance could be affected.\n");
 #endif
 
-#ifdef EGL_EXT_platform_base
 	extensions =
 		(const char *) eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 	if (!extensions) {
@@ -2151,7 +2144,6 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 			(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
 	else
 		weston_log("warning: EGL_EXT_platform_base not supported.\n");
-#endif
 
 #ifdef EGL_MESA_configless_context
 	if (strstr(extensions, "EGL_MESA_configless_context"))
@@ -2286,8 +2278,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	gr->base.surface_copy_content = gl_renderer_surface_copy_content;
 	gr->egl_display = NULL;
 
-#ifdef EGL_EXT_platform_base
-	/* the platform extension is supported */
+	/* extension_suffix is supported */
 	if (supports) {
 		if (!get_platform_display) {
 			get_platform_display = (void *) eglGetProcAddress(
@@ -2304,7 +2295,6 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 							       NULL);
 		}
 	}
-#endif
 
 	if (!gr->egl_display) {
 		weston_log("warning: either no EGL_EXT_platform_base "

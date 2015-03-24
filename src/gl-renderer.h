@@ -35,11 +35,17 @@ typedef int EGLint;
 typedef int EGLenum;
 typedef void *EGLDisplay;
 typedef void *EGLSurface;
+typedef void *EGLConfig;
 typedef intptr_t EGLNativeDisplayType;
 typedef intptr_t EGLNativeWindowType;
 #define EGL_DEFAULT_DISPLAY ((EGLNativeDisplayType)0)
 
 #endif /* ENABLE_EGL */
+
+#ifndef EGL_EXT_platform_base
+typedef EGLDisplay (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
+typedef EGLSurface (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy, EGLConfig config, void *native_window, const EGLint *attrib_list);
+#endif
 
 #ifndef EGL_PLATFORM_GBM_KHR
 #define EGL_PLATFORM_GBM_KHR 0x31D7
