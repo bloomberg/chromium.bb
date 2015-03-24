@@ -63,9 +63,6 @@ crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
-crbug.com/460198 virtual/slimmingpaint/fast/css/transformed-mask.html [ NeedsRebaseline ]
-crbug.com/460198 virtual/slimmingpaint/svg/text/text-align-05-b.svg [ NeedsRebaseline ]
-
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
 
