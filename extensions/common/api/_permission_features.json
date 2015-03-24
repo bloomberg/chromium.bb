@@ -222,7 +222,7 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "networking.config": {
-    "channel": "dev",
+    "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension"]
   },
