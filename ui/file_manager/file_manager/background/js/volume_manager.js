@@ -250,7 +250,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
         chrome.fileSystem.requestFileSystem(
             {
               volumeId: volumeMetadata.volumeId,
-              writable: true
+              writable: !volumeMetadata.isReadOnly
             },
             function(isolatedFileSystem) {
               if (chrome.runtime.lastError)
