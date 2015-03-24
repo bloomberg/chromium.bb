@@ -721,6 +721,24 @@
             'angle_end2end_tests_main.cc',
           ],
         },
+        {
+          # TODO(jmadill): port this target to the GN build.
+          'target_name': 'angle_perftests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+          ],
+          'includes':
+          [
+            '../third_party/angle/build/common_defines.gypi',
+            '../third_party/angle/src/tests/angle_perftests.gypi',
+          ],
+          'sources':
+          [
+            'angle_perftests_main.cc',
+          ],
+        },
       ],
     }],
     ['test_isolation_mode != "noop"', {

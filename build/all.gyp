@@ -557,6 +557,7 @@
             ['OS=="win"', {
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
+                '../gpu/gpu.gyp:angle_perftests',
               ],
             }],
             ['OS=="win" and target_arch=="ia32"', {
