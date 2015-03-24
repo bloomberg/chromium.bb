@@ -1910,9 +1910,6 @@ crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
 # This needs to be removed after chromium patch lands (crbug.com/455241)
 crbug.com/469613 http/tests/serviceworker/chromium/clients-openwindow.html [ Failure ]
 
-# These need a rebaseline after crbug.com/451346
-crbug.com/451346 tables/mozilla/bugs/bug2886-2.html [ NeedsRebaseline ]
-
 crbug.com/469636 [ Debug ] inspector/elements/edit-dom-actions.html [ Pass Failure ]
 
 crbug.com/469641 [ XP Release ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
