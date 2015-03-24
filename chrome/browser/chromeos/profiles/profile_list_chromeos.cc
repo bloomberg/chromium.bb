@@ -63,7 +63,9 @@ void ProfileListChromeOS::RebuildMenu() {
     item->name = (*it)->GetDisplayName();
     item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
     item->profile_path = profile_info_->GetPathOfProfileAtIndex(i);
-    item->supervised = false;
+    DCHECK(!profile_info_->ProfileIsLegacySupervisedAtIndex(i));
+    item->legacy_supervised = false;
+    item->child_account = profile_info_->ProfileIsChildAtIndex(i);
     item->signed_in = true;
     item->active = profile_info_->GetPathOfProfileAtIndex(i) ==
         active_profile_path_;

@@ -8001,6 +8001,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SUPERVISED_USER_NEW_AVATAR_LABEL" desc="Label shown in the new avatar menu for a supervised user.">
         <ph name="PROFILE_DISPLAY_NAME">$1<ex>Markus</ex></ph> (Supervised)
       </message>
+      <message name="IDS_CHILD_AVATAR_LABEL" desc="Label shown in the new avatar menu for a child user.">
+        <ph name="PROFILE_DISPLAY_NAME">$1<ex>Markus</ex></ph> (Account for kids)
+      </message>
 
       <!-- Supervised User Block Interstitial data -->
       <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the supervised-user block interstitial page.">

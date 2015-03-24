@@ -51,12 +51,14 @@ void ProfileListDesktop::RebuildMenu() {
     item->name = profile_info_->GetNameOfProfileAtIndex(i);
     item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
     item->profile_path = profile_info_->GetPathOfProfileAtIndex(i);
-    item->supervised = profile_info_->ProfileIsSupervisedAtIndex(i);
+    item->legacy_supervised =
+        profile_info_->ProfileIsLegacySupervisedAtIndex(i);
+    item->child_account = profile_info_->ProfileIsChildAtIndex(i);
     item->signed_in = !item->sync_state.empty();
     if (!item->signed_in) {
       item->sync_state = l10n_util::GetStringUTF16(
-          item->supervised ? IDS_SUPERVISED_USER_AVATAR_LABEL :
-                             IDS_PROFILES_LOCAL_PROFILE_STATE);
+          item->legacy_supervised ? IDS_SUPERVISED_USER_AVATAR_LABEL :
+                                    IDS_PROFILES_LOCAL_PROFILE_STATE);
     }
     item->active = profile_info_->GetPathOfProfileAtIndex(i) ==
         active_profile_path_;

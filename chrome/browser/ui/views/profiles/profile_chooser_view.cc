@@ -1279,9 +1279,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 
-  int num_avatars_to_show = avatars_to_show.size();
-  for (int i = 0; i < num_avatars_to_show; ++i) {
-    const size_t index = avatars_to_show[i];
+  for (size_t index : avatars_to_show) {
     const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
     const int kSmallImageSide = 32;
 
@@ -1293,9 +1291,11 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
         item.profile_path, &item_icon, &is_rectangle);
 
     base::string16 title = item.name;
-    if (item.supervised) {
+    if (item.legacy_supervised) {
       title = l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
                                          title);
+    } else if (item.child_account) {
+      title = l10n_util::GetStringFUTF16(IDS_CHILD_AVATAR_LABEL, title);
     }
 
     gfx::Image image = profiles::GetSizedAvatarIcon(
