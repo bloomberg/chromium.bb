@@ -532,6 +532,9 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (m_accelerationDisabled)
         return false;
 
+    if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
+        return false;
+
     Settings* settings = document().settings();
     if (!settings || !settings->accelerated2dCanvasEnabled())
         return false;
@@ -556,46 +559,12 @@ public:
     virtual ~UnacceleratedSurfaceFactory() { }
 };
 
-class Accelerated2dSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
-public:
-    Accelerated2dSurfaceFactory(int msaaSampleCount) : m_msaaSampleCount(msaaSampleCount) { }
-
-    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
-    {
-        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(size, opacityMode, m_msaaSampleCount));
-        if (surface->isValid())
-            return surface.release();
-        return adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
-    }
-
-    virtual ~Accelerated2dSurfaceFactory() { }
-private:
-    int m_msaaSampleCount;
-};
-
-PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> HTMLCanvasElement::createSurfaceFactory(const IntSize& deviceSize, int* msaaSampleCount) const
-{
-    *msaaSampleCount = 0;
-    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory;
-    if (shouldAccelerate(deviceSize)) {
-        if (document().settings())
-            *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
-        surfaceFactory = adoptPtr(new Accelerated2dSurfaceFactory(*msaaSampleCount));
-    } else {
-        surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory());
-    }
-    return surfaceFactory.release();
-}
-
 bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize)
 {
     if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
         return true;
 
     if (!RuntimeEnabledFeatures::displayList2dCanvasEnabled())
-        return false;
-
-    if (shouldAccelerate(deviceSize))
         return false;
 
     return true;
@@ -618,13 +587,22 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
         return adoptPtr(new AcceleratedImageBufferSurface(deviceSize, opacityMode));
     }
 
-    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount);
+    if (shouldAccelerate(deviceSize)) {
+        int msaaSampleCount = 0;
+        if (document().settings())
+            msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(deviceSize, opacityMode, msaaSampleCount));
+        if (surface->isValid())
+            return surface.release();
+    }
+
+    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory());
 
     if (shouldUseDisplayList(deviceSize)) {
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, surfaceFactory.release(), opacityMode));
         if (surface->isValid())
             return surface.release();
-        surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount); // recreate because previous one was released
+        surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory()); // recreate because previous one was released
     }
 
     return surfaceFactory->createSurface(deviceSize, opacityMode);

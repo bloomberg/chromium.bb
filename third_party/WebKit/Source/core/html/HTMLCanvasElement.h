@@ -55,7 +55,6 @@ class ImageData;
 class ImageBuffer;
 class ImageBufferSurface;
 class IntSize;
-class RecordingImageBufferFallbackSurfaceFactory;
 
 class CanvasObserver : public WillBeGarbageCollectedMixin {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CanvasObserver);
@@ -183,7 +182,6 @@ private:
 
     void reset();
 
-    PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> createSurfaceFactory(const IntSize& deviceSize, int* msaaSampleCount) const;
     PassOwnPtr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
     void createImageBuffer();
     void createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface);
