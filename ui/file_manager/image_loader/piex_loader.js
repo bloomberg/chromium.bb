@@ -53,31 +53,37 @@ function PiexLoader() {
    * @const
    */
   this.naclPromise_ = new Promise(function(fulfill) {
-    var embed = this.naclModule_;
-    embed.setAttribute('type', 'application/x-pnacl');
-    // The extension nmf is not allowed to load. We uses .nmf.js instead.
-    embed.setAttribute('src', '/pnacl/piex_loader.nmf.js');
-    embed.width = 0;
-    embed.height = 0;
+    chrome.fileManagerPrivate.isPiexLoaderEnabled(fulfill);
+  }).then(function(enabled) {
+    if (!enabled)
+      return Promise.reject('PiexLoader is not enabled for chromium build.');
+    return new Promise(function(fulfill, reject) {
+      var embed = this.naclModule_;
+      embed.setAttribute('type', 'application/x-pnacl');
+      // The extension nmf is not allowed to load. We uses .nmf.js instead.
+      embed.setAttribute('src', '/piex/piex.nmf.txt');
+      embed.width = 0;
+      embed.height = 0;
 
-    // The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
-    // and a 'message' event listener attached.  This wrapping method is used
-    // instead of attaching the event listeners directly to the <EMBED> element
-    // to ensure that the listeners are active before the NaCl module 'load'
-    // event fires.
-    var listenerContainer = document.createElement('div');
-    listenerContainer.appendChild(embed);
-    listenerContainer.addEventListener('load', fulfill, true);
-    listenerContainer.addEventListener(
-        'message', this.onMessage_.bind(this), true);
-    listenerContainer.addEventListener('error', function() {
-      console.error(embed['lastError']);
-    }.bind(this), true);
-    listenerContainer.addEventListener('crash', function() {
-      console.error('PiexLoader crashed.');
-    }.bind(this), true);
-    listenerContainer.style.height = '0px';
-    document.body.appendChild(listenerContainer);
+      // The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
+      // and a 'message' event listener attached.  This wrapping method is used
+      // instead of attaching the event listeners directly to the <EMBED>
+      // element to ensure that the listeners are active before the NaCl module
+      // 'load' event fires.
+      var listenerContainer = document.createElement('div');
+      listenerContainer.appendChild(embed);
+      listenerContainer.addEventListener('load', fulfill, true);
+      listenerContainer.addEventListener(
+          'message', this.onMessage_.bind(this), true);
+      listenerContainer.addEventListener('error', function() {
+        reject(embed['lastError']);
+      }.bind(this), true);
+      listenerContainer.addEventListener('crash', function() {
+        reject('PiexLoader crashed.');
+      }.bind(this), true);
+      listenerContainer.style.height = '0px';
+      document.body.appendChild(listenerContainer);
+    }.bind(this));
   }.bind(this));
 
   /**

@@ -7,6 +7,7 @@
       'target_name': 'background',
       'variables': {
         'depends': [
+          "../file_manager/common/js/file_type.js",
           "../file_manager/foreground/js/metadata/image_orientation.js",
           'cache.js',
           'image_loader.js',

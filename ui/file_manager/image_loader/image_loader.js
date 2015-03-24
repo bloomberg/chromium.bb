@@ -21,6 +21,12 @@ function ImageLoader() {
    */
   this.scheduler_ = new Scheduler();
 
+  /**
+   * Piex loader for RAW images.
+   * @private {!PiexLoader}
+   */
+  this.piexLoader_ = new PiexLoader();
+
   // Grant permissions to all volumes, initialize the cache and then start the
   // scheduler.
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
@@ -99,7 +105,8 @@ ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
     return false;  // No callback calls.
   } else {
     // Create a request task and add it to the scheduler (queue).
-    var requestTask = new Request(requestId, this.cache_, request, callback);
+    var requestTask = new Request(
+        requestId, this.cache_, this.piexLoader_, request, callback);
     this.scheduler_.add(requestTask);
     return true;  // Request will call the callback.
   }
@@ -203,32 +210,20 @@ ImageLoader.resize = function(source, target, options) {
   var targetDimensions = ImageLoader.resizeDimensions(
       source.width, source.height, options);
 
-  target.width = targetDimensions.width;
-  target.height = targetDimensions.height;
-
   // Default orientation is 0deg.
-  var orientation = options.orientation || 0;
-
-  // For odd orientation values: 1 (90deg) and 3 (270deg) flip dimensions.
-  var drawImageWidth;
-  var drawImageHeight;
-  if (orientation % 2) {
-    drawImageWidth = target.height;
-    drawImageHeight = target.width;
-  } else {
-    drawImageWidth = target.width;
-    drawImageHeight = target.height;
-  }
+  var orientation = options.orientation || new ImageOrientation(1, 0, 0, 1);
+  var size = orientation.getSizeAfterCancelling(
+      targetDimensions.width, targetDimensions.height);
+  target.width = size.width;
+  target.height = size.height;
 
   var targetContext = target.getContext('2d');
   targetContext.save();
-  targetContext.translate(target.width / 2, target.height / 2);
-  targetContext.rotate(orientation * Math.PI / 2);
+  orientation.cancelImageOrientation(
+      targetContext, targetDimensions.width, targetDimensions.height);
   targetContext.drawImage(
       source,
-      0, 0,
-      source.width, source.height,
-      -drawImageWidth / 2, -drawImageHeight / 2,
-      drawImageWidth, drawImageHeight);
+      0, 0, source.width, source.height,
+      0, 0, targetDimensions.width, targetDimensions.height);
   targetContext.restore();
 };

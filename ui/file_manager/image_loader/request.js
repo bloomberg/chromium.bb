@@ -8,7 +8,8 @@
  *   priority: (number|undefined),
  *   taskId: number,
  *   timestamp: (number|undefined),
- *   url: string
+ *   url: string,
+ *   orientation: ImageOrientation
  * }}
  */
 var LoadImageRequest;
@@ -19,11 +20,12 @@ var LoadImageRequest;
  *
  * @param {string} id Request ID.
  * @param {Cache} cache Cache object.
+ * @param {!PiexLoader} piexLoader Piex loader for RAW file.
  * @param {LoadImageRequest} request Request message as a hash array.
  * @param {function(Object)} callback Callback used to send the response.
  * @constructor
  */
-function Request(id, cache, request, callback) {
+function Request(id, cache, piexLoader, request, callback) {
   /**
    * @type {string}
    * @private
@@ -35,6 +37,12 @@ function Request(id, cache, request, callback) {
    * @private
    */
   this.cache_ = cache;
+
+  /**
+   * @type {!PiexLoader}
+   * @private
+   */
+  this.piexLoader_ = piexLoader;
 
   /**
    * @type {LoadImageRequest}
@@ -226,11 +234,24 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     return;
   }
 
+  // Load RAW images by using Piex loader instead of XHR.
+  if (FileType.getTypeForName(this.request_.url).type === 'raw') {
+    this.piexLoader_.load(this.request_.url).then(function(data) {
+      var blob = new Blob([data.thumbnail], {type: 'image/jpeg'});
+      var url = URL.createObjectURL(blob);
+      this.image_.src = url;
+      this.request_.orientation = data.orientation;
+    }.bind(this), function(error) {
+      console.error('PiexLoaderError: ', error);
+      onFailure();
+    });
+    return;
+  }
+
   // Fetch the image via authorized XHR and parse it.
   var parseImage = function(contentType, blob) {
     if (contentType)
       this.contentType_ = contentType;
-
     this.image_.src = URL.createObjectURL(blob);
   }.bind(this);
 

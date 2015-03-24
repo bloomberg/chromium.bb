@@ -18,6 +18,7 @@
   "background": {
     "scripts": [
       "cache.js",
+      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
       "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/image_orientation.js",
       "image_loader.js",
       "piex_loader.js",
