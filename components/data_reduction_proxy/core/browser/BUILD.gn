@@ -8,6 +8,8 @@ static_library("browser") {
     "data_reduction_proxy_bypass_protocol.h",
     "data_reduction_proxy_config.cc",
     "data_reduction_proxy_config.h",
+    "data_reduction_proxy_config_service_client.cc",
+    "data_reduction_proxy_config_service_client.h",
     "data_reduction_proxy_configurator.cc",
     "data_reduction_proxy_configurator.h",
     "data_reduction_proxy_debug_ui_service.h",
@@ -41,6 +43,7 @@ static_library("browser") {
     "//base",
     "//base:prefs",
     "//components/data_reduction_proxy/core/common",
+    "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
     "//components/pref_registry",
     "//crypto",
     "//net",
@@ -85,6 +88,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "data_reduction_proxy_bypass_protocol_unittest.cc",
+    "data_reduction_proxy_config_service_client_unittest.cc",
     "data_reduction_proxy_config_unittest.cc",
     "data_reduction_proxy_configurator_unittest.cc",
     "data_reduction_proxy_interceptor_unittest.cc",
@@ -105,6 +109,7 @@ source_set("unit_tests") {
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/data_reduction_proxy/core/common:test_support",
+    "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

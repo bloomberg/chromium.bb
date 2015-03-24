@@ -5,9 +5,15 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_TEST_UTILS_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
@@ -18,7 +24,6 @@ class TestingPrefServiceSimple;
 
 namespace base {
 class MessageLoopForUI;
-class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -39,6 +44,44 @@ class DataReductionProxyStatisticsPrefs;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
 class TestDataReductionProxyConfigurator;
+
+// Test version of |DataReductionProxyRequestOptions|.
+class TestDataReductionProxyRequestOptions
+    : public DataReductionProxyRequestOptions {
+ public:
+  TestDataReductionProxyRequestOptions(
+      Client client,
+      const std::string& version,
+      DataReductionProxyConfig* config,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Overrides of DataReductionProxyRequestOptions.
+  std::string GetDefaultKey() const override;
+  base::Time Now() const override;
+  void RandBytes(void* output, size_t length) const override;
+
+  // Time after the unix epoch that Now() reports.
+  void set_offset(const base::TimeDelta& now_offset);
+
+ private:
+  base::TimeDelta now_offset_;
+};
+
+// Mock version of |DataReductionProxyRequestOptions|.
+class MockDataReductionProxyRequestOptions
+    : public DataReductionProxyRequestOptions {
+ public:
+  MockDataReductionProxyRequestOptions(
+      Client client,
+      const std::string& version,
+      DataReductionProxyConfig* config,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  ~MockDataReductionProxyRequestOptions();
+
+  MOCK_CONST_METHOD1(PopulateConfigResponse,
+                     void(base::DictionaryValue* response));
+};
 
 // Test version of |DataReductionProxyService|, which permits mocking of various
 // methods.
@@ -118,6 +161,10 @@ class DataReductionProxyTestContext {
     // |DataReductionProxyService|.
     Builder& WithMockDataReductionProxyService();
 
+    // Specifies the use of |MockDataReductionProxyRequestOptions| instead of
+    // |DataReductionProxyRequestOptions|.
+    Builder& WithMockRequestOptions();
+
     // Construct, but do not initialize the |DataReductionProxySettings| object.
     Builder& SkipSettingsInitialization();
 
@@ -134,6 +181,7 @@ class DataReductionProxyTestContext {
     bool use_mock_config_;
     bool use_test_configurator_;
     bool use_mock_service_;
+    bool use_mock_request_options_;
     bool skip_settings_initialization_;
   };
 
@@ -178,6 +226,10 @@ class DataReductionProxyTestContext {
   // Returns the underlying |MockDataReductionProxyService|. This can only
   // be called if built with WithMockDataReductionProxyService.
   MockDataReductionProxyService* mock_data_reduction_proxy_service() const;
+
+  // Returns the underlying |MockDataReductionProxyRequestOptions|. This can
+  // only be called if built with WithMockRequestOptions.
+  MockDataReductionProxyRequestOptions* mock_request_options() const;
 
   // Obtains a callback for notifying that the Data Reduction Proxy is no
   // longer reachable.
@@ -233,6 +285,8 @@ class DataReductionProxyTestContext {
     SKIP_SETTINGS_INITIALIZATION = 0x4,
     // Permits mocking of the underlying |DataReductionProxyService|.
     USE_MOCK_SERVICE = 0x8,
+    // Permits mocking of the underlying |DataReductionProxyRequestOptions|.
+    USE_MOCK_REQUEST_OPTIONS = 0x10,
   };
 
   DataReductionProxyTestContext(

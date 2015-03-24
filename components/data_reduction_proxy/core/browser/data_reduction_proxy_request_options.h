@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 
 namespace base {
+class DictionaryValue;
 class SingleThreadTaskRunner;
 }
 
@@ -65,6 +66,22 @@ class DataReductionProxyRequestOptions {
  public:
   static bool IsKeySetOnCommandLine();
 
+  // A pair of functions to convert the session and credentials for the Data
+  // Reduction Proxy to and from a single string; they are used to encode the
+  // session and credentials values into the |session_key| field of the
+  // ClientConfig protocol buffer. The delimiter used is '|', as it is not a
+  // valid character in a session or credentials string.
+  //
+  // CreateLocalSessionKey joins session and credentials with the delimiter.
+  static std::string CreateLocalSessionKey(const std::string& session,
+                                           const std::string& credentials);
+
+  // ParseLocalSessionKey splits the output of CreateLocalSessionKey into its
+  // two components. |session| and |credentials| must not be null.
+  static bool ParseLocalSessionKey(const std::string& session_key,
+                                   std::string* session,
+                                   std::string* credentials);
+
   // Constructs a DataReductionProxyRequestOptions object with the given
   // client type, config, and network task runner.
   DataReductionProxyRequestOptions(
@@ -104,6 +121,10 @@ class DataReductionProxyRequestOptions {
   // SetKeyOnIO is called.
   void SetKeyOnIO(const std::string& key);
 
+  // Populates |response| with the Data Reduction Proxy authentication info.
+  // Virtualized for testing.
+  virtual void PopulateConfigResponse(base::DictionaryValue* response) const;
+
  protected:
   void SetHeader(net::HttpRequestHeaders* headers);
 
@@ -114,7 +135,7 @@ class DataReductionProxyRequestOptions {
                                         const std::string& key);
   // Visible for testing.
   virtual base::Time Now() const;
-  virtual void RandBytes(void* output, size_t length);
+  virtual void RandBytes(void* output, size_t length) const;
 
   // Visible for testing.
   virtual std::string GetDefaultKey() const;
@@ -153,7 +174,7 @@ class DataReductionProxyRequestOptions {
   // the data reduction proxy.
   void ComputeCredentials(const base::Time& now,
                           std::string* session,
-                          std::string* credentials);
+                          std::string* credentials) const;
 
   // Generates and updates the session ID and credentials.
   void UpdateCredentials();
@@ -186,9 +207,9 @@ class DataReductionProxyRequestOptions {
   std::string lofi_;
   std::vector<std::string> experiments_;
 
-  // The last time the session was updated. Used to ensure that a session is
+  // The time at which the session expires. Used to ensure that a session is
   // never used for more than twenty-four hours.
-  base::Time last_credentials_update_time_;
+  base::Time credentials_expiration_time_;
 
   DataReductionProxyConfig* data_reduction_proxy_config_;
 
