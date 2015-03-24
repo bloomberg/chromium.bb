@@ -1,0 +1,70 @@
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.settingsPrivate</code> API to get or set preferences
+// from the settings UI.
+namespace settingsPrivate {
+  // Type of a pref.
+  enum PrefType { BOOLEAN, NUMBER, STRING, URL };
+
+  // Source of a pref (device, user).
+  enum PrefSource { DEVICE, USER };
+
+  dictionary PrefObject {
+    // The key for the pref.
+    DOMString key;
+
+    // The type of the pref (e.g., boolean, string, etc.).
+    PrefType type;
+
+    // The current value of the pref.
+    any value;
+
+    // The source of the pref (e.g., device, user).
+    PrefSource source;
+  };
+
+  callback OnPrefSetCallback = void (boolean success);
+  callback GetAllPrefsCallback = void (PrefObject[] prefs);
+  callback GetPrefCallback = void (PrefObject pref);
+
+  interface Functions {
+    // Sets a boolean settings value.
+    // |name|: The name of the pref.
+    // |value|: The new value of the pref.
+    static void setBooleanPref(DOMString name, boolean value,
+        optional OnPrefSetCallback callback);
+
+    // Sets a number settings value.
+    // |name|: The name of the pref.
+    // |value|: The new value of the pref.
+    static void setNumericPref(DOMString name, double value,
+        optional OnPrefSetCallback callback);
+
+    // Sets a string settings value.
+    // |name|: The name of the pref.
+    // |value|: The new value of the pref.
+    static void setStringPref(DOMString name, DOMString value,
+        optional OnPrefSetCallback callback);
+
+    // Sets a URL settings value.
+    // |name|: The name of the pref.
+    // |value|: The new value of the pref.
+    static void setURLPref(DOMString name, DOMString value,
+        optional OnPrefSetCallback callback);
+
+    // Gets an array of all the prefs.
+    static void getAllPrefs(GetAllPrefsCallback callback);
+
+    // Gets the value of a specific pref.
+    static void getPref(DOMString name, GetPrefCallback callback);
+  };
+
+  interface Events {
+    // Fired when a set of prefs has changed.
+    //
+    // |callback|: Callback fired with a list of prefs that changed.
+    static void onPrefsChanged(GetAllPrefsCallback callback);
+  };
+};

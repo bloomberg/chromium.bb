@@ -862,6 +862,12 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "settingsPrivate": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos", "mac", "win", "linux"],
+    "whitelist": []
+  },
   "signedInDevices": {
     "channel": "dev",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]

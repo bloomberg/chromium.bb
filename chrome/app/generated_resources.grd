@@ -4726,6 +4726,9 @@ Even if you have downloaded files from this website before, the website might ha
         Read and change anything you type including task switching keys like ALT+TAB
       </message>
       </if>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SETTINGS_PRIVATE" desc="Permission string for access to settings.">
+        Read and change user and device settings
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">

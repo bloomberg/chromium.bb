@@ -333,6 +333,11 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        "firstRunPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kInlineInstallPrivate, "inlineInstallPrivate"},
+      {APIPermission::kSettingsPrivate,
+       "settingsPrivate",
+       APIPermissionInfo::kFlagCannotBeOptional,
+       IDS_EXTENSION_PROMPT_WARNING_SETTINGS_PRIVATE,
+       PermissionMessage::kSettingsPrivate},
 
       // Full url access permissions.
       {APIPermission::kDebugger,

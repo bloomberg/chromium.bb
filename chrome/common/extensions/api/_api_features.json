@@ -619,6 +619,18 @@
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]
   },
+  "settingsPrivate": [{
+    "dependencies": ["permission:settingsPrivate"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "trunk",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "signedInDevices": {
     "dependencies": ["permission:signedInDevices"],
     "contexts": ["blessed_extension"]

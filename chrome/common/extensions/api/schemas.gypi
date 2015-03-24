@@ -68,6 +68,7 @@
       'reading_list_private.json',
       'screenlock_private.idl',
       'sessions.json',
+      'settings_private.idl',
       'signed_in_devices.idl',
       'streams_private.idl',
       'sync_file_system.idl',

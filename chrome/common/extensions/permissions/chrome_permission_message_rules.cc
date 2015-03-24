@@ -454,9 +454,7 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
        {APIPermission::kManagement},
        {}},
-      {IDS_EXTENSION_PROMPT_WARNING_MDNS,
-       {APIPermission::kMDns},
-       {}},
+      {IDS_EXTENSION_PROMPT_WARNING_MDNS, {APIPermission::kMDns}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_NATIVE_MESSAGING,
        {APIPermission::kNativeMessaging},
        {}},
@@ -495,6 +493,9 @@ ChromePermissionMessageRule::GetAllRules() {
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_MUSIC_MANAGER_PRIVATE,
        {APIPermission::kMusicManagerPrivate},
+       {}},
+      {IDS_EXTENSION_PROMPT_WARNING_SETTINGS_PRIVATE,
+       {APIPermission::kSettingsPrivate},
        {}},
 
       // Platform-app permission messages.
