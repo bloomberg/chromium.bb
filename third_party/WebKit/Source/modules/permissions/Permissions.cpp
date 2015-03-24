@@ -37,7 +37,6 @@ Permissions::~Permissions()
 {
 }
 
-// static
 ScriptPromise Permissions::query(ScriptState* scriptState, const AtomicString& permissionName)
 {
     WebPermissionClient* client = permissionClient(scriptState->executionContext());

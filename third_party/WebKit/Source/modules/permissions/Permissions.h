@@ -26,7 +26,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    static ScriptPromise query(ScriptState*, const AtomicString&);
+    ScriptPromise query(ScriptState*, const AtomicString&);
 };
 
 } // namespace blink

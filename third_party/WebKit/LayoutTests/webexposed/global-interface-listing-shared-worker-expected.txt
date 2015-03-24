@@ -585,6 +585,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onchange
 [Worker] interface Permissions
 [Worker]     method constructor
+[Worker]     method query
 [Worker] interface Promise
 [Worker]     method catch
 [Worker]     method chain
@@ -912,6 +913,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter geofencing
 [Worker]     getter hardwareConcurrency
 [Worker]     getter onLine
+[Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
 [Worker]     getter userAgent

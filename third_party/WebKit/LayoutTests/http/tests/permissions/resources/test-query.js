@@ -7,27 +7,25 @@ if (self.importScripts) {
         importScripts('../../resources/testharness.js');
 }
 
-// FIXME: re-enable when WebPermissionClient is implemented in Chromium.
-//async_test(function(test) {
-//    Permissions.query('geolocation').then(function() {
-//        assert_unreached('Permissions.query() should not succeed (for now).')
-//    }, function(e) {
-//        assert_true(e instanceof DOMException);
-//        assert_equals('NotSupportedError', e.name);
-//    }).then(function() {
-//        test.done();
-//    });
-//}, 'Check the Permissions.query() normal behavior in ' + get_current_scope() + ' scope.');
+async_test(function(test) {
+   navigator.permissions.query('geolocation').then(function(result) {
+       // TODO(mlamouri): test values when some instrumentation are done.
+       assert_true(result instanceof PermissionStatus);
+       test.done();
+   }).catch(function() {
+        assert_unreached('navigator.permissions.query() should not fail.')
+   });
+}, 'Check the navigator.permissions.query() normal behavior in ' + get_current_scope() + ' scope.');
 
 async_test(function(test) {
-    Permissions.query('unknown-keyword').then(function() {
-        assert_unreached('Permissions.query() should not succeed (for now).')
+    navigator.permissions.query('unknown-keyword').then(function() {
+        assert_unreached('navigator.permissions.query() should not succeed (for now).')
     }, function(e) {
         assert_true(e instanceof TypeError);
         assert_equals('TypeError', e.name);
     }).then(function() {
         test.done();
     });
-}, 'Check the Permissions.query() with wrong keyword in ' + get_current_scope() + ' scope.');
+}, 'Check the navigator.permissions.query() with wrong keyword in ' + get_current_scope() + ' scope.');
 
 done();
