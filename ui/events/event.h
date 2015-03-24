@@ -473,10 +473,6 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   int y_offset() const { return offset_.y(); }
   const gfx::Vector2d& offset() const { return offset_; }
 
-  // Overridden from LocatedEvent.
-  void UpdateForRootTransform(
-      const gfx::Transform& inverted_root_transform) override;
-
  private:
   gfx::Vector2d offset_;
 };

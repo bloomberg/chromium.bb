@@ -505,22 +505,6 @@ const int MouseWheelEvent::kWheelDelta = 120;
 const int MouseWheelEvent::kWheelDelta = 53;
 #endif
 
-void MouseWheelEvent::UpdateForRootTransform(
-    const gfx::Transform& inverted_root_transform) {
-  LocatedEvent::UpdateForRootTransform(inverted_root_transform);
-  gfx::DecomposedTransform decomp;
-  bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
-  DCHECK(success);
-  if (decomp.scale[0]) {
-    offset_.set_x(
-        gfx::ToRoundedInt(SkMScalarToFloat(offset_.x() * decomp.scale[0])));
-  }
-  if (decomp.scale[1]) {
-    offset_.set_y(
-        gfx::ToRoundedInt(SkMScalarToFloat(offset_.y() * decomp.scale[1])));
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent
 
