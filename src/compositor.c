@@ -5332,11 +5332,6 @@ int main(int argc, char *argv[])
 	ec->default_pointer_grab = NULL;
 	ec->exit_code = EXIT_SUCCESS;
 
-	for (i = 1; i < argc; i++)
-		weston_log("fatal: unhandled option: %s\n", argv[i]);
-	if (argc > 1)
-		goto out;
-
 	weston_compositor_log_capabilities(ec);
 
 	server_socket = getenv("WAYLAND_SERVER_SOCKET");
@@ -5387,6 +5382,11 @@ int main(int argc, char *argv[])
 							  WESTON_NUM_LOCK);
 		}
 	}
+
+	for (i = 1; i < argc; i++)
+		weston_log("fatal: unhandled option: %s\n", argv[i]);
+	if (argc > 1)
+		goto out;
 
 	weston_compositor_wake(ec);
 
