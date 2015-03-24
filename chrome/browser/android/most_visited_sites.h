@@ -108,9 +108,6 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   // The maximum number of most visited sites to return.
   int num_sites_;
 
-  // Whether the user is in a control group for the purposes of logging.
-  bool is_control_group_;
-
   // Keeps track of whether the initial NTP load has been done.
   bool initial_load_done_;
 

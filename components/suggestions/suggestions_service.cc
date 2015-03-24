@@ -17,7 +17,6 @@
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/variations/net/variations_http_header_provider.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -51,12 +50,6 @@ void LogResponseState(SuggestionsResponseState state) {
                             RESPONSE_STATE_SIZE);
 }
 
-// Obtains the experiment parameter under the supplied |key|, or empty string
-// if the parameter does not exist.
-std::string GetExperimentParam(const std::string& key) {
-  return variations::GetVariationParamValue(kSuggestionsFieldTrialName, key);
-}
-
 GURL BuildBlacklistRequestURL(const std::string& blacklist_url_prefix,
                               const GURL& candidate_url) {
   return GURL(blacklist_url_prefix +
@@ -88,11 +81,6 @@ const int kSchedulingMaxDelaySec = 5 * 60;
 
 }  // namespace
 
-const char kSuggestionsFieldTrialName[] = "ChromeSuggestions";
-const char kSuggestionsFieldTrialControlParam[] = "control";
-const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
-const char kSuggestionsFieldTrialStateParam[] = "state";
-
 // TODO(mathp): Put this in TemplateURL.
 const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=2";
 const char kSuggestionsBlacklistURLPrefix[] =
@@ -117,12 +105,6 @@ SuggestionsService::SuggestionsService(
       weak_ptr_factory_(this) {}
 
 SuggestionsService::~SuggestionsService() {}
-
-// static
-bool SuggestionsService::IsControlGroup() {
-  return GetExperimentParam(kSuggestionsFieldTrialControlParam) ==
-      kSuggestionsFieldTrialStateEnabled;
-}
 
 void SuggestionsService::FetchSuggestionsData(
     SyncState sync_state,

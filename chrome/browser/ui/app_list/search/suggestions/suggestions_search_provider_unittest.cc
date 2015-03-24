@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -18,8 +17,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
-#include "components/variations/entropy_provider.h"
-#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/search_result.h"
 
@@ -57,7 +54,6 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
   // AppListTestBase overrides:
   void SetUp() override {
     AppListTestBase::SetUp();
-    EnableSuggestionsService();
 
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
     suggestions_search_.reset(
@@ -67,23 +63,6 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
         profile_->GetTestingPrefService();
     suggestions_store_.reset(new SuggestionsStore(pref_service));
 
-  }
-
-  // Enables the SuggestionsService field trial.
-  void EnableSuggestionsService() {
-    // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
-    field_trial_list_.reset(NULL);
-    field_trial_list_.reset(
-        new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
-
-    variations::testing::ClearAllVariationParams();
-    std::map<std::string, std::string> params;
-    params["state"] = "enabled";
-    variations::AssociateVariationParams("ChromeSuggestions", "Group1",
-                                         params);
-    field_trial_ = base::FieldTrialList::CreateFieldTrial(
-        "ChromeSuggestions", "Group1");
-    field_trial_->group();
   }
 
   void TearDown() override {
@@ -121,8 +100,6 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
 
   // Helpers.
   ProfileSyncServiceMock* mock_pss_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
-  scoped_refptr<base::FieldTrial> field_trial_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSearchProviderTest);
 };

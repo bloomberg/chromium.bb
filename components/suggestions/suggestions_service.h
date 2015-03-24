@@ -37,11 +37,6 @@ namespace suggestions {
 class BlacklistStore;
 class SuggestionsStore;
 
-extern const char kSuggestionsFieldTrialName[];
-extern const char kSuggestionsFieldTrialControlParam[];
-extern const char kSuggestionsFieldTrialStateEnabled[];
-extern const char kSuggestionsFieldTrialStateParam[];
-
 extern const char kSuggestionsURL[];
 extern const char kSuggestionsBlacklistURLPrefix[];
 extern const char kSuggestionsBlacklistURLParam[];
@@ -60,9 +55,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       scoped_ptr<ImageManager> thumbnail_manager,
       scoped_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
-
-  // Whether the user is part of a control group.
-  static bool IsControlGroup();
 
   // Request suggestions data, which will be passed to |callback|. |sync_state|
   // will influence the behavior of this function (see SyncState definition).

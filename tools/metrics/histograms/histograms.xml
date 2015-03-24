@@ -64768,7 +64768,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">
   <suffix name="client" label="Suggestions coming from the client."/>
-  <suffix name="client0" label="Suggestions coming from the client source 0."/>
+  <suffix name="client0"
+      label="deprecated - Suggestions coming from the client source 0."/>
 <!-- Server providers 1 through 8 have never been logged. -->
 
   <suffix name="server" label="Suggestions coming from the server."/>

@@ -10,15 +10,11 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/suggestions/suggestions_utils.h"
-#include "components/variations/entropy_provider.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -199,27 +195,6 @@ class SuggestionsServiceTest : public testing::Test {
         io_message_loop_.message_loop_proxy());
   }
 
-  void EnableFieldTrial(bool control_group) {
-    // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
-    field_trial_list_.reset(NULL);
-    field_trial_list_.reset(
-        new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
-
-    variations::testing::ClearAllVariationParams();
-    std::map<std::string, std::string> params;
-    params[kSuggestionsFieldTrialStateParam] =
-        kSuggestionsFieldTrialStateEnabled;
-    if (control_group) {
-      params[kSuggestionsFieldTrialControlParam] =
-          kSuggestionsFieldTrialStateEnabled;
-    }
-    variations::AssociateVariationParams(kSuggestionsFieldTrialName, "Group1",
-                                         params);
-    field_trial_ = base::FieldTrialList::CreateFieldTrial(
-        kSuggestionsFieldTrialName, "Group1");
-    field_trial_->group();
-  }
-
   void FetchSuggestionsDataHelper(SyncState sync_state) {
     scoped_ptr<SuggestionsService> suggestions_service(
         CreateSuggestionsServiceWithMocks());
@@ -343,32 +318,18 @@ class SuggestionsServiceTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
 
  private:
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
-  scoped_refptr<base::FieldTrial> field_trial_;
-
   DISALLOW_COPY_AND_ASSIGN(SuggestionsServiceTest);
 };
 
-TEST_F(SuggestionsServiceTest, IsControlGroup) {
-  EnableFieldTrial(false);
-  EXPECT_FALSE(SuggestionsService::IsControlGroup());
-
-  EnableFieldTrial(true);
-  EXPECT_TRUE(SuggestionsService::IsControlGroup());
-}
-
 TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
-  EnableFieldTrial(false);
   FetchSuggestionsDataHelper(INITIALIZED_ENABLED_HISTORY);
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
-  EnableFieldTrial(false);
   FetchSuggestionsDataHelper(NOT_INITIALIZED_ENABLED);
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -387,7 +348,6 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -407,7 +367,6 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -436,7 +395,6 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURL) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -480,7 +438,6 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -496,7 +453,6 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
 
 // Initial blacklist request fails, triggering a second which succeeds.
 TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -553,7 +509,6 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
 }
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -590,17 +545,14 @@ TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
 
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURLFailsIfNotInBlacklist) {
-  EnableFieldTrial(false);
   UndoBlacklistURLFailsHelper(true);
 }
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURLFailsIfAlreadyCandidate) {
-  EnableFieldTrial(false);
   UndoBlacklistURLFailsHelper(false);
 }
 
 TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
-  EnableFieldTrial(false);
   scoped_ptr<GURL> request_url;
   scoped_ptr<net::FakeURLFetcher> fetcher;
   GURL retrieved_url;
@@ -626,7 +578,6 @@ TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
 }
 
 TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   base::TimeDelta initial_delay = suggestions_service->blacklist_delay();
@@ -645,7 +596,6 @@ TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
 }
 
 TEST_F(SuggestionsServiceTest, CheckDefaultTimeStamps) {
-  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   SuggestionsProfile suggestions =

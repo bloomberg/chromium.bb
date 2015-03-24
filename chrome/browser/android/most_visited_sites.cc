@@ -61,8 +61,6 @@ const char kNumEmptyTilesHistogramName[] = "NewTabPage.NumberOfGrayTiles";
 const char kNumServerTilesHistogramName[] = "NewTabPage.NumberOfExternalTiles";
 // Client suggestion opened.
 const char kOpenedItemClientHistogramName[] = "NewTabPage.MostVisited.client";
-// Control group suggestion opened.
-const char kOpenedItemControlHistogramName[] = "NewTabPage.MostVisited.client0";
 // Server suggestion opened, no provider.
 const char kOpenedItemServerHistogramName[] = "NewTabPage.MostVisited.server";
 // Server suggestion opened with provider.
@@ -71,9 +69,6 @@ const char kOpenedItemServerProviderHistogramFormat[] =
 // Client impression.
 const char kImpressionClientHistogramName[] =
     "NewTabPage.SuggestionsImpression.client";
-// Control group impression.
-const char kImpressionControlHistogramName[] =
-    "NewTabPage.SuggestionsImpression.client0";
 // Server suggestion impression, no provider.
 const char kImpressionServerHistogramName[] =
     "NewTabPage.SuggestionsImpression.server";
@@ -189,9 +184,9 @@ SyncState GetSyncState(Profile* profile) {
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
-    : profile_(profile), num_sites_(0), is_control_group_(false),
-      initial_load_done_(false), num_local_thumbs_(0), num_server_thumbs_(0),
-      num_empty_thumbs_(0), scoped_observer_(this), weak_ptr_factory_(this) {
+    : profile_(profile), num_sites_(0), initial_load_done_(false),
+      num_local_thumbs_(0), num_server_thumbs_(0), num_empty_thumbs_(0),
+      scoped_observer_(this), weak_ptr_factory_(this) {
   // Register the debugging page for the Suggestions Service and the thumbnails
   // debugging page.
   content::URLDataSource::Add(profile_,
@@ -316,9 +311,7 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
                                                    jint index) {
   switch (mv_source_) {
     case TOP_SITES: {
-      const std::string histogram = is_control_group_ ?
-          kOpenedItemControlHistogramName : kOpenedItemClientHistogramName;
-      LogHistogramEvent(histogram, index, num_sites_);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kOpenedItemClientHistogramName, index);
       break;
     }
     case SUGGESTIONS_SERVICE: {
@@ -393,10 +386,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   if (!initial_load_done_) {
     int num_tiles = urls.size();
     UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_tiles);
-    const std::string histogram = is_control_group_ ?
-        kImpressionControlHistogramName : kImpressionClientHistogramName;
     for (int i = 0; i < num_tiles; ++i) {
-      LogHistogramEvent(histogram, i, num_sites_);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionClientHistogramName, i);
     }
   }
   initial_load_done_ = true;
@@ -413,21 +404,14 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     ScopedJavaGlobalRef<jobject>* j_observer,
     const SuggestionsProfile& suggestions_profile) {
   int size = suggestions_profile.suggestions_size();
-
-  // Determine if the user is in a control group (they would have received
-  // suggestions, but are in a group where they shouldn't).
-  is_control_group_ = size && SuggestionsService::IsControlGroup();
-
-  // If no suggestions data is available or the user is in a control group,
-  // initiate Top Sites query.
-  if (is_control_group_ || !size) {
+  // With no server suggestions, fall back to local Most Visited.
+  if (!size) {
     InitiateTopSitesQuery();
     return;
   }
 
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
-
   int i = 0;
   for (; i < size && i < num_sites_; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
