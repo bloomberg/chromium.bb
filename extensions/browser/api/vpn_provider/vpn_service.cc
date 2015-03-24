@@ -431,15 +431,8 @@ bool VpnService::VerifyConfigIsConnectedForTesting(
   return DoesActiveConfigurationExistAndIsAccessAuthorized(extension_id);
 }
 
-void VpnService::OnExtensionUninstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UninstallReason reason) {
-  if (browser_context != browser_context_) {
-    NOTREACHED();
-    return;
-  }
-
+void VpnService::DestroyConfigurationsForExtension(
+    const extensions::Extension* extension) {
   std::vector<VpnConfiguration*> to_be_destroyed;
   for (const auto& iter : key_to_configuration_map_) {
     if (iter.second->extension_id() == extension->id()) {
@@ -453,6 +446,18 @@ void VpnService::OnExtensionUninstalled(
                          base::Bind(base::DoNothing),
                          base::Bind(DoNothingFailureCallback));
   }
+}
+
+void VpnService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  if (browser_context != browser_context_) {
+    NOTREACHED();
+    return;
+  }
+
+  DestroyConfigurationsForExtension(extension);
 }
 
 void VpnService::OnExtensionUnloaded(
@@ -470,6 +475,10 @@ void VpnService::OnExtensionUnloaded(
         active_configuration_->object_path(),
         static_cast<uint32_t>(api_vpn::VPN_CONNECTION_STATE_FAILURE),
         base::Bind(base::DoNothing), base::Bind(DoNothingFailureCallback));
+  }
+  if (reason == extensions::UnloadedExtensionInfo::REASON_DISABLE ||
+      reason == extensions::UnloadedExtensionInfo::REASON_BLACKLIST) {
+    DestroyConfigurationsForExtension(extension);
   }
 }
 

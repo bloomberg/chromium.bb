@@ -215,6 +215,10 @@ class VpnService : public KeyedService,
                              const std::string& event_name,
                              scoped_ptr<base::ListValue> event_args);
 
+  // Destroy configurations belonging to the extension.
+  void DestroyConfigurationsForExtension(
+      const extensions::Extension* extension);
+
   // Set the active configuration.
   void SetActiveConfiguration(VpnConfiguration* configuration);
 

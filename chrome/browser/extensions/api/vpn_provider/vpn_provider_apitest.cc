@@ -418,4 +418,55 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CreateUninstall) {
                    ->GetService(service_path, &profile_path, &properties));
 }
 
+IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CreateDisable) {
+  LoadVpnExtension();
+  AddNetworkProfileForUser();
+  EXPECT_TRUE(RunExtensionTest("createConfigSuccess"));
+  EXPECT_TRUE(DoesConfigExist(kTestConfig));
+
+  const std::string service_path = GetSingleServicePath();
+  std::string profile_path;
+  base::DictionaryValue properties;
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->GetService(service_path, &profile_path, &properties));
+
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  extension_service->DisableExtension(extension_id_,
+                                      extensions::Extension::DISABLE_NONE);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(DoesConfigExist(kTestConfig));
+  EXPECT_FALSE(DBusThreadManager::Get()
+                   ->GetShillProfileClient()
+                   ->GetTestInterface()
+                   ->GetService(service_path, &profile_path, &properties));
+}
+
+IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CreateBlacklist) {
+  LoadVpnExtension();
+  AddNetworkProfileForUser();
+  EXPECT_TRUE(RunExtensionTest("createConfigSuccess"));
+  EXPECT_TRUE(DoesConfigExist(kTestConfig));
+
+  const std::string service_path = GetSingleServicePath();
+  std::string profile_path;
+  base::DictionaryValue properties;
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->GetService(service_path, &profile_path, &properties));
+
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  extension_service->BlacklistExtensionForTest(extension_id_);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(DoesConfigExist(kTestConfig));
+  EXPECT_FALSE(DBusThreadManager::Get()
+                   ->GetShillProfileClient()
+                   ->GetTestInterface()
+                   ->GetService(service_path, &profile_path, &properties));
+}
+
 }  // namespace chromeos
