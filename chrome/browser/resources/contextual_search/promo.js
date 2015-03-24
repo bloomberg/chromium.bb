@@ -21,7 +21,7 @@ var OPT_IN_DELAY_MS = 65;
  */
 document.addEventListener('DOMContentLoaded', function(event) {
   if (config['hideHeader']) {
-    $('container').removeChild($('header-image'));
+    removeHeaderImages();
   }
   $('optin-button').addEventListener('click', function() {
     $('container').classList.add('hide');
@@ -41,4 +41,18 @@ document.addEventListener('DOMContentLoaded', function(event) {
  */
 function getContentHeight() {
   return $('container').clientHeight;
+}
+
+/**
+ * Removes all header images from the promo.
+ */
+function removeHeaderImages() {
+  var images = document.querySelectorAll('.header-image');
+  for (var i = 0, length = images.length; i < length; i++) {
+    var image = images[i];
+    var parent = image.parentElement;
+    if (parent) {
+      parent.removeChild(image);
+    }
+  }
 }
