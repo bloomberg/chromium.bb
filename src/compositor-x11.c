@@ -1492,7 +1492,7 @@ init_gl_renderer(struct x11_compositor *c)
 	if (!gl_renderer)
 		return -1;
 
-	if (!gl_renderer->supports || gl_renderer->supports(&c->base, "x11") < 0)
+	if (gl_renderer->supports(&c->base, "x11") < 0)
 		return -1;
 
 	ret = gl_renderer->create(&c->base, EGL_PLATFORM_X11_KHR, (void *) c->dpy,

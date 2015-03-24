@@ -1396,8 +1396,7 @@ drm_compositor_create_gl_renderer(struct drm_compositor *ec)
 {
 	EGLint format;
 
-	if (!gl_renderer->supports ||
-	    gl_renderer->supports(&ec->base, "gbm") < 0) {
+	if (gl_renderer->supports(&ec->base, "gbm") < 0) {
 		return -1;
 	}
 
