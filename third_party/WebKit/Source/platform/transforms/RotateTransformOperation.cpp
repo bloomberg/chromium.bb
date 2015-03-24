@@ -127,7 +127,11 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
 
     // Extract the result as a quaternion
     TransformationMatrix::DecomposedType decomp;
-    toT.decompose(decomp);
+    if (!toT.decompose(decomp)) {
+        // If we can't decompose, bail out of interpolation.
+        const RotateTransformOperation* usedOperation = progress > 0.5 ? this : fromOp;
+        return RotateTransformOperation::create(usedOperation->x(), usedOperation->y(), usedOperation->z(), usedOperation->angle(), Rotate3D);
+    }
 
     // Convert that to Axis/Angle form
     double x = -decomp.quaternionX;

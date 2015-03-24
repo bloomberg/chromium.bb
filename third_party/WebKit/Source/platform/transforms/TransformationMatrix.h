@@ -254,8 +254,8 @@ public:
         double perspectiveX, perspectiveY, perspectiveZ, perspectiveW;
     } DecomposedType;
 
-    bool decompose(DecomposedType& decomp) const;
-    void recompose(const DecomposedType& decomp);
+    bool decompose(DecomposedType&) const WARN_UNUSED_RETURN;
+    void recompose(const DecomposedType&);
 
     void blend(const TransformationMatrix& from, double progress);
 

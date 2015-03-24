@@ -48,8 +48,13 @@ PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(const Transf
     fromT.applyPerspective(fromOp ? fromOp->m_p : 0);
     toT.applyPerspective(m_p);
     toT.blend(fromT, progress);
+
     TransformationMatrix::DecomposedType decomp;
-    toT.decompose(decomp);
+    if (!toT.decompose(decomp)) {
+        // If we can't decompose, bail out of interpolation.
+        const PerspectiveTransformOperation* usedOperation = progress > 0.5 ? this : fromOp;
+        return PerspectiveTransformOperation::create(usedOperation->perspective());
+    }
 
     if (decomp.perspectiveZ) {
         double val = -1.0 / decomp.perspectiveZ;
