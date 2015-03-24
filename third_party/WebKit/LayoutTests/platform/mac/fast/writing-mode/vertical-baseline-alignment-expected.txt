@@ -14,8 +14,8 @@ layer at (548,0) size 252x600
           LayoutText {#text} at (55,0) size 55x293
             text run at (55,0) width 293: "MORE TEXT. "
           LayoutInline {SPAN} at (0,0) size 14x165
-            LayoutText {#text} at (87,292) size 14x165
-              text run at (87,292) width 164: "SHOULD NOT BE CENTERED."
+            LayoutText {#text} at (76,292) size 14x165
+              text run at (76,292) width 164: "SHOULD NOT BE CENTERED."
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (134,0) size 70x584
         LayoutInline {SPAN} at (0,0) size 28x467

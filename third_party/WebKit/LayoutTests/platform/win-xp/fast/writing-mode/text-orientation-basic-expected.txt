@@ -14,35 +14,35 @@ layer at (0,0) size 800x672 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 41x170
             LayoutText {#text} at (2,1) size 41x170
               text run at (2,1) width 170: "Hello world"
-          LayoutBR {BR} at (11,171) size 0x0
+          LayoutBR {BR} at (22,171) size 0x0
           LayoutInline {SPAN} at (0,0) size 41x451
             LayoutText {#text} at (45,1) size 41x451
               text run at (45,1) width 451: "Hello world"
-          LayoutBR {BR} at (54,452) size 0x0
+          LayoutBR {BR} at (65,452) size 0x0
           LayoutInline {SPAN} at (0,0) size 41x170
             LayoutText {#text} at (88,1) size 41x170
               text run at (88,1) width 170: "Hello world"
-          LayoutBR {BR} at (97,171) size 0x0
+          LayoutBR {BR} at (108,171) size 0x0
           LayoutInline {SPAN} at (0,0) size 41x451
             LayoutText {#text} at (131,1) size 41x451
               text run at (131,1) width 451: "Hello world"
-          LayoutBR {BR} at (140,452) size 0x0
+          LayoutBR {BR} at (151,452) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (174,0) size 174x453 [border: (1px solid #008000)]
           LayoutInline {SPAN} at (0,0) size 41x170
             LayoutText {#text} at (2,1) size 41x170
               text run at (2,1) width 170: "Hello world"
-          LayoutBR {BR} at (11,171) size 0x0
+          LayoutBR {BR} at (22,171) size 0x0
           LayoutInline {SPAN} at (0,0) size 41x451
             LayoutText {#text} at (45,1) size 41x451
               text run at (45,1) width 451: "Hello world"
-          LayoutBR {BR} at (54,452) size 0x0
+          LayoutBR {BR} at (65,452) size 0x0
           LayoutInline {SPAN} at (0,0) size 41x170
             LayoutText {#text} at (88,1) size 41x170
               text run at (88,1) width 170: "Hello world"
-          LayoutBR {BR} at (97,171) size 0x0
+          LayoutBR {BR} at (108,171) size 0x0
           LayoutInline {SPAN} at (0,0) size 41x451
             LayoutText {#text} at (131,1) size 41x451
               text run at (131,1) width 451: "Hello world"
-          LayoutBR {BR} at (140,452) size 0x0
+          LayoutBR {BR} at (151,452) size 0x0
         LayoutText {#text} at (0,0) size 0x0

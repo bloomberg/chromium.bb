@@ -795,13 +795,6 @@ crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
-crbug.com/454159 fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/454159 fast/writing-mode/text-orientation-basic.html [ NeedsRebaseline ]
-crbug.com/454159 fast/writing-mode/vertical-align-table-baseline.html [ NeedsRebaseline ]
-crbug.com/454159 fast/writing-mode/vertical-baseline-alignment.html [ NeedsRebaseline ]
-crbug.com/454159 [ Mac Linux ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/454159 virtual/slimmingpaint/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
