@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/suggestion_answer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -160,7 +159,11 @@ class OmniboxResultView : public views::View,
   int GetAnswerLineHeight() const;
   int GetContentLineHeight() const;
 
-  void AppendAnswerText(const SuggestionAnswer::TextField& text_field);
+  // Adds |text| to |description_rendertext_|.  |text_type| is an index into the
+  // kTextStyles constant defined in the .cc file and is used to style the text,
+  // including setting the font size, color, and baseline style.  See the
+  // TextStyle struct in the .cc file for more.
+  void AppendAnswerText(const base::string16& text, int text_type);
 
   static int default_icon_size_;
 

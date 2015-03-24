@@ -197,8 +197,8 @@ struct TextStyle {
      gfx::NORMAL_BASELINE},
 };
 
-const TextStyle& GetTextStyle(size_t type) {
-  if (type > arraysize(kTextStyles))
+const TextStyle& GetTextStyle(int type) {
+  if (type < 1 || static_cast<size_t>(type) > arraysize(kTextStyles))
     type = 1;
   // Subtract one because the types are one based (not zero based).
   return kTextStyles[type - 1];
@@ -699,13 +699,16 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
       if (match_.answer) {
         base::string16 text;
         description_rendertext_ = CreateRenderText(text);
-        for (const SuggestionAnswer::TextField& textfield :
+        for (const SuggestionAnswer::TextField& text_field :
              match_.answer->second_line().text_fields())
-          AppendAnswerText(textfield);
-        if (match_.answer->second_line().additional_text())
-          AppendAnswerText(*match_.answer->second_line().additional_text());
-        if (match_.answer->second_line().status_text())
-          AppendAnswerText(*match_.answer->second_line().status_text());
+          AppendAnswerText(text_field.text(), text_field.type());
+        const base::char16 space(' ');
+        const auto* text_field = match_.answer->second_line().additional_text();
+        if (text_field)
+          AppendAnswerText(space + text_field->text(), text_field->type());
+        text_field = match_.answer->second_line().status_text();
+        if (text_field)
+          AppendAnswerText(space + text_field->text(), text_field->type());
       } else if (!match_.description.empty()) {
         description_rendertext_ = CreateClassifiedRenderText(
             match_.description, match_.description_class, true);
@@ -755,12 +758,12 @@ int OmniboxResultView::GetContentLineHeight() const {
                   GetTextHeight() + (kMinimumTextVerticalPadding * 2));
 }
 
-void OmniboxResultView::AppendAnswerText(
-    const SuggestionAnswer::TextField& text_field) {
+void OmniboxResultView::AppendAnswerText(const base::string16& text,
+                                         int text_type) {
   int offset = description_rendertext_->text().length();
-  gfx::Range range(offset, offset + text_field.text().length());
-  description_rendertext_->AppendText(text_field.text());
-  const TextStyle& text_style = GetTextStyle(text_field.type());
+  gfx::Range range(offset, offset + text.length());
+  description_rendertext_->AppendText(text);
+  const TextStyle& text_style = GetTextStyle(text_type);
   // TODO(dschuyler): follow up on the problem of different font sizes within
   // one RenderText.
   description_rendertext_->SetFontList(
