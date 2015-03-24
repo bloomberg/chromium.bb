@@ -156,47 +156,40 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       slave build configs. Build configs that never started will have a
       BuilderStatus of MISSING.
     """
+    # Wait for slaves if we're a master, in production or mock-production.
+    # Otherwise just look at our own status.
+    slave_statuses = self._GetLocalBuildStatus()
     if not self._run.config.master:
       # The slave build returns its own status.
       logging.warning('The build is not a master.')
-      return self._GetLocalBuildStatus()
-    else:
+    elif self._run.options.mock_slave_status or not self._run.options.debug:
       # The master build.
       builders = self._GetSlaveConfigs()
-      builder_names = [b['name'] for b in builders]
-      if not builder_names:
-        # Master has no slaves.
-        return {}
-      elif (len(builder_names) == 1 and self._run.config.name in builder_names
-            or not self._run.options.mock_slave_status and
-            self._run.options.debug):
-        # Master with only itself as the slave should not wait.
-        return self._GetLocalBuildStatus()
-      else:
-        # Wait for the slaves to finish.
-        timeout = None
-        build_id, db = self._run.GetCIDBHandle()
-        if db:
-          timeout = db.GetTimeToDeadline(build_id)
-        if timeout is None:
-          # Catch-all: This could happen if cidb is not setup, or the deadline
-          # query fails.
-          timeout = constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS
+      builder_names = [b.name for b in builders]
+      timeout = None
+      build_id, db = self._run.GetCIDBHandle()
+      if db:
+        timeout = db.GetTimeToDeadline(build_id)
+      if timeout is None:
+        # Catch-all: This could happen if cidb is not setup, or the deadline
+        # query fails.
+        timeout = constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS
 
-        if self._run.options.debug:
-          # For debug runs, wait for three minutes to ensure most code
-          # paths are executed.
-          logging.info('Waiting for 3 minutes only for debug run. '
-                       'Would have waited for %s seconds.', timeout)
-          timeout = 3 * 60
+      if self._run.options.debug:
+        # For debug runs, wait for three minutes to ensure most code
+        # paths are executed.
+        logging.info('Waiting for 3 minutes only for debug run. '
+                     'Would have waited for %s seconds.', timeout)
+        timeout = 3 * 60
 
-        manager = self._run.attrs.manifest_manager
-        if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
-          manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
-        return manager.GetBuildersStatus(
-            self._run.attrs.metadata.GetValue('build_id'),
-            builder_names,
-            timeout=timeout)
+      manager = self._run.attrs.manifest_manager
+      if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
+        manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
+      slave_statuses.update(manager.GetBuildersStatus(
+          self._run.attrs.metadata.GetValue('build_id'),
+          builder_names,
+          timeout=timeout))
+    return slave_statuses
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
