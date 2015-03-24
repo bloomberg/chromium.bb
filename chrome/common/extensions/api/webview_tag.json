@@ -251,6 +251,21 @@
         ]
       },
       {
+        "id": "FullscreenPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>fullscreen</code> <a href=\"#event-permissionrequest\">permissionrequest</a> DOM event.<p>",
+        "properties": {
+          "origin": {
+            "description": "The origin of the frame inside the <code>webview</code> that initiated the fullscreen request.",
+            "type": "string"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request." }
+        ]
+      },
+      {
         "id": "LoadPluginPermissionRequest",
         "type": "object",
         "description": "The type of <code>request</code> object which accompanies a <code>loadplugin</code> <a href=\"#event-permissionrequest\">permissionrequest</a> DOM event.<p>",
@@ -829,7 +844,7 @@
             "name": "permission",
             "description": "The type of permission being requested.",
             "type": "string",
-            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin", "filesystem"]
+            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin", "filesystem", "fullscreen"]
           },
           {
             "name": "requestId",
@@ -840,7 +855,7 @@
             "name": "request",
             "type": "object",
             "properties": {},
-            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $(ref:webviewTag.MediaPermissionRequest), $(ref:webviewTag.GeolocationPermissionRequest), $(ref:webviewTag.PointerLockPermissionRequest), $(ref:webviewTag.DownloadPermissionRequest), or $(ref:webviewTag.LoadPluginPermissionRequest)."
+            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $(ref:webviewTag.MediaPermissionRequest), $(ref:webviewTag.GeolocationPermissionRequest), $(ref:webviewTag.PointerLockPermissionRequest), $(ref:webviewTag.DownloadPermissionRequest), $(ref:webviewTag.LoadPluginPermissionRequest), or $(ref:webviewTag.FullscreenPermissionRequest)."
           }
         ]
       },
