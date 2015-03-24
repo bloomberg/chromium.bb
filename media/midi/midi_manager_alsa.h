@@ -39,14 +39,15 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
   FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ExtractManufacturer);
   FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, JSONPortMetadata);
 
-  class AlsaRawmidi {
+  class AlsaCard {
    public:
-    AlsaRawmidi(const MidiManagerAlsa* outer,
-                const std::string& alsa_name,
-                const std::string& alsa_longname,
-                const std::string& alsa_driver,
-                int card_index);
-    ~AlsaRawmidi();
+    AlsaCard(const MidiManagerAlsa* outer,
+             const std::string& alsa_name,
+             const std::string& alsa_longname,
+             const std::string& alsa_driver,
+             int card_index,
+             int midi_count);
+    ~AlsaCard();
 
     const std::string alsa_name() const;
     const std::string alsa_longname() const;
@@ -56,6 +57,7 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
     const std::string bus() const;
     const std::string vendor_id() const;
     const std::string id() const;
+    const int midi_count() const;
 
    private:
     FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ExtractManufacturer);
@@ -77,8 +79,9 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
     std::string vendor_id_;
     std::string model_id_;
     std::string usb_interface_num_;
+    int midi_count_;
 
-    DISALLOW_COPY_AND_ASSIGN(AlsaRawmidi);
+    DISALLOW_COPY_AND_ASSIGN(AlsaCard);
   };
 
   class AlsaPortMetadata {
@@ -124,8 +127,8 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
     DISALLOW_COPY_AND_ASSIGN(AlsaPortMetadata);
   };
 
-  // Returns an ordered vector of all the rawmidi devices on the system.
-  ScopedVector<AlsaRawmidi> AllAlsaRawmidis();
+  // Returns an ordered vector of all the cards with MIDI capabilities.
+  ScopedVector<AlsaCard> AllMidiCards();
 
   // Enumerate all the ports for initial setup.
   void EnumeratePorts();

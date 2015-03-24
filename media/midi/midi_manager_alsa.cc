@@ -243,14 +243,16 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                             base::Unretained(client), data.size()));
 }
 
-MidiManagerAlsa::AlsaRawmidi::AlsaRawmidi(const MidiManagerAlsa* outer,
-                                          const std::string& alsa_name,
-                                          const std::string& alsa_longname,
-                                          const std::string& alsa_driver,
-                                          int card_index)
+MidiManagerAlsa::AlsaCard::AlsaCard(const MidiManagerAlsa* outer,
+                                    const std::string& alsa_name,
+                                    const std::string& alsa_longname,
+                                    const std::string& alsa_driver,
+                                    int card_index,
+                                    int midi_count)
     : alsa_name_(alsa_name),
       alsa_longname_(alsa_longname),
-      alsa_driver_(alsa_driver) {
+      alsa_driver_(alsa_driver),
+      midi_count_(midi_count) {
   // Get udev properties if available.
   std::string vendor;
   std::string vendor_from_database;
@@ -297,38 +299,38 @@ MidiManagerAlsa::AlsaRawmidi::AlsaRawmidi(const MidiManagerAlsa* outer,
       vendor, vendor_id_, vendor_from_database, alsa_name, alsa_longname);
 }
 
-MidiManagerAlsa::AlsaRawmidi::~AlsaRawmidi() {
+MidiManagerAlsa::AlsaCard::~AlsaCard() {
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::alsa_name() const {
+const std::string MidiManagerAlsa::AlsaCard::alsa_name() const {
   return alsa_name_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::alsa_longname() const {
+const std::string MidiManagerAlsa::AlsaCard::alsa_longname() const {
   return alsa_longname_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::manufacturer() const {
+const std::string MidiManagerAlsa::AlsaCard::manufacturer() const {
   return manufacturer_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::alsa_driver() const {
+const std::string MidiManagerAlsa::AlsaCard::alsa_driver() const {
   return alsa_driver_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::path() const {
+const std::string MidiManagerAlsa::AlsaCard::path() const {
   return path_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::bus() const {
+const std::string MidiManagerAlsa::AlsaCard::bus() const {
   return bus_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::vendor_id() const {
+const std::string MidiManagerAlsa::AlsaCard::vendor_id() const {
   return vendor_id_;
 }
 
-const std::string MidiManagerAlsa::AlsaRawmidi::id() const {
+const std::string MidiManagerAlsa::AlsaCard::id() const {
   std::string id = vendor_id_;
   if (!model_id_.empty())
     id += ":" + model_id_;
@@ -337,8 +339,12 @@ const std::string MidiManagerAlsa::AlsaRawmidi::id() const {
   return id;
 }
 
+const int MidiManagerAlsa::AlsaCard::midi_count() const {
+  return midi_count_;
+}
+
 // static
-std::string MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+std::string MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
     const std::string& udev_id_vendor,
     const std::string& udev_id_vendor_id,
     const std::string& udev_id_vendor_from_database,
@@ -445,13 +451,14 @@ std::string MidiManagerAlsa::AlsaPortMetadata::OpaqueKey() const {
 
 // TODO(agoode): Add a client->card/rawmidi mapping to the kernel to avoid
 //               needing to probe in this way.
-ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
-  ScopedVector<AlsaRawmidi> devices;
+ScopedVector<MidiManagerAlsa::AlsaCard> MidiManagerAlsa::AllMidiCards() {
+  ScopedVector<AlsaCard> devices;
   snd_ctl_card_info_t* card;
   snd_hwdep_info_t* hwdep;
   snd_ctl_card_info_alloca(&card);
   snd_hwdep_info_alloca(&hwdep);
   for (int card_index = -1; !snd_card_next(&card_index) && card_index >= 0;) {
+    int midi_count = 0;
     const std::string id = base::StringPrintf("hw:CARD=%i", card_index);
     snd_ctl_t* handle;
     int err = snd_ctl_open(&handle, id.c_str(), 0);
@@ -471,12 +478,10 @@ ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
 
     // Count rawmidi devices (not subdevices).
     for (int device = -1;
-         !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0;) {
-      devices.push_back(
-          new AlsaRawmidi(this, name, longname, driver, card_index));
-    }
+         !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0;)
+      ++midi_count;
 
-    // Count any hwdep synths that become MIDI devices.
+    // Count any hwdep synths that become MIDI devices outside of rawmidi.
     //
     // Explanation:
     // Any kernel driver can create an ALSA client (visible to us).
@@ -503,9 +508,12 @@ ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
       snd_hwdep_iface_t iface = snd_hwdep_info_get_iface(hwdep);
       if (iface == SND_HWDEP_IFACE_OPL2 || iface == SND_HWDEP_IFACE_OPL3 ||
           iface == SND_HWDEP_IFACE_OPL4)
-        devices.push_back(
-            new AlsaRawmidi(this, name, longname, driver, card_index));
+        ++midi_count;
     }
+
+    if (midi_count > 0)
+      devices.push_back(
+          new AlsaCard(this, name, longname, driver, card_index, midi_count));
     snd_ctl_close(handle);
   }
 
@@ -513,7 +521,13 @@ ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
 }
 
 void MidiManagerAlsa::EnumeratePorts() {
-  ScopedVector<AlsaRawmidi> devices = AllAlsaRawmidis();
+  ScopedVector<AlsaCard> cards = AllMidiCards();
+  std::vector<const AlsaCard*> devices;
+  for (const auto* card : cards) {
+    // Insert 1 AlsaCard per number of MIDI devices.
+    for (int n = 0; n < card->midi_count(); ++n)
+      devices.push_back(card);
+  }
 
   snd_seq_port_subscribe_t* subs;
   snd_seq_port_subscribe_alloca(&subs);
@@ -551,14 +565,14 @@ void MidiManagerAlsa::EnumeratePorts() {
     std::string card_name;
     std::string card_longname;
 
-    // Join kernel clients against the list of AlsaRawmidis.
+    // Join kernel clients against the list of AlsaCards.
     // In the current ALSA kernel implementation, kernel clients match the
-    // kernel devices in the same order, for devices with client_id over
+    // kernel devices in the same order, for clients with client_id over
     // kMinimumClientIdForCards.
     if ((snd_seq_client_info_get_type(client_info) == SND_SEQ_KERNEL_CLIENT) &&
         (current_device < devices.size()) &&
         (client_id >= kMinimumClientIdForCards)) {
-      const AlsaRawmidi* device = devices[current_device];
+      const AlsaCard* device = devices[current_device];
       manufacturer = device->manufacturer();
       driver = device->alsa_driver();
       path = device->path();
@@ -700,6 +714,10 @@ void MidiManagerAlsa::EventLoop() {
         // TODO(agoode): rescan hardware devices.
         break;
 
+      case SND_SEQ_EVENT_PORT_START:
+        // TODO(agoode): add port.
+        break;
+
       case SND_SEQ_EVENT_CLIENT_EXIT:
         // Check for disconnection of our "out" client. This means "shut down".
         if (event->data.addr.client == out_client_id_)
@@ -708,17 +726,13 @@ void MidiManagerAlsa::EventLoop() {
         // TODO(agoode): remove all ports for a client.
         break;
 
-      case SND_SEQ_EVENT_PORT_START:
-        // TODO(agoode): add port.
-        break;
-
       case SND_SEQ_EVENT_PORT_EXIT:
         // TODO(agoode): remove port.
         break;
     }
+  } else {
+    ProcessSingleEvent(event, timestamp);
   }
-
-  ProcessSingleEvent(event, timestamp);
 
   // Do again.
   ScheduleEventLoop();
@@ -726,8 +740,7 @@ void MidiManagerAlsa::EventLoop() {
 
 void MidiManagerAlsa::ProcessSingleEvent(snd_seq_event_t* event,
                                          double timestamp) {
-  std::map<int, uint32>::iterator source_it =
-      source_map_.find(AddrToInt(&event->source));
+  auto source_it = source_map_.find(AddrToInt(&event->source));
   if (source_it != source_map_.end()) {
     uint32 source = source_it->second;
     if (event->type == SND_SEQ_EVENT_SYSEX) {

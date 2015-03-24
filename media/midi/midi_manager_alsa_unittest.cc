@@ -10,53 +10,52 @@ namespace media {
 
 TEST(MidiManagerAlsaTest, ExtractManufacturer) {
   ASSERT_EQ("My\\x20Vendor",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "My\\x20Vendor", "1234", "My Vendor, Inc.", "Card",
                 "My Vendor Inc Card at bus"));
-  ASSERT_EQ("My Vendor",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
-                "My Vendor", "1234", "My Vendor, Inc.", "Card",
-                "My Vendor Inc Card at bus"));
+  ASSERT_EQ("My Vendor", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
+                             "My Vendor", "1234", "My Vendor, Inc.", "Card",
+                             "My Vendor Inc Card at bus"));
   ASSERT_EQ("My Vendor, Inc.",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "1234", "1234", "My Vendor, Inc.", "Card",
                 "My Vendor Inc Card at bus"));
   ASSERT_EQ("My Vendor Inc",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "1234", "1234", "", "Card", "My Vendor Inc Card at bus"));
   ASSERT_EQ("My Vendor Inc",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "", "", "Card", "My Vendor Inc Card at bus"));
-  ASSERT_EQ("", MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+  ASSERT_EQ("", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                     "1234", "1234", "", "Card", "Longname"));
   ASSERT_EQ("Keystation\\x20Mini\\x2032",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "Keystation\\x20Mini\\x2032", "129d",
                 "Evolution Electronics, Ltd", "Keystation Mini 32",
                 "Keystation Mini 32 Keystation Mini 32 at"
                 " usb-0000:00:14.0-2.4.4, full speed"));
   ASSERT_EQ("Keystation Mini 32",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "Keystation Mini 32", "129d", "Evolution Electronics, Ltd",
                 "Keystation Mini 32",
                 "Keystation Mini 32 Keystation Mini 32 at"
                 " usb-0000:00:14.0-2.4.4, full speed"));
   ASSERT_EQ("Keystation Mini 32",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "", "", "Keystation Mini 32",
                 "Keystation Mini 32 Keystation Mini 32 at"
                 " usb-0000:00:14.0-2.4.4, full speed"));
-  ASSERT_EQ("", MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+  ASSERT_EQ("", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                     "", "", "", "Serial MIDI (UART16550A)",
                     "Serial MIDI (UART16550A) [Soundcanvas] at 0x3f8, irq 4"));
-  ASSERT_EQ("", MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+  ASSERT_EQ("", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                     "", "", "", "VirMIDI", "Virtual MIDI Card 1"));
   ASSERT_EQ("C-Media Electronics Inc",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "0x13f6", "C-Media Electronics Inc", "C-Media CMI8738 MIDI",
                 "C-Media CMI8738 (model 55) at 0xd000, irq 19"));
   ASSERT_EQ("C-Media Electronics Inc",
-            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "0x13f6", "C-Media Electronics Inc", "C-Media CMI8738 FM",
                 "C-Media CMI8738 (model 55) at 0xd000, irq 19"));
 }
