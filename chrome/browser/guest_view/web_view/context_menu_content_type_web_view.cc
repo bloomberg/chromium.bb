@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 
@@ -33,10 +35,22 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
       // Show contextMenus API items.
       return true;
     case ITEM_GROUP_DEVELOPER:
-      // TODO(lazyboy): Enable this for mac too when http://crbug.com/380405 is
-      // fixed.
-#if !defined(OS_MACOSX)
       {
+        if (chrome::VersionInfo::GetChannel() >=
+                chrome::VersionInfo::CHANNEL_DEV) {
+          // Hide dev tools items in guests inside WebUI if we are not running
+          // canary or tott.
+          auto web_view_guest =
+              extensions::WebViewGuest::FromWebContents(source_web_contents());
+          if (web_view_guest &&
+                  web_view_guest->owner_web_contents()->GetWebUI()) {
+              return false;
+          }
+        }
+
+        // TODO(lazyboy): Enable this for mac too when http://crbug.com/380405
+        // is fixed.
+#if !defined(OS_MACOSX)
         // Add dev tools for unpacked extensions.
         const extensions::Extension* embedder_platform_app = GetExtension();
         return !embedder_platform_app ||
@@ -44,10 +58,10 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
                    embedder_platform_app->location()) ||
                base::CommandLine::ForCurrentProcess()->HasSwitch(
                    switches::kDebugPackedApps);
-      }
 #else
-      return ContextMenuContentType::SupportsGroup(group);
+        return ContextMenuContentType::SupportsGroup(group);
 #endif
+      }
     default:
       return ContextMenuContentType::SupportsGroup(group);
   }

@@ -70,6 +70,10 @@ class ContextMenuContentType {
 
   const extensions::Extension* GetExtension() const;
 
+  const content::WebContents* source_web_contents() const {
+    return source_web_contents_;
+  }
+
  private:
   bool SupportsGroupInternal(int group);
 
