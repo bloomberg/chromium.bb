@@ -175,7 +175,7 @@ cr.define('cr.login', function() {
         this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
         this.continueUrl_;
     this.isConstrainedWindow_ = data.constrained == '1';
-    this.isMinuteMaidChromeOS = data.isMinuteMaidChromeOS;
+    this.isNewGaiaFlowChromeOS = data.isNewGaiaFlowChromeOS;
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -198,7 +198,7 @@ cr.define('cr.login', function() {
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
 
-    if (this.isMinuteMaidChromeOS) {
+    if (this.isNewGaiaFlowChromeOS) {
       if (data.chromeType)
         url = appendParam(url, 'chrometype', data.chromeType);
       if (data.clientId)
@@ -321,7 +321,8 @@ cr.define('cr.login', function() {
         // URL will contain a source=3 field.
         var location = decodeURIComponent(header.value);
         this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
-      } else if (this.isMinuteMaidChromeOS && headerName == SET_COOKIE_HEADER) {
+      } else if (
+          this.isNewGaiaFlowChromeOS && headerName == SET_COOKIE_HEADER) {
         var headerValue = header.value;
         if (headerValue.indexOf(OAUTH_CODE_COOKIE + '=', 0) == 0) {
           this.oauth_code_ =

@@ -47,10 +47,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     isLocal_: false,
 
     /**
-     * Whether MinuteMaid flow is active.
+     * Whether new Gaia flow is active.
      * @type {boolean}
      */
-    isMinuteMaid: false,
+    isNewGaiaFlow: false,
 
     /**
      * Email of the user, which is logging in using offline mode.
@@ -299,7 +299,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     loadAuthExtension: function(data) {
       this.isLocal = data.isLocal;
       this.email = '';
-      this.isMinuteMaid = data.useMinuteMaid;
+      this.isNewGaiaFlow = data.useNewGaiaFlow;
 
       // Reset SAML
       this.classList.toggle('full-width', false);
@@ -317,20 +317,20 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.localizedStrings)
         params.localizedStrings = data.localizedStrings;
 
-      if (this.isMinuteMaid) {
+      if (this.isNewGaiaFlow) {
         $('inner-container').classList.add('minute-maid');
         $('progress-dots').hidden = true;
         if (data.enterpriseDomain)
           params.enterpriseDomain = data.enterpriseDomain;
         params.chromeType = data.chromeType;
-        params.isMinuteMaidChromeOS = true;
+        params.isNewGaiaFlowChromeOS = true;
         $('login-header-bar').showGuestButton = true;
       }
 
       if (data.gaiaEndpoint)
         params.gaiaPath = data.gaiaEndpoint;
 
-      $('login-header-bar').minuteMaid = this.isMinuteMaid;
+      $('login-header-bar').newGaiaFlow = this.isNewGaiaFlow;
 
       if (data.forceReload ||
           JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
@@ -368,7 +368,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         reasonLabel.hidden = true;
       }
 
-      if (this.isMinuteMaid) {
+      if (this.isNewGaiaFlow) {
         $('login-header-bar').showCreateSupervisedButton =
             data.supervisedUsersCanCreate;
       } else {
@@ -411,7 +411,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateCancelButtonState: function() {
       this.cancelAllowed_ = this.isShowUsers_ && $('pod-row').pods.length;
       $('login-header-bar').allowCancel = this.cancelAllowed_;
-      if (this.isMinuteMaid)
+      if (this.isNewGaiaFlow)
         $('close-button-item').hidden = !this.cancelAllowed_;
     },
 
@@ -443,7 +443,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
         $('login-header-bar').allowCancel = isSAML || this.cancelAllowed_;
-        if (this.isMinuteMaid)
+        if (this.isNewGaiaFlow)
           $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
       }
     },

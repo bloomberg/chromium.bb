@@ -232,7 +232,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (StartupUtils::IsWebviewSigninEnabled()) {
-    params.SetBoolean("useMinuteMaid", true);
+    params.SetBoolean("useNewGaiaFlow", true);
 
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -248,7 +248,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
                                       kNewGaiaFlowPath);
     }
   } else {
-    params.SetBoolean("useMinuteMaid", false);
+    params.SetBoolean("useNewGaiaFlow", false);
   }
 
   if (!command_line->HasSwitch(::switches::kGaiaUrl) &&
