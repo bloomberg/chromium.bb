@@ -45,35 +45,33 @@ typedef void (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (void);
 typedef void (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (void);
 #endif
 
-static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display_ext = NULL;
-static PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window_surface_ext = NULL;
-
-static inline void
-weston_platform_get_egl_proc_addresses(void)
+static inline void *
+weston_platform_get_egl_proc_address(const char *address)
 {
-	if (!get_platform_display_ext) {
-		const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
-		if (strstr(extensions, "EGL_EXT_platform_wayland")
-		    || strstr(extensions, "EGL_KHR_platform_wayland")) {
-			get_platform_display_ext =
-				(void *) eglGetProcAddress("eglGetPlatformDisplayEXT");
-			create_platform_window_surface_ext =
-				(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
-		}
+	if (strstr(extensions, "EGL_EXT_platform_wayland")
+	    || strstr(extensions, "EGL_KHR_platform_wayland")) {
+		return (void *) eglGetProcAddress(address);
 	}
+
+	return NULL;
 }
 
 static inline EGLDisplay
 weston_platform_get_egl_display(EGLenum platform, void *native_display,
 				const EGLint *attrib_list)
 {
-	if (!get_platform_display_ext)
-		weston_platform_get_egl_proc_addresses();
+	static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
 
-	if (get_platform_display_ext)
-		return get_platform_display_ext(platform,
-						native_display, attrib_list);
+	if (!get_platform_display) {
+		get_platform_display = weston_platform_get_egl_proc_address(
+			"eglGetPlatformDisplayEXT");
+	}
+
+	if (get_platform_display)
+		return get_platform_display(platform,
+					    native_display, attrib_list);
 
 	return eglGetDisplay((EGLNativeDisplayType) native_display);
 }
@@ -83,13 +81,18 @@ weston_platform_create_egl_window(EGLDisplay dpy, EGLConfig config,
 				  void *native_window,
 				  const EGLint *attrib_list)
 {
-	if (!create_platform_window_surface_ext)
-		weston_platform_get_egl_proc_addresses();
+	static PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC
+		create_platform_window = NULL;
 
-	if (create_platform_window_surface_ext)
-		return create_platform_window_surface_ext(dpy, config,
-							  native_window,
-							  attrib_list);
+	if (!create_platform_window) {
+		create_platform_window = weston_platform_get_egl_proc_address(
+				"eglCreatePlatformWindowSurfaceEXT");
+	}
+
+	if (create_platform_window)
+		return create_platform_window(dpy, config,
+					      native_window,
+					      attrib_list);
 
 	return eglCreateWindowSurface(dpy, config,
 				      (EGLNativeWindowType) native_window,
