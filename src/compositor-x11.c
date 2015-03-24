@@ -55,10 +55,6 @@
 
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 
-#ifndef EGL_PLATFORM_X11_KHR
-#define EGL_PLATFORM_X11_KHR 0x31D5
-#endif
-
 static int option_width;
 static int option_height;
 static int option_scale;

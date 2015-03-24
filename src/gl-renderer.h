@@ -39,6 +39,18 @@ typedef intptr_t EGLNativeDisplayType;
 typedef intptr_t EGLNativeWindowType;
 #define EGL_DEFAULT_DISPLAY ((EGLNativeDisplayType)0)
 
+#endif /* ENABLE_EGL */
+
+#ifndef EGL_PLATFORM_GBM_KHR
+#define EGL_PLATFORM_GBM_KHR 0x31D7
+#endif
+
+#ifndef EGL_PLATFORM_WAYLAND_KHR
+#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
+#endif
+
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR 0x31D5
 #endif
 
 enum gl_renderer_border_side {

@@ -47,10 +47,6 @@
 
 #define WINDOW_TITLE "Weston Compositor"
 
-#ifndef EGL_PLATFORM_WAYLAND_KHR
-#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
-#endif
-
 struct wayland_compositor {
 	struct weston_compositor base;
 

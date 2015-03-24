@@ -68,10 +68,6 @@
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
 #endif
 
-#ifndef EGL_PLATFORM_GBM_KHR
-#define EGL_PLATFORM_GBM_KHR 0x31D7
-#endif
-
 static int option_current_mode = 0;
 
 enum output_config {
