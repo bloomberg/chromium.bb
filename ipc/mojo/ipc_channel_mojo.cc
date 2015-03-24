@@ -192,8 +192,7 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 // static
 bool ChannelMojo::ShouldBeUsed() {
   // TODO(morrita): Remove this if it sticks.
-  // ChannelMojo is currently disabled due to http://crbug.com/466814.
-  return false;
+  return true;
 }
 
 // static
