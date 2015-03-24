@@ -456,6 +456,8 @@ class _PropertyTypeInfo(_Enum):
     _Enum.__init__(self, name)
     self.is_fundamental = is_fundamental
 
+  def __repr__(self):
+    return self.name
 
 class PropertyType(object):
   """Enum of different types of properties/parameters.

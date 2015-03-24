@@ -24,6 +24,7 @@ import sys
 from cpp_bundle_generator import CppBundleGenerator
 from cpp_generator import CppGenerator
 from cpp_type_generator import CppTypeGenerator
+from js_externs_generator import JsExternsGenerator
 import json_schema
 from cpp_namespace_environment import CppNamespaceEnvironment
 from model import Model
@@ -31,7 +32,7 @@ from schema_loader import SchemaLoader
 
 # Names of supported code generators, as specified on the command-line.
 # First is default.
-GENERATORS = ['cpp', 'cpp-bundle-registration', 'cpp-bundle-schema']
+GENERATORS = ['cpp', 'cpp-bundle-registration', 'cpp-bundle-schema', 'externs']
 
 def GenerateSchema(generator_name,
                    file_paths,
@@ -114,6 +115,10 @@ def GenerateSchema(generator_name,
     generators = [
       ('%s.h' % filename_base, cpp_generator.h_generator),
       ('%s.cc' % filename_base, cpp_generator.cc_generator)
+    ]
+  elif generator_name == 'externs':
+    generators = [
+      ('%s_externs.js' % namespace.unix_name, JsExternsGenerator())
     ]
   else:
     raise Exception('Unrecognised generator %s' % generator_name)
