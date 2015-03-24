@@ -11,7 +11,7 @@ import os
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
-from chromite.cli.cros import cros_sdk
+from chromite.cli.brillo import brillo_sdk
 from chromite.lib import bootstrap_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -21,7 +21,7 @@ from chromite.lib import workspace_lib
 # Unittests often access internals.
 # pylint: disable=protected-access
 
-class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
+class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
 
   def setUp(self):
@@ -49,18 +49,18 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     # If we only no the workspace, use the workspace version.
     self.assertEqual(
         self.workspace_version,
-        cros_sdk.SdkCommand._FindVersion(self.workspace_path, None))
+        brillo_sdk.SdkCommand._FindVersion(self.workspace_path, None))
 
     # If we have an explicit sdk path, use it's version.
     self.assertEqual(
         self.sdk_version,
-        cros_sdk.SdkCommand._FindVersion(None, self.sdk_path))
+        brillo_sdk.SdkCommand._FindVersion(None, self.sdk_path))
     self.assertEqual(
         self.sdk_version,
-        cros_sdk.SdkCommand._FindVersion(self.workspace_path, self.sdk_path))
+        brillo_sdk.SdkCommand._FindVersion(self.workspace_path, self.sdk_path))
 
   def testHandleExplicitUpdate(self):
-    cros_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, '1.2.3')
+    brillo_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_VERSIONS_GOB_URL,
@@ -72,7 +72,7 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
   def testHandleLatestUpdate(self):
-    cros_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, 'latest')
+    brillo_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, 'latest')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_VERSIONS_GOB_URL,
@@ -84,7 +84,7 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
   def testHandleTotUpdate(self):
-    cros_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, 'tot')
+    brillo_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, 'tot')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_URL,
@@ -96,7 +96,7 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
   def testHandleWorkspaceUpdate(self):
-    cros_sdk.SdkCommand._HandleUpdate(self.workspace_path, None, '1.2.3')
+    brillo_sdk.SdkCommand._HandleUpdate(self.workspace_path, None, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_VERSIONS_GOB_URL,

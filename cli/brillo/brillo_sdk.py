@@ -96,7 +96,7 @@ class SdkCommand(command.CliCommand):
         '--update', help='Update the SDK to version 1.2.3, tot, latest')
 
   def Run(self):
-    """Run cros sdk."""
+    """Run brillo sdk."""
     self.options.Freeze()
 
     workspace_path = workspace_lib.WorkspacePath()
