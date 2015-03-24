@@ -9,6 +9,6 @@ namespace extensionoptions {
 // API namespace.
 extern const char kAPINamespace[] = "extensionOptionsInternal";
 
-const char kExtensionId[] = "extensionId";
+const char kExtensionId[] = "extension";
 
 }  // namespace extensionoptions

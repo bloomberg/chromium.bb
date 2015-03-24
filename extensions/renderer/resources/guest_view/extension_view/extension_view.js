@@ -13,7 +13,6 @@ var ExtensionViewInternal =
 
 function ExtensionViewImpl(extensionviewElement) {
   GuestViewContainer.call(this, extensionviewElement, 'extensionview');
-  this.setupExtensionViewAttributes();
 
   new ExtensionViewEvents(this, this.viewInstanceId);
 }
@@ -40,16 +39,6 @@ ExtensionViewImpl.prototype.buildContainerParams = function() {
     params[i] = this.attributes[i].getValue();
   }
   return params;
-};
-
-// This observer monitors mutations to attributes of the <extensionview>.
-ExtensionViewImpl.prototype.handleAttributeMutation = function(
-    attributeName, oldValue, newValue) {
-  if (!this.attributes[attributeName])
-    return;
-
-  // Let the changed attribute handle its own mutation.
-  this.attributes[attributeName].maybeHandleMutation(oldValue, newValue);
 };
 
 ExtensionViewImpl.prototype.onElementDetached = function() {

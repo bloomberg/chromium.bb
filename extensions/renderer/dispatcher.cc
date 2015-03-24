@@ -478,6 +478,10 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair(kEventBindings, IDR_EVENT_BINDINGS_JS));
   resources.push_back(std::make_pair("extensionOptions",
                                      IDR_EXTENSION_OPTIONS_JS));
+  resources.push_back(std::make_pair("extensionOptionsAttributes",
+                                     IDR_EXTENSION_OPTIONS_ATTRIBUTES_JS));
+  resources.push_back(std::make_pair("extensionOptionsConstants",
+                                     IDR_EXTENSION_OPTIONS_CONSTANTS_JS));
   resources.push_back(std::make_pair("extensionOptionsEvents",
                                      IDR_EXTENSION_OPTIONS_EVENTS_JS));
   resources.push_back(std::make_pair("extensionView", IDR_EXTENSION_VIEW_JS));
@@ -1409,6 +1413,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // Require ExtensionOptions.
   if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     module_system->Require("extensionOptions");
+    module_system->Require("extensionOptionsAttributes");
   }
 
   // Require ExtensionView.

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ExtensionOptionsConstants =
+    require('extensionOptionsConstants').ExtensionOptionsConstants;
 var ExtensionOptionsEvents =
     require('extensionOptionsEvents').ExtensionOptionsEvents;
-var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 
 function ExtensionOptionsImpl(extensionoptionsElement) {
   GuestViewContainer.call(this, extensionoptionsElement, 'extensionoptions');
 
   new ExtensionOptionsEvents(this);
-  this.setupElementProperties();
 };
 
 ExtensionOptionsImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -23,16 +23,14 @@ ExtensionOptionsImpl.prototype.onElementAttached = function() {
 }
 
 ExtensionOptionsImpl.prototype.buildContainerParams = function() {
-  return {
-    'extensionId': this.element.getAttribute('extension')
-  };
+  var params = {};
+  for (var i in this.attributes) {
+    params[i] = this.attributes[i].getValue();
+  }
+  return params;
 };
 
 ExtensionOptionsImpl.prototype.createGuest = function() {
-  if (!this.elementAttached) {
-    return;
-  }
-
   // Destroy the old guest if one exists.
   this.guest.destroy();
 
@@ -48,31 +46,7 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
   }.bind(this));
 };
 
-ExtensionOptionsImpl.prototype.handleAttributeMutation =
-    function(name, oldValue, newValue) {
-  // We treat null attribute (attribute removed) and the empty string as
-  // one case.
-  oldValue = oldValue || '';
-  newValue = newValue || '';
-
-  if (oldValue === newValue)
-    return;
-
-  if (name == 'extension') {
-    this.createGuest();
-  }
-};
-
-ExtensionOptionsImpl.prototype.setupElementProperties = function() {
-  $Object.defineProperty(this.element, 'extension', {
-    get: function() {
-      return this.element.getAttribute('extension');
-    }.bind(this),
-    set: function(value) {
-      this.element.setAttribute('extension', value);
-    }.bind(this),
-    enumerable: true
-  });
-};
-
 GuestViewContainer.registerElement(ExtensionOptionsImpl);
+
+// Exports.
+exports.ExtensionOptionsImpl = ExtensionOptionsImpl;

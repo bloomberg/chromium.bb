@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 var DocumentNatives = requireNative('document_natives');
-var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var IdGenerator = requireNative('id_generator');
 

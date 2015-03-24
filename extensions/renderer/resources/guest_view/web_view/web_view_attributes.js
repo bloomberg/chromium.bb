@@ -5,8 +5,8 @@
 // This module implements the attributes of the <webview> tag.
 
 var GuestViewAttributes = require('guestViewAttributes').GuestViewAttributes;
-var WebViewImpl = require('webView').WebViewImpl;
 var WebViewConstants = require('webViewConstants').WebViewConstants;
+var WebViewImpl = require('webView').WebViewImpl;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
 // -----------------------------------------------------------------------------
@@ -252,9 +252,7 @@ SrcAttribute.prototype.parse = function() {
 // -----------------------------------------------------------------------------
 
 // Sets up all of the webview attributes.
-WebViewImpl.prototype.setupWebViewAttributes = function() {
-  this.attributes = {};
-
+WebViewImpl.prototype.setupAttributes = function() {
   this.attributes[WebViewConstants.ATTRIBUTE_ALLOWSCALING] =
       new AllowScalingAttribute(this);
   this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY] =

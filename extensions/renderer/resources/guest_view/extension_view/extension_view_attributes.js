@@ -5,9 +5,9 @@
 // This module implements the attributes of the <extensionview> tag.
 
 var GuestViewAttributes = require('guestViewAttributes').GuestViewAttributes;
-var ExtensionViewImpl = require('extensionView').ExtensionViewImpl;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
+var ExtensionViewImpl = require('extensionView').ExtensionViewImpl;
 var ExtensionViewInternal =
     require('extensionViewInternal').ExtensionViewInternal;
 
@@ -54,8 +54,7 @@ SrcAttribute.prototype.parse = function() {
 // -----------------------------------------------------------------------------
 
 // Sets up all of the extensionview attributes.
-ExtensionViewImpl.prototype.setupExtensionViewAttributes = function() {
-  this.attributes = {};
+ExtensionViewImpl.prototype.setupAttributes = function() {
   this.attributes[ExtensionViewConstants.ATTRIBUTE_EXTENSION] =
       new ExtensionAttribute(this);
   this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC] =

@@ -12,6 +12,7 @@ var IdGenerator = requireNative('id_generator');
 
 function GuestViewContainer(element, viewType) {
   privates(element).internal = this;
+  this.attributes = {};
   this.element = element;
   this.elementAttached = false;
   this.viewInstanceId = IdGenerator.GetNextId();
@@ -19,10 +20,10 @@ function GuestViewContainer(element, viewType) {
 
   this.setupGuestProperty();
   this.guest = new GuestView(viewType);
+  this.setupAttributes();
 
   privates(this).browserPluginElement = this.createBrowserPluginElement();
   this.setupFocusPropagation();
-
   var shadowRoot = this.element.createShadowRoot();
   shadowRoot.appendChild(privates(this).browserPluginElement);
 }
@@ -168,11 +169,9 @@ GuestViewContainer.prototype.dispatchEvent = function(event) {
 
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
-// TODO(paulmeyer): remove once all view types use attribute objects.
-GuestViewContainer.prototype.handleAttributeMutation = function(
-    attributeName, oldValue, newValue) {};
 GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {};
+GuestViewContainer.prototype.setupAttributes = function() {};
 
 // Registers the browser plugin <object> custom element. |viewType| is the
 // name of the specific guestview container (e.g. 'webview').
@@ -230,10 +229,12 @@ function registerGuestViewElement(guestViewContainerType) {
 
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
     var internal = privates(this).internal;
-    if (!internal) {
+    if (!internal || !internal.attributes[name]) {
       return;
     }
-    internal.handleAttributeMutation(name, oldValue, newValue);
+
+    // Let the changed attribute handle its own mutation.
+    internal.attributes[name].maybeHandleMutation(oldValue, newValue);
   };
 
   proto.detachedCallback = function() {

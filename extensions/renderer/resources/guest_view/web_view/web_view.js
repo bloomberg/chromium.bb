@@ -18,9 +18,7 @@ var WebViewInternal = require('webViewInternal').WebViewInternal;
 function WebViewImpl(webviewElement) {
   GuestViewContainer.call(this, webviewElement, 'webview');
 
-  this.setupWebViewAttributes();
   this.setupElementProperties();
-
   new WebViewEvents(this, this.viewInstanceId);
 }
 
@@ -96,17 +94,6 @@ WebViewImpl.prototype.setupElementProperties = function() {
     // No setter.
     enumerable: true
   });
-};
-
-// This observer monitors mutations to attributes of the <webview>.
-WebViewImpl.prototype.handleAttributeMutation = function(
-    attributeName, oldValue, newValue) {
-  if (!this.attributes[attributeName]) {
-    return;
-  }
-
-  // Let the changed attribute handle its own mutation;
-  this.attributes[attributeName].maybeHandleMutation(oldValue, newValue);
 };
 
 WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
