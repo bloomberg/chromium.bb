@@ -60,6 +60,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -92,6 +93,17 @@ const char kNotSupportedOnNonKioskSessionError[] =
     "Operation only supported for kiosk apps running in a kiosk session.";
 const char kVolumeNotFoundError[] = "Volume not found.";
 const char kSecurityError[] = "Security error.";
+
+// List of whitelisted component apps and extensions by their ids for
+// chrome.fileSystem.requestFileSystem.
+const char* const kRequestFileSystemComponentWhitelist[] = {
+    file_manager::kFileManagerAppId,
+    file_manager::kVideoPlayerAppId,
+    file_manager::kGalleryAppId,
+    file_manager::kAudioPlayerAppId,
+    file_manager::kImageLoaderExtensionId,
+    "pkplfbidichfdicaijlchgnapepdginl"  // Testing extensions.
+};
 #endif
 
 namespace file_system = extensions::api::file_system;
@@ -1024,11 +1036,20 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   return RespondNow(Error(kNotSupportedOnCurrentPlatformError));
 
 #else
-  // Only kiosk apps in kiosk sessions can use this API. Additionally component
-  // extensions and apps, which is not documented though.
+  // Only kiosk apps in kiosk sessions can use this API.
+  // Additionally whitelisted component extensions and apps.
+  bool is_whitelisted_component = false;
+  if (extension()->location() == Manifest::COMPONENT) {
+    for (const auto& whitelisted_id : kRequestFileSystemComponentWhitelist) {
+      if (extension_id().compare(whitelisted_id) == 0) {
+        is_whitelisted_component = true;
+        break;
+      }
+    }
+  }
   if ((!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
        !KioskModeInfo::IsKioskEnabled(extension())) &&
-      extension()->location() != Manifest::COMPONENT) {
+      !is_whitelisted_component) {
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
   }
 
@@ -1071,8 +1092,7 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   const bool is_auto_launched =
       chromeos::KioskAppManager::Get()->GetApp(extension_id(), &app_info) &&
       app_info.was_auto_launched_with_zero_delay;
-  const bool requires_consent =
-      !is_auto_launched && extension()->location() != Manifest::COMPONENT;
+  const bool requires_consent = !is_auto_launched && !is_whitelisted_component;
 
   if (!requires_consent) {
     // Grant the permission without showing the dialog.

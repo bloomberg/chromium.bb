@@ -19,6 +19,12 @@ const char kVideoPlayerAppId[] = "jcgeabjmjgoblfofpppfkcoakmfobdko";
 // The gallery's app ID.
 const char kGalleryAppId[] = "nlkncpkkdoccmpiclbokaimcnedabhhm";
 
+// The audio player's app ID.
+const char kAudioPlayerAppId[] = "cjbfomnbifhcdnihkgipgfcihmgjfhbf";
+
+// The image loader extension's ID.
+const char kImageLoaderExtensionId[] = "pmfjbimdmchhbnneeidfognadeopoehp";
+
 }  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_ID_H_

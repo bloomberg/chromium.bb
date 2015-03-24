@@ -125,7 +125,7 @@ function launchWithEntries(isolatedEntries) {
             }).then(function(tasks) {
               chrome.test.assertEq(1, tasks.length);
               chrome.test.assertEq(
-                  'kidcpjlbjdmcnmccjhjdckhbngnhnepk|app|textAction',
+                  'pkplfbidichfdicaijlchgnapepdginl|app|textAction',
                   tasks[0].taskId);
               return tasks[0];
             });

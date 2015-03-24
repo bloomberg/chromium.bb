@@ -449,7 +449,6 @@
   "fileSystem.requestFileSystem": [{
     "channel": "dev",
     "extension_types": ["platform_app"],
-    "location": "component",
     "platforms": ["chromeos"]
   }],
   "fileSystemProvider": {
