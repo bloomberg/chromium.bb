@@ -272,12 +272,26 @@ void LayoutListItem::updateMarkerLocationAndInvalidateWidth()
     // FIXME: We should not modify the structure of the render tree
     // during layout. crbug.com/370461
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+    LayoutState* layoutState = view()->layoutState();
+    LayoutFlowThread* currentFlowThread = nullptr;
+    if (layoutState) {
+        // We're about to modify the layout tree structure (during layout!), and any code using
+        // LayoutState might get utterly confused by that. There's no evidence that anything other
+        // than the flow thread code will suffer, though, so just reset the current flow thread
+        // temporarily.
+        // FIXME: get rid of this hack, including the flow thread setter in LayoutState, as part of
+        // fixing crbug.com/370461
+        currentFlowThread = layoutState->flowThread();
+        layoutState->setFlowThread(nullptr);
+    }
     if (updateMarkerLocation()) {
         // If the marker is inside we need to redo the preferred width calculations
         // as the size of the item now includes the size of the list marker.
         if (m_marker->isInside())
             containingBlock()->updateLogicalWidth();
     }
+    if (layoutState)
+        layoutState->setFlowThread(currentFlowThread);
 }
 
 bool LayoutListItem::updateMarkerLocation()
