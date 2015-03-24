@@ -36,8 +36,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,150) size 27x32 [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "ltr"
-            LayoutTableCell {TD} at (103,104) size 124x124 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,106) size 124x120 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (0,5) size 10.55x10.55: right
@@ -49,8 +49,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,104) size 124x124 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,106) size 124x120 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: right
@@ -92,8 +92,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,276) size 27x32 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "rtl"
-            LayoutTableCell {TD} at (103,230) size 124x124 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,232) size 124x120 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: left
@@ -105,8 +105,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,230) size 124x124 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,232) size 124x120 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
@@ -179,8 +179,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,150) size 27x32 [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "ltr"
-            LayoutTableCell {TD} at (103,104) size 124x124 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,106) size 124x120 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (0,5) size 10.55x10.55: right
@@ -192,8 +192,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,104) size 124x124 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,106) size 124x120 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: right
@@ -235,8 +235,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,276) size 27x32 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "rtl"
-            LayoutTableCell {TD} at (103,230) size 124x124 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,232) size 124x120 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (54,5) size 10.55x10.55: left
@@ -248,8 +248,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (0,0) size 54x19
                       text run at (0,0) width 54: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,230) size 124x124 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,232) size 124x120 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (60.39,3.45) size 10.55x10.55: left
@@ -322,8 +322,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,150) size 27x32 [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "ltr"
-            LayoutTableCell {TD} at (103,104) size 124x124 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,106) size 124x120 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (24.53,5) size 10.55x10.55: right
@@ -335,8 +335,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (41,0) size 55x19
                       text run at (41,0) width 55: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,104) size 124x124 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,106) size 124x120 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (24.53,3.45) size 10.55x10.55: right
@@ -378,8 +378,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,276) size 27x32 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "rtl"
-            LayoutTableCell {TD} at (103,230) size 124x124 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,232) size 124x120 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (78.53,5) size 10.55x10.55: left
@@ -391,8 +391,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (24,0) size 55x19
                       text run at (24,0) width 55: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,230) size 124x124 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,232) size 124x120 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (84.92,3.45) size 10.55x10.55: left
@@ -465,8 +465,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,150) size 27x32 [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "ltr"
-            LayoutTableCell {TD} at (103,104) size 124x124 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,106) size 124x120 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (49.06,5) size 10.55x10.55: right
@@ -478,8 +478,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (66,0) size 54x19
                       text run at (66,0) width 54: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,104) size 124x124 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,106) size 124x120 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (49.06,3.45) size 10.55x10.55: right
@@ -521,8 +521,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (74,276) size 27x32 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 15x19
                 text run at (6,6) width 15: "rtl"
-            LayoutTableCell {TD} at (103,230) size 124x124 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (103,232) size 124x120 [border: (1px solid #000000)] [r=4 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: left
@@ -534,8 +534,8 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                   LayoutBlockFlow {DIV} at (0,20) size 120x0
-            LayoutTableCell {TD} at (229,230) size 124x124 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (2,2) size 120x120
+            LayoutTableCell {TD} at (229,232) size 124x120 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (2,2) size 120x116
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x20
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x20
                     LayoutDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
