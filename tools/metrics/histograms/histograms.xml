@@ -26185,8 +26185,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Platform.TPM.DictionaryAttackCounter">
   <owner>dkrahn@chromium.org</owner>
   <summary>
-    Each sample is the value of the TPM dictionary attack counter during
-    startup.  Any non-zero value is unexpected.
+    Each sample is the value of the TPM dictionary attack counter reported at
+    boot and hourly while running.  Any non-zero value is unexpected.
   </summary>
 </histogram>
 
@@ -26194,7 +26194,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="CrosTPMDictionaryAttackResetStatusEnum">
   <owner>dkrahn@chromium.org</owner>
   <summary>
-    Each sample is the status of a periodic attempt to reset the TPM dictionary
+    Each sample is the status of an hourly attempt to reset the TPM dictionary
     attack counter.
   </summary>
 </histogram>
