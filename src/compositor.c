@@ -4135,7 +4135,7 @@ weston_output_transform_coordinate(struct weston_output *output,
 		0.0,
 		1.0 } };
 
-	weston_matrix_transform(&output->matrix, &p);
+	weston_matrix_transform(&output->inverse_matrix, &p);
 
 	*x = wl_fixed_from_double(p.f[0] / p.f[3]);
 	*y = wl_fixed_from_double(p.f[1] / p.f[3]);
