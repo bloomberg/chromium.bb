@@ -390,18 +390,18 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
     client_->SendBeginFramesToChildren(adjusted_args_for_children);
   }
 
+  BeginFrameArgs adjusted_args(args);
+  adjusted_args.deadline -= EstimatedParentDrawTime();
+
   // We have just called SetNeedsBeginFrame(true) and the BeginFrameSource has
   // sent us the last BeginFrame we have missed. As we might not be able to
   // actually make rendering for this call, handle it like a "retro frame".
   // TODO(brainderson): Add a test for this functionality ASAP!
-  if (args.type == BeginFrameArgs::MISSED) {
-    begin_retro_frame_args_.push_back(args);
+  if (adjusted_args.type == BeginFrameArgs::MISSED) {
+    begin_retro_frame_args_.push_back(adjusted_args);
     PostBeginRetroFrameIfNeeded();
     return true;
   }
-
-  BeginFrameArgs adjusted_args(args);
-  adjusted_args.deadline -= EstimatedParentDrawTime();
 
   bool should_defer_begin_frame;
   if (settings_.using_synchronous_renderer_compositor) {
