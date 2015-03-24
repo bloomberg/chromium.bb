@@ -9,6 +9,9 @@ from __future__ import print_function
 from chromite.cbuildbot import constants
 
 
+# Metadata keys to tag our GCE artifacts with.
+METADATA_IMAGE_NAME = 'cros-image'
+
 PROJECT = 'chromeos-bot'
 DEFAULT_BASE_IMAGE = 'ubuntu-14-04-server-v20150324'
 DEFAULT_IMAGE_NAME = 'chromeos-bot-v5'

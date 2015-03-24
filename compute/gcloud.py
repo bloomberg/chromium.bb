@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+from chromite.compute import compute_configs
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import timeout_util
@@ -164,6 +165,9 @@ class GCContext(object):
                      scopes=None, **kwargs):
     """Creates an |instance|.
 
+    Additionally, if an image is provided, adds a custom metadata pair to
+    identify the the image used to create the instance.
+
     Args:
        instance: The name of the instance to create.
        image: The source image to create |instance| from.
@@ -177,6 +181,8 @@ class GCContext(object):
     cmd = ['instances', 'create', instance]
     if image:
       cmd += ['--image', image]
+      cmd += ['--metadata',
+              '%s="%s"' % (compute_configs.METADATA_IMAGE_NAME, image)]
     if address:
       cmd += ['--address', address]
     if machine_type:
