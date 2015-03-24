@@ -1027,11 +1027,8 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 
 // Tests what happens when a tab navigates a cross-frame iframe (to b.com)
 // back to the site of the parent document (a.com).
-//
-// TODO(nick): http://crbug.com/433012. Disabled because the second navigation
-// crashes the renderer under --site-per-process during blink::Frame::detach().
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
-                       DISABLED_CrossSiteIframeBecomesSameSite) {
+                       CrossSiteIframeBecomesSameSite) {
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
