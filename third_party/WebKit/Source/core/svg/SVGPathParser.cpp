@@ -167,27 +167,12 @@ void SVGPathParser::emitCurveToQuadraticSmoothSegment(PathSegmentData& segment)
 
 void SVGPathParser::emitArcToSegment(PathSegmentData& segment)
 {
-    // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints.
-    // http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
-    // If the current point and target point for the arc are identical, it should be treated as a zero length
-    // path. This ensures continuity in animations.
-    float rx = fabsf(segment.arcRadii().x());
-    float ry = fabsf(segment.arcRadii().y());
-
     if (m_mode == RelativeCoordinates)
         segment.targetPoint += m_currentPoint;
 
-    if (!rx || !ry || segment.targetPoint == m_currentPoint) {
+    if (!decomposeArcToCubic(m_currentPoint, segment))
         m_consumer->lineTo(segment.targetPoint, AbsoluteCoordinates);
-        m_currentPoint = segment.targetPoint;
-        return;
-    }
-
-    float angle = segment.arcAngle();
-    FloatPoint point1 = m_currentPoint;
     m_currentPoint = segment.targetPoint;
-    if (!decomposeArcToCubic(angle, rx, ry, point1, segment.targetPoint, segment.arcLarge, segment.arcSweep))
-        m_consumer->lineTo(segment.targetPoint, AbsoluteCoordinates);
 }
 
 bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, bool checkForInitialMoveTo)
@@ -346,9 +331,23 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
 // This works by converting the SVG arc to "simple" beziers.
 // Partly adapted from Niko's code in kdelibs/kdecore/svgicons.
 // See also SVG implementation notes: http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
-bool SVGPathParser::decomposeArcToCubic(float angle, float rx, float ry, const FloatPoint& start, const FloatPoint& end, bool largeArcFlag, bool sweepFlag)
+bool SVGPathParser::decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData& arcSegment)
 {
-    FloatSize midPointDistance = start - end;
+    // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints.
+    // http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
+    float rx = fabsf(arcSegment.arcRadii().x());
+    float ry = fabsf(arcSegment.arcRadii().y());
+    if (!rx || !ry)
+        return false;
+
+    // If the current point and target point for the arc are identical, it should be treated as a zero length
+    // path. This ensures continuity in animations.
+    if (arcSegment.targetPoint == currentPoint)
+        return false;
+
+    float angle = arcSegment.arcAngle();
+
+    FloatSize midPointDistance = currentPoint - arcSegment.targetPoint;
     midPointDistance.scale(0.5f);
 
     AffineTransform pointTransform;
@@ -372,15 +371,15 @@ bool SVGPathParser::decomposeArcToCubic(float angle, float rx, float ry, const F
     pointTransform.scale(1 / rx, 1 / ry);
     pointTransform.rotate(-angle);
 
-    FloatPoint point1 = pointTransform.mapPoint(start);
-    FloatPoint point2 = pointTransform.mapPoint(end);
+    FloatPoint point1 = pointTransform.mapPoint(currentPoint);
+    FloatPoint point2 = pointTransform.mapPoint(arcSegment.targetPoint);
     FloatSize delta = point2 - point1;
 
     float d = delta.width() * delta.width() + delta.height() * delta.height();
     float scaleFactorSquared = std::max(1 / d - 0.25f, 0.f);
 
     float scaleFactor = sqrtf(scaleFactorSquared);
-    if (sweepFlag == largeArcFlag)
+    if (arcSegment.arcSweep == arcSegment.arcLarge)
         scaleFactor = -scaleFactor;
 
     delta.scale(scaleFactor);
@@ -392,9 +391,9 @@ bool SVGPathParser::decomposeArcToCubic(float angle, float rx, float ry, const F
     float theta2 = FloatPoint(point2 - centerPoint).slopeAngleRadians();
 
     float thetaArc = theta2 - theta1;
-    if (thetaArc < 0 && sweepFlag)
+    if (thetaArc < 0 && arcSegment.arcSweep)
         thetaArc += twoPiFloat;
-    else if (thetaArc > 0 && !sweepFlag)
+    else if (thetaArc > 0 && !arcSegment.arcSweep)
         thetaArc -= twoPiFloat;
 
     pointTransform.makeIdentity();

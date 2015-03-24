@@ -49,7 +49,7 @@ public:
 
 private:
     bool initialCommandIsMoveTo();
-    bool decomposeArcToCubic(float, float, float, const FloatPoint&, const FloatPoint&, bool largeArcFlag, bool sweepFlag);
+    bool decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData&);
     void emitMoveToSegment(PathSegmentData&);
     void emitLineToSegment(PathSegmentData&);
     void emitLineToHorizontalSegment(PathSegmentData&);
