@@ -10,7 +10,8 @@
         [442, 23, 335, 554]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML"
+        "LayoutBlockFlow HTML",
+        "LayoutText #text"
       ]
     }
   ]

@@ -19,9 +19,16 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow HTML",
         "LayoutText #text",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV id='root'",
+        "LayoutBlockFlow DIV id='firstLine'",
         "LayoutBlockFlow DIV id='firstLine'",
         "LayoutText #text",
+        "LayoutText #text",
         "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBR BR",
         "LayoutBR BR"
       ]
     }

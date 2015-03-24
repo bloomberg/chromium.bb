@@ -1,0 +1,22 @@
+{
+  "bounds": [850, 585],
+  "children": [
+    {
+      "bounds": [850, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [50, 50, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV",
+        "LayoutBR BR",
+        "LayoutBlockFlow (positioned) DIV id='target'",
+        "LayoutBR BR"
+      ]
+    }
+  ]
+}
+

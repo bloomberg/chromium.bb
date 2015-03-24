@@ -6,11 +6,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [442, 123, 335, 399],
-        [442, 23, 335, 554]
+        [8, 8, 187, 19]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutText #text"
       ]
     }
