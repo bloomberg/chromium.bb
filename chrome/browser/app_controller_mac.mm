@@ -111,13 +111,6 @@ using content::DownloadManager;
 
 namespace {
 
-// Declare notification names from the 10.7 SDK.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-NSString* NSPopoverDidShowNotification = @"NSPopoverDidShowNotification";
-NSString* NSPopoverDidCloseNotification = @"NSPopoverDidCloseNotification";
-#endif
-
 // How long we allow a workspace change notification to wait to be
 // associated with a dock activation. The animation lasts 250ms. See
 // applicationShouldHandleReopen:hasVisibleWindows:.
@@ -353,19 +346,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
              name:NSWindowDidResignMainNotification
            object:nil];
 
-  if (base::mac::IsOSLionOrLater()) {
-    [notificationCenter
-        addObserver:self
-           selector:@selector(popoverDidShow:)
-               name:NSPopoverDidShowNotification
-             object:nil];
-    [notificationCenter
-        addObserver:self
-           selector:@selector(popoverDidClose:)
-               name:NSPopoverDidCloseNotification
-             object:nil];
-  }
-
   // Register for space change notifications.
   [[[NSWorkspace sharedWorkspace] notificationCenter]
     addObserver:self
@@ -562,21 +542,26 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 // Close Tab/Close Window accordingly.
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   DCHECK(menu == [closeTabMenuItem_ menu]);
-  NSWindow* window = [NSApp keyWindow];
-  NSWindow* mainWindow = [NSApp mainWindow];
-  if (!window || ([window parentWindow] == mainWindow)) {
-    // If the key window is a child of the main window (e.g. a bubble), the main
-    // window should be the one that handles the close menu item action.
-    // Also, there might be a small amount of time where there is no key window;
-    // in that case as well, just use our main browser window if there is one.
-    // You might think that we should just always use the main window, but the
-    // "About Chrome" window serves as a counterexample.
-    window = mainWindow;
+
+  BOOL enableCloseTabShortcut = NO;
+  id target = [NSApp targetForAction:@selector(performClose:)];
+
+  // |target| is an instance of NSPopover or NSWindow.
+  // If a popover (likely the dictionary lookup popover), we want Cmd-W to
+  // close the popover so map it to "Close Window".
+  // Otherwise, map Cmd-W to "Close Tab" if it's a browser window.
+  if ([target isKindOfClass:[NSWindow class]]) {
+    NSWindow* window = target;
+    NSWindow* mainWindow = [NSApp mainWindow];
+    if (!window || ([window parentWindow] == mainWindow)) {
+      // If the target window is a child of the main window (e.g. a bubble), the
+      // main window should be the one that handles the close menu item action.
+      window = mainWindow;
+    }
+    enableCloseTabShortcut =
+        [[window windowController] isKindOfClass:[TabWindowController class]];
   }
 
-  BOOL hasTabs =
-      [[window windowController] isKindOfClass:[TabWindowController class]];
-  BOOL enableCloseTabShortcut = hasTabs && !hasPopover_;
   [self adjustCloseWindowMenuItemKeyEquivalent:enableCloseTabShortcut];
   [self adjustCloseTabMenuItemKeyEquivalent:enableCloseTabShortcut];
 }
@@ -637,16 +622,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // Don't attempt any shutdown here. Cocoa will shortly call
   // -[BrowserCrApplication terminate:].
   isPoweringOff_ = YES;
-}
-
-// Called on Lion and later when a popover (e.g. dictionary) is shown.
-- (void)popoverDidShow:(NSNotification*)notify {
-  hasPopover_ = YES;
-}
-
-// Called on Lion and later when a popover (e.g. dictionary) is closed.
-- (void)popoverDidClose:(NSNotification*)notify {
-  hasPopover_ = NO;
 }
 
 - (void)checkForAnyKeyWindows {

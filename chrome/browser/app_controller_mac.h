@@ -85,9 +85,6 @@ class WorkAreaWatcherObserver;
   // to it.
   IBOutlet NSMenu* helpMenu_;
 
-  // Indicates wheter an NSPopover is currently being shown.
-  BOOL hasPopover_;
-
   // If we are expecting a workspace change in response to a reopen
   // event, the time we got the event. A null time otherwise.
   base::TimeTicks reopenTime_;
