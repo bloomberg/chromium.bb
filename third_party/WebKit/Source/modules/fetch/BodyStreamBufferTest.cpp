@@ -78,11 +78,21 @@ private:
     RefPtrWillBeMember<DOMException> m_exception;
 };
 
+class MockCanceller : public BodyStreamBuffer::Canceller {
+public:
+    MockCanceller() : m_counter(0) { }
+    void cancel() override { ++m_counter; }
+    int counter() const { return m_counter; }
+
+private:
+    int m_counter;
+};
+
 } // namespace
 
 TEST(BodyStreamBufferTest, Read)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     RefPtr<DOMArrayBuffer> arrayBuffer1 = DOMArrayBuffer::create("foobar", 6);
     RefPtr<DOMArrayBuffer> arrayBuffer2 = DOMArrayBuffer::create("abc", 3);
     RefPtr<DOMArrayBuffer> arrayBuffer3 = DOMArrayBuffer::create("piyo", 4);
@@ -98,7 +108,7 @@ TEST(BodyStreamBufferTest, Read)
 
 TEST(BodyStreamBufferTest, Exception)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     EXPECT_FALSE(buffer->exception());
     buffer->error(DOMException::create(NetworkError, "Error Message"));
     EXPECT_TRUE(buffer->exception());
@@ -108,7 +118,7 @@ TEST(BodyStreamBufferTest, Exception)
 
 TEST(BodyStreamBufferTest, Observer)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     MockObserver* observer1 = new MockObserver();
     MockObserver* observer2 = new MockObserver();
     EXPECT_TRUE(buffer->registerObserver(observer1));
@@ -137,7 +147,7 @@ TEST(BodyStreamBufferTest, Observer)
 
 TEST(BodyStreamBufferTest, CreateBlob)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     BlobHandleCallback* callback1 = new BlobHandleCallback();
     BlobHandleCallback* callback2 = new BlobHandleCallback();
     EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("text/html", callback1));
@@ -164,7 +174,7 @@ TEST(BodyStreamBufferTest, CreateBlob)
 
 TEST(BodyStreamBufferTest, CreateBlobAfterWrite)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback));
@@ -180,7 +190,7 @@ TEST(BodyStreamBufferTest, CreateBlobAfterWrite)
 
 TEST(BodyStreamBufferTest, CreateBlobAfterClose)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->close();
@@ -196,7 +206,7 @@ TEST(BodyStreamBufferTest, CreateBlobAfterClose)
 
 TEST(BodyStreamBufferTest, CreateBlobException)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     BlobHandleCallback* callback1 = new BlobHandleCallback();
     BlobHandleCallback* callback2 = new BlobHandleCallback();
     EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback1));
@@ -216,7 +226,7 @@ TEST(BodyStreamBufferTest, CreateBlobException)
 
 TEST(BodyStreamBufferTest, CreateBlobExceptionAfterWrite)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     EXPECT_TRUE(buffer->readAllAndCreateBlobHandle("", callback));
@@ -228,7 +238,7 @@ TEST(BodyStreamBufferTest, CreateBlobExceptionAfterWrite)
 
 TEST(BodyStreamBufferTest, CreateBlobExceptionAfterError)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     BlobHandleCallback* callback = new BlobHandleCallback();
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->error(DOMException::create(NetworkError, "Error Message"));
@@ -236,6 +246,17 @@ TEST(BodyStreamBufferTest, CreateBlobExceptionAfterError)
     EXPECT_TRUE(callback->exception());
     EXPECT_EQ("NetworkError", callback->exception()->name());
     EXPECT_EQ("Error Message", callback->exception()->message());
+}
+
+TEST(BodyStreamBufferTest, Cancel)
+{
+    auto canceller = new MockCanceller;
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(canceller);
+    buffer->cancel();
+
+    EXPECT_EQ(1, canceller->counter());
+    EXPECT_FALSE(buffer->isClosed());
+    EXPECT_FALSE(buffer->hasError());
 }
 
 } // namespace blink

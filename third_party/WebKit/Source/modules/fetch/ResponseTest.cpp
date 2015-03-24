@@ -21,6 +21,16 @@ namespace {
 
 const char kTestData[] = "Here is sample text for the blob.";
 
+class MockCanceller : public BodyStreamBuffer::Canceller {
+public:
+    MockCanceller() : m_counter(0) { }
+    void cancel() override { ++m_counter; }
+    int counter() const { return m_counter; }
+
+private:
+    int m_counter;
+};
+
 PassOwnPtr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse()
 {
     const KURL url(ParsedURLString, "http://www.webresponse.com/");
@@ -306,7 +316,7 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     Response* response = Response::create(executionContext(), fetchResponseData);
@@ -316,7 +326,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault)
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createBasicFilteredResponse();
@@ -327,7 +337,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic)
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createCORSFilteredResponse();
@@ -338,7 +348,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS)
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createOpaqueFilteredResponse();
@@ -349,7 +359,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque)
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(new MockCanceller);
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     Response* response = Response::create(executionContext(), fetchResponseData);
@@ -369,6 +379,23 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
     EXPECT_EQ("Error Message", client1->exception()->message());
     EXPECT_EQ("NetworkError", client2->exception()->name());
     EXPECT_EQ("Error Message", client2->exception()->message());
+}
+
+TEST_F(ServiceWorkerResponseTest, CloneAndCancel)
+{
+    auto canceller = new MockCanceller;
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(canceller);
+    FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
+    fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
+    Response* response = Response::create(executionContext(), fetchResponseData);
+    TrackExceptionState exceptionState;
+    Response* clonedResponse = response->clone(exceptionState);
+
+    EXPECT_EQ(0, canceller->counter());
+    response->bufferForTest()->cancel();
+    EXPECT_EQ(0, canceller->counter());
+    clonedResponse->bufferForTest()->cancel();
+    EXPECT_EQ(1, canceller->counter());
 }
 
 } // namespace

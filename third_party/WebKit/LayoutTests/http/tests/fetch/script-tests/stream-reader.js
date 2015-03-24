@@ -122,5 +122,25 @@ sequential_promise_test(function(t) {
       });
   }, 'Clone after reading partially');
 
+sequential_promise_test(function(t) {
+    return fetch('/fetch/resources/progressive.php').then(function(res) {
+        res.body.cancel();
+        return res.text();
+      }).then(function(text) {
+        assert_equals(text, '');
+      });
+  }, 'Cancelling stream stops downloading.');
+
+sequential_promise_test(function(t) {
+    return fetch('/fetch/resources/progressive.php').then(function(res) {
+        var clone = res.clone();
+        res.body.cancel();
+        return Promise.all([res.arrayBuffer(), clone.arrayBuffer()]);
+      }).then(function(r) {
+        assert_equals(r[0].byteLength, 0);
+        assert_equals(r[1].byteLength, 190);
+      });
+  }, 'Cancelling stream should not affect cloned one.');
+
 sequential_promise_test_done();
 done();

@@ -107,7 +107,7 @@ public:
         ASSERT(m_state != Initial);
         ASSERT(m_state != BodyUsed);
         ASSERT(m_stream);
-        m_drainingStreamBuffer = new BodyStreamBuffer();
+        m_drainingStreamBuffer = new BodyStreamBuffer(new Canceller(this));
         if (m_state == Errored) {
             m_drainingStreamBuffer->error(exception());
             return m_drainingStreamBuffer;
@@ -135,11 +135,30 @@ public:
     }
 
 private:
+    class Canceller : public BodyStreamBuffer::Canceller {
+    public:
+        Canceller(ReadableStreamSource* source) : m_source(source) { }
+        void cancel() override
+        {
+            m_source->cancel();
+        }
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            visitor->trace(m_source);
+            BodyStreamBuffer::Canceller::trace(visitor);
+        }
+
+    private:
+        Member<ReadableStreamSource> m_source;
+    };
+
     // UnderlyingSource functions.
     void pullSource() override { }
     ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) override
     {
-        return ScriptPromise();
+        cancel();
+        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
     }
 
     // BodyStreamBuffer::Observer functions.
@@ -201,6 +220,14 @@ private:
             m_drainingStreamBuffer->error(exception());
         m_stream->error(exception());
     }
+    void cancel()
+    {
+        if (m_bodyStreamBuffer)
+            m_bodyStreamBuffer->cancel();
+        if (m_loader)
+            m_loader->cancel();
+    }
+
     PassRefPtrWillBeRawPtr<DOMException> exception()
     {
         if (m_state != Errored)

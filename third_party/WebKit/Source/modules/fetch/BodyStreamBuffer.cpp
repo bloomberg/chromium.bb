@@ -82,20 +82,26 @@ public:
     void onWrite() override
     {
         while (RefPtr<DOMArrayBuffer> buf = m_inBuffer->read()) {
-            m_outBuffer1->write(buf);
-            m_outBuffer2->write(buf);
+            if (!m_outBuffer1->isClosed() && !m_outBuffer1->hasError())
+                m_outBuffer1->write(buf);
+            if (!m_outBuffer2->isClosed() && !m_outBuffer2->hasError())
+                m_outBuffer2->write(buf);
         }
     }
     void onClose() override
     {
-        m_outBuffer1->close();
-        m_outBuffer2->close();
+        if (!m_outBuffer1->isClosed() && !m_outBuffer1->hasError())
+            m_outBuffer1->close();
+        if (!m_outBuffer2->isClosed() && !m_outBuffer2->hasError())
+            m_outBuffer2->close();
         cleanup();
     }
     void onError() override
     {
-        m_outBuffer1->error(m_inBuffer->exception());
-        m_outBuffer2->error(m_inBuffer->exception());
+        if (!m_outBuffer1->isClosed() && !m_outBuffer1->hasError())
+            m_outBuffer1->error(m_inBuffer->exception());
+        if (!m_outBuffer2->isClosed() && !m_outBuffer2->hasError())
+            m_outBuffer2->error(m_inBuffer->exception());
         cleanup();
     }
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -202,10 +208,12 @@ DEFINE_TRACE(BodyStreamBuffer)
 {
     visitor->trace(m_exception);
     visitor->trace(m_observer);
+    visitor->trace(m_canceller);
 }
 
-BodyStreamBuffer::BodyStreamBuffer()
+BodyStreamBuffer::BodyStreamBuffer(Canceller* canceller)
     : m_isClosed(false)
+    , m_canceller(canceller)
 {
 }
 

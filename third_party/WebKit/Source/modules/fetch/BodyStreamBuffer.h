@@ -26,6 +26,13 @@ public:
         virtual void onError() = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
+
+    class Canceller : public GarbageCollected<Canceller> {
+    public:
+        virtual void cancel() = 0;
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
+    };
+
     class BlobHandleCreatorClient : public GarbageCollectedFinalized<BlobHandleCreatorClient> {
     public:
         virtual ~BlobHandleCreatorClient() { }
@@ -33,7 +40,7 @@ public:
         virtual void didFail(PassRefPtrWillBeRawPtr<DOMException>) = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
-    BodyStreamBuffer();
+    explicit BodyStreamBuffer(Canceller*);
     ~BodyStreamBuffer() { }
 
     PassRefPtr<DOMArrayBuffer> read();
@@ -47,6 +54,7 @@ public:
     void close();
     // Can't call after close() or error() was called.
     void error(PassRefPtrWillBeRawPtr<DOMException>);
+    void cancel() { m_canceller->cancel(); }
 
     // This function registers an observer so it fails and returns false when an
     // observer was already registered.
@@ -67,6 +75,7 @@ private:
     bool m_isClosed;
     RefPtrWillBeMember<DOMException> m_exception;
     Member<Observer> m_observer;
+    Member<Canceller> m_canceller;
 };
 
 } // namespace blink

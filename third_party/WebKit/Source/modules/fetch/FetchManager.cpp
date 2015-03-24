@@ -49,9 +49,37 @@ public:
     void didFailRedirectCheck() override;
 
     void start();
+    void cancel();
     void dispose();
 
 private:
+    class Canceller : public BodyStreamBuffer::Canceller {
+    public:
+        explicit Canceller(Loader* loader) : m_loader(loader) { }
+        void cancel() override
+        {
+            if (m_loader)
+                m_loader->cancel();
+        }
+
+#if !ENABLE(OILPAN)
+        // FIXME: This function should go away once Oilpan is shipped.
+        void disconnect() { m_loader = nullptr; }
+#endif
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            visitor->trace(m_loader);
+            BodyStreamBuffer::Canceller::trace(visitor);
+        }
+
+    private:
+        // |m_loader| is a raw ptr in non-oilpan circumstance to avoid
+        // circular reference. It will be cleared when the loader is destructed.
+        RawPtrWillBeMember<Loader> m_loader;
+    };
+
+
     Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, const FetchRequestData*);
 
     void performBasicFetch();
@@ -65,6 +93,9 @@ private:
     PersistentWillBeMember<FetchRequestData> m_request;
     PersistentWillBeMember<BodyStreamBuffer> m_responseBuffer;
     RefPtr<ThreadableLoader> m_loader;
+    // Hold as a member in order to call |disconnect|. This member can be
+    // eliminated once Oilpan is shipped.
+    PersistentWillBeMember<Canceller> m_canceller;
     bool m_failed;
     bool m_finished;
 };
@@ -74,6 +105,7 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
     , m_request(request->createCopy())
+    , m_canceller(new Canceller(this))
     , m_failed(false)
     , m_finished(false)
 {
@@ -82,6 +114,10 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
 FetchManager::Loader::~Loader()
 {
     ASSERT(!m_loader);
+#if !ENABLE(OILPAN)
+    // FIXME: This should go away once Oilpan is shipped.
+    m_canceller->disconnect();
+#endif
 }
 
 DEFINE_TRACE(FetchManager::Loader)
@@ -90,6 +126,7 @@ DEFINE_TRACE(FetchManager::Loader)
     visitor->trace(m_resolver);
     visitor->trace(m_request);
     visitor->trace(m_responseBuffer);
+    visitor->trace(m_canceller);
     ContextLifecycleObserver::trace(visitor);
 }
 
@@ -113,7 +150,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             break;
         }
     }
-    m_responseBuffer = new BodyStreamBuffer();
+    m_responseBuffer = new BodyStreamBuffer(m_canceller);
     FetchResponseData* responseData = FetchResponseData::createWithBuffer(m_responseBuffer);
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
@@ -263,6 +300,29 @@ void FetchManager::Loader::start()
     // "The result of performing an HTTP fetch using |request| with the
     // |CORS flag| set."
     performHTTPFetch(true, false);
+}
+
+void FetchManager::Loader::cancel()
+{
+    m_finished = true;
+    if (m_loader) {
+        m_loader->cancel();
+        m_loader.clear();
+    }
+    if (m_responseBuffer) {
+        m_responseBuffer->close();
+        m_responseBuffer.clear();
+    }
+    if (m_resolver) {
+        // Note: In the current implementation this branch is never taken
+        // because this function can be called only through the body stream.
+        ScriptState* scriptState = m_resolver->scriptState();
+        ScriptState::Scope scope(scriptState);
+        m_resolver->reject(V8ThrowException::createTypeError(scriptState->isolate(), "fetch is cancelled"));
+        m_resolver.clear();
+    }
+
+    notifyFinished();
 }
 
 void FetchManager::Loader::dispose()
