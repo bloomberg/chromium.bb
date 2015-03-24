@@ -45,11 +45,11 @@ class InnerBoundedLabel : public views::Label {
 
   // Overridden from views::Label.
   void SetText(const base::string16& text) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  protected:
   // Overridden from views::Label.
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   int GetTextFlags();
@@ -319,9 +319,8 @@ int BoundedLabel::GetHeightForWidth(int width) const {
          label_->GetSizeForWidthAndLines(width, line_limit_).height() : 0;
 }
 
-void BoundedLabel::Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) {
-  if (visible())
-    label_->Paint(canvas, cull_set);
+void BoundedLabel::OnPaint(gfx::Canvas* canvas) {
+  label_->OnPaint(canvas);
 }
 
 bool BoundedLabel::CanProcessEventsWithinSubtree() const {

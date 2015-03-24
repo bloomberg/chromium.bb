@@ -53,7 +53,7 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   int GetBaseline() const override;
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   bool CanProcessEventsWithinSubtree() const override;
   void GetAccessibleState(ui::AXViewState* state) override;
 
