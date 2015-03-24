@@ -6,6 +6,7 @@
 
 # pylint: disable=W0613
 
+import base64
 import BaseHTTPServer
 import collections
 import datetime
@@ -34,7 +35,6 @@ from pyasn1.codec.der import decoder
 from pyasn1.type import univ
 
 from oauth2client import client
-from oauth2client import crypt
 from oauth2client import multistore_file
 
 from third_party import requests
@@ -455,10 +455,19 @@ def _make_assertion_jwt(service_account):
   # instead. It is slower, but we do not care (since this code path is exercised
   # only when access token expires (once an hour).
   pkey = _parse_private_key(service_account.private_key)
-  class Signer(object):
-    def sign(self, message):
-      return rsa.sign(message, pkey, 'SHA-256')
-  return crypt.make_signed_jwt(Signer(), payload)
+  return _make_signed_jwt(payload, pkey)
+
+
+def _make_signed_jwt(payload, pkey):
+  """Wraps |payload| dict into signed JSON Web Token."""
+  # See http://self-issued.info/docs/draft-jones-json-web-token.html.
+  as_json = lambda d: json.dumps(d, sort_keys=True, separators=(',', ':'))
+  b64encode = lambda d: base64.urlsafe_b64encode(d).rstrip('=')
+  to_sign = '%s.%s' % (
+      b64encode(as_json({'typ': 'JWT', 'alg': 'RS256'})),
+      b64encode(as_json(payload)))
+  signature = rsa.sign(to_sign, pkey, 'SHA-256')
+  return '%s.%s' % (to_sign, b64encode(signature))
 
 
 # The chunk of code below is based on oauth2client.tools module, but adapted for
