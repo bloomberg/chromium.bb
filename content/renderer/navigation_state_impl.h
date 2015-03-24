@@ -19,7 +19,7 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   static NavigationStateImpl* CreateBrowserInitiated(
       const CommonNavigationParams& common_params,
       const StartNavigationParams& start_params,
-      const HistoryNavigationParams& history_params);
+      const RequestNavigationParams& request_params);
 
   static NavigationStateImpl* CreateContentInitiated();
 
@@ -30,8 +30,8 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   const CommonNavigationParams& common_params() const { return common_params_; }
   const StartNavigationParams& start_params() const { return start_params_; }
-  const HistoryNavigationParams& history_params() const {
-    return history_params_;
+  const RequestNavigationParams& request_params() const {
+    return request_params_;
   }
   bool request_committed() const { return request_committed_; }
   void set_request_committed(bool value) { request_committed_ = value; }
@@ -44,7 +44,7 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
  private:
   NavigationStateImpl(const CommonNavigationParams& common_params,
                       const StartNavigationParams& start_params,
-                      const HistoryNavigationParams& history_params,
+                      const RequestNavigationParams& request_params,
                       bool is_content_initiated);
 
   bool request_committed_;
@@ -67,7 +67,7 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   // swaps because FrameLoader::loadWithNavigationAction treats loads before a
   // FrameLoader has committedFirstRealDocumentLoad as a replacement. (Added for
   // http://crbug.com/178380).
-  const HistoryNavigationParams history_params_;
+  const RequestNavigationParams request_params_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationStateImpl);
 };

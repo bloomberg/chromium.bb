@@ -21,11 +21,12 @@ class RefCountedMemory;
 }
 
 namespace content {
-class NavigationEntry;
 
 // The following structures hold parameters used during a navigation. In
 // particular they are used by FrameMsg_Navigate, FrameMsg_CommitNavigation and
 // FrameHostMsg_BeginNavigation.
+
+// Provided by the browser or the renderer -------------------------------------
 
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
@@ -76,7 +77,15 @@ struct CONTENT_EXPORT CommonNavigationParams {
   GURL history_url_for_data_url;
 };
 
-// PlzNavigate: parameters needed to start a navigation on the IO thread.
+// Provided by the renderer ----------------------------------------------------
+//
+// This struct holds parameters sent by the renderer to the browser. It is only
+// used in PlzNavigate (since in the current architecture, the renderer does not
+// inform the browser of navigations until they commit).
+
+// This struct is not used outside of the PlzNavigate project.
+// PlzNavigate: parameters needed to start a navigation on the IO thread,
+// following a renderer-initiated navigation request.
 struct CONTENT_EXPORT BeginNavigationParams {
   // TODO(clamy): See if it is possible to reuse this in
   // ResourceMsg_Request_Params.
@@ -99,79 +108,20 @@ struct CONTENT_EXPORT BeginNavigationParams {
   bool has_user_gesture;
 };
 
-// Used by FrameMsg_Navigate.
-// PlzNavigate: sent to the renderer when the navigation is ready to commit.
-struct CONTENT_EXPORT CommitNavigationParams {
-  CommitNavigationParams();
-  CommitNavigationParams(bool is_overriding_user_agent,
-                         base::TimeTicks navigation_start,
-                         const std::vector<GURL>& redirects,
-                         bool can_load_local_resources,
-                         const std::string& frame_to_navigate,
-                         base::Time request_time);
-  ~CommitNavigationParams();
+// Provided by the browser -----------------------------------------------------
+//
+// These structs are sent by the browser to the renderer to start/commit a
+// navigation depending on whether browser-side navigation is enabled.
+// Parameters used both in the current architecture and PlzNavigate should be
+// put in RequestNavigationParams.  Parameters only used by the current
+// architecture should go in StartNavigationParams.
 
-  // Whether or not the user agent override string should be used.
-  bool is_overriding_user_agent;
-
-  // The navigationStart time to expose through the Navigation Timing API to JS.
-  base::TimeTicks browser_navigation_start;
-
-  // Any redirect URLs that occurred before |url|. Useful for cross-process
-  // navigations; defaults to empty.
-  std::vector<GURL> redirects;
-
-  // Whether or not this url should be allowed to access local file://
-  // resources.
-  bool can_load_local_resources;
-
-  // If not empty, which frame to navigate.
-  std::string frame_to_navigate;
-
-  // The time the request was created. This is used by the old performance
-  // infrastructure to set up DocumentState associated with the RenderView.
-  // TODO(ppi): make it go away.
-  base::Time request_time;
-};
-
-// Used by FrameMsg_Navigate.
-// PlzNavigate: sent to the renderer when the navigation is ready to commit.
-struct CONTENT_EXPORT HistoryNavigationParams {
-  HistoryNavigationParams();
-  HistoryNavigationParams(const PageState& page_state,
-                          int32 page_id,
-                          int pending_history_list_offset,
-                          int current_history_list_offset,
-                          int current_history_list_length,
-                          bool should_clear_history_list);
-  ~HistoryNavigationParams();
-
-  // Opaque history state (received by ViewHostMsg_UpdateState).
-  PageState page_state;
-
-  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
-  // Forward, and Reload navigations should have a valid page_id.  If the load
-  // succeeds, then this page_id will be reflected in the resultant
-  // FrameHostMsg_DidCommitProvisionalLoad message.
-  int32 page_id;
-
-  // For history navigations, this is the offset in the history list of the
-  // pending load. For non-history navigations, this will be ignored.
-  int pending_history_list_offset;
-
-  // Where its current page contents reside in session history and the total
-  // size of the session history list.
-  int current_history_list_offset;
-  int current_history_list_length;
-
-  // Whether session history should be cleared. In that case, the RenderView
-  // needs to notify the browser that the clearing was succesful when the
-  // navigation commits.
-  bool should_clear_history_list;
-};
-
-// Parameters needed at the start of a navigation. Used by FrameMsg_Navigate.
-// PlzNavigate: these parameters are not used in navigation.
+// Used by FrameMsg_Navigate. Holds the parameters needed by the renderer to
+// start a browser-initiated navigation besides those in CommonNavigationParams.
+// The difference with the RequestNavigationParams below is that they are only
+// used in the current architecture of navigation, and will not be used by
+// PlzNavigate.
+// PlzNavigate: These are not used.
 struct CONTENT_EXPORT StartNavigationParams {
   StartNavigationParams();
   StartNavigationParams(
@@ -206,18 +156,85 @@ struct CONTENT_EXPORT StartNavigationParams {
   int transferred_request_request_id;
 };
 
+// Used by FrameMsg_Navigate. Holds the parameters needed by the renderer to
+// start a browser-initiated navigation besides those in CommonNavigationParams.
+// PlzNavigate: sent to the renderer to make it issue a stream request for a
+// navigation that is ready to commit.
+struct CONTENT_EXPORT RequestNavigationParams {
+  RequestNavigationParams();
+  RequestNavigationParams(bool is_overriding_user_agent,
+                          base::TimeTicks navigation_start,
+                          const std::vector<GURL>& redirects,
+                          bool can_load_local_resources,
+                          const std::string& frame_to_navigate,
+                          base::Time request_time,
+                          const PageState& page_state,
+                          int32 page_id,
+                          int pending_history_list_offset,
+                          int current_history_list_offset,
+                          int current_history_list_length,
+                          bool should_clear_history_list);
+  ~RequestNavigationParams();
+
+  // Whether or not the user agent override string should be used.
+  bool is_overriding_user_agent;
+
+  // The navigationStart time to expose through the Navigation Timing API to JS.
+  base::TimeTicks browser_navigation_start;
+
+  // Any redirect URLs that occurred before |url|. Useful for cross-process
+  // navigations; defaults to empty.
+  std::vector<GURL> redirects;
+
+  // Whether or not this url should be allowed to access local file://
+  // resources.
+  bool can_load_local_resources;
+
+  // If not empty, which frame to navigate.
+  std::string frame_to_navigate;
+
+  // The time the request was created. This is used by the old performance
+  // infrastructure to set up DocumentState associated with the RenderView.
+  // TODO(ppi): make it go away.
+  base::Time request_time;
+
+  // Opaque history state (received by ViewHostMsg_UpdateState).
+  PageState page_state;
+
+  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
+  // Forward, and Reload navigations should have a valid page_id.  If the load
+  // succeeds, then this page_id will be reflected in the resultant
+  // FrameHostMsg_DidCommitProvisionalLoad message.
+  int32 page_id;
+
+  // For history navigations, this is the offset in the history list of the
+  // pending load. For non-history navigations, this will be ignored.
+  int pending_history_list_offset;
+
+  // Where its current page contents reside in session history and the total
+  // size of the session history list.
+  int current_history_list_offset;
+  int current_history_list_length;
+
+  // Whether session history should be cleared. In that case, the RenderView
+  // needs to notify the browser that the clearing was succesful when the
+  // navigation commits.
+  bool should_clear_history_list;
+};
+
+// Helper struct keeping track in one place of all the parameters the browser
+// needs to provide to the renderer.
 struct NavigationParams {
   NavigationParams(const CommonNavigationParams& common_params,
                    const StartNavigationParams& start_params,
-                   const CommitNavigationParams& commit_params,
-                   const HistoryNavigationParams& history_params);
+                   const RequestNavigationParams& request_params);
   ~NavigationParams();
 
   CommonNavigationParams common_params;
   StartNavigationParams start_params;
-  CommitNavigationParams commit_params;
-  HistoryNavigationParams history_params;
+  RequestNavigationParams request_params;
 };
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_NAVIGATION_PARAMS_H_

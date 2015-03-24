@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 class GURL;
-struct FrameMsg_Navigate_Params;
 
 namespace content {
 

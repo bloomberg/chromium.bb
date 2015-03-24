@@ -190,16 +190,15 @@ TEST_F(RendererAccessibilityTest,
   // because the element it was referring to no longer exists,
   // so the event here is from loading this new page.
   CommonNavigationParams common_params;
-  HistoryNavigationParams history_params;
+  RequestNavigationParams request_params;
   common_params.url = GURL("data:text/html,<p>Hello, again.</p>");
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  history_params.current_history_list_length = 1;
-  history_params.current_history_list_offset = 0;
-  history_params.pending_history_list_offset = 1;
-  history_params.page_id = -1;
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      CommitNavigationParams(), history_params);
+  request_params.current_history_list_length = 1;
+  request_params.current_history_list_offset = 0;
+  request_params.pending_history_list_offset = 1;
+  request_params.page_id = -1;
+  frame()->OnNavigate(common_params, StartNavigationParams(), request_params);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_TRUE(sink_->GetUniqueMessageMatching(
       AccessibilityHostMsg_Events::ID));

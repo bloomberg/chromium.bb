@@ -18,10 +18,8 @@
 #include "content/public/common/ssl_status.h"
 
 namespace content {
-class NavigationControllerImpl;
-struct CommitNavigationParams;
 struct CommonNavigationParams;
-struct HistoryNavigationParams;
+struct RequestNavigationParams;
 struct StartNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl
@@ -123,6 +121,17 @@ class CONTENT_EXPORT NavigationEntryImpl
   // that shares the existing FrameNavigationEntries (for use within the same
   // tab) and one that draws them from a different pool (for use in a new tab).
   NavigationEntryImpl* Clone() const;
+
+  // Helper functions to construct NavigationParameters for a navigation to this
+  // NavigationEntry.
+  CommonNavigationParams ConstructCommonNavigationParams(
+      FrameMsg_Navigate_Type::Value navigation_type) const;
+  StartNavigationParams ConstructStartNavigationParams() const;
+  RequestNavigationParams ConstructRequestNavigationParams(
+      base::TimeTicks navigation_start,
+      int pending_offset_to_send,
+      int current_offset_to_send,
+      int current_length_to_send) const;
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
@@ -261,14 +270,6 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Returns the history URL for a data URL to use in Blink.
   GURL GetHistoryURLForDataURL() const;
-
-  CommonNavigationParams ConstructCommonNavigationParams(
-      FrameMsg_Navigate_Type::Value navigation_type) const;
-  CommitNavigationParams ConstructCommitNavigationParams(
-      base::TimeTicks navigation_start) const;
-  HistoryNavigationParams ConstructHistoryNavigationParams(
-      NavigationControllerImpl* controller) const;
-  StartNavigationParams ConstructStartNavigationParams() const;
 
 #if defined(OS_ANDROID)
   base::TimeTicks intent_received_timestamp() const {

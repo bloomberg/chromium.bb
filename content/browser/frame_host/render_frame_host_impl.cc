@@ -1541,8 +1541,7 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 void RenderFrameHostImpl::Navigate(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
-    const CommitNavigationParams& commit_params,
-    const HistoryNavigationParams& history_params) {
+    const RequestNavigationParams& request_params) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::Navigate");
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to request additional URLs.
@@ -1562,8 +1561,8 @@ void RenderFrameHostImpl::Navigate(
   // file access.  If this is a different process, we will need to grant the
   // access again.  The files listed in the page state are validated when they
   // are received from the renderer to prevent abuse.
-  if (history_params.page_state.IsValid()) {
-    render_view_host_->GrantFileAccessFromPageState(history_params.page_state);
+  if (request_params.page_state.IsValid()) {
+    render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
   }
 
   // Only send the message if we aren't suspended at the start of a cross-site
@@ -1574,15 +1573,15 @@ void RenderFrameHostImpl::Navigate(
     // second navigation occurs, RenderFrameHostManager will cancel this pending
     // RFH and create a new pending RFH.
     DCHECK(!suspended_nav_params_.get());
-    suspended_nav_params_.reset(new NavigationParams(
-        common_params, start_params, commit_params, history_params));
+    suspended_nav_params_.reset(
+        new NavigationParams(common_params, start_params, request_params));
   } else {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RFH swap or unload handler.
     SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
     Send(new FrameMsg_Navigate(routing_id_, common_params, start_params,
-                               commit_params, history_params));
+                               request_params));
   }
 
   // Force the throbber to start. We do this because Blink's "started
@@ -1605,8 +1604,7 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::NORMAL,
       true, base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
       GURL(), GURL());
-  Navigate(common_params, StartNavigationParams(), CommitNavigationParams(),
-           HistoryNavigationParams());
+  Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
 }
 
 void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params,
@@ -1718,8 +1716,7 @@ void RenderFrameHostImpl::CommitNavigation(
     ResourceResponse* response,
     scoped_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
-    const HistoryNavigationParams& history_params) {
+    const RequestNavigationParams& request_params) {
   DCHECK((response && body.get()) ||
           !NavigationRequest::ShouldMakeNetworkRequest(common_params.url));
   // TODO(clamy): Check if we have to add security checks for the browser plugin
@@ -1733,7 +1730,7 @@ void RenderFrameHostImpl::CommitNavigation(
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
-                                     commit_params, history_params));
+                                     request_params));
   // TODO(clamy): Check if we should start the throbber for non javascript urls
   // here.
 
@@ -1948,13 +1945,12 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
     SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
     DCHECK(!proceed_time.is_null());
-    suspended_nav_params_->commit_params.browser_navigation_start =
+    suspended_nav_params_->request_params.browser_navigation_start =
         proceed_time;
     Send(new FrameMsg_Navigate(routing_id_,
                                suspended_nav_params_->common_params,
                                suspended_nav_params_->start_params,
-                               suspended_nav_params_->commit_params,
-                               suspended_nav_params_->history_params));
+                               suspended_nav_params_->request_params));
     suspended_nav_params_.reset();
   }
 }

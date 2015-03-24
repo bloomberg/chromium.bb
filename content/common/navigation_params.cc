@@ -40,8 +40,7 @@ CommonNavigationParams::~CommonNavigationParams() {
 }
 
 BeginNavigationParams::BeginNavigationParams()
-    : load_flags(0),
-      has_user_gesture(false) {
+    : load_flags(0), has_user_gesture(false) {
 }
 
 BeginNavigationParams::BeginNavigationParams(std::string method,
@@ -52,56 +51,6 @@ BeginNavigationParams::BeginNavigationParams(std::string method,
       headers(headers),
       load_flags(load_flags),
       has_user_gesture(has_user_gesture) {
-}
-
-CommitNavigationParams::CommitNavigationParams()
-    : is_overriding_user_agent(false),
-      browser_navigation_start(base::TimeTicks::Now()),
-      can_load_local_resources(false),
-      request_time(base::Time::Now()) {
-}
-
-CommitNavigationParams::CommitNavigationParams(
-    bool is_overriding_user_agent,
-    base::TimeTicks navigation_start,
-    const std::vector<GURL>& redirects,
-    bool can_load_local_resources,
-    const std::string& frame_to_navigate,
-    base::Time request_time)
-    : is_overriding_user_agent(is_overriding_user_agent),
-      browser_navigation_start(navigation_start),
-      redirects(redirects),
-      can_load_local_resources(can_load_local_resources),
-      frame_to_navigate(frame_to_navigate),
-      request_time(request_time) {
-}
-
-CommitNavigationParams::~CommitNavigationParams() {}
-
-HistoryNavigationParams::HistoryNavigationParams()
-    : page_id(-1),
-      pending_history_list_offset(-1),
-      current_history_list_offset(-1),
-      current_history_list_length(0),
-      should_clear_history_list(false) {
-}
-
-HistoryNavigationParams::HistoryNavigationParams(
-    const PageState& page_state,
-    int32 page_id,
-    int pending_history_list_offset,
-    int current_history_list_offset,
-    int current_history_list_length,
-    bool should_clear_history_list)
-    : page_state(page_state),
-      page_id(page_id),
-      pending_history_list_offset(pending_history_list_offset),
-      current_history_list_offset(current_history_list_offset),
-      current_history_list_length(current_history_list_length),
-      should_clear_history_list(should_clear_history_list) {
-}
-
-HistoryNavigationParams::~HistoryNavigationParams() {
 }
 
 StartNavigationParams::StartNavigationParams()
@@ -129,15 +78,55 @@ StartNavigationParams::StartNavigationParams(
 StartNavigationParams::~StartNavigationParams() {
 }
 
+RequestNavigationParams::RequestNavigationParams()
+    : is_overriding_user_agent(false),
+      browser_navigation_start(base::TimeTicks::Now()),
+      can_load_local_resources(false),
+      request_time(base::Time::Now()),
+      page_id(-1),
+      pending_history_list_offset(-1),
+      current_history_list_offset(-1),
+      current_history_list_length(0),
+      should_clear_history_list(false) {
+}
+
+RequestNavigationParams::RequestNavigationParams(
+    bool is_overriding_user_agent,
+    base::TimeTicks navigation_start,
+    const std::vector<GURL>& redirects,
+    bool can_load_local_resources,
+    const std::string& frame_to_navigate,
+    base::Time request_time,
+    const PageState& page_state,
+    int32 page_id,
+    int pending_history_list_offset,
+    int current_history_list_offset,
+    int current_history_list_length,
+    bool should_clear_history_list)
+    : is_overriding_user_agent(is_overriding_user_agent),
+      browser_navigation_start(navigation_start),
+      redirects(redirects),
+      can_load_local_resources(can_load_local_resources),
+      frame_to_navigate(frame_to_navigate),
+      request_time(request_time),
+      page_state(page_state),
+      page_id(page_id),
+      pending_history_list_offset(pending_history_list_offset),
+      current_history_list_offset(current_history_list_offset),
+      current_history_list_length(current_history_list_length),
+      should_clear_history_list(should_clear_history_list) {
+}
+
+RequestNavigationParams::~RequestNavigationParams() {
+}
+
 NavigationParams::NavigationParams(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
-    const CommitNavigationParams& commit_params,
-    const HistoryNavigationParams& history_params)
+    const RequestNavigationParams& request_params)
     : common_params(common_params),
       start_params(start_params),
-      commit_params(commit_params),
-      history_params(history_params) {
+      request_params(request_params) {
 }
 
 NavigationParams::~NavigationParams() {

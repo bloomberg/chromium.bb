@@ -17,7 +17,7 @@
 namespace content {
 
 class FrameTreeNode;
-class NavigationController;
+class NavigationControllerImpl;
 class NavigationURLLoader;
 class ResourceRequestBody;
 class SiteInstanceImpl;
@@ -88,10 +88,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   const BeginNavigationParams& begin_params() const { return begin_params_; }
 
-  const CommitNavigationParams& commit_params() const { return commit_params_; }
-
-  const HistoryNavigationParams& history_params() const {
-    return history_params_;
+  const RequestNavigationParams& request_params() const {
+    return request_params_;
   }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }
@@ -125,8 +123,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     const BeginNavigationParams& begin_params,
-                    const CommitNavigationParams& commit_params,
-                    const HistoryNavigationParams& history_params,
+                    const RequestNavigationParams& request_params,
                     scoped_refptr<ResourceRequestBody> body,
                     bool browser_initiated,
                     const NavigationEntryImpl* navitation_entry);
@@ -149,8 +146,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // redirects.
   CommonNavigationParams common_params_;
   const BeginNavigationParams begin_params_;
-  const CommitNavigationParams commit_params_;
-  const HistoryNavigationParams history_params_;
+  const RequestNavigationParams request_params_;
   const bool browser_initiated_;
 
   NavigationState state_;

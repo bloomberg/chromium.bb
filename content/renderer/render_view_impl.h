@@ -76,7 +76,6 @@
 class PepperDeviceTest;
 class SkBitmap;
 struct PP_NetAddress_Private;
-struct FrameMsg_Navigate_Params;
 struct ViewMsg_New_Params;
 struct ViewMsg_PostMessage_Params;
 struct ViewMsg_Resize_Params;

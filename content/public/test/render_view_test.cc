@@ -368,8 +368,7 @@ void RenderViewTest::Reload(const GURL& url) {
       GURL(), GURL());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->GetMainRenderFrame()->OnNavigate(common_params, StartNavigationParams(),
-                                         CommitNavigationParams(),
-                                         HistoryNavigationParams());
+                                         RequestNavigationParams());
   FrameLoadWaiter(impl->GetMainRenderFrame()).Wait();
 }
 
@@ -447,13 +446,15 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
       GURL(), Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
       FrameMsg_Navigate_Type::NORMAL, true, base::TimeTicks(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
-  HistoryNavigationParams history_params(
-      state, impl->page_id_ + offset, pending_offset,
-      impl->history_list_offset_, history_list_length, false);
+  RequestNavigationParams request_params;
+  request_params.page_state = state;
+  request_params.page_id = impl->page_id_ + offset;
+  request_params.pending_history_list_offset = pending_offset;
+  request_params.current_history_list_offset = impl->history_list_offset_;
+  request_params.current_history_list_length = history_list_length;
 
   impl->GetMainRenderFrame()->OnNavigate(common_params, StartNavigationParams(),
-                                         CommitNavigationParams(),
-                                         history_params);
+                                         request_params);
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

@@ -2088,8 +2088,8 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
   // Make sure any previous redirect URLs end up in our new data source.
   if (pending_navigation_params_.get()) {
     for (std::vector<GURL>::const_iterator i =
-             pending_navigation_params_->commit_params.redirects.begin();
-         i != pending_navigation_params_->commit_params.redirects.end(); ++i) {
+             pending_navigation_params_->request_params.redirects.begin();
+         i != pending_navigation_params_->request_params.redirects.end(); ++i) {
       ds->appendRedirect(*i);
     }
   }
@@ -2183,7 +2183,7 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
 void RenderViewImpl::PopulateDocumentStateFromPending(
     DocumentState* document_state) {
   document_state->set_request_time(
-      pending_navigation_params_->commit_params.request_time);
+      pending_navigation_params_->request_params.request_time);
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
@@ -2208,18 +2208,18 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
 
   if (IsReload(pending_navigation_params_->common_params.navigation_type))
     document_state->set_load_type(DocumentState::RELOAD);
-  else if (pending_navigation_params_->history_params.page_state.IsValid())
+  else if (pending_navigation_params_->request_params.page_state.IsValid())
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
   internal_data->set_is_overriding_user_agent(
-      pending_navigation_params_->commit_params.is_overriding_user_agent);
+      pending_navigation_params_->request_params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
       pending_navigation_params_->common_params.navigation_type ==
       FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
   document_state->set_can_load_local_resources(
-      pending_navigation_params_->commit_params.can_load_local_resources);
+      pending_navigation_params_->request_params.can_load_local_resources);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
@@ -2231,7 +2231,7 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
     return NavigationStateImpl::CreateBrowserInitiated(
         pending_navigation_params_->common_params,
         pending_navigation_params_->start_params,
-        pending_navigation_params_->history_params);
+        pending_navigation_params_->request_params);
   }
   return NavigationStateImpl::CreateContentInitiated();
 }

@@ -317,8 +317,10 @@ bool NavigatorImpl::NavigateToEntry(
     dest_render_frame_host->Navigate(
         entry.ConstructCommonNavigationParams(navigation_type),
         entry.ConstructStartNavigationParams(),
-        entry.ConstructCommitNavigationParams(navigation_start),
-        entry.ConstructHistoryNavigationParams(controller_));
+        entry.ConstructRequestNavigationParams(
+            navigation_start, controller_->GetIndexOfEntry(&entry),
+            controller_->GetLastCommittedEntryIndex(),
+            controller_->GetEntryCount()));
   } else {
     // No need to navigate again.  Just resume the deferred request.
     dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
@@ -700,8 +702,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
 
   render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
-                                      navigation_request->commit_params(),
-                                      navigation_request->history_params());
+                                      navigation_request->request_params());
 }
 
 // PlzNavigate

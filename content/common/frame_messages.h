@@ -223,24 +223,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
-  IPC_STRUCT_TRAITS_MEMBER(browser_navigation_start)
-  IPC_STRUCT_TRAITS_MEMBER(redirects)
-  IPC_STRUCT_TRAITS_MEMBER(can_load_local_resources)
-  IPC_STRUCT_TRAITS_MEMBER(frame_to_navigate)
-  IPC_STRUCT_TRAITS_MEMBER(request_time)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::HistoryNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(page_state)
-  IPC_STRUCT_TRAITS_MEMBER(page_id)
-  IPC_STRUCT_TRAITS_MEMBER(pending_history_list_offset)
-  IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
-  IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
-  IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(is_post)
   IPC_STRUCT_TRAITS_MEMBER(extra_headers)
@@ -248,6 +230,21 @@ IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
   IPC_STRUCT_TRAITS_MEMBER(transferred_request_child_id)
   IPC_STRUCT_TRAITS_MEMBER(transferred_request_request_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
+  IPC_STRUCT_TRAITS_MEMBER(browser_navigation_start)
+  IPC_STRUCT_TRAITS_MEMBER(redirects)
+  IPC_STRUCT_TRAITS_MEMBER(can_load_local_resources)
+  IPC_STRUCT_TRAITS_MEMBER(frame_to_navigate)
+  IPC_STRUCT_TRAITS_MEMBER(request_time)
+  IPC_STRUCT_TRAITS_MEMBER(page_state)
+  IPC_STRUCT_TRAITS_MEMBER(page_id)
+  IPC_STRUCT_TRAITS_MEMBER(pending_history_list_offset)
+  IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
+  IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
+  IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
@@ -363,11 +360,10 @@ IPC_MESSAGE_CONTROL4(FrameMsg_NewFrameProxy,
 
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
-IPC_MESSAGE_ROUTED4(FrameMsg_Navigate,
+IPC_MESSAGE_ROUTED3(FrameMsg_Navigate,
                     content::CommonNavigationParams, /* common_params */
                     content::StartNavigationParams,  /* start_params */
-                    content::CommitNavigationParams, /* commit_params */
-                    content::HistoryNavigationParams /* history_params */)
+                    content::RequestNavigationParams /* request_params */)
 
 // Instructs the renderer to invoke the frame's beforeunload event handler.
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
@@ -502,12 +498,11 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
 // Tells the renderer that a navigation is ready to commit.  The renderer should
 // request |stream_url| to get access to the stream containing the body of the
 // response.
-IPC_MESSAGE_ROUTED5(FrameMsg_CommitNavigation,
+IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
                     content::ResourceResponseHead,   /* response */
                     GURL,                            /* stream_url */
                     content::CommonNavigationParams, /* common_params */
-                    content::CommitNavigationParams, /* commit_params */
-                    content::HistoryNavigationParams /* history_params */)
+                    content::RequestNavigationParams /* request_params */)
 
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.

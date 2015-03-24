@@ -89,9 +89,11 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, entry.ConstructCommonNavigationParams(navigation_type),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type), false),
-      entry.ConstructCommitNavigationParams(navigation_start),
-      entry.ConstructHistoryNavigationParams(controller), request_body, true,
-      &entry));
+      entry.ConstructRequestNavigationParams(
+          navigation_start, controller->GetIndexOfEntry(&entry),
+          controller->GetLastCommittedEntryIndex(),
+          controller->GetEntryCount()),
+      request_body, true, &entry));
   return navigation_request.Pass();
 }
 
@@ -108,11 +110,13 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // navigation may start in a renderer and commit in another one.
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
-  scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, common_params, begin_params, CommitNavigationParams(),
-      HistoryNavigationParams(PageState(), -1, -1, current_history_list_offset,
-                              current_history_list_length, false),
-      body, false, nullptr));
+  // TODO(clamy): The pending history list offset should be properly set.
+  RequestNavigationParams request_params;
+  request_params.current_history_list_offset = current_history_list_offset;
+  request_params.current_history_list_length = current_history_list_length;
+  scoped_ptr<NavigationRequest> navigation_request(
+      new NavigationRequest(frame_tree_node, common_params, begin_params,
+                            request_params, body, false, nullptr));
   return navigation_request.Pass();
 }
 
@@ -120,16 +124,14 @@ NavigationRequest::NavigationRequest(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
-    const CommitNavigationParams& commit_params,
-    const HistoryNavigationParams& history_params,
+    const RequestNavigationParams& request_params,
     scoped_refptr<ResourceRequestBody> body,
     bool browser_initiated,
     const NavigationEntryImpl* entry)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
       begin_params_(begin_params),
-      commit_params_(commit_params),
-      history_params_(history_params),
+      request_params_(request_params),
       browser_initiated_(browser_initiated),
       state_(NOT_STARTED),
       restore_type_(NavigationEntryImpl::RESTORE_NONE),

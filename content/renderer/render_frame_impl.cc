@@ -1042,17 +1042,16 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 void RenderFrameImpl::OnNavigate(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
-    const CommitNavigationParams& commit_params,
-    const HistoryNavigationParams& history_params) {
+    const RequestNavigationParams& request_params) {
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
                "url", common_params.url.possibly_invalid_spec());
 
   bool is_reload = RenderViewImpl::IsReload(common_params.navigation_type);
-  bool is_history_navigation = history_params.page_state.IsValid();
+  bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-          common_params.url, is_history_navigation, history_params, &is_reload,
+          common_params.url, is_history_navigation, request_params, &is_reload,
           &cache_policy)) {
     Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
@@ -1061,12 +1060,12 @@ void RenderFrameImpl::OnNavigate(
   GetContentClient()->SetActiveURL(common_params.url);
 
   WebFrame* frame = frame_;
-  if (!commit_params.frame_to_navigate.empty()) {
+  if (!request_params.frame_to_navigate.empty()) {
     // TODO(nasko): Move this lookup to the browser process.
     frame = render_view_->webview()->findFrameByName(
-        WebString::fromUTF8(commit_params.frame_to_navigate));
+        WebString::fromUTF8(request_params.frame_to_navigate));
     CHECK(frame) << "Invalid frame name passed: "
-                 << commit_params.frame_to_navigate;
+                 << request_params.frame_to_navigate;
   }
 
   if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
@@ -1076,8 +1075,8 @@ void RenderFrameImpl::OnNavigate(
     cache_policy = WebURLRequest::ReloadIgnoringCacheData;
   }
 
-  render_view_->pending_navigation_params_.reset(new NavigationParams(
-      common_params, start_params, commit_params, history_params));
+  render_view_->pending_navigation_params_.reset(
+      new NavigationParams(common_params, start_params, request_params));
 
   // If we are reloading, then WebKit will use the history state of the current
   // page, so we should just ignore any given history state.  Otherwise, if we
@@ -1096,9 +1095,9 @@ void RenderFrameImpl::OnNavigate(
       frame->reload(ignore_cache);
   } else if (is_history_navigation) {
     // We must know the page ID of the page we are navigating back to.
-    DCHECK_NE(history_params.page_id, -1);
+    DCHECK_NE(request_params.page_id, -1);
     scoped_ptr<HistoryEntry> entry =
-        PageStateToHistoryEntry(history_params.page_state);
+        PageStateToHistoryEntry(request_params.page_state);
     if (entry) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
@@ -1140,14 +1139,14 @@ void RenderFrameImpl::OnNavigate(
     }
 
     // A session history navigation should have been accompanied by state.
-    CHECK_EQ(history_params.page_id, -1);
+    CHECK_EQ(request_params.page_id, -1);
 
     // Record this before starting the load, we need a lower bound of this time
     // to sanitize the navigationStart override set below.
     base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
     frame->loadRequest(request);
 
-    UpdateFrameNavigationTiming(frame, commit_params.browser_navigation_start,
+    UpdateFrameNavigationTiming(frame, request_params.browser_navigation_start,
                                 renderer_navigation_start);
   }
 
@@ -2447,7 +2446,7 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
   // TODO(davidben): This should also take the failed navigation's replacement
   // state into account, if a location.replace() failed.
   bool replace =
-      navigation_state->history_params().page_id != -1 ||
+      navigation_state->request_params().page_id != -1 ||
       ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME);
 
@@ -2456,10 +2455,9 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
   if (!navigation_state->IsContentInitiated()) {
     render_view_->pending_navigation_params_.reset(new NavigationParams(
         navigation_state->common_params(), navigation_state->start_params(),
-        CommitNavigationParams(false, base::TimeTicks(), std::vector<GURL>(),
-                               false, std::string(),
-                               document_state->request_time()),
-        navigation_state->history_params()));
+        navigation_state->request_params()));
+    render_view_->pending_navigation_params_->request_params.request_time =
+        document_state->request_time();
   }
 
   // Load an error page.
@@ -2542,14 +2540,14 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // Note that we need to check if the page ID changed. In the case of a
     // reload, the page ID doesn't change, and UpdateSessionHistory gets the
     // previous URL and the current page ID, which would be wrong.
-    if (navigation_state->history_params().page_id != -1 &&
-        navigation_state->history_params().page_id != render_view_->page_id_ &&
+    if (navigation_state->request_params().page_id != -1 &&
+        navigation_state->request_params().page_id != render_view_->page_id_ &&
         !navigation_state->request_committed()) {
       // This is a successful session history navigation!
-      render_view_->page_id_ = navigation_state->history_params().page_id;
+      render_view_->page_id_ = navigation_state->request_params().page_id;
 
       render_view_->history_list_offset_ =
-          navigation_state->history_params().pending_history_list_offset;
+          navigation_state->request_params().pending_history_list_offset;
     }
   }
 
@@ -3849,7 +3847,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.original_request_url = GetOriginalRequestURL(ds);
 
     params.history_list_was_cleared =
-        navigation_state->history_params().should_clear_history_list;
+        navigation_state->request_params().should_clear_history_list;
 
     params.report_type = static_cast<FrameMsg_UILoadMetricsReportType::Value>(
         frame->dataSource()->request().inputPerfMetricReportPolicy());
@@ -3876,7 +3874,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     else
       params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
 
-    DCHECK(!navigation_state->history_params().should_clear_history_list);
+    DCHECK(!navigation_state->request_params().should_clear_history_list);
     params.history_list_was_cleared = false;
     params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
 
@@ -3928,16 +3926,15 @@ void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
     const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
-    const HistoryNavigationParams& history_params) {
+    const RequestNavigationParams& request_params) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   bool is_reload = false;
-  bool is_history_navigation = history_params.page_state.IsValid();
+  bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-          common_params.url, is_history_navigation, history_params, &is_reload,
+          common_params.url, is_history_navigation, request_params, &is_reload,
           &cache_policy)) {
     return;
   }
@@ -3945,7 +3942,7 @@ void RenderFrameImpl::OnCommitNavigation(
   GetContentClient()->SetActiveURL(common_params.url);
 
   render_view_->pending_navigation_params_.reset(new NavigationParams(
-      common_params, StartNavigationParams(), commit_params, history_params));
+      common_params, StartNavigationParams(), request_params));
 
   if (!common_params.base_url_for_data_url.is_empty() ||
       common_params.url.SchemeIs(url::kDataScheme)) {
@@ -3975,9 +3972,8 @@ void RenderFrameImpl::OnCommitNavigation(
   // to sanitize the navigationStart override set below.
   base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
   frame_->loadRequest(request);
-  UpdateFrameNavigationTiming(
-      frame_, commit_params.browser_navigation_start,
-      renderer_navigation_start);
+  UpdateFrameNavigationTiming(frame_, request_params.browser_navigation_start,
+                              renderer_navigation_start);
 }
 
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
@@ -4372,7 +4368,7 @@ RenderFrameImpl::CreateRendererFactory() {
 bool RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
     bool is_history_navigation,
-    const HistoryNavigationParams& history_params,
+    const RequestNavigationParams& request_params,
     bool* is_reload,
     WebURLRequest::CachePolicy* cache_policy) {
   MaybeHandleDebugURL(url);
@@ -4387,15 +4383,15 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
   // frame is swapped out, it won't commit before asking the browser.
   if (!render_view_->is_swapped_out() && is_history_navigation &&
       render_view_->history_list_offset_ !=
-          history_params.current_history_list_offset) {
+          request_params.current_history_list_offset) {
     return false;
   }
 
   render_view_->history_list_offset_ =
-      history_params.current_history_list_offset;
+      request_params.current_history_list_offset;
   render_view_->history_list_length_ =
-      history_params.current_history_list_length;
-  if (history_params.should_clear_history_list) {
+      request_params.current_history_list_length;
+  if (request_params.should_clear_history_list) {
     CHECK_EQ(-1, render_view_->history_list_offset_);
     CHECK_EQ(0, render_view_->history_list_length_);
   }

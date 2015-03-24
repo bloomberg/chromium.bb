@@ -327,8 +327,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // rather than sending it.
   void Navigate(const CommonNavigationParams& common_params,
                 const StartNavigationParams& start_params,
-                const CommitNavigationParams& commit_params,
-                const HistoryNavigationParams& history_params);
+                const RequestNavigationParams& request_params);
 
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
@@ -441,8 +440,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CommitNavigation(ResourceResponse* response,
                         scoped_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
-                        const CommitNavigationParams& commit_params,
-                        const HistoryNavigationParams& history_params);
+                        const RequestNavigationParams& request_params);
 
   // Sets up the Mojo connection between this instance and its associated render
   // frame if it has not yet been set up.

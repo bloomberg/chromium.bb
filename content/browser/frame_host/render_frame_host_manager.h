@@ -20,8 +20,6 @@
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
 
-struct FrameMsg_Navigate_Params;
-
 namespace content {
 class BrowserContext;
 class CrossProcessFrameConnector;

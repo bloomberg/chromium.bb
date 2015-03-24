@@ -29,7 +29,6 @@
 
 class SkBitmap;
 class FrameMsg_Navigate;
-struct FrameMsg_Navigate_Params;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewMsg_PostMessage_Params;

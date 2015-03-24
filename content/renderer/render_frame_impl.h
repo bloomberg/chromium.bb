@@ -98,11 +98,9 @@ class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
 enum class SandboxFlags;
-struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FrameReplicationState;
-struct HistoryNavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponseHead;
 struct StartNavigationParams;
@@ -533,8 +531,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // this back to private member.
   void OnNavigate(const CommonNavigationParams& common_params,
                   const StartNavigationParams& start_params,
-                  const CommitNavigationParams& commit_params,
-                  const HistoryNavigationParams& history_params);
+                  const RequestNavigationParams& request_params);
 
   // Make this frame show an empty, unscriptable page.
   // TODO(nasko): Remove this method once swapped out state is no longer used.
@@ -642,8 +639,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,
-                          const CommitNavigationParams& commit_params,
-                          const HistoryNavigationParams& history_params);
+                          const RequestNavigationParams& request_params);
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
@@ -710,7 +706,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool PrepareRenderViewForNavigation(
       const GURL& url,
       bool is_history_navigation,
-      const HistoryNavigationParams& history_params,
+      const RequestNavigationParams& request_params,
       bool* is_reload,
       blink::WebURLRequest::CachePolicy* cache_policy);
 
