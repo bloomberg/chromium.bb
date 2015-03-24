@@ -51,11 +51,13 @@ MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
 
   string name;
   CFStringRef name_ref = NULL;
-  result = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyName, &name_ref);
+  result = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyDisplayName,
+                                       &name_ref);
   if (result == noErr)
     name = SysCFStringRefToUTF8(name_ref);
   else
-    DLOG(WARNING) << "Failed to get kMIDIPropertyName with status " << result;
+    DLOG(WARNING) << "Failed to get kMIDIPropertyDisplayName with status "
+                  << result;
 
   string version;
   SInt32 version_number = 0;
