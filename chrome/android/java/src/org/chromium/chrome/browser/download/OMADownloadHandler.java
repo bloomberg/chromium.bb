@@ -24,12 +24,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -39,11 +33,16 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -661,34 +660,42 @@ public class OMADownloadHandler {
 
         @Override
         protected Boolean doInBackground(Void...voids) {
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(mOMAInfo.getValue(OMA_INSTALL_NOTIFY_URI));
-
+            HttpURLConnection urlConnection = null;
             try {
+                URL url = new URL(mOMAInfo.getValue(OMA_INSTALL_NOTIFY_URI));
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                urlConnection.setUseCaches(false);
+                urlConnection.setRequestMethod("POST");
                 String userAgent = mDownloadInfo.getUserAgent();
                 if (TextUtils.isEmpty(userAgent)) {
                     userAgent = ChromiumApplication.getBrowserUserAgent();
                 }
-                httpPost.setHeader("Accept", "*/*");
-                httpPost.setHeader("User-Agent", userAgent);
-                httpPost.setHeader("Cookie", mDownloadInfo.getCookie());
-                httpPost.setEntity(new StringEntity(mStatusMessage));
+                urlConnection.setRequestProperty("User-Agent", userAgent);
+                urlConnection.setRequestProperty("cookie", mDownloadInfo.getCookie());
 
-                // Execute HTTP Post Request
-                HttpResponse response = httpClient.execute(httpPost);
-
-                byte[] responseBody;
-                int responseCode = response.getStatusLine().getStatusCode();
+                DataOutputStream dos = new DataOutputStream(urlConnection.getOutputStream());
+                try {
+                    dos.writeBytes(mStatusMessage);
+                    dos.flush();
+                } catch (IOException e) {
+                    Log.w(TAG, "Cannot write status message.", e);
+                } finally {
+                    dos.close();
+                }
+                int responseCode = urlConnection.getResponseCode();
                 if (responseCode == 200 || responseCode == -1) {
                     return true;
                 }
                 return false;
-            } catch (ClientProtocolException e) {
-                Log.w(TAG, "Invalid protocol detected.", e);
+            } catch (MalformedURLException e) {
+                Log.w(TAG, "Invalid notification URL.", e);
             } catch (IOException e) {
                 Log.w(TAG, "Cannot connect to server.", e);
             } catch (IllegalStateException e) {
                 Log.w(TAG, "Cannot connect to server.", e);
+            } finally {
+                if (urlConnection != null) urlConnection.disconnect();
             }
             return false;
         }
