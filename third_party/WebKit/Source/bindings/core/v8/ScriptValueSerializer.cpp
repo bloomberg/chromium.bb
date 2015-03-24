@@ -1286,7 +1286,8 @@ bool SerializedScriptValueReader::readUCharString(v8::Local<v8::Value>* value)
     if (m_position + length > m_length)
         return false;
     ASSERT(!(m_position & 1));
-    *value = v8::String::NewFromTwoByte(isolate(), reinterpret_cast<const uint16_t*>(m_buffer + m_position), v8::String::kNormalString, length / sizeof(UChar));
+    if (!v8::String::NewFromTwoByte(isolate(), reinterpret_cast<const uint16_t*>(m_buffer + m_position), v8::NewStringType::kNormal, length / sizeof(UChar)).ToLocal(value))
+        return false;
     m_position += length;
     return true;
 }
