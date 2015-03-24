@@ -1,8 +1,13 @@
 include_rules = [
+  "+ios/public/provider/web",
+  "+ios/net",
   "+ios/web",
   "+net",
   "+third_party/libwebp/webp",
   "+ui",
+
+  # For tests.
+  "+ios/testing",
 ]
 
 specific_include_rules = {

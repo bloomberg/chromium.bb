@@ -31,10 +31,40 @@ scoped_ptr<NavigationItem> NavigationItem::Create() {
 NavigationItemImpl::NavigationItemImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       page_id_(-1),
-      transition_type_(ui::PAGE_TRANSITION_LINK) {
+      transition_type_(ui::PAGE_TRANSITION_LINK),
+      is_renderer_initiated_(false),
+      is_unsafe_(false),
+      facade_delegate_(nullptr) {
 }
 
 NavigationItemImpl::~NavigationItemImpl() {
+}
+
+NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
+    : unique_id_(item.unique_id_),
+      url_(item.url_),
+      referrer_(item.referrer_),
+      virtual_url_(item.virtual_url_),
+      title_(item.title_),
+      page_id_(item.page_id_),
+      page_scroll_state_(item.page_scroll_state_),
+      transition_type_(item.transition_type_),
+      favicon_(item.favicon_),
+      ssl_(item.ssl_),
+      timestamp_(item.timestamp_),
+      is_renderer_initiated_(item.is_renderer_initiated_),
+      is_unsafe_(item.is_unsafe_),
+      cached_display_title_(item.cached_display_title_),
+      facade_delegate_(nullptr) {
+}
+
+void NavigationItemImpl::SetFacadeDelegate(
+    scoped_ptr<NavigationItemFacadeDelegate> facade_delegate) {
+  facade_delegate_ = facade_delegate.Pass();
+}
+
+NavigationItemFacadeDelegate* NavigationItemImpl::GetFacadeDelegate() const {
+  return facade_delegate_.get();
 }
 
 int NavigationItemImpl::GetUniqueID() const {
@@ -82,6 +112,15 @@ void NavigationItemImpl::SetPageID(int page_id) {
 
 int32 NavigationItemImpl::GetPageID() const {
   return page_id_;
+}
+
+void NavigationItemImpl::SetPageScrollState(
+    const web::PageScrollState& scroll_state) {
+  page_scroll_state_ = scroll_state;
+}
+
+const PageScrollState& NavigationItemImpl::GetPageScrollState() const {
+  return page_scroll_state_;
 }
 
 const base::string16& NavigationItemImpl::GetTitleForDisplay(
@@ -146,6 +185,20 @@ void NavigationItemImpl::SetTimestamp(base::Time timestamp) {
 
 base::Time NavigationItemImpl::GetTimestamp() const {
   return timestamp_;
+}
+
+void NavigationItemImpl::ResetForCommit() {
+  // Any state that only matters when a navigation item is pending should be
+  // cleared here.
+  set_is_renderer_initiated(false);
+}
+
+void NavigationItemImpl::SetUnsafe(bool is_unsafe) {
+  is_unsafe_ = is_unsafe;
+}
+
+bool NavigationItemImpl::IsUnsafe() const {
+  return is_unsafe_;
 }
 
 }  // namespace web

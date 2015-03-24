@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ios/web/public/web_state/page_scroll_state.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -68,6 +69,10 @@ class NavigationItem {
   virtual void SetPageID(int page_id) = 0;
   virtual int32 GetPageID() const = 0;
 
+  // Stores the NavigationItem's last recorded scroll offset and zoom scale.
+  virtual void SetPageScrollState(const PageScrollState& scroll_state) = 0;
+  virtual const PageScrollState& GetPageScrollState() const = 0;
+
   // Page-related helpers ------------------------------------------------------
 
   // Returns the title to be displayed on the tab. This could be the title of
@@ -104,6 +109,11 @@ class NavigationItem {
   //   - or this navigation was copied from a foreign session.
   virtual void SetTimestamp(base::Time timestamp) = 0;
   virtual base::Time GetTimestamp() const = 0;
+
+  // |true| if this item contains unsafe resources and will be removed. This
+  // property doesn't get serialized.
+  virtual void SetUnsafe(bool is_unsafe) = 0;
+  virtual bool IsUnsafe() const = 0;
 };
 
 }  // namespace web
