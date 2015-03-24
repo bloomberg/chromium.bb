@@ -154,6 +154,11 @@ static AtkRelationSet* ax_platform_node_auralinux_ref_relation_set(
   return atk_relation_set;
 }
 
+static AtkAttributeSet* ax_platform_node_auralinux_get_attributes(
+    AtkObject* atk_object) {
+  return NULL;
+}
+
 static AtkRole ax_platform_node_auralinux_get_role(AtkObject* atk_object) {
   ui::AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(atk_object);
@@ -166,17 +171,15 @@ static AtkStateSet* ax_platform_node_auralinux_ref_state_set(
     AtkObject* atk_object) {
   ui::AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-  AtkStateSet* state_set =
+  if (!obj)
+    return NULL;
+
+  AtkStateSet* atk_state_set =
       ATK_OBJECT_CLASS(ax_platform_node_auralinux_parent_class)->
       ref_state_set(atk_object);
 
-  if (!obj) {
-    atk_state_set_add_state(state_set, ATK_STATE_DEFUNCT);
-    return state_set;
-  }
-  obj->GetAtkState(state_set);
-
-  return state_set;
+  obj->GetAtkState(atk_state_set);
+  return atk_state_set;
 }
 
 //
@@ -214,6 +217,7 @@ static void ax_platform_node_auralinux_class_init(AtkObjectClass* klass) {
   klass->ref_state_set = ax_platform_node_auralinux_ref_state_set;
   klass->get_index_in_parent = ax_platform_node_auralinux_get_index_in_parent;
   klass->ref_relation_set = ax_platform_node_auralinux_ref_relation_set;
+  klass->get_attributes = ax_platform_node_auralinux_get_attributes;
 }
 
 GType ax_platform_node_auralinux_get_type() {
@@ -329,29 +333,29 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
   }
 }
 
-void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* state_set) {
+void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   uint32 state = GetData().state;
 
   if (state & (1 << ui::AX_STATE_CHECKED))
-    atk_state_set_add_state(state_set, ATK_STATE_CHECKED);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKED);
   if (state & (1 << ui::AX_STATE_DEFAULT))
-    atk_state_set_add_state(state_set, ATK_STATE_DEFAULT);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_DEFAULT);
   if (state & (1 << ui::AX_STATE_EDITABLE))
-    atk_state_set_add_state(state_set, ATK_STATE_EDITABLE);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_EDITABLE);
   if (state & (1 << ui::AX_STATE_ENABLED))
-    atk_state_set_add_state(state_set, ATK_STATE_ENABLED);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
   if (state & (1 << ui::AX_STATE_EXPANDED))
-    atk_state_set_add_state(state_set, ATK_STATE_EXPANDED);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
   if (state & (1 << ui::AX_STATE_FOCUSABLE))
-    atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
   if (state & (1 << ui::AX_STATE_FOCUSED))
-    atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
   if (state & (1 << ui::AX_STATE_PRESSED))
-    atk_state_set_add_state(state_set, ATK_STATE_PRESSED);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_PRESSED);
   if (state & (1 << ui::AX_STATE_SELECTABLE))
-    atk_state_set_add_state(state_set, ATK_STATE_SELECTABLE);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
   if (state & (1 << ui::AX_STATE_SELECTED))
-    atk_state_set_add_state(state_set, ATK_STATE_SELECTED);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
 }
 
 void AXPlatformNodeAuraLinux::GetAtkRelations(AtkRelationSet* atk_relation_set)
