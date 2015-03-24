@@ -88,7 +88,39 @@ private:
     InspectorOverlayImpl* m_overlay;
 };
 
+class InspectorOverlayStub : public NoBaseWillBeGarbageCollected<InspectorOverlayStub>, public InspectorOverlay {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayStub);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayStub);
+public:
+    InspectorOverlayStub() { }
+    DECLARE_TRACE();
+
+    // InspectorOverlay implementation.
+    void update() override { }
+    void setPausedInDebuggerMessage(const String*) override { }
+    void setInspectModeEnabled(bool) override { }
+    void hideHighlight() override { }
+    void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip) override { }
+    void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) override { }
+    void showAndHideViewSize(bool showGrid) override { }
+    void setListener(InspectorOverlay::Listener* listener) override { }
+    void suspendUpdates() override { }
+    void resumeUpdates() override { }
+    void clear() override { }
+};
+
+DEFINE_TRACE(InspectorOverlayStub)
+{
+    InspectorOverlay::trace(visitor);
+}
+
 } // anonymous namespace
+
+// static
+PassOwnPtrWillBeRawPtr<InspectorOverlay> InspectorOverlayImpl::createEmpty()
+{
+    return adoptPtrWillBeNoop(new InspectorOverlayStub());
+}
 
 InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)

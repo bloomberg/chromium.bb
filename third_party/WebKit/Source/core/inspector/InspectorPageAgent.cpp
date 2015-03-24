@@ -72,7 +72,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Page.h"
 #include "platform/Cookie.h"
 #include "platform/JSONValues.h"
 #include "platform/MIMETypeRegistry.h"
@@ -287,9 +286,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new InspectorPageAgent(page, injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrame, injectedScriptManager, overlay));
 }
 
 void InspectorPageAgent::setDeferredAgents(InspectorDebuggerAgent* debuggerAgent, InspectorCSSAgent* cssAgent)
@@ -377,9 +376,9 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorPageAgent::InspectorPageAgent(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
-    , m_page(page)
+    , m_inspectedFrame(inspectedFrame)
     , m_injectedScriptManager(injectedScriptManager)
     , m_debuggerAgent(nullptr)
     , m_cssAgent(nullptr)
@@ -766,12 +765,7 @@ void InspectorPageAgent::frameDetachedFromParent(LocalFrame* frame)
 
 FrameHost* InspectorPageAgent::frameHost()
 {
-    return &m_page->frameHost();
-}
-
-LocalFrame* InspectorPageAgent::inspectedFrame()
-{
-    return m_page->deprecatedLocalMainFrame();
+    return m_inspectedFrame->host();
 }
 
 LocalFrame* InspectorPageAgent::frameForId(const String& frameId)
@@ -975,16 +969,6 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
     return result;
 }
 
-bool InspectorPageAgent::compositingEnabled(ErrorString* errorString)
-{
-    if (!m_page->settings().acceleratedCompositingEnabled()) {
-        if (errorString)
-            *errorString = "Compositing mode is not supported";
-        return false;
-    }
-    return true;
-}
-
 void InspectorPageAgent::startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight)
 {
     m_state->setBoolean(PageAgentState::screencastEnabled, true);
@@ -1008,7 +992,7 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
 
 DEFINE_TRACE(InspectorPageAgent)
 {
-    visitor->trace(m_page);
+    visitor->trace(m_inspectedFrame);
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_cssAgent);

@@ -94,6 +94,7 @@ public:
 
     // Initializes the various client interfaces.
     virtual void setCredentialManagerClient(WebCredentialManagerClient*) = 0;
+    // TODO(dgozman): remove this one.
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;

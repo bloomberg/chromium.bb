@@ -59,6 +59,9 @@ class InspectorOverlayImpl final : public NoBaseWillBeGarbageCollectedFinalized<
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayImpl);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayImpl);
 public:
+    // FIXME: remove this once overlay works for non-main frame.
+    static PassOwnPtrWillBeRawPtr<InspectorOverlay> createEmpty();
+
     static PassOwnPtrWillBeRawPtr<InspectorOverlayImpl> create(WebViewImpl* webViewImpl)
     {
         return adoptPtrWillBeNoop(new InspectorOverlayImpl(webViewImpl));

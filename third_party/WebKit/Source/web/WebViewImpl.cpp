@@ -66,7 +66,6 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/html/ime/InputMethodContext.h"
-#include "core/inspector/InspectorInputAgent.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -144,9 +143,7 @@
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
-#include "web/InspectorEmulationAgent.h"
 #include "web/InspectorOverlayImpl.h"
-#include "web/InspectorRenderingAgent.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/PopupContainer.h"
@@ -292,36 +289,6 @@ private:
     }
 };
 
-class InspectorInputClient : public InspectorInputAgent::Client {
-public:
-    explicit InspectorInputClient(WebViewImpl* webViewImpl) : m_webViewImpl(webViewImpl) { }
-    ~InspectorInputClient() override { }
-
-    // InspectorInputAgent::Client implementation.
-    void dispatchKeyEvent(const PlatformKeyboardEvent& event) override
-    {
-        if (!m_webViewImpl->page()->focusController().isFocused())
-            m_webViewImpl->setFocus(true);
-
-        WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
-        if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
-            webEvent.setKeyIdentifierFromWindowsKeyCode();
-        m_webViewImpl->handleInputEvent(webEvent);
-    }
-
-    void dispatchMouseEvent(const PlatformMouseEvent& event) override
-    {
-        if (!m_webViewImpl->page()->focusController().isFocused())
-            m_webViewImpl->setFocus(true);
-
-        WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
-        m_webViewImpl->handleInputEvent(webEvent);
-    }
-
-private:
-    WebViewImpl* m_webViewImpl;
-};
-
 } // namespace
 
 // WebView ----------------------------------------------------------------
@@ -387,17 +354,8 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
 
 void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
-    if (devToolsClient) {
-        m_inspectorOverlay = InspectorOverlayImpl::create(this);
-        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient, m_inspectorOverlay.get(), adoptPtr(new InspectorInputClient(this))));
-        m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
-        m_devToolsAgent->registerAgent(InspectorEmulationAgent::create(this));
-    } else {
-        m_devToolsAgent->willBeDestroyed();
-        m_devToolsAgent->dispose();
-        m_devToolsAgent.clear();
-        m_inspectorOverlay.clear();
-    }
+    ASSERT(mainFrameImpl());
+    mainFrameImpl()->setDevToolsAgentClient(devToolsClient);
 }
 
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)
@@ -509,6 +467,19 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 WebViewImpl::~WebViewImpl()
 {
     ASSERT(!m_page);
+}
+
+WebDevToolsAgentImpl* WebViewImpl::devToolsAgentImpl()
+{
+    WebLocalFrameImpl* mainFrame = mainFrameImpl();
+    return mainFrame ? mainFrame->devToolsAgentImpl() : nullptr;
+}
+
+InspectorOverlay* WebViewImpl::inspectorOverlay()
+{
+    if (!m_inspectorOverlay)
+        m_inspectorOverlay = InspectorOverlayImpl::create(this);
+    return m_inspectorOverlay.get();
 }
 
 WebLocalFrameImpl* WebViewImpl::mainFrameImpl()
@@ -812,7 +783,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Instead, assume that the page has been designed with big enough buttons and links.
         // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
         // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
-        bool screencastEnabled = m_devToolsAgent && m_devToolsAgent->screencastEnabled();
+        WebDevToolsAgentImpl* devTools = devToolsAgentImpl();
+        bool screencastEnabled = devTools && devTools->screencastEnabled();
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
             IntRect boundingBox(page()->frameHost().pinchViewport().viewportToRootFrame(IntRect(
                 event.x - event.data.tap.width / 2,
@@ -1717,10 +1689,6 @@ WebViewImpl* WebViewImpl::fromPage(Page* page)
 
 void WebViewImpl::close()
 {
-    // Should happen before m_page.clear().
-    if (m_devToolsAgent)
-        m_devToolsAgent->willBeDestroyed();
-
     WebDevToolsAgentImpl::webViewImplClosed(this);
     ASSERT(allInstances().contains(this));
     allInstances().remove(this);
@@ -1730,12 +1698,6 @@ void WebViewImpl::close()
         // notifications to be sent.
         m_page->willBeDestroyed();
         m_page.clear();
-    }
-
-    // Should happen after m_page.clear().
-    if (m_devToolsAgent) {
-        m_devToolsAgent->dispose();
-        m_devToolsAgent.clear();
     }
 
     // Reset the delegate to prevent notifications being sent as we're being
@@ -2132,7 +2094,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (m_devToolsEmulator->handleInputEvent(inputEvent))
         return true;
 
-    if (m_devToolsAgent && m_devToolsAgent->handleInputEvent(m_page.get(), inputEvent))
+    WebDevToolsAgentImpl* devTools = devToolsAgentImpl();
+    if (devTools && devTools->handleInputEvent(inputEvent))
         return true;
 
     if (m_inspectorOverlay && m_inspectorOverlay->handleInputEvent(inputEvent))
@@ -3789,7 +3752,8 @@ void WebViewImpl::disableDeviceEmulation()
 
 WebDevToolsAgent* WebViewImpl::devToolsAgent()
 {
-    return m_devToolsAgent.get();
+    WebLocalFrameImpl* mainFrame = mainFrameImpl();
+    return mainFrame ? mainFrame->devToolsAgent() : nullptr;
 }
 
 WebAXObject WebViewImpl::accessibilityObject()

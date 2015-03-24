@@ -270,6 +270,7 @@ void LocalFrame::detach()
     if (!client())
         return;
 
+    client()->willBeDetached();
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
     // back to FrameLoaderClient via WindowProxy.
     script().clearForClose();

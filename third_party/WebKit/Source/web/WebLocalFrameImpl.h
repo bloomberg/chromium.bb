@@ -46,6 +46,7 @@ namespace blink {
 
 class ChromePrintContext;
 class GeolocationClientProxy;
+class InspectorOverlay;
 class IntSize;
 class KURL;
 class Range;
@@ -53,6 +54,7 @@ class SharedWorkerRepositoryClientImpl;
 class TextFinder;
 class WebAutofillClient;
 class WebDataSourceImpl;
+class WebDevToolsAgentImpl;
 class WebDevToolsFrontendImpl;
 class WebFrameClient;
 class WebFrameWidgetImpl;
@@ -228,6 +230,8 @@ public:
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*, const WebString& name, WebSandboxFlags) override;
     virtual void setAutofillClient(WebAutofillClient*) override;
     virtual WebAutofillClient* autofillClient() override;
+    virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
+    virtual WebDevToolsAgent* devToolsAgent() override;
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) override;
     virtual bool isLoading() const override;
     virtual bool isResourceLoadInProgress() const override;
@@ -237,6 +241,7 @@ public:
     virtual void willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply*) override;
     void requestRunTask(WebSuspendableTask*) const override;
 
+    void willBeDetached();
     void willDetachParent();
 
     static WebLocalFrameImpl* create(WebFrameClient*);
@@ -266,6 +271,9 @@ public:
     WebViewImpl* viewImpl() const;
 
     FrameView* frameView() const { return frame() ? frame()->view() : 0; }
+
+    InspectorOverlay* inspectorOverlay();
+    WebDevToolsAgentImpl* devToolsAgentImpl() const { return m_devToolsAgent.get(); }
 
     // Getters for the impls corresponding to Get(Provisional)DataSource. They
     // may return 0 if there is no corresponding data source.
@@ -349,6 +357,9 @@ private:
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtrWillBeMember<LocalFrame> m_frame;
+
+    OwnPtrWillBeMember<InspectorOverlay> m_inspectorOverlay;
+    OwnPtrWillBeMember<WebDevToolsAgentImpl> m_devToolsAgent;
 
     // This is set if the frame is the root of a local frame tree, and requires a widget for rendering.
     WebFrameWidgetImpl* m_frameWidget;

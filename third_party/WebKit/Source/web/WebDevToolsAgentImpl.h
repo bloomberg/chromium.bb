@@ -72,14 +72,14 @@ class WebDevToolsAgentImpl final
     , public InspectorFrontendChannel
     , private WebThread::TaskObserver {
 public:
-    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorOverlay*, PassOwnPtr<InspectorInputAgent::Client>);
+    static PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
     ~WebDevToolsAgentImpl() override;
     void dispose();
     DECLARE_VIRTUAL_TRACE();
 
     void willBeDestroyed();
     WebDevToolsAgentClient* client() { return m_client; }
-    bool handleInputEvent(Page*, const WebInputEvent&);
+    bool handleInputEvent(const WebInputEvent&);
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
@@ -103,6 +103,8 @@ public:
     void setLayerTreeId(int) override;
 
 private:
+    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, InspectorOverlay*, PassOwnPtr<InspectorInputAgent::Client>);
+
     // InspectorStateClient implementation.
     void updateInspectorStateCookie(const WTF::String&) override;
 
@@ -128,7 +130,7 @@ private:
     bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
 
     WebDevToolsAgentClient* m_client;
-    WebViewImpl* m_webViewImpl;
+    WebLocalFrameImpl* m_webLocalFrameImpl;
     bool m_attached;
 #if ENABLE(ASSERT)
     bool m_hasBeenDisposed;

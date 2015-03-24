@@ -71,6 +71,7 @@ class DevToolsEmulator;
 class Frame;
 class FullscreenController;
 class InputMethodContext;
+class InspectorOverlay;
 class InspectorOverlayImpl;
 class LinkHighlight;
 class PopupContainer;
@@ -330,10 +331,9 @@ public:
         return m_page.get();
     }
 
-    WebDevToolsAgentImpl* devToolsAgentImpl() const
-    {
-        return m_devToolsAgent.get();
-    }
+    WebDevToolsAgentImpl* devToolsAgentImpl();
+
+    InspectorOverlay* inspectorOverlay();
 
     DevToolsEmulator* devToolsEmulator() const
     {
@@ -714,7 +714,6 @@ private:
     // The popup associated with an input element.
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
-    OwnPtrWillBePersistent<WebDevToolsAgentImpl> m_devToolsAgent;
     OwnPtrWillBePersistent<InspectorOverlayImpl> m_inspectorOverlay;
     OwnPtr<DevToolsEmulator> m_devToolsEmulator;
     OwnPtr<PageOverlayList> m_pageOverlays;

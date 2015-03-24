@@ -26,6 +26,10 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
 {
 }
 
+void RemoteFrameClientImpl::willBeDetached()
+{
+}
+
 void RemoteFrameClientImpl::detached()
 {
     // Alert the client that the frame is being detached.

@@ -85,10 +85,10 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsAgentClient.h"
-#include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebSettings.h"
-#include "public/web/WebViewClient.h"
 #include "web/DevToolsEmulator.h"
+#include "web/InspectorEmulationAgent.h"
+#include "web/InspectorRenderingAgent.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -100,6 +100,40 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+namespace {
+
+class InspectorInputClient : public InspectorInputAgent::Client {
+public:
+    explicit InspectorInputClient(WebViewImpl* webViewImpl) : m_webViewImpl(webViewImpl) { }
+    ~InspectorInputClient() override { }
+
+    // InspectorInputAgent::Client implementation.
+    void dispatchKeyEvent(const PlatformKeyboardEvent& event) override
+    {
+        if (!m_webViewImpl->page()->focusController().isFocused())
+            m_webViewImpl->setFocus(true);
+
+        WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
+        if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
+            webEvent.setKeyIdentifierFromWindowsKeyCode();
+        m_webViewImpl->handleInputEvent(webEvent);
+    }
+
+    void dispatchMouseEvent(const PlatformMouseEvent& event) override
+    {
+        if (!m_webViewImpl->page()->focusController().isFocused())
+            m_webViewImpl->setFocus(true);
+
+        WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
+        m_webViewImpl->handleInputEvent(webEvent);
+    }
+
+private:
+    WebViewImpl* m_webViewImpl;
+};
+
+} // namespace
 
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
@@ -150,8 +184,8 @@ private:
         m_running = true;
 
         // 0. Flush pending frontend messages.
-        WebViewImpl* viewImpl = WebViewImpl::fromPage(frame->page());
-        WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(viewImpl->devToolsAgent());
+        WebLocalFrameImpl* frameImpl = WebLocalFrameImpl::fromFrame(frame);
+        WebDevToolsAgentImpl* agent = frameImpl->devToolsAgentImpl();
         agent->flushPendingProtocolNotifications();
 
         Vector<WebViewImpl*> views;
@@ -251,13 +285,34 @@ private:
     OwnPtr<WebDevToolsAgent::MessageDescriptor> m_descriptor;
 };
 
+// static
+PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, WebDevToolsAgentClient* client)
+{
+    WebViewImpl* view = frame->viewImpl();
+    bool isMainFrame = view && view->mainFrameImpl() == frame;
+    if (!isMainFrame)
+        return adoptPtrWillBeNoop(new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay(), nullptr));
+
+    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, view->inspectorOverlay(), adoptPtr(new InspectorInputClient(view)));
+    agent->registerAgent(InspectorRenderingAgent::create(view));
+    agent->registerAgent(InspectorEmulationAgent::create(view));
+    // TODO(dgozman): migrate each of the following agents to frame once module is ready.
+    agent->registerAgent(InspectorDatabaseAgent::create(view->page()));
+    agent->registerAgent(DeviceOrientationInspectorAgent::create(view->page()));
+    agent->registerAgent(InspectorFileSystemAgent::create(view->page()));
+    agent->registerAgent(InspectorIndexedDBAgent::create(view->page()));
+    agent->registerAgent(InspectorAccessibilityAgent::create(view->page()));
+    agent->registerAgent(InspectorDOMStorageAgent::create(view->page()));
+    return adoptPtrWillBeNoop(agent);
+}
+
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
-    WebViewImpl* webViewImpl,
+    WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
     InspectorOverlay* overlay,
     PassOwnPtr<InspectorInputAgent::Client> inputClient)
     : m_client(client)
-    , m_webViewImpl(webViewImpl)
+    , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
 #if ENABLE(ASSERT)
     , m_hasBeenDisposed(false)
@@ -274,17 +329,16 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_deferredAgentsInitialized(false)
 {
     ASSERT(isMainThread());
+    ASSERT(m_webLocalFrameImpl->frame());
 
     long processId = WTF::getCurrentProcessID();
     ASSERT(processId > 0);
     IdentifiersFactory::setProcessId(processId);
-    Page* page = m_webViewImpl->page();
-
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
 
     m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, m_overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), injectedScriptManager, m_overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
@@ -317,15 +371,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), scriptDebugServer);
 
-    m_agents.append(InspectorDatabaseAgent::create(page));
-    m_agents.append(DeviceOrientationInspectorAgent::create(page));
-    m_agents.append(InspectorFileSystemAgent::create(page));
-    m_agents.append(InspectorIndexedDBAgent::create(page));
-    m_agents.append(InspectorAccessibilityAgent::create(page));
-    m_agents.append(InspectorDOMStorageAgent::create(page));
-
-    if (m_webViewImpl->mainFrameImpl())
-        m_webViewImpl->mainFrameImpl()->frame()->setInstrumentingAgents(m_instrumentingAgents.get());
+    m_webLocalFrameImpl->frame()->setInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -378,10 +424,9 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
 void WebDevToolsAgentImpl::willBeDestroyed()
 {
 #if ENABLE(ASSERT)
-    Frame* frame = m_webViewImpl->page()->mainFrame();
+    Frame* frame = m_webLocalFrameImpl->frame();
     ASSERT(frame);
-    if (frame->isLocalFrame())
-        ASSERT(m_pageAgent->inspectedFrame()->view());
+    ASSERT(m_pageAgent->inspectedFrame()->view());
 #endif
 
     detach();
@@ -389,8 +434,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     m_agents.discardAgents();
     m_instrumentingAgents->reset();
 
-    if (m_webViewImpl->mainFrameImpl())
-        m_webViewImpl->mainFrameImpl()->frame()->setInstrumentingAgents(nullptr);
+    m_webLocalFrameImpl->frame()->setInstrumentingAgents(nullptr);
 }
 
 void WebDevToolsAgentImpl::initializeDeferredAgents()
@@ -502,24 +546,24 @@ void WebDevToolsAgentImpl::continueProgram()
     ClientMessageLoopAdapter::continueProgram();
 }
 
-bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)
+bool WebDevToolsAgentImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
     if (!m_attached)
         return false;
 
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
         // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
-        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebGestureEvent&>(inputEvent));
-        return handleGestureEvent(toLocalFrame(page->mainFrame()), gestureEvent);
+        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(m_webLocalFrameImpl->frameView(), static_cast<const WebGestureEvent&>(inputEvent));
+        return handleGestureEvent(m_webLocalFrameImpl->frame(), gestureEvent);
     }
     if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
         // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
-        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebMouseEvent&>(inputEvent));
-        return handleMouseEvent(toLocalFrame(page->mainFrame()), mouseEvent);
+        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(m_webLocalFrameImpl->frameView(), static_cast<const WebMouseEvent&>(inputEvent));
+        return handleMouseEvent(m_webLocalFrameImpl->frame(), mouseEvent);
     }
     if (WebInputEvent::isTouchEventType(inputEvent.type)) {
-        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebTouchEvent&>(inputEvent));
-        return handleTouchEvent(toLocalFrame(page->mainFrame()), touchEvent);
+        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(m_webLocalFrameImpl->frameView(), static_cast<const WebTouchEvent&>(inputEvent));
+        return handleTouchEvent(m_webLocalFrameImpl->frame(), touchEvent);
     }
     return false;
 }
@@ -600,22 +644,18 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(const String& message)
 
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
 {
-    Page* page = m_webViewImpl->page();
-    if (!page)
-        return;
-
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     HitTestRequest request(hitType);
     WebMouseEvent dummyEvent;
     dummyEvent.type = WebInputEvent::MouseDown;
     dummyEvent.x = pointInRootFrame.x;
     dummyEvent.y = pointInRootFrame.y;
-    IntPoint transformedPoint = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), dummyEvent).position();
-    HitTestResult result(page->deprecatedLocalMainFrame()->view()->rootFrameToContents(transformedPoint));
-    page->deprecatedLocalMainFrame()->contentRenderer()->hitTest(request, result);
+    IntPoint transformedPoint = PlatformMouseEventBuilder(m_webLocalFrameImpl->frameView(), dummyEvent).position();
+    HitTestResult result(m_webLocalFrameImpl->frameView()->rootFrameToContents(transformedPoint));
+    m_webLocalFrameImpl->frame()->contentRenderer()->hitTest(request, result);
     Node* node = result.innerNode();
-    if (!node && page->deprecatedLocalMainFrame()->document())
-        node = page->deprecatedLocalMainFrame()->document()->documentElement();
+    if (!node && m_webLocalFrameImpl->frame()->document())
+        node = m_webLocalFrameImpl->frame()->document()->documentElement();
     m_domAgent->inspect(node);
 }
 

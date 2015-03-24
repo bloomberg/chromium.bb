@@ -14,6 +14,7 @@ class SecurityOrigin;
 
 class FrameClient {
 public:
+    virtual void willBeDetached() = 0;
     virtual void detached() = 0;
 
     virtual Frame* opener() const = 0;

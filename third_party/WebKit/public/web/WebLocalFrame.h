@@ -13,6 +13,8 @@ enum class WebAppBannerPromptReply;
 enum class WebSandboxFlags;
 class WebAutofillClient;
 class WebContentSettingsClient;
+class WebDevToolsAgent;
+class WebDevToolsAgentClient;
 class WebFrameClient;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
@@ -50,7 +52,8 @@ public:
 
     virtual void setAutofillClient(WebAutofillClient*) = 0;
     virtual WebAutofillClient* autofillClient() = 0;
-
+    virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
+    virtual WebDevToolsAgent* devToolsAgent() = 0;
 
     // Navigation Ping --------------------------------------------------------
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;

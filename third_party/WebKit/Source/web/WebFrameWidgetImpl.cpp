@@ -367,6 +367,10 @@ bool WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& inputEvent)
 
     TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type).ascii());
 
+    WebDevToolsAgentImpl* devTools = m_localRoot ? m_localRoot->devToolsAgentImpl() : nullptr;
+    if (devTools && devTools->handleInputEvent(inputEvent))
+        return true;
+
     // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
     if (m_ignoreInputEvents)
         return false;

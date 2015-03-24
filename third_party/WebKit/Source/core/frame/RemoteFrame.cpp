@@ -82,6 +82,7 @@ void RemoteFrame::detach()
     detachChildren();
     if (!client())
         return;
+    client()->willBeDetached();
     m_windowProxyManager->clearForClose();
     setView(nullptr);
     Frame::detach();

@@ -205,6 +205,7 @@
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/GeolocationClientProxy.h"
+#include "web/InspectorOverlayImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/MIDIClientProxy.h"
 #include "web/NotificationPermissionClientImpl.h"
@@ -577,6 +578,11 @@ WebRemoteFrame* WebLocalFrameImpl::toWebRemoteFrame()
 void WebLocalFrameImpl::close()
 {
     m_client = nullptr;
+
+    if (m_devToolsAgent) {
+        m_devToolsAgent->dispose();
+        m_devToolsAgent.clear();
+    }
 
 #if ENABLE(OILPAN)
     m_selfKeepAlive.clear();
@@ -1607,6 +1613,8 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
 DEFINE_TRACE(WebLocalFrameImpl)
 {
     visitor->trace(m_frame);
+    visitor->trace(m_devToolsAgent);
+    visitor->trace(m_inspectorOverlay);
     visitor->trace(m_textFinder);
     visitor->trace(m_printContext);
     visitor->trace(m_geolocationClientProxy);
@@ -1917,6 +1925,29 @@ WebAutofillClient* WebLocalFrameImpl::autofillClient()
     return m_autofillClient;
 }
 
+void WebLocalFrameImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
+{
+    if (devToolsClient) {
+        m_devToolsAgent = WebDevToolsAgentImpl::create(this, devToolsClient);
+    } else {
+        m_devToolsAgent->willBeDestroyed();
+        m_devToolsAgent->dispose();
+        m_devToolsAgent.clear();
+    }
+}
+
+InspectorOverlay* WebLocalFrameImpl::inspectorOverlay()
+{
+    if (!m_inspectorOverlay)
+        m_inspectorOverlay = InspectorOverlayImpl::createEmpty();
+    return m_inspectorOverlay.get();
+}
+
+WebDevToolsAgent* WebLocalFrameImpl::devToolsAgent()
+{
+    return m_devToolsAgent.get();
+}
+
 void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
 {
     ASSERT(frame());
@@ -1984,6 +2015,12 @@ void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const
     ASSERT(frame());
     ASSERT(frame()->document());
     frame()->document()->postSuspendableTask(WebSuspendableTaskWrapper::create(adoptPtr(task)));
+}
+
+void WebLocalFrameImpl::willBeDetached()
+{
+    if (m_devToolsAgent)
+        m_devToolsAgent->willBeDestroyed();
 }
 
 void WebLocalFrameImpl::willDetachParent()

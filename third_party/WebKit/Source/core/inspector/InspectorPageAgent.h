@@ -51,7 +51,6 @@ class InspectorOverlay;
 class InspectorResourceContentLoader;
 class KURL;
 class LocalFrame;
-class Page;
 class SharedBuffer;
 class TextResourceDecoder;
 
@@ -73,7 +72,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InjectedScriptManager*, InspectorOverlay*);
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
@@ -130,7 +129,7 @@ public:
 
     // Cross-agents API
     FrameHost* frameHost();
-    LocalFrame* inspectedFrame();
+    LocalFrame* inspectedFrame() const { return m_inspectedFrame.get(); }
     String createIdentifier();
     LocalFrame* frameForId(const String& frameId);
     String frameId(LocalFrame*);
@@ -147,9 +146,7 @@ public:
 private:
     class GetResourceContentLoadListener;
 
-    InspectorPageAgent(Page*, InjectedScriptManager*, InspectorOverlay*);
-    void updateTouchEventEmulationInPage(bool);
-    bool compositingEnabled(ErrorString*);
+    InspectorPageAgent(LocalFrame* inspectedFrame, InjectedScriptManager*, InspectorOverlay*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
@@ -158,7 +155,7 @@ private:
 
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
-    RawPtrWillBeMember<Page> m_page;
+    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
