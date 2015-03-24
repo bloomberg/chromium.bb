@@ -48,12 +48,13 @@ def GetBoardKey(config, board=None):
   return BoardKey(board, config.useflags)
 
 
-def GetAllBoardKeys():
+def GetAllImportantBoardKeys():
   """Get a list of all board keys used in a top-level config."""
   boards = set()
   for config in cbuildbot_config.config.values():
-    for board in config.boards:
-      boards.add(GetBoardKey(config, board))
+    if config.important:
+      for board in config.boards:
+        boards.add(GetBoardKey(config, board))
   return boards
 
 
@@ -186,7 +187,7 @@ def GetChromeUseFlags(board, extra_useflags):
     Use flags that are disabled are not listed.
   """
   assert cros_build_lib.IsInsideChroot()
-  assert os.path.exists('/build/%s' % board)
+  assert os.path.exists('/build/%s' % board), 'Board %s not set up' % board
   extra_env = {'USE': ' '.join(extra_useflags)}
   cmd = ['equery-%s' % board, 'uses', constants.CHROME_CP]
   chrome_useflags = cros_build_lib.RunCommand(

@@ -38,12 +38,13 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   def setUpClass(cls):
     assert cros_build_lib.IsInsideChroot()
     logging.info('Generating board configs. This takes about 10m...')
-    boards = set(key.board for key in binhost.GetAllBoardKeys())
+    board_keys = binhost.GetAllImportantBoardKeys()
+    boards = set(key.board for key in board_keys)
     for board in sorted(boards):
       binhost.GenConfigsForBoard(board, regen=not cls.CACHING,
                                  error_code_ok=True)
     fetcher = binhost.CompatIdFetcher(caching=cls.CACHING)
-    cls.COMPAT_IDS = fetcher.FetchCompatIds(binhost.GetAllBoardKeys())
+    cls.COMPAT_IDS = fetcher.FetchCompatIds(board_keys)
 
   def setUp(self):
     self.complaints = []
