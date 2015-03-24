@@ -74,8 +74,7 @@ class GenerateSysroot(object):
     sysroot_lib.WriteSysrootConfig(self.sysroot, config)
     cros_build_lib.RunCommand(
         [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
-         '--noconfigure', '--board_root', self.sysroot, '--board',
-         self.options.board])
+         '--noconfigure', '--sysroot', self.sysroot])
 
   def _InstallKernelHeaders(self):
     self._Emerge('sys-kernel/linux-headers')

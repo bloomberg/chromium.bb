@@ -104,10 +104,9 @@ def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
     # Generate the sysroot configuration.
     config = sysroot_lib.GenerateBoardConfiguration(sysroot, board)
     sysroot_lib.SetSysrootConfig(sysroot, config)
-
     cros_build_lib.RunCommand(
         [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
-         '--noconfigure', '--board_root', sysroot, '--board', board])
+         '--noconfigure', '--sysroot', sysroot])
   cmd = list(_BUILD_PKGS_CMD)
   cmd.extend(['--board_root', sysroot, '--board', board])
   if unpack_only:
