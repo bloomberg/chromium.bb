@@ -9,6 +9,11 @@
         [0, 260, 20, 20],
         [0, 200, 200, 100],
         [0, 160, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "LayoutView #document",
+        "LayoutBlockFlow (positioned) DIV"
       ]
     }
   ]
@@ -23,6 +28,12 @@
       "repaintRects": [
         [200, 0, 100, 300],
         [0, 0, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML"
       ]
     }
   ]
@@ -38,6 +49,10 @@
         [0, 260, 20, 20],
         [0, 250, 300, 50],
         [0, 210, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow (positioned) DIV"
       ]
     }
   ]
@@ -52,6 +67,11 @@
       "repaintRects": [
         [250, 0, 50, 250],
         [0, 0, 250, 250]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML"
       ]
     }
   ]

@@ -7,6 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [0, 200, 200, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document"
       ]
     }
   ]
@@ -21,6 +24,10 @@
       "repaintRects": [
         [200, 0, 100, 300],
         [0, 0, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutView #document"
       ]
     }
   ]
@@ -34,6 +41,9 @@
       "drawsContent": true,
       "repaintRects": [
         [0, 250, 300, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document"
       ]
     }
   ]
@@ -48,6 +58,10 @@
       "repaintRects": [
         [250, 0, 50, 250],
         [0, 0, 250, 250]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutView #document"
       ]
     }
   ]

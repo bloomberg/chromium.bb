@@ -12,9 +12,11 @@
         [8, 224, 866, 548],
         [8, 224, 784, 548],
         [8, 8, 866, 764],
-        [8, 8, 866, 216]
+        [8, 8, 866, 216],
+        [0, 232, 874, 548]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV",
         "LayoutBlockFlow DIV",

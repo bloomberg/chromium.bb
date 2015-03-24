@@ -14,9 +14,11 @@
         [8, 145, 4, 18],
         [8, 145, 4, 18],
         [8, 130, 784, 66],
-        [8, 130, 4, 18]
+        [8, 130, 4, 18],
+        [0, 182, 800, 30]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
         "LayoutInline SPAN id='d'",

@@ -15,9 +15,11 @@
         [10, 281, 292, 50],
         [10, 276, 240, 36],
         [10, 132, 292, 144],
-        [10, 132, 242, 180]
+        [10, 132, 242, 180],
+        [0, 341, 800, 36]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
         "LayoutTableCell TD id='col1'",
         "LayoutBlockFlow DIV",
         "LayoutText #text",
