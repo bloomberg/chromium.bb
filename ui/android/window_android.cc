@@ -43,6 +43,11 @@ void WindowAndroid::OnCompositingDidCommit() {
                     OnCompositingDidCommit());
 }
 
+void WindowAndroid::OnVisibilityChanged(bool visible) {
+  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_,
+                    OnVisibilityChanged(visible));
+}
+
 void WindowAndroid::AddObserver(WindowAndroidObserver* observer) {
   if (!observer_list_.HasObserver(observer))
     observer_list_.AddObserver(observer);
@@ -101,6 +106,14 @@ void WindowAndroid::OnVSync(JNIEnv* env,
       OnVSync(frame_time, vsync_period));
   if (compositor_)
     compositor_->OnVSync(frame_time, vsync_period);
+}
+
+void WindowAndroid::OnActivityResumed(JNIEnv* env, jobject obj) {
+  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityResumed());
+}
+
+void WindowAndroid::OnActivityPaused(JNIEnv* env, jobject obj) {
+  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityPaused());
 }
 
 // ----------------------------------------------------------------------------
