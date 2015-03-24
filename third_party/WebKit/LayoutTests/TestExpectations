@@ -74,18 +74,6 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
-crbug.com/468434 fast/repaint/vertical-align-length1.html [ NeedsRebaseline ]
-crbug.com/468434 fast/repaint/remove-inline-after-layout.html [ NeedsRebaseline ]
-crbug.com/468434 fast/repaint/remove-inline-layer-after-layout.html [ NeedsRebaseline ]
-crbug.com/468434 fast/repaint/list-marker-2.html [ NeedsRebaseline ]
-crbug.com/468434 fast/repaint/vertical-align1.html [ NeedsRebaseline ]
-crbug.com/468434 virtual/slimmingpaint/fast/repaint/vertical-align-length1.html [ NeedsRebaseline ]
-crbug.com/468434 virtual/slimmingpaint/fast/repaint/vertical-align1.html [ NeedsRebaseline ]
-crbug.com/468434 virtual/slimmingpaint/fast/repaint/list-marker-2.html [ NeedsRebaseline ]
-crbug.com/468434 virtual/slimmingpaint/fast/repaint/remove-inline-layer-after-layout.html [ NeedsRebaseline ]
-crbug.com/468434 virtual/slimmingpaint/fast/repaint/remove-inline-after-layout.html [ NeedsRebaseline ]
-crbug.com/468434 virtual/slimmingpaint/fast/repaint/remove-inline-block-descendant-of-flex.html [ NeedsRebaseline ]
-
 # It is not possible to capture a marquee at exactly the same state 100% of the runs.
 crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]

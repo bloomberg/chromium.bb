@@ -6,12 +6,20 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [120, 130, 20, 20],
+        [120, 100, 20, 20],
+        [0, 130, 20, 20],
         [0, 125, 800, 30],
+        [0, 125, 800, 30],
+        [0, 100, 20, 20],
         [0, 0, 800, 154]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
-        "LayoutBlockFlow BODY"
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV class='other'",
+        "LayoutBlockFlow DIV class='other'"
       ]
     }
   ]

@@ -8,12 +8,15 @@
       "repaintRects": [
         [48, 100, 100, 100],
         [48, 100, 100, 50],
+        [30, 185, 7, 19],
         [30, 155, 762, 50],
+        [30, 135, 7, 19],
         [30, 100, 762, 104]
       ],
       "paintInvalidationClients": [
         "LayoutListItem LI",
         "LayoutListItem LI",
+        "LayoutListMarker",
         "LayoutImage IMG id='target'"
       ]
     }

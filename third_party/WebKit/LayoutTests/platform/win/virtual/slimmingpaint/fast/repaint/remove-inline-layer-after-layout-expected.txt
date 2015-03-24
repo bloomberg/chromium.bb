@@ -6,14 +6,17 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [294, 108, 100, 100],
         [112, 194, 182, 17],
         [112, 108, 182, 103],
+        [112, 108, 100, 100],
         [8, 108, 784, 103]
       ],
       "paintInvalidationClients": [
         "LayoutText #text",
         "LayoutInline SPAN id='target'",
-        "LayoutBlockFlow (anonymous)"
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]
