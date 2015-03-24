@@ -7,7 +7,9 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Enabled('android')
+# Failing on N4, crbug.com/470071
+#@benchmark.Enabled('android')
+@benchmark.Disabled
 class PolymerLoadPica(benchmark.Benchmark):
   """Measures time to polymer-ready for Pica (News Reader)."""
   test = polymer_load.PolymerLoadMeasurement
