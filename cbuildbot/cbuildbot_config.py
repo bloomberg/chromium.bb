@@ -1256,8 +1256,6 @@ project_sdk = _config(
   build_type=constants.PROJECT_SDK_TYPE,
   description='Produce Project SDK build artifacts.',
 
-  profile='minimal',
-
   # These are test builds, they shouldn't break anything (yet).
   important=False,
 
