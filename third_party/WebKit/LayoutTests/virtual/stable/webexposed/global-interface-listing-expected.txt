@@ -125,6 +125,8 @@ interface AudioBuffer
     getter numberOfChannels
     getter sampleRate
     method constructor
+    method copyFromChannel
+    method copyToChannel
     method getChannelData
 interface AudioBufferSourceNode
     getter buffer

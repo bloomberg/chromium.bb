@@ -127,14 +127,30 @@ function createLinearRampBuffer(context, sampleFrameLength) {
     return audioBuffer;
 }
 
-// Create a buffer of the given length having a constant value.
+// Create an AudioBuffer of length |sampleFrameLength| having a constant value |constantValue|. If
+// |constantValue| is a number, the buffer has one channel filled with that value. If
+// |constantValue| is an array, the buffer is created wit a number of channels equal to the length
+// of the array, and channel k is filled with the k'th element of the |constantValue| array.
 function createConstantBuffer(context, sampleFrameLength, constantValue) {
-    var audioBuffer = context.createBuffer(1, sampleFrameLength, context.sampleRate);
-    var n = audioBuffer.length;
-    var dataL = audioBuffer.getChannelData(0);
+    var channels;
+    var values;
 
-    for (var i = 0; i < n; ++i)
-        dataL[i] = constantValue;
+    if (typeof constantValue === "number") {
+        channels = 1;
+        values = [constantValue];
+    } else {
+        channels = constantValue.length;
+        values = constantValue;
+    }
+
+    var audioBuffer = context.createBuffer(channels, sampleFrameLength, context.sampleRate);
+    var n = audioBuffer.length;
+
+    for (var c = 0; c < channels; ++c) {
+        var data = audioBuffer.getChannelData(c);
+        for (var i = 0; i < n; ++i)
+            data[i] = values[c];
+    }
 
     return audioBuffer;
 }

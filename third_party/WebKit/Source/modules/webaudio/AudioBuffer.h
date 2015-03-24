@@ -60,6 +60,11 @@ public:
     unsigned numberOfChannels() const { return m_channels.size(); }
     PassRefPtr<DOMFloat32Array> getChannelData(unsigned channelIndex, ExceptionState&);
     DOMFloat32Array* getChannelData(unsigned channelIndex);
+    void copyFromChannel(DOMFloat32Array*, long channelNumber, ExceptionState&);
+    void copyFromChannel(DOMFloat32Array*, long channelNumber, unsigned long startInChannel, ExceptionState&);
+    void copyToChannel(DOMFloat32Array*, long channelNumber, ExceptionState&);
+    void copyToChannel(DOMFloat32Array*, long channelNumber, unsigned long startInChannel, ExceptionState&);
+
     void zero();
 
     DEFINE_INLINE_TRACE() { }

@@ -191,6 +191,120 @@ DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex)
     return m_channels[channelIndex].get();
 }
 
+void AudioBuffer::copyFromChannel(DOMFloat32Array* destination, long channelNumber, ExceptionState& exceptionState)
+{
+    return copyFromChannel(destination, channelNumber, 0, exceptionState);
+}
+
+void AudioBuffer::copyFromChannel(DOMFloat32Array* destination, long channelNumber, unsigned long startInChannel, ExceptionState& exceptionState)
+{
+    if (!destination) {
+        exceptionState.throwDOMException(
+            TypeMismatchError,
+            ExceptionMessages::argumentNullOrIncorrectType(
+                1,
+                "Float32Array"));
+        return;
+    }
+
+    if (channelNumber < 0 || channelNumber >= static_cast<long>(m_channels.size())) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "channelNumber",
+                channelNumber,
+                1L,
+                ExceptionMessages::InclusiveBound,
+                static_cast<long>(m_channels.size()),
+                ExceptionMessages::InclusiveBound));
+        return;
+    }
+
+    DOMFloat32Array* channelData = m_channels[channelNumber].get();
+
+    if (startInChannel >= channelData->length()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "startInChannel",
+                startInChannel,
+                0UL,
+                ExceptionMessages::InclusiveBound,
+                static_cast<unsigned long>(channelData->length()),
+                ExceptionMessages::ExclusiveBound));
+
+        return;
+    }
+
+    unsigned count = channelData->length() - startInChannel;
+    count = std::min(destination->length(), count);
+
+    const float* src = channelData->data();
+    float* dst = destination->data();
+
+    ASSERT(src);
+    ASSERT(dst);
+
+    memcpy(dst, src + startInChannel, count * sizeof(*src));
+}
+
+void AudioBuffer::copyToChannel(DOMFloat32Array* source, long channelNumber, ExceptionState& exceptionState)
+{
+    return copyToChannel(source, channelNumber, 0, exceptionState);
+}
+
+void AudioBuffer::copyToChannel(DOMFloat32Array* source, long channelNumber, unsigned long startInChannel, ExceptionState& exceptionState)
+{
+    if (!source) {
+        exceptionState.throwDOMException(
+            TypeMismatchError,
+            ExceptionMessages::argumentNullOrIncorrectType(
+                1,
+                "Float32Array"));
+        return;
+    }
+
+    if (channelNumber < 0 || channelNumber >= static_cast<long>(m_channels.size())) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "channelNumber",
+                channelNumber,
+                1L,
+                ExceptionMessages::InclusiveBound,
+                static_cast<long>(m_channels.size()),
+                ExceptionMessages::InclusiveBound));
+        return;
+    }
+
+    DOMFloat32Array* channelData = m_channels[channelNumber].get();
+
+    if (startInChannel >= channelData->length()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "startInChannel",
+                startInChannel,
+                0UL,
+                ExceptionMessages::InclusiveBound,
+                static_cast<unsigned long>(channelData->length()),
+                ExceptionMessages::ExclusiveBound));
+
+        return;
+    }
+
+    unsigned count = channelData->length() - startInChannel;
+    count = std::min(source->length(), count);
+
+    const float* src = source->data();
+    float* dst = channelData->data();
+
+    ASSERT(src);
+    ASSERT(dst);
+
+    memcpy(dst + startInChannel, src, count * sizeof(*dst));
+}
+
 void AudioBuffer::zero()
 {
     for (unsigned i = 0; i < m_channels.size(); ++i) {
