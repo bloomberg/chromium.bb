@@ -89,18 +89,12 @@ class LogoutButton : public TrayPopupLabelButton {
                const base::string16& text,
                bool placeholder)
       : TrayPopupLabelButton(listener, text), placeholder_(placeholder) {
-    SetEnabled(!placeholder_);
+    SetVisible(!placeholder_);
   }
 
   ~LogoutButton() override {}
 
  private:
-  void Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) override {
-    // Just skip paint if this button used as a placeholder.
-    if (!placeholder_)
-      TrayPopupLabelButton::Paint(canvas, cull_set);
-  }
-
   bool placeholder_;
   DISALLOW_COPY_AND_ASSIGN(LogoutButton);
 };
