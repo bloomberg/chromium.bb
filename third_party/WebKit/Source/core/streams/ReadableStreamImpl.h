@@ -86,9 +86,14 @@ public:
 
     class DefaultStrategy : public Strategy {
     public:
-        ~DefaultStrategy() override { }
         size_t size(const typename ChunkTypeTraits::PassType& chunk, ReadableStream*) override { return 1; }
         bool shouldApplyBackpressure(size_t totalQueueSize, ReadableStream*) override { return totalQueueSize > 1; }
+    };
+
+    class StrictStrategy : public Strategy {
+    public:
+        size_t size(const typename ChunkTypeTraits::PassType& chunk, ReadableStream*) override { return 1; }
+        bool shouldApplyBackpressure(size_t totalQueueSize, ReadableStream*) override { return true; }
     };
 
     ReadableStreamImpl(ExecutionContext* executionContext, UnderlyingSource* source)
@@ -189,7 +194,9 @@ ScriptPromise ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState
     ASSERT(stateInternal() == Readable);
     if (m_queue.isEmpty()) {
         m_pendingReads.append(ScriptPromiseResolver::create(scriptState));
-        return m_pendingReads.last()->promise();
+        ScriptPromise promise = m_pendingReads.last()->promise();
+        readInternalPostAction();
+        return promise;
     }
 
     auto pair = m_queue.takeFirst();

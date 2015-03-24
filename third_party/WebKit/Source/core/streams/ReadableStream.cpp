@@ -156,9 +156,19 @@ void ReadableStream::callPullIfNeeded()
         return;
 
     bool shouldApplyBackpressure = this->shouldApplyBackpressure();
-    // this->shouldApplyBackpressure may call this->error().
-    if (shouldApplyBackpressure || m_state == Errored)
+    if (m_state == Errored) {
+        // this->shouldApplyBackpressure may call this->error().
         return;
+    }
+
+    // Note: We call |pull| if |hasPendingReads| returns true. This is not yet
+    // specified, but we need this for the fetch implementation. Because
+    // it is the only practical customer, it should be no problem for now.
+    // We need to propose this behavior to the spec.
+    if (!hasPendingReads() && shouldApplyBackpressure) {
+        // No pull is needed.
+        return;
+    }
     m_isPulling = true;
     m_source->pullSource();
 }

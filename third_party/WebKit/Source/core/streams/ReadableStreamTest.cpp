@@ -547,4 +547,61 @@ TEST_F(ReadableStreamTest, GetErroredReader)
     EXPECT_EQ("SyntaxError: some error", onRejected);
 }
 
+TEST_F(ReadableStreamTest, StrictStrategy)
+{
+    Checkpoint checkpoint;
+    {
+        InSequence s;
+        EXPECT_CALL(checkpoint, Call(0));
+        EXPECT_CALL(checkpoint, Call(1));
+        EXPECT_CALL(*m_underlyingSource, pullSource());
+        EXPECT_CALL(checkpoint, Call(2));
+        EXPECT_CALL(checkpoint, Call(3));
+        EXPECT_CALL(*m_underlyingSource, pullSource());
+        EXPECT_CALL(checkpoint, Call(4));
+        EXPECT_CALL(checkpoint, Call(5));
+        EXPECT_CALL(checkpoint, Call(6));
+        EXPECT_CALL(checkpoint, Call(7));
+        EXPECT_CALL(checkpoint, Call(8));
+        EXPECT_CALL(checkpoint, Call(9));
+        EXPECT_CALL(*m_underlyingSource, pullSource());
+    }
+    StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource, new StringStream::StrictStrategy);
+    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
+
+    checkpoint.Call(0);
+    stream->didSourceStart();
+
+    checkpoint.Call(1);
+    EXPECT_FALSE(stream->isPulling());
+    reader->read(scriptState());
+    EXPECT_TRUE(stream->isPulling());
+    checkpoint.Call(2);
+    stream->enqueue("hello");
+    EXPECT_FALSE(stream->isPulling());
+    checkpoint.Call(3);
+    reader->read(scriptState());
+    EXPECT_TRUE(stream->isPulling());
+    checkpoint.Call(4);
+    reader->read(scriptState());
+    EXPECT_TRUE(stream->isPulling());
+    checkpoint.Call(5);
+    stream->enqueue("hello");
+    EXPECT_FALSE(stream->isPulling());
+    checkpoint.Call(6);
+    stream->enqueue("hello");
+    EXPECT_FALSE(stream->isPulling());
+    checkpoint.Call(7);
+    stream->enqueue("hello");
+    EXPECT_FALSE(stream->isPulling());
+    checkpoint.Call(8);
+    reader->read(scriptState());
+    EXPECT_FALSE(stream->isPulling());
+    checkpoint.Call(9);
+    reader->read(scriptState());
+    EXPECT_TRUE(stream->isPulling());
+
+    stream->error(DOMException::create(AbortError, "done"));
+}
+
 } // namespace blink
