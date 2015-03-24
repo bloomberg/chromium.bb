@@ -18,13 +18,14 @@
  * fontSize: Font size to use for the iframes, in px.
  * tileWidth: The width of each suggestion tile, in px.
  * tileMargin: Spacing between successive tiles, in px.
- * titleColor: The RRGGBBAA color of title text.
- * titleColorAgainstDark: The RRGGBBAA color of title text against a dark theme.
+ * titleColor: The 4-component color of title text.
+ * titleColorAgainstDark: The 4-component color of title text against a dark
+ *   theme.
  * titleTextAlign: (Optional) The alignment of title text. If unspecified, the
  *   default value is 'center'.
  * titleTextFade: (Optional) The number of pixels beyond which title
  *   text begins to fade. This overrides the default ellipsis style.
- * thumbnailTextColor: The RRGGBBAA color that thumbnail iframe may use to
+ * thumbnailTextColor: The 4-component color that thumbnail iframe may use to
  *   display text message in place of missing thumbnail.
  * thumbnailFallback: (Optional) A value in THUMBNAIL_FALLBACK to specify the
  *   thumbnail fallback strategy. If unassigned, then the thumbnail.html
@@ -50,10 +51,10 @@ var NTP_DESIGN = {
   fontSize: 12,
   tileWidth: 156,
   tileMargin: 16,
-  titleColor: '323232ff',
-  titleColorAgainstDark: 'd2d2d2ff',
+  titleColor: [50, 50, 50, 255],
+  titleColorAgainstDark: [210, 210, 210, 255],
   titleTextAlign: 'inherit',
   titleTextFade: 122 - 36,  // 112px wide title with 32 pixel fade at end.
-  thumbnailTextColor: '323232ff',  // Unused.
+  thumbnailTextColor: [50, 50, 50, 255],
   thumbnailFallback: THUMBNAIL_FALLBACK.DOT
 };

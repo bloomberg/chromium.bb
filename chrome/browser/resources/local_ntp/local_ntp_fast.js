@@ -241,9 +241,9 @@ function renderTheme() {
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
-    titleColor = convertToRRGGBBAAColor(info.textColorRgba);
+    themeinfo.tileTitleColor = info.textColorRgba;
   } else if (isThemeDark) {
-    NTP_DESIGN.titleColorAgainstDark;
+    titleColor = NTP_DESIGN.titleColorAgainstDark;
   }
   themeinfo.tileTitleColor = convertToRGBAColor(titleColor);
 

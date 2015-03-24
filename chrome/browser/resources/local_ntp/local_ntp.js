@@ -340,15 +340,15 @@ function renderTheme() {
   var isThemeDark = getIsThemeDark(info);
   ntpContents.classList.toggle(CLASSES.DARK, isThemeDark);
   if (!info) {
-    titleColor = NTP_DESIGN.titleColor;
+    titleColor = convertToRRGGBBAAColor(NTP_DESIGN.titleColor);
     return;
   }
 
   if (!info.usingDefaultTheme && info.textColorRgba) {
     titleColor = convertToRRGGBBAAColor(info.textColorRgba);
   } else {
-    titleColor = isThemeDark ?
-        NTP_DESIGN.titleColorAgainstDark : NTP_DESIGN.titleColor;
+    titleColor = convertToRRGGBBAAColor(isThemeDark ?
+        NTP_DESIGN.titleColorAgainstDark : NTP_DESIGN.titleColor);
   }
 
   var background = [convertToRGBAColor(info.backgroundColorRgba),
@@ -646,11 +646,12 @@ function getMostVisitedTitleIframeUrl(rid, position) {
 function getMostVisitedThumbnailIframeUrl(rid, position) {
   var url = 'chrome-search://most-visited/' +
       encodeURIComponent(MOST_VISITED_THUMBNAIL_IFRAME);
+  var colorString = convertToRRGGBBAAColor(NTP_DESIGN.thumbnailTextColor);
   var params = [
       'rid=' + encodeURIComponent(rid),
       'f=' + encodeURIComponent(NTP_DESIGN.fontFamily),
       'fs=' + encodeURIComponent(NTP_DESIGN.fontSize),
-      'c=' + encodeURIComponent(NTP_DESIGN.thumbnailTextColor),
+      'c=' + encodeURIComponent(colorString),
       'pos=' + encodeURIComponent(position)];
   if (NTP_DESIGN.thumbnailFallback)
     params.push('etfb=1');
