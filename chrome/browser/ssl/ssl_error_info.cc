@@ -211,10 +211,10 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
 }
 
 // static
-int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
-                                         net::CertStatus cert_status,
-                                         const GURL& url,
-                                         std::vector<SSLErrorInfo>* errors) {
+void SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
+                                          net::CertStatus cert_status,
+                                          const GURL& url,
+                                          std::vector<SSLErrorInfo>* errors) {
   const net::CertStatus kErrorFlags[] = {
       net::CERT_STATUS_COMMON_NAME_INVALID,
       net::CERT_STATUS_DATE_INVALID,
@@ -245,10 +245,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
   DCHECK(arraysize(kErrorFlags) == arraysize(kErrorTypes));
 
   scoped_refptr<net::X509Certificate> cert = NULL;
-  int count = 0;
   for (size_t i = 0; i < arraysize(kErrorFlags); ++i) {
     if (cert_status & kErrorFlags[i]) {
-      count++;
       if (!cert.get()) {
         bool r = content::CertStore::GetInstance()->RetrieveCert(
             cert_id, &cert);
@@ -260,5 +258,4 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
       }
     }
   }
-  return count;
 }
