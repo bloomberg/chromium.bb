@@ -21,19 +21,20 @@ if test -z "$BACKEND"; then
 	BACKEND=headless-backend.so
 fi
 
-BACKEND=$abs_builddir/.libs/$BACKEND
-SHELL_PLUGIN=$abs_builddir/.libs/desktop-shell.so
-TEST_PLUGIN=$abs_builddir/.libs/weston-test.so
-XWAYLAND_PLUGIN=$abs_builddir/.libs/xwayland.so
+MODDIR=$abs_builddir/.libs
+
+SHELL_PLUGIN=$MODDIR/desktop-shell.so
+TEST_PLUGIN=$MODDIR/weston-test.so
+XWAYLAND_PLUGIN=$MODDIR/xwayland.so
 
 case $TESTNAME in
 	*.la|*.so)
 		WESTON_BUILD_DIR=$abs_builddir \
-		$WESTON --backend=$BACKEND \
+		$WESTON --backend=$MODDIR/$BACKEND \
 			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-$(basename $TESTNAME) \
-			--modules=$abs_builddir/.libs/${TESTNAME/.la/.so},$XWAYLAND_PLUGIN \
+			--modules=$MODDIR/${TESTNAME/.la/.so},$XWAYLAND_PLUGIN \
 			--log="$SERVERLOG" \
 			&> "$OUTLOG"
 		;;
@@ -41,7 +42,7 @@ case $TESTNAME in
 		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TESTNAME $WESTON \
 			--socket=test-$(basename $TESTNAME) \
-			--backend=$BACKEND \
+			--backend=$MODDIR/$BACKEND \
 			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--log="$SERVERLOG" \
