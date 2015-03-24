@@ -88,8 +88,6 @@ remoting.AppRemoting.prototype.init = function() {
   this.contextMenu_ = new remoting.ApplicationContextMenu(adapter);
   this.keyboardLayoutsMenu_ = new remoting.KeyboardLayoutsMenu(adapter);
   this.windowActivationMenu_ = new remoting.WindowActivationMenu(adapter);
-
-  remoting.LoadingWindow.show();
 };
 
 /**
@@ -102,6 +100,8 @@ remoting.AppRemoting.prototype.init = function() {
  *     start-up.
  */
 remoting.AppRemoting.prototype.start = function(connector, token) {
+  remoting.LoadingWindow.show();
+
   /** @type {remoting.AppRemoting} */
   var that = this;
 

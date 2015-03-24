@@ -130,7 +130,6 @@
     ],
     # Auth (Google account) JavaScript files.
     'remoting_webapp_js_auth_google_files': [
-      'webapp/base/js/auth_dialog.js',
       'webapp/base/js/auth_init.js',
       'webapp/crd/js/identity.js',
       'webapp/crd/js/oauth2.js',
@@ -273,6 +272,7 @@
     # The CRD-specific JavaScript files required by main.html.
     'remoting_webapp_crd_main_html_all_js_files': [
       '<@(remoting_webapp_shared_main_html_js_files)',
+      'webapp/crd/js/crd_auth_dialog.js',
       'webapp/crd/js/crd_connect.js',
       'webapp/crd/js/crd_event_handlers.js',
       'webapp/crd/js/crd_main.js',
@@ -284,8 +284,8 @@
     # These template files are used to construct main.html.
     'remoting_webapp_template_files': [
       'webapp/base/html/client_plugin.html',
-      'webapp/base/html/dialog_auth.html',
       'webapp/crd/html/butter_bar.html',
+      'webapp/crd/html/dialog_auth.html',
       'webapp/crd/html/dialog_client_connect_failed.html',
       'webapp/crd/html/dialog_client_connecting.html',
       'webapp/crd/html/dialog_client_host_needs_upgrade.html',

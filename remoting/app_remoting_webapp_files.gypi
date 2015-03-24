@@ -40,7 +40,6 @@
       '<(DEPTH)/remoting/webapp/app_remoting/html/template_lg.html',
     'ar_main_template_files': [
       'webapp/base/html/client_plugin.html',
-      'webapp/base/html/dialog_auth.html',
       'webapp/app_remoting/html/context_menu.html',
       'webapp/app_remoting/html/idle_dialog.html',
     ],
@@ -48,6 +47,7 @@
       'webapp/app_remoting/js/application_context_menu.js',
       'webapp/app_remoting/js/app_connected_view.js',
       'webapp/app_remoting/js/app_remoting.js',
+      'webapp/app_remoting/js/ar_auth_dialog.js',
       'webapp/app_remoting/js/ar_main.js',
       'webapp/app_remoting/js/context_menu_adapter.js',
       'webapp/app_remoting/js/context_menu_chrome.js',
@@ -59,7 +59,6 @@
       'webapp/app_remoting/js/submenu_manager.js',
       'webapp/app_remoting/js/window_activation_menu.js',
       'webapp/base/js/application.js',
-      'webapp/base/js/auth_dialog.js',
       'webapp/base/js/base.js',
       'webapp/base/js/message_window_helper.js',
       'webapp/base/js/message_window_manager.js',
