@@ -80,22 +80,22 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Updates the avatar button using the old or new UI based on the BrowserView
   // type, and the presence of the --enable-new-avatar-menu flag. Calls either
-  // UpdateAvatarInfo() or UpdateNewStyleAvatar() accordingly.
+  // UpdateOldAvatarButton() or UpdateNewAvatarButtonImpl() accordingly.
   void UpdateAvatar();
 
   // Updates the title and icon of the old avatar button.
-  void UpdateAvatarInfo();
+  void UpdateOldAvatarButton();
 
   // Updates the avatar button displayed in the caption area by calling
-  // UpdateNewStyleAvatarInfo() with an implementation specific |listener|
+  // UpdateNewAvatarButton() with an implementation specific |listener|
   // and button |style|.
-  virtual void UpdateNewStyleAvatar() = 0;
+  virtual void UpdateNewAvatarButtonImpl() = 0;
 
   // Updates the title of the avatar button displayed in the caption area.
   // The button uses |style| to match the browser window style and notifies
   // |listener| when it is clicked.
-  void UpdateNewStyleAvatarInfo(views::ButtonListener* listener,
-                                const NewAvatarButton::AvatarButtonStyle style);
+  void UpdateNewAvatarButton(views::ButtonListener* listener,
+                             const NewAvatarButton::AvatarButtonStyle style);
 
  private:
   // Overriden from ProfileInfoCacheObserver.
@@ -103,8 +103,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
-  void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override;
 
   // Draws a taskbar icon if avatars are enabled, erases it otherwise.
   void UpdateTaskbarDecoration();

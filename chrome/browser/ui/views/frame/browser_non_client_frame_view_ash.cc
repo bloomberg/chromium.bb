@@ -468,8 +468,8 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
 // BrowserNonClientFrameViewAsh, protected:
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewAsh::UpdateNewStyleAvatar() {
-  UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
+void BrowserNonClientFrameViewAsh::UpdateNewAvatarButtonImpl() {
+  UpdateNewAvatarButton(this, NewAvatarButton::NATIVE_BUTTON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

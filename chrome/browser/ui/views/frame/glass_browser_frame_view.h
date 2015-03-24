@@ -48,7 +48,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
                              const ui::Event& event) override;
 
   // BrowserNonClientFrameView:
-  void UpdateNewStyleAvatar() override;
+  void UpdateNewAvatarButtonImpl() override;
 
  private:
   // views::NonClientFrameView:

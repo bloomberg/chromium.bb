@@ -70,12 +70,12 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
   if (!is_visible)
     return;
 
-  // The first time UpdateAvatarInfo() is called the window is not visible so
-  // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
-  // once the window is visible.
+  // The first time UpdateOldAvatarButton() is called the window is not visible
+  // so DrawTaskBarDecoration() has no effect. Therefore we need to call it
+  // again once the window is visible.
   if (!browser_view_->IsRegularOrGuestSession() ||
       !switches::IsNewAvatarMenu()) {
-    UpdateAvatarInfo();
+    UpdateOldAvatarButton();
   }
 
   // Make sure the task bar icon is correctly updated call
@@ -175,12 +175,12 @@ int BrowserNonClientFrameView::GetTopAreaHeight() const {
 
 void BrowserNonClientFrameView::UpdateAvatar() {
   if (browser_view()->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
-    UpdateNewStyleAvatar();
+    UpdateNewAvatarButtonImpl();
   else
-    UpdateAvatarInfo();
+    UpdateOldAvatarButton();
 }
 
-void BrowserNonClientFrameView::UpdateAvatarInfo() {
+void BrowserNonClientFrameView::UpdateOldAvatarButton() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -237,7 +237,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
 }
 
-void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
+void BrowserNonClientFrameView::UpdateNewAvatarButton(
     views::ButtonListener* listener,
     const NewAvatarButton::AvatarButtonStyle style) {
   DCHECK(switches::IsNewAvatarMenu());
@@ -277,13 +277,7 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
   UpdateTaskbarDecoration();
   // Profile avatars are only displayed in the old UI or incognito.
   if (browser_view()->IsOffTheRecord() || !switches::IsNewAvatarMenu())
-    UpdateAvatarInfo();
-}
-
-void BrowserNonClientFrameView::OnProfileNameChanged(
-    const base::FilePath& profile_path,
-    const base::string16& old_profile_name) {
-  UpdateAvatar();
+    UpdateOldAvatarButton();
 }
 
 void BrowserNonClientFrameView::UpdateTaskbarDecoration() {

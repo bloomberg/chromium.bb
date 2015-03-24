@@ -98,7 +98,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   bool ShouldPaintAsThemed() const override;
-  void UpdateNewStyleAvatar() override;
+  void UpdateNewAvatarButtonImpl() override;
 
  private:
   // views::NonClientFrameView:

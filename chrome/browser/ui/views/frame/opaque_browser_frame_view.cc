@@ -485,8 +485,8 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
          platform_observer_->IsUsingSystemTheme();
 }
 
-void OpaqueBrowserFrameView::UpdateNewStyleAvatar() {
-  UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
+void OpaqueBrowserFrameView::UpdateNewAvatarButtonImpl() {
+  UpdateNewAvatarButton(this, NewAvatarButton::THEMED_BUTTON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

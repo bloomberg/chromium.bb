@@ -300,8 +300,8 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
 }
 
 // BrowserNonClientFrameView:
-void GlassBrowserFrameView::UpdateNewStyleAvatar() {
-  UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
+void GlassBrowserFrameView::UpdateNewAvatarButtonImpl() {
+  UpdateNewAvatarButton(this, NewAvatarButton::NATIVE_BUTTON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
