@@ -137,7 +137,6 @@ class WorkerSharedTimer : public SharedTimer {
 public:
     explicit WorkerSharedTimer(WorkerThread* workerThread)
         : m_workerThread(workerThread)
-        , m_nextFireTime(0.0)
         , m_running(false)
     { }
 
@@ -145,8 +144,6 @@ public:
     virtual void setFiredFunction(SharedTimerFunction func)
     {
         m_sharedTimerFunction = func;
-        if (!m_sharedTimerFunction)
-            m_nextFireTime = 0.0;
     }
 
     virtual void setFireInterval(double interval)
@@ -159,11 +156,9 @@ public:
 
         if (delay < 0) {
             delay = 0;
-            m_nextFireTime = 0.0;
         }
 
         m_running = true;
-        m_nextFireTime = currentTime() + interval;
 
         if (m_lastQueuedTask.get())
             m_lastQueuedTask->cancelTask();
@@ -180,8 +175,6 @@ public:
         m_lastQueuedTask = nullptr;
     }
 
-    double nextFireTime() { return m_nextFireTime; }
-
 private:
     void OnTimeout()
     {
@@ -195,7 +188,6 @@ private:
 
     WorkerThread* m_workerThread;
     SharedTimerFunction m_sharedTimerFunction;
-    double m_nextFireTime;
     bool m_running;
 
     // The task to run OnTimeout, if any. While OnTimeout resets
@@ -334,8 +326,7 @@ void WorkerThread::initialize()
         m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
 
-        m_sharedTimer = adoptPtr(new WorkerSharedTimer(this));
-        PlatformThreadData::current().threadTimers().setSharedTimer(m_sharedTimer.get());
+        PlatformThreadData::current().threadTimers().setSharedTimer(adoptPtr(new WorkerSharedTimer(this)));
     }
 
     // The corresponding call to stopRunLoop() is in ~WorkerScriptController().
@@ -521,7 +512,8 @@ void WorkerThread::idleHandler()
 
     // Do a script engine idle notification if the next event is distant enough.
     const double kMinIdleTimespan = 0.3;
-    if (m_sharedTimer->nextFireTime() == 0.0 || m_sharedTimer->nextFireTime() > currentTime() + kMinIdleTimespan) {
+    const double nextFireTime = PlatformThreadData::current().threadTimers().nextFireTime();
+    if (nextFireTime == 0.0 || nextFireTime > currentTime() + kMinIdleTimespan) {
         bool hasMoreWork = !isolate()->IdleNotification(1000);
         if (hasMoreWork)
             delay = kShortIdleHandlerDelayMs;

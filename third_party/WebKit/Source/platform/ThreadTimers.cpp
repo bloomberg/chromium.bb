@@ -45,10 +45,9 @@ static const double maxDurationOfFiringTimers = 0.050;
 // Timers are created, started and fired on the same thread, and each thread has its own ThreadTimers
 // copy to keep the heap and a set of currently firing timers.
 
-static MainThreadSharedTimer* mainThreadSharedTimer()
+static PassOwnPtr<MainThreadSharedTimer> mainThreadSharedTimer()
 {
-    static MainThreadSharedTimer* timer = new MainThreadSharedTimer;
-    return timer;
+    return adoptPtr(new MainThreadSharedTimer);
 }
 
 ThreadTimers::ThreadTimers()
@@ -62,7 +61,7 @@ ThreadTimers::ThreadTimers()
 
 // A worker thread may initialize SharedTimer after some timers are created.
 // Also, SharedTimer can be replaced with 0 before all timers are destroyed.
-void ThreadTimers::setSharedTimer(SharedTimer* sharedTimer)
+void ThreadTimers::setSharedTimer(PassOwnPtr<SharedTimer> sharedTimer)
 {
     if (m_sharedTimer) {
         m_sharedTimer->setFiredFunction(0);
@@ -72,7 +71,7 @@ void ThreadTimers::setSharedTimer(SharedTimer* sharedTimer)
 
     m_sharedTimer = sharedTimer;
 
-    if (sharedTimer) {
+    if (m_sharedTimer) {
         m_sharedTimer->setFiredFunction(ThreadTimers::sharedTimerFired);
         updateSharedTimer();
     }

@@ -32,7 +32,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "platform/SharedTimer.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
@@ -136,7 +135,6 @@ private:
     void terminateV8Execution();
 
     bool m_terminated;
-    OwnPtr<WorkerSharedTimer> m_sharedTimer;
     MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
