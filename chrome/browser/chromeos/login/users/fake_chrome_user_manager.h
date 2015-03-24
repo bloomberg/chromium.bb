@@ -59,6 +59,11 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   void SessionStarted() override;
   void RemoveUser(const std::string& email,
                   user_manager::RemoveUserDelegate* delegate) override;
+  bool FindKnownUserPrefs(const user_manager::UserID& user_id,
+                          const base::DictionaryValue** out_value) override;
+  void UpdateKnownUserPrefs(const user_manager::UserID& user_id,
+                            const base::DictionaryValue& values,
+                            bool clear) override;
 
   void set_owner_email(const std::string& owner_email) {
     owner_email_ = owner_email;

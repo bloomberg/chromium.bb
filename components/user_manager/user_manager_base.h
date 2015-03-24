@@ -105,6 +105,11 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       UserManager::UserSessionStateObserver* obs) override;
   void NotifyLocalStateChanged() override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
+  bool FindKnownUserPrefs(const UserID& user_id,
+                          const base::DictionaryValue** out_value) override;
+  void UpdateKnownUserPrefs(const UserID& user_id,
+                            const base::DictionaryValue& values,
+                            bool clear) override;
 
   virtual void SetIsCurrentUserNew(bool is_new);
 
@@ -201,21 +206,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Removes data stored or cached outside the user's cryptohome (wallpaper,
   // avatar, OAuth token status, display name, display email).
   virtual void RemoveNonCryptohomeData(const std::string& user_id);
-
-  // Methods for storage/retrieval of per-user properties in Local State.
-
-  // Performs a lookup of properties associated with |user_id|. If found,
-  // returns |true| and fills |out_value|. |out_value| can be NULL, if
-  // only existence check is required.
-  bool FindKnowUserPrefs(const UserID& user_id,
-                         const base::DictionaryValue** out_value);
-
-  // Updates (or creates) properties associated with |user_id| based
-  // on |values|. |clear| defines if existing properties are cleared (|true|)
-  // or if it is just a incremental update (|false|).
-  void UpdateKnowUserPrefs(const UserID& user_id,
-                           const base::DictionaryValue& values,
-                           bool clear);
 
   // Check for a particular user type.
 
@@ -343,7 +333,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                              scoped_ptr<std::string> resolved_locale);
 
   // Removes all user preferences associated with |user_id|.
-  void RemoveKnowUserPrefs(const UserID& user_id);
+  void RemoveKnownUserPrefs(const UserID& user_id);
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_;

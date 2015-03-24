@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "components/user_manager/user_id.h"
 #include "components/user_manager/user_manager_export.h"
 
 namespace gfx {
@@ -35,7 +36,7 @@ class USER_MANAGER_EXPORT UserInfo {
 
   // Gets the user id (sanitized email address) for the user.
   // The function would return something like "foobar@mock.com".
-  virtual std::string GetUserID() const = 0;
+  virtual UserID GetUserID() const = 0;
 
   // Gets the avatar image for the user.
   virtual const gfx::ImageSkia& GetImage() const = 0;

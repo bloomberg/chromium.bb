@@ -6,6 +6,7 @@ component("user_manager") {
   sources = [
     "empty_user_info.cc",
     "empty_user_info.h",
+    "user_id.h",
     "user_info.cc",
     "user_info.h",
     "user_info_impl.cc",
@@ -26,7 +27,6 @@ component("user_manager") {
       "remove_user_delegate.h",
       "user.cc",
       "user.h",
-      "user_id.h",
       "user_image/default_user_images.cc",
       "user_image/default_user_images.h",
       "user_image/user_image.cc",

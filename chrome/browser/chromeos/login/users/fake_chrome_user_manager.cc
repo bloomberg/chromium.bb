@@ -173,4 +173,16 @@ UserFlow* FakeChromeUserManager::GetDefaultUserFlow() const {
   return default_flow_.get();
 }
 
+bool FakeChromeUserManager::FindKnownUserPrefs(
+    const user_manager::UserID& user_id,
+    const base::DictionaryValue** out_value) {
+  return false;
+}
+
+void FakeChromeUserManager::UpdateKnownUserPrefs(
+    const user_manager::UserID& user_id,
+    const base::DictionaryValue& values,
+    bool clear) {
+}
+
 }  // namespace chromeos

@@ -971,14 +971,14 @@ void UserManagerBase::RemoveNonCryptohomeData(const std::string& user_id) {
   DictionaryPrefUpdate prefs_force_online_update(prefs, kUserForceOnlineSignin);
   prefs_force_online_update->RemoveWithoutPathExpansion(user_id, NULL);
 
-  RemoveKnowUserPrefs(user_id);
+  RemoveKnownUserPrefs(user_id);
 
   std::string last_active_user = GetLocalState()->GetString(kLastActiveUser);
   if (user_id == last_active_user)
     GetLocalState()->SetString(kLastActiveUser, std::string());
 }
 
-bool UserManagerBase::FindKnowUserPrefs(
+bool UserManagerBase::FindKnownUserPrefs(
     const UserID& user_id,
     const base::DictionaryValue** out_value) {
   PrefService* local_state = GetLocalState();
@@ -995,9 +995,9 @@ bool UserManagerBase::FindKnowUserPrefs(
   return false;
 }
 
-void UserManagerBase::UpdateKnowUserPrefs(const UserID& user_id,
-                                          const base::DictionaryValue& values,
-                                          bool clear) {
+void UserManagerBase::UpdateKnownUserPrefs(const UserID& user_id,
+                                           const base::DictionaryValue& values,
+                                           bool clear) {
   ListPrefUpdate update(GetLocalState(), kKnownUsers);
   for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* element = nullptr;
@@ -1036,7 +1036,7 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
   return user;
 }
 
-void UserManagerBase::RemoveKnowUserPrefs(const UserID& user_id) {
+void UserManagerBase::RemoveKnownUserPrefs(const UserID& user_id) {
   ListPrefUpdate update(GetLocalState(), kKnownUsers);
   for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* element = nullptr;

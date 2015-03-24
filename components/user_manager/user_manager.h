@@ -8,8 +8,13 @@
 #include <string>
 
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_id.h"
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace chromeos {
 class ScopedUserManagerEnabler;
@@ -305,6 +310,21 @@ class USER_MANAGER_EXPORT UserManager {
 
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;
+
+  // Methods for storage/retrieval of per-user properties in Local State.
+
+  // Performs a lookup of properties associated with |user_id|. If found,
+  // returns |true| and fills |out_value|. |out_value| can be NULL, if
+  // only existence check is required.
+  virtual bool FindKnownUserPrefs(const UserID& user_id,
+                                  const base::DictionaryValue** out_value) = 0;
+
+  // Updates (or creates) properties associated with |user_id| based
+  // on |values|. |clear| defines if existing properties are cleared (|true|)
+  // or if it is just a incremental update (|false|).
+  virtual void UpdateKnownUserPrefs(const UserID& user_id,
+                                    const base::DictionaryValue& values,
+                                    bool clear) = 0;
 
  protected:
   // Sets UserManager instance.

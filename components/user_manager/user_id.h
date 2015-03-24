@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_USER_MANAGER_USER_ID_H_
 #define COMPONENTS_USER_MANAGER_USER_ID_H_
 
+#include <string>
+
 namespace user_manager {
 
 // Type that contains enough information to identify user on ChromeOS.

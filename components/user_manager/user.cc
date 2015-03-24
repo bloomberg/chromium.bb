@@ -118,7 +118,7 @@ const gfx::ImageSkia& User::GetImage() const {
   return user_image_.image();
 }
 
-std::string User::GetUserID() const {
+UserID User::GetUserID() const {
   return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email()));
 }
 
