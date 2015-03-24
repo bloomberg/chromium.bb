@@ -465,6 +465,14 @@ message AccessibilitySettingsProto {
   // shown. Users can enable or disable the on-screen keyboard anytime and its
   // status on the login screen is persisted between users.
   optional bool login_screen_default_virtual_keyboard_enabled = 5;
+
+  // If this policy is not configured or set to a blank string,
+  // no autocomplete option during user sign-in flow will be shown.
+  // If this policy is set to a string representing a domain name, an
+  // autocomplete option during user sign-in will be shown allowing the user
+  // to type in only his user name without the domain name extension. The user
+  // will be able to overwrite this domain name extension.
+  optional string login_screen_domain_auto_complete = 6;
 }
 
 message SupervisedUsersSettingsProto {

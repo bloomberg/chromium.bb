@@ -48041,6 +48041,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="294" label="How often the monitoring heartbeats are sent."/>
   <int value="295" label="Captive portal authentication ignores proxy"/>
   <int value="296" label="Set Apps and Extensions cache size (in bytes)"/>
+  <int value="297"
+      label="Show an autocomplete option during user sign-in flow"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
