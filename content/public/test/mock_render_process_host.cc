@@ -172,6 +172,9 @@ void MockRenderProcessHost::AddPendingView() {
 void MockRenderProcessHost::RemovePendingView() {
 }
 
+void MockRenderProcessHost::SetSuddenTerminationAllowed(bool allowed) {
+}
+
 bool MockRenderProcessHost::SuddenTerminationAllowed() const {
   return true;
 }

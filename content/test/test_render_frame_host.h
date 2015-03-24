@@ -114,12 +114,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // redirect step is ignored.
   void PrepareForCommitWithServerRedirect(const GURL& redirect_url);
 
-  // Simulate receiving a FrameHostMsg_BeforeUnloadHandlersPresent.
-  void SendBeforeUnloadHandlersPresent(bool present);
-
-  // Simulate receiving a FrameHostMsg_UnloadHandlersPresent.
-  void SendUnloadHandlersPresent(bool present);
-
  private:
   TestRenderFrameHostCreationObserver child_creation_observer_;
 

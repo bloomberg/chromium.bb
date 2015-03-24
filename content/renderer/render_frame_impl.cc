@@ -3620,23 +3620,6 @@ bool RenderFrameImpl::exitFullscreen() {
   return true;
 }
 
-void RenderFrameImpl::suddenTerminationDisablerChanged(
-    bool present,
-    blink::WebFrameClient::SuddenTerminationDisablerType type) {
-  switch (type) {
-    case blink::WebFrameClient::BeforeUnloadHandler:
-      Send(new FrameHostMsg_BeforeUnloadHandlersPresent(
-          routing_id_, present));
-      break;
-    case blink::WebFrameClient::UnloadHandler:
-      Send(new FrameHostMsg_UnloadHandlersPresent(
-          routing_id_, present));
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 blink::WebPermissionClient* RenderFrameImpl::permissionClient() {
   if (!permission_client_)
     permission_client_.reset(new PermissionManager(GetServiceRegistry()));

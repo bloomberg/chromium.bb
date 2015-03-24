@@ -122,6 +122,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
+  void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() const override;
   IPC::ChannelProxy* GetChannel() override;
   void AddFilter(BrowserMessageFilter* filter) override;
@@ -317,7 +318,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Control message handlers.
   void OnShutdownRequest();
   void OnDumpHandlesDone();
-  void OnSuddenTerminationChanged(bool enabled);
+  void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
   void OnCloseACK(int old_route_id);
@@ -418,12 +419,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The observers watching our lifetime.
   ObserverList<RenderProcessHostObserver> observers_;
 
-  // True if the process can be shut down suddenly. If this is true, then it's
-  // sure that all the RenderFrames in the process can be shutdown suddenly. If
-  // it's false, then specific RenderFrames might still be allowed to be
-  // shutdown suddenly by checking their SuddenTerminationAllowed() flag. This
-  // can occur when a RenderFrame has an unload/beforeUnload event listener
-  // registered but another RenderFrame in the same process doesn't.
+  // True if the process can be shut down suddenly.  If this is true, then we're
+  // sure that all the RenderViews in the process can be shutdown suddenly.  If
+  // it's false, then specific RenderViews might still be allowed to be shutdown
+  // suddenly by checking their SuddenTerminationAllowed() flag.  This can occur
+  // if one WebContents has an unload event listener but another WebContents in
+  // the same process doesn't.
   bool sudden_termination_allowed_;
 
   // Set to true if we shouldn't send input events.  We actually do the

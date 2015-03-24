@@ -59,6 +59,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
+  void SetSuddenTerminationAllowed(bool allowed) override;
   bool SuddenTerminationAllowed() const override;
   BrowserContext* GetBrowserContext() const override;
   bool InSameStoragePartition(StoragePartition* partition) const override;

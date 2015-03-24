@@ -246,6 +246,11 @@ class CONTENT_EXPORT RenderViewHostImpl
                         uint64 upload_position,
                         uint64 upload_size);
 
+  bool SuddenTerminationAllowed() const;
+  void set_sudden_termination_allowed(bool enabled) {
+    sudden_termination_allowed_ = enabled;
+  }
+
   // RenderWidgetHost public overrides.
   void Init() override;
   void Shutdown() override;
@@ -426,6 +431,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // TODO(creis): Move to RenderFrameHost and RenderWidgetHost.
   // See http://crbug.com/418265.
   bool is_waiting_for_close_ack_;
+
+  // True if the render view can be shut down suddenly.
+  bool sudden_termination_allowed_;
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;

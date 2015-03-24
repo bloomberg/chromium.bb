@@ -820,14 +820,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64 /* id */)
 // See the comment in chrome/browser/ui/browser.h for more details.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ToggleFullscreen, bool /* enter_fullscreen */)
 
-// Messages to signal the presence or absence of BeforeUnload or Unload handlers
-// for a frame. |present| is true if there is at least one of the handlers for
-// the frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_BeforeUnloadHandlersPresent,
-                    bool /* present */)
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UnloadHandlersPresent,
-                    bool /* present */)
-
 // Dispatch a load event for this frame in the iframe element of an
 // out-of-process parent frame.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
