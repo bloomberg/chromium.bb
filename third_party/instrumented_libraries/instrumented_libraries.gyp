@@ -94,8 +94,13 @@
               ['msan_track_origins==2', {
                 'archive_name': 'msan-chained-origins-<(_ubuntu_release)',
               }, {
-                'archive_name': 'UNSUPPORTED_CONFIGURATION'
-              }],
+                'conditions': [
+                  ['msan_track_origins==0', {
+                    'archive_name': 'msan-no-origins-<(_ubuntu_release)',
+                  }, {
+                    'archive_name': 'UNSUPPORTED_CONFIGURATION'
+                  }],
+              ]}],
           ]}, {
               'archive_name': 'UNSUPPORTED_CONFIGURATION'
           }],

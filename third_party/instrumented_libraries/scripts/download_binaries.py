@@ -20,6 +20,8 @@ def get_ubuntu_release():
 
 def get_configuration(gyp_defines):
   if re.search(r'\b(msan)=1', gyp_defines):
+    if 'msan_track_origins=0' in gyp_defines:
+      return 'msan-no-origins'
     if 'msan_track_origins=2' in gyp_defines:
       return 'msan-chained-origins'
     if 'msan_track_origins=' not in gyp_defines:
