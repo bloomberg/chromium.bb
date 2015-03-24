@@ -45,6 +45,14 @@ namespaces = [
     'i18n.input.chrome.inputview.layouts.RowsOfNumberpad',
     'i18n.input.chrome.inputview.layouts.SpaceRow',
     'i18n.input.chrome.inputview.layouts.util',
+    'i18n.input.chrome.inputview.layouts.material.CompactSpaceRow',
+    'i18n.input.chrome.inputview.layouts.material.RowsOf101',
+    'i18n.input.chrome.inputview.layouts.material.RowsOf102',
+    'i18n.input.chrome.inputview.layouts.material.RowsOfCompact',
+    'i18n.input.chrome.inputview.layouts.material.RowsOfJP',
+    'i18n.input.chrome.inputview.layouts.material.RowsOfNumberpad',
+    'i18n.input.chrome.inputview.layouts.material.SpaceRow',
+    'i18n.input.chrome.inputview.layouts.material.util',
     'i18n.input.hwt.util'
 ]
 
