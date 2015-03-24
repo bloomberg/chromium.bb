@@ -105,8 +105,6 @@ void CSSTokenizer::consume(unsigned offset)
 
 CSSParserToken CSSTokenizer::whiteSpace(UChar cc)
 {
-    // CSS Tokenization is currently lossy, but we could record
-    // the exact whitespace instead of discarding it here.
     consumeUntilNonWhitespace();
     return CSSParserToken(WhitespaceToken);
 }
@@ -221,8 +219,8 @@ CSSParserToken CSSTokenizer::hyphenMinus(UChar cc)
 CSSParserToken CSSTokenizer::solidus(UChar cc)
 {
     if (consumeIfNext('*')) {
-        // We're intentionally deviating from the spec here, by creating tokens for CSS comments.
-        return consumeUntilCommentEndFound()? CSSParserToken(CommentToken): CSSParserToken(EOFToken);
+        // These get ignored, but we need a value to return.
+        return consumeUntilCommentEndFound() ? CSSParserToken(CommentToken) : CSSParserToken(EOFToken);
     }
 
     return CSSParserToken(DelimiterToken, cc);
