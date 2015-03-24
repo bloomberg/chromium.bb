@@ -59,7 +59,7 @@ public class CardUnmaskPrompt
     private final CheckBox mStoreLocallyCheckbox;
     private final ImageView mStoreLocallyTooltipIcon;
     private PopupWindow mStoreLocallyTooltipPopup;
-    private final ViewGroup mMainContents;
+    private final ViewGroup mControlsContainer;
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
     private final TextView mVerificationView;
@@ -109,7 +109,7 @@ public class CardUnmaskPrompt
         mStoreLocallyCheckbox.setChecked(defaultToStoringLocally);
         mStoreLocallyTooltipIcon = (ImageView) v.findViewById(R.id.store_locally_tooltip_icon);
         mStoreLocallyTooltipIcon.setOnLongClickListener(this);
-        mMainContents = (ViewGroup) v.findViewById(R.id.main_contents);
+        mControlsContainer = (ViewGroup) v.findViewById(R.id.controls_container);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
         mVerificationView = (TextView) v.findViewById(R.id.verification_message);
@@ -295,12 +295,18 @@ public class CardUnmaskPrompt
      */
     private void setOverlayVisibility(int visibility) {
         mVerificationOverlay.setVisibility(visibility);
+        mControlsContainer.setAlpha(1f);
         boolean contentsShowing = visibility == View.GONE;
-        mMainContents.setAlpha(contentsShowing ? 1.0f : 0.15f);
-        ViewCompat.setImportantForAccessibility(mMainContents,
+        if (!contentsShowing) {
+            int durationMs = 250;
+            mVerificationOverlay.setAlpha(0f);
+            mVerificationOverlay.animate().alpha(1f).setDuration(durationMs);
+            mControlsContainer.animate().alpha(0f).setDuration(durationMs);
+        }
+        ViewCompat.setImportantForAccessibility(mControlsContainer,
                 contentsShowing ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
                                 : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
-        mMainContents.setDescendantFocusability(
+        mControlsContainer.setDescendantFocusability(
                 contentsShowing ? ViewGroup.FOCUS_BEFORE_DESCENDANTS
                                 : ViewGroup.FOCUS_BLOCK_DESCENDANTS);
     }

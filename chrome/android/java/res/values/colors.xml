@@ -10,7 +10,7 @@
     <color name="light_normal_color">#5A5A5A</color>
     <color name="light_active_color">#4285F4</color>
     <color name="input_underline_color">#e5e5e5</color>
-    <color name="input_underline_error_color">#db4437</color>
+    <color name="input_underline_error_color">#d32f2f</color>
     <color name="explanation_text_color">#909090</color>
 
     <!-- Infobar colors -->

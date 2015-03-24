@@ -10,26 +10,27 @@
     android:layout_height="wrap_content">
 
     <LinearLayout
-        android:id="@+id/main_contents"
+        android:id="@+id/instructions_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_alignStart="@+id/controls_container"
+        android:layout_alignEnd="@+id/controls_container"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/no_retry_error_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="23dp"
-            android:layout_marginBottom="2dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
             android:paddingTop="12dp"
             android:paddingBottom="15dp"
             android:gravity="start"
             android:textSize="12sp"
-            android:textColor="@color/input_underline_error_color"
-            android:background="#e0e0e0"
+            android:textColor="@android:color/white"
+            android:background="@color/input_underline_error_color"
             android:visibility="gone" />
 
         <TextView
@@ -39,11 +40,20 @@
             android:layout_marginStart="24dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="16dp"
-            android:textSize="16sp"
+            android:layout_marginTop="12dp"
+            android:textSize="12sp"
             android:textColor="@color/explanation_text_color"
             android:lineSpacingMultiplier="1.25"
             android:gravity="start" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/controls_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/instructions_container"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -143,7 +153,7 @@
                 android:layout_marginStart="17dp"
                 android:layout_marginEnd="10dp"
                 android:paddingStart="7dp"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/explanation_text_color"
                 android:text="@string/autofill_card_unmask_prompt_storage_checkbox" />
 
@@ -154,20 +164,19 @@
         android:id="@+id/verification_overlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/main_contents"
-        android:layout_alignBottom="@+id/main_contents"
-        android:layout_alignStart="@+id/main_contents"
-        android:layout_alignEnd="@+id/main_contents"
-        android:orientation="vertical"
+        android:layout_alignTop="@+id/controls_container"
+        android:layout_alignBottom="@+id/controls_container"
+        android:layout_alignStart="@+id/controls_container"
+        android:layout_alignEnd="@+id/controls_container"
+        android:orientation="horizontal"
         android:gravity="center"
         android:visibility="gone">
 
         <ProgressBar
             android:id="@+id/verification_progress_bar"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="30dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            style="@android:style/Widget.Material.Light.ProgressBar.Small"
             android:visibility="gone" />
 
         <!--  TODO(estade): add a real content description for this image. -->
@@ -183,7 +192,8 @@
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:textColor="?attr/colorAccent"
-            android:textSize="20sp" />
+            android:textSize="12sp" />
     </LinearLayout>
 </RelativeLayout>
