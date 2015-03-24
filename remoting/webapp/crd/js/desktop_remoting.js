@@ -194,14 +194,20 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
     connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
   }
 
+  var sessionConnector = remoting.app.getSessionConnector();
   if (connectionInfo.mode() === remoting.DesktopConnectedView.Mode.ME2ME) {
-    var sessionConnector = remoting.app.getSessionConnector();
     if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
       sessionConnector.registerProtocolExtension(
           new remoting.CastExtensionHandler());
     }
     sessionConnector.registerProtocolExtension(
         new remoting.GnubbyAuthHandler());
+  }
+  if (connectionInfo.session().hasCapability(
+          remoting.ClientSession.Capability.VIDEO_RECORDER)) {
+    var recorder = new remoting.VideoFrameRecorder();
+    sessionConnector.registerProtocolExtension(recorder);
+    this.connectedView_.setVideoFrameRecorder(recorder);
   }
 
   if (remoting.pairingRequested) {

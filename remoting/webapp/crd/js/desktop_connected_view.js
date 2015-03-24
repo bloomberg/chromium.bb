@@ -149,11 +149,6 @@ remoting.DesktopConnectedView.prototype.initPlugin_ = function() {
     var sendCadElement = document.getElementById('send-ctrl-alt-del');
     sendCadElement.hidden = true;
   }
-
-  if (this.session_.hasCapability(
-          remoting.ClientSession.Capability.VIDEO_RECORDER)) {
-    this.videoFrameRecorder_ = new remoting.VideoFrameRecorder(this.plugin_);
-  }
 };
 
 /**
@@ -262,6 +257,12 @@ remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
   this.plugin_.injectKeyCombination([0x070046]);
 };
 
+/** @param {remoting.VideoFrameRecorder} recorder */
+remoting.DesktopConnectedView.prototype.setVideoFrameRecorder =
+    function(recorder) {
+  this.videoFrameRecorder_ = recorder;
+};
+
 /**
  * Returns true if the ClientSession can record video frames to a file.
  * @return {boolean}
@@ -288,18 +289,4 @@ remoting.DesktopConnectedView.prototype.startStopRecording = function() {
   if (this.videoFrameRecorder_) {
     this.videoFrameRecorder_.startStopRecording();
   }
-};
-
-/**
- * Handles protocol extension messages.
- * @param {string} type Type of extension message.
- * @param {Object} message The parsed extension message data.
- * @return {boolean} True if the message was recognized, false otherwise.
- */
-remoting.DesktopConnectedView.prototype.handleExtensionMessage =
-    function(type, message) {
-  if (this.videoFrameRecorder_) {
-    return this.videoFrameRecorder_.handleMessage(type, message);
-  }
-  return false;
 };
