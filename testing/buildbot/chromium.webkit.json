@@ -233,6 +233,150 @@
       }
     ]
   },
+  "WebKit Win Oilpan": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Win Oilpan (dbg)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac Oilpan": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac Oilpan (dbg)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Linux Oilpan": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Linux Leak": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Linux Oilpan Leak": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Linux Oilpan (dbg)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
   "Linux ChromiumOS Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
