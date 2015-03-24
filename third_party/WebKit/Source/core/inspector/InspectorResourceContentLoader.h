@@ -18,7 +18,7 @@ class VoidCallback;
 
 class InspectorResourceContentLoader final : public NoBaseWillBeGarbageCollectedFinalized<InspectorResourceContentLoader> {
     WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorResourceContentLoader);
 public:
     explicit InspectorResourceContentLoader(LocalFrame*);
     void ensureResourcesContentLoaded(VoidCallback*);

@@ -63,7 +63,7 @@
 namespace blink {
 
 class EmptyChromeClient : public ChromeClient {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EmptyChromeClient);
 public:
     virtual ~EmptyChromeClient() { }
     virtual void chromeDestroyed() override { }
@@ -156,7 +156,7 @@ public:
 };
 
 class EmptyFrameLoaderClient : public FrameLoaderClient {
-    WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED(EmptyFrameLoaderClient);
 public:
     EmptyFrameLoaderClient() { }
     virtual ~EmptyFrameLoaderClient() {  }
@@ -256,7 +256,7 @@ public:
 };
 
 class EmptySpellCheckerClient : public SpellCheckerClient {
-    WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient); WTF_MAKE_FAST_ALLOCATED(EmptySpellCheckerClient);
 public:
     EmptySpellCheckerClient() { }
     virtual ~EmptySpellCheckerClient() { }
@@ -276,7 +276,7 @@ private:
 };
 
 class EmptyEditorClient final : public EditorClient {
-    WTF_MAKE_NONCOPYABLE(EmptyEditorClient); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EmptyEditorClient); WTF_MAKE_FAST_ALLOCATED(EmptyEditorClient);
 public:
     EmptyEditorClient() { }
     virtual ~EmptyEditorClient() { }
@@ -291,7 +291,7 @@ public:
 };
 
 class EmptyContextMenuClient final : public ContextMenuClient {
-    WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient); WTF_MAKE_FAST_ALLOCATED(EmptyContextMenuClient);
 public:
     EmptyContextMenuClient() { }
     virtual ~EmptyContextMenuClient() {  }
@@ -300,7 +300,7 @@ public:
 };
 
 class EmptyDragClient final : public DragClient {
-    WTF_MAKE_NONCOPYABLE(EmptyDragClient); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EmptyDragClient); WTF_MAKE_FAST_ALLOCATED(EmptyDragClient);
 public:
     EmptyDragClient() { }
     virtual ~EmptyDragClient() {}

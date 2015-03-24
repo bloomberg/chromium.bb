@@ -33,7 +33,7 @@
 namespace blink {
 
 template<typename T> class EventSender {
-    WTF_MAKE_NONCOPYABLE(EventSender); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EventSender); WTF_MAKE_FAST_ALLOCATED(EventSender);
 public:
     explicit EventSender(const AtomicString& eventType);
 

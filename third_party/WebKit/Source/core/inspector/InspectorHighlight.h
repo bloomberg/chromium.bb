@@ -17,7 +17,7 @@ class Color;
 class JSONValue;
 
 struct InspectorHighlightConfig {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(InspectorHighlightConfig);
 public:
     Color content;
     Color contentOutline;

@@ -45,7 +45,7 @@ class ScriptValue;
 
 class InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InjectedScriptManager);
 public:
     struct CallbackData {
         ScopedPersistent<v8::Object> handle;

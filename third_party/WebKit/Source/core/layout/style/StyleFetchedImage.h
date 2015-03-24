@@ -33,7 +33,7 @@ namespace blink {
 class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(StyleFetchedImage);
 public:
     static PassRefPtr<StyleFetchedImage> create(ImageResource* image) { return adoptRef(new StyleFetchedImage(image)); }
     virtual ~StyleFetchedImage();

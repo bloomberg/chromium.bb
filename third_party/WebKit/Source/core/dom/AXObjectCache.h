@@ -39,7 +39,7 @@ class Page;
 class Widget;
 
 class CORE_EXPORT AXObjectCache {
-    WTF_MAKE_NONCOPYABLE(AXObjectCache); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(AXObjectCache); WTF_MAKE_FAST_ALLOCATED(AXObjectCache);
 public:
     static AXObjectCache* create(Document&);
 

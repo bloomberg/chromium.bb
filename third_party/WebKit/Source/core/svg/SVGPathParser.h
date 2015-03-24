@@ -33,7 +33,7 @@ namespace blink {
 class SVGPathSource;
 
 class SVGPathParser final : public NoBaseWillBeGarbageCollected<SVGPathParser> {
-    WTF_MAKE_NONCOPYABLE(SVGPathParser); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(SVGPathParser); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathParser);
 public:
     SVGPathParser(SVGPathSource* source, SVGPathConsumer* consumer)
         : m_source(source)

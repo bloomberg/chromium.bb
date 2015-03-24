@@ -43,7 +43,7 @@ class SegmentedString;
 class MediaValues;
 
 class TokenPreloadScanner {
-    WTF_MAKE_NONCOPYABLE(TokenPreloadScanner); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(TokenPreloadScanner); WTF_MAKE_FAST_ALLOCATED(TokenPreloadScanner);
 public:
     TokenPreloadScanner(const KURL& documentURL, PassRefPtr<MediaValues>);
     ~TokenPreloadScanner();
@@ -105,7 +105,7 @@ private:
 };
 
 class HTMLPreloadScanner {
-    WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); WTF_MAKE_FAST_ALLOCATED(HTMLPreloadScanner);
 public:
     HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassRefPtr<MediaValues>);
     ~HTMLPreloadScanner();

@@ -20,7 +20,7 @@ class WebScrollOffsetAnimationCurve;
 // CSSOM View scroll APIs.
 class ProgrammaticScrollAnimator {
     WTF_MAKE_NONCOPYABLE(ProgrammaticScrollAnimator);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ProgrammaticScrollAnimator);
 public:
     static PassOwnPtr<ProgrammaticScrollAnimator> create(ScrollableArea*);
 

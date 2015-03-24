@@ -67,7 +67,7 @@ class XMLHttpRequest final
     , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(XMLHttpRequest);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);

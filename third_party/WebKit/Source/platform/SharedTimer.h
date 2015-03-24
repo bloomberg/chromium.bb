@@ -36,7 +36,7 @@ namespace blink {
 // This instance is shared by all timers in the thread.
 // Not intended to be used directly; use the Timer class instead.
 class PLATFORM_EXPORT SharedTimer {
-    WTF_MAKE_NONCOPYABLE(SharedTimer); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(SharedTimer); WTF_MAKE_FAST_ALLOCATED(SharedTimer);
 public:
     SharedTimer() { }
     virtual ~SharedTimer() {}

@@ -40,7 +40,7 @@ namespace blink {
 template <typename TargetClass>
 class AsyncMethodRunner final {
     WTF_MAKE_NONCOPYABLE(AsyncMethodRunner);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(AsyncMethodRunner);
 public:
     typedef void (TargetClass::*TargetMethod)();
 

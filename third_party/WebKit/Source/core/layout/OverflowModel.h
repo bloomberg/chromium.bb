@@ -38,7 +38,7 @@ namespace blink {
 // This object is allocated only when some of these fields have non-default values in the owning box.
 class OverflowModel {
     WTF_MAKE_NONCOPYABLE(OverflowModel);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(OverflowModel);
 public:
     OverflowModel(const LayoutRect& layoutRect, const LayoutRect& visualRect)
         : m_layoutOverflow(layoutRect)

@@ -47,7 +47,7 @@ class WorkerClients;
 
 class CORE_EXPORT WorkerThreadStartupData final : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerThreadStartupData);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
     {

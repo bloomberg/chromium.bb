@@ -42,7 +42,7 @@ class LayoutView;
 
 class CORE_EXPORT CaretBase {
     WTF_MAKE_NONCOPYABLE(CaretBase);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CaretBase);
 protected:
     enum CaretVisibility { Visible, Hidden };
     explicit CaretBase(CaretVisibility = Hidden);
@@ -76,7 +76,7 @@ private:
 
 class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretController>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(DragCaretController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DragCaretController);
 public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 

@@ -15,7 +15,7 @@ namespace blink {
 class RoundedRect;
 
 class PLATFORM_EXPORT FloatClipDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(FloatClipDisplayItem);
 public:
     static PassOwnPtr<FloatClipDisplayItem> create(DisplayItemClient client, Type type, const FloatRect& clipRect)
     {
@@ -41,7 +41,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndFloatClipDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndFloatClipDisplayItem);
 public:
     static PassOwnPtr<EndFloatClipDisplayItem> create(DisplayItemClient client, Type type)
     {

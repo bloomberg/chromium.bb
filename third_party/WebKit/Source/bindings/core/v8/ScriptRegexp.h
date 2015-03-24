@@ -40,7 +40,7 @@ enum MultilineMode {
 };
 
 class ScriptRegexp {
-    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(ScriptRegexp);
+    WTF_MAKE_FAST_ALLOCATED(ScriptRegexp); WTF_MAKE_NONCOPYABLE(ScriptRegexp);
 public:
     ScriptRegexp(const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled);
 

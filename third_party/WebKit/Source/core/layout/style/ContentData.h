@@ -37,7 +37,7 @@ class LayoutObject;
 class LayoutStyle;
 
 class ContentData {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ContentData);
 public:
     static PassOwnPtr<ContentData> create(PassRefPtr<StyleImage>);
     static PassOwnPtr<ContentData> create(const String&);

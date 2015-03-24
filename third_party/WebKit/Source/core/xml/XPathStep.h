@@ -40,7 +40,7 @@ class Predicate;
 
 class Step final : public ParseNode {
     WTF_MAKE_NONCOPYABLE(Step);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Step);
 public:
     enum Axis {
         AncestorAxis, AncestorOrSelfAxis, AttributeAxis,
@@ -51,7 +51,7 @@ public:
     };
 
     class NodeTest : public NoBaseWillBeGarbageCollectedFinalized<NodeTest> {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NodeTest);
     public:
         enum Kind {
             TextNodeTest, CommentNodeTest, ProcessingInstructionNodeTest, AnyNodeTest, NameTest

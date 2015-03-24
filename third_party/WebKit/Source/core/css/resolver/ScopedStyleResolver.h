@@ -44,7 +44,7 @@ class ViewportStyleResolver;
 // This class selects a LayoutStyle for a given element based on a collection of stylesheets.
 class ScopedStyleResolver final : public NoBaseWillBeGarbageCollected<ScopedStyleResolver> {
     WTF_MAKE_NONCOPYABLE(ScopedStyleResolver);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScopedStyleResolver);
 public:
     static PassOwnPtrWillBeRawPtr<ScopedStyleResolver> create(TreeScope& scope)
     {

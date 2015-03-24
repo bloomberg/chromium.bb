@@ -34,7 +34,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT ContextMenu {
-    WTF_MAKE_NONCOPYABLE(ContextMenu); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ContextMenu); WTF_MAKE_FAST_ALLOCATED(ContextMenu);
 public:
     ContextMenu() { }
     const ContextMenuItem* itemWithAction(unsigned) const;

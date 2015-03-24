@@ -34,7 +34,7 @@ class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCache {
-    WTF_MAKE_NONCOPYABLE(SVGResourcesCache); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(SVGResourcesCache); WTF_MAKE_FAST_ALLOCATED(SVGResourcesCache);
 public:
     SVGResourcesCache();
     ~SVGResourcesCache();

@@ -83,7 +83,7 @@ inline bool isUseCounterEnabledForMode(CSSParserMode mode)
 class UseCounter;
 
 class CSSParserContext {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CSSParserContext);
 public:
     CSSParserContext(CSSParserMode, UseCounter*);
     // FIXME: We shouldn't need the UseCounter argument as we could infer it from the Document

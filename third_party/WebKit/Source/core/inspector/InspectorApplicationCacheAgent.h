@@ -41,7 +41,7 @@ typedef String ErrorString;
 
 class InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, InspectorFrontend::ApplicationCache>, public InspectorBackendDispatcher::ApplicationCacheCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorApplicationCacheAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorApplicationCacheAgent> create(InspectorPageAgent* pageAgent)
     {

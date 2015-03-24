@@ -66,7 +66,7 @@ private:
 };
 
 class XMLDocumentParser final : public ScriptableDocumentParser, public ScriptResourceClient {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(XMLDocumentParser);
 public:
     static PassRefPtrWillBeRawPtr<XMLDocumentParser> create(Document& document, FrameView* view)
     {

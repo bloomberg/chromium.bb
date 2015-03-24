@@ -66,7 +66,7 @@ struct PathElement {
 typedef void (*PathApplierFunction)(void* info, const PathElement*);
 
 class PLATFORM_EXPORT Path {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(Path);
 public:
     Path();
     ~Path();

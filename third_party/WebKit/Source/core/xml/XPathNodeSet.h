@@ -35,7 +35,7 @@ namespace blink {
 namespace XPath {
 
 class NodeSet : public NoBaseWillBeGarbageCollected<NodeSet> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NodeSet);
 public:
     static PassOwnPtrWillBeRawPtr<NodeSet> create() { return adoptPtrWillBeNoop(new NodeSet); }
     static PassOwnPtrWillBeRawPtr<NodeSet> create(const NodeSet&);

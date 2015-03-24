@@ -55,7 +55,7 @@ class WebPagePopupImpl final
     , public PagePopup
     , public RefCounted<WebPagePopupImpl> {
     WTF_MAKE_NONCOPYABLE(WebPagePopupImpl);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WebPagePopupImpl);
 
 public:
     virtual ~WebPagePopupImpl();

@@ -55,7 +55,7 @@ public:
 };
 
 class ARC4RandomNumberGenerator {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ARC4RandomNumberGenerator);
 public:
     ARC4RandomNumberGenerator();
 

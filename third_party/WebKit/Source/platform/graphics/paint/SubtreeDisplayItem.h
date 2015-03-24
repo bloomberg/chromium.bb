@@ -12,7 +12,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT SubtreeCachedDisplayItem : public DisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(SubtreeCachedDisplayItem);
 public:
     static PassOwnPtr<SubtreeCachedDisplayItem> create(DisplayItemClient client, Type type)
     {
@@ -31,7 +31,7 @@ private:
 };
 
 class PLATFORM_EXPORT BeginSubtreeDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BeginSubtreeDisplayItem);
 public:
     static PassOwnPtr<BeginSubtreeDisplayItem> create(DisplayItemClient client, Type type)
     {
@@ -47,7 +47,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndSubtreeDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndSubtreeDisplayItem);
 public:
     static PassOwnPtr<EndSubtreeDisplayItem> create(DisplayItemClient client, Type type)
     {

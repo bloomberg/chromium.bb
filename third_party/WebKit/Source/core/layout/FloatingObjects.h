@@ -39,7 +39,7 @@ class LayoutBox;
 enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
 
 class FloatingObject {
-    WTF_MAKE_NONCOPYABLE(FloatingObject); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(FloatingObject); WTF_MAKE_FAST_ALLOCATED(FloatingObject);
 public:
 #ifndef NDEBUG
     // Used by the PODIntervalTree for debugging the FloatingObject.
@@ -133,7 +133,7 @@ typedef PODFreeListArena<PODRedBlackTree<FloatingObjectInterval>::Node> Interval
 typedef HashMap<LayoutBox*, OwnPtr<FloatingObject>> RendererToFloatInfoMap;
 
 class FloatingObjects {
-    WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED(FloatingObjects);
 public:
     FloatingObjects(const LayoutBlockFlow*, bool horizontalWritingMode);
     ~FloatingObjects();

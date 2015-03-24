@@ -13,7 +13,7 @@ namespace blink {
 class GraphicsContext;
 
 class PLATFORM_EXPORT ClipPathRecorder {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ClipPathRecorder);
 public:
     ClipPathRecorder(GraphicsContext&, DisplayItemClient, const Path&, WindRule);
     ~ClipPathRecorder();

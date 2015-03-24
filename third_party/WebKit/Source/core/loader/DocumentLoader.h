@@ -56,7 +56,7 @@ namespace blink {
     class ThreadedDataReceiver;
 
     class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
-        WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_FAST_ALLOCATED(DocumentLoader);
     public:
         static PassRefPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
         {

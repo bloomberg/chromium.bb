@@ -35,7 +35,7 @@ namespace blink {
 class LayoutObject;
 
 class LayoutImageResource {
-    WTF_MAKE_NONCOPYABLE(LayoutImageResource); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(LayoutImageResource); WTF_MAKE_FAST_ALLOCATED(LayoutImageResource);
 public:
     virtual ~LayoutImageResource();
 

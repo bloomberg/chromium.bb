@@ -1235,7 +1235,7 @@ private:
 // the sampling state having recorded.
 template<size_t BucketNumber>
 class SamplingStateScope {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(SamplingStateScope);
 public:
     SamplingStateScope(const char* categoryAndName)
     {

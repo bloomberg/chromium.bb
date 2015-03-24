@@ -64,7 +64,7 @@ enum CompositingStateTransitionType {
 // There is one DeprecatedPaintLayerCompositor per LayoutView.
 
 class DeprecatedPaintLayerCompositor final : public GraphicsLayerClient {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerCompositor);
 public:
     explicit DeprecatedPaintLayerCompositor(LayoutView&);
     virtual ~DeprecatedPaintLayerCompositor();

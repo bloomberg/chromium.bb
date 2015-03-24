@@ -79,7 +79,7 @@ namespace blink {
     // shadow DOM.
 
     class CSSSelector {
-        WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_FAST_ALLOCATED(CSSSelector);
     public:
         CSSSelector();
         CSSSelector(const CSSSelector&);

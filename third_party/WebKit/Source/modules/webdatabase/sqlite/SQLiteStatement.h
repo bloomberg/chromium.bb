@@ -35,7 +35,7 @@ namespace blink {
 class SQLValue;
 
 class SQLiteStatement {
-    WTF_MAKE_NONCOPYABLE(SQLiteStatement); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(SQLiteStatement); WTF_MAKE_FAST_ALLOCATED(SQLiteStatement);
 public:
     SQLiteStatement(SQLiteDatabase&, const String&);
     ~SQLiteStatement();

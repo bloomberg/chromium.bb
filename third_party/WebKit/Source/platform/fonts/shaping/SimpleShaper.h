@@ -40,7 +40,7 @@ class TextRun;
 struct GlyphData;
 
 struct PLATFORM_EXPORT SimpleShaper : public Shaper {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(SimpleShaper);
 public:
     SimpleShaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
         HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);

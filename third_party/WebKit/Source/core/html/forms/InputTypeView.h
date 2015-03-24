@@ -56,7 +56,7 @@ class LayoutStyle;
 class TouchEvent;
 
 struct ClickHandlingState final : public NoBaseWillBeGarbageCollected<ClickHandlingState> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ClickHandlingState);
 
 public:
     DECLARE_TRACE();
@@ -71,7 +71,7 @@ public:
 // derived from it to classes other than HTMLInputElement.
 class InputTypeView : public RefCountedWillBeGarbageCollectedFinalized<InputTypeView> {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InputTypeView);
 
 public:
     static PassRefPtrWillBeRawPtr<InputTypeView> create(HTMLInputElement&);

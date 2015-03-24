@@ -67,7 +67,7 @@ enum GraphicsLayerUpdateScope {
 // Currently (Oct. 2013) there is one CompositedDeprecatedPaintLayerMapping for each Layer,
 // but this is likely to evolve soon.
 class CompositedDeprecatedPaintLayerMapping final : public GraphicsLayerClient {
-    WTF_MAKE_NONCOPYABLE(CompositedDeprecatedPaintLayerMapping); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(CompositedDeprecatedPaintLayerMapping); WTF_MAKE_FAST_ALLOCATED(CompositedDeprecatedPaintLayerMapping);
 public:
     explicit CompositedDeprecatedPaintLayerMapping(DeprecatedPaintLayer&);
     virtual ~CompositedDeprecatedPaintLayerMapping();

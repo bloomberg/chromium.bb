@@ -56,7 +56,7 @@ enum RevealExtentOption {
 
 class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, public VisibleSelection::ChangeObserver, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameSelection);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
 public:
     static PassOwnPtrWillBeRawPtr<FrameSelection> create(LocalFrame* frame = nullptr)

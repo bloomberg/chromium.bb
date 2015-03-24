@@ -58,7 +58,7 @@ class IntSize;
 
 class DummyPageHolder {
     WTF_MAKE_NONCOPYABLE(DummyPageHolder);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(DummyPageHolder);
 public:
     static PassOwnPtr<DummyPageHolder> create(
         const IntSize& initialViewSize = IntSize(),

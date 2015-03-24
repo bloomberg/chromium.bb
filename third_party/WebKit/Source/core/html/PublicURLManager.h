@@ -43,7 +43,7 @@ class URLRegistrable;
 
 class PublicURLManager final : public NoBaseWillBeGarbageCollectedFinalized<PublicURLManager>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PublicURLManager);
 public:
     static PassOwnPtrWillBeRawPtr<PublicURLManager> create(ExecutionContext*);
 

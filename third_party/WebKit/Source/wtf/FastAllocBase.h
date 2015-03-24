@@ -36,12 +36,12 @@
 //
 // Example usage:
 //    class Widget {
-//        WTF_MAKE_FAST_ALLOCATED
+//        WTF_MAKE_FAST_ALLOCATED(Widget)
 //    ...
 //    };
 //
 //    struct Data {
-//        WTF_MAKE_FAST_ALLOCATED
+//        WTF_MAKE_FAST_ALLOCATED(Data)
 //    public:
 //    ...
 //    };
@@ -51,7 +51,7 @@
 #include "wtf/FastMalloc.h"
 #include "wtf/StdLibExtras.h"
 
-#define WTF_MAKE_FAST_ALLOCATED \
+#define WTF_MAKE_FAST_ALLOCATED(type) \
 public: \
     void* operator new(size_t, void* p) { return p; } \
     void* operator new[](size_t, void* p) { return p; } \
@@ -79,6 +79,10 @@ public: \
     { \
         ASSERT(location); \
         return location; \
+    } \
+    static const char* classNameForAllocator() \
+    { \
+        return #type; \
     } \
 private: \
 typedef int __thisIsHereToForceASemicolonAfterThisMacro

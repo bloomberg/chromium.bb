@@ -37,7 +37,7 @@ namespace WTF {
 template<typename T>
 class WeakReference : public ThreadSafeRefCounted<WeakReference<T>> {
     WTF_MAKE_NONCOPYABLE(WeakReference<T>);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WeakReference);
 public:
     static PassRefPtr<WeakReference<T>> create(T* ptr) { return adoptRef(new WeakReference(ptr)); }
     static PassRefPtr<WeakReference<T>> createUnbound() { return adoptRef(new WeakReference()); }
@@ -82,7 +82,7 @@ private:
 
 template<typename T>
 class WeakPtr {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WeakPtr);
 public:
     WeakPtr() { }
     WeakPtr(std::nullptr_t) { }
@@ -117,7 +117,7 @@ template<typename T, typename U> inline bool operator!=(const WeakPtr<T>& a, con
 template<typename T>
 class WeakPtrFactory {
     WTF_MAKE_NONCOPYABLE(WeakPtrFactory<T>);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WeakPtrFactory);
 public:
     explicit WeakPtrFactory(T* ptr) : m_ref(WeakReference<T>::create(ptr)) { }
 

@@ -39,7 +39,7 @@ class CSSImageSetValue;
 // This class keeps one cached image and has access to a set of alternatives.
 
 class StyleFetchedImageSet final : public StyleImage, private ImageResourceClient {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(StyleFetchedImageSet);
 public:
     static PassRefPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
     {

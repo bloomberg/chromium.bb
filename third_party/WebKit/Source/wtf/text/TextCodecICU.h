@@ -70,7 +70,7 @@ private:
 };
 
 struct ICUConverterWrapper {
-    WTF_MAKE_NONCOPYABLE(ICUConverterWrapper); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ICUConverterWrapper); WTF_MAKE_FAST_ALLOCATED(ICUConverterWrapper);
 public:
     ICUConverterWrapper() : converter(0) { }
     ~ICUConverterWrapper();

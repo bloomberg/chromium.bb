@@ -45,7 +45,7 @@ namespace blink {
 static const double TwentyMinutesInSeconds = 20 * 60;
 
 class HeapSizeCache {
-    WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED(HeapSizeCache);
 public:
     HeapSizeCache()
         : m_lastUpdateTime(monotonicallyIncreasingTime() - TwentyMinutesInSeconds)

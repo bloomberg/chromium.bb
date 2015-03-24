@@ -55,7 +55,7 @@ class WorkerScriptDebugServer;
 
 class WorkerInspectorController : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerInspectorController);
 public:
     explicit WorkerInspectorController(WorkerGlobalScope*);
     ~WorkerInspectorController();

@@ -111,7 +111,7 @@ Vector<Length> parseHTMLAreaElementCoords(const String& string)
 }
 
 class CalculationValueHandleMap {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CalculationValueHandleMap);
 public:
     CalculationValueHandleMap()
         : m_index(1)

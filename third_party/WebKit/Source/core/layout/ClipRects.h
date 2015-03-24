@@ -32,7 +32,7 @@
 namespace blink {
 
 class ClipRects : public RefCounted<ClipRects> {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ClipRects);
 public:
     static PassRefPtr<ClipRects> create()
     {

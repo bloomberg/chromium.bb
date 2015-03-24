@@ -47,7 +47,7 @@ class TextResourceDecoder;
 class WorkerScriptLoaderClient;
 
 class WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WorkerScriptLoader);
 public:
     static PassRefPtr<WorkerScriptLoader> create()
     {

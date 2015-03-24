@@ -50,7 +50,7 @@ class WorkerMessagingProxy final
     : public WorkerGlobalScopeProxy
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WorkerMessagingProxy);
 public:
     WorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 

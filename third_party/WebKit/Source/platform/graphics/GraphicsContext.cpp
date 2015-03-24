@@ -51,7 +51,7 @@
 namespace blink {
 
 class GraphicsContext::RecordingState {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(GraphicsContext::RecordingState);
     WTF_MAKE_NONCOPYABLE(RecordingState);
 public:
     static PassOwnPtr<RecordingState> Create(SkCanvas* canvas, const SkMatrix& matrix)

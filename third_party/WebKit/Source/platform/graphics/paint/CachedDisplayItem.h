@@ -14,7 +14,7 @@ namespace blink {
 // the DisplayItem has not been changed and should be replaced with the cached DisplayItem
 // when merging new paint list to cached paint list.
 class PLATFORM_EXPORT CachedDisplayItem : public DisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CachedDisplayItem);
 public:
     static PassOwnPtr<CachedDisplayItem> create(DisplayItemClient client, Type type)
     {

@@ -39,7 +39,7 @@ class Image;
 class KURL;
 
 class Pasteboard {
-    WTF_MAKE_NONCOPYABLE(Pasteboard); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(Pasteboard); WTF_MAKE_FAST_ALLOCATED(Pasteboard);
 public:
     enum SmartReplaceOption {
         CanSmartReplace,

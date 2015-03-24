@@ -40,7 +40,7 @@ class ResourceResponse;
 
 class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(DocumentThreadableLoaderClient);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(DocumentThreadableLoaderClient);
 public:
     bool isDocumentThreadableLoaderClient()  override final { return true; }
 

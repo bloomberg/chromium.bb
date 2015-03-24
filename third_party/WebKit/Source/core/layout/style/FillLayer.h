@@ -60,7 +60,7 @@ struct FillSize {
 };
 
 class FillLayer {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(FillLayer);
 public:
     FillLayer(EFillLayerType, bool useInitialValues = false);
     ~FillLayer();

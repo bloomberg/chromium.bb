@@ -43,7 +43,7 @@ class ExecutionContextTask;
 
 class MainThreadTaskRunner {
     WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(MainThreadTaskRunner);
 
 public:
     static PassOwnPtr<MainThreadTaskRunner> create(ExecutionContext*);

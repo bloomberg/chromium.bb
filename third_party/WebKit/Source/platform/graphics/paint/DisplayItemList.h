@@ -19,7 +19,7 @@ typedef Vector<OwnPtr<DisplayItem>> PaintList;
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(DisplayItemList);
 public:
     static PassOwnPtr<DisplayItemList> create() { return adoptPtr(new DisplayItemList); }
 

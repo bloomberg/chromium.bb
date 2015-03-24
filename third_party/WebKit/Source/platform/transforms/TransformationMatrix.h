@@ -47,7 +47,7 @@ class FloatBox;
 #endif
 
 class PLATFORM_EXPORT TransformationMatrix {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(TransformationMatrix);
 public:
 
 #if CPU(APPLE_ARMV7S) || defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)

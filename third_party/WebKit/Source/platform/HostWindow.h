@@ -36,7 +36,7 @@ class IntRect;
 struct WebScreenInfo;
 
 class PLATFORM_EXPORT HostWindow {
-    WTF_MAKE_NONCOPYABLE(HostWindow); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(HostWindow); WTF_MAKE_FAST_ALLOCATED(HostWindow);
 public:
     HostWindow() { }
     virtual ~HostWindow() { }

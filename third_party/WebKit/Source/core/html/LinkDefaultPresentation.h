@@ -17,7 +17,7 @@ class HTMLLinkElement;
 // Represents the default presentation URL resource associated with the <link> tag.
 // Notifies the WebFrameClient about the change of its value.
 class LinkDefaultPresentation final : public LinkResource {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LinkDefaultPresentation);
 public:
 
     static PassOwnPtrWillBeRawPtr<LinkDefaultPresentation> create(HTMLLinkElement* owner);

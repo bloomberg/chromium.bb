@@ -53,7 +53,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MediaQueryResult>> MediaQueryResultL
 // of stylesheets to only those which are probable to match.
 
 class MediaQueryEvaluator {
-    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); WTF_MAKE_FAST_ALLOCATED(MediaQueryEvaluator);
 public:
     // Creates evaluator which evaluates only simple media queries
     // Evaluator returns true for "all", and returns value of \mediaFeatureResult

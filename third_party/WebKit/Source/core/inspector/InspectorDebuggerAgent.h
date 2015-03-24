@@ -71,7 +71,7 @@ class InspectorDebuggerAgent
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorDebuggerAgent);
 public:
     enum BreakpointSource {
         UserBreakpointSource,

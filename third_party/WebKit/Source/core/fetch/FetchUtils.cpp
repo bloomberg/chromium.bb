@@ -17,7 +17,7 @@ namespace blink {
 namespace {
 
 class ForbiddenHeaderNames {
-    WTF_MAKE_NONCOPYABLE(ForbiddenHeaderNames); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ForbiddenHeaderNames); WTF_MAKE_FAST_ALLOCATED(ForbiddenHeaderNames);
 public:
     bool has(const String& name) const
     {

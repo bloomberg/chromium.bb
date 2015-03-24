@@ -56,7 +56,7 @@ namespace blink {
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 
 class ScheduledNavigation {
-    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED(ScheduledNavigation);
 public:
     ScheduledNavigation(double delay, bool lockBackForwardList, bool isLocationChange)
         : m_delay(delay)

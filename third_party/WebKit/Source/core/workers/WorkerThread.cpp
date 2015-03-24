@@ -103,7 +103,7 @@ unsigned WorkerThread::workerThreadCount()
 }
 
 class WorkerThreadCancelableTask final : public ExecutionContextTask {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadCancelableTask); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(WorkerThreadCancelableTask); WTF_MAKE_FAST_ALLOCATED(WorkerThreadCancelableTask);
 public:
     static PassOwnPtr<WorkerThreadCancelableTask> create(PassOwnPtr<Closure> closure)
     {
@@ -205,7 +205,7 @@ private:
 };
 
 class WorkerThreadTask : public blink::WebThread::Task {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadTask); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(WorkerThreadTask); WTF_MAKE_FAST_ALLOCATED(WorkerThreadTask);
 public:
     static PassOwnPtr<WorkerThreadTask> create(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
     {

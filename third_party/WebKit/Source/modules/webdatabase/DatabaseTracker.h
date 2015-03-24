@@ -44,7 +44,7 @@ class DatabaseContext;
 class SecurityOrigin;
 
 class DatabaseTracker {
-    WTF_MAKE_NONCOPYABLE(DatabaseTracker); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(DatabaseTracker); WTF_MAKE_FAST_ALLOCATED(DatabaseTracker);
 public:
     static DatabaseTracker& tracker();
     // This singleton will potentially be used from multiple worker threads and the page's context thread simultaneously.  To keep this safe, it's

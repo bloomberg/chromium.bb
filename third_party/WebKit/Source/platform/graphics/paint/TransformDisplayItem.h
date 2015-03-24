@@ -12,7 +12,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginTransformDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BeginTransformDisplayItem);
 public:
     static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const AffineTransform& transform)
     {
@@ -31,7 +31,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndTransformDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndTransformDisplayItem);
 public:
     static PassOwnPtr<EndTransformDisplayItem> create(DisplayItemClient client)
     {

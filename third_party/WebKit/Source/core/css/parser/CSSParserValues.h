@@ -163,7 +163,7 @@ struct CSSParserValue {
 };
 
 class CSSParserValueList {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CSSParserValueList);
 public:
     CSSParserValueList()
         : m_current(0)
@@ -205,14 +205,14 @@ private:
 };
 
 struct CSSParserFunction {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CSSParserFunction);
 public:
     CSSValueID id;
     OwnPtr<CSSParserValueList> args;
 };
 
 class CSSParserSelector {
-    WTF_MAKE_NONCOPYABLE(CSSParserSelector); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(CSSParserSelector); WTF_MAKE_FAST_ALLOCATED(CSSParserSelector);
 public:
     CSSParserSelector();
     explicit CSSParserSelector(const QualifiedName&);

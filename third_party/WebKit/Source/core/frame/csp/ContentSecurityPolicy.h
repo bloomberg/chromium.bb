@@ -63,7 +63,7 @@ typedef Vector<OwnPtr<CSPDirectiveList>> CSPDirectiveListVector;
 typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
 
 class CORE_EXPORT ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ContentSecurityPolicy);
 public:
     // CSP Level 1 Directives
     static const char ConnectSrc[];

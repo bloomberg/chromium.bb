@@ -37,7 +37,7 @@
 namespace blink {
 
 class CORE_EXPORT GenericEventQueue final : public EventQueue {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(GenericEventQueue);
 public:
     static PassOwnPtrWillBeRawPtr<GenericEventQueue> create(EventTarget*);
     virtual ~GenericEventQueue();

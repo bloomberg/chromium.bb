@@ -42,7 +42,7 @@ enum PathParsingMode {
 };
 
 class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathConsumer> {
-    WTF_MAKE_NONCOPYABLE(SVGPathConsumer); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(SVGPathConsumer); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathConsumer);
 public:
     SVGPathConsumer() { }
     virtual ~SVGPathConsumer() { }

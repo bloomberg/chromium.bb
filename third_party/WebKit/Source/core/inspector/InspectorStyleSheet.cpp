@@ -389,7 +389,7 @@ void StyleSheetHandler::endMediaQuery()
 } // namespace
 
 class ParsedStyleSheet {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ParsedStyleSheet);
 public:
     ParsedStyleSheet(CSSStyleSheet* pageStyleSheet);
 

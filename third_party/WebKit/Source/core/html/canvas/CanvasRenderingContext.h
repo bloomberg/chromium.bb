@@ -42,7 +42,7 @@ class HTMLCanvasElement;
 
 class CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext>, public ActiveDOMObject {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CanvasRenderingContext);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext);
 public:
     virtual ~CanvasRenderingContext() { }

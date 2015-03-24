@@ -32,7 +32,7 @@
 namespace blink {
 
 struct GradientData {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(GradientData);
 public:
     RefPtr<Gradient> gradient;
     AffineTransform userspaceTransform;

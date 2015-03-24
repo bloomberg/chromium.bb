@@ -31,7 +31,7 @@
 namespace blink {
 
 class CounterContent {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CounterContent);
 public:
     CounterContent(const AtomicString& identifier, EListStyleType style, const AtomicString& separator)
         : m_identifier(identifier)

@@ -51,7 +51,7 @@ class HTMLImportTreeRoot;
 
 class HTMLImportsController final : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportsController>, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLImportsController);
 public:
     static const char* supplementName();
     static void provideTo(Document&);

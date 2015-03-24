@@ -45,7 +45,7 @@ typedef HashMap<const void*, LayoutSize> LayerSizeMap;
 typedef HashMap<LayoutObject*, LayerSizeMap> ObjectLayerSizeMap;
 
 class ImageQualityController final {
-    WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED(ImageQualityController);
 public:
     ~ImageQualityController();
 

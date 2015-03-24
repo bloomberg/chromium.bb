@@ -384,7 +384,7 @@ public:
 
     // Allocated only when some of these fields have non-default values
     struct LayoutBlockFlowRareData {
-        WTF_MAKE_NONCOPYABLE(LayoutBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_NONCOPYABLE(LayoutBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED(LayoutBlockFlowRareData);
     public:
         LayoutBlockFlowRareData(const LayoutBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))

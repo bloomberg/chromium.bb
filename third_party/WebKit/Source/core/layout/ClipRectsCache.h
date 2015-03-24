@@ -31,7 +31,7 @@ enum ClipRectsCacheSlot {
 };
 
 class ClipRectsCache {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ClipRectsCache);
 public:
     struct Entry {
         Entry()

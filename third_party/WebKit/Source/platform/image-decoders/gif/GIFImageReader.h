@@ -83,7 +83,7 @@ struct GIFFrameContext;
 
 // LZW decoder state machine.
 class GIFLZWContext {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(GIFLZWContext);
 public:
     GIFLZWContext(blink::GIFImageDecoder* client, const GIFFrameContext* frameContext)
         : codesize(0)
@@ -134,7 +134,7 @@ private:
 
 // Data structure for one LZW block.
 struct GIFLZWBlock {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(GIFLZWBlock);
 public:
     GIFLZWBlock(size_t position, size_t size)
         : blockPosition(position)
@@ -147,7 +147,7 @@ public:
 };
 
 class GIFColorMap {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(GIFColorMap);
 public:
     typedef Vector<blink::ImageFrame::PixelData> Table;
 
@@ -180,7 +180,7 @@ private:
 
 // LocalFrame output state machine.
 struct GIFFrameContext {
-    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(GIFFrameContext);
+    WTF_MAKE_FAST_ALLOCATED(GIFFrameContext); WTF_MAKE_NONCOPYABLE(GIFFrameContext);
 public:
     GIFFrameContext(int id)
         : m_frameId(id)
@@ -277,7 +277,7 @@ private:
 };
 
 class PLATFORM_EXPORT GIFImageReader {
-    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(GIFImageReader);
+    WTF_MAKE_FAST_ALLOCATED(GIFImageReader); WTF_MAKE_NONCOPYABLE(GIFImageReader);
 public:
     GIFImageReader(blink::GIFImageDecoder* client = 0)
         : m_client(client)

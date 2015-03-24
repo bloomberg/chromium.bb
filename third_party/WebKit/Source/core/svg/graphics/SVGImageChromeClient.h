@@ -37,7 +37,7 @@ namespace blink {
 class SVGImage;
 
 class SVGImageChromeClient final : public EmptyChromeClient {
-    WTF_MAKE_NONCOPYABLE(SVGImageChromeClient); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(SVGImageChromeClient); WTF_MAKE_FAST_ALLOCATED(SVGImageChromeClient);
 public:
     explicit SVGImageChromeClient(SVGImage*);
     virtual bool isSVGImageChromeClient() const override;

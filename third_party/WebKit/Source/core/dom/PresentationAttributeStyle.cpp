@@ -58,7 +58,7 @@ static bool operator!=(const PresentationAttributeCacheKey& a, const Presentatio
 }
 
 struct PresentationAttributeCacheEntry final : public NoBaseWillBeGarbageCollectedFinalized<PresentationAttributeCacheEntry> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PresentationAttributeCacheEntry);
 public:
     DEFINE_INLINE_TRACE() { visitor->trace(value); }
 
@@ -74,7 +74,7 @@ static PresentationAttributeCache& presentationAttributeCache()
 }
 
 class PresentationAttributeCacheCleaner {
-    WTF_MAKE_NONCOPYABLE(PresentationAttributeCacheCleaner); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(PresentationAttributeCacheCleaner); WTF_MAKE_FAST_ALLOCATED(PresentationAttributeCacheCleaner);
 public:
     PresentationAttributeCacheCleaner()
         : m_hitCount(0)

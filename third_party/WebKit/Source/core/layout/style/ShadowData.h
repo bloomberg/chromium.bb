@@ -35,7 +35,7 @@ enum ShadowStyle { Normal, Inset };
 
 // This class holds information about shadows for the text-shadow and box-shadow properties.
 class ShadowData {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ShadowData);
 public:
     ShadowData(const FloatPoint& location, float blur, float spread, ShadowStyle style, const Color& color)
         : m_location(location)

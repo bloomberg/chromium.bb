@@ -17,7 +17,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginFilterDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BeginFilterDisplayItem);
 public:
     static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds)
     {
@@ -48,7 +48,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndFilterDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndFilterDisplayItem);
 public:
     static PassOwnPtr<EndFilterDisplayItem> create(DisplayItemClient client)
     {

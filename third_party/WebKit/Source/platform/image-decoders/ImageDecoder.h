@@ -66,7 +66,7 @@ private:
 // (e.g. JPEGImageDecoder). This base manages the ImageFrame cache.
 //
 class PLATFORM_EXPORT ImageDecoder {
-    WTF_MAKE_NONCOPYABLE(ImageDecoder); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ImageDecoder); WTF_MAKE_FAST_ALLOCATED(ImageDecoder);
 public:
     enum SizeType { ActualSize, SizeForMemoryAllocation };
 

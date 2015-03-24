@@ -51,7 +51,7 @@ static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 };
 
 class InspectorWorkerAgent::WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(InspectorWorkerAgent::WorkerAgentClient);
 public:
     WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
         : m_frontend(frontend)

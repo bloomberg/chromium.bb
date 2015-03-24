@@ -36,7 +36,7 @@ namespace blink {
 
 class HTMLTokenizer {
     WTF_MAKE_NONCOPYABLE(HTMLTokenizer);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(HTMLTokenizer);
 public:
     static PassOwnPtr<HTMLTokenizer> create(const HTMLParserOptions& options) { return adoptPtr(new HTMLTokenizer(options)); }
     ~HTMLTokenizer();

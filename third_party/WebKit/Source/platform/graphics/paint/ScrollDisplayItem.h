@@ -13,7 +13,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginScrollDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BeginScrollDisplayItem);
 public:
     static PassOwnPtr<BeginScrollDisplayItem> create(DisplayItemClient client, Type type, const IntSize& currentOffset)
     {
@@ -35,7 +35,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndScrollDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndScrollDisplayItem);
 public:
     static PassOwnPtr<EndScrollDisplayItem> create(DisplayItemClient client, Type type)
     {

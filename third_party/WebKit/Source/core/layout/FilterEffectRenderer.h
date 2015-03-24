@@ -40,7 +40,7 @@ class ReferenceFilter;
 class LayoutObject;
 
 class FilterEffectRenderer final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectRenderer> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FilterEffectRenderer);
 public:
     static PassRefPtrWillBeRawPtr<FilterEffectRenderer> create()
     {

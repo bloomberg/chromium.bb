@@ -45,7 +45,7 @@ namespace blink {
 
     class CORE_EXPORT ThreadableLoaderClient {
         WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ThreadableLoaderClient);
     public:
         virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) { }
 

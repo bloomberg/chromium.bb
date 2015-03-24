@@ -68,7 +68,7 @@ private:
 };
 
 class HTMLParserScheduler {
-    WTF_MAKE_NONCOPYABLE(HTMLParserScheduler); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(HTMLParserScheduler); WTF_MAKE_FAST_ALLOCATED(HTMLParserScheduler);
 public:
     static PassOwnPtr<HTMLParserScheduler> create(HTMLDocumentParser* parser)
     {

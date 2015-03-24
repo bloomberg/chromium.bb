@@ -61,7 +61,7 @@ static inline Attribute* findAttributeInVector(Vector<Attribute>& attributes, co
 
 class HTMLToken {
     WTF_MAKE_NONCOPYABLE(HTMLToken);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(HTMLToken);
 public:
     enum Type {
         Uninitialized,

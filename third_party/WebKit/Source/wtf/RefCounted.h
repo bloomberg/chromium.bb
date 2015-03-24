@@ -163,7 +163,7 @@ inline void adopted(RefCountedBase* object)
 
 template<typename T> class RefCounted : public RefCountedBase {
     WTF_MAKE_NONCOPYABLE(RefCounted);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(RefCounted);
 
 public:
     void deref()

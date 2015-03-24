@@ -30,7 +30,7 @@ class LayoutUnit;
 class LayoutTable;
 
 class TableLayoutAlgorithm {
-    WTF_MAKE_NONCOPYABLE(TableLayoutAlgorithm); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(TableLayoutAlgorithm); WTF_MAKE_FAST_ALLOCATED(TableLayoutAlgorithm);
 public:
     explicit TableLayoutAlgorithm(LayoutTable* table)
         : m_table(table)

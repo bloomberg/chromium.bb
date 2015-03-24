@@ -44,7 +44,7 @@
 namespace blink {
 
 class Settings {
-    WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED(Settings);
 public:
     static PassOwnPtr<Settings> create();
 

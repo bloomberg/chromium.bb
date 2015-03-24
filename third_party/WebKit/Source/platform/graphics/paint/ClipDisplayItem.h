@@ -16,7 +16,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ClipDisplayItem);
 public:
     static PassOwnPtr<ClipDisplayItem> create(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
     {
@@ -46,7 +46,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndClipDisplayItem);
 public:
     static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client, Type type)
     {

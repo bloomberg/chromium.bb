@@ -41,7 +41,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT GenericFontFamilySettings {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(GenericFontFamilySettings);
 
 public:
     GenericFontFamilySettings()

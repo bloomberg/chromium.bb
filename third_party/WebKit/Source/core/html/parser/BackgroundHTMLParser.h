@@ -45,7 +45,7 @@ class Scheduler;
 class XSSAuditor;
 
 class BackgroundHTMLParser {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BackgroundHTMLParser);
 public:
     struct Configuration {
         HTMLParserOptions options;

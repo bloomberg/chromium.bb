@@ -39,7 +39,7 @@ class ExecutionContext;
 
 class ExecutionContextTask {
     WTF_MAKE_NONCOPYABLE(ExecutionContextTask);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(ExecutionContextTask);
 public:
     ExecutionContextTask() { }
     virtual ~ExecutionContextTask() { }

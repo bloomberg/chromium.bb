@@ -159,7 +159,7 @@ private:
 typedef Vector<BlobDataItem> BlobDataItemList;
 
 class PLATFORM_EXPORT BlobData {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BlobData);
 public:
     static PassOwnPtr<BlobData> create();
 

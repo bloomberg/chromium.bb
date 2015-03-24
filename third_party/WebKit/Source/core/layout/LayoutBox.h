@@ -49,7 +49,7 @@ enum ScrollOffsetClamping {
 };
 
 struct LayoutBoxRareData {
-    WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); WTF_MAKE_FAST_ALLOCATED(LayoutBoxRareData);
 public:
     LayoutBoxRareData()
         : m_inlineBoxWrapper(0)

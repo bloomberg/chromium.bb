@@ -68,7 +68,7 @@ namespace blink {
 
 class PagePopupChromeClient : public EmptyChromeClient {
     WTF_MAKE_NONCOPYABLE(PagePopupChromeClient);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(PagePopupChromeClient);
 
 public:
     explicit PagePopupChromeClient(WebPagePopupImpl* popup)

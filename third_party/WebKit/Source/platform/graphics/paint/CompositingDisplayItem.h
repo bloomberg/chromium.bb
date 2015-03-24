@@ -17,7 +17,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginCompositingDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BeginCompositingDisplayItem);
 public:
     static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds = nullptr, ColorFilter colorFilter = ColorFilterNone)
     {
@@ -50,7 +50,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndCompositingDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(EndCompositingDisplayItem);
 public:
     static PassOwnPtr<EndCompositingDisplayItem> create(DisplayItemClient client)
     {

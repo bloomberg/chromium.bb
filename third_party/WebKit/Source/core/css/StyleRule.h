@@ -35,7 +35,7 @@ class MutableStylePropertySet;
 class StylePropertySet;
 
 class StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleBase);
 public:
     enum Type {
         Unknown,
@@ -99,7 +99,7 @@ private:
 };
 
 class StyleRule : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRule);
 public:
     static PassRefPtrWillBeRawPtr<StyleRule> create() { return adoptRefWillBeNoop(new StyleRule()); }
 
@@ -257,7 +257,7 @@ private:
 
 // This should only be used within the CSS Parser
 class StyleRuleCharset : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleCharset);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleCharset> create() { return adoptRefWillBeNoop(new StyleRuleCharset()); }
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); };

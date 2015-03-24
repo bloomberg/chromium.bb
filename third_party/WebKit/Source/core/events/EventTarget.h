@@ -61,7 +61,7 @@ struct FiringEventIterator {
 typedef Vector<FiringEventIterator, 1> FiringEventIteratorVector;
 
 struct EventTargetData {
-    WTF_MAKE_NONCOPYABLE(EventTargetData); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(EventTargetData); WTF_MAKE_FAST_ALLOCATED(EventTargetData);
 public:
     EventTargetData();
     ~EventTargetData();

@@ -52,7 +52,7 @@ class WebTouchEvent;
 struct WebRect;
 
 class WebPopupMenuImpl : public WebPopupMenu, public PopupContainerClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(WebPopupMenuImpl);
 public:
     // WebWidget functions:
     virtual void close() override final;

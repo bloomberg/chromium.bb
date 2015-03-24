@@ -58,7 +58,7 @@ public:
 };
 
 struct BlobRegistryContext {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(BlobRegistryContext);
 public:
     BlobRegistryContext(const KURL& url, PassOwnPtr<BlobData> blobData)
         : url(url.copy())

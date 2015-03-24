@@ -35,7 +35,7 @@ namespace blink {
 enum StyleInjectionTarget { InjectStyleInAllFrames, InjectStyleInTopFrameOnly };
 
 class InjectedStyleSheetEntry {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(InjectedStyleSheetEntry);
 public:
     InjectedStyleSheetEntry(const String& source, const Vector<String>& whitelist, StyleInjectionTarget injectedFrames)
         : m_source(source)

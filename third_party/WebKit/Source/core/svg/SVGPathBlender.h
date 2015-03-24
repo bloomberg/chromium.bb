@@ -34,7 +34,7 @@ struct PathSegmentData;
 class SVGPathSource;
 
 class SVGPathBlender : public NoBaseWillBeGarbageCollectedFinalized<SVGPathBlender> {
-    WTF_MAKE_NONCOPYABLE(SVGPathBlender); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(SVGPathBlender); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathBlender);
 public:
     SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer*);
 

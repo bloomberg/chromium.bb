@@ -57,7 +57,7 @@ public:
 };
 
 class Expression : public ParseNode {
-    WTF_MAKE_NONCOPYABLE(Expression); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(Expression); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Expression);
 public:
     Expression();
     virtual ~Expression();

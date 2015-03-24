@@ -48,7 +48,7 @@ public:
 };
 
 class InspectorState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorState);
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
 

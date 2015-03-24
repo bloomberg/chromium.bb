@@ -40,7 +40,7 @@ class SVGLayoutStyle;
 
 // Holds a set of resources associated with a LayoutObject
 class SVGResources {
-    WTF_MAKE_NONCOPYABLE(SVGResources); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(SVGResources); WTF_MAKE_FAST_ALLOCATED(SVGResources);
 public:
     SVGResources();
 
@@ -112,7 +112,7 @@ private:
     // masker:  'container elements' and 'graphics elements'
     // -> a, circle, defs, ellipse, glyph, g, image, line, marker, mask, missing-glyph, path, pattern, polygon, polyline, rect, svg, switch, symbol, text, use
     struct ClipperFilterMaskerData {
-        WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_FAST_ALLOCATED(ClipperFilterMaskerData);
     public:
         ClipperFilterMaskerData()
             : clipper(0)
@@ -134,7 +134,7 @@ private:
     // From SVG 1.1 2nd Edition
     // marker: line, path, polygon, polyline
     struct MarkerData {
-        WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_FAST_ALLOCATED(MarkerData);
     public:
         MarkerData()
             : markerStart(0)
@@ -158,7 +158,7 @@ private:
     // stroke:     'shapes' and 'text content elements'
     // -> circle, ellipse, line, path, polygon, polyline, rect, text, textPath, tspan
     struct FillStrokeData {
-        WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_FAST_ALLOCATED(FillStrokeData);
     public:
         FillStrokeData()
             : fill(0)

@@ -41,7 +41,7 @@ namespace blink {
 
 class Path2D final : public RefCountedWillBeGarbageCollectedFinalized<Path2D>, public CanvasPathMethods, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Path2D);
     WTF_MAKE_NONCOPYABLE(Path2D);
 public:
     static PassRefPtrWillBeRawPtr<Path2D> create() { return adoptRefWillBeNoop(new Path2D); }

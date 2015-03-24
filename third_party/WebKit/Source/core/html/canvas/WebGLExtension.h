@@ -37,7 +37,7 @@ namespace blink {
 
 class WebGLExtensionScopedContext : public NoBaseWillBeGarbageCollectedFinalized<WebGLExtensionScopedContext> {
     WTF_MAKE_NONCOPYABLE(WebGLExtensionScopedContext);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLExtensionScopedContext);
 public:
     WebGLExtensionScopedContext(WebGLExtension*);
     virtual ~WebGLExtensionScopedContext();
@@ -52,7 +52,7 @@ private:
 };
 
 class WebGLExtension : public RefCountedWillBeGarbageCollectedFinalized<WebGLExtension>, public ScriptWrappable {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLExtension);
 public:
     virtual ~WebGLExtension();
     virtual WebGLExtensionName name() const = 0;

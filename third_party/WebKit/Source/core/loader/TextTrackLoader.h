@@ -49,7 +49,7 @@ public:
 
 class TextTrackLoader final : public NoBaseWillBeGarbageCollectedFinalized<TextTrackLoader>, public ResourceOwner<RawResource>, private VTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(TextTrackLoader);
 public:
     static PassOwnPtrWillBeRawPtr<TextTrackLoader> create(TextTrackLoaderClient& client, Document& document)
     {

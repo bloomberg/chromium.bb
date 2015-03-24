@@ -310,7 +310,7 @@ static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info)
 }
 
 class JPEGImageReader {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(JPEGImageReader);
 public:
     JPEGImageReader(JPEGImageDecoder* decoder)
         : m_decoder(decoder)

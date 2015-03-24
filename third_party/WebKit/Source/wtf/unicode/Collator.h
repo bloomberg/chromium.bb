@@ -40,7 +40,7 @@ struct UCollator;
 namespace WTF {
 
     class WTF_EXPORT Collator {
-        WTF_MAKE_NONCOPYABLE(Collator); WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_NONCOPYABLE(Collator); WTF_MAKE_FAST_ALLOCATED(Collator);
     public:
         enum Result { Equal = 0, Greater = 1, Less = -1 };
 

@@ -111,7 +111,7 @@ private:
 };
 
 class Predicate final : public NoBaseWillBeGarbageCollected<Predicate> {
-    WTF_MAKE_NONCOPYABLE(Predicate); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(Predicate); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Predicate);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Predicate);
 public:
     explicit Predicate(PassOwnPtrWillBeRawPtr<Expression>);

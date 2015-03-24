@@ -19,7 +19,7 @@ class CSSParserTokenRange;
 
 class CSSTokenizer {
     WTF_MAKE_NONCOPYABLE(CSSTokenizer);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED(CSSTokenizer);
 public:
     class Scope {
     public:

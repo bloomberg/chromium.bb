@@ -92,7 +92,7 @@ public:
 
 // This class selects a LayoutStyle for a given element based on a collection of stylesheets.
 class StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
-    WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleResolver);
 public:
     explicit StyleResolver(Document&);
     virtual ~StyleResolver();

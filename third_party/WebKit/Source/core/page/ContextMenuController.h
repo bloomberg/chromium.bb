@@ -45,7 +45,7 @@ namespace blink {
     class Page;
 
     class ContextMenuController final : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
-        WTF_MAKE_NONCOPYABLE(ContextMenuController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+        WTF_MAKE_NONCOPYABLE(ContextMenuController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ContextMenuController);
     public:
         static PassOwnPtrWillBeRawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
         ~ContextMenuController();

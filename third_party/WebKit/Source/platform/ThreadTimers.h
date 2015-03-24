@@ -39,7 +39,7 @@ class TimerBase;
 
 // A collection of timers per thread. Kept in PlatformThreadData.
 class PLATFORM_EXPORT ThreadTimers {
-    WTF_MAKE_NONCOPYABLE(ThreadTimers); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ThreadTimers); WTF_MAKE_FAST_ALLOCATED(ThreadTimers);
 public:
     ThreadTimers();
 

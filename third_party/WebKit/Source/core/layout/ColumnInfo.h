@@ -33,7 +33,7 @@
 namespace blink {
 
 class ColumnInfo {
-    WTF_MAKE_NONCOPYABLE(ColumnInfo); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ColumnInfo); WTF_MAKE_FAST_ALLOCATED(ColumnInfo);
 public:
     ColumnInfo()
         : m_desiredColumnWidth(0)

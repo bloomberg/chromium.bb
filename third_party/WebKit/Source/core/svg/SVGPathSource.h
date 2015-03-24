@@ -25,7 +25,7 @@
 namespace blink {
 
 class SVGPathSource : public NoBaseWillBeGarbageCollectedFinalized<SVGPathSource> {
-    WTF_MAKE_NONCOPYABLE(SVGPathSource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(SVGPathSource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathSource);
 public:
     SVGPathSource() { }
     virtual ~SVGPathSource() { }

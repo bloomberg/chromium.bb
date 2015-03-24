@@ -76,7 +76,7 @@ private:
 };
 
 class SpellCheckRequester final : public NoBaseWillBeGarbageCollectedFinalized<SpellCheckRequester> {
-    WTF_MAKE_NONCOPYABLE(SpellCheckRequester); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(SpellCheckRequester); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SpellCheckRequester);
 public:
     static PassOwnPtrWillBeRawPtr<SpellCheckRequester> create(LocalFrame& frame)
     {

@@ -42,7 +42,7 @@ namespace blink {
 class EventDispatchMediator;
 
 class ScopedEventQueue {
-    WTF_MAKE_NONCOPYABLE(ScopedEventQueue); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ScopedEventQueue); WTF_MAKE_FAST_ALLOCATED(ScopedEventQueue);
 public:
     ~ScopedEventQueue();
 
