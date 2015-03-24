@@ -4,11 +4,14 @@
 
 package org.chromium.components.devtools_bridge;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
+
 import java.util.List;
 
 /**
  * Mock of SignalingReceiver.
  */
+@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class SignalingReceiverMock implements SignalingReceiver {
     public String sessionId;
     public String offer;

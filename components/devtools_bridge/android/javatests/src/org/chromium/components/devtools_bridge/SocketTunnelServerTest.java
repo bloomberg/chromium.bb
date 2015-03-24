@@ -11,6 +11,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import junit.framework.Assert;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -193,6 +195,7 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
         Assert.assertEquals(sentData, readData);
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @MediumTest
     public void testReuseConnectionId() throws IOException, InterruptedException {
         LocalSocket socket = connectToSocket(CONNECTION_ID);

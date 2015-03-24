@@ -228,6 +228,7 @@
           'variables': {
             'java_in_dir': '../../build/android/empty',
             'additional_src_dirs': [ 'src/java/' ],
+            'run_findbugs': 0,
           },
           'includes': [ '../../build/java.gypi' ],
         },

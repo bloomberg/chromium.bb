@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.HistoryUtils;
@@ -276,6 +277,7 @@ public class NavigationHistoryTest extends AwTestBase {
      * @MediumTest
      * @Feature({"AndroidWebView"})
      */
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @DisabledTest
     public void testNavigateBackToNoncacheableLoginPage() throws Throwable {
         final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =

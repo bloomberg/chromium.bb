@@ -4,11 +4,14 @@
 
 package org.chromium.components.devtools_bridge;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
  * Mock for AbstractPeerConnection.Observer.
  */
+@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class PeerConnectionObserverMock implements AbstractPeerConnection.Observer {
     public AbstractPeerConnection.SessionDescriptionType localDescriptionType;
     public String localDescription;

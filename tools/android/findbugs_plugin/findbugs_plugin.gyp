@@ -9,6 +9,7 @@
          'type': 'none',
          'variables': {
            'java_in_dir': 'test/java/',
+            'run_findbugs': 0,
          },
          'includes': [ '../../../build/java.gypi' ],
       }

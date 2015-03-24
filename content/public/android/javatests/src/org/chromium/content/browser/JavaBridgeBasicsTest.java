@@ -36,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
  * - Threading
  * - Inheritance
  */
+@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestController extends Controller {

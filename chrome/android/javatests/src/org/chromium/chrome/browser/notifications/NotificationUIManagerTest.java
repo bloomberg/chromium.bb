@@ -13,6 +13,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.SparseArray;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -277,6 +278,7 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
      * Verifies that creating a notification with an associated "tag" will cause any previous
      * notification with the same tag to be dismissed prior to being shown.
      */
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationTagReplacement() throws Exception {

@@ -14,6 +14,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -240,6 +241,7 @@ public class LoadUrlTest extends AwTestBase {
         }
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRedirectAndReloadWithExtraHeaders() throws Throwable {
@@ -278,6 +280,7 @@ public class LoadUrlTest extends AwTestBase {
         }
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRendererNavigationAndGoBackWithExtraHeaders() throws Throwable {

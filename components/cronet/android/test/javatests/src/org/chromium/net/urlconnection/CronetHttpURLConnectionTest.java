@@ -7,6 +7,7 @@ package org.chromium.net.urlconnection;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
@@ -168,6 +169,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         checkExceptionsAreThrown(urlConnection);
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
@@ -432,6 +434,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.disconnect();
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet

@@ -8,25 +8,6 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into depot_tools.
 """
 
-_DELETIONS_ONLY_FILES = (
-    'build/android/findbugs_filter/findbugs_known_bugs.txt',
-)
-
-
-def _CheckDeletionsOnlyFiles(input_api, output_api):
-  """Check that a certain listed files only have deletions.
-  """
-  warnings = []
-  for f in input_api.AffectedFiles():
-    if f.LocalPath() in _DELETIONS_ONLY_FILES:
-      if f.ChangedContents():
-        warnings.append(f.LocalPath())
-  results = []
-  if warnings:
-    results.append(output_api.PresubmitPromptWarning(
-        'Following files should only contain deletions.', warnings))
-  return results
-
 
 def CommonChecks(input_api, output_api):
   output = []
@@ -70,8 +51,6 @@ def CommonChecks(input_api, output_api):
           J('pylib', 'utils', 'md5sum_test.py'),
       ],
       env=pylib_test_env))
-  # TODO(jbudorick): Reenable this check once upstreaming is finished.
-  # output.extend(_CheckDeletionsOnlyFiles(input_api, output_api))
   return output
 
 

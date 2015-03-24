@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -35,6 +36,7 @@ public class AutofillTest extends ChromeShellTestBase {
     private WindowAndroid mWindowAndroid;
     private MockAutofillCallback mMockAutofillCallback;
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     @Override
     public void setUp() throws Exception {
         super.setUp();

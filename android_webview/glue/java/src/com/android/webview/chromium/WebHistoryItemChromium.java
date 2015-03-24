@@ -7,6 +7,7 @@ package com.android.webview.chromium;
 import android.graphics.Bitmap;
 import android.webkit.WebHistoryItem;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.NavigationEntry;
 
 /**
@@ -79,6 +80,9 @@ public class WebHistoryItemChromium extends WebHistoryItem {
     /**
      * See {@link android.webkit.WebHistoryItem#clone}.
      */
+    @SuppressFBWarnings({
+            "CHROMIUM_SYNCHRONIZED_METHOD",
+            "CN_IDIOM_NO_SUPER_CALL"})
     @Override
     public synchronized WebHistoryItemChromium clone() {
         return new WebHistoryItemChromium(mUrl, mOriginalUrl, mTitle, mFavicon);

@@ -21,6 +21,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
@@ -241,12 +242,14 @@ public abstract class ChromiumApplication extends ContentApplication {
                         .setCancelable(true)
                         .setPositiveButton(getResources().getString(android.R.string.ok),
                                 new DialogInterface.OnClickListener() {
+                                    @SuppressFBWarnings("DM_EXIT")
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         System.exit(-1);
                                     }
                                 })
                         .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @SuppressFBWarnings("DM_EXIT")
                             @Override
                             public void onCancel(DialogInterface dialog) {
                                 System.exit(-1);

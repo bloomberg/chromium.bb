@@ -12,40 +12,12 @@ In particular, ~ at the start of a string means it's a regex.
 <FindBugsFilter>
   <!-- Skip the generated resource classes (including nested classes). -->
   <Match>
-    <Class name="~org\.chromium\..*\.R(\$\w+)?" />
+    <Class name="~.*\.R(\$\w+)?" />
   </Match>
   <Match>
     <Class name="~org\.chromium\..*\.Manifest(\$\w+)?" />
   </Match>
+  <Bug pattern="DM_STRING_CTOR" />
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
-  <Match>
-    <Class name="~org\.chromium\.chrome\.browser\.ChromiumApplication.*" />
-    <Method name="onCancel" />
-    <Bug code="Dm" />
-  </Match>
-  <Match>
-    <Class name="~org\.chromium\.chrome\.browser\.ChromiumApplication.*" />
-    <Method name="onClick" />
-    <Bug code="Dm" />
-  </Match>
   <Bug pattern="DM_DEFAULT_ENCODING" />
-  <!-- Ignore bugs that are often false-positives in test code -->
-  <Match>
-    <Class name="~org\.chromium\..*Test(\$\w+)?" />
-    <Or>
-      <Bug code="DLS,UrF" />
-      <Bug pattern="DM_GC" />
-    </Or>
-  </Match>
-  <!--
-  crbug.com/449101
-  Ignore findbugs plugin test cases.
-  -->
-  <Match>
-    <Or>
-      <Class name="~org\.chromium\.tools\.findbugs\.plugin\.SimpleSynchronizedMethod" />
-      <Class name="~org\.chromium\.tools\.findbugs\.plugin\.SimpleSynchronizedStaticMethod" />
-      <Class name="~org\.chromium\.tools\.findbugs\.plugin\.SimpleSynchronizedThis" />
-    </Or>
-  </Match>
 </FindBugsFilter>

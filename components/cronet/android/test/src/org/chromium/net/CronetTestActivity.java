@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 /**
  * Activity for managing the Cronet Test.
  */
+@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class CronetTestActivity extends Activity {
     private static final String TAG = "CronetTestActivity";
 
@@ -42,6 +44,7 @@ public class CronetTestActivity extends Activity {
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
     public UrlRequestContext mUrlRequestContext;
     HttpUrlRequestFactory mRequestFactory;
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     HistogramManager mHistogramManager;
 
     String mUrl;

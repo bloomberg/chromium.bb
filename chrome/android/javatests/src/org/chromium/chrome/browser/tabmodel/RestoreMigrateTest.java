@@ -8,6 +8,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.util.StreamUtil;
 import org.chromium.chrome.test.util.ApplicationData;
@@ -60,6 +61,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
      * @throws ExecutionException
      */
     @SuppressWarnings("unused")
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     public void testMigrateData() throws IOException, InterruptedException, ExecutionException {
         ApplicationData.clearAppData(getInstrumentation().getTargetContext());
@@ -115,6 +117,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
      * @throws ExecutionException
      */
     @SuppressWarnings("unused")
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     public void testSkipMigrateData() throws IOException, InterruptedException, ExecutionException {
         ApplicationData.clearAppData(getInstrumentation().getTargetContext());
@@ -172,6 +175,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
      * @throws ExecutionException
      */
     @SuppressWarnings("unused")
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     public void testMigrationLeavesOtherFilesAlone() throws IOException, InterruptedException,
             ExecutionException {

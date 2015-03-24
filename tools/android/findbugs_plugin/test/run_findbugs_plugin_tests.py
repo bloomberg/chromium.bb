@@ -14,7 +14,7 @@
 # remove the expected result of exsting tests.
 
 
-import optparse
+import argparse
 import os
 import sys
 
@@ -26,28 +26,79 @@ from pylib import constants
 from pylib.utils import findbugs
 
 
+_EXPECTED_WARNINGS = set([
+    findbugs.FindBugsWarning(
+        bug_type='CHROMIUM_SYNCHRONIZED_THIS',
+        start_line=15,
+        end_line=15,
+        file_name='SimpleSynchronizedThis.java',
+        message=(
+            "Shouldn't use synchronized(this)",
+            'In class org.chromium.tools.findbugs.plugin.'
+                + 'SimpleSynchronizedThis',
+            'In method org.chromium.tools.findbugs.plugin.'
+                + 'SimpleSynchronizedThis.synchronizedThis()',
+            'At SimpleSynchronizedThis.java:[line 15]',
+        )),
+    findbugs.FindBugsWarning(
+        bug_type='CHROMIUM_SYNCHRONIZED_METHOD',
+        start_line=14,
+        end_line=14,
+        file_name='SimpleSynchronizedStaticMethod.java',
+        message=(
+            "Shouldn't use synchronized method",
+            'In class org.chromium.tools.findbugs.plugin.'
+                + 'SimpleSynchronizedStaticMethod',
+            'In method org.chromium.tools.findbugs.plugin.'
+                + 'SimpleSynchronizedStaticMethod.synchronizedStaticMethod()',
+            'At SimpleSynchronizedStaticMethod.java:[line 14]',
+        )),
+    findbugs.FindBugsWarning(
+        bug_type='CHROMIUM_SYNCHRONIZED_METHOD',
+        start_line=15,
+        end_line=15,
+        file_name='SimpleSynchronizedMethod.java',
+        message=(
+            "Shouldn't use synchronized method",
+            'In class org.chromium.tools.findbugs.plugin.'
+                + 'SimpleSynchronizedMethod',
+            'In method org.chromium.tools.findbugs.plugin.'
+                + 'SimpleSynchronizedMethod.synchronizedMethod()',
+            'At SimpleSynchronizedMethod.java:[line 15]',
+        )),
+])
+
+
 def main(argv):
-  parser = findbugs.GetCommonParser()
 
-  options, _ = parser.parse_args()
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+      '-l', '--release-build', action='store_true', dest='release',
+      help='Run the release build of the findbugs plugin test.')
+  args = parser.parse_args()
 
-  if not options.known_bugs:
-    options.known_bugs = os.path.join(constants.DIR_SOURCE_ROOT, 'tools',
-                                      'android', 'findbugs_plugin', 'test',
-                                      'expected_result.txt')
+  test_jar_path = os.path.join(
+      constants.GetOutDirectory(
+          'Release' if args.release else 'Debug'),
+      'lib.java', 'findbugs_plugin_test.jar')
 
-  if not options.only_analyze:
-    options.only_analyze = 'org.chromium.tools.findbugs.plugin.*'
+  findbugs_command, findbugs_warnings = findbugs.Run(
+      None, 'org.chromium.tools.findbugs.plugin.*', None, None, None,
+      [test_jar_path])
 
-  # crbug.com/449101
-  # Temporary workaround to have the Android Clang Builder (dbg) bot
-  # pass the findbugs_tests step.
-  if not options.exclude:
-    options.exclude = os.path.join(constants.DIR_SOURCE_ROOT, 'build',
-                                   'android', 'findbugs_filter',
-                                   'findbugs_exclude.xml')
+  missing_warnings = _EXPECTED_WARNINGS.difference(findbugs_warnings)
+  if missing_warnings:
+    print 'Missing warnings:'
+    for w in missing_warnings:
+      print '%s' % str(w)
 
-  return findbugs.Run(options)
+  unexpected_warnings = findbugs_warnings.difference(_EXPECTED_WARNINGS)
+  if unexpected_warnings:
+    print 'Unexpected warnings:'
+    for w in unexpected_warnings:
+      print '%s' % str(w)
+
+  return len(unexpected_warnings) + len(missing_warnings)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

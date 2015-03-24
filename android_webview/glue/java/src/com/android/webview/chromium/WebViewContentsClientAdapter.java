@@ -46,6 +46,7 @@ import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -1203,6 +1204,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             return mAwPermissionRequest.getOrigin();
         }
 
+        @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_THIS")
         @Override
         public String[] getResources() {
             synchronized (this) {

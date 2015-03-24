@@ -8,6 +8,7 @@ import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -118,6 +119,7 @@ public class EnhancedBookmarksModelTest extends ChromeShellTestBase{
         verifyBookmark(bookmarkD, "kauri", "http://kauri.org/", false, folderA, "kauri");
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @UiThreadTest
     @SmallTest
     @Feature({"Bookmark"})

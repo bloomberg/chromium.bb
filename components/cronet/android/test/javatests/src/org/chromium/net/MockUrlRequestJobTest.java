@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 
 import java.io.IOException;
@@ -252,6 +253,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         }
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"Cronet"})
     public void testNoWriteAfterSyncCancel() throws Exception {

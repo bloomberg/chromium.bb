@@ -12,12 +12,14 @@ import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import org.chromium.android_webview.AwCookieManager;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * Chromium implementation of CookieManager -- forwards calls to the
  * chromium internal implementation.
  */
 @SuppressWarnings("deprecation")
+@SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 public class CookieManagerAdapter extends CookieManager {
     private static final String LOGTAG = "CookieManager";
 

@@ -21,6 +21,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -79,6 +80,7 @@ public abstract class AwContentsClient {
     /**
      * Parameters for the {@link AwContentsClient#shouldInterceptRequest} method.
      */
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class AwWebResourceRequest {
         // Url of the request.
         public String url;

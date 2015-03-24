@@ -44,6 +44,9 @@ if (is_android) {
     # identifying various build artifacts corresponding to a particular build of
     # chrome (e.g. where to find archived symbols).
     android_chrome_build_id = "\"\""
+
+    # Set to true to run findbugs on JAR targets.
+    run_findbugs = false
   }
 
   # Host stuff -----------------------------------------------------------------

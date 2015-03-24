@@ -14,7 +14,9 @@ import org.chromium.base.test.util.Feature;
  * use of fields.
  */
 public class JavaBridgeFieldsTest extends JavaBridgeTestBase {
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    @SuppressFBWarnings({
+            "CHROMIUM_SYNCHRONIZED_METHOD",
+            "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     private class TestObject extends Controller {
         private String mStringValue;
 

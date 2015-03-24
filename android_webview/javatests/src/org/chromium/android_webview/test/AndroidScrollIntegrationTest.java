@@ -15,6 +15,7 @@ import org.chromium.android_webview.AwScrollOffsetManager;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Integration tests for synchronous scrolling.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
+@SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
 public class AndroidScrollIntegrationTest extends AwTestBase {
     private static class OverScrollByCallbackHelper extends CallbackHelper {
         int mDeltaX;

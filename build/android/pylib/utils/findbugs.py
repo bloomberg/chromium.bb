@@ -2,254 +2,153 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
+import argparse
+import logging
 import os
 import re
 import shlex
-import subprocess
 import sys
+import xml.dom.minidom
 
 from pylib import cmd_helper
 from pylib import constants
 
 
-def _PrintMessage(warnings, title, action, known_bugs_file):
-  if warnings:
-    print
-    print '*' * 80
-    print '%s warnings.' % title
-    print '%s %s' % (action, known_bugs_file)
-    print '-' * 80
-    for warning in warnings:
-      print warning
-    print '-' * 80
-    print
+_FINDBUGS_HOME = os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
+                              'findbugs')
+_FINDBUGS_JAR = os.path.join(_FINDBUGS_HOME, 'lib', 'findbugs.jar')
+_FINDBUGS_MAX_HEAP = 768
+_FINDBUGS_PLUGIN_PATH = os.path.join(
+    constants.DIR_SOURCE_ROOT, 'tools', 'android', 'findbugs_plugin', 'lib',
+    'chromiumPlugin.jar')
 
 
-def _StripLineNumbers(current_warnings):
-  re_line = r':\[line.*?\]$'
-  return [re.sub(re_line, '', x) for x in current_warnings]
+def _ParseXmlResults(results_doc):
+  warnings = set()
+  for en in (n for n in results_doc.documentElement.childNodes
+             if n.nodeType == xml.dom.Node.ELEMENT_NODE):
+    if en.tagName == 'BugInstance':
+      warnings.add(_ParseBugInstance(en))
+  return warnings
 
 
-def _DiffKnownWarnings(current_warnings_set, known_bugs_file):
-  if os.path.exists(known_bugs_file):
-    with open(known_bugs_file, 'r') as known_bugs:
-      known_bugs_set = set(known_bugs.read().splitlines())
-  else:
-    known_bugs_set = set()
-
-  new_warnings = current_warnings_set - known_bugs_set
-  _PrintMessage(sorted(new_warnings), 'New', 'Please fix, or perhaps add to',
-                known_bugs_file)
-
-  obsolete_warnings = known_bugs_set - current_warnings_set
-  _PrintMessage(sorted(obsolete_warnings), 'Obsolete', 'Please remove from',
-                known_bugs_file)
-
-  count = len(new_warnings) + len(obsolete_warnings)
-  if count:
-    print '*** %d FindBugs warning%s! ***' % (count, 's' * (count > 1))
-    if len(new_warnings):
-      print '*** %d: new ***' % len(new_warnings)
-    if len(obsolete_warnings):
-      print '*** %d: obsolete ***' % len(obsolete_warnings)
-    print
-    print 'Alternatively,  rebaseline with --rebaseline command option'
-    print
-  else:
-    print 'No new FindBugs warnings.'
-  print
-  return count
+def _GetMessage(node):
+  for c in (n for n in node.childNodes
+            if n.nodeType == xml.dom.Node.ELEMENT_NODE):
+    if c.tagName == 'Message':
+      if (len(c.childNodes) == 1
+          and c.childNodes[0].nodeType == xml.dom.Node.TEXT_NODE):
+        return c.childNodes[0].data
+  return None
 
 
-def _Rebaseline(current_warnings_set, known_bugs_file):
-  with file(known_bugs_file, 'w') as known_bugs:
-    for warning in sorted(current_warnings_set):
-      print >> known_bugs, warning
-  return 0
+def _ParseBugInstance(node):
+  bug = FindBugsWarning(node.getAttribute('type'))
+  msg_parts = []
+  for c in (n for n in node.childNodes
+            if n.nodeType == xml.dom.Node.ELEMENT_NODE):
+    if c.tagName == 'Class':
+      msg_parts.append(_GetMessage(c))
+    elif c.tagName == 'Method':
+      msg_parts.append(_GetMessage(c))
+    elif c.tagName == 'Field':
+      msg_parts.append(_GetMessage(c))
+    elif c.tagName == 'SourceLine':
+      bug.file_name = c.getAttribute('sourcefile')
+      if c.hasAttribute('start'):
+        bug.start_line = int(c.getAttribute('start'))
+      if c.hasAttribute('end'):
+        bug.end_line = int(c.getAttribute('end'))
+      msg_parts.append(_GetMessage(c))
+    elif (c.tagName == 'ShortMessage' and len(c.childNodes) == 1
+          and c.childNodes[0].nodeType == xml.dom.Node.TEXT_NODE):
+      msg_parts.append(c.childNodes[0].data)
+  bug.message = tuple(m for m in msg_parts if m)
+  return bug
 
 
-def _GetChromeJars(release_version):
-  version = 'Debug'
-  if release_version:
-    version = 'Release'
-  path = os.path.join(constants.DIR_SOURCE_ROOT,
-                      os.environ.get('CHROMIUM_OUT_DIR', 'out'),
-                      version,
-                      'lib.java')
-  cmd = 'find %s -name "*.jar"' % path
-  out = cmd_helper.GetCmdOutput(shlex.split(cmd))
-  out = [p for p in out.splitlines() if not p.endswith('.dex.jar')]
-  if not out:
-    print 'No classes found in %s' % path
-  return ' '.join(out)
+class FindBugsWarning(object):
+
+  def __init__(self, bug_type='', end_line=0, file_name='', message=None,
+               start_line=0):
+    self.bug_type = bug_type
+    self.end_line = end_line
+    self.file_name = file_name
+    if message is None:
+      self.message = tuple()
+    else:
+      self.message = message
+    self.start_line = start_line
+
+  def __cmp__(self, other):
+    return (cmp(self.file_name, other.file_name)
+            or cmp(self.start_line, other.start_line)
+            or cmp(self.end_line, other.end_line)
+            or cmp(self.bug_type, other.bug_type)
+            or cmp(self.message, other.message))
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
+  def __hash__(self):
+    return hash((self.bug_type, self.end_line, self.file_name, self.message,
+                 self.start_line))
+
+  def __ne__(self, other):
+    return not self == other
+
+  def __str__(self):
+    return '%s: %s' % (self.bug_type, '\n  '.join(self.message))
 
 
-def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
-        rebaseline, release_version, findbug_args):
-  """Run the FindBugs.
+def Run(exclude, classes_to_analyze, auxiliary_classes, output_file,
+        findbug_args, jars):
+  """Run FindBugs.
 
   Args:
     exclude: the exclude xml file, refer to FindBugs's -exclude command option.
-    known_bugs: the text file of known bugs. The bugs in it will not be
-                reported.
     classes_to_analyze: the list of classes need to analyze, refer to FindBug's
                         -onlyAnalyze command line option.
     auxiliary_classes: the classes help to analyze, refer to FindBug's
                        -auxclasspath command line option.
-    rebaseline: True if the known_bugs file needs rebaseline.
-    release_version: True if the release version needs check, otherwise check
-                     debug version.
-    findbug_args: addtional command line options needs pass to Findbugs.
+    output_file: An optional path to dump XML results to.
+    findbug_args: A list of addtional command line options to pass to Findbugs.
   """
+  # TODO(jbudorick): Get this from the build system.
+  system_classes = [
+    os.path.join(constants.ANDROID_SDK_ROOT, 'platforms',
+                 'android-%s' % constants.ANDROID_SDK_VERSION, 'android.jar')
+  ]
+  system_classes.extend(os.path.abspath(classes)
+                        for classes in auxiliary_classes or [])
 
-  chrome_src = constants.DIR_SOURCE_ROOT
-  sdk_root = constants.ANDROID_SDK_ROOT
-  sdk_version = constants.ANDROID_SDK_VERSION
-
-  system_classes = []
-  system_classes.append(os.path.join(sdk_root, 'platforms',
-                                     'android-%s' % sdk_version, 'android.jar'))
-  if auxiliary_classes:
-    for classes in auxiliary_classes:
-      system_classes.append(os.path.abspath(classes))
-
-  findbugs_javacmd = 'java'
-  findbugs_home = os.path.join(chrome_src, 'third_party', 'findbugs')
-  findbugs_jar = os.path.join(findbugs_home, 'lib', 'findbugs.jar')
-  findbugs_pathsep = ':'
-  findbugs_maxheap = '768'
-
-  cmd = '%s ' % findbugs_javacmd
-  cmd = '%s -classpath %s%s' % (cmd, findbugs_jar, findbugs_pathsep)
-  cmd = '%s -Xmx%sm ' % (cmd, findbugs_maxheap)
-  cmd = '%s -Dfindbugs.home="%s" ' % (cmd, findbugs_home)
-  cmd = '%s -jar %s ' % (cmd, findbugs_jar)
-
-  cmd = '%s -textui -sortByClass ' % cmd
-  cmd = '%s -pluginList %s' % (cmd, os.path.join(chrome_src, 'tools', 'android',
-                                                 'findbugs_plugin', 'lib',
-                                                 'chromiumPlugin.jar'))
-  if len(system_classes):
-    cmd = '%s -auxclasspath %s ' % (cmd, ':'.join(system_classes))
-
+  cmd = ['java',
+         '-classpath', '%s:' % _FINDBUGS_JAR,
+         '-Xmx%dm' % _FINDBUGS_MAX_HEAP,
+         '-Dfindbugs.home="%s"' % _FINDBUGS_HOME,
+         '-jar', _FINDBUGS_JAR,
+         '-textui', '-sortByClass',
+         '-pluginList', _FINDBUGS_PLUGIN_PATH, '-xml:withMessages']
+  if system_classes:
+    cmd.extend(['-auxclasspath', ':'.join(system_classes)])
   if classes_to_analyze:
-    cmd = '%s -onlyAnalyze %s ' % (cmd, classes_to_analyze)
-
+    cmd.extend(['-onlyAnalyze', classes_to_analyze])
   if exclude:
-    cmd = '%s -exclude %s ' % (cmd, os.path.abspath(exclude))
-
+    cmd.extend(['-exclude', os.path.abspath(exclude)])
+  if output_file:
+    cmd.extend(['-output', output_file])
   if findbug_args:
-    cmd = '%s %s ' % (cmd, findbug_args)
+    cmd.extend(findbug_args)
+  cmd.extend(os.path.abspath(j) for j in jars or [])
 
-  chrome_classes = _GetChromeJars(release_version)
-  if not chrome_classes:
-    return 1
-  cmd = '%s %s ' % (cmd, chrome_classes)
-
-  print
-  print '*' * 80
-  print 'Command used to run findbugs:'
-  print cmd
-  print '*' * 80
-  print
-
-  proc = subprocess.Popen(shlex.split(cmd),
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  out, _err = proc.communicate()
-  current_warnings_set = set(_StripLineNumbers(filter(None, out.splitlines())))
-
-  if rebaseline:
-    return _Rebaseline(current_warnings_set, known_bugs)
+  if output_file:
+    cmd_helper.RunCmd(cmd)
+    results_doc = xml.dom.minidom.parse(output_file)
   else:
-    return _DiffKnownWarnings(current_warnings_set, known_bugs)
+    raw_out = cmd_helper.GetCmdOutput(cmd)
+    results_doc = xml.dom.minidom.parseString(raw_out)
 
-def Run(options):
-  exclude_file = None
-  known_bugs_file = None
+  current_warnings_set = _ParseXmlResults(results_doc)
 
-  if options.exclude:
-    exclude_file = options.exclude
-  elif options.base_dir:
-    exclude_file = os.path.join(options.base_dir, 'findbugs_exclude.xml')
+  return (' '.join(cmd), current_warnings_set)
 
-  if options.known_bugs:
-    known_bugs_file = options.known_bugs
-  elif options.base_dir:
-    known_bugs_file = os.path.join(options.base_dir, 'findbugs_known_bugs.txt')
-
-  auxclasspath = None
-  if options.auxclasspath:
-    auxclasspath = options.auxclasspath.split(':')
-  return _Run(exclude_file, known_bugs_file, options.only_analyze, auxclasspath,
-              options.rebaseline, options.release_build, options.findbug_args)
-
-
-def GetCommonParser():
-  parser = optparse.OptionParser()
-  parser.add_option('-r',
-                    '--rebaseline',
-                    action='store_true',
-                    dest='rebaseline',
-                    help='Rebaseline known findbugs issues.')
-
-  parser.add_option('-a',
-                    '--auxclasspath',
-                    action='store',
-                    default=None,
-                    dest='auxclasspath',
-                    help='Set aux classpath for analysis.')
-
-  parser.add_option('-o',
-                    '--only-analyze',
-                    action='store',
-                    default=None,
-                    dest='only_analyze',
-                    help='Only analyze the given classes and packages.')
-
-  parser.add_option('-e',
-                    '--exclude',
-                    action='store',
-                    default=None,
-                    dest='exclude',
-                    help='Exclude bugs matching given filter.')
-
-  parser.add_option('-k',
-                    '--known-bugs',
-                    action='store',
-                    default=None,
-                    dest='known_bugs',
-                    help='Not report the bugs in the given file.')
-
-  parser.add_option('-l',
-                    '--release-build',
-                    action='store_true',
-                    dest='release_build',
-                    help='Analyze release build instead of debug.')
-
-  parser.add_option('-f',
-                    '--findbug-args',
-                    action='store',
-                    default=None,
-                    dest='findbug_args',
-                    help='Additional findbug arguments.')
-
-  parser.add_option('-b',
-                    '--base-dir',
-                    action='store',
-                    default=None,
-                    dest='base_dir',
-                    help='Base directory for configuration file.')
-
-  return parser
-
-
-def main():
-  parser = GetCommonParser()
-  options, _ = parser.parse_args()
-
-  return Run(options)
-
-
-if __name__ == '__main__':
-  sys.exit(main())

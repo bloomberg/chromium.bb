@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -119,6 +120,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
         assertEquals(1.0f, getScaleOnUiThread(awContents));
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testScreenSizeInPhysicalPixelsQuirk() throws Throwable {

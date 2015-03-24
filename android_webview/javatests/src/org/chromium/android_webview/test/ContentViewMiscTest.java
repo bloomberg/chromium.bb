@@ -14,6 +14,7 @@ import android.test.mock.MockContext;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
@@ -33,6 +34,7 @@ public class ContentViewMiscTest extends AwTestBase {
     private AwContents mAwContents;
     private ContentViewCore mContentViewCore;
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     @Override
     public void setUp() throws Exception {
         super.setUp();

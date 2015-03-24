@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -18,6 +19,7 @@ public class LocationProviderTest extends InstrumentationTestCase {
     private Activity mActivity;
     private LocationProviderAdapter mLocationProvider;
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     @Override
     public void setUp() {
         mActivity = new Activity();

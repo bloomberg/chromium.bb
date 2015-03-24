@@ -7,6 +7,7 @@ package org.chromium.content.common;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -30,6 +31,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
             }
         };
 
+        @SuppressFBWarnings("URF_UNREAD_FIELD")
         public ReferredObject() {
             sObjectCount.incrementAndGet();
             mRef = new CleanupReference(this, new DestroyRunnable());
@@ -42,6 +44,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         sObjectCount.set(0);
     }
 
+    @SuppressFBWarnings("DM_GC")
     private void collectGarbage() {
         // While this is only a 'hint' to the VM, it's generally effective and sufficient on
         // dalvik. If this changes in future, maybe try allocating a few gargantuan objects
@@ -49,6 +52,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         System.gc();
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCreateSingle() throws Throwable {

@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import junit.framework.Assert;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.devtools_bridge.RTCConfiguration;
 import org.chromium.components.devtools_bridge.SessionBase;
 
@@ -18,6 +19,7 @@ import java.util.List;
 /**
  * Tests for {@link CommandSender}
  */
+@SuppressFBWarnings("URF_UNREAD_FIELD")
 public class CommandSenderTest extends InstrumentationTestCase {
     private static final RTCConfiguration CONFIG = new RTCConfiguration.Builder()
             .addIceServer("http://example.org")
