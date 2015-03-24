@@ -32,6 +32,7 @@
 #else
 
 typedef int EGLint;
+typedef int EGLenum;
 typedef void *EGLDisplay;
 typedef void *EGLSurface;
 typedef intptr_t EGLNativeDisplayType;
