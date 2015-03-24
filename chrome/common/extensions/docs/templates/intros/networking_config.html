@@ -6,12 +6,20 @@ The interaction between Extension, Chrome, and the user will be:
   networks that it wants to handle captive portals on.</li>
   <li>If one of these networks is detected by Chrome, it will appear in the
   network list, badged with an icon to indicate that a captive portal handler is
-  available.</li>
+  available.
+  <p>
+  <img src="{{static}}/images/networking_config_badge.png"
+     align="middle" width="301" height="305" alt="Badge icon in tray network list" />
+  </li>
   <li>If the user selects such a network, but a captive portal is not detected,
   Chrome will connect as usual - the Extension will never be involved.</li>
   <li>Otherwise, if a captive portal is detected, the user is notified and asked
   to authenticate using the registered Extension or whether to visit the captive
-  portal page.</li>
+  portal page.
+  <p>
+  <img src="{{static}}/images/networking_config_notification.png"
+     align="middle" width="367" height="224" alt="Captive portal notification" />
+  </li>
   <li>If the user selects the Extension, Chrome notifies the Extension through
   the $(ref:onCaptivePortalDetected) event.</li>
   <li>The Extension should now interact with the user if necessary and
