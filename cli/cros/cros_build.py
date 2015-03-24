@@ -76,6 +76,9 @@ To just build a single package:
     parser.add_argument('--no-chroot-update', help="Don't update chroot.",
                         default=True, dest='chroot_update',
                         action='store_false')
+    parser.add_argument('--init-only', action='store_true',
+                        help="Initialize build environment but don't build "
+                        "anything.")
     deps = parser.add_mutually_exclusive_group()
     deps.add_argument('--no-deps', help="Don't update dependencies.",
                       default=True, dest='deps', action='store_false')
@@ -144,7 +147,7 @@ To just build a single package:
 
     self.build_pkgs = self.options.packages or (self.brick and
                                                 self.brick.MainPackages())
-    if not self.build_pkgs:
+    if not (self.build_pkgs or self.options.init_only):
       cros_build_lib.Die('No packages found, nothing to build.')
 
     # Set up board if not building for host.
@@ -154,4 +157,5 @@ To just build a single package:
       chroot_util.SetupBoard(brick=self.brick, board=self.board,
                              use_binary=self.options.binary)
 
-    parallel.RunParallelSteps([self._CheckDependencies, self._Build])
+    if not self.options.init_only:
+      parallel.RunParallelSteps([self._CheckDependencies, self._Build])
