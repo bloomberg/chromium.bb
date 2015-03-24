@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -32,19 +33,14 @@ namespace content {
 namespace devtools {
 namespace service_worker {
 
+using Response = DevToolsProtocolClient::Response;
+
 namespace {
 
-const char kServiceWorkerVersionRunningStatusStopped[] = "stopped";
-const char kServiceWorkerVersionRunningStatusStarting[] = "starting";
-const char kServiceWorkerVersionRunningStatusRunning[] = "running";
-const char kServiceWorkerVersionRunningStatusStopping[] = "stopping";
-
-const char kServiceWorkerVersionStatusNew[] = "new";
-const char kServiceWorkerVersionStatusInstalling[] = "installing";
-const char kServiceWorkerVersionStatusInstalled[] = "installed";
-const char kServiceWorkerVersionStatusActivating[] = "activating";
-const char kServiceWorkerVersionStatusActivated[] = "activated";
-const char kServiceWorkerVersionStatusRedundant[] = "redundant";
+void ResultNoOp(bool success) {
+}
+void StatusNoOp(ServiceWorkerStatusCode status) {
+}
 
 const std::string GetVersionRunningStatusString(
     content::ServiceWorkerVersion::RunningStatus running_status) {
@@ -145,9 +141,43 @@ bool CollectURLs(std::set<GURL>* urls, FrameTreeNode* tree_node) {
   return false;
 }
 
-}  // namespace
+void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
+                           int64 version_id) {
+  ServiceWorkerContextCore* context_core = context->context();
+  if (!context_core)
+    return;
+  if (content::ServiceWorkerVersion* version =
+          context_core->GetLiveVersion(version_id)) {
+    version->StopWorker(base::Bind(&StatusNoOp));
+  }
+}
 
-using Response = DevToolsProtocolClient::Response;
+void GetDevToolsRouteInfoOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> context,
+    int64 version_id,
+    const base::Callback<void(int, int)>& callback) {
+  ServiceWorkerContextCore* context_core = context->context();
+  if (!context_core)
+    return;
+  if (content::ServiceWorkerVersion* version =
+          context_core->GetLiveVersion(version_id)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            callback, version->embedded_worker()->process_id(),
+            version->embedded_worker()->worker_devtools_agent_route_id()));
+  }
+}
+
+Response CreateContextErrorResoponse() {
+  return Response::InternalError("Could not connect to the context");
+}
+
+Response CreateInvalidVersionIdErrorResoponse() {
+  return Response::InternalError("Invalid version ID");
+}
+
+}  // namespace
 
 ServiceWorkerHandler::ServiceWorkerHandler()
     : enabled_(false), weak_factory_(this) {
@@ -258,6 +288,64 @@ Response ServiceWorkerHandler::Stop(
     return Response::InternalError("Not connected to the worker");
   it->second->UnregisterWorker();
   return Response::OK();
+}
+
+Response ServiceWorkerHandler::Unregister(const std::string& scope_url) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResoponse();
+  context_->UnregisterServiceWorker(GURL(scope_url), base::Bind(&ResultNoOp));
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::StartWorker(const std::string& scope_url) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResoponse();
+  context_->StartServiceWorker(GURL(scope_url), base::Bind(&StatusNoOp));
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResoponse();
+  int64 id = 0;
+  if (!base::StringToInt64(version_id, &id))
+    return CreateInvalidVersionIdErrorResoponse();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&StopServiceWorkerOnIO, context_, id));
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResoponse();
+
+  int64 id = 0;
+  if (!base::StringToInt64(version_id, &id))
+    return CreateInvalidVersionIdErrorResoponse();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetDevToolsRouteInfoOnIO, context_, id,
+                 base::Bind(&ServiceWorkerHandler::OpenNewDevToolsWindow,
+                            weak_factory_.GetWeakPtr())));
+  return Response::OK();
+}
+
+void ServiceWorkerHandler::OpenNewDevToolsWindow(int process_id,
+                                                 int devtools_agent_route_id) {
+  scoped_refptr<DevToolsAgentHostImpl> agent_host(
+      ServiceWorkerDevToolsManager::GetInstance()
+          ->GetDevToolsAgentHostForWorker(process_id, devtools_agent_route_id));
+  if (!agent_host.get())
+    return;
+  agent_host->Inspect(render_frame_host_->GetProcess()->GetBrowserContext());
 }
 
 void ServiceWorkerHandler::OnWorkerRegistrationUpdated(

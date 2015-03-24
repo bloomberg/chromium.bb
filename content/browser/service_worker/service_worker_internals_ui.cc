@@ -122,28 +122,6 @@ void UnregisterWithScope(
   context->context()->UnregisterServiceWorker(scope, callback);
 }
 
-void WorkerStarted(const scoped_refptr<ServiceWorkerRegistration>& registration,
-                   const ServiceWorkerInternalsUI::StatusCallback& callback,
-                   ServiceWorkerStatusCode status) {
-  callback.Run(status);
-}
-
-void StartActiveWorker(
-    const ServiceWorkerInternalsUI::StatusCallback& callback,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status == SERVICE_WORKER_OK) {
-    // Pass the reference of |registration| to WorkerStarted callback to prevent
-    // it from being deleted while starting the worker. If the refcount of
-    // |registration| is 1, it will be deleted after WorkerStarted is called.
-    registration->active_version()->StartWorker(
-        base::Bind(WorkerStarted, registration, callback));
-    return;
-  }
-  callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
-}
-
 void FindRegistrationForPattern(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     const GURL& scope,
@@ -655,11 +633,9 @@ void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
       !cmd_args->GetString("scope", &scope_string)) {
     return;
   }
-
   base::Callback<void(ServiceWorkerStatusCode)> callback =
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
-  FindRegistrationForPattern(
-      context, GURL(scope_string), base::Bind(StartActiveWorker, callback));
+  context->StartServiceWorker(GURL(scope_string), callback);
 }
 
 }  // namespace content

@@ -48,6 +48,10 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response SendMessage(const std::string& worker_id,
                        const std::string& message);
   Response Stop(const std::string& worker_id);
+  Response Unregister(const std::string& scope_url);
+  Response StartWorker(const std::string& scope_url);
+  Response StopWorker(const std::string& version_id);
+  Response InspectWorker(const std::string& version_id);
 
   // WorkerDevToolsManager::Observer implementation.
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
@@ -68,6 +72,8 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
   void OnWorkerVersionUpdated(
       const std::vector<ServiceWorkerVersionInfo>& registrations);
+
+  void OpenNewDevToolsWindow(int process_id, int devtools_agent_route_id);
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   scoped_ptr<Client> client_;

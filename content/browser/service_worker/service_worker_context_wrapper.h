@@ -40,6 +40,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
     : NON_EXPORTED_BASE(public ServiceWorkerContext),
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
+  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
   ServiceWorkerContextWrapper(BrowserContext* browser_context);
 
   // Init and Shutdown are for use on the UI thread when the profile,
@@ -90,6 +91,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   virtual void DeleteForOrigin(const GURL& origin_url,
                                const ResultCallback& done);
 
+  void StartServiceWorker(const GURL& pattern, const StatusCallback& callback);
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
 

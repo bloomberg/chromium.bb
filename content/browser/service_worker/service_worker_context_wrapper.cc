@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,6 +41,30 @@ base::LazyInstance<HeaderNameSet> g_excluded_header_name_set =
 
 void RunSoon(const base::Closure& closure) {
   base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+}
+
+void WorkerStarted(const ServiceWorkerContextWrapper::StatusCallback& callback,
+                   ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, status));
+}
+
+void StartActiveWorkerOnIO(
+    const ServiceWorkerContextWrapper::StatusCallback& callback,
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status == SERVICE_WORKER_OK) {
+    // Pass the reference of |registration| to WorkerStarted callback to prevent
+    // it from being deleted while starting the worker. If the refcount of
+    // |registration| is 1, it will be deleted after WorkerStarted is called.
+    registration->active_version()->StartWorker(
+        base::Bind(WorkerStarted, callback));
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
 }
 
 }  // namespace
@@ -210,6 +235,27 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
   context()->UnregisterServiceWorker(
       pattern,
       base::Bind(&FinishUnregistrationOnIO, continuation));
+}
+
+void ServiceWorkerContextWrapper::StartServiceWorker(
+    const GURL& pattern,
+    const StatusCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::StartServiceWorker, this,
+                   pattern, callback));
+    return;
+  }
+  if (!context_core_.get()) {
+    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    return;
+  }
+  context_core_->storage()->FindRegistrationForPattern(
+      pattern, base::Bind(&StartActiveWorkerOnIO, callback));
 }
 
 static void DidFindRegistrationForDocument(
