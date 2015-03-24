@@ -17,19 +17,19 @@ application-layer-id=4000
 
 transition-duration=300
 
-background-image=@abs_top_builddir@/data/background.png
+background-image=@abs_top_srcdir@/data/background.png
 background-id=1001
-panel-image=@abs_top_builddir@/data/panel.png
+panel-image=@abs_top_srcdir@/data/panel.png
 panel-id=1002
-tiling-image=@abs_top_builddir@/data/tiling.png
+tiling-image=@abs_top_srcdir@/data/tiling.png
 tiling-id=1003
-sidebyside-image=@abs_top_builddir@/data/sidebyside.png
+sidebyside-image=@abs_top_srcdir@/data/sidebyside.png
 sidebyside-id=1004
-fullscreen-image=@abs_top_builddir@/data/fullscreen.png
+fullscreen-image=@abs_top_srcdir@/data/fullscreen.png
 fullscreen-id=1005
-random-image=@abs_top_builddir@/data/random.png
+random-image=@abs_top_srcdir@/data/random.png
 random-id=1006
-home-image=@abs_top_builddir@/data/home.png
+home-image=@abs_top_srcdir@/data/home.png
 home-id=1007
 workspace-background-color=0x99000000
 workspace-background-id=2001
@@ -40,59 +40,59 @@ path=@libexecdir@/weston-keyboard
 [ivi-launcher]
 workspace-id=0
 icon-id=4001
-icon=@abs_top_builddir@/data/icon_ivi_flower.png
+icon=@abs_top_srcdir@/data/icon_ivi_flower.png
 path=@abs_top_builddir@/weston-flower
 
 [ivi-launcher]
 workspace-id=0
 icon-id=4002
-icon=@abs_top_builddir@/data/icon_ivi_clickdot.png
+icon=@abs_top_srcdir@/data/icon_ivi_clickdot.png
 path=@abs_top_builddir@/weston-clickdot
 
 [ivi-launcher]
 workspace-id=1
 icon-id=4003
-icon=@abs_top_builddir@/data/icon_ivi_simple-egl.png
+icon=@abs_top_srcdir@/data/icon_ivi_simple-egl.png
 path=@abs_top_builddir@/weston-simple-egl
 
 [ivi-launcher]
 workspace-id=1
 icon-id=4004
-icon=@abs_top_builddir@/data/icon_ivi_simple-shm.png
+icon=@abs_top_srcdir@/data/icon_ivi_simple-shm.png
 path=@abs_top_builddir@/weston-simple-shm
 
 [ivi-launcher]
 workspace-id=2
 icon-id=4005
-icon=@abs_top_builddir@/data/icon_ivi_smoke.png
+icon=@abs_top_srcdir@/data/icon_ivi_smoke.png
 path=@abs_top_builddir@/weston-smoke
 
 [ivi-launcher]
 workspace-id=3
 icon-id=4006
-icon=@abs_top_builddir@/data/icon_ivi_flower.png
+icon=@abs_top_srcdir@/data/icon_ivi_flower.png
 path=@abs_top_builddir@/weston-flower
 
 [ivi-launcher]
 workspace-id=3
 icon-id=4007
-icon=@abs_top_builddir@/data/icon_ivi_clickdot.png
+icon=@abs_top_srcdir@/data/icon_ivi_clickdot.png
 path=@abs_top_builddir@/weston-clickdot
 
 [ivi-launcher]
 workspace-id=3
 icon-id=4008
-icon=@abs_top_builddir@/data/icon_ivi_simple-egl.png
+icon=@abs_top_srcdir@/data/icon_ivi_simple-egl.png
 path=@abs_top_builddir@/weston-simple-egl
 
 [ivi-launcher]
 workspace-id=3
 icon-id=4009
-icon=@abs_top_builddir@/data/icon_ivi_simple-shm.png
+icon=@abs_top_srcdir@/data/icon_ivi_simple-shm.png
 path=@abs_top_builddir@/weston-simple-shm
 
 [ivi-launcher]
 workspace-id=3
 icon-id=4010
-icon=@abs_top_builddir@/data/icon_ivi_smoke.png
+icon=@abs_top_srcdir@/data/icon_ivi_smoke.png
 path=@abs_top_builddir@/weston-smoke
