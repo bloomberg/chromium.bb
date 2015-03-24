@@ -45,8 +45,6 @@
 #include "fullscreen-shell-client-protocol.h"
 #include "presentation_timing-server-protocol.h"
 
-#include <EGL/eglext.h>
-
 #define WINDOW_TITLE "Weston Compositor"
 
 #ifndef EGL_PLATFORM_WAYLAND_KHR

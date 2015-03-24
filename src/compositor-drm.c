@@ -52,8 +52,6 @@
 #include "vaapi-recorder.h"
 #include "presentation_timing-server-protocol.h"
 
-#include <EGL/eglext.h>
-
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
 #endif

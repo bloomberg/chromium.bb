@@ -27,6 +27,7 @@
 #ifdef ENABLE_EGL
 
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #else
 

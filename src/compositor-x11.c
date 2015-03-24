@@ -53,8 +53,6 @@
 #include "../shared/image-loader.h"
 #include "presentation_timing-server-protocol.h"
 
-#include <EGL/eglext.h>
-
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 
 #ifndef EGL_PLATFORM_X11_KHR
