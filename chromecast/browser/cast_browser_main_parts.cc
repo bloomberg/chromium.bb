@@ -4,8 +4,10 @@
 
 #include "chromecast/browser/cast_browser_main_parts.h"
 
+#if !defined(OS_ANDROID)
 #include <signal.h>
 #include <sys/prctl.h>
+#endif
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -80,6 +82,49 @@ void RegisterClosureOnSignal(const base::Closure& closure) {
 
   // Get the first signal to exit when the parent process dies.
   prctl(PR_SET_PDEATHSIG, kSignalsToRunClosure[0]);
+}
+
+const int kKillOnAlarmTimeoutSec = 5;  // 5 seconds
+
+void KillOnAlarm(int signum) {
+  LOG(ERROR) << "Got alarm signal for termination: " << signum;
+  raise(SIGKILL);
+}
+
+void RegisterKillOnAlarm(int timeout_seconds) {
+  struct sigaction sa_new;
+  memset(&sa_new, 0, sizeof(sa_new));
+  sa_new.sa_handler = KillOnAlarm;
+  sigfillset(&sa_new.sa_mask);
+  sa_new.sa_flags = SA_RESTART;
+
+  struct sigaction sa_old;
+  if (sigaction(SIGALRM, &sa_new, &sa_old) == -1) {
+    NOTREACHED();
+  } else {
+    DCHECK_EQ(sa_old.sa_handler, SIG_DFL);
+  }
+
+  if (alarm(timeout_seconds) > 0)
+    NOTREACHED() << "Previous alarm() was cancelled";
+}
+
+void DeregisterKillOnAlarm() {
+  // Explicitly cancel any outstanding alarm() calls.
+  alarm(0);
+
+  struct sigaction sa_new;
+  memset(&sa_new, 0, sizeof(sa_new));
+  sa_new.sa_handler = SIG_DFL;
+  sigfillset(&sa_new.sa_mask);
+  sa_new.sa_flags = SA_RESTART;
+
+  struct sigaction sa_old;
+  if (sigaction(SIGALRM, &sa_new, &sa_old) == -1) {
+    NOTREACHED();
+  } else {
+    DCHECK_EQ(sa_old.sa_handler, KillOnAlarm);
+  }
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -266,6 +311,12 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   run_loop.Run();
 
+  // Once the main loop has stopped running, we give the browser process a few
+  // seconds to stop cast service and finalize all resources. If a hang occurs
+  // and cast services refuse to terminate successfully, then we SIGKILL the
+  // current process to avoid indefinte hangs.
+  RegisterKillOnAlarm(kKillOnAlarmTimeoutSec);
+
   cast_browser_process_->cast_service()->Stop();
   return true;
 #endif
@@ -279,6 +330,7 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->metrics_service_client()->Finalize();
   cast_browser_process_.reset();
+  DeregisterKillOnAlarm();
 #endif
 }
 
