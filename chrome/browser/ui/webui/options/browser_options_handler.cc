@@ -1871,7 +1871,7 @@ void BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp(
   if (!hotword_service)
     return;
 
-  hotword_service->LaunchHotwordAudioVerificationApp(launch_mode);
+  hotword_service->OptIntoHotwording(launch_mode);
 }
 
 void BrowserOptionsHandler::HandleLaunchEasyUnlockSetup(

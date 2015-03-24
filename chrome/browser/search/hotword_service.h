@@ -140,17 +140,25 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // These methods are for launching, and getting and setting the launch mode of
   // the Hotword Audio Verification App.
   //
-  // TODO(kcarattini): Remove this when
-  // https://code.google.com/p/chromium/issues/detail?id=165573 is fixed,
-  // at which time we can simply launch the app in the given mode instead of
-  // having to check for it here.
+  // OptIntoHotwording first determines if the app needs to be launched, and if
+  // so, launches the app (if Audio History is on and a speaker model exists,
+  // then we don't need to launch the app).
+  //
+  // LaunchHotwordAudioVerificationApp launches the app without the above
+  // check in the specified |launch_mode|.
   enum LaunchMode {
     HOTWORD_ONLY,
     HOTWORD_AND_AUDIO_HISTORY,
     RETRAIN
   };
+  void OptIntoHotwording(const LaunchMode& launch_mode);
   void LaunchHotwordAudioVerificationApp(const LaunchMode& launch_mode);
   virtual LaunchMode GetHotwordAudioVerificationLaunchMode();
+
+  // Called when the SpeakerModelExists request is complete. Either
+  // sets the always-on hotword pref to true, or launches the Hotword
+  // Audio Verification App, depending on the value of |exists|.
+  void SpeakerModelExistsComplete(bool exists);
 
   // These methods control the speaker training communication between
   // the Hotword Audio Verification App and the Hotword Extension that

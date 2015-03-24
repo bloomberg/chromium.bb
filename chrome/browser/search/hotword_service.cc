@@ -725,6 +725,34 @@ void HotwordService::DisableHotwordExtension(
   }
 }
 
+void HotwordService::SpeakerModelExistsComplete(bool exists) {
+  if (exists) {
+    profile_->GetPrefs()->
+        SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, true);
+  } else {
+    LaunchHotwordAudioVerificationApp(HotwordService::HOTWORD_ONLY);
+  }
+}
+
+void HotwordService::OptIntoHotwording(
+    const LaunchMode& launch_mode) {
+  // First determine if we actually need to launch the app, or can just enable
+  // the pref. If Audio History has already been enabled, and we already have
+  // a speaker model, then we don't need to launch the app at all.
+  if (launch_mode == HotwordService::HOTWORD_ONLY) {
+    HotwordPrivateEventService* event_service =
+        BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(
+            profile_);
+    if (event_service) {
+      // TODO(kcarattini): add this call once it's implemented in the API.
+      // event_service->SpeakerModelExists();
+      return;
+    }
+  }
+
+  LaunchHotwordAudioVerificationApp(launch_mode);
+}
+
 void HotwordService::LaunchHotwordAudioVerificationApp(
     const LaunchMode& launch_mode) {
   hotword_audio_verification_launch_mode_ = launch_mode;
