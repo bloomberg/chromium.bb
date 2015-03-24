@@ -1192,7 +1192,8 @@ void RenderThreadImpl::IdleHandler() {
   bool continue_timer = !webkit_shared_timer_suspended_;
 
   if (blink::mainThreadIsolate() &&
-      !blink::mainThreadIsolate()->IdleNotification(1000)) {
+      !blink::mainThreadIsolate()->IdleNotificationDeadline(
+          blink_platform_impl_->monotonicallyIncreasingTime() + 1.0)) {
     continue_timer = true;
   }
 
