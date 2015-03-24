@@ -111,7 +111,7 @@
                     "android_clang_dbg_recipe": [
                         "defaulttests"
                     ],
-                    "android_compile_rel": [
+                    "android_compile_dbg": [
                         "defaulttests"
                     ],
                     "chromium_presubmit": [
