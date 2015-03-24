@@ -39,6 +39,7 @@ def DefaultConfigVariables():
     'tsan': '0',
     'use_custom_libcxx': '0',
     'use_instrumented_libraries': '0',
+    'use_prebuilt_instrumented_libraries': '0',
     'use_openssl': '0',
     'use_ozone': '0',
     'use_x11': '0',
