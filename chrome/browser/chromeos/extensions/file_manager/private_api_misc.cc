@@ -460,4 +460,15 @@ void FileManagerPrivateGetMimeTypeFunction::OnGetMimeType(
   SendResponse(true);
 }
 
+ExtensionFunction::ResponseAction
+FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
+#if defined(OFFICIAL_BUILD)
+  return RespondNow(OneArgument(
+      new base::FundamentalValue(true)));
+#else
+  return RespondNow(OneArgument(
+      new base::FundamentalValue(false)));
+#endif
+}
+
 }  // namespace extensions

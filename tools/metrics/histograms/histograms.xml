@@ -49317,6 +49317,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="980" label="FILEMANAGERPRIVATE_ENABLEEXTERNALFILESCHEME"/>
   <int value="981" label="DEVELOPERPRIVATE_UPDATEEXTENSIONCONFIGURATION"/>
   <int value="982" label="DEVELOPERPRIVATE_DELETEEXTENSIONERRORS"/>
+  <int value="983" label="FILEMANAGERPRIVATE_ISPIEXLOADERENABLED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

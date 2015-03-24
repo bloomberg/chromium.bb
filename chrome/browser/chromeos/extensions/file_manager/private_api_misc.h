@@ -181,6 +181,21 @@ class FileManagerPrivateGetMimeTypeFunction
   void OnGetMimeType(const std::string& mimeType);
 };
 
+// Implements the chrome.fileManagerPrivate.isPiexLoaderEnabled method.
+class FileManagerPrivateIsPiexLoaderEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  FileManagerPrivateIsPiexLoaderEnabledFunction() {}
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isPiexLoaderEnabled",
+                             FILEMANAGERPRIVATE_ISPIEXLOADERENABLED)
+ protected:
+  ~FileManagerPrivateIsPiexLoaderEnabledFunction() override {}
+
+ private:
+  ResponseAction Run() override;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsPiexLoaderEnabledFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

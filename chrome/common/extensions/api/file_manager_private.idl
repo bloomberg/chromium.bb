@@ -872,6 +872,9 @@ interface Functions {
                           DOMString key,
                           DOMString value,
                           SimpleCallback callback);
+
+  // Returns if Piex loader is enabled.
+  static void isPiexLoaderEnabled(BooleanCallback callback);
 };
 
 interface Events {

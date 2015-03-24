@@ -574,6 +574,12 @@ chrome.fileManagerPrivate.isUMAEnabled = function(callback) {};
  */
 chrome.fileManagerPrivate.setEntryTag = function(entryURL, visibility, key, value, callback) {};
 
+/**
+ * Gets a flag indicating whether PiexLoader is enabled.
+ * @param {function(boolean)} callback
+ */
+chrome.fileManagerPrivate.isPiexLoaderEnabled = function(callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 
