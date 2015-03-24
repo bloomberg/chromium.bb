@@ -4,6 +4,7 @@
 
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 
+#include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
@@ -58,7 +59,9 @@ void AnalyzeContainedFile(
     zip::ZipReader* reader,
     base::File* temp_file,
     ClientDownloadRequest_ArchivedBinary* archived_binary) {
-  archived_binary->set_file_basename(file_path.BaseName().AsUTF8Unsafe());
+  std::string file_basename(file_path.BaseName().AsUTF8Unsafe());
+  if (base::StreamingUtf8Validator::Validate(file_basename))
+    archived_binary->set_file_basename(file_basename);
   archived_binary->set_download_type(
       download_protection_util::GetDownloadType(file_path));
   archived_binary->set_length(reader->current_entry_info()->original_size());
