@@ -359,6 +359,7 @@ class SigninScreenHandler
                                              const std::string& locale);
   void HandleCancelConsumerManagementEnrollment();
   void HandleGetTouchViewState();
+  void HandleLogRemoveUserWarningShown();
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.

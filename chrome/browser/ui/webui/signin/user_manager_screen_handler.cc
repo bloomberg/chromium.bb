@@ -75,6 +75,8 @@ const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
 const char kJsApiUserManagerRemoveUser[] = "removeUser";
 const char kJsApiUserManagerAttemptUnlock[] = "attemptUnlock";
+const char kJsApiUserManagerLogRemoveUserWarningShown[] =
+    "logRemoveUserWarningShown";
 
 const size_t kAvatarIconSize = 180;
 
@@ -210,6 +212,11 @@ void UrlHashHelper::ExecuteUrlHash() {
     chrome::ShowSettings(target_browser);
   else if (hash_ == profiles::kUserManagerSelectProfileChromeMemory)
     chrome::ShowMemory(target_browser);
+}
+
+void HandleLogRemoveUserWarningShown(const base::ListValue* args) {
+  ProfileMetrics::LogProfileDeleteUser(
+      ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);
 }
 
 }  // namespace
@@ -594,6 +601,8 @@ void UserManagerScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kJsApiUserManagerAttemptUnlock,
       base::Bind(&UserManagerScreenHandler::HandleAttemptUnlock,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerLogRemoveUserWarningShown,
+      base::Bind(&HandleLogRemoveUserWarningShown));
 
   const content::WebUI::MessageCallback& kDoNothingCallback =
       base::Bind(&HandleAndDoNothing);

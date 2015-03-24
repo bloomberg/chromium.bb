@@ -64,6 +64,11 @@ bool GetProfilePathFromArgs(const base::ListValue* args,
   return base::GetValueAsFilePath(*file_path_value, profile_file_path);
 }
 
+void HandleLogDeleteUserDialogShown(const base::ListValue* args) {
+  ProfileMetrics::LogProfileDeleteUser(
+      ProfileMetrics::DELETE_PROFILE_SETTINGS_SHOW_WARNING);
+}
+
 }  // namespace
 
 ManageProfileHandler::ManageProfileHandler()
@@ -185,6 +190,8 @@ void ManageProfileHandler::RegisterMessages() {
       "showDisconnectManagedProfileDialog",
       base::Bind(&ManageProfileHandler::ShowDisconnectManagedProfileDialog,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("logDeleteUserDialogShown",
+      base::Bind(&HandleLogDeleteUserDialogShown));
 }
 
 void ManageProfileHandler::Uninitialize() {

@@ -1415,6 +1415,7 @@ cr.define('login', function() {
         this.actionBoxMenu.classList.add('menu-moved-up');
         this.actionBoxAreaElement.classList.add('menu-moved-up');
       }
+      chrome.send('logRemoveUserWarningShown');
     },
 
     /**

@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -491,6 +492,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleCancelConsumerManagementEnrollment);
   AddCallback("getTouchViewState",
               &SigninScreenHandler::HandleGetTouchViewState);
+  AddCallback("logRemoveUserWarningShown",
+              &SigninScreenHandler::HandleLogRemoveUserWarningShown);
 
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
@@ -1269,6 +1272,11 @@ void SigninScreenHandler::HandleGetTouchViewState() {
     CallJS("login.AccountPickerScreen.setTouchViewState",
            max_mode_delegate_->IsMaximizeModeEnabled());
   }
+}
+
+void SigninScreenHandler::HandleLogRemoveUserWarningShown() {
+  ProfileMetrics::LogProfileDeleteUser(
+      ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

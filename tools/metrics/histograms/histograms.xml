@@ -29345,10 +29345,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Profile.DeleteProfileAction" enum="ProfileDeleteAction">
   <owner>mlerman@chromium.org</owner>
+  <owner>anthonyvd@chromium.org</owner>
   <summary>
-    This histogram tracks which UI screen was used to delete a profile. This
-    does not track when the profile is actually deleted, which is an
-    asycnhronous process that happens later.
+    This histogram tracks which UI screen was used to initiate and confirm the
+    deletion of a profile. This does not track when the profile is actually
+    deleted, which is an asynchronous process that happens later.
   </summary>
 </histogram>
 
@@ -57627,8 +57628,21 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="ProfileDeleteAction" type="int">
-  <int value="0" label="Settings Page"/>
-  <int value="1" label="User Manager"/>
+  <int value="0" label="Settings Page">
+    The user confirmed deletion of a profile from the settings page.
+  </int>
+  <int value="1" label="User Manager">
+    The user confirmed deletion of a profile from the User Manager.
+  </int>
+  <int value="2" label="User Manager Warning Shown">
+    The user clicked 'Remove this person' in the user manager and was shown the
+    profile deletion warning. No profile deletion action has been started yet.
+  </int>
+  <int value="3" label="Settings Page Warning Shown">
+    The user clicked 'Remove...' or the 'X' in the settings page and was shown
+    the profile deletion warning. No profile deletion action has been started
+    yet.
+  </int>
 </enum>
 
 <enum name="ProfileDesktopMenu" type="int">

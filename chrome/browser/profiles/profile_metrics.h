@@ -49,8 +49,14 @@ class ProfileMetrics {
   };
 
   enum ProfileDelete {
-    DELETE_PROFILE_SETTINGS = 0,  // Delete profile from settings page.
-    DELETE_PROFILE_USER_MANAGER,  // Delete profile from User Manager.
+    // Delete profile from settings page.
+    DELETE_PROFILE_SETTINGS = 0,
+    // Delete profile from User Manager.
+    DELETE_PROFILE_USER_MANAGER,
+    // Show the delete profile warning in the User Manager.
+    DELETE_PROFILE_USER_MANAGER_SHOW_WARNING,
+    // Show the delete profile warning in the Settings page.
+    DELETE_PROFILE_SETTINGS_SHOW_WARNING,
     NUM_DELETE_PROFILE_METRICS
   };
 

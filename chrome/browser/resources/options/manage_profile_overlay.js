@@ -573,6 +573,7 @@ cr.define('options', function() {
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
       PageManager.showPageByName('manageProfile', false);
+      chrome.send('logDeleteUserDialogShown');
     },
 
     /**
