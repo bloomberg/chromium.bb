@@ -51,9 +51,17 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
         return android.hardware.Camera.getNumberOfCameras();
     }
 
+    static int getCaptureApiType(int id) {
+        if (VideoCaptureCamera.getCameraInfo(id) == null) {
+            return CaptureApiType.API_TYPE_UNKNOWN;
+        }
+        return CaptureApiType.API1;
+    }
+
     static String getName(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
         if (cameraInfo == null) return null;
+
         return "camera " + id + ", facing " + (cameraInfo.facing
                 == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
     }

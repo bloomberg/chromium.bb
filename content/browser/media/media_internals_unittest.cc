@@ -109,7 +109,8 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
   MediaInternals::UpdateCallback update_cb_;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
 TEST_F(MediaInternalsVideoCaptureDeviceTest,
        AllCaptureApiTypesHaveProperStringRepresentation) {
   typedef media::VideoCaptureDevice::Name VideoCaptureDeviceName;
@@ -128,6 +129,12 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   m[VideoCaptureDeviceName::AVFOUNDATION] = "AV Foundation";
   m[VideoCaptureDeviceName::QTKIT] = "QTKit";
   m[VideoCaptureDeviceName::DECKLINK] = "DeckLink";
+#elif defined(OS_ANDROID)
+  m[VideoCaptureDeviceName::API1] = "Camera API1";
+  m[VideoCaptureDeviceName::API2_LEGACY] = "Camera API2 Legacy";
+  m[VideoCaptureDeviceName::API2_FULL] = "Camera API2 Full";
+  m[VideoCaptureDeviceName::API2_LIMITED] = "Camera API2 Limited";
+  m[VideoCaptureDeviceName::TANGO] = "Tango API";
 #endif
   EXPECT_EQ(media::VideoCaptureDevice::Name::API_TYPE_UNKNOWN, m.size());
   for (CaptureApiTypeStringMap::iterator it = m.begin(); it != m.end(); ++it) {
@@ -179,6 +186,9 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
       media::VideoCaptureDevice::Name(
           "dummy", "/dev/dummy",
           media::VideoCaptureDevice::Name::V4L2_SINGLE_PLANE),
+#elif defined(OS_ANDROID)
+      media::VideoCaptureDevice::Name("dummy", "dummy",
+          media::VideoCaptureDevice::Name::API2_LEGACY),
 #else
       media::VideoCaptureDevice::Name("dummy", "dummy"),
 #endif
@@ -207,6 +217,8 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   ExpectString("captureApi", "Direct Show");
 #elif defined(OS_MACOSX)
   ExpectString("captureApi", "QTKit");
+#elif defined(OS_ANDROID)
+  ExpectString("captureApi", "Camera API2 Legacy");
 #endif
 }
 

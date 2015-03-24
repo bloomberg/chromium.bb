@@ -303,6 +303,27 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
+    static int getCaptureApiType(int id, Context appContext) {
+        final CameraCharacteristics cameraCharacteristics =
+                getCameraCharacteristics(appContext, id);
+        if (cameraCharacteristics == null) {
+            return CaptureApiType.API_TYPE_UNKNOWN;
+        }
+
+        final int supportedHWLevel = cameraCharacteristics.get(
+                CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+        switch (supportedHWLevel) {
+            case CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY:
+                return CaptureApiType.API2_LEGACY;
+            case CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_FULL:
+                return CaptureApiType.API2_FULL;
+            case CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED:
+                return CaptureApiType.API2_LIMITED;
+            default:
+                return CaptureApiType.API2_LEGACY;
+        }
+    }
+
     static String getName(int id, Context appContext) {
         final CameraCharacteristics cameraCharacteristics =
                 getCameraCharacteristics(appContext, id);

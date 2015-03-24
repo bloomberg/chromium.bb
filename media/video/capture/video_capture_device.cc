@@ -58,6 +58,13 @@ VideoCaptureDevice::Name::Name(const std::string& name,
       capture_api_class_(api_type),
       transport_type_(transport_type),
       is_blacklisted_(false) {}
+#elif defined(ANDROID)
+VideoCaptureDevice::Name::Name(const std::string& name,
+                               const std::string& id,
+                               const CaptureApiType api_type)
+    : device_name_(name),
+      unique_id_(id),
+      capture_api_class_(api_type) {}
 #endif
 
 VideoCaptureDevice::Name::~Name() {}
@@ -97,6 +104,25 @@ const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
       return "QTKit";
     case DECKLINK:
       return "DeckLink";
+    default:
+      NOTREACHED() << "Unknown Video Capture API type!";
+      return "Unknown API";
+  }
+}
+#elif defined(OS_ANDROID)
+const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
+  switch(capture_api_type()) {
+    case API1:
+      return "Camera API1";
+    case API2_LEGACY:
+      return "Camera API2 Legacy";
+    case API2_FULL:
+      return "Camera API2 Full";
+    case API2_LIMITED:
+      return "Camera API2 Limited";
+    case TANGO:
+      return "Tango API";
+    case API_TYPE_UNKNOWN:
     default:
       NOTREACHED() << "Unknown Video Capture API type!";
       return "Unknown API";

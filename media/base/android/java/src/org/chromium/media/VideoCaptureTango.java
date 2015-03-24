@@ -67,6 +67,13 @@ public class VideoCaptureTango extends VideoCaptureCamera {
         return CAM_PARAMS.length;
     }
 
+    static int getCaptureApiType(int index) {
+        if (index >= CAM_PARAMS.length) {
+            return CaptureApiType.API1;
+        }
+        return CaptureApiType.TANGO;
+    }
+
     static String getName(int index) {
         if (index >= CAM_PARAMS.length) return "";
         return CAM_PARAMS[index].mName;

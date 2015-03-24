@@ -117,6 +117,18 @@ class VideoCaptureFactory {
     }
 
     @CalledByNative
+    static int getCaptureApiType(int id, Context appContext) {
+        if (isLReleaseOrLater()) {
+            return VideoCaptureCamera2.getCaptureApiType(id, appContext);
+        } else if (ChromiumCameraInfo.isSpecialCamera(id)) {
+            return VideoCaptureTango.getCaptureApiType(
+                    ChromiumCameraInfo.toSpecialCameraId(id));
+        } else {
+            return VideoCaptureAndroid.getCaptureApiType(id);
+        }
+    }
+
+    @CalledByNative
     static String getDeviceName(int id, Context appContext) {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(appContext, id)) {
             return VideoCaptureCamera2.getName(id, appContext);

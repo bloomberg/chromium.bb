@@ -99,9 +99,11 @@ generate_jni("video_capture_jni_headers") {
 java_cpp_enum("media_java_enums_srcjar") {
   sources = [
     "//media/video/capture/android/video_capture_device_android.h",
+    "//media/video/capture/video_capture_device.h",
   ]
   outputs = [
     "org/chromium/media/AndroidImageFormat.java",
+    "org/chromium/media/CaptureApiType.java",
   ]
 }
 

@@ -1822,6 +1822,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
+            'media_android_captureapitype',
             'media_android_imageformat',
           ],
           'export_dependent_settings': [
@@ -1831,6 +1832,15 @@
             'java_in_dir': 'base/android/java',
           },
           'includes': ['../build/java.gypi'],
+        },
+        {
+          # GN: //media/base/android:media_android_captureapitype
+          'target_name': 'media_android_captureapitype',
+          'type': 'none',
+          'variables': {
+            'source_file': 'video/capture/video_capture_device.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           # GN: //media/base/android:media_android_imageformat

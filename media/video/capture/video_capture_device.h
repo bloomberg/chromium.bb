@@ -69,10 +69,25 @@ class MEDIA_EXPORT VideoCaptureDevice {
       USB_OR_BUILT_IN,
       OTHER_TRANSPORT
     };
+#elif defined (OS_ANDROID)
+    // Android targets Capture Api type: it can only be set on construction.
+    // Automatically generated enum to interface with Java world.
+    //
+    // A Java counterpart will be generated for this enum.
+    // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
+    enum CaptureApiType {
+      API1,
+      API2_LEGACY,
+      API2_FULL,
+      API2_LIMITED,
+      TANGO,
+      API_TYPE_UNKNOWN
+    };
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    Name(const std::string& name,
-         const std::string& id,
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
+    Name(const std::string& name, const std::string& id,
          const CaptureApiType api_type);
 #endif
 #if defined(OS_MACOSX)
@@ -108,7 +123,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
       return unique_id_ < other.id();
     }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
     CaptureApiType capture_api_type() const {
       return capture_api_class_.capture_api_type();
     }
@@ -123,7 +139,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     void set_capabilities_id(const std::string& id) {
       capabilities_id_ = id;
     }
-#endif
+#endif  // if defined(OS_WIN)
 #if defined(OS_MACOSX)
     TransportType transport_type() const {
       return transport_type_;
@@ -134,12 +150,13 @@ class MEDIA_EXPORT VideoCaptureDevice {
     void set_is_blacklisted(bool is_blacklisted) {
       is_blacklisted_ = is_blacklisted;
     }
-#endif  // if defined(OS_WIN)
+#endif  // if defined(OS_MACOSX)
 
    private:
     std::string device_name_;
     std::string unique_id_;
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
     // This class wraps the CaptureApiType to give it a by default value if not
     // initialized.
     class CaptureApiClass {

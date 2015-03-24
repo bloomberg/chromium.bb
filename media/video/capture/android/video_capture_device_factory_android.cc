@@ -71,9 +71,14 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceNames(
     if (device_name.obj() == NULL)
       continue;
 
+    const int capture_api_type =
+        Java_VideoCaptureFactory_getCaptureApiType(env, camera_id, context);
+
     VideoCaptureDevice::Name name(
         base::android::ConvertJavaStringToUTF8(device_name),
-        base::IntToString(camera_id));
+        base::IntToString(camera_id),
+        static_cast<VideoCaptureDevice::Name::CaptureApiType>(
+            capture_api_type));
     device_names->push_back(name);
 
     DVLOG(1) << "VideoCaptureDeviceFactoryAndroid::GetDeviceNames: camera "

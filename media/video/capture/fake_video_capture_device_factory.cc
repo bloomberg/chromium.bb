@@ -37,6 +37,8 @@ void FakeVideoCaptureDeviceFactory::GetDeviceNames(
                                   , VideoCaptureDevice::Name::AVFOUNDATION
 #elif defined(OS_WIN)
                                   , VideoCaptureDevice::Name::DIRECT_SHOW
+#elif defined(OS_ANDROID)
+                                  , VideoCaptureDevice::Name::API2_LEGACY
 #endif
     );
     device_names->push_back(name);
