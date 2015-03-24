@@ -26,6 +26,9 @@ IPC_STRUCT_TRAITS_END()
 IPC_ENUM_TRAITS_MAX_VALUE(autofill::PasswordForm::Scheme,
                           autofill::PasswordForm::SCHEME_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::PasswordForm::Layout,
+                          autofill::PasswordForm::Layout::LAYOUT_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordForm)
   IPC_STRUCT_TRAITS_MEMBER(scheme)
   IPC_STRUCT_TRAITS_MEMBER(signon_realm)
@@ -47,6 +50,7 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordForm)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(times_used)
   IPC_STRUCT_TRAITS_MEMBER(form_data)
+  IPC_STRUCT_TRAITS_MEMBER(layout)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_

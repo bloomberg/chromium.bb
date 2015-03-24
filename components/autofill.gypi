@@ -437,6 +437,8 @@
             '../ipc/ipc.gyp:ipc',
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/icu/icu.gyp:icuuc',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../ui/base/ui_base.gyp:ui_base',
             'autofill_content_common',

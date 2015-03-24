@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
+#include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
@@ -11,6 +13,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/icu/source/i18n/unicode/regex.h"
 
 using blink::WebDocument;
 using blink::WebFormControlElement;
@@ -21,6 +24,73 @@ using blink::WebVector;
 
 namespace autofill {
 namespace {
+
+// Layout classification of password forms
+// A layout sequence of a form is the sequence of it's non-password and password
+// input fields, represented by "N" and "P", respectively. A form like this
+// <form>
+//   <input type='text' ...>
+//   <input type='hidden' ...>
+//   <input type='password' ...>
+//   <input type='submit' ...>
+// </form>
+// has the layout sequence "NP" -- "N" for the first field, and "P" for the
+// third. The second and fourth fields are ignored, because they are not text
+// fields.
+//
+// The code below classifies the layout (see PasswordForm::Layout) of a form
+// based on its layout sequence. This is done by assigning layouts regular
+// expressions over the alphabet {N, P}. LAYOUT_OTHER is implicitly the type
+// corresponding to all layout sequences not matching any other layout.
+//
+// LAYOUT_LOGIN_AND_SIGNUP is classified by NPN+P.*. This corresponds to a form
+// which starts with a login section (NP) and continues with a sign-up section
+// (N+P.*). The aim is to distinguish such forms from change password-forms
+// (N*PPP?.*) and forms which use password fields to store private but
+// non-password data (could look like, e.g., PN+P.*).
+const char kLoginAndSignupRegex[] =
+    "NP"   // Login section.
+    "N+P"  // Sign-up section.
+    ".*";  // Anything beyond that.
+
+struct LoginAndSignupLazyInstanceTraits
+    : public base::DefaultLazyInstanceTraits<icu::RegexMatcher> {
+  static icu::RegexMatcher* New(void* instance) {
+    const icu::UnicodeString icu_pattern(kLoginAndSignupRegex);
+
+    UErrorCode status = U_ZERO_ERROR;
+    // Use placement new to initialize the instance in the preallocated space.
+    // The "(instance)" is very important to force POD type initialization.
+    scoped_ptr<icu::RegexMatcher> matcher(new (instance) icu::RegexMatcher(
+        icu_pattern, UREGEX_CASE_INSENSITIVE, status));
+    DCHECK(U_SUCCESS(status));
+    return matcher.release();
+  }
+};
+
+base::LazyInstance<icu::RegexMatcher, LoginAndSignupLazyInstanceTraits>
+    login_and_signup_matcher = LAZY_INSTANCE_INITIALIZER;
+
+bool MatchesLoginAndSignupPattern(base::StringPiece layout_sequence) {
+  icu::RegexMatcher* matcher = login_and_signup_matcher.Pointer();
+  icu::UnicodeString icu_input(icu::UnicodeString::fromUTF8(
+      icu::StringPiece(layout_sequence.data(), layout_sequence.length())));
+  matcher->reset(icu_input);
+
+  UErrorCode status = U_ZERO_ERROR;
+  UBool match = matcher->find(0, status);
+  DCHECK(U_SUCCESS(status));
+  return match == TRUE;
+}
+
+// Given the sequence of non-password and password text input fields of a form,
+// represented as a string of Ns (non-password) and Ps (password), computes the
+// layout type of that form.
+PasswordForm::Layout SequenceToLayout(base::StringPiece layout_sequence) {
+  if (MatchesLoginAndSignupPattern(layout_sequence))
+    return PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
+  return PasswordForm::Layout::LAYOUT_OTHER;
+}
 
 // Checks in a case-insensitive way if the autocomplete attribute for the given
 // |element| is present and has the specified |value_in_lowercase|.
@@ -125,6 +195,8 @@ void GetPasswordForm(
   WebVector<WebFormControlElement> control_elements;
   form.getFormControlElements(control_elements);
 
+  std::string layout_sequence;
+  layout_sequence.reserve(control_elements.size());
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement control_element = control_elements[i];
     if (control_element.isActivatedSubmit())
@@ -133,6 +205,13 @@ void GetPasswordForm(
     WebInputElement* input_element = toWebInputElement(&control_element);
     if (!input_element || !input_element->isEnabled())
       continue;
+
+    if (input_element->isTextField()) {
+      if (input_element->isPasswordField())
+        layout_sequence.push_back('P');
+      else
+        layout_sequence.push_back('N');
+    }
 
     if (input_element->isPasswordField()) {
       passwords.push_back(*input_element);
@@ -194,6 +273,7 @@ void GetPasswordForm(
       }
     }
   }
+  password_form->layout = SequenceToLayout(layout_sequence);
 
   if (!username_element.isNull()) {
     password_form->username_element = username_element.nameForAutofill();

@@ -80,6 +80,9 @@ class PasswordFormBuilder {
     html_ += "<INPUT type=\"password\" disabled/>";
   }
 
+  // Appends a hidden field at the end of the form.
+  void AddHiddenField() { html_ += "<INPUT type=\"hidden\"/>"; }
+
   // Appends a new submit-type field at the end of the form with the specified
   // |name|. If |activated| is true, the test will emulate as if this button
   // were used to submit the form.
@@ -590,6 +593,94 @@ TEST_F(PasswordFormConversionUtilsTest,
   scoped_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(html, &password_form));
   EXPECT_FALSE(password_form);
+}
+
+TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddHiddenField();
+  builder.AddUsernameField("username", "", nullptr);
+  builder.AddPasswordField("password", "", nullptr);
+  builder.AddSubmitButton("submit", false);
+  std::string login_html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> login_form;
+  ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(login_html, &login_form));
+  ASSERT_TRUE(login_form);
+  EXPECT_EQ(PasswordForm::Layout::LAYOUT_OTHER, login_form->layout);
+}
+
+TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationSignup) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddUsernameField("someotherfield", "", nullptr);
+  builder.AddUsernameField("username", "", nullptr);
+  builder.AddPasswordField("new_password", "", nullptr);
+  builder.AddHiddenField();
+  builder.AddPasswordField("new_password2", "", nullptr);
+  builder.AddSubmitButton("submit", false);
+  std::string signup_html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> signup_form;
+  ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(signup_html, &signup_form));
+  ASSERT_TRUE(signup_form);
+  EXPECT_EQ(PasswordForm::Layout::LAYOUT_OTHER, signup_form->layout);
+}
+
+TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationChange) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddUsernameField("username", "", nullptr);
+  builder.AddPasswordField("old_password", "", nullptr);
+  builder.AddHiddenField();
+  builder.AddPasswordField("new_password", "", nullptr);
+  builder.AddPasswordField("new_password2", "", nullptr);
+  builder.AddSubmitButton("submit", false);
+  std::string change_html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> change_form;
+  ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(change_html, &change_form));
+  ASSERT_TRUE(change_form);
+  EXPECT_EQ(PasswordForm::Layout::LAYOUT_OTHER, change_form->layout);
+}
+
+TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLoginPlusSignup_A) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddUsernameField("username", "", nullptr);
+  builder.AddHiddenField();
+  builder.AddPasswordField("password", "", nullptr);
+  builder.AddUsernameField("username2", "", nullptr);
+  builder.AddUsernameField("someotherfield", "", nullptr);
+  builder.AddPasswordField("new_password", "", nullptr);
+  builder.AddPasswordField("new_password2", "", nullptr);
+  builder.AddHiddenField();
+  builder.AddSubmitButton("submit", false);
+  std::string login_plus_signup_html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> login_plus_signup_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(login_plus_signup_html, &login_plus_signup_form));
+  ASSERT_TRUE(login_plus_signup_form);
+  EXPECT_EQ(PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP,
+            login_plus_signup_form->layout);
+}
+
+TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLoginPlusSignup_B) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddUsernameField("username", "", nullptr);
+  builder.AddHiddenField();
+  builder.AddPasswordField("password", "", nullptr);
+  builder.AddUsernameField("username2", "", nullptr);
+  builder.AddUsernameField("someotherfield", "", nullptr);
+  builder.AddPasswordField("new_password", "", nullptr);
+  builder.AddUsernameField("someotherfield2", "", nullptr);
+  builder.AddHiddenField();
+  builder.AddSubmitButton("submit", false);
+  std::string login_plus_signup_html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> login_plus_signup_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(login_plus_signup_html, &login_plus_signup_form));
+  ASSERT_TRUE(login_plus_signup_form);
+  EXPECT_EQ(PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP,
+            login_plus_signup_form->layout);
 }
 
 }  // namespace autofill

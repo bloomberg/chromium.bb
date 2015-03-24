@@ -42,6 +42,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                      bool(const std::string&, const std::string&));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
+  // The code inside EXPECT_CALL for PromptUserToSavePasswordPtr owns the
+  // PasswordFormManager* argument.
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
                void(PasswordFormManager*, CredentialSourceType type));
   MOCK_METHOD1(AutomaticPasswordSavePtr, void(PasswordFormManager*));
@@ -823,10 +825,11 @@ TEST_F(PasswordManagerTest,
 }
 
 // Create a form with a new_password_element. Submit the form with the empty
-// new password value. It shouldn't overwrite the existing password.
+// new password value. It shouldn't attempt to save the empty password.
 TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
+  ASSERT_FALSE(form.password_value.empty());
   form.new_password_element = ASCIIToUTF16("new_password_element");
   form.new_password_value.clear();
   observed.push_back(form);
@@ -837,10 +840,11 @@ TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
   // And the form submit contract is to call ProvisionallySavePassword.
   OnPasswordFormSubmitted(form);
 
+  scoped_ptr<PasswordFormManager> form_to_save;
   EXPECT_CALL(client_,
               PromptUserToSavePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
-      .Times(0);
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   // Now the password manager waits for the login to complete successfully.
   observed.clear();
@@ -848,6 +852,8 @@ TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
                                    observed);  // The post-navigation load.
   manager()->OnPasswordFormsRendered(&driver_, observed,
                                      true);  // The post-navigation layout.
+  EXPECT_FALSE(PasswordFormManager::PasswordToSave(
+                   form_to_save->pending_credentials()).empty());
 }
 
 TEST_F(PasswordManagerTest, FormSubmitWithOnlyPassowrdField) {

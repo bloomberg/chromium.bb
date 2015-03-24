@@ -1421,6 +1421,7 @@ TEST_F(PasswordFormManagerTest,
   saved_match()->password_value = ASCIIToUTF16("DifferentPassword");
   saved_match()->new_password_element =
       base::ASCIIToUTF16("new_password_field");
+  saved_match()->new_password_value = base::ASCIIToUTF16("new_pwd");
   EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(*saved_match()));
 }
 
@@ -1440,7 +1441,48 @@ TEST_F(PasswordFormManagerTest,
   saved_match()->username_value = ASCIIToUTF16("DifferentUsername");
   saved_match()->new_password_element =
       base::ASCIIToUTF16("new_password_field");
+  saved_match()->new_password_value = base::ASCIIToUTF16("new_pwd");
   EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(*saved_match()));
+}
+
+TEST_F(PasswordFormManagerTest, PasswordToSave_NoElements) {
+  PasswordForm form;
+  EXPECT_TRUE(PasswordFormManager::PasswordToSave(form).empty());
+}
+
+TEST_F(PasswordFormManagerTest, PasswordToSave_NoNewElement) {
+  PasswordForm form;
+  form.password_element = base::ASCIIToUTF16("pwd");
+  base::string16 kValue = base::ASCIIToUTF16("val");
+  form.password_value = kValue;
+  EXPECT_EQ(kValue, PasswordFormManager::PasswordToSave(form));
+}
+
+TEST_F(PasswordFormManagerTest, PasswordToSave_NoOldElement) {
+  PasswordForm form;
+  form.new_password_element = base::ASCIIToUTF16("new_pwd");
+  base::string16 kNewValue = base::ASCIIToUTF16("new_val");
+  form.new_password_value = kNewValue;
+  EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form));
+}
+
+TEST_F(PasswordFormManagerTest, PasswordToSave_BothButNoNewValue) {
+  PasswordForm form;
+  form.password_element = base::ASCIIToUTF16("pwd");
+  form.new_password_element = base::ASCIIToUTF16("new_pwd");
+  base::string16 kValue = base::ASCIIToUTF16("val");
+  form.password_value = kValue;
+  EXPECT_EQ(kValue, PasswordFormManager::PasswordToSave(form));
+}
+
+TEST_F(PasswordFormManagerTest, PasswordToSave_NewValue) {
+  PasswordForm form;
+  form.password_element = base::ASCIIToUTF16("pwd");
+  form.new_password_element = base::ASCIIToUTF16("new_pwd");
+  form.password_value = base::ASCIIToUTF16("val");
+  base::string16 kNewValue = base::ASCIIToUTF16("new_val");
+  form.new_password_value = kNewValue;
+  EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form));
 }
 
 }  // namespace password_manager

@@ -21,7 +21,8 @@ PasswordForm::PasswordForm()
       type(TYPE_MANUAL),
       times_used(0),
       generation_upload_status(NO_SIGNAL_SENT),
-      skip_zero_click(false) {
+      skip_zero_click(false),
+      layout(Layout::LAYOUT_OTHER) {
 }
 
 PasswordForm::~PasswordForm() {
@@ -59,11 +60,24 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       display_name == form.display_name &&
       avatar_url == form.avatar_url &&
       federation_url == form.federation_url &&
-      skip_zero_click == form.skip_zero_click;
+      skip_zero_click == form.skip_zero_click &&
+      layout == form.layout;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {
   return !operator==(form);
+}
+
+std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout) {
+  switch (layout) {
+    case PasswordForm::Layout::LAYOUT_OTHER:
+      os << "LAYOUT_OTHER";
+      break;
+    case PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP:
+      os << "LAYOUT_LOGIN_AND_SIGNUP";
+      break;
+  }
+  return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
@@ -97,7 +111,8 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " display_name: " << base::UTF16ToUTF8(form.display_name)
             << " avatar_url: " << form.avatar_url
             << " federation_url: " << form.federation_url
-            << " skip_next_zero_click: " << form.skip_zero_click;
+            << " skip_next_zero_click: " << form.skip_zero_click
+            << " layout: " << form.layout;
 }
 
 }  // namespace autofill

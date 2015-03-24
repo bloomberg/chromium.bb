@@ -59,6 +59,21 @@ struct PasswordForm {
     SCHEME_LAST = SCHEME_OTHER
   } scheme;
 
+  // During form parsing, Chrome tries to partly understand the type of the form
+  // based on the layout of its fields. The result of this analysis helps to
+  // treat the form correctly once the low-level information is lost by
+  // converting the web form into a PasswordForm. It is only used for observed
+  // HTML forms, not for stored credentials.
+  enum class Layout {
+    // Forms which either do not need to be classified, or cannot be classified
+    // meaningfully.
+    LAYOUT_OTHER,
+    // Login and signup forms combined in one <form>, to distinguish them from,
+    // e.g., change-password forms.
+    LAYOUT_LOGIN_AND_SIGNUP,
+    LAYOUT_LAST = LAYOUT_LOGIN_AND_SIGNUP
+  };
+
   // The "Realm" for the sign-on. This is scheme, host, port for SCHEME_HTML.
   // Dialog based forms also contain the HTTP realm. Android based forms will
   // contain a string of the form "android://<hash of cert>@<package name>"
@@ -238,6 +253,9 @@ struct PasswordForm {
   // Once user selects this credential the flag is reseted.
   bool skip_zero_click;
 
+  // The layout as determined during parsing. Default value is LAYOUT_OTHER.
+  Layout layout;
+
   // Returns true if this match was found using public suffix matching.
   bool IsPublicSuffixMatch() const;
 
@@ -255,6 +273,7 @@ typedef std::map<base::string16, PasswordForm*> PasswordFormMap;
 typedef std::map<base::string16, const PasswordForm*> ConstPasswordFormMap;
 
 // For testing.
+std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);
 std::ostream& operator<<(std::ostream& os,
                          const autofill::PasswordForm& form);
 

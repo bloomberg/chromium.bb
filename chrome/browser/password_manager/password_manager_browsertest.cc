@@ -1801,3 +1801,47 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
 }
+
+// Tests that if a site embeds the login and signup forms into one <form>, the
+// login form still gets autofilled.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       AutofillSuggetionsForLoginSignupForm) {
+  password_manager::TestPasswordStore* password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
+
+  EXPECT_TRUE(password_store->IsEmpty());
+
+  NavigateToFile("/password/login_signup_form.html");
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string submit =
+      "document.getElementById('username').value = 'myusername';"
+      "document.getElementById('password').value = 'mypassword';"
+      "document.getElementById('submit').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  observer.Wait();
+
+  prompt_observer->Accept();
+
+  // Spin the message loop to make sure the password store had a chance to save
+  // the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(password_store->IsEmpty());
+
+  // Now, navigate to the same html password form and verify whether password is
+  // autofilled.
+  NavigateToFile("/password/login_signup_form.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  // Wait until that interaction causes the password value to be revealed.
+  WaitForElementValue("password", "mypassword");
+}

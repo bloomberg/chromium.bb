@@ -119,6 +119,13 @@ int PasswordFormManager::GetActionsTaken() const {
              (manager_action_ + kManagerActionMax * submit_result_);
 }
 
+// static
+base::string16 PasswordFormManager::PasswordToSave(const PasswordForm& form) {
+  if (form.new_password_element.empty() || form.new_password_value.empty())
+    return form.password_value;
+  return form.new_password_value;
+}
+
 // TODO(timsteele): use a hash of some sort in the future?
 PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
     const PasswordForm& form) const {
@@ -256,13 +263,7 @@ void PasswordFormManager::ProvisionallySave(
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
 
-  // If this was a sign-up or change password form, we want to persist the new
-  // password; if this was a login form, then the current password (which might
-  // still be "new" in the sense that we see these credentials for the first
-  // time, or that the user manually entered his actual password to overwrite an
-  // obsolete password we had in the store).
-  base::string16 password_to_save(credentials.new_password_element.empty() ?
-      credentials.password_value : credentials.new_password_value);
+  base::string16 password_to_save(PasswordToSave(credentials));
 
   // Make sure the important fields stay the same as the initially observed or
   // autofilled ones, as they may have changed if the user experienced a login
@@ -411,7 +412,7 @@ bool PasswordFormManager::HasCompletedMatching() const {
 bool PasswordFormManager::IsIgnorableChangePasswordForm(
     const PasswordForm& form) const {
   bool is_change_password_form =
-      !form.new_password_element.empty() && !form.password_element.empty();
+      !form.new_password_value.empty() && !form.password_value.empty();
   return is_change_password_form && !form.username_marked_by_site &&
          !DoesUsenameAndPasswordMatchCredentials(
              form.username_value, form.password_value, best_matches_);
@@ -544,8 +545,10 @@ void PasswordFormManager::ProcessFrame(
     return;
 
   // Do not autofill on sign-up or change password forms (until we have some
-  // working change password functionality).
-  if (!observed_form_.new_password_element.empty()) {
+  // working change password functionality). Combined login-sign-up forms are OK
+  // to autofill in the login part.
+  if (observed_form_.layout != PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP &&
+      !observed_form_.new_password_element.empty()) {
     if (client_->IsLoggingActive()) {
       BrowserSavePasswordProgressLogger logger(client_);
       logger.LogMessage(Logger::PROCESS_FRAME_METHOD);

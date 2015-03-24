@@ -64,6 +64,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
     IGNORE_OTHER_POSSIBLE_USERNAMES
   };
 
+  // Chooses between the current and new password value which one to save. This
+  // is whichever is non-empty, with the preference being given to the new one.
+  static base::string16 PasswordToSave(const autofill::PasswordForm& form);
+
   // Compares basic data of |observed_form_| with |form| and returns how much
   // they match. The return value is a MatchResultMask bitmask.
   MatchResultMask DoesManage(const autofill::PasswordForm& form) const;
@@ -89,14 +93,15 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the same thread!
   bool HasCompletedMatching() const;
 
-  // Returns true if |form| has both the current and new password fields, and
-  // the username field was not explicitly marked with "autocomplete=username"
-  // and |form.username_value| and |form.password_value| fields do not match
-  // the credentials already stored. In these cases it is not clear whether
-  // the username field is the right guess (often such change password forms do
-  // not contain the username at all), and the user should not be bothered with
-  // saving a potentially malformed credential. Once we handle change password
-  // forms correctly, this method should be replaced accordingly.
+  // When attempting to provisionally save |form|, call this to check if it is
+  // actually a change-password form which should be ignored, i.e., whether:
+  // * the username was not explicitly marked with "autocomplete=username", and
+  // * both the current and new password fields are non-empty, and
+  // * the username and password do not match any credentials already stored.
+  // In these cases the username field is detection is unreliable (there might
+  // even be none), and the user should not be bothered with saving a
+  // potentially malformed credential. Once we handle change password forms
+  // correctly, this method should be replaced accordingly.
   bool IsIgnorableChangePasswordForm(const autofill::PasswordForm& form) const;
 
   // Determines if the user opted to 'never remember' passwords for this form.
