@@ -1273,7 +1273,7 @@ bool SerializedScriptValueReader::readString(v8::Local<v8::Value>* value)
         return false;
     if (m_position + length > m_length)
         return false;
-    *value = v8::String::NewFromUtf8(isolate(), reinterpret_cast<const char*>(m_buffer + m_position), v8::String::kNormalString, length);
+    *value = v8AtomicString(isolate(), reinterpret_cast<const char*>(m_buffer + m_position), length);
     m_position += length;
     return true;
 }

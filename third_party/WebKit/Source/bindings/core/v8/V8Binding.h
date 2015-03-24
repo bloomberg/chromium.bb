@@ -347,16 +347,13 @@ inline v8::Handle<v8::String> v8String(v8::Isolate* isolate, const String& strin
     return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), isolate);
 }
 
-inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str)
+inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)
 {
     ASSERT(isolate);
-    return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, strlen(str));
-}
-
-inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, size_t length)
-{
-    ASSERT(isolate);
-    return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, length);
+    v8::Local<v8::String> value;
+    if (LIKELY(v8::String::NewFromUtf8(isolate, str, v8::NewStringType::kInternalized, length).ToLocal(&value)))
+        return value;
+    return v8::String::Empty(isolate);
 }
 
 inline v8::Handle<v8::Value> v8Undefined()

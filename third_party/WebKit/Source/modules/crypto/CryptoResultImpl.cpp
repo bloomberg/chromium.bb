@@ -150,7 +150,7 @@ void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
         ScriptState* scriptState = resolver->scriptState();
         ScriptState::Scope scope(scriptState);
 
-        v8::Handle<v8::String> jsonString = v8::String::NewFromUtf8(scriptState->isolate(), utf8Data, v8::String::kInternalizedString, length);
+        v8::Handle<v8::String> jsonString = v8AtomicString(scriptState->isolate(), utf8Data, length);
 
         v8::TryCatch exceptionCatcher;
         v8::Handle<v8::Value> jsonDictionary = v8::JSON::Parse(jsonString);

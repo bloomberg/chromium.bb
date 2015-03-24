@@ -128,7 +128,7 @@ void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplat
         value = v8::Number::New(isolate, constant.dvalue);
         break;
     case V8DOMConfiguration::ConstantTypeString:
-        value = v8::String::NewFromUtf8(isolate, constant.svalue);
+        value = v8AtomicString(isolate, constant.svalue);
         break;
     default:
         ASSERT_NOT_REACHED();

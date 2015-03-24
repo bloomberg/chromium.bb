@@ -423,7 +423,7 @@ void Body::resolveJSON(const String& string)
         if (trycatch.HasCaught())
             m_resolver->reject(trycatch.Exception());
         else
-            m_resolver->reject(v8::Exception::Error(v8::String::NewFromUtf8(isolate, "JSON parse error")));
+            m_resolver->reject(v8::Exception::Error(v8AtomicString(isolate, "JSON parse error")));
         return;
     }
     m_resolver->resolve(parsed);
