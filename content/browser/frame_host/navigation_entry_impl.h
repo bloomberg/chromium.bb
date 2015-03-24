@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/site_instance_impl.h"
@@ -42,6 +43,9 @@ class CONTENT_EXPORT NavigationEntryImpl
     // Ref counted pointer that keeps the FrameNavigationEntry alive as long as
     // it is needed by this node's NavigationEntry.
     scoped_refptr<FrameNavigationEntry> frame_entry;
+
+    // List of child TreeNodes, which will be deleted when this node is.
+    ScopedVector<TreeNode> children;
   };
 
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
@@ -136,6 +140,24 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
   void ResetForCommit();
+
+  // Exposes the tree of FrameNavigationEntries that make up this joint session
+  // history item.
+  // In default Chrome, this tree only has a root node with an unshared
+  // FrameNavigationEntry.  Subframes are only added to the tree if the
+  // --site-per-process flag is passed.
+  TreeNode* root_node() const {
+    return frame_tree_.get();
+  }
+
+  // Finds the TreeNode associated with |frame_tree_node_id| to add or update
+  // its FrameNavigationEntry.  A new FrameNavigationEntry is added if none
+  // exists, or else the existing one (which might be shared with other
+  // NavigationEntries) is updated with the given parameters.
+  void AddOrUpdateFrameEntry(int64 frame_tree_node_id,
+                             SiteInstanceImpl* site_instance,
+                             const GURL& url,
+                             const Referrer& referrer);
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;

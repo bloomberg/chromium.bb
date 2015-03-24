@@ -471,6 +471,18 @@ void NavigationEntryImpl::ResetForCommit() {
 #endif
 }
 
+void NavigationEntryImpl::AddOrUpdateFrameEntry(int64 frame_tree_node_id,
+                                                SiteInstanceImpl* site_instance,
+                                                const GURL& url,
+                                                const Referrer& referrer) {
+  // TODO(creis): Walk tree to find the node to update.
+  // TODO(creis): Only create a new entry if one doesn't exist yet.
+  FrameNavigationEntry* frame_entry =
+      new FrameNavigationEntry(site_instance, url, referrer);
+  root_node()->children.push_back(
+      new NavigationEntryImpl::TreeNode(frame_entry));
+}
+
 void NavigationEntryImpl::SetScreenshotPNGData(
     scoped_refptr<base::RefCountedBytes> png_data) {
   screenshot_ = png_data;

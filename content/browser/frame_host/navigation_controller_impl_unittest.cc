@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
+#include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
@@ -1966,34 +1967,103 @@ TEST_F(NavigationControllerTest, NewSubframe) {
 
 // Auto subframes are ones the page loads automatically like ads. They should
 // not create new navigation entries.
+// TODO(creis): Test cross-site and nested iframes.
+// TODO(creis): Test updating entries for history auto subframe navigations.
 TEST_F(NavigationControllerTest, AutoSubframe) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
 
-  const GURL url1("http://foo1");
-  main_test_rfh()->SendNavigate(0, url1);
+  const GURL url1("http://foo/1");
+  main_test_rfh()->SendNavigate(1, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
-  const GURL url2("http://foo2");
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = 0;
-  params.url = url2;
-  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureUser;
-  params.is_post = false;
-  params.page_state = PageState::CreateFromURL(url2);
+  // Add a subframe and navigate it.
+  main_test_rfh()->OnCreateChildFrame(MSG_ROUTING_NONE, std::string(),
+                                      SandboxFlags::NONE);
+  RenderFrameHostImpl* subframe =
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
+  const GURL url2("http://foo/2");
+  {
+    FrameHostMsg_DidCommitProvisionalLoad_Params params;
+    params.page_id = 1;
+    params.url = url2;
+    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    params.should_update_history = false;
+    params.gesture = NavigationGestureUser;
+    params.is_post = false;
+    params.page_state = PageState::CreateFromURL(url2);
 
-  // Navigating should do nothing.
-  LoadCommittedDetails details;
-  EXPECT_FALSE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                              &details));
-  EXPECT_EQ(0U, notifications.size());
+    // Navigating should do nothing.
+    LoadCommittedDetails details;
+    EXPECT_FALSE(controller.RendererDidNavigate(subframe, params, &details));
+    EXPECT_EQ(0U, notifications.size());
+  }
 
   // There should still be only one entry.
   EXPECT_EQ(1, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(url1, entry->GetURL());
+  EXPECT_EQ(1, entry->GetPageID());
+  FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
+  EXPECT_EQ(url1, root_entry->url());
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should now have a subframe FrameNavigationEntry.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[0]->frame_entry.get();
+    EXPECT_EQ(url2, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+
+  // Add a second subframe and navigate.
+  main_test_rfh()->OnCreateChildFrame(MSG_ROUTING_NONE, std::string(),
+                                      SandboxFlags::NONE);
+  RenderFrameHostImpl* subframe2 =
+      contents()->GetFrameTree()->root()->child_at(1)->current_frame_host();
+  const GURL url3("http://foo/3");
+  {
+    FrameHostMsg_DidCommitProvisionalLoad_Params params;
+    params.page_id = 1;
+    params.url = url3;
+    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    params.should_update_history = false;
+    params.gesture = NavigationGestureUser;
+    params.is_post = false;
+    params.page_state = PageState::CreateFromURL(url3);
+
+    // Navigating should do nothing.
+    LoadCommittedDetails details;
+    EXPECT_FALSE(controller.RendererDidNavigate(subframe2, params, &details));
+    EXPECT_EQ(0U, notifications.size());
+  }
+
+  // There should still be only one entry, mostly unchanged.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+  EXPECT_EQ(url1, entry->GetURL());
+  EXPECT_EQ(1, entry->GetPageID());
+  EXPECT_EQ(root_entry, entry->root_node()->frame_entry.get());
+  EXPECT_EQ(url1, root_entry->url());
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should now have 2 subframe FrameNavigationEntries.
+    ASSERT_EQ(2U, entry->root_node()->children.size());
+    FrameNavigationEntry* new_frame_entry =
+        entry->root_node()->children[1]->frame_entry.get();
+    EXPECT_EQ(url3, new_frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
 }
 
 // Tests navigation and then going back to a subframe navigation.
