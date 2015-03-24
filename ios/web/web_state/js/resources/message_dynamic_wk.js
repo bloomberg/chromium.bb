@@ -4,6 +4,8 @@
 
 // Scripts for the message handler for use with WKWebView.
 
+goog.provide('__crweb.message_dynamic_wk');
+
 /**
  * Namespace for this module.
  */

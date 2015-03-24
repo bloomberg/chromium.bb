@@ -4,6 +4,8 @@
 
 // This file provides common methods that can be shared by other JavaScripts.
 
+goog.provide('__crweb.common');
+
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected. String 'common' is used in |__gCrWeb['common']| as it needs to be
@@ -575,5 +577,116 @@ new function() {
     window.setTimeout(function() {
       element.dispatchEvent(changeEvent);
     }, 0);
+  };
+
+  /**
+   * Retrieves favicon information.
+   *
+   * @return {Object} Object containing favicon data.
+   */
+  __gCrWeb.common.getFavicons = function() {
+    var favicons = [];
+    var hasFavicon = false;
+    favicons.toJSON = null;  // Never inherit Array.prototype.toJSON.
+    var links = document.getElementsByTagName('link');
+    var linkCount = links.length;
+    for (var i = 0; i < linkCount; ++i) {
+      if (links[i].rel) {
+        var rel = links[i].rel.toLowerCase();
+        if (rel == 'shortcut icon' ||
+            rel == 'icon' ||
+            rel == 'apple-touch-icon' ||
+            rel == 'apple-touch-icon-precomposed') {
+          var favicon = {
+            rel: links[i].rel.toLowerCase(),
+            href: links[i].href
+          };
+          favicons.push(favicon);
+          if (rel == 'icon' || rel == 'shortcut icon') {
+            hasFavicon = true;
+          }
+        }
+      }
+    }
+    if (!hasFavicon) {
+      // If an HTTP(S)? webpage does not reference a "favicon" then search
+      // for a file named "favicon.ico" at the root of the website (legacy).
+      // http://en.wikipedia.org/wiki/Favicon
+      var location = document.location;
+      if (location.protocol == 'http:' || location.protocol == 'https:') {
+        var favicon = {
+          rel: 'icon',
+          href: location.origin + '/favicon.ico'
+        };
+        favicons.push(favicon);
+      }
+    }
+    return favicons;
+  };
+
+  /**
+   * Checks whether an <object> node is plugin content (as <object> can also be
+   * used to embed images).
+   * @param {HTMLElement} node The <object> node to check.
+   * @return {Boolean} Whether the node appears to be a plugin.
+   * @private
+   */
+  var objectNodeIsPlugin_ = function(node) {
+    return node.hasAttribute('classid') ||
+    (node.hasAttribute('type') && node.type.indexOf('image/') != 0);
+  };
+
+  /**
+   * Checks whether plugin a node has fallback content.
+   * @param {HTMLElement} node The node to check.
+   * @return {Boolean} Whether the node has fallback.
+   * @private
+   */
+  var pluginHasFallbackContent_ = function(node) {
+    return node.textContent.trim().length > 0 ||
+           node.getElementsByTagName('img').length > 0;
+  };
+
+  /**
+   * Returns a list of plugin elements in the document that have no fallback
+   * content. For nested plugins, only the innermost plugin element is returned.
+   * @return {Array} A list of plugin elements.
+   * @private
+   */
+  var findPluginNodesWithoutFallback_ = function() {
+    var pluginNodes = [];
+    var objects = document.getElementsByTagName('object');
+    var objectCount = objects.length;
+    for (var i = 0; i < objectCount; i++) {
+      var object = objects[i];
+      if (objectNodeIsPlugin_(object) &&
+          !pluginHasFallbackContent_(object)) {
+        pluginNodes.push(object);
+      }
+    }
+    var applets = document.getElementsByTagName('applet');
+    var appletsCount = applets.length;
+    for (var i = 0; i < appletsCount; i++) {
+      var applet = applets[i];
+      if (!pluginHasFallbackContent_(applet)) {
+        pluginNodes.push(applet);
+      }
+    }
+    return pluginNodes;
+  };
+
+  /**
+   * Finds and stores any plugins that don't have placeholders.
+   * Returns true if any plugins without placeholders are found.
+   */
+  __gCrWeb.common.updatePluginPlaceholders = function() {
+    var plugins = findPluginNodesWithoutFallback_();
+    if (plugins.length > 0) {
+      // Store the list of plugins in a known place for the replacement script
+      // to use, then trigger it.
+      __gCrWeb['placeholderTargetPlugins'] = plugins;
+      return true;
+    }
+    return false;
   };
 }  // End of anonymous object

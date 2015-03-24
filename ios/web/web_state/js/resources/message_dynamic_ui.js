@@ -4,6 +4,8 @@
 
 // Scripts for the message handler for use with UIWebView.
 
+goog.provide('__crweb.message_dynamic_ui');
+
 /**
  * Namespace for this module.
  */

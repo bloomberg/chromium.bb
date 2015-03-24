@@ -4,6 +4,8 @@
 
 // Scripts for the message handler.
 
+goog.provide('__crweb.message');
+
 /**
  * Namespace for this module.
  */
