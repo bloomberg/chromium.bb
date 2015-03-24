@@ -20,14 +20,13 @@
 
 namespace blink {
 
-bool SVGClipPainter::applyStatefulResource(LayoutObject* object, GraphicsContext* context, ClipperState& clipperState)
+bool SVGClipPainter::applyStatefulResource(const LayoutObject& object, GraphicsContext* context, ClipperState& clipperState)
 {
-    ASSERT(object);
     ASSERT(context);
 
     m_clip.clearInvalidationMask();
 
-    return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperState);
+    return applyClippingToContext(object, object.objectBoundingBox(), object.paintInvalidationRectInLocalCoordinates(), context, clipperState);
 }
 
 class SVGClipExpansionCycleHelper {
@@ -38,10 +37,9 @@ private:
     LayoutSVGResourceClipper& m_clip;
 };
 
-bool SVGClipPainter::applyClippingToContext(LayoutObject* target, const FloatRect& targetBoundingBox,
+bool SVGClipPainter::applyClippingToContext(const LayoutObject& target, const FloatRect& targetBoundingBox,
     const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperState& clipperState)
 {
-    ASSERT(target);
     ASSERT(context);
     ASSERT(clipperState == ClipperNotApplied);
     ASSERT_WITH_SECURITY_IMPLICATION(!m_clip.needsLayout());
@@ -55,13 +53,13 @@ bool SVGClipPainter::applyClippingToContext(LayoutObject* target, const FloatRec
     // When drawing a clip for non-SVG elements, the CTM does not include the zoom factor.
     // In this case, we need to apply the zoom scale explicitly - but only for clips with
     // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
-    if (!target->isSVG() && m_clip.clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
+    if (!target.isSVG() && m_clip.clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
         ASSERT(m_clip.style());
         animatedLocalTransform.scale(m_clip.style()->effectiveZoom());
     }
 
     // First, try to apply the clip as a clipPath.
-    if (m_clip.tryPathOnlyClipping(target->displayItemClient(), context, animatedLocalTransform, targetBoundingBox)) {
+    if (m_clip.tryPathOnlyClipping(target.displayItemClient(), context, animatedLocalTransform, targetBoundingBox)) {
         clipperState = ClipperAppliedPath;
         return true;
     }
@@ -70,50 +68,50 @@ bool SVGClipPainter::applyClippingToContext(LayoutObject* target, const FloatRec
     clipperState = ClipperAppliedMask;
 
     // Begin compositing the clip mask.
-    CompositingRecorder::beginCompositing(context, target->displayItemClient(), SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(context, target.displayItemClient(), SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     {
-        TransformRecorder recorder(*context, target->displayItemClient(), animatedLocalTransform);
+        TransformRecorder recorder(*context, target.displayItemClient(), animatedLocalTransform);
 
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_clip);
         LayoutSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
         ClipperState clipPathClipperState = ClipperNotApplied;
-        if (clipPathClipper && !SVGClipPainter(*clipPathClipper).applyClippingToContext(&m_clip, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
+        if (clipPathClipper && !SVGClipPainter(*clipPathClipper).applyClippingToContext(m_clip, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
             // End the clip mask's compositor.
-            CompositingRecorder::endCompositing(context, target->displayItemClient());
+            CompositingRecorder::endCompositing(context, target.displayItemClient());
             return false;
         }
 
-        drawClipMaskContent(context, target->displayItemClient(), targetBoundingBox);
+        drawClipMaskContent(context, target.displayItemClient(), targetBoundingBox);
 
         if (clipPathClipper)
-            SVGClipPainter(*clipPathClipper).postApplyStatefulResource(&m_clip, context, clipPathClipperState);
+            SVGClipPainter(*clipPathClipper).postApplyStatefulResource(m_clip, context, clipPathClipperState);
     }
 
     // Masked content layer start.
-    CompositingRecorder::beginCompositing(context, target->displayItemClient(), SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(context, target.displayItemClient(), SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
 
     return true;
 }
 
-void SVGClipPainter::postApplyStatefulResource(LayoutObject* target, GraphicsContext* context, ClipperState& clipperState)
+void SVGClipPainter::postApplyStatefulResource(const LayoutObject& target, GraphicsContext* context, ClipperState& clipperState)
 {
     switch (clipperState) {
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            context->displayItemList()->add(EndClipPathDisplayItem::create(target->displayItemClient()));
+            context->displayItemList()->add(EndClipPathDisplayItem::create(target.displayItemClient()));
         } else {
-            EndClipPathDisplayItem endClipPathDisplayItem(target->displayItemClient());
+            EndClipPathDisplayItem endClipPathDisplayItem(target.displayItemClient());
             endClipPathDisplayItem.replay(context);
         }
         break;
     case ClipperAppliedMask:
         // Transfer content -> clip mask (SrcIn)
-        CompositingRecorder::endCompositing(context, target->displayItemClient());
+        CompositingRecorder::endCompositing(context, target.displayItemClient());
 
         // Transfer clip mask -> bg (SrcOver)
-        CompositingRecorder::endCompositing(context, target->displayItemClient());
+        CompositingRecorder::endCompositing(context, target.displayItemClient());
         break;
     default:
         ASSERT_NOT_REACHED();

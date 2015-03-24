@@ -142,7 +142,7 @@ public:
                 }
 
                 m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
-                if (!SVGClipPainter(*m_resourceClipper).applyClippingToContext(renderLayer.layoutObject(), rootRelativeBounds,
+                if (!SVGClipPainter(*m_resourceClipper).applyClippingToContext(*renderLayer.layoutObject(), rootRelativeBounds,
                     paintingInfo.paintDirtyRect, context, m_clipperState)) {
                     // No need to post-apply the clipper if this failed.
                     m_resourceClipper = 0;
@@ -154,7 +154,7 @@ public:
     ~ClipPathHelper()
     {
         if (m_resourceClipper)
-            SVGClipPainter(*m_resourceClipper).postApplyStatefulResource(m_renderLayer.layoutObject(), m_context, m_clipperState);
+            SVGClipPainter(*m_resourceClipper).postApplyStatefulResource(*m_renderLayer.layoutObject(), m_context, m_clipperState);
     }
 private:
     LayoutSVGResourceClipper* m_resourceClipper;
