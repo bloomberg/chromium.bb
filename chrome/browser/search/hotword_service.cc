@@ -744,8 +744,7 @@ void HotwordService::OptIntoHotwording(
         BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(
             profile_);
     if (event_service) {
-      // TODO(kcarattini): add this call once it's implemented in the API.
-      // event_service->SpeakerModelExists();
+      event_service->OnSpeakerModelExists();
       return;
     }
   }

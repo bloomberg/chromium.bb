@@ -42,6 +42,8 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
 
   void OnDeleteSpeakerModel();
 
+  void OnSpeakerModelExists();
+
  private:
   friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 
@@ -234,6 +236,19 @@ class HotwordPrivateGetAudioHistoryEnabledFunction
   bool RunAsync() override;
 
   void SetResultAndSendResponse(bool success, bool new_enabled_value);
+};
+
+class HotwordPrivateSpeakerModelExistsResultFunction :
+    public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.speakerModelExistsResult",
+                             HOTWORDPRIVATE_SPEAKERMODELEXISTSRESULT)
+
+ protected:
+  ~HotwordPrivateSpeakerModelExistsResultFunction() override {}
+
+  // ExtensionFunction:
+  bool RunSync() override;
 };
 
 }  // namespace extensions

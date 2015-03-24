@@ -102,6 +102,10 @@ void HotwordPrivateEventService::OnDeleteSpeakerModel() {
   SignalEvent(api::hotword_private::OnDeleteSpeakerModel::kEventName);
 }
 
+void HotwordPrivateEventService::OnSpeakerModelExists() {
+  SignalEvent(api::hotword_private::OnSpeakerModelExists::kEventName);
+}
+
 void HotwordPrivateEventService::SignalEvent(const std::string& event_name) {
   EventRouter* router = EventRouter::Get(profile_);
   if (!router || !router->HasEventListener(event_name))
@@ -460,6 +464,20 @@ void HotwordPrivateGetAudioHistoryEnabledFunction::SetResultAndSendResponse(
   result.enabled = new_enabled_value;
   SetResult(result.ToValue().release());
   SendResponse(true);
+}
+
+bool HotwordPrivateSpeakerModelExistsResultFunction::RunSync() {
+  scoped_ptr<api::hotword_private::SpeakerModelExistsResult::Params> params(
+      api::hotword_private::SpeakerModelExistsResult::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service)
+    return false;
+
+  hotword_service->SpeakerModelExistsComplete(params->exists);
+  return true;
 }
 
 }  // namespace extensions

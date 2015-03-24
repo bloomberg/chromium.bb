@@ -149,6 +149,10 @@ namespace hotwordPrivate {
 
     // Gets the audio history opt-in state.
     static void getAudioHistoryEnabled(optional AudioHistoryCallback callback);
+
+    // Sends the result of whether a speaker model exists to the browser.
+    static void speakerModelExistsResult(boolean exists,
+                                         optional GenericDoneCallback callback);
   };
 
   interface Events {
@@ -174,5 +178,9 @@ namespace hotwordPrivate {
 
     // Fired when the speaker model should be deleted.
     static void onDeleteSpeakerModel();
+
+    // Fired when the browser wants to find out whether the speaker model
+    // exists.
+    static void onSpeakerModelExists();
   };
 };
