@@ -246,25 +246,16 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
     return pathHasChanged;
 }
 
-void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
+void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect&, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_node || !m_node->layoutObject())
         return;
 
-    GraphicsContext context(canvas, nullptr, paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ?
-        GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
-
-    DisplayItemListScope displayItemListScope(&context);
-
-    IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
-    {
-        DrawingRecorder drawingRecorder(displayItemListScope.context(), displayItemClient(), DisplayItem::LinkHighlight, clipRect);
-        if (!drawingRecorder.canUseCachedDrawing()) {
-            displayItemListScope.context()->clip(clipRect);
-            displayItemListScope.context()->setFillColor(m_node->layoutObject()->style()->tapHighlightColor());
-            displayItemListScope.context()->fillPath(m_path);
-        }
-    }
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
+    canvas->drawPath(m_path.skPath(), paint);
 }
 
 void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
