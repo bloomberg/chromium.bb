@@ -86,7 +86,7 @@ html[dir=rtl] #close-button-item {
   z-index: 1;
 }
 
-html[dir=rtl] #close-button-item {
+html[dir=rtl] #back-button-item {
   left: auto;
   right: 14px;
 }
