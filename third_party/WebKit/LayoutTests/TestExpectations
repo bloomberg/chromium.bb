@@ -1764,8 +1764,7 @@ crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualReba
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
-# crbug.com/375565 [ Mac ] virtual/slimmingpaint/fast/repaint/caret-with-transformation.html [ Pass Failure ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/caret-with-transformation.html [ Pass Failure NeedsManualRebaseline ]
+crbug.com/375565 [ Mac ] virtual/slimmingpaint/fast/repaint/caret-with-transformation.html [ Pass Failure ]
 
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
@@ -2366,8 +2365,6 @@ crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Pass Failure ImageOnlyFailure ]
-
-crbug.com/451235 virtual/slimmingpaint/svg/clip-path/invalid-clip-path-crash.html [ Pass Failure ]
 
 crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
 crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
