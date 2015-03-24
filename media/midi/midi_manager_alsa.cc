@@ -91,6 +91,13 @@ const std::string UdevDeviceGetPropertyOrSysattr(
 }
 #endif  // defined(USE_UDEV)
 
+void SetStringIfNonEmpty(base::DictionaryValue* value,
+                         const std::string& path,
+                         const std::string& in_value) {
+  if (!in_value.empty())
+    value->SetString(path, in_value);
+}
+
 }  // namespace
 
 MidiManagerAlsa::MidiManagerAlsa()
@@ -395,16 +402,16 @@ MidiManagerAlsa::AlsaPortMetadata::~AlsaPortMetadata() {
 }
 
 scoped_ptr<base::Value> MidiManagerAlsa::AlsaPortMetadata::Value() const {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  value->SetString("path", path_);
-  value->SetString("bus", bus_);
-  value->SetString("id", id_);
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  SetStringIfNonEmpty(value.get(), "path", path_);
+  SetStringIfNonEmpty(value.get(), "bus", bus_);
+  SetStringIfNonEmpty(value.get(), "id", id_);
   value->SetInteger("clientAddr", client_addr_);
   value->SetInteger("portAddr", port_addr_);
-  value->SetString("clientName", client_name_);
-  value->SetString("portName", port_name_);
-  value->SetString("cardName", card_name_);
-  value->SetString("cardLongname", card_longname_);
+  SetStringIfNonEmpty(value.get(), "clientName", client_name_);
+  SetStringIfNonEmpty(value.get(), "portName", port_name_);
+  SetStringIfNonEmpty(value.get(), "cardName", card_name_);
+  SetStringIfNonEmpty(value.get(), "cardLongname", card_longname_);
   std::string type;
   switch (type_) {
     case Type::kInput:
@@ -415,9 +422,9 @@ scoped_ptr<base::Value> MidiManagerAlsa::AlsaPortMetadata::Value() const {
       type = "output";
       break;
   }
-  value->SetString("type", type);
+  SetStringIfNonEmpty(value.get(), "type", type);
 
-  return scoped_ptr<base::Value>(value).Pass();
+  return value.Pass();
 }
 
 std::string MidiManagerAlsa::AlsaPortMetadata::JSONValue() const {

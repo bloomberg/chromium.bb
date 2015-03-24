@@ -66,6 +66,10 @@ TEST(MidiManagerAlsaTest, JSONPortMetadata) {
       "path", "bus", "id", &address, "client_name", "port_name", "card_name",
       "card_longname", MidiManagerAlsa::AlsaPortMetadata::Type::kOutput);
 
+  MidiManagerAlsa::AlsaPortMetadata partial(
+      "", "", "", &address, "client_name", "port_name", "card_name",
+      "card_longname", MidiManagerAlsa::AlsaPortMetadata::Type::kOutput);
+
   ASSERT_EQ(
       "{\"bus\":\"bus\",\"cardLongname\":\"card_longname\",\"cardName\":\"card_"
       "name\","
@@ -86,6 +90,15 @@ TEST(MidiManagerAlsaTest, JSONPortMetadata) {
       output.JSONValue());
   ASSERT_EQ("747E553D40F8388A0C1C51261B82869D5EFA8A54860AAFB2F4F7437744982495",
             output.OpaqueKey());
+
+  ASSERT_EQ(
+      "{\"cardLongname\":\"card_longname\",\"cardName\":\"card_"
+      "name\","
+      "\"clientAddr\":1,\"clientName\":\"client_name\","
+      "\"portAddr\":2,\"portName\":\"port_name\",\"type\":\"output\"}",
+      partial.JSONValue());
+  ASSERT_EQ("51DF7AF543B5BDF83C0B8DE3A00A0BC588DDFCA8600671EF7D59828B40DFF6D3",
+            partial.OpaqueKey());
 }
 
 }  // namespace media
