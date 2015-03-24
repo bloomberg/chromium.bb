@@ -516,32 +516,17 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                                     blink::WGC3Denum pname,
                                     blink::WGC3Duint* params);
 
-  // TODO(dshwang): Remove |level| in Blink and then remove it.
   void copyTextureCHROMIUM(blink::WGC3Denum target,
                            blink::WebGLId source_id,
                            blink::WebGLId dest_id,
-                           blink::WGC3Dint level,
                            blink::WGC3Denum internal_format,
                            blink::WGC3Denum dest_type) override;
 
   void copySubTextureCHROMIUM(blink::WGC3Denum target,
                               blink::WebGLId source_id,
                               blink::WebGLId dest_id,
-                              blink::WGC3Dint level,
                               blink::WGC3Dint xoffset,
                               blink::WGC3Dint yoffset) override;
-
-  virtual void copyTextureCHROMIUM(blink::WGC3Denum target,
-                                   blink::WebGLId source_id,
-                                   blink::WebGLId dest_id,
-                                   blink::WGC3Denum internal_format,
-                                   blink::WGC3Denum dest_type);
-
-  virtual void copySubTextureCHROMIUM(blink::WGC3Denum target,
-                                      blink::WebGLId sourceId,
-                                      blink::WebGLId destId,
-                                      blink::WGC3Dint xoffset,
-                                      blink::WGC3Dint yoffset);
 
   virtual void bindUniformLocationCHROMIUM(blink::WebGLId program,
                                            blink::WGC3Dint location,
