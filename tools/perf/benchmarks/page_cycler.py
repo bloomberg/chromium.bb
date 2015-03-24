@@ -70,6 +70,7 @@ class PageCyclerIntlEsFrPtBr(_PageCycler):
     return 'page_cycler.intl_es_fr_pt-BR'
 
 
+@benchmark.Disabled('win', 'mac', 'linux')  # crbug.com/470071
 class PageCyclerIntlHiRu(_PageCycler):
   """Page load time benchmark for a variety of pages in Hindi and Russian.
 
