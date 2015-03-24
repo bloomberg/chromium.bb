@@ -471,6 +471,16 @@ def Load(filename):
   contents = f.read()
   f.close()
 
+  return Process(contents, filename)
+
+
+def Process(contents, filename):
+  '''
+  Processes the contents of a file and returns an equivalent Python dictionary
+  in a format that the JSON schema compiler expects to see. (Separate from
+  Load primarily for testing purposes.)
+  '''
+
   idl = idl_parser.IDLParser().ParseData(contents, filename)
   idl_schema = IDLSchema(idl)
   return idl_schema.process()

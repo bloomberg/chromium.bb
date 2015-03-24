@@ -38,10 +38,10 @@ class _Generator(object):
                 self._namespace.name)
         .Append())
 
+    c.Cblock(self._GenerateNamespaceObject())
+
     for js_type in self._namespace.types.values():
       c.Cblock(self._GenerateType(js_type))
-
-    c.Cblock(self._GenerateNamespaceObject())
 
     for function in self._namespace.functions.values():
       c.Cblock(self._GenerateFunction(function))
@@ -53,22 +53,24 @@ class _Generator(object):
 
   def _GenerateType(self, js_type):
     """Given a Type object, returns the Code for this type's definition.
-
     """
     c = Code()
-
-    # Since enums are just treated as strings for now, don't generate their
-    # type.
     if js_type.property_type is PropertyType.ENUM:
-      return c
+      c.Concat(self._GenerateEnumJsDoc(js_type))
+    else:
+      c.Concat(self._GenerateTypeJsDoc(js_type))
 
-    c.Concat(self._GenerateTypeJsDoc(js_type))
+    return c
 
-    var = 'var ' + js_type.simple_name
-    if self._IsTypeConstructor(js_type): var += ' = function()'
-    var += ';'
-    c.Append(var)
-
+  def _GenerateEnumJsDoc(self, js_type):
+    """ Given an Enum Type object, returns the Code for the enum's definition.
+    """
+    c = Code()
+    c.Append('/**').Append(' * @enum {string}').Append(' */')
+    c.Append('chrome.%s.%s = {' % (self._namespace.name, js_type.name))
+    c.Append('\n'.join(
+        ["  %s: '%s'," % (v.name, v.name) for v in js_type.enum_values]))
+    c.Append('};')
     return c
 
   def _IsTypeConstructor(self, js_type):
@@ -90,12 +92,19 @@ class _Generator(object):
       for line in js_type.description.splitlines():
         c.Comment(line, comment_prefix = ' * ')
 
-    if self._IsTypeConstructor(js_type):
+    is_constructor = self._IsTypeConstructor(js_type)
+    if is_constructor:
       c.Comment('@constructor', comment_prefix = ' * ')
     else:
       c.Concat(self._GenerateTypedef(js_type.properties))
 
     c.Append(' */')
+
+    var = 'var ' + js_type.simple_name
+    if is_constructor: var += ' = function() {}'
+    var += ';'
+    c.Append(var)
+
     return c
 
   def _GenerateTypedef(self, properties):
@@ -173,7 +182,12 @@ class _Generator(object):
     elif js_type.property_type is PropertyType.ARRAY:
       return 'Array'
     elif js_type.property_type is PropertyType.REF:
-      return js_type.ref_type
+      ref_type = js_type.ref_type
+      # Enums are defined as chrome.fooAPI.MyEnum, but types are defined simply
+      # as MyType.
+      if self._namespace.types[ref_type].property_type is PropertyType.ENUM:
+        ref_type = 'chrome.%s.%s' % (self._namespace.name, ref_type)
+      return ref_type
     elif js_type.property_type.is_fundamental:
       return js_type.property_type.name
     else:
