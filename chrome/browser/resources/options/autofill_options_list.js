@@ -90,10 +90,22 @@ cr.define('options.autofillOptions', function() {
       }
 
       // The 'Edit' button.
-      var guid = this.metadata_.guid;
+      var metadata = this.metadata_;
       var editButtonEl = AutofillEditProfileButton(
-          function() { AutofillOptions.loadAddressEditor(guid); });
+          AddressListItem.prototype.loadAddressEditor.bind(this));
       this.contentElement.appendChild(editButtonEl);
+    },
+
+    /**
+     * For local Autofill data, this function causes the AutofillOptionsHandler
+     * to call showEditAddressOverlay(). For Wallet data, the user is
+     * redirected to the Wallet web interface.
+     */
+    loadAddressEditor: function() {
+      if (this.metadata_.isLocal)
+        chrome.send('loadAddressEditor', [this.metadata_.guid]);
+      else
+        window.open(loadTimeData.getString('manageWalletAddressesUrl'));
     },
   };
 
@@ -151,9 +163,22 @@ cr.define('options.autofillOptions', function() {
       }
 
       // The 'Edit' button.
+      var metadata = this.metadata_;
       var editButtonEl = AutofillEditProfileButton(
-          function() { AutofillOptions.loadCreditCardEditor(guid); });
+          CreditCardListItem.prototype.loadCreditCardEditor.bind(this));
       this.contentElement.appendChild(editButtonEl);
+    },
+
+    /**
+     * For local Autofill data, this function causes the AutofillOptionsHandler
+     * to call showEditCreditCardOverlay(). For Wallet data, the user is
+     * redirected to the Wallet web interface.
+     */
+    loadCreditCardEditor: function() {
+      if (this.metadata_.isLocal)
+        chrome.send('loadCreditCardEditor', [this.metadata_.guid]);
+      else
+        window.open(loadTimeData.getString('manageWalletPaymentMethodsUrl'));
     },
   };
 
@@ -408,7 +433,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     activateItemAtIndex: function(index) {
-      AutofillOptions.loadAddressEditor(this.dataModel.item(index));
+      this.getListItemByIndex(index).loadAddressEditor();
     },
 
     /**
@@ -442,7 +467,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     activateItemAtIndex: function(index) {
-      AutofillOptions.loadCreditCardEditor(this.dataModel.item(index));
+      this.getListItemByIndex(index).loadCreditCardEditor();
     },
 
     /**

@@ -175,34 +175,6 @@ cr.define('options', function() {
     },
 
     /**
-     * For local Autofill data, this function causes the AutofillOptionsHandler
-     * to call showEditAddressOverlay(). For Wallet data, the user is
-     * redirected to the Wallet web interface.
-     * @param {Object} entry The relevant entry in data model.
-     * @private
-     */
-    loadAddressEditor_: function(entry) {
-      if (entry.isLocal)
-        chrome.send('loadAddressEditor', [entry.guid]);
-      else
-        window.open(loadTimeData.getString('manageWalletAddressesUrl'));
-    },
-
-    /**
-     * For local Autofill data, this function causes the AutofillOptionsHandler
-     * to call showEditCreditCardOverlay(). For Wallet data, the user is
-     * redirected to the Wallet web interface.
-     * @param {Object} entry The relevant entry in data model.
-     * @private
-     */
-    loadCreditCardEditor_: function(entry) {
-      if (entry.isLocal)
-        chrome.send('loadCreditCardEditor', [entry.guid]);
-      else
-        window.open(loadTimeData.getString('manageWalletPaymentMethodsUrl'));
-    },
-
-    /**
      * Shows the 'Edit address' overlay, using the data in |address| to fill the
      * input fields. |address| is a list with one item, an associative array
      * that contains the address data.
@@ -250,14 +222,6 @@ cr.define('options', function() {
 
   AutofillOptions.removeData = function(guid, metricsAction) {
     AutofillOptions.getInstance().removeData_(guid, metricsAction);
-  };
-
-  AutofillOptions.loadAddressEditor = function(entry) {
-    AutofillOptions.getInstance().loadAddressEditor_(entry);
-  };
-
-  AutofillOptions.loadCreditCardEditor = function(entry) {
-    AutofillOptions.getInstance().loadCreditCardEditor_(entry);
   };
 
   AutofillOptions.editAddress = function(address) {
