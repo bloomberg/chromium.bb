@@ -26,7 +26,7 @@ class CONTENT_EXPORT V8SamplingProfiler final
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  void EnableSamplingEventForTesting(int code_added_events, int sample_events);
+  void EnableSamplingEventForTesting();
   void WaitSamplingEventForTesting();
 
  private:

@@ -77,10 +77,9 @@ class V8SamplingProfilerTest : public RenderViewTest {
       flush_complete_event->Signal();
   }
 
-  void CollectTrace(int code_added_events, int sample_events) {
+  void CollectTrace() {
     TraceLog* trace_log = TraceLog::GetInstance();
-    sampling_profiler_->EnableSamplingEventForTesting(code_added_events,
-                                                      sample_events);
+    sampling_profiler_->EnableSamplingEventForTesting();
     trace_log->SetEnabled(
         CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
         TraceLog::RECORDING_MODE, TraceOptions());
@@ -130,7 +129,7 @@ class V8SamplingProfilerTest : public RenderViewTest {
 #endif
 
 TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingEventFired)) {
-  sampling_profiler_->EnableSamplingEventForTesting(0, 0);
+  sampling_profiler_->EnableSamplingEventForTesting();
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
       TraceLog::RECORDING_MODE, TraceOptions());
@@ -140,14 +139,14 @@ TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingEventFired)) {
 }
 
 TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingJitCodeEventsCollected)) {
-  CollectTrace(1, 0);
+  CollectTrace();
   int jit_code_added_events_count = CountEvents("JitCodeAdded");
   CHECK_LT(0, jit_code_added_events_count);
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingSamplesCollected)) {
-  CollectTrace(0, 1);
+  CollectTrace();
   int sample_events_count = CountEvents("V8Sample");
   CHECK_LT(0, sample_events_count);
   base::RunLoop().RunUntilIdle();
