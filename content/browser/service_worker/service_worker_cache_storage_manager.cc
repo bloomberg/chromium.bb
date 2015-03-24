@@ -21,20 +21,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
 
 namespace {
-
-base::FilePath ConstructOriginPath(const base::FilePath& root_path,
-                                   const GURL& origin) {
-  std::string origin_hash = base::SHA1HashString(origin.spec());
-  std::string origin_hash_hex = base::StringToLowerASCII(
-      base::HexEncode(origin_hash.c_str(), origin_hash.length()));
-  return root_path.AppendASCII(origin_hash_hex);
-}
 
 bool DeleteDir(const base::FilePath& path) {
   return base::DeleteFile(path, true /* recursive */);
@@ -214,6 +207,7 @@ void ServiceWorkerCacheStorageManager::GetOriginUsage(
     return;
   }
 
+  MigrateOrigin(origin_url);
   PostTaskAndReplyWithResult(
       cache_task_runner_.get(),
       FROM_HERE,
@@ -298,6 +292,7 @@ void ServiceWorkerCacheStorageManager::DeleteOriginDidClose(
     return;
   }
 
+  cache_manager->MigrateOrigin(origin);
   PostTaskAndReplyWithResult(
       cache_manager->cache_task_runner_.get(), FROM_HERE,
       base::Bind(&DeleteDir,
@@ -328,6 +323,7 @@ ServiceWorkerCacheStorageManager::FindOrCreateServiceWorkerCacheManager(
   ServiceWorkerCacheStorageMap::const_iterator it =
       cache_storage_map_.find(origin);
   if (it == cache_storage_map_.end()) {
+    MigrateOrigin(origin);
     ServiceWorkerCacheStorage* cache_storage =
         new ServiceWorkerCacheStorage(ConstructOriginPath(root_path_, origin),
                                       IsMemoryBacked(),
@@ -341,6 +337,49 @@ ServiceWorkerCacheStorageManager::FindOrCreateServiceWorkerCacheManager(
     return cache_storage;
   }
   return it->second;
+}
+
+// static
+base::FilePath ServiceWorkerCacheStorageManager::ConstructLegacyOriginPath(
+    const base::FilePath& root_path,
+    const GURL& origin) {
+  const std::string origin_hash = base::SHA1HashString(origin.spec());
+  const std::string origin_hash_hex = base::StringToLowerASCII(
+      base::HexEncode(origin_hash.c_str(), origin_hash.length()));
+  return root_path.AppendASCII(origin_hash_hex);
+}
+
+// static
+base::FilePath ServiceWorkerCacheStorageManager::ConstructOriginPath(
+    const base::FilePath& root_path,
+    const GURL& origin) {
+  const std::string identifier = storage::GetIdentifierFromOrigin(origin);
+  const std::string origin_hash = base::SHA1HashString(identifier);
+  const std::string origin_hash_hex = base::StringToLowerASCII(
+      base::HexEncode(origin_hash.c_str(), origin_hash.length()));
+  return root_path.AppendASCII(origin_hash_hex);
+}
+
+// Migrate from old origin-based path to storage identifier-based path.
+// TODO(jsbell); Remove after a few releases.
+void ServiceWorkerCacheStorageManager::MigrateOrigin(const GURL& origin) {
+  if (IsMemoryBacked())
+    return;
+  base::FilePath old_path = ConstructLegacyOriginPath(root_path_, origin);
+  base::FilePath new_path = ConstructOriginPath(root_path_, origin);
+  cache_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MigrateOriginOnTaskRunner, old_path, new_path));
+}
+
+// static
+void ServiceWorkerCacheStorageManager::MigrateOriginOnTaskRunner(
+    const base::FilePath& old_path,
+    const base::FilePath& new_path) {
+  if (base::PathExists(old_path)) {
+    if (!base::PathExists(new_path))
+      base::Move(old_path, new_path);
+    base::DeleteFile(old_path, /*recursive*/ true);
+  }
 }
 
 }  // namespace content

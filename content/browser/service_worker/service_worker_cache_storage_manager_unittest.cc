@@ -5,9 +5,11 @@
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/browser/service_worker/service_worker_cache_quota_client.h"
@@ -565,6 +567,115 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, MemoryBackedSizePersistent) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_EQ(0, cache_storage->MemoryBackedSize());
+}
+
+class ServiceWorkerCacheStorageMigrationTest
+    : public ServiceWorkerCacheStorageManagerTest {
+ protected:
+  ServiceWorkerCacheStorageMigrationTest() : cache1_("foo"), cache2_("bar") {}
+
+  void SetUp() override {
+    ServiceWorkerCacheStorageManagerTest::SetUp();
+
+    // Populate a cache, then move it to the "legacy" location
+    // so that tests can verify the results of migration.
+    legacy_path_ = ServiceWorkerCacheStorageManager::ConstructLegacyOriginPath(
+        cache_manager_->root_path(), origin1_);
+    new_path_ = ServiceWorkerCacheStorageManager::ConstructOriginPath(
+        cache_manager_->root_path(), origin1_);
+
+    ASSERT_FALSE(base::DirectoryExists(legacy_path_));
+    ASSERT_FALSE(base::DirectoryExists(new_path_));
+    ASSERT_TRUE(Open(origin1_, cache1_));
+    ASSERT_TRUE(Open(origin1_, cache2_));
+    callback_cache_ = nullptr;
+    ASSERT_FALSE(base::DirectoryExists(legacy_path_));
+    ASSERT_TRUE(base::DirectoryExists(new_path_));
+
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+    cache_manager_ =
+        ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
+
+    ASSERT_TRUE(base::Move(new_path_, legacy_path_));
+    ASSERT_TRUE(base::DirectoryExists(legacy_path_));
+    ASSERT_FALSE(base::DirectoryExists(new_path_));
+  }
+
+  int64 GetOriginUsage(const GURL& origin) {
+    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
+    cache_manager_->GetOriginUsage(
+        origin,
+        base::Bind(&ServiceWorkerCacheStorageMigrationTest::UsageCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
+    loop->Run();
+    return callback_usage_;
+  }
+
+  void UsageCallback(base::RunLoop* run_loop, int64 usage) {
+    callback_usage_ = usage;
+    run_loop->Quit();
+  }
+
+  base::FilePath legacy_path_;
+  base::FilePath new_path_;
+
+  const std::string cache1_;
+  const std::string cache2_;
+
+  int64 callback_usage_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageMigrationTest);
+};
+
+TEST_F(ServiceWorkerCacheStorageMigrationTest, OpenCache) {
+  EXPECT_TRUE(Open(origin1_, cache1_));
+  EXPECT_FALSE(base::DirectoryExists(legacy_path_));
+  EXPECT_TRUE(base::DirectoryExists(new_path_));
+
+  EXPECT_TRUE(Keys(origin1_));
+  std::vector<std::string> expected_keys;
+  expected_keys.push_back(cache1_);
+  expected_keys.push_back(cache2_);
+  EXPECT_EQ(expected_keys, callback_strings_);
+}
+
+TEST_F(ServiceWorkerCacheStorageMigrationTest, DeleteCache) {
+  EXPECT_TRUE(Delete(origin1_, cache1_));
+  EXPECT_FALSE(base::DirectoryExists(legacy_path_));
+  EXPECT_TRUE(base::DirectoryExists(new_path_));
+
+  EXPECT_TRUE(Keys(origin1_));
+  std::vector<std::string> expected_keys;
+  expected_keys.push_back(cache2_);
+  EXPECT_EQ(expected_keys, callback_strings_);
+}
+
+TEST_F(ServiceWorkerCacheStorageMigrationTest, GetOriginUsage) {
+  EXPECT_GT(GetOriginUsage(origin1_), 0);
+  EXPECT_FALSE(base::DirectoryExists(legacy_path_));
+  EXPECT_TRUE(base::DirectoryExists(new_path_));
+}
+
+TEST_F(ServiceWorkerCacheStorageMigrationTest, MoveFailure) {
+  // Revert the migration.
+  ASSERT_TRUE(base::Move(legacy_path_, new_path_));
+  ASSERT_FALSE(base::DirectoryExists(legacy_path_));
+  ASSERT_TRUE(base::DirectoryExists(new_path_));
+
+  // Make a dummy legacy directory.
+  ASSERT_TRUE(base::CreateDirectory(legacy_path_));
+
+  // Ensure that migration doesn't stomp existing new directory,
+  // but does clean up old directory.
+  EXPECT_TRUE(Open(origin1_, cache1_));
+  EXPECT_FALSE(base::DirectoryExists(legacy_path_));
+  EXPECT_TRUE(base::DirectoryExists(new_path_));
+
+  EXPECT_TRUE(Keys(origin1_));
+  std::vector<std::string> expected_keys;
+  expected_keys.push_back(cache1_);
+  expected_keys.push_back(cache2_);
+  EXPECT_EQ(expected_keys, callback_strings_);
 }
 
 class ServiceWorkerCacheQuotaClientTest

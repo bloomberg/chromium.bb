@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "content/browser/service_worker/service_worker_cache_storage.h"
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
@@ -31,7 +32,6 @@ class QuotaManagerProxy;
 namespace content {
 
 class ServiceWorkerCacheQuotaClient;
-class ServiceWorkerCacheStorageManagerTest;
 
 // Keeps track of a ServiceWorkerCacheStorage per origin. There is one
 // ServiceWorkerCacheStorageManager per ServiceWorkerContextCore.
@@ -87,6 +87,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
  private:
   friend class ServiceWorkerCacheQuotaClient;
   friend class ServiceWorkerCacheStorageManagerTest;
+  friend class ServiceWorkerCacheStorageMigrationTest;
 
   typedef std::map<GURL, ServiceWorkerCacheStorage*>
       ServiceWorkerCacheStorageMap;
@@ -128,6 +129,21 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   }
 
   bool IsMemoryBacked() const { return root_path_.empty(); }
+
+  // Map a origin to the path. Exposed for testing.
+  static base::FilePath ConstructLegacyOriginPath(
+      const base::FilePath& root_path,
+      const GURL& origin);
+  // Map a database identifier (computed from an origin) to the path. Exposed
+  // for testing.
+  static base::FilePath ConstructOriginPath(const base::FilePath& root_path,
+                                            const GURL& origin);
+
+  // Migrate from old origin-based path to storage identifier-based path.
+  // TODO(jsbell); Remove method and all calls after a few releases.
+  void MigrateOrigin(const GURL& origin);
+  static void MigrateOriginOnTaskRunner(const base::FilePath& old_path,
+                                        const base::FilePath& new_path);
 
   base::FilePath root_path_;
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
