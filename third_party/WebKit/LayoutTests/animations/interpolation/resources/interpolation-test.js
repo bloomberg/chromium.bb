@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,92 +27,105 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*
  * This script is intended to be used for constructing layout tests which
  * exercise the interpolation functionaltiy of the animation system.
  * Tests which run using this script should be portable across browsers.
  *
- * The following function is exported:
- *  * assertInterpolation({property: x, from: y, to: z}, [{at: fraction, is: value}])
- *    Constructs a test case which for each fraction will output a PASS
- *    or FAIL depending on whether the interpolated result matches
- *    'value'. Replica elements are constructed to aid eyeballing test
- *    results. This function may not be used in a ref test.
+ * The following functions are exported:
+ *  - assertInterpolation({property, from, to, [method]}, [{at: fraction, is: value}])
+ *        Constructs a test case for each fraction that asserts the expected value
+ *        equals the value produced by interpolation between from and to using
+ *        CSS Animations, CSS Transitions and Web Animations. If the method option is
+ *        specified then only that interpolation method will be used.
+ *  - assertNoInterpolation({property, from, to, [method]})
+ *        This works in the same way as assertInterpolation with expectations auto
+ *        generated according to each interpolation method's handling of values
+ *        that don't interpolate.
+ *  - afterTest(callback)
+ *        Calls callback after all the tests have executed.
  */
 'use strict';
 (function() {
-  var webkitPrefix = 'webkitAnimation' in document.documentElement.style ? '-webkit-' : '';
-  var webAnimationsTest = typeof Element.prototype.animate === 'function';
-  var startEvent = webkitPrefix ? 'webkitAnimationStart' : 'animationstart';
-  var endEvent = webkitPrefix ? 'webkitAnimationEnd' : 'animationend';
-  var testCount = 0;
-  var animationEventCount = 0;
-  // FIXME: This should be 0, but 0 duration animations are broken in at least
-  // pre-Web-Animations Blink, WebKit and Gecko.
-  var durationSeconds = 0.001;
-  var iterationCount = 0.5;
-  var delaySeconds = 0;
-  var cssText = '.test:hover:before {\n' +
-      '  content: attr(description);\n' +
-      '  position: absolute;\n' +
-      '  z-index: 1000;\n' +
-      '  background: gold;\n' +
-      '}\n';
-  var fragment = document.createDocumentFragment();
-  var fragmentAttachedListeners = [];
-  var style = document.createElement('style');
-  var cssTests = document.createElement('div');
-  cssTests.id = 'css-tests';
-  cssTests.textContent = 'CSS Animations:';
-  var afterTestCallback = null;
-  fragment.appendChild(style);
-  fragment.appendChild(cssTests);
+  var interpolationTests = [];
+  var cssAnimationsData = {
+    sharedStyle: null,
+    nextID: 0,
+  };
+  var webAnimationsEnabled = typeof Element.prototype.animate === 'function';
+  var expectNoInterpolation = {};
+  var afterTestHook = function() {};
 
-  var waTestsDiv = null;
-  function waTests() {
-    if (!waTestsDiv) {
-      waTestsDiv = document.createElement('div');
-      waTestsDiv.id = 'web-animations-tests';
-      waTestsDiv.textContent = 'Web Animations API:';
-      fragment.appendChild(waTestsDiv);
-    }
-    return waTestsDiv;
-  }
-
-  var updateScheduled = false;
-  function maybeScheduleUpdate() {
-    if (updateScheduled) {
-      return;
-    }
-    updateScheduled = true;
-    setTimeout(function() {
-      updateScheduled = false;
-      style.innerHTML = cssText;
-      document.body.appendChild(fragment);
-      fragmentAttachedListeners.forEach(function(listener) {listener();});
-    }, 0);
-  }
-
-  function dumpResults() {
-    var targets = document.querySelectorAll('.target.active');
-    var cssResultString = 'CSS Animations:\n';
-    var waResultString = 'Web Animations API:\n';
-    for (var i = 0; i < targets.length; i++) {
-      if (targets[i].testType === 'css') {
-        cssResultString += targets[i].getResultString() + '\n';
-      } else {
-        waResultString += targets[i].getResultString() + '\n';
+  var cssAnimationsInterpolation = {
+    name: 'CSS Animations',
+    supports: function() {return true;},
+    setup: function() {},
+    nonInterpolationExpectations: function(from, to) {
+      return expectFlip(from, to, 0.5);
+    },
+    interpolate: function(property, from, to, at, target) {
+      var id = cssAnimationsData.nextID++;
+      if (!cssAnimationsData.sharedStyle) {
+        cssAnimationsData.sharedStyle = createElement(document.body, 'style');
       }
-    }
-    var results = document.createElement('pre');
-    results.textContent = cssResultString + (waTestsDiv ? '\n' + waResultString : '');
-    results.id = 'results';
-    document.body.appendChild(results);
-  }
+      cssAnimationsData.sharedStyle.textContent += '' +
+        '@keyframes animation' + id + ' {' +
+          'from {' + property + ': ' + from + ';}' +
+          'to {' + property + ': ' + to + ';}' +
+        '}';
+      target.style.animationName = 'animation' + id;
+      target.style.animationDuration = '2e10s';
+      target.style.animationDelay = '-1e10s';
+      target.style.animationTimingFunction = createEasing(at);
+    },
+  };
 
-  function afterTest(callback) {
-    afterTestCallback = callback;
+  var cssTransitionsInterpolation = {
+    name: 'CSS Transitions',
+    supports: function() {return true;},
+    setup: function(property, from, target) {
+      target.style[property] = from;
+    },
+    nonInterpolationExpectations: function(from, to) {
+      return expectFlip(from, to, -Infinity);
+    },
+    interpolate: function(property, from, to, at, target) {
+      target.style.transitionDuration = '2e10s';
+      target.style.transitionDelay = '-1e10s';
+      target.style.transitionTimingFunction = createEasing(at);
+      target.style.transitionProperty = property;
+      target.style[property] = to;
+    },
+  };
+
+  var webAnimationsInterpolation = {
+    name: 'Web Animations',
+    supports: function(property) {return property.indexOf('-webkit-') != 0;},
+    setup: function() {},
+    nonInterpolationExpectations: function(from, to) {
+      return expectFlip(from, to, 0.5);
+    },
+    interpolate: function(property, from, to, at, target) {
+      var keyframes = [{}, {}];
+      keyframes[0][property] = from;
+      keyframes[1][property] = to;
+      var player = target.animate(keyframes, {
+        fill: 'forwards',
+        duration: 1,
+        easing: createEasing(at),
+        delay: -0.5,
+        iterations: 0.5,
+      });
+    },
+  };
+
+  function expectFlip(from, to, flipAt) {
+    return [-0.3, 0, 0.3, 0.5, 0.6, 1, 1.5].map(function(at) {
+      return {
+        at: at,
+        is: at < flipAt ? from : to
+      };
+    });
   }
 
   // Constructs a timing function which produces 'y' at x = 0.5
@@ -133,66 +146,32 @@
     return 'cubic-bezier(0, ' + b + ', 1, ' + b + ')';
   }
 
-  function testInterpolationAt(fractions, params) {
-    if (!Array.isArray(fractions)) {
-      fractions = [fractions];
-    }
-    assertInterpolation(params, fractions.map(function(fraction) {
-      return {at: fraction};
-    }));
+  function createElement(parent, tag, text) {
+    var element = document.createElement(tag || 'div');
+    element.textContent = text || '';
+    parent.appendChild(element);
+    return element;
   }
 
-  function createTestContainer(description, className) {
-    var testContainer = document.createElement('div');
-    testContainer.setAttribute('description', description);
-    testContainer.classList.add('test');
-    if (className) {
-      testContainer.classList.add(className);
-    }
-    return testContainer;
-  }
-
-  function convertPropertyToCamelCase(property) {
-    return property.replace(/^-/, '').replace(/-\w/g, function(m) {return m[1].toUpperCase();});
-  }
-
-  function describeCSSTest(params) {
-    return 'CSS ' + params.property + ': from [' + params.from + '] to [' + params.to + ']';
-  }
-
-  function describeWATest(params) {
-    return 'element.animate() ' + convertPropertyToCamelCase(params.property) + ': from [' + params.from + '] to [' + params.to + ']';
-  }
-
-  function assertInterpolation(params, expectations) {
-    var testId = defineKeyframes(params);
-    var nextCaseId = 0;
-    var cssTestContainer = createTestContainer(describeCSSTest(params), testId);
-    cssTests.appendChild(cssTestContainer);
-    expectations.forEach(function(expectation) {
-      cssTestContainer.appendChild(makeInterpolationTest(
-          'css', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
+  function loadScript(url) {
+    return new Promise(function(resolve) {
+      var script = document.createElement('script');
+      script.src = url;
+      script.onload = resolve;
+      document.head.appendChild(script);
     });
-    // We don't support prefixed properties in Web Animations
-    if (webAnimationsTest && params.property[0] != '-') {
-      var waTestContainer = createTestContainer(describeWATest(params), testId);
-      waTests().appendChild(waTestContainer);
-      expectations.forEach(function(expectation) {
-        waTestContainer.appendChild(makeInterpolationTest(
-            'web-animations', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
-      });
-    }
-    maybeScheduleUpdate();
   }
 
-  var nextKeyframeId = 0;
-  function defineKeyframes(params) {
-    var testId = 'test-' + ++nextKeyframeId;
-    cssText += '@' + webkitPrefix + 'keyframes ' + testId + ' { \n' +
-        '  0% { ' + params.property + ': ' + params.from + '; }\n' +
-        '  100% { ' + params.property + ': ' + params.to + '; }\n' +
-        '}\n';
-    return testId;
+  function createTargetContainer(parent) {
+    var targetContainer = createElement(parent);
+    var template = document.querySelector('#target-template');
+    if (template) {
+      targetContainer.appendChild(template.content.cloneNode(true));
+    }
+    var target = targetContainer.querySelector('.target') || targetContainer;
+    target.classList.add('target');
+    targetContainer.target = target;
+    return targetContainer;
   }
 
   function roundNumbers(value) {
@@ -208,43 +187,12 @@
         });
   }
 
-  function normalizeValue(value) {
-    return roundNumbers(value).
-        // Place whitespace between tokens.
-        replace(/([\w\d.]+|[^\s])/g, '$1 ').
-        replace(/\s+/g, ' ');
-  }
-
-  function createTargetContainer(id) {
-    var targetContainer = document.createElement('div');
-    var template = document.querySelector('#target-template');
-    if (template) {
-      targetContainer.appendChild(template.content.cloneNode(true));
-      // Remove whitespace text nodes at start / end.
-      while (targetContainer.firstChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(targetContainer.firstChild.nodeValue)) {
-        targetContainer.removeChild(targetContainer.firstChild);
-      }
-      while (targetContainer.lastChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(targetContainer.lastChild.nodeValue)) {
-        targetContainer.removeChild(targetContainer.lastChild);
-      }
-      // If the template contains just one element, use that rather than a wrapper div.
-      if (targetContainer.children.length == 1 && targetContainer.childNodes.length == 1) {
-        targetContainer = targetContainer.firstChild;
-        targetContainer.remove();
-      }
-    }
-    var target = targetContainer.querySelector('.target') || targetContainer;
-    target.classList.add('target');
-    target.classList.add(id);
-    return targetContainer;
-  }
-
+  var anchor = document.createElement('a');
   function sanitizeUrls(value) {
     var matches = value.match(/url\([^\)]*\)/g);
     if (matches !== null) {
       for (var i = 0; i < matches.length; ++i) {
         var url = /url\(([^\)]*)\)/g.exec(matches[i])[1];
-        var anchor = document.createElement('a');
         anchor.href = url;
         anchor.pathname = '...' + anchor.pathname.substring(anchor.pathname.lastIndexOf('/'));
         value = value.replace(matches[i], 'url(' + anchor.href + ')');
@@ -253,134 +201,112 @@
     return value;
   }
 
-  function makeInterpolationTest(testType, fraction, testId, caseId, params, expectation) {
-    var targetContainer = createTargetContainer(caseId);
-    var target = targetContainer.querySelector('.target') || targetContainer;
-    target.classList.add('active');
-    var replicaContainer, replica;
-    if (expectation !== undefined) {
-      replicaContainer = createTargetContainer(caseId);
-      replica = replicaContainer.querySelector('.target') || replicaContainer;
-      replica.classList.add('replica');
-      replica.style.setProperty(params.property, expectation);
-    }
-    target.testType = testType;
-    target.getResultString = function() {
-      if (!CSS.supports(params.property, expectation)) {
-        return 'FAIL: [' + params.property + ': ' + expectation + '] is not supported';
-      }
-      var value = getComputedStyle(this).getPropertyValue(params.property);
-      var result = '';
-      var reason = '';
-      var property = testType === 'css' ? params.property : convertPropertyToCamelCase(params.property);
-      if (expectation !== undefined) {
-        var parsedExpectation = getComputedStyle(replica).getPropertyValue(params.property);
-        var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
-        result = pass ? 'PASS: ' : 'FAIL: ';
-        reason = pass ? '' : ', expected [' + expectation + ']' +
-            (expectation === parsedExpectation ? '' : ' (parsed as [' + sanitizeUrls(roundNumbers(parsedExpectation)) + '])');
-        value = pass ? expectation : sanitizeUrls(value);
-      }
-      return result + property + ' from [' + params.from + '] to ' +
-          '[' + params.to + '] was [' + value + ']' +
-          ' at ' + fraction + reason;
-    };
-    var easing = createEasing(fraction);
-    testCount++;
-    if (testType === 'css') {
-      cssText += '.' + testId + ' .' + caseId + '.active {\n' +
-          '  ' + webkitPrefix + 'animation: ' + testId + ' ' + durationSeconds + 's forwards;\n' +
-          '  ' + webkitPrefix + 'animation-timing-function: ' + easing + ';\n' +
-          '  ' + webkitPrefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
-          '  ' + webkitPrefix + 'animation-delay: ' + delaySeconds + 's;\n' +
-          '}\n';
-    } else {
-      var keyframes = [{}, {}];
-      keyframes[0][convertPropertyToCamelCase(params.property)] = params.from;
-      keyframes[1][convertPropertyToCamelCase(params.property)] = params.to;
-      fragmentAttachedListeners.push(function() {
-        target.animate(keyframes, {
-            fill: 'forwards',
-            duration: 1,
-            easing: easing,
-            delay: -0.5,
-            iterations: 0.5,
-          });
-        animationEnded();
-      });
-    }
-    var testFragment = document.createDocumentFragment();
-    testFragment.appendChild(targetContainer);
-    replica && testFragment.appendChild(replicaContainer);
-    testFragment.appendChild(document.createTextNode('\n'));
-    return testFragment;
+  function normalizeValue(value) {
+    return roundNumbers(sanitizeUrls(value)).
+        // Place whitespace between tokens.
+        replace(/([\w\d.]+|[^\s])/g, '$1 ').
+        replace(/\s+/g, ' ');
   }
 
-  var finished = false;
-  function finishTest() {
-    finished = true;
-    dumpResults();
-    if (afterTestCallback) {
-      afterTestCallback();
+  function assertNoInterpolation(options) {
+    assertInterpolation(options, expectNoInterpolation);
+  }
+
+  function assertInterpolation(options, expectations) {
+    console.assert(CSS.supports(options.property, options.from));
+    console.assert(CSS.supports(options.property, options.to));
+    interpolationTests.push({
+      options: options,
+      expectations: expectations,
+    });
+  }
+
+  function createTestTargets(interpolationMethods, interpolationTests, container) {
+    var targets = [];
+    interpolationMethods.forEach(function(interpolationMethod) {
+      var methodContainer = createElement(container);
+      interpolationTests.forEach(function(interpolationTest) {
+        var property = interpolationTest.options.property;
+        if (!interpolationMethod.supports(property)) {
+          return;
+        }
+        if (interpolationTest.options.method && interpolationTest.options.method != interpolationMethod.name) {
+          return;
+        }
+        var from = interpolationTest.options.from;
+        var to = interpolationTest.options.to;
+        var testText = interpolationMethod.name + ': property <' + property + '> from [' + from + '] to [' + to + ']';
+        var testContainer = createElement(methodContainer, 'div', testText);
+        createElement(testContainer, 'br');
+        var expectations = interpolationTest.expectations;
+        if (expectations === expectNoInterpolation) {
+          expectations = interpolationMethod.nonInterpolationExpectations(from, to);
+        }
+        expectations.forEach(function(expectation) {
+          var actualTargetContainer = createTargetContainer(testContainer);
+          var expectedTargetContainer = createTargetContainer(testContainer);
+          expectedTargetContainer.target.classList.add('expected');
+          expectedTargetContainer.target.style[property] = expectation.is;
+          var target = actualTargetContainer.target;
+          target.classList.add('actual');
+          interpolationMethod.setup(property, from, target);
+          target.interpolate = function() {
+            interpolationMethod.interpolate(property, from, to, expectation.at, target);
+          };
+          target.measure = function() {
+            var actualValue = getComputedStyle(target)[property];
+            test(function() {
+              assert_equals(
+                normalizeValue(actualValue),
+                normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
+            }, testText + ' at (' + expectation.at + ') is [' + sanitizeUrls(actualValue) + ']');
+          };
+          targets.push(target);
+        });
+      });
+    });
+    return targets;
+  }
+
+  function runInterpolationTests() {
+    var interpolationMethods = [
+      cssTransitionsInterpolation,
+      cssAnimationsInterpolation,
+    ];
+    if (webAnimationsEnabled) {
+      interpolationMethods.push(webAnimationsInterpolation);
+    }
+    var container = createElement(document.body);
+    var targets = createTestTargets(interpolationMethods, interpolationTests, container);
+    getComputedStyle(document.documentElement).left; // Force a style recalc for transitions.
+    // Separate interpolation and measurement into different phases to avoid (targets.length) style recalcs.
+    for (var target of targets) {
+      target.interpolate();
+    }
+    for (var target of targets) {
+      target.measure();
     }
     if (window.testRunner) {
-      var results = document.querySelector('#results');
-      document.documentElement.textContent = '';
-      document.documentElement.appendChild(results);
-      testRunner.dumpAsText();
-      testRunner.notifyDone();
+      container.remove();
     }
+    afterTestHook();
   }
 
-  if (window.testRunner) {
-    testRunner.waitUntilDone();
+  function afterTest(f) {
+    afterTestHook = f;
   }
 
-  function isLastAnimationEvent() {
-    return !finished && animationEventCount === testCount;
-  }
-
-  function animationEnded() {
-    animationEventCount++;
-    if (!isLastAnimationEvent()) {
-      return;
-    }
-    finishTest();
-  }
-
-  if (window.internals) {
-    durationSeconds = 0;
-    document.documentElement.addEventListener(endEvent, animationEnded);
-  } else if (webkitPrefix) {
-    durationSeconds = 1e9;
-    iterationCount = 1;
-    delaySeconds = -durationSeconds / 2;
-    document.documentElement.addEventListener(startEvent, function() {
-      animationEventCount++;
-      if (!isLastAnimationEvent()) {
-        return;
-      }
-      setTimeout(finishTest, 0);
-    });
-  } else {
-    document.documentElement.addEventListener(endEvent, animationEnded);
-  }
-
-  if (!window.testRunner) {
-    setTimeout(function() {
-      if (finished) {
-        return;
-      }
-      finishTest();
-    }, 10000);
-  }
-
-  function disableWebAnimationsTest() {
-    webAnimationsTest = false;
-  }
-
-  window.testInterpolationAt = testInterpolationAt;
   window.assertInterpolation = assertInterpolation;
+  window.assertNoInterpolation = assertNoInterpolation;
   window.afterTest = afterTest;
-  window.disableWebAnimationsTest = disableWebAnimationsTest;
+
+  loadScript('../../resources/testharness.js').then(function() {
+    return loadScript('../../resources/testharnessreport.js');
+  }).then(function() {
+    var asyncHandle = async_test('This test uses interpolation-test.js.')
+    requestAnimationFrame(function() {
+      runInterpolationTests();
+      asyncHandle.done()
+    });
+  });
 })();

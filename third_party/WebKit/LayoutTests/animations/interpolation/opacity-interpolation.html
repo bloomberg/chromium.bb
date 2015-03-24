@@ -7,7 +7,7 @@
   background-color: black;
   display: inline-block;
 }
-.replica {
+.expected {
   background-color: green;
 }
 </style>
@@ -25,19 +25,6 @@ assertInterpolation({
   {at: 0.6, is: '0.6'},
   {at: 1, is: '1'},
   {at: 1.5, is: '1'}
-]);
-assertInterpolation({
-  property: 'opacity',
-  from: '-2',
-  to: '-4'
-}, [
-  {at: -1.25, is: '0.5'},
-  {at: -0.3, is: '0'}, // CSS opacity is [0-1].
-  {at: 0, is: '0'},
-  {at: 0.3, is: '0'},
-  {at: 0.6, is: '0'},
-  {at: 1, is: '0'},
-  {at: 1.5, is: '0'}
 ]);
 </script>
 </body>

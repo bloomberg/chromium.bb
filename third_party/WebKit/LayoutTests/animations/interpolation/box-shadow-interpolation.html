@@ -10,7 +10,7 @@
   margin-right: 20px;
   margin-bottom: 30px;
 }
-.replica {
+.expected {
   margin-right: 40px;
 }
 </style>
@@ -66,23 +66,16 @@ assertInterpolation({
   {at: -0.3, is: '13px 26px rgba(255, 255, 0, 0.65), inset 6.5px 39px rgb(0, 166, 0)'},
   {at: 0, is: '10px 20px rgba(255, 255, 0, 0.5), inset 5px 30px #008000'},
   {at: 0.3, is: '7px 14px rgba(255, 255, 0, 0.35), inset 3.5px 21px rgba(0, 128, 0, 0.7)'},
-  {at: 0.6, is: '4px 8px rgba(255, 255, 0, 0.2), inset 2px 12px rgba(0, 128, 0, 0.4)'},
+  {at: 0.6, is: '4px 8px rgba(255, 255, 0, 0.2), inset 2px 12px rgba(0, 127, 0, 0.4)'},
   {at: 1, is: 'none'},
   {at: 1.5, is: '-5px -10px transparent, inset -2.5px -15px transparent'},
 ]);
 
 // Test unmatched inset
-assertInterpolation({
+assertNoInterpolation({
   property: 'box-shadow',
   from: '10px 20px yellow, 5px 10px green',
   to: 'inset 5px 10px green, 15px 20px blue'
-}, [
-  {at: -0.3, is: '10px 20px yellow, 5px 10px green'},
-  {at: 0, is: '10px 20px yellow, 5px 10px green'},
-  {at: 0.3, is: '10px 20px yellow, 5px 10px green'},
-  {at: 0.6, is: 'inset 5px 10px green, 15px 20px blue'},
-  {at: 1, is: 'inset 5px 10px green, 15px 20px blue'},
-  {at: 1.5, is: 'inset 5px 10px green, 15px 20px blue'},
-]);
+});
 </script>
 </body>

@@ -10,7 +10,7 @@
   -webkit-flex: 1 1 50%;
   flex: 1 1 50%;
 }
-.replica {
+.expected {
   background: green;
 }
 .container {
@@ -38,18 +38,11 @@ assertInterpolation({
   {at: 1, is: '2 2 100%'},
   {at: 1.5, is: '2.5 2.5 150%'}
 ]);
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-flex',
   from: '0 0 100%',
   to: '1 1 100%'
-}, [
-  {at: -0.3, is: '0 0 100%'},
-  {at: 0, is: '0 0 100%'},
-  {at: 0.4, is: '0 0 100%'},
-  {at: 0.6, is: '1 1 100%'},
-  {at: 1, is: '1 1 100%'},
-  {at: 1.5, is: '1 1 100%'}
-]);
+});
 assertInterpolation({
   property: 'flex-basis',
   from: '0px',

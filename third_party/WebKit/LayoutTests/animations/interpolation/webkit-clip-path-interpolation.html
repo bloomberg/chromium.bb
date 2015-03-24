@@ -5,12 +5,12 @@
   width: 100px;
   height: 100px;
 }
-.active {
+.actual {
   background-color: green;
   display: inline-block;
 }
 
-.replica {
+.expected {
   background-color: black;
   display: inline-block;
 }
@@ -31,18 +31,11 @@ assertInterpolation({
   {at: 1.5, is: 'circle(70px at 62.5px 37.5px)'}
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-clip-path',
   from: 'none',
   to: 'circle(3px at 1px 2px)'
-}, [
-  {at: -0.3, is: 'none'},
-  {at: 0, is: 'none'},
-  {at: 0.3, is: 'none'},
-  {at: 0.6, is: 'circle(3px at 1px 2px)'},
-  {at: 1, is: 'circle(3px at 1px 2px)'},
-  {at: 1.5, is: 'circle(3px at 1px 2px)'}
-]);
+});
 
 assertInterpolation({
   property: '-webkit-clip-path',

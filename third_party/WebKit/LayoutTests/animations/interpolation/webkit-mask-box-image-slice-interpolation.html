@@ -9,7 +9,7 @@
   border: 25px;
   -webkit-mask-box-image-source: linear-gradient(45deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
 }
-.replica {
+.expected {
   background-color: green;
   margin-right: 2px;
 }
@@ -31,17 +31,10 @@ assertInterpolation({
   {at: 10, is: '500%'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-mask-box-image-slice',
   from: '0%',
   to: '50% fill',
-}, [
-  {at: -0.3, is: '0%'},
-  {at: 0, is: '0%'},
-  {at: 0.4, is: '0%'},
-  {at: 0.6, is: '50% fill'},
-  {at: 1, is: '50% fill'},
-  {at: 1.5, is: '50% fill'},
-]);
+});
 </script>
 </body>

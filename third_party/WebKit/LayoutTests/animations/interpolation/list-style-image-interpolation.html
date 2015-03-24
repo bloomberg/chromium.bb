@@ -5,7 +5,7 @@
   background-color: black;
   width: 100px;
 }
-.replica {
+.expected {
   background-color: green;
 }
 </style>
@@ -35,18 +35,11 @@ assertInterpolation({
 
 // None to image
 from = 'none';
-assertInterpolation({
+assertNoInterpolation({
   property: 'list-style-image',
   from: from,
   to: to
-}, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: from},
-  {at: 0.6, is: to},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
-]);
+});
 
 // Image to image
 from = 'url(../resources/green-20.png)';

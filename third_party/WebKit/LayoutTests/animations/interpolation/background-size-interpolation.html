@@ -13,7 +13,7 @@
                     url(../resources/green-100.png);
   background-position: left top, right top, left bottom, right bottom;
 }
-.replica {
+.expected {
   margin-right: 10px;
   border-color: green;
 }
@@ -22,34 +22,18 @@
 <script src="resources/interpolation-test.js"></script>
 <script>
 // Matched keywords in size value list.
-assertInterpolation({
+assertNoInterpolation({
   property: 'background-size',
   from: '0px 0px, 0px 0px, contain, cover',
   to: '40px 40px, 40px 40px, contain, cover',
-}, [
-  {at: -0.25, is: ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0, is:     ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0.25, is:  ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0.5, is:   '40px 40px, 40px 40px, contain, cover'},
-  {at: 0.75, is:  '40px 40px, 40px 40px, contain, cover'},
-  {at: 1, is:     '40px 40px, 40px 40px, contain, cover'},
-  {at: 1.25, is:  '40px 40px, 40px 40px, contain, cover'},
-]);
+});
 
 // Mismatched keywords in size value list.
-assertInterpolation({
+assertNoInterpolation({
   property: 'background-size',
   from: '0px 0px, 0px 0px, contain, cover',
   to: '40px 40px, 40px 40px, cover, contain',
-}, [
-  {at: -0.25, is: ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0, is:     ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0.25, is:  ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0.5, is:   '40px 40px, 40px 40px, cover, contain'},
-  {at: 0.75, is:  '40px 40px, 40px 40px, cover, contain'},
-  {at: 1, is:     '40px 40px, 40px 40px, cover, contain'},
-  {at: 1.25, is:  '40px 40px, 40px 40px, cover, contain'},
-]);
+});
 
 // Equal number of size values as background images.
 assertInterpolation({

@@ -63,29 +63,15 @@ assertInterpolation({
   {at: 2, is: 'rect(auto, 100px, 50px, auto)'}
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'clip',
   from: 'auto',
   to: 'rect(0px, 50px, 50px, 0px)'
-}, [
-  {at: -1, is: 'auto'},
-  {at: 0, is: 'auto'},
-  {at: 0.25, is: 'auto'},
-  {at: 0.75, is: 'rect(0px, 50px, 50px, 0px)'},
-  {at: 1, is: 'rect(0px, 50px, 50px, 0px)'},
-  {at: 2, is: 'rect(0px, 50px, 50px, 0px)'}
-]);
+});
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'clip',
   from: 'rect(0px, 50px, 50px, 0px)',
   to: 'auto'
-}, [
-  {at: -1, is: 'rect(0px, 50px, 50px, 0px)'},
-  {at: 0, is: 'rect(0px, 50px, 50px, 0px)'},
-  {at: 0.25, is: 'rect(0px, 50px, 50px, 0px)'},
-  {at: 0.75, is: 'auto'},
-  {at: 1, is: 'auto'},
-  {at: 2, is: 'auto'},
-]);
+});
 </script>

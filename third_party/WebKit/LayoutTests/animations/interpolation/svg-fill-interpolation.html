@@ -8,7 +8,7 @@
   stroke-width: 20px;
   color: blue;
 }
-.replica {
+.expected {
   stroke: green;
 }
 </style>
@@ -58,15 +58,10 @@ assertInterpolation({
   {at: 0.6, is: '#996366'},
   {at: 1, is: 'orange'},
 ]);
-assertInterpolation({
+assertNoInterpolation({
   property: 'fill',
   from: 'orange',
   to: 'url(#gradient)'
-}, [
-  {at: 0, is: 'orange'},
-  {at: 0.2, is: 'orange'},
-  {at: 0.6, is: 'url(#gradient)'},
-  {at: 1, is: 'url(#gradient)'}
-]);
+});
 </script>
 </body>

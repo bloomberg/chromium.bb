@@ -9,7 +9,7 @@
   */
   baseline-shift: 0;
 }
-.replica {
+.expected {
   stroke: green;
 }
 svg:nth-child(2n) {
@@ -73,30 +73,16 @@ assertInterpolation({
   {at: 1, is: '0px'},
   {at: 1.25, is: '-25px'},
 ]);
-assertInterpolation({
+assertNoInterpolation({
   property: 'baseline-shift',
   from: 'sub',
   to: '100px'
-}, [
-  {at: -0.25, is: 'sub'},
-  {at: 0, is: 'sub'},
-  {at: 0.25, is: 'sub'},
-  {at: 0.75, is: '100px'},
-  {at: 1, is: '100px'},
-  {at: 1.25, is: '100px'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'baseline-shift',
   from: '100px',
   to: 'super'
-}, [
-  {at: -0.25, is: '100px'},
-  {at: 0, is: '100px'},
-  {at: 0.25, is: '100px'},
-  {at: 0.75, is: 'super'},
-  {at: 1, is: 'super'},
-  {at: 1.25, is: 'super'},
-]);
+});
 assertInterpolation({
   property: 'baseline-shift',
   from: '50mm',

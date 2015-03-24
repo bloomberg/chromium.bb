@@ -44,18 +44,11 @@ assertInterpolation({
   {at: 1.5, is: 'polygon(nonzero, 37.5px 37.5px, 62.5px 62.5px, 87.5px 87.5px)'}
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'shape-outside',
   from: 'polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)',
   to: 'polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)',
-}, [
-  {at: -0.3, is: 'polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)'},
-  {at: 0, is: 'polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)'},
-  {at: 0.3, is: 'polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)'},
-  {at: 0.6, is: 'polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)'},
-  {at: 1, is: 'polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)'},
-  {at: 1.5, is: 'polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)'},
-]);
+});
 
 assertInterpolation({
   property: 'shape-outside',
@@ -70,18 +63,11 @@ assertInterpolation({
   {at: 1.5, is: 'inset(30%)'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'shape-outside',
   from: 'none',
   to: 'ellipse(100% 100% at 0% 0%)',
-}, [
-  {at: -0.3, is: 'none'},
-  {at: 0, is: 'none'},
-  {at: 0.3, is: 'none'},
-  {at: 0.6, is: 'ellipse(100% 100% at 0% 0%)'},
-  {at: 1, is: 'ellipse(100% 100% at 0% 0%)'},
-  {at: 1.5, is: 'ellipse(100% 100% at 0% 0%)'}
-]);
+});
 
 // TODO: add intermediate keyframe tests when CSS shapes position computed values are cleaned up
 assertInterpolation({
@@ -90,7 +76,7 @@ assertInterpolation({
   to: 'circle(30% at right 20% bottom 30px)',
 }, [
   {at: 0, is: 'circle(20% at right 10% bottom 20px)'},
-  {at: 0.5, is: 'circle(25% at left 85% bottom 25px)'},
+  {at: 0.5, is: 'circle(25% at 85% calc(-25px + 100%))'},
   {at: 1, is: 'circle(30% at right 20% bottom 30px)'},
 ]);
 </script>

@@ -5,7 +5,7 @@
   display: inline-block;
   font: 20px sans-serif;
 }
-.replica {
+.expected {
   color: green;
   margin-right: 30px;
 }
@@ -56,78 +56,36 @@ assertInterpolation({
   {at: 1, is: 'normal'},
   {at: 1.5, is: 'normal'},
 ]);
-assertInterpolation({
+assertNoInterpolation({
   property: 'line-height',
   from: '4',
   to: '14px'
-}, [
-  {at: -0.3, is: '4'},
-  {at: 0, is: '4'},
-  {at: 0.3, is: '4'},
-  {at: 0.6, is: '14px'},
-  {at: 1, is: '14px'},
-  {at: 1.5, is: '14px'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'line-height',
   from: '14px',
   to: 'normal'
-}, [
-  {at: -0.3, is: '14px'},
-  {at: 0, is: '14px'},
-  {at: 0.3, is: '14px'},
-  {at: 0.6, is: 'normal'},
-  {at: 1, is: 'normal'},
-  {at: 1.5, is: 'normal'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'line-height',
   from: 'normal',
   to: '4'
-}, [
-  {at: -0.3, is: 'normal'},
-  {at: 0, is: 'normal'},
-  {at: 0.3, is: 'normal'},
-  {at: 0.6, is: '4'},
-  {at: 1, is: '4'},
-  {at: 1.5, is: '4'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'line-height',
   from: '4',
   to: 'normal'
-}, [
-  {at: -0.3, is: '4'},
-  {at: 0, is: '4'},
-  {at: 0.3, is: '4'},
-  {at: 0.6, is: 'normal'},
-  {at: 1, is: 'normal'},
-  {at: 1.5, is: 'normal'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'line-height',
   from: 'normal',
   to: '14px'
-}, [
-  {at: -0.3, is: 'normal'},
-  {at: 0, is: 'normal'},
-  {at: 0.3, is: 'normal'},
-  {at: 0.6, is: '14px'},
-  {at: 1, is: '14px'},
-  {at: 1.5, is: '14px'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'line-height',
   from: '14px',
   to: '4'
-}, [
-  {at: -0.3, is: '14px'},
-  {at: 0, is: '14px'},
-  {at: 0.3, is: '14px'},
-  {at: 0.6, is: '4'},
-  {at: 1, is: '4'},
-  {at: 1.5, is: '4'},
-]);
+});
 assertInterpolation({
   property: 'line-height',
   from: '4vw',

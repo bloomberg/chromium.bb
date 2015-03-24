@@ -1,47 +1,44 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+body {
+  margin-top: 20px;
+}
 .layer-reference {
-  position: absolute;
-  height: 300px;
+  position: fixed;
+  top: 0px;
+  height: 100vh;
   width: 50px;
-  background-color: lightgrey;
+  background-color: rgba(255, 255, 255, 0.75);
   font-family: sans-serif;
   text-align: center;
   padding-top: 5px;
   border: 1px solid;
 }
 .target {
-  position: absolute;
-  width: 450px;
+  position: relative;
+  width: 350px;
   height: 10px;
 }
-.active {
+.actual {
   background-color: black;
 }
-.replica {
+.expected {
   background-color: green;
 }
-.spacer {
-  height: 350px;
-}
 </style>
-<body>
-
-<div class="spacer"></div>
-
 <script src="resources/interpolation-test.js"></script>
+<body></body>
 <script>
-
 [-8, -5, -2, 1, 5, 10, 12].forEach(function(zIndex, i) {
   var layerReference = document.createElement('div');
   layerReference.classList.add('layer-reference');
   layerReference.style.zIndex = zIndex;
-  layerReference.style.top = '0px';
-  layerReference.style.left = 50 + (i * 50) + 'px';
-  layerReference.textContent = 'Z ' + zIndex;
+  layerReference.style.left = 7 + (i * 50) + 'px';
+  layerReference.textContent = 'Z=' + zIndex;
   document.body.appendChild(layerReference);
 });
+
 assertInterpolation({
   property: 'z-index',
   from: '-5',
@@ -79,13 +76,12 @@ assertInterpolation({
   {at: 1, is: '-4'},
   {at: 1.5, is: '-5'},
 ]);
+
 afterTest(function() {
-  var actives = document.querySelectorAll('.active');
-  var replicas = document.querySelectorAll('.replica');
-  for (var i = 0; i < actives.length; i++) {
-    actives[i].style.top = 50 + (i * 40) + 'px';
-    replicas[i].style.top = 60 + (i * 40) + 'px';
+  if (window.testRunner) {
+    [].forEach.call(document.querySelectorAll('.layer-reference'), function(element) {
+      element.remove();
+    });
   }
 });
 </script>
-</body>

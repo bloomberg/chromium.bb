@@ -46,36 +46,20 @@
 // Matched keywords in size value list.
 var from = '0px 0px, 0px 0px, contain, cover';
 var to = '20px 20px, 20px 20px, contain, cover';
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-mask-size',
   from: from,
   to: to,
-}, [
-  {at: -0.25, is: from},
-  {at: 0, is: from},
-  {at: 0.25, is: from},
-  {at: 0.5, is: to},
-  {at: 0.75, is: to},
-  {at: 1, is: to},
-  {at: 1.25, is: to},
-]);
+});
 
 // Mismatched keywords in size value list.
 from = '0px 0px, 0px 0px, contain, cover';
 to = '20px 20px, 20px 20px, cover, contain';
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-mask-size',
   from: from,
   to: to,
-}, [
-  {at: -0.25, is: from},
-  {at: 0, is: from},
-  {at: 0.25, is: from},
-  {at: 0.5, is: to},
-  {at: 0.75, is: to},
-  {at: 1, is: to},
-  {at: 1.25, is: to},
-]);
+});
 
 // Equal number of size values as mask images.
 assertInterpolation({

@@ -8,7 +8,7 @@
   background-color: black;
   margin-right: 5px;
 }
-.replica {
+.expected {
   background-color: green;
   margin-right: 15px;
 }
@@ -76,29 +76,15 @@ assertInterpolation({
   {at: 1, is: 'auto 50deg'},
   {at: 1.5, is: 'auto 70deg'},
 ]);
-assertInterpolation({
+assertNoInterpolation({
   property: 'motion-rotation',
   from: 'auto 200deg',
   to: '300deg'
-}, [
-  {at: -0.3, is: 'auto 200deg'},
-  {at: 0, is: 'auto 200deg'},
-  {at: 0.3, is: 'auto 200deg'},
-  {at: 0.6, is: '300deg'},
-  {at: 1, is: '300deg'},
-  {at: 1.5, is: '300deg'},
-]);
-assertInterpolation({
+});
+assertNoInterpolation({
   property: 'motion-rotation',
   from: '300deg',
   to: 'reverse 20deg'
-}, [
-  {at: -0.3, is: '300deg'},
-  {at: 0, is: '300deg'},
-  {at: 0.3, is: '300deg'},
-  {at: 0.6, is: 'auto 200deg'},
-  {at: 1, is: 'auto 200deg'},
-  {at: 1.5, is: 'auto 200deg'},
-]);
+});
 </script>
 </body>

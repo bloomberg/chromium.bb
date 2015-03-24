@@ -40,16 +40,10 @@ assertInterpolation({
   {at: 1.5, is: 'visible'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'visibility',
   from: 'collapse',
   to: 'hidden'
-}, [
-  {at: -1, is: 'collapse'},
-  {at: 0, is: 'collapse'},
-  {at: 0.4, is: 'collapse'},
-  {at: 0.5, is: 'hidden'},
-  {at: 1, is: 'hidden'},
-  {at: 1.5, is: 'hidden'},
-]);
+});
 </script>
+</body>

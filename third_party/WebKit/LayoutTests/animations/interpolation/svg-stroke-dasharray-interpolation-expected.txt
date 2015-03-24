@@ -1,248 +1,370 @@
-CSS Animations:
-PASS: stroke-dasharray from [5 10] to [15 20] was [ 0  4] at -0.6
-PASS: stroke-dasharray from [5 10] to [15 20] was [ 1  6] at -0.4
-PASS: stroke-dasharray from [5 10] to [15 20] was [ 3  8] at -0.2
-PASS: stroke-dasharray from [5 10] to [15 20] was [ 5 10] at 0
-PASS: stroke-dasharray from [5 10] to [15 20] was [ 7 12] at 0.2
-PASS: stroke-dasharray from [5 10] to [15 20] was [ 9 14] at 0.4
-PASS: stroke-dasharray from [5 10] to [15 20] was [11 16] at 0.6
-PASS: stroke-dasharray from [5 10] to [15 20] was [13 18] at 0.8
-PASS: stroke-dasharray from [5 10] to [15 20] was [15 20] at 1
-PASS: stroke-dasharray from [5 10] to [15 20] was [17 22] at 1.2
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 0  0] at -0.2
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 0  0] at 0
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 1  2] at 0.2
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 2  4] at 0.4
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 3  6] at 0.6
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 4  8] at 0.8
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 5 10] at 1
-PASS: stroke-dasharray from [0 0] to [5 10] was [ 6 12] at 1.2
-PASS: stroke-dasharray from [none] to [5 10] was [ 0  0] at -0.2
-PASS: stroke-dasharray from [none] to [5 10] was [0px, 0px] at 0
-PASS: stroke-dasharray from [none] to [5 10] was [ 1  2] at 0.2
-PASS: stroke-dasharray from [none] to [5 10] was [ 2  4] at 0.4
-PASS: stroke-dasharray from [none] to [5 10] was [ 3  6] at 0.6
-PASS: stroke-dasharray from [none] to [5 10] was [ 4  8] at 0.8
-PASS: stroke-dasharray from [none] to [5 10] was [ 5 10] at 1
-PASS: stroke-dasharray from [none] to [5 10] was [ 6 12] at 1.2
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 0em  0em] at -0.2
-PASS: stroke-dasharray from [none] to [5em 10em] was [0em, 0em] at 0
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 1em  2em] at 0.2
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 2em  4em] at 0.4
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 3em  6em] at 0.6
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 4em  8em] at 0.8
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 5em 10em] at 1
-PASS: stroke-dasharray from [none] to [5em 10em] was [ 6em 12em] at 1.2
-PASS: stroke-dasharray from [5 10] to [none] was [ 6 12] at -0.2
-PASS: stroke-dasharray from [5 10] to [none] was [ 5 10] at 0
-PASS: stroke-dasharray from [5 10] to [none] was [ 4  8] at 0.2
-PASS: stroke-dasharray from [5 10] to [none] was [ 3  6] at 0.4
-PASS: stroke-dasharray from [5 10] to [none] was [ 2  4] at 0.6
-PASS: stroke-dasharray from [5 10] to [none] was [ 1  2] at 0.8
-PASS: stroke-dasharray from [5 10] to [none] was [0px, 0px] at 1
-PASS: stroke-dasharray from [5 10] to [none] was [ 0  0] at 1.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at -0.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at 0
-PASS: stroke-dasharray from [none] to [none] was [0px] at 2.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at 4.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at 6.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at 8.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at 0.2
-PASS: stroke-dasharray from [none] to [none] was [0px] at 1.2
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [ 3  8  1  9  2  7] at -0.2
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [ 5 10  5 10  5 10] at 0
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [ 7 12  9 11  8 13] at 0.2
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [ 9 14 13 12 11 16] at 0.4
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [11 16 17 13 14 19] at 0.6
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [13 18 21 14 17 22] at 0.8
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [15 20 25 15 20 25] at 1
-PASS: stroke-dasharray from [5 10] to [15 20 25] was [17 22 29 16 23 28] at 1.2
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [ 1  6 11 16  0  2 13 18  0  4  9 14] at -0.2
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [ 5 10 15 20  5 10 15 20  5 10 15 20] at 0
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [ 9 14 19 24 13 18 17 22 11 16 21 26] at 0.2
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [13 18 23 28 21 26 19 24 17 22 27 32] at 0.4
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [17 22 27 32 29 34 21 26 23 28 33 38] at 0.6
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [21 26 31 36 37 42 23 28 29 34 39 44] at 0.8
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [25 30 35 40 45 50 25 30 35 40 45 50] at 1
-PASS: stroke-dasharray from [5 10 15 20] to [25 30 35 40 45 50] was [29 34 39 44 53 58 27 32 41 46 51 56] at 1.2
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [ 2  7 12  0  8 13  0  5 14  1  6 11] at -0.2
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [ 5 10 15  5 10 15  5 10 15  5 10 15] at 0
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [ 8 13 18 11 12 17 10 15 16  9 14 19] at 0.2
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [11 16 21 17 14 19 15 20 17 13 18 23] at 0.4
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [14 19 24 23 16 21 20 25 18 17 22 27] at 0.6
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [17 22 27 29 18 23 25 30 19 21 26 31] at 0.8
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [20 25 30 35 20 25 30 35 20 25 30 35] at 1
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35] was [23 28 33 41 22 27 35 40 21 29 34 39] at 1.2
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [ 2  7 12  0  4 14  1  6 11  0  8 13  0  5 10] at -0.2
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [ 5 10 15  5 10 15  5 10 15  5 10 15  5 10 15] at 0
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [ 8 13 18 11 16 16  9 14 19 12 12 17 10 15 20] at 0.2
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [11 16 21 17 22 17 13 18 23 19 14 19 15 20 25] at 0.4
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [14 19 24 23 28 18 17 22 27 26 16 21 20 25 30] at 0.6
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [17 22 27 29 34 19 21 26 31 33 18 23 25 30 35] at 0.8
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [20 25 30 35 40 20 25 30 35 40 20 25 30 35 40] at 1
-PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [23 28 33 41 46 21 29 34 39 47 22 27 35 40 45] at 1.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [0px 24px 24px] at -0.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [0px 20px 30px] at 0
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [8px 16px 36px] at 0.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [16px 12px 42px] at 0.4
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [24px 8px 48px] at 0.6
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [32px 4px 54px] at 0.8
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [40px 0px 60px] at 1
-PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [48px 0px 66px] at 1.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 24px 0px] at -0.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [8em 16px 216px] at 0.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [16em 12px 402px] at 0.4
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [24em 8px 588px] at 0.6
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [32em 4px 774px] at 0.8
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 1
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [48em 0px 1146px] at 1.2
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 24px 0px 16px 0px 0px] at -0.2
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 20px 0px 20px 0px 20px] at 0
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [8px 16px 192px 24px 0px 208px] at 0.2
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [16px 12px 384px 28px 0px 396px] at 0.4
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [24px 8px 576px 32px 0px 584px] at 0.6
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [32px 4px 768px 36px 0px 772px] at 0.8
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em 40px 0px 60em] at 1
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [48px 0px 1152px 44px 0px 1148px] at 1.2
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [8em 28px] at -0.2
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [10em 30px] at 0
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [12em 32px] at 0.2
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [14em 34px] at 0.4
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [16em 36px] at 0.6
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [18em 38px] at 0.8
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [20em 40px] at 1
-PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [22em 42px] at 1.2
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [0em 0px 0em 0px 40em 32px 0em 0px 16em 8px 0em 0px] at -0.2
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [10em 20px 30em 40px 50em 60px 10em 20px 30em 40px 50em 60px] at 0
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [28em 56px 84em 112px 60em 88px 68em 96px 44em 72px 100em 128px] at 0.2
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [46em 92px 138em 184px 70em 116px 126em 172px 58em 104px 150em 196px] at 0.4
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [64em 128px 192em 256px 80em 144px 184em 248px 72em 136px 200em 264px] at 0.6
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [82em 164px 246em 328px 90em 172px 242em 324px 86em 168px 250em 332px] at 0.8
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [100em 200px 300em 400px 100em 200px 300em 400px 100em 200px 300em 400px] at 1
-PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [118em 236px 354em 472px 110em 228px 358em 476px 114em 232px 350em 468px] at 1.2
-
-Web Animations API:
-PASS: strokeDasharray from [5 10] to [15 20] was [ 0  4] at -0.6
-PASS: strokeDasharray from [5 10] to [15 20] was [ 1  6] at -0.4
-PASS: strokeDasharray from [5 10] to [15 20] was [ 3  8] at -0.2
-PASS: strokeDasharray from [5 10] to [15 20] was [ 5 10] at 0
-PASS: strokeDasharray from [5 10] to [15 20] was [ 7 12] at 0.2
-PASS: strokeDasharray from [5 10] to [15 20] was [ 9 14] at 0.4
-PASS: strokeDasharray from [5 10] to [15 20] was [11 16] at 0.6
-PASS: strokeDasharray from [5 10] to [15 20] was [13 18] at 0.8
-PASS: strokeDasharray from [5 10] to [15 20] was [15 20] at 1
-PASS: strokeDasharray from [5 10] to [15 20] was [17 22] at 1.2
-PASS: strokeDasharray from [0 0] to [5 10] was [ 0  0] at -0.2
-PASS: strokeDasharray from [0 0] to [5 10] was [ 0  0] at 0
-PASS: strokeDasharray from [0 0] to [5 10] was [ 1  2] at 0.2
-PASS: strokeDasharray from [0 0] to [5 10] was [ 2  4] at 0.4
-PASS: strokeDasharray from [0 0] to [5 10] was [ 3  6] at 0.6
-PASS: strokeDasharray from [0 0] to [5 10] was [ 4  8] at 0.8
-PASS: strokeDasharray from [0 0] to [5 10] was [ 5 10] at 1
-PASS: strokeDasharray from [0 0] to [5 10] was [ 6 12] at 1.2
-PASS: strokeDasharray from [none] to [5 10] was [ 0  0] at -0.2
-PASS: strokeDasharray from [none] to [5 10] was [0px, 0px] at 0
-PASS: strokeDasharray from [none] to [5 10] was [ 1  2] at 0.2
-PASS: strokeDasharray from [none] to [5 10] was [ 2  4] at 0.4
-PASS: strokeDasharray from [none] to [5 10] was [ 3  6] at 0.6
-PASS: strokeDasharray from [none] to [5 10] was [ 4  8] at 0.8
-PASS: strokeDasharray from [none] to [5 10] was [ 5 10] at 1
-PASS: strokeDasharray from [none] to [5 10] was [ 6 12] at 1.2
-PASS: strokeDasharray from [none] to [5em 10em] was [ 0em  0em] at -0.2
-PASS: strokeDasharray from [none] to [5em 10em] was [0em, 0em] at 0
-PASS: strokeDasharray from [none] to [5em 10em] was [ 1em  2em] at 0.2
-PASS: strokeDasharray from [none] to [5em 10em] was [ 2em  4em] at 0.4
-PASS: strokeDasharray from [none] to [5em 10em] was [ 3em  6em] at 0.6
-PASS: strokeDasharray from [none] to [5em 10em] was [ 4em  8em] at 0.8
-PASS: strokeDasharray from [none] to [5em 10em] was [ 5em 10em] at 1
-PASS: strokeDasharray from [none] to [5em 10em] was [ 6em 12em] at 1.2
-PASS: strokeDasharray from [5 10] to [none] was [ 6 12] at -0.2
-PASS: strokeDasharray from [5 10] to [none] was [ 5 10] at 0
-PASS: strokeDasharray from [5 10] to [none] was [ 4  8] at 0.2
-PASS: strokeDasharray from [5 10] to [none] was [ 3  6] at 0.4
-PASS: strokeDasharray from [5 10] to [none] was [ 2  4] at 0.6
-PASS: strokeDasharray from [5 10] to [none] was [ 1  2] at 0.8
-PASS: strokeDasharray from [5 10] to [none] was [0px, 0px] at 1
-PASS: strokeDasharray from [5 10] to [none] was [ 0  0] at 1.2
-PASS: strokeDasharray from [none] to [none] was [0px] at -0.2
-PASS: strokeDasharray from [none] to [none] was [0px] at 0
-PASS: strokeDasharray from [none] to [none] was [0px] at 2.2
-PASS: strokeDasharray from [none] to [none] was [0px] at 4.2
-PASS: strokeDasharray from [none] to [none] was [0px] at 6.2
-PASS: strokeDasharray from [none] to [none] was [0px] at 8.2
-PASS: strokeDasharray from [none] to [none] was [0px] at 0.2
-PASS: strokeDasharray from [none] to [none] was [0px] at 1.2
-PASS: strokeDasharray from [5 10] to [15 20 25] was [ 3  8  1  9  2  7] at -0.2
-PASS: strokeDasharray from [5 10] to [15 20 25] was [ 5 10  5 10  5 10] at 0
-PASS: strokeDasharray from [5 10] to [15 20 25] was [ 7 12  9 11  8 13] at 0.2
-PASS: strokeDasharray from [5 10] to [15 20 25] was [ 9 14 13 12 11 16] at 0.4
-PASS: strokeDasharray from [5 10] to [15 20 25] was [11 16 17 13 14 19] at 0.6
-PASS: strokeDasharray from [5 10] to [15 20 25] was [13 18 21 14 17 22] at 0.8
-PASS: strokeDasharray from [5 10] to [15 20 25] was [15 20 25 15 20 25] at 1
-PASS: strokeDasharray from [5 10] to [15 20 25] was [17 22 29 16 23 28] at 1.2
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [ 1  6 11 16  0  2 13 18  0  4  9 14] at -0.2
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [ 5 10 15 20  5 10 15 20  5 10 15 20] at 0
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [ 9 14 19 24 13 18 17 22 11 16 21 26] at 0.2
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [13 18 23 28 21 26 19 24 17 22 27 32] at 0.4
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [17 22 27 32 29 34 21 26 23 28 33 38] at 0.6
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [21 26 31 36 37 42 23 28 29 34 39 44] at 0.8
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [25 30 35 40 45 50 25 30 35 40 45 50] at 1
-PASS: strokeDasharray from [5 10 15 20] to [25 30 35 40 45 50] was [29 34 39 44 53 58 27 32 41 46 51 56] at 1.2
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [ 2  7 12  0  8 13  0  5 14  1  6 11] at -0.2
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [ 5 10 15  5 10 15  5 10 15  5 10 15] at 0
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [ 8 13 18 11 12 17 10 15 16  9 14 19] at 0.2
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [11 16 21 17 14 19 15 20 17 13 18 23] at 0.4
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [14 19 24 23 16 21 20 25 18 17 22 27] at 0.6
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [17 22 27 29 18 23 25 30 19 21 26 31] at 0.8
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [20 25 30 35 20 25 30 35 20 25 30 35] at 1
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35] was [23 28 33 41 22 27 35 40 21 29 34 39] at 1.2
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [ 2  7 12  0  4 14  1  6 11  0  8 13  0  5 10] at -0.2
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [ 5 10 15  5 10 15  5 10 15  5 10 15  5 10 15] at 0
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [ 8 13 18 11 16 16  9 14 19 12 12 17 10 15 20] at 0.2
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [11 16 21 17 22 17 13 18 23 19 14 19 15 20 25] at 0.4
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [14 19 24 23 28 18 17 22 27 26 16 21 20 25 30] at 0.6
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [17 22 27 29 34 19 21 26 31 33 18 23 25 30 35] at 0.8
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [20 25 30 35 40 20 25 30 35 40 20 25 30 35 40] at 1
-PASS: strokeDasharray from [5 10 15] to [20 25 30 35 40] was [23 28 33 41 46 21 29 34 39 47 22 27 35 40 45] at 1.2
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [0px 24px 24px] at -0.2
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [0px 20px 30px] at 0
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [8px 16px 36px] at 0.2
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [16px 12px 42px] at 0.4
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [24px 8px 48px] at 0.6
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [32px 4px 54px] at 0.8
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [40px 0px 60px] at 1
-PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [48px 0px 66px] at 1.2
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 24px 0px] at -0.2
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [8em 16px 216px] at 0.2
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [16em 12px 402px] at 0.4
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [24em 8px 588px] at 0.6
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [32em 4px 774px] at 0.8
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 1
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [48em 0px 1146px] at 1.2
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 24px 0px 16px 0px 0px] at -0.2
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 20px 0px 20px 0px 20px] at 0
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [8px 16px 192px 24px 0px 208px] at 0.2
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [16px 12px 384px 28px 0px 396px] at 0.4
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [24px 8px 576px 32px 0px 584px] at 0.6
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [32px 4px 768px 36px 0px 772px] at 0.8
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em 40px 0px 60em] at 1
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [48px 0px 1152px 44px 0px 1148px] at 1.2
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [8em 28px] at -0.2
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [10em 30px] at 0
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [12em 32px] at 0.2
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [14em 34px] at 0.4
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [16em 36px] at 0.6
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [18em 38px] at 0.8
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [20em 40px] at 1
-PASS: strokeDasharray from [10em 30px] to [20em 40px] was [22em 42px] at 1.2
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [0em 0px 0em 0px 40em 32px 0em 0px 16em 8px 0em 0px] at -0.2
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [10em 20px 30em 40px 50em 60px 10em 20px 30em 40px 50em 60px] at 0
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [28em 56px 84em 112px 60em 88px 68em 96px 44em 72px 100em 128px] at 0.2
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [46em 92px 138em 184px 70em 116px 126em 172px 58em 104px 150em 196px] at 0.4
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [64em 128px 192em 256px 80em 144px 184em 248px 72em 136px 200em 264px] at 0.6
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [82em 164px 246em 328px 90em 172px 242em 324px 86em 168px 250em 332px] at 0.8
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [100em 200px 300em 400px 100em 200px 300em 400px 100em 200px 300em 400px] at 1
-PASS: strokeDasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [118em 236px 354em 472px 110em 228px 358em 476px 114em 232px 350em 468px] at 1.2
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (-0.6) is [0px, 4px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (-0.4) is [1px, 6px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (-0.2) is [3px, 8px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (0) is [5px, 10px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (0.2) is [7px, 12px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (0.4) is [9px, 14px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (0.6) is [11px, 16px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (0.8) is [13px, 18px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (1) is [15px, 20px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20] at (1.2) is [17px, 22px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (-0.2) is [0px, 0px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (0) is [0px, 0px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (0.2) is [1px, 2px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (0.4) is [2px, 4px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (0.6) is [3px, 6px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (0.8) is [4px, 8px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (1) is [5px, 10px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0 0] to [5 10] at (1.2) is [6px, 12px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (-0.2) is [0px, 0px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (0) is [none] assert_equals: expected "0px , 0px " but got "none "
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (0.2) is [1px, 2px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (0.4) is [2px, 4px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (0.6) is [3px, 6px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (0.8) is [4px, 8px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (1) is [5px, 10px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5 10] at (1.2) is [6px, 12px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (-0.2) is [0px, 0px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (0) is [none] assert_equals: expected "0px , 0px " but got "none "
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (0.2) is [16px, 32px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (0.4) is [32px, 64px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (0.6) is [48px, 96px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (0.8) is [64px, 128px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (1) is [80px, 160px] 
+PASS CSS Transitions: property <stroke-dasharray> from [none] to [5em 10em] at (1.2) is [96px, 192px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (-0.2) is [6px, 12px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (0) is [5px, 10px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (0.2) is [4px, 8px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (0.4) is [3px, 6px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (0.6) is [2px, 4px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (0.8) is [1px, 2px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (1) is [none] assert_equals: expected "0px , 0px " but got "none "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [none] at (1.2) is [0px, 0px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (-0.2) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (0) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (2.2) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (4.2) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (6.2) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (8.2) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (0.2) is [none] assert_equals: expected "0px " but got "none "
+FAIL CSS Transitions: property <stroke-dasharray> from [none] to [none] at (1.2) is [none] assert_equals: expected "0px " but got "none "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (-0.2) is [3px, 8px, 1px, 9px, 2px, 7px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (0) is [5px, 10px] assert_equals: expected "5px , 10px , 5px , 10px , 5px , 10px " but got "5px , 10px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.2) is [7px, 12px, 9px, 11px, 8px, 13px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.4) is [9px, 14px, 13px, 12px, 11px, 16px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.6) is [11px, 16px, 17px, 13px, 14px, 19px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.8) is [13px, 18px, 21px, 14px, 17px, 22px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (1) is [15px, 20px, 25px] assert_equals: expected "15px , 20px , 25px , 15px , 20px , 25px " but got "15px , 20px , 25px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10] to [15 20 25] at (1.2) is [17px, 22px, 29px, 16px, 23px, 28px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (-0.2) is [1px, 6px, 11px, 16px, 0px, 2px, 13px, 18px, 0px, 4px, 9px, 14px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0) is [5px, 10px, 15px, 20px] assert_equals: expected "5px , 10px , 15px , 20px , 5px , 10px , 15px , 20px , 5px , 10px , 15px , 20px " but got "5px , 10px , 15px , 20px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.2) is [9px, 14px, 19px, 24px, 13px, 18px, 17px, 22px, 11px, 16px, 21px, 26px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.4) is [13px, 18px, 23px, 28px, 21px, 26px, 19px, 24px, 17px, 22px, 27px, 32px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.6) is [17px, 22px, 27px, 32px, 29px, 34px, 21px, 26px, 23px, 28px, 33px, 38px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.8) is [21px, 26px, 31px, 36px, 37px, 42px, 23px, 28px, 29px, 34px, 39px, 44px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (1) is [25px, 30px, 35px, 40px, 45px, 50px] assert_equals: expected "25px , 30px , 35px , 40px , 45px , 50px , 25px , 30px , 35px , 40px , 45px , 50px " but got "25px , 30px , 35px , 40px , 45px , 50px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (1.2) is [29px, 34px, 39px, 44px, 53px, 58px, 27px, 32px, 41px, 46px, 51px, 56px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (-0.2) is [2px, 7px, 12px, 0px, 8px, 13px, 0px, 5px, 14px, 1px, 6px, 11px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0) is [5px, 10px, 15px] assert_equals: expected "5px , 10px , 15px , 5px , 10px , 15px , 5px , 10px , 15px , 5px , 10px , 15px " but got "5px , 10px , 15px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.2) is [8px, 13px, 18px, 11px, 12px, 17px, 10px, 15px, 16px, 9px, 14px, 19px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.4) is [11px, 16px, 21px, 17px, 14px, 19px, 15px, 20px, 17px, 13px, 18px, 23px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.6) is [14px, 19px, 24px, 23px, 16px, 21px, 20px, 25px, 18px, 17px, 22px, 27px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.8) is [17px, 22px, 27px, 29px, 18px, 23px, 25px, 30px, 19px, 21px, 26px, 31px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (1) is [20px, 25px, 30px, 35px] assert_equals: expected "20px , 25px , 30px , 35px , 20px , 25px , 30px , 35px , 20px , 25px , 30px , 35px " but got "20px , 25px , 30px , 35px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (1.2) is [23px, 28px, 33px, 41px, 22px, 27px, 35px, 40px, 21px, 29px, 34px, 39px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (-0.2) is [2px, 7px, 12px, 0px, 4px, 14px, 1px, 6px, 11px, 0px, 8px, 13px, 0px, 5px, 10px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0) is [5px, 10px, 15px] assert_equals: expected "5px , 10px , 15px , 5px , 10px , 15px , 5px , 10px , 15px , 5px , 10px , 15px , 5px , 10px , 15px " but got "5px , 10px , 15px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.2) is [8px, 13px, 18px, 11px, 16px, 16px, 9px, 14px, 19px, 12px, 12px, 17px, 10px, 15px, 20px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.4) is [11px, 16px, 21px, 17px, 22px, 17px, 13px, 18px, 23px, 19px, 14px, 19px, 15px, 20px, 25px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.6) is [14px, 19px, 24px, 23px, 28px, 18px, 17px, 22px, 27px, 26px, 16px, 21px, 20px, 25px, 30px] 
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.8) is [17px, 22px, 27px, 29px, 34px, 19px, 21px, 26px, 31px, 33px, 18px, 23px, 25px, 30px, 35px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (1) is [20px, 25px, 30px, 35px, 40px] assert_equals: expected "20px , 25px , 30px , 35px , 40px , 20px , 25px , 30px , 35px , 40px , 20px , 25px , 30px , 35px , 40px " but got "20px , 25px , 30px , 35px , 40px "
+PASS CSS Transitions: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (1.2) is [23px, 28px, 33px, 41px, 46px, 21px, 29px, 34px, 39px, 47px, 22px, 27px, 35px, 40px, 45px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (-0.2) is [0px, 24px, 24px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0) is [0px, 20px, 30px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.2) is [8px, 16px, 36px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.4) is [16px, 12px, 42px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.6) is [24px, 8px, 48px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.8) is [32px, 4px, 54px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (1) is [40px, 0px, 60px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (1.2) is [48px, 0px, 66px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (-0.2) is [0px, 24px, 0px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0) is [0px, 20px, 30px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.2) is [128px, 16px, 216px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.4) is [256px, 12px, 402px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.6) is [384px, 8px, 588px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.8) is [512px, 4px, 774px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (1) is [640px, 0px, 960px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (1.2) is [768px, 0px, 1146px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (-0.2) is [0px, 24px, 0px, 16px, 0px, 0px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0) is [0px, 20px] assert_equals: expected "0px , 20px , 0px , 20px , 0px , 20px " but got "0px , 20px "
+PASS CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.2) is [8px, 16px, 192px, 24px, 0px, 208px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.4) is [16px, 12px, 384px, 28px, 0px, 396px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.6) is [24px, 8px, 576px, 32px, 0px, 584px] 
+PASS CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.8) is [32px, 4px, 768px, 36px, 0px, 772px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (1) is [40px, 0px, 960px] assert_equals: expected "40px , 0px , 960px , 40px , 0px , 960px " but got "40px , 0px , 960px "
+PASS CSS Transitions: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (1.2) is [48px, 0px, 1152px, 44px, 0px, 1148px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (-0.2) is [128px, 28px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0) is [160px, 30px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.2) is [192px, 32px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.4) is [224px, 34px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.6) is [256px, 36px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.8) is [288px, 38px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (1) is [320px, 40px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (1.2) is [352px, 42px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (-0.2) is [0px, 0px, 0px, 0px, 640px, 32px, 0px, 0px, 256px, 8px, 0px, 0px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0) is [160px, 20px, 480px, 40px, 800px, 60px] assert_equals: expected "160px , 20px , 480px , 40px , 800px , 60px , 160px , 20px , 480px , 40px , 800px , 60px " but got "160px , 20px , 480px , 40px , 800px , 60px "
+PASS CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.2) is [448px, 56px, 1344px, 112px, 960px, 88px, 1088px, 96px, 704px, 72px, 1600px, 128px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.4) is [736px, 92px, 2208px, 184px, 1120px, 116px, 2016px, 172px, 928px, 104px, 2400px, 196px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.6) is [1024px, 128px, 3072px, 256px, 1280px, 144px, 2944px, 248px, 1152px, 136px, 3200px, 264px] 
+PASS CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.8) is [1312px, 164px, 3936px, 328px, 1440px, 172px, 3872px, 324px, 1376px, 168px, 4000px, 332px] 
+FAIL CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (1) is [1600px, 200px, 4800px, 400px] assert_equals: expected "1600px , 200px , 4800px , 400px , 1600px , 200px , 4800px , 400px , 1600px , 200px , 4800px , 400px " but got "1600px , 200px , 4800px , 400px "
+PASS CSS Transitions: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (1.2) is [1888px, 236px, 5664px, 472px, 1760px, 228px, 5728px, 476px, 1824px, 232px, 5600px, 468px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (-0.6) is [0px, 4px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (-0.4) is [1px, 6px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (-0.2) is [3px, 8px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0) is [5px, 10px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.2) is [7px, 12px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.4) is [9px, 14px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.6) is [11px, 16px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.8) is [13px, 18px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (1) is [15px, 20px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20] at (1.2) is [17px, 22px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (-0.2) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.2) is [1px, 2px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.4) is [2px, 4px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.6) is [3px, 6px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.8) is [4px, 8px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (1) is [5px, 10px] 
+PASS CSS Animations: property <stroke-dasharray> from [0 0] to [5 10] at (1.2) is [6px, 12px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (-0.2) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (0) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (0.2) is [1px, 2px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (0.4) is [2px, 4px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (0.6) is [3px, 6px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (0.8) is [4px, 8px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (1) is [5px, 10px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5 10] at (1.2) is [6px, 12px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (-0.2) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.2) is [16px, 32px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.4) is [32px, 64px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.6) is [48px, 96px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.8) is [64px, 128px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (1) is [80px, 160px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [5em 10em] at (1.2) is [96px, 192px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (-0.2) is [6px, 12px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (0) is [5px, 10px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (0.2) is [4px, 8px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (0.4) is [3px, 6px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (0.6) is [2px, 4px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (0.8) is [1px, 2px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (1) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [none] at (1.2) is [0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (-0.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (0) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (2.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (4.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (6.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (8.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (0.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [none] to [none] at (1.2) is [0px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (-0.2) is [3px, 8px, 1px, 9px, 2px, 7px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0) is [5px, 10px, 5px, 10px, 5px, 10px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.2) is [7px, 12px, 9px, 11px, 8px, 13px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.4) is [9px, 14px, 13px, 12px, 11px, 16px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.6) is [11px, 16px, 17px, 13px, 14px, 19px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.8) is [13px, 18px, 21px, 14px, 17px, 22px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (1) is [15px, 20px, 25px, 15px, 20px, 25px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (1.2) is [17px, 22px, 29px, 16px, 23px, 28px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (-0.2) is [1px, 6px, 11px, 16px, 0px, 2px, 13px, 18px, 0px, 4px, 9px, 14px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0) is [5px, 10px, 15px, 20px, 5px, 10px, 15px, 20px, 5px, 10px, 15px, 20px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.2) is [9px, 14px, 19px, 24px, 13px, 18px, 17px, 22px, 11px, 16px, 21px, 26px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.4) is [13px, 18px, 23px, 28px, 21px, 26px, 19px, 24px, 17px, 22px, 27px, 32px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.6) is [17px, 22px, 27px, 32px, 29px, 34px, 21px, 26px, 23px, 28px, 33px, 38px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.8) is [21px, 26px, 31px, 36px, 37px, 42px, 23px, 28px, 29px, 34px, 39px, 44px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (1) is [25px, 30px, 35px, 40px, 45px, 50px, 25px, 30px, 35px, 40px, 45px, 50px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (1.2) is [29px, 34px, 39px, 44px, 53px, 58px, 27px, 32px, 41px, 46px, 51px, 56px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (-0.2) is [2px, 7px, 12px, 0px, 8px, 13px, 0px, 5px, 14px, 1px, 6px, 11px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0) is [5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.2) is [8px, 13px, 18px, 11px, 12px, 17px, 10px, 15px, 16px, 9px, 14px, 19px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.4) is [11px, 16px, 21px, 17px, 14px, 19px, 15px, 20px, 17px, 13px, 18px, 23px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.6) is [14px, 19px, 24px, 23px, 16px, 21px, 20px, 25px, 18px, 17px, 22px, 27px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.8) is [17px, 22px, 27px, 29px, 18px, 23px, 25px, 30px, 19px, 21px, 26px, 31px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (1) is [20px, 25px, 30px, 35px, 20px, 25px, 30px, 35px, 20px, 25px, 30px, 35px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (1.2) is [23px, 28px, 33px, 41px, 22px, 27px, 35px, 40px, 21px, 29px, 34px, 39px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (-0.2) is [2px, 7px, 12px, 0px, 4px, 14px, 1px, 6px, 11px, 0px, 8px, 13px, 0px, 5px, 10px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0) is [5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.2) is [8px, 13px, 18px, 11px, 16px, 16px, 9px, 14px, 19px, 12px, 12px, 17px, 10px, 15px, 20px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.4) is [11px, 16px, 21px, 17px, 22px, 17px, 13px, 18px, 23px, 19px, 14px, 19px, 15px, 20px, 25px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.6) is [14px, 19px, 24px, 23px, 28px, 18px, 17px, 22px, 27px, 26px, 16px, 21px, 20px, 25px, 30px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.8) is [17px, 22px, 27px, 29px, 34px, 19px, 21px, 26px, 31px, 33px, 18px, 23px, 25px, 30px, 35px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (1) is [20px, 25px, 30px, 35px, 40px, 20px, 25px, 30px, 35px, 40px, 20px, 25px, 30px, 35px, 40px] 
+PASS CSS Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (1.2) is [23px, 28px, 33px, 41px, 46px, 21px, 29px, 34px, 39px, 47px, 22px, 27px, 35px, 40px, 45px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (-0.2) is [0px, 24px, 24px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0) is [0px, 20px, 30px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.2) is [8px, 16px, 36px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.4) is [16px, 12px, 42px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.6) is [24px, 8px, 48px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.8) is [32px, 4px, 54px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (1) is [40px, 0px, 60px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (1.2) is [48px, 0px, 66px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (-0.2) is [0px, 24px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0) is [0px, 20px, 30px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.2) is [128px, 16px, 216px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.4) is [256px, 12px, 402px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.6) is [384px, 8px, 588px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.8) is [512px, 4px, 774px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (1) is [640px, 0px, 960px] 
+PASS CSS Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (1.2) is [768px, 0px, 1146px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (-0.2) is [0px, 24px, 0px, 16px, 0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0) is [0px, 20px, 0px, 20px, 0px, 20px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.2) is [8px, 16px, 192px, 24px, 0px, 208px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.4) is [16px, 12px, 384px, 28px, 0px, 396px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.6) is [24px, 8px, 576px, 32px, 0px, 584px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.8) is [32px, 4px, 768px, 36px, 0px, 772px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (1) is [40px, 0px, 960px, 40px, 0px, 960px] 
+PASS CSS Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (1.2) is [48px, 0px, 1152px, 44px, 0px, 1148px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (-0.2) is [128px, 28px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0) is [160px, 30px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.2) is [192px, 32px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.4) is [224px, 34px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.6) is [256px, 36px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.8) is [288px, 38px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (1) is [320px, 40px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (1.2) is [352px, 42px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (-0.2) is [0px, 0px, 0px, 0px, 640px, 32px, 0px, 0px, 256px, 8px, 0px, 0px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0) is [160px, 20px, 480px, 40px, 800px, 60px, 160px, 20px, 480px, 40px, 800px, 60px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.2) is [448px, 56px, 1344px, 112px, 960px, 88px, 1088px, 96px, 704px, 72px, 1600px, 128px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.4) is [736px, 92px, 2208px, 184px, 1120px, 116px, 2016px, 172px, 928px, 104px, 2400px, 196px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.6) is [1024px, 128px, 3072px, 256px, 1280px, 144px, 2944px, 248px, 1152px, 136px, 3200px, 264px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.8) is [1312px, 164px, 3936px, 328px, 1440px, 172px, 3872px, 324px, 1376px, 168px, 4000px, 332px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (1) is [1600px, 200px, 4800px, 400px, 1600px, 200px, 4800px, 400px, 1600px, 200px, 4800px, 400px] 
+PASS CSS Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (1.2) is [1888px, 236px, 5664px, 472px, 1760px, 228px, 5728px, 476px, 1824px, 232px, 5600px, 468px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (-0.6) is [0px, 4px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (-0.4) is [1px, 6px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (-0.2) is [3px, 8px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0) is [5px, 10px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.2) is [7px, 12px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.4) is [9px, 14px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.6) is [11px, 16px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (0.8) is [13px, 18px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (1) is [15px, 20px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20] at (1.2) is [17px, 22px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (-0.2) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.2) is [1px, 2px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.4) is [2px, 4px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.6) is [3px, 6px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (0.8) is [4px, 8px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (1) is [5px, 10px] 
+PASS Web Animations: property <stroke-dasharray> from [0 0] to [5 10] at (1.2) is [6px, 12px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (-0.2) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (0) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (0.2) is [1px, 2px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (0.4) is [2px, 4px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (0.6) is [3px, 6px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (0.8) is [4px, 8px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (1) is [5px, 10px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5 10] at (1.2) is [6px, 12px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (-0.2) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.2) is [16px, 32px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.4) is [32px, 64px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.6) is [48px, 96px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (0.8) is [64px, 128px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (1) is [80px, 160px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [5em 10em] at (1.2) is [96px, 192px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (-0.2) is [6px, 12px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (0) is [5px, 10px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (0.2) is [4px, 8px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (0.4) is [3px, 6px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (0.6) is [2px, 4px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (0.8) is [1px, 2px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (1) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [none] at (1.2) is [0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (-0.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (0) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (2.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (4.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (6.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (8.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (0.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [none] to [none] at (1.2) is [0px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (-0.2) is [3px, 8px, 1px, 9px, 2px, 7px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0) is [5px, 10px, 5px, 10px, 5px, 10px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.2) is [7px, 12px, 9px, 11px, 8px, 13px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.4) is [9px, 14px, 13px, 12px, 11px, 16px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.6) is [11px, 16px, 17px, 13px, 14px, 19px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (0.8) is [13px, 18px, 21px, 14px, 17px, 22px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (1) is [15px, 20px, 25px, 15px, 20px, 25px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10] to [15 20 25] at (1.2) is [17px, 22px, 29px, 16px, 23px, 28px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (-0.2) is [1px, 6px, 11px, 16px, 0px, 2px, 13px, 18px, 0px, 4px, 9px, 14px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0) is [5px, 10px, 15px, 20px, 5px, 10px, 15px, 20px, 5px, 10px, 15px, 20px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.2) is [9px, 14px, 19px, 24px, 13px, 18px, 17px, 22px, 11px, 16px, 21px, 26px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.4) is [13px, 18px, 23px, 28px, 21px, 26px, 19px, 24px, 17px, 22px, 27px, 32px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.6) is [17px, 22px, 27px, 32px, 29px, 34px, 21px, 26px, 23px, 28px, 33px, 38px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (0.8) is [21px, 26px, 31px, 36px, 37px, 42px, 23px, 28px, 29px, 34px, 39px, 44px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (1) is [25px, 30px, 35px, 40px, 45px, 50px, 25px, 30px, 35px, 40px, 45px, 50px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15 20] to [25 30 35 40 45 50] at (1.2) is [29px, 34px, 39px, 44px, 53px, 58px, 27px, 32px, 41px, 46px, 51px, 56px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (-0.2) is [2px, 7px, 12px, 0px, 8px, 13px, 0px, 5px, 14px, 1px, 6px, 11px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0) is [5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.2) is [8px, 13px, 18px, 11px, 12px, 17px, 10px, 15px, 16px, 9px, 14px, 19px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.4) is [11px, 16px, 21px, 17px, 14px, 19px, 15px, 20px, 17px, 13px, 18px, 23px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.6) is [14px, 19px, 24px, 23px, 16px, 21px, 20px, 25px, 18px, 17px, 22px, 27px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (0.8) is [17px, 22px, 27px, 29px, 18px, 23px, 25px, 30px, 19px, 21px, 26px, 31px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (1) is [20px, 25px, 30px, 35px, 20px, 25px, 30px, 35px, 20px, 25px, 30px, 35px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35] at (1.2) is [23px, 28px, 33px, 41px, 22px, 27px, 35px, 40px, 21px, 29px, 34px, 39px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (-0.2) is [2px, 7px, 12px, 0px, 4px, 14px, 1px, 6px, 11px, 0px, 8px, 13px, 0px, 5px, 10px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0) is [5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px, 5px, 10px, 15px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.2) is [8px, 13px, 18px, 11px, 16px, 16px, 9px, 14px, 19px, 12px, 12px, 17px, 10px, 15px, 20px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.4) is [11px, 16px, 21px, 17px, 22px, 17px, 13px, 18px, 23px, 19px, 14px, 19px, 15px, 20px, 25px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.6) is [14px, 19px, 24px, 23px, 28px, 18px, 17px, 22px, 27px, 26px, 16px, 21px, 20px, 25px, 30px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (0.8) is [17px, 22px, 27px, 29px, 34px, 19px, 21px, 26px, 31px, 33px, 18px, 23px, 25px, 30px, 35px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (1) is [20px, 25px, 30px, 35px, 40px, 20px, 25px, 30px, 35px, 40px, 20px, 25px, 30px, 35px, 40px] 
+PASS Web Animations: property <stroke-dasharray> from [5 10 15] to [20 25 30 35 40] at (1.2) is [23px, 28px, 33px, 41px, 46px, 21px, 29px, 34px, 39px, 47px, 22px, 27px, 35px, 40px, 45px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (-0.2) is [0px, 24px, 24px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0) is [0px, 20px, 30px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.2) is [8px, 16px, 36px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.4) is [16px, 12px, 42px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.6) is [24px, 8px, 48px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (0.8) is [32px, 4px, 54px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (1) is [40px, 0px, 60px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40px 0em 60px] at (1.2) is [48px, 0px, 66px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (-0.2) is [0px, 24px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0) is [0px, 20px, 30px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.2) is [128px, 16px, 216px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.4) is [256px, 12px, 402px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.6) is [384px, 8px, 588px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (0.8) is [512px, 4px, 774px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (1) is [640px, 0px, 960px] 
+PASS Web Animations: property <stroke-dasharray> from [0em 20px 30px] to [40em 0em 60em] at (1.2) is [768px, 0px, 1146px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (-0.2) is [0px, 24px, 0px, 16px, 0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0) is [0px, 20px, 0px, 20px, 0px, 20px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.2) is [8px, 16px, 192px, 24px, 0px, 208px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.4) is [16px, 12px, 384px, 28px, 0px, 396px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.6) is [24px, 8px, 576px, 32px, 0px, 584px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (0.8) is [32px, 4px, 768px, 36px, 0px, 772px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (1) is [40px, 0px, 960px, 40px, 0px, 960px] 
+PASS Web Animations: property <stroke-dasharray> from [0px 20px] to [40px 0px 60em] at (1.2) is [48px, 0px, 1152px, 44px, 0px, 1148px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (-0.2) is [128px, 28px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0) is [160px, 30px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.2) is [192px, 32px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.4) is [224px, 34px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.6) is [256px, 36px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (0.8) is [288px, 38px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (1) is [320px, 40px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 30px] to [20em 40px] at (1.2) is [352px, 42px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (-0.2) is [0px, 0px, 0px, 0px, 640px, 32px, 0px, 0px, 256px, 8px, 0px, 0px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0) is [160px, 20px, 480px, 40px, 800px, 60px, 160px, 20px, 480px, 40px, 800px, 60px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.2) is [448px, 56px, 1344px, 112px, 960px, 88px, 1088px, 96px, 704px, 72px, 1600px, 128px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.4) is [736px, 92px, 2208px, 184px, 1120px, 116px, 2016px, 172px, 928px, 104px, 2400px, 196px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.6) is [1024px, 128px, 3072px, 256px, 1280px, 144px, 2944px, 248px, 1152px, 136px, 3200px, 264px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (0.8) is [1312px, 164px, 3936px, 328px, 1440px, 172px, 3872px, 324px, 1376px, 168px, 4000px, 332px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (1) is [1600px, 200px, 4800px, 400px, 1600px, 200px, 4800px, 400px, 1600px, 200px, 4800px, 400px] 
+PASS Web Animations: property <stroke-dasharray> from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] at (1.2) is [1888px, 236px, 5664px, 472px, 1760px, 228px, 5728px, 476px, 1824px, 232px, 5600px, 468px] 
+Harness: the test ran to completion.
 

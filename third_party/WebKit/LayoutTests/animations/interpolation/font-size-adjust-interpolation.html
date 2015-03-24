@@ -15,7 +15,7 @@
     font-family: testFont;
 }
 
-.replica {
+.expected {
   color: green;
   margin-right: 30px;
 }
@@ -42,19 +42,11 @@ assertInterpolation({
     {at: 1.5, is: '1.8'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
     property: 'font-size-adjust',
     from: 'none',
     to: '1.2'
-}, [
-    {at: -2, is: 'none'},
-    {at: -0.3, is: 'none'},
-    {at: 0, is: 'none'},
-    {at: 0.3, is: 'none'},
-    {at: 0.6, is: '1.2'},
-    {at: 1, is: '1.2'},
-    {at: 1.5, is: '1.2'},
-]);
+});
 
 assertInterpolation({
     property: 'font-size-adjust',

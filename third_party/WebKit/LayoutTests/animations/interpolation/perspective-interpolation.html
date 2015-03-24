@@ -12,10 +12,10 @@
   background: black;
   transform: rotateY(45deg);
 }
-.replica .transformed {
+.expected .transformed {
   background: green;
 }
-.replica {
+.expected {
   position: relative;
   left: -50px;
   opacity: 0.75;
@@ -42,19 +42,10 @@ assertInterpolation({
   {at: 1.5, is: '125px'}
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'perspective',
   from: '50px',
   to: 'none'
-}, [
-  {at: -20, is: '50px'},
-  {at: -1, is: '50px'},
-  {at: -0.3, is: '50px'},
-  {at: 0, is: '50px'},
-  {at: 0.3, is: '50px'},
-  {at: 0.6, is: 'none'},
-  {at: 1, is: 'none'},
-  {at: 1.5, is: 'none'}
-]);
+});
 </script>
 </body>

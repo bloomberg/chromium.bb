@@ -7,7 +7,7 @@
   background-color: black;
   display: inline-block;
 }
-.replica {
+.expected {
   background-color: green;
 }
 </style>
@@ -39,15 +39,10 @@ assertInterpolation({
   {at: 1.5, is: 'calc(-20px + 60%)'}
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'vertical-align',
   from: 'super',
   to: '40%'
-}, [
-  {at: 0, is: 'super'},
-  {at: 0.3, is: 'super'},
-  {at: 0.5, is: '40%'},
-  {at: 1, is: '40%'},
-]);
+});
 </script>
 </body>
