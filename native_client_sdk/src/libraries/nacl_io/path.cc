@@ -170,7 +170,7 @@ std::string Path::Range(size_t start, size_t end) const {
     }
   }
 
-  if (pstart > pend)
+  if (slashes < start || pstart > pend)
     return std::string();
 
   return std::string(pstart, pend - pstart);

@@ -70,6 +70,7 @@ TEST(PathTest, OnePart_Absolute) {
   EXPECT_EQ("/", p.Range(0, 1));
   EXPECT_EQ("foo", p.Range(1, 2));
   EXPECT_EQ("/foo", p.Range(0, 2));
+  EXPECT_EQ("", p.Range(2, 2));
   EXPECT_EQ("/", p.Parent().Join());
 }
 
@@ -85,6 +86,7 @@ TEST(PathTest, TwoPart_Relative) {
   EXPECT_EQ("foo", p.Range(0, 1));
   EXPECT_EQ("bar", p.Range(1, 2));
   EXPECT_EQ("foo/bar", p.Range(0, 2));
+  EXPECT_EQ("", p.Range(2, 2));
   EXPECT_EQ("foo", p.Parent().Join());
 }
 
@@ -185,6 +187,9 @@ TEST(PathTest, Range_Relative) {
   EXPECT_EQ("relative/path", p.Range(1, 3));
 
   EXPECT_EQ("path", p.Range(2, 3));
+
+  EXPECT_EQ("", p.Range(2, 100));
+  EXPECT_EQ("", p.Range(42, 67));
 }
 
 TEST(PathTest, Range_Absolute) {
@@ -203,6 +208,9 @@ TEST(PathTest, Range_Absolute) {
   EXPECT_EQ("absolute/path", p.Range(2, 4));
 
   EXPECT_EQ("path", p.Range(3, 4));
+
+  EXPECT_EQ("", p.Range(2, 100));
+  EXPECT_EQ("", p.Range(42, 67));
 }
 
 TEST(PathTest, Assign) {
