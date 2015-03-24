@@ -368,6 +368,7 @@ extern const char kHostedAppQuitNotification[];
 extern const char kDisableHostedAppShimCreation[];
 extern const char kDisableSystemFullscreenForTesting[];
 extern const char kRelauncherProcess[];
+extern const char kMetricsClientID[];
 #endif
 
 #if defined(OS_WIN)

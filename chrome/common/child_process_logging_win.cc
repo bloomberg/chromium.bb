@@ -74,7 +74,7 @@ void Init() {
   scoped_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
   if (client_info)
-    crash_keys::SetCrashClientIdFromGUID(client_info->client_id);
+    crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);
 }
 
 }  // namespace child_process_logging

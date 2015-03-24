@@ -45,11 +45,16 @@ class CrashReporterClient {
   CrashReporterClient();
   virtual ~CrashReporterClient();
 
+#if !defined(OS_MACOSX)
   // Sets the crash reporting client ID, a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
   // |client_guid| may either be a full GUID or a GUID that was already stripped
   // from its dashes.
+  //
+  // On Mac OS X, this is the responsibility of Crashpad, and can not be set
+  // directly by the client.
   virtual void SetCrashReporterClientIdFromGUID(const std::string& client_guid);
+#endif
 
 #if defined(OS_WIN)
   // Returns true if an alternative location to store the minidump files was

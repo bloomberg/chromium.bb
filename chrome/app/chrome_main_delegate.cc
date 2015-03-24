@@ -569,6 +569,13 @@ void ChromeMainDelegate::InitMacCrashReporter(
   // dylib is even loaded, to catch potential early crashes.
   crash_reporter::InitializeCrashpad(process_type);
 
+  const bool browser_process = process_type.empty();
+  if (!browser_process) {
+    std::string metrics_client_id =
+        command_line.GetSwitchValueASCII(switches::kMetricsClientID);
+    crash_keys::SetMetricsClientIdFromGUID(metrics_client_id);
+  }
+
   // Mac Chrome is packaged with a main app bundle and a helper app bundle.
   // The main app bundle should only be used for the browser process, so it
   // should never see a --type switch (switches::kProcessType).  Likewise,

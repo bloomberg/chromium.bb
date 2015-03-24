@@ -1270,6 +1270,11 @@ const char kDisableSystemFullscreenForTesting[] =
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";
 
+// This is how the metrics client ID is passed from the browser process to its
+// children. With Crashpad, the metrics client ID is distinct from the crash
+// client ID.
+const char kMetricsClientID[]               = "metrics-client-id";
+
 #endif
 
 // Use bubbles for content permissions requests instead of infobars.

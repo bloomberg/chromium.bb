@@ -29,6 +29,10 @@ class MetricsServiceClient {
   // when metrics recording gets enabled.
   virtual void SetMetricsClientId(const std::string& client_id) = 0;
 
+  // Notifies the client that recording is disabled, so that other services
+  // (such as crash reporting) can clear any association with metrics.
+  virtual void OnRecordingDisabled() = 0;
+
   // Whether there's an "off the record" (aka "Incognito") session active.
   virtual bool IsOffTheRecordSessionActive() = 0;
 

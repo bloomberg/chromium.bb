@@ -252,13 +252,6 @@ void InitCrashReporter(const std::string& process_type) {
   SetCrashKeyValue(@"prod", [info_dictionary objectForKey:@BREAKPAD_PRODUCT]);
   SetCrashKeyValue(@"plat", @"OS X");
 
-  if (!is_browser) {
-    // Get the guid from the command line switch.
-    std::string client_guid =
-        command_line->GetSwitchValueASCII(switches::kEnableCrashReporter);
-    GetCrashReporterClient()->SetCrashReporterClientIdFromGUID(client_guid);
-  }
-
   logging::SetLogMessageHandler(&FatalMessageHandler);
   base::debug::SetDumpWithoutCrashingFunction(&DumpHelper::DumpWithoutCrashing);
 

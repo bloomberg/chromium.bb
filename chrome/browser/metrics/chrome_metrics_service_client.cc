@@ -181,7 +181,11 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void ChromeMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
-  crash_keys::SetCrashClientIdFromGUID(client_id);
+  crash_keys::SetMetricsClientIdFromGUID(client_id);
+}
+
+void ChromeMetricsServiceClient::OnRecordingDisabled() {
+  crash_keys::ClearMetricsClientId();
 }
 
 bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {

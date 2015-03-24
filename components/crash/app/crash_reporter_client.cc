@@ -27,9 +27,11 @@ CrashReporterClient* GetCrashReporterClient() {
 CrashReporterClient::CrashReporterClient() {}
 CrashReporterClient::~CrashReporterClient() {}
 
+#if !defined(OS_MACOSX)
 void CrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {
 }
+#endif
 
 #if defined(OS_WIN)
 bool CrashReporterClient::GetAlternativeCrashDumpLocation(

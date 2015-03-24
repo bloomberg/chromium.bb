@@ -58,6 +58,7 @@ class ChromeMetricsServiceClient
 
   // metrics::MetricsServiceClient:
   void SetMetricsClientId(const std::string& client_id) override;
+  void OnRecordingDisabled() override;
   bool IsOffTheRecordSessionActive() override;
   int32 GetProduct() override;
   std::string GetApplicationLocale() override;

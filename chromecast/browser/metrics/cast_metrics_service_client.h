@@ -51,6 +51,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 
   // metrics::MetricsServiceClient implementation:
   void SetMetricsClientId(const std::string& client_id) override;
+  void OnRecordingDisabled() override;
   bool IsOffTheRecordSessionActive() override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;

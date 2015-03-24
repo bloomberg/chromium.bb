@@ -52,6 +52,9 @@ void CastMetricsServiceClient::SetMetricsClientId(
   PlatformSetClientID(cast_service_, client_id);
 }
 
+void CastMetricsServiceClient::OnRecordingDisabled() {
+}
+
 void CastMetricsServiceClient::StoreClientInfo(
     const ::metrics::ClientInfo& client_info) {
   const std::string& client_id = client_info.client_id;

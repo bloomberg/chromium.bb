@@ -1238,7 +1238,14 @@ bool IsAutoReloadVisibleOnlyEnabled() {
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+  scoped_ptr<metrics::ClientInfo> client_info =
+      GoogleUpdateSettings::LoadMetricsClientInfo();
+  if (client_info) {
+    command_line->AppendSwitchASCII(switches::kMetricsClientID,
+                                    client_info->client_id);
+  }
+#elif defined(OS_POSIX)
   if (breakpad::IsCrashReporterEnabled()) {
     scoped_ptr<metrics::ClientInfo> client_info =
         GoogleUpdateSettings::LoadMetricsClientInfo();
@@ -1246,7 +1253,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     client_info ? client_info->client_id
                                                 : std::string());
   }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif
 
   if (logging::DialogsAreSuppressed())
     command_line->AppendSwitch(switches::kNoErrorDialogs);

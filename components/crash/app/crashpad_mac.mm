@@ -158,6 +158,10 @@ void InitializeCrashpad(const std::string& process_type) {
 
   g_simple_string_dictionary = new crashpad::SimpleStringDictionary();
   crashpad_info->set_simple_annotations(g_simple_string_dictionary);
+
+  base::debug::SetCrashKeyReportingFunctions(SetCrashKeyValue, ClearCrashKey);
+  crash_reporter_client->RegisterCrashKeys();
+
   SetCrashKeyValue("ptype", browser_process ? base::StringPiece("browser")
                                             : base::StringPiece(process_type));
   SetCrashKeyValue("pid", base::StringPrintf("%d", getpid()));
@@ -170,9 +174,6 @@ void InitializeCrashpad(const std::string& process_type) {
   // preferable to having all occurrences show up in DumpWithoutCrashing() at
   // the same file and line.
   base::debug::SetDumpWithoutCrashingFunction(DumpWithoutCrashing);
-
-  base::debug::SetCrashKeyReportingFunctions(SetCrashKeyValue, ClearCrashKey);
-  crash_reporter_client->RegisterCrashKeys();
 
   if (browser_process) {
     g_database =

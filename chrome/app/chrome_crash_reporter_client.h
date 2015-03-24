@@ -17,8 +17,10 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   ~ChromeCrashReporterClient() override;
 
   // crash_reporter::CrashReporterClient implementation.
+#if !defined(OS_MACOSX)
   void SetCrashReporterClientIdFromGUID(
       const std::string& client_guid) override;
+#endif
 #if defined(OS_WIN)
   virtual bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir)
       override;

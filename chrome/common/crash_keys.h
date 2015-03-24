@@ -21,11 +21,11 @@ namespace crash_keys {
 // reporting server. Returns the size of the union of all keys.
 size_t RegisterChromeCrashKeys();
 
-// Sets the ID (based on |client_guid| which may either be a full GUID or a
-// GUID that was already stripped from its dashes -- in either cases this method
-// will strip remaining dashes before setting the crash key) by which this crash
-// reporting client can be identified.
-void SetCrashClientIdFromGUID(const std::string& client_guid);
+// Sets the ID (which may either be a full GUID or a GUID that was already
+// stripped from its dashes -- in either case this method will strip remaining
+// dashes before setting the crash key).
+void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid);
+void ClearMetricsClientId();
 
 // Sets the kSwitch and kNumSwitches keys based on the given |command_line|.
 void SetSwitchesFromCommandLine(const base::CommandLine* command_line);
@@ -55,7 +55,16 @@ class ScopedPrinterInfo {
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
 // The GUID used to identify this client to the crash system.
+#if defined(OS_MACOSX)
+// On Mac OS X, the crash reporting client ID is the responsibility of Crashpad.
+// It is not set directly by Chrome. To make the metrics client ID available on
+// the server, it's stored in a distinct key.
+extern const char kMetricsClientID[];
+#else
+// When using Breakpad instead of Crashpad, the crash reporting client ID is the
+// same as the metrics client ID.
 extern const char kClientID[];
+#endif
 
 // The product release/distribution channel.
 extern const char kChannel[];

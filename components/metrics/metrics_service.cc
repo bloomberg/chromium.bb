@@ -388,6 +388,8 @@ void MetricsService::DisableRecording() {
     return;
   recording_active_ = false;
 
+  client_->OnRecordingDisabled();
+
   base::RemoveActionCallback(action_callback_);
 
   for (size_t i = 0; i < metrics_providers_.size(); ++i)

@@ -80,10 +80,12 @@ ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
 ChromeCrashReporterClient::~ChromeCrashReporterClient() {}
 
+#if !defined(OS_MACOSX)
 void ChromeCrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {
-  crash_keys::SetCrashClientIdFromGUID(client_guid);
+  crash_keys::SetMetricsClientIdFromGUID(client_guid);
 }
+#endif
 
 #if defined(OS_WIN)
 bool ChromeCrashReporterClient::GetAlternativeCrashDumpLocation(
