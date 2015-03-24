@@ -868,6 +868,8 @@ void Predictor::SaveDnsPrefetchStateForNextStartupAndTrim(
 
   // Do at least one trim at shutdown, in case the user wasn't running long
   // enough to do any regular trimming of referrers.
+  // TODO(lizeb): Should trimming really be done at each shutdown? This could be
+  // a frequent occurrence on Android.
   TrimReferrersNow();
   SerializeReferrers(referral_list);
 

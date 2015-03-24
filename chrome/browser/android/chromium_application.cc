@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_content_client.h"
@@ -32,14 +33,15 @@ void FlushCookiesOnIOThread(
 }
 
 void CommitPendingWritesForProfile(Profile* profile) {
-  // Both of these calls are asynchronous. They may not finish (and may not
-  // even start!) before the Android OS kills our process. But we can't wait
-  // for them to finish because blocking the UI thread is illegal.
+  // These calls are asynchronous. They may not finish (and may not even
+  // start!) before the Android OS kills our process. But we can't wait for them
+  // to finish because blocking the UI thread is illegal.
   profile->GetPrefs()->CommitPendingWrite();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&FlushCookiesOnIOThread,
                  make_scoped_refptr(profile->GetRequestContext())));
+  profile->GetNetworkPredictor()->SaveStateForNextStartupAndTrim();
 }
 }  // namespace
 
