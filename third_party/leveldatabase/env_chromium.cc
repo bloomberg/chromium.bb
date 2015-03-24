@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
@@ -319,6 +320,7 @@ class IDBEnv : public ChromiumEnv {
  public:
   IDBEnv() : ChromiumEnv() {
     name_ = "LevelDBEnv.IDB";
+    uma_ioerror_base_name_ = name_ + ".IOError.BFE";
     make_backup_ = true;
   }
 };
@@ -389,7 +391,7 @@ Status MakeIOError(Slice filename,
                    base::File::Error error) {
   DCHECK_LT(error, 0);
   char buf[512];
-  snprintf(buf, sizeof(buf), "%s (ChromeMethodPFE: %d::%s::%d)",
+  snprintf(buf, sizeof(buf), "%s (ChromeMethodBFE: %d::%s::%d)",
            message.c_str(), method, MethodIDToString(method), -error);
   return Status::IOError(filename, buf);
 }
@@ -415,13 +417,13 @@ ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
   }
   int parsed_error;
   if (RE2::PartialMatch(status_string.c_str(),
-                        "ChromeMethodPFE: (\\d+)::.*::(\\d+)", &method,
+                        "ChromeMethodBFE: (\\d+)::.*::(\\d+)", &method,
                         &parsed_error)) {
     *method_param = static_cast<MethodID>(method);
     *error = static_cast<base::File::Error>(-parsed_error);
     DCHECK_LT(*error, base::File::FILE_OK);
     DCHECK_GT(*error, base::File::FILE_ERROR_MAX);
-    return METHOD_AND_PFE;
+    return METHOD_AND_BFE;
   }
   return NONE;
 }
@@ -500,7 +502,7 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
   base::File::Error error = base::File::FILE_OK;
   leveldb_env::ErrorParsingResult result =
       leveldb_env::ParseMethodAndError(status, &method, &error);
-  return (result == leveldb_env::METHOD_AND_PFE &&
+  return (result == leveldb_env::METHOD_AND_BFE &&
           static_cast<base::File::Error>(error) ==
               base::File::FILE_ERROR_NO_SPACE);
 }
@@ -518,6 +520,7 @@ ChromiumEnv::ChromiumEnv()
       bgsignal_(&mu_),
       started_bgthread_(false),
       kMaxRetryTimeMillis(1000) {
+  uma_ioerror_base_name_ = name_ + ".IOError.BFE";
 }
 
 ChromiumEnv::~ChromiumEnv() {
@@ -934,9 +937,9 @@ void ChromiumEnv::RecordBackupResult(bool result) const {
 
 base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,
                                                       int limit) const {
-  std::string uma_name(name_);
-  // TODO(dgrogan): This is probably not the best way to concatenate strings.
-  uma_name.append(".IOError.").append(MethodIDToString(method));
+  std::string uma_name;
+  base::StringAppendF(&uma_name, "%s.%s", uma_ioerror_base_name_.c_str(),
+                      MethodIDToString(method));
   return base::LinearHistogram::FactoryGet(uma_name, 1, limit, limit + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
 }

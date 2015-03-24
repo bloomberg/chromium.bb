@@ -43,7 +43,7 @@ TEST(ErrorEncoding, FileError) {
   const Status s = MakeIOError("Somefile.txt", "message", in_method, fe);
   MethodID method;
   base::File::Error error;
-  EXPECT_EQ(leveldb_env::METHOD_AND_PFE,
+  EXPECT_EQ(leveldb_env::METHOD_AND_BFE,
             ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(fe, error);

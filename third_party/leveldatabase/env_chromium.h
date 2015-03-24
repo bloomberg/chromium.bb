@@ -59,7 +59,7 @@ leveldb::Status MakeIOError(leveldb::Slice filename,
 
 enum ErrorParsingResult {
   METHOD_ONLY,
-  METHOD_AND_PFE,
+  METHOD_AND_BFE,
   NONE,
 };
 
@@ -129,6 +129,7 @@ class ChromiumEnv : public leveldb::Env,
 
  protected:
   std::string name_;
+  std::string uma_ioerror_base_name_;
   bool make_backup_;
 
  private:
