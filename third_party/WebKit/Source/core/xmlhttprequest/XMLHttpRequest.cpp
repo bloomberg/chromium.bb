@@ -24,6 +24,7 @@
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
@@ -793,8 +794,46 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
     return true;
 }
 
+void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData& data, ExceptionState& exceptionState)
+{
+    if (data.isNull()) {
+        send(exceptionState);
+        return;
+    }
+
+    InspectorInstrumentation::willSendXMLHttpRequest(executionContext(), url());
+    if (data.isArrayBuffer()) {
+        send(data.getAsArrayBuffer().get(), exceptionState);
+        return;
+    }
+
+    if (data.isArrayBufferView()) {
+        send(data.getAsArrayBufferView().get(), exceptionState);
+        return;
+    }
+
+    if (data.isBlob()) {
+        send(data.getAsBlob(), exceptionState);
+        return;
+    }
+
+    if (data.isDocument()) {
+        send(data.getAsDocument().get(), exceptionState);
+        return;
+    }
+
+    if (data.isFormData()) {
+        send(data.getAsFormData().get(), exceptionState);
+        return;
+    }
+
+    ASSERT(data.isString());
+    send(data.getAsString(), exceptionState);
+}
+
 void XMLHttpRequest::send(ExceptionState& exceptionState)
 {
+    InspectorInstrumentation::willSendXMLHttpRequest(executionContext(), url());
     send(String(), exceptionState);
 }
 

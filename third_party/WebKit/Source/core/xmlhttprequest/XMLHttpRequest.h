@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData;
 class Blob;
 class BlobDataHandle;
 class DOMArrayBuffer;
@@ -116,12 +117,7 @@ public:
     void open(const AtomicString& method, const KURL&, bool async, const String& user, ExceptionState&);
     void open(const AtomicString& method, const KURL&, bool async, const String& user, const String& password, ExceptionState&);
     void send(ExceptionState&);
-    void send(Document*, ExceptionState&);
-    void send(const String&, ExceptionState&);
-    void send(Blob*, ExceptionState&);
-    void send(DOMFormData*, ExceptionState&);
-    void send(DOMArrayBuffer*, ExceptionState&);
-    void send(DOMArrayBufferView*, ExceptionState&);
+    void send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData&, ExceptionState&);
     void abort();
     void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
     void overrideMimeType(const AtomicString& override, ExceptionState&);
@@ -204,6 +200,12 @@ private:
 
     bool initSend(ExceptionState&);
     void sendBytesData(const void*, size_t, ExceptionState&);
+    void send(Document*, ExceptionState&);
+    void send(const String&, ExceptionState&);
+    void send(Blob*, ExceptionState&);
+    void send(DOMFormData*, ExceptionState&);
+    void send(DOMArrayBuffer*, ExceptionState&);
+    void send(DOMArrayBufferView*, ExceptionState&);
 
     const AtomicString& getRequestHeader(const AtomicString& name) const;
     void setRequestHeaderInternal(const AtomicString& name, const AtomicString& value);

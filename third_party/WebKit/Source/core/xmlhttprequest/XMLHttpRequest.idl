@@ -62,7 +62,7 @@ enum XMLHttpRequestResponseType {
 
     [RaisesException] void setRequestHeader(DOMString header, DOMString value);
 
-    [Custom, RaisesException] void send();
+    [RaisesException] void send(optional (ArrayBuffer or ArrayBufferView or Blob or Document or DOMString or FormData)? data);
 
     void abort();
 
