@@ -196,7 +196,7 @@ def ParseDate(value):
     # Give a helpful error message about the format expected.  Putting this
     # message in the exception is useless because argparse ignores the
     # exception message and just says the value is invalid.
-    cros_build_lib.Error('Date is expected to be in format YYYY-MM-DD.')
+    logging.error('Date is expected to be in format YYYY-MM-DD.')
     raise
 
 
@@ -293,10 +293,10 @@ class DeviceParser(object):
       return device
     except ValueError as e:
       # argparse ignores exception messages, so print the message manually.
-      cros_build_lib.Error(e)
+      logging.error(e)
       raise
     except Exception as e:
-      cros_build_lib.Error('Internal error while parsing device input: %s', e)
+      logging.error('Internal error while parsing device input: %s', e)
       raise
 
   def _EnforceConstraints(self, device, value):

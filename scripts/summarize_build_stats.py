@@ -18,7 +18,6 @@ from chromite.cbuildbot import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gdata_lib
 from chromite.scripts import gather_builder_stats
@@ -616,13 +615,12 @@ def _CheckOptions(options):
   # Ensure that specified start date is in the past.
   now = datetime.datetime.now()
   if options.start_date and now.date() < options.start_date:
-    cros_build_lib.Error('Specified start date is in the future: %s',
-                         options.start_date)
+    logging.error('Specified start date is in the future: %s',
+                  options.start_date)
     return False
 
   if not options.email and not options.annotations_from_cidb:
-    cros_build_lib.Error('--email is required if not using '
-                         '--annotations-from-cidb.')
+    logging.error('--email is required if not using --annotations-from-cidb.')
     return False
 
   return True

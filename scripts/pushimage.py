@@ -318,8 +318,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         continue
       except gs.GSContextException:
         unknown_error = True
-        cros_build_lib.Error('Skipping %s due to unknown GS error', src,
-                             exc_info=True)
+        logging.error('Skipping %s due to unknown GS error', src, exc_info=True)
         continue
 
       if image_type:
@@ -351,8 +350,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
           except gs.GSContextException:
             unknown_error = True
             exists = False
-            cros_build_lib.Error('Unknown error while checking %s',
-                                 gs_artifact_path, exc_info=True)
+            logging.error('Unknown error while checking %s', gs_artifact_path,
+                          exc_info=True)
           if not exists:
             logging.info('%s does not exist.  Nothing to sign.',
                          gs_artifact_path)
@@ -379,16 +378,16 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
             ctx.Copy(insns_path.name, gs_insns_path)
           except gs.GSContextException:
             unknown_error = True
-            cros_build_lib.Error('Unknown error while uploading insns %s',
-                                 gs_insns_path, exc_info=True)
+            logging.error('Unknown error while uploading insns %s',
+                          gs_insns_path, exc_info=True)
             continue
 
           try:
             MarkImageToBeSigned(ctx, tbs_base, gs_insns_path, priority)
           except gs.GSContextException:
             unknown_error = True
-            cros_build_lib.Error('Unknown error while marking for signing %s',
-                                 gs_insns_path, exc_info=True)
+            logging.error('Unknown error while marking for signing %s',
+                          gs_insns_path, exc_info=True)
             continue
           logging.info('Signing %s image %s', image_type, gs_insns_path)
           instruction_urls.setdefault(channel, []).append(gs_insns_path)

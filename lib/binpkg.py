@@ -19,6 +19,7 @@ import time
 import urllib2
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import parallel
 
@@ -324,7 +325,7 @@ def GrabRemotePackageIndex(binhost_url):
     except urllib2.HTTPError as e:
       if e.code in HTTP_FORBIDDEN_CODES:
         cros_build_lib.PrintBuildbotStepWarnings()
-        cros_build_lib.Error('Cannot GET %s: %s' % (url, str(e)))
+        logging.error('Cannot GET %s: %s' % (url, str(e)))
         return None
       # Not found errors are normal if old prebuilts were cleaned out.
       if e.code in HTTP_NOT_FOUND_CODES:
@@ -336,7 +337,7 @@ def GrabRemotePackageIndex(binhost_url):
       output = gs_context.Cat(url)
     except (cros_build_lib.RunCommandError, gs.GSNoSuchKey) as e:
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Error('Cannot GET %s: %s' % (url, str(e)))
+      logging.error('Cannot GET %s: %s' % (url, str(e)))
       return None
     f = cStringIO.StringIO(output)
   else:

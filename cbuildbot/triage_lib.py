@@ -234,7 +234,7 @@ def GetStagesToIgnoreForChange(build_root, change):
     result = GetOptionForChange(build_root, change, 'GENERAL',
                                 'ignored-stages')
   except ConfigParser.Error:
-    cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
+    logging.error('%s has malformed config file', change, exc_info=True)
   return result.split() if result else []
 
 

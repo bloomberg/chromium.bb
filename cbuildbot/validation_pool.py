@@ -1590,7 +1590,7 @@ class ValidationPool(object):
             'patches.' % (e,)
         )
         links = cros_patch.GetChangesAsString(self.changes)
-        cros_build_lib.Error('%s\nAffected Patches are: %s', msg, links)
+        logging.error('%s\nAffected Patches are: %s', msg, links)
         errors = [InternalCQError(patch, msg) for patch in self.changes]
         self._HandleApplyFailure(errors)
         raise

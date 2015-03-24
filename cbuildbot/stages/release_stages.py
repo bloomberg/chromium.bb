@@ -274,7 +274,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
           timeout=self.SIGNING_TIMEOUT, period=self.SIGNING_PERIOD)
     except timeout_util.TimeoutError:
       msg = 'Image signing timed out.'
-      cros_build_lib.Error(msg)
+      logging.error(msg)
       cros_build_lib.PrintBuildbotStepText(msg)
       raise SignerResultsTimeout(msg)
 
@@ -290,12 +290,12 @@ class PaygenStage(artifact_stages.ArchivingStage):
         status = self._SigningStatusFromJson(signer_result)
         if status != 'passed':
           failures.append(result_description)
-          cros_build_lib.Error('Signing failed for: %s', result_description)
+          logging.error('Signing failed for: %s', result_description)
 
     if failures:
-      cros_build_lib.Error('Failure summary:')
+      logging.error('Failure summary:')
       for failure in failures:
-        cros_build_lib.Error('  %s', failure)
+        logging.error('  %s', failure)
       raise SignerFailure(', '.join([str(f) for f in failures]))
 
   def PerformStage(self):

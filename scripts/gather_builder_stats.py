@@ -15,7 +15,6 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gdata_lib
 from chromite.lib import gs
@@ -526,9 +525,8 @@ class SSUploader(object):
           logging.debug('Adding spreadsheet row for %s %s.', id_col, id_val)
           self._scomm.InsertRow(row_dict)
       except gdata_lib.SpreadsheetError as e:
-        cros_build_lib.Error('Failure while uploading spreadsheet row for'
-                             ' %s %s with data %s. Error: %s.', id_col, id_val,
-                             row_dict, e)
+        logging.error('Failure while uploading spreadsheet row for %s %s with '
+                      'data %s. Error: %s.', id_col, id_val, row_dict, e)
 
 
 class StatsManager(object):
@@ -682,9 +680,9 @@ class StatsManager(object):
         try:
           data_table.AppendBuildRow(build)
         except Exception:
-          cros_build_lib.Error('Failed to add row for builder_number %s to'
-                               ' table.  It came from %s.', build.build_number,
-                               build.metadata_url)
+          logging.error('Failed to add row for builder_number %s to table.  It'
+                        ' came from %s.', build.build_number,
+                        build.metadata_url)
           raise
 
       # Upload data table to sheet.
@@ -775,13 +773,13 @@ def _CheckOptions(options):
   # Ensure that specified start date is in the past.
   now = datetime.datetime.now()
   if options.start_date and now.date() < options.start_date:
-    cros_build_lib.Error('Specified start date is in the future: %s',
-                         options.start_date)
+    logging.error('Specified start date is in the future: %s',
+                  options.start_date)
     return False
 
   # The --save option requires --email.
   if options.save and not options.email:
-    cros_build_lib.Error('You must specify --email with --save.')
+    logging.error('You must specify --email with --save.')
     return False
 
   return True

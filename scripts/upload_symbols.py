@@ -859,7 +859,7 @@ def main(argv):
                        failed_list=opts.failed_list, root=opts.root,
                        dedupe_namespace=dedupe_namespace)
   if ret:
-    cros_build_lib.Error('encountered %i problem(s)', ret)
+    logging.error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
     # return 0 in case we are a multiple of the mask.
     ret = 1

@@ -102,7 +102,7 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
       return runcmd(cmd, **kwargs)
     except cros_build_lib.RunCommandError as ex:
       # Print the original exception.
-      cros_build_lib.Error('\n%s', ex)
+      logging.error('\n%s', ex)
 
       # Check whether a specific package failed. If so, wrap the exception
       # appropriately. These failures are usually caused by a recent CL, so we
@@ -1030,8 +1030,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir,
         # Ex: crbug.com/167497
         if not asan_log_signaled:
           asan_log_signaled = True
-          cros_build_lib.Error(
-              'Asan crash occurred. See asan_logs in Artifacts.')
+          logging.error('Asan crash occurred. See asan_logs in Artifacts.')
           cros_build_lib.PrintBuildbotStepFailure()
 
       # Append the processed file to archive.
@@ -1113,8 +1112,8 @@ def MarkChromeAsStable(buildroot,
           ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
           enter_chroot=True, combine_stdout_stderr=True, capture_output=True)
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Error('Cannot emerge-%s =%s\nIs Chrome pinned to an '
-                           'older version?' % (board, chrome_atom))
+      logging.error('Cannot emerge-%s =%s\nIs Chrome pinned to an older '
+                    'version?' % (board, chrome_atom))
       raise
 
   return chrome_atom

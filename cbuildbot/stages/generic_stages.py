@@ -374,7 +374,7 @@ class BuilderStage(object):
     retrying = False
     description = cls._StringifyException(exc_info)
     cros_build_lib.PrintBuildbotStepFailure()
-    cros_build_lib.Error(description)
+    logging.error(description)
     return (exc_info[1], description, retrying)
 
   def _HandleStageException(self, exc_info):
@@ -402,10 +402,10 @@ class BuilderStage(object):
     try:
       return self._HandleStageException(exc_info)
     except Exception:
-      cros_build_lib.Error(
+      logging.error(
           'An exception was thrown while running _HandleStageException')
-      cros_build_lib.Error('The original exception was:', exc_info=exc_info)
-      cros_build_lib.Error('The new exception is:', exc_info=True)
+      logging.error('The original exception was:', exc_info=exc_info)
+      logging.error('The new exception is:', exc_info=True)
       return self._HandleExceptionAsError(exc_info)
 
   def HandleSkip(self):
@@ -500,7 +500,7 @@ class NonHaltingBuilderStage(BuilderStage):
       super(NonHaltingBuilderStage, self).Run()
     except failures_lib.StepFailure:
       name = self.__class__.__name__
-      cros_build_lib.Error('Ignoring StepFailure in %s', name)
+      logging.error('Ignoring StepFailure in %s', name)
 
 
 class ForgivingBuilderStage(BuilderStage):

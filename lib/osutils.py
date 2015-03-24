@@ -454,24 +454,24 @@ class TempDir(object):
       if exc_type:
         # If an exception from inside the context was already in progress,
         # log our cleanup exception, then allow the original to resume.
-        cros_build_lib.Error('While exiting %s:', self, exc_info=True)
+        logging.error('While exiting %s:', self, exc_info=True)
 
         if self.tempdir:
           # Log all files in tempdir at the time of the failure.
           try:
-            cros_build_lib.Error('Directory contents were:')
+            logging.error('Directory contents were:')
             for name in os.listdir(self.tempdir):
-              cros_build_lib.Error('  %s', name)
+              logging.error('  %s', name)
           except OSError:
-            cros_build_lib.Error('  Directory did not exist.')
+            logging.error('  Directory did not exist.')
 
           # Log all mounts at the time of the failure, since that's the most
           # common cause.
           mount_results = cros_build_lib.RunCommand(
               ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
               error_code_ok=True)
-          cros_build_lib.Error('Mounts were:')
-          cros_build_lib.Error('  %s', mount_results.output)
+          logging.error('Mounts were:')
+          logging.error('  %s', mount_results.output)
 
       else:
         # If there was not an exception from the context, raise ours.

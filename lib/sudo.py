@@ -6,12 +6,14 @@
 
 from __future__ import print_function
 
-import os
-import sys
 import errno
+import os
 import signal
 import subprocess
+import sys
+
 import cros_build_lib
+import cros_logging as logging
 
 
 class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
@@ -93,7 +95,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
         # If ttyless sudo is not strictly required for this script, don't
         # prompt for a password a second time. Instead, just complain.
         if idx > 0:
-          cros_build_lib.Error(tty_msg, url)
+          logging.error(tty_msg, url)
           if not self._ttyless_sudo:
             break
 

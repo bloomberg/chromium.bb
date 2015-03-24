@@ -888,7 +888,7 @@ def _PostParseCheck(parser, options, args):
 
     if not build_config:
       invalid_targets.append(arg)
-      cros_build_lib.Error('No such configuraton target: "%s".', arg)
+      logging.error('No such configuraton target: "%s".', arg)
       continue
 
     is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE

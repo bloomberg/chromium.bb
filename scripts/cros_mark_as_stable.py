@@ -128,8 +128,8 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
                     push_branch, stable_branch)]
   bad_cls = git.RunGit(cwd, bad_cl_cmd).output
   if bad_cls.strip() and not dryrun:
-    cros_build_lib.Error('The Uprev stage found changes from users other'
-                         ' than chrome-bot:\n\n%s', bad_cls)
+    logging.error('The Uprev stage found changes from users other than '
+                  'chrome-bot:\n\n%s', bad_cls)
     raise AssertionError('Unexpected CLs found during uprev stage.')
 
   description = git.RunGit(

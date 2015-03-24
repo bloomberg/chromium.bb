@@ -97,8 +97,8 @@ class GconvModules(object):
         toset = toset.rstrip('/')
         # Warn if the same charset is defined as two different aliases.
         if self._alias.get(fromset, toset) != toset:
-          cros_build_lib.Error('charset "%s" already defined as "%s".',
-                               fromset, self._alias[fromset])
+          logging.error('charset "%s" already defined as "%s".', fromset,
+                        self._alias[fromset])
         self._alias[fromset] = toset
       else:
         cros_build_lib.Die('Unknown line: %s', line)

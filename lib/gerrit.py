@@ -139,8 +139,8 @@ class GerritHelper(object):
       if result:
         return result.output.split()[0]
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Error('Command "%s" failed.', cros_build_lib.CmdToStr(cmd),
-                           exc_info=True)
+      logging.error('Command "%s" failed.', cros_build_lib.CmdToStr(cmd),
+                    exc_info=True)
 
   def QuerySingleRecord(self, change=None, **kwargs):
     """Free-form query of a gerrit change that expects a single result.

@@ -187,8 +187,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
             self._RunTest(test_type, test_results_dir)
 
     except Exception:
-      cros_build_lib.Error(_VM_TEST_ERROR_MSG %
-                           dict(vm_test_results=test_basename))
+      logging.error(_VM_TEST_ERROR_MSG % dict(vm_test_results=test_basename))
       self._ArchiveVMFiles(test_results_dir)
       raise
     finally:

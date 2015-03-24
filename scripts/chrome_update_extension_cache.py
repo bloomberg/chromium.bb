@@ -45,14 +45,14 @@ def DownloadCrx(ext, extension, crxdir):
                 (extension['external_update_url'], ext))
   response = urllib.urlopen(update_url)
   if response.getcode() != 200:
-    cros_build_lib.Error('Cannot get update response, URL: %s, error: %d',
-                         update_url, response.getcode())
+    logging.error('Cannot get update response, URL: %s, error: %d', update_url,
+                  response.getcode())
     return False
 
   dom = xml.dom.minidom.parse(response)
   status = dom.getElementsByTagName('app')[0].getAttribute('status')
   if status != 'ok':
-    cros_build_lib.Error('Cannot fetch extension, status: %s', status)
+    logging.error('Cannot fetch extension, status: %s', status)
     return False
 
   node = dom.getElementsByTagName('updatecheck')[0]
@@ -61,8 +61,8 @@ def DownloadCrx(ext, extension, crxdir):
   filename = '%s-%s.crx' % (ext, version)
   response = urllib.urlopen(url)
   if response.getcode() != 200:
-    cros_build_lib.Error('Cannot download extension, URL: %s, error: %d',
-                         url, response.getcode())
+    logging.error('Cannot download extension, URL: %s, error: %d', url,
+                  response.getcode())
     return False
 
   osutils.WriteFile(os.path.join(crxdir, 'extensions', filename),

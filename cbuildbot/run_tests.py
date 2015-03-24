@@ -115,7 +115,7 @@ def RunTest(test, cmd, tmpfile, finished, total):
     with finished.get_lock():
       finished.value += 1
       if result.returncode:
-        func = cros_build_lib.Error
+        func = logging.error
         msg = 'Failed'
       else:
         func = logging.info
@@ -223,7 +223,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
     # Fork each test and add it to the list.
     for test, cmd, tmpfile in testsets:
       if failed and failfast:
-        cros_build_lib.Error('failure detected; stopping new tests')
+        logging.error('failure detected; stopping new tests')
         break
 
       if len(pids) >= jobs:
@@ -242,7 +242,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
         except KeyboardInterrupt:
           pass
         except BaseException:
-          cros_build_lib.Error('%s failed', test, exc_info=True)
+          logging.error('%s failed', test, exc_info=True)
         # We cannot run clean up hooks in the child because it'll break down
         # things like tempdir context managers.
         os._exit(ret)  # pylint: disable=protected-access
@@ -267,13 +267,13 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
     if output:
       failed_tests.append(test)
       print()
-      cros_build_lib.Error('### LOG: %s', test)
+      logging.error('### LOG: %s', test)
       print(output.rstrip())
       print()
 
   if failed_tests:
-    cros_build_lib.Error('The following %i tests failed:\n  %s',
-                         len(failed_tests), '\n  '.join(sorted(failed_tests)))
+    logging.error('The following %i tests failed:\n  %s', len(failed_tests),
+                  '\n  '.join(sorted(failed_tests)))
     return False
   elif aborted or failed:
     return False

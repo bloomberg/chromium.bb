@@ -136,8 +136,8 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
           logging.warning('no symbols found for %s', elf_file)
         else:
           num_errors.value += 1
-          cros_build_lib.Error('dumping symbols for %s failed:\n%s',
-                               elf_file, result.error)
+          logging.error('dumping symbols for %s failed:\n%s', elf_file,
+                        result.error)
         return num_errors.value
 
     # Move the dumped symbol file to the right place:
@@ -260,8 +260,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     files_not_found = [x for x, found in file_filter.iteritems() if not found]
     bg_errors.value += len(files_not_found)
     if files_not_found:
-      cros_build_lib.Error('Failed to find requested files: %s',
-                           files_not_found)
+      logging.error('Failed to find requested files: %s', files_not_found)
 
   # Now start generating symbols for the discovered elfs.
   with parallel.BackgroundTaskRunner(GenerateBreakpadSymbol,
@@ -330,7 +329,7 @@ def main(argv):
                                 exclude_dirs=opts.exclude_dir,
                                 file_list=opts.file_list)
   if ret:
-    cros_build_lib.Error('encountered %i problem(s)', ret)
+    logging.error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
     # return 0 in case we are a multiple of the mask.
     ret = 1

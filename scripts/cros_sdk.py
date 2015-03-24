@@ -16,6 +16,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import locking
 from chromite.lib import namespaces
 from chromite.lib import osutils
@@ -395,7 +396,7 @@ def _ProxySimSetup(options):
     try:
       cros_build_lib.RunCommand(cmd_cleanup, print_cmd=False)
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Error('running %r failed', cmd_cleanup)
+      logging.error('running %r failed', cmd_cleanup)
     raise SystemExit('Running %r failed!' % (cmd,))
   os.write(parent_writefd, SUCCESS_FLAG)
   os.close(parent_writefd)

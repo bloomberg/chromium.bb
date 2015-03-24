@@ -98,9 +98,9 @@ class PatchChangesStage(generic_stages.BuilderStage):
       return changes
 
     for conflict in duplicates:
-      cros_build_lib.Error(
-          "Changes %s conflict with each other- they have same id %s.",
-          ', '.join(map(str, conflict)), conflict[0].id)
+      logging.error(
+          "Changes %s conflict with each other- they have same id %s., "
+          .join(map(str, conflict)), conflict[0].id)
 
     cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
 
@@ -247,8 +247,7 @@ class BootstrapStage(PatchChangesStage):
       # patches to the internal manifest, and this means we may flag a conflict
       # here even if the patch applies cleanly. TODO(davidjames): Fix this.
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Error('Failed applying patches: %s',
-                           '\n'.join(map(str, failures)))
+      logging.error('Failed applying patches: %s\n'.join(map(str, failures)))
     else:
       PatchChangesStage.HandleApplyFailures(self, failures)
 
@@ -1060,8 +1059,7 @@ class PreCQLauncherStage(SyncStage):
               self._build_root, change, 'GENERAL',
               constants.PRE_CQ_CONFIGS_OPTION))
     except ConfigParser.Error:
-      cros_build_lib.Error('%s has malformed config file', change,
-                           exc_info=True)
+      logging.error('%s has malformed config file', change, exc_info=True)
 
     return set(configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS)
 
@@ -1141,8 +1139,7 @@ class PreCQLauncherStage(SyncStage):
       result = triage_lib.GetOptionForChange(
           self._build_root, change, 'GENERAL', 'submit-in-pre-cq')
     except ConfigParser.Error:
-      cros_build_lib.Error('%s has malformed config file', change,
-                           exc_info=True)
+      logging.error('%s has malformed config file', change, exc_info=True)
     return bool(result and result.lower() == 'yes')
 
 

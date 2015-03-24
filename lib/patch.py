@@ -841,9 +841,7 @@ class GitRepoPatch(PatchQuery):
     except cros_build_lib.RunCommandError as error:
       ret = error.result.returncode
       if ret not in (1, 2):
-        cros_build_lib.Error(
-            'Unknown cherry-pick exit code %s; %s',
-            ret, error)
+        logging.error('Unknown cherry-pick exit code %s; %s', ret, error)
         raise ApplyPatchException(
             self, inflight=inflight,
             message=('Unknown exit code %s returned from cherry-pick '
