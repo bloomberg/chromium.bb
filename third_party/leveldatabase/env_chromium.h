@@ -87,17 +87,9 @@ class RetrierProvider {
       MethodID method) const = 0;
 };
 
-class WriteTracker {
- public:
-  virtual void DidCreateNewFile(const std::string& fname) = 0;
-  virtual bool DoesDirNeedSync(const std::string& fname) = 0;
-  virtual void DidSyncDir(const std::string& fname) = 0;
-};
-
 class ChromiumEnv : public leveldb::Env,
                     public UMALogger,
-                    public RetrierProvider,
-                    public WriteTracker {
+                    public RetrierProvider {
  public:
   ChromiumEnv();
 
@@ -136,16 +128,12 @@ class ChromiumEnv : public leveldb::Env,
                                     leveldb::Logger** result);
 
  protected:
-  virtual void DidSyncDir(const std::string& fname);
-
   std::string name_;
   bool make_backup_;
 
  private:
   static const char* FileErrorString(base::File::Error error);
 
-  virtual void DidCreateNewFile(const std::string& fname);
-  virtual bool DoesDirNeedSync(const std::string& fname);
   virtual void RecordErrorAt(MethodID method) const;
   virtual void RecordOSError(MethodID method,
                              base::File::Error error) const;
@@ -169,9 +157,6 @@ class ChromiumEnv : public leveldb::Env,
     leveldb::port::Mutex mu_;
     std::set<std::string> locked_files_;
   };
-
-  std::set<std::string> directories_needing_sync_;
-  base::Lock directory_sync_lock_;
 
   const int kMaxRetryTimeMillis;
   // BGThread() is the body of the background thread

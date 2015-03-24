@@ -216,7 +216,6 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   ChromiumWritableFile(const std::string& fname,
                        base::File* f,
                        const UMALogger* uma_logger,
-                       WriteTracker* tracker,
                        bool make_backup);
   virtual ~ChromiumWritableFile() {}
   leveldb::Status Append(const leveldb::Slice& data) override;
@@ -231,7 +230,6 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   std::string filename_;
   scoped_ptr<base::File> file_;
   const UMALogger* uma_logger_;
-  WriteTracker* tracker_;
   Type file_type_;
   std::string parent_dir_;
   bool make_backup_;
@@ -240,12 +238,10 @@ class ChromiumWritableFile : public leveldb::WritableFile {
 ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
                                            base::File* f,
                                            const UMALogger* uma_logger,
-                                           WriteTracker* tracker,
                                            bool make_backup)
     : filename_(fname),
       file_(f),
       uma_logger_(uma_logger),
-      tracker_(tracker),
       file_type_(kOther),
       make_backup_(make_backup) {
   FilePath path = FilePath::FromUTF8Unsafe(fname);
@@ -253,8 +249,6 @@ ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
     file_type_ = kManifest;
   else if (path.MatchesExtension(table_extension))
     file_type_ = kTable;
-  if (file_type_ != kManifest)
-    tracker_->DidCreateNewFile(filename_);
   parent_dir_ = FilePath::FromUTF8Unsafe(fname).DirName().AsUTF8Unsafe();
 }
 
@@ -277,13 +271,6 @@ Status ChromiumWritableFile::SyncParent() {
 }
 
 Status ChromiumWritableFile::Append(const Slice& data) {
-  if (file_type_ == kManifest && tracker_->DoesDirNeedSync(filename_)) {
-    Status s = SyncParent();
-    if (!s.ok())
-      return s;
-    tracker_->DidSyncDir(filename_);
-  }
-
   int bytes_written = file_->WriteAtCurrentPos(data.data(), data.size());
   if (bytes_written != data.size()) {
     base::File::Error error = LastFileError();
@@ -318,6 +305,12 @@ Status ChromiumWritableFile::Sync() {
 
   if (make_backup_ && file_type_ == kTable)
     uma_logger_->RecordBackupResult(ChromiumEnv::MakeBackup(filename_));
+
+  // leveldb's implicit contract for Sync() is that if this instance is for a
+  // manifest file then the directory is also sync'ed. See leveldb's
+  // env_posix.cc.
+  if (file_type_ == kManifest)
+    return SyncParent();
 
   return Status::OK();
 }
@@ -888,8 +881,7 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
     return MakeIOError(fname, "Unable to create writable file",
                        kNewWritableFile, f->error_details());
   } else {
-    *result =
-        new ChromiumWritableFile(fname, f.release(), this, this, make_backup_);
+    *result = new ChromiumWritableFile(fname, f.release(), this, make_backup_);
     return Status::OK();
   }
 }
@@ -905,8 +897,7 @@ Status ChromiumEnv::NewAppendableFile(const std::string& fname,
     return MakeIOError(fname, "Unable to create appendable file",
                        kNewAppendableFile, f->error_details());
   }
-  *result =
-      new ChromiumWritableFile(fname, f.release(), this, this, make_backup_);
+  *result = new ChromiumWritableFile(fname, f.release(), this, make_backup_);
   return Status::OK();
 }
 
@@ -1069,25 +1060,6 @@ void ChromiumEnv::BGThread() {
 
 void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
   new Thread(function, arg);  // Will self-delete.
-}
-
-static std::string GetDirName(const std::string& filename) {
-  return FilePath::FromUTF8Unsafe(filename).DirName().AsUTF8Unsafe();
-}
-
-void ChromiumEnv::DidCreateNewFile(const std::string& filename) {
-  base::AutoLock auto_lock(directory_sync_lock_);
-  directories_needing_sync_.insert(GetDirName(filename));
-}
-
-bool ChromiumEnv::DoesDirNeedSync(const std::string& filename) {
-  base::AutoLock auto_lock(directory_sync_lock_);
-  return ContainsKey(directories_needing_sync_, GetDirName(filename));
-}
-
-void ChromiumEnv::DidSyncDir(const std::string& filename) {
-  base::AutoLock auto_lock(directory_sync_lock_);
-  directories_needing_sync_.erase(GetDirName(filename));
 }
 
 }  // namespace leveldb_env

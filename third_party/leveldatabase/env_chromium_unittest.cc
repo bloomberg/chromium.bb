@@ -59,22 +59,6 @@ TEST(ErrorEncoding, NoEncodedMessage) {
 }
 
 template <typename T>
-class MyEnv : public T {
- public:
-  MyEnv() : directory_syncs_(0) {}
-  int directory_syncs() { return directory_syncs_; }
-
- protected:
-  virtual void DidSyncDir(const std::string& fname) {
-    ++directory_syncs_;
-    leveldb_env::ChromiumEnv::DidSyncDir(fname);
-  }
-
- private:
-  int directory_syncs_;
-};
-
-template <typename T>
 class ChromiumEnvMultiPlatformTests : public ::testing::Test {
  public:
 };
@@ -82,41 +66,6 @@ class ChromiumEnvMultiPlatformTests : public ::testing::Test {
 typedef ::testing::Types<ChromiumEnv> ChromiumEnvMultiPlatformTestsTypes;
 TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests,
                 ChromiumEnvMultiPlatformTestsTypes);
-
-TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
-  MyEnv<TypeParam> env;
-
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath dir_path = dir.path();
-  std::string some_data = "some data";
-  Slice data = some_data;
-
-  std::string manifest_file_name =
-      dir_path.Append(FILE_PATH_LITERAL("MANIFEST-001")).AsUTF8Unsafe();
-  WritableFile* manifest_file_ptr;
-  Status s = env.NewWritableFile(manifest_file_name, &manifest_file_ptr);
-  EXPECT_TRUE(s.ok());
-  scoped_ptr<WritableFile> manifest_file(manifest_file_ptr);
-  manifest_file->Append(data);
-  EXPECT_EQ(0, env.directory_syncs());
-  manifest_file->Append(data);
-  EXPECT_EQ(0, env.directory_syncs());
-
-  std::string sst_file_name =
-      dir_path.Append(FILE_PATH_LITERAL("000003.sst")).AsUTF8Unsafe();
-  WritableFile* sst_file_ptr;
-  s = env.NewWritableFile(sst_file_name, &sst_file_ptr);
-  EXPECT_TRUE(s.ok());
-  scoped_ptr<WritableFile> sst_file(sst_file_ptr);
-  sst_file->Append(data);
-  EXPECT_EQ(0, env.directory_syncs());
-
-  manifest_file->Append(data);
-  EXPECT_EQ(1, env.directory_syncs());
-  manifest_file->Append(data);
-  EXPECT_EQ(1, env.directory_syncs());
-}
 
 int CountFilesWithExtension(const base::FilePath& dir,
                             const base::FilePath::StringType& extension) {
