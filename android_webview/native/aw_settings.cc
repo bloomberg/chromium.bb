@@ -200,8 +200,13 @@ void AwSettings::UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj) {
 
   bool video_overlay =
       Java_AwSettings_getVideoOverlayForEmbeddedVideoEnabledLocked(env, obj);
-  if (video_overlay != prefs->use_video_overlay_for_embedded_encrypted_video) {
+  bool force_video_overlay =
+      Java_AwSettings_getForceVideoOverlayForTests(env, obj);
+  if (video_overlay !=
+          prefs->use_video_overlay_for_embedded_encrypted_video ||
+      force_video_overlay != prefs->use_view_overlay_for_all_video) {
     prefs->use_video_overlay_for_embedded_encrypted_video = video_overlay;
+    prefs->use_view_overlay_for_all_video = force_video_overlay;
     update_prefs = true;
   }
 

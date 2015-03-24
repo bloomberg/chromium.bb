@@ -20,6 +20,7 @@
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -27,6 +28,7 @@
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -212,9 +214,11 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
-  force_use_overlay_embedded_video_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceUseOverlayEmbeddedVideo);
+  const RendererPreferences& prefs =
+      static_cast<RenderFrameImpl*>(render_frame())
+          ->render_view()
+          ->renderer_preferences();
+  force_use_overlay_embedded_video_ = prefs.use_view_overlay_for_all_video;
   if (force_use_overlay_embedded_video_ ||
     player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
     // Defer stream texture creation until we are sure it's necessary.

@@ -72,8 +72,10 @@ void CastWindowAndroid::Initialize() {
       web_contents_->GetRenderProcessHost()->GetID());
 
   // Enabling hole-punching also requires runtime renderer preference
-  web_contents_->GetMutableRendererPrefs()->
-      use_video_overlay_for_embedded_encrypted_video = true;
+  content::RendererPreferences* prefs =
+      web_contents_->GetMutableRendererPrefs();
+  prefs->use_video_overlay_for_embedded_encrypted_video = true;
+  prefs->use_view_overlay_for_all_video = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 

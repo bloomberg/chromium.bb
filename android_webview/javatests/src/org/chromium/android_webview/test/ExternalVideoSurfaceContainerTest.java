@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.ExternalVideoSurfaceContainer;
 import org.chromium.android_webview.test.util.VideoTestUtil;
-import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
@@ -106,12 +105,10 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
     public void testEnableVideoOverlayForEmbeddedVideo() throws Throwable {
         setUpMockExternalVideoSurfaceContainer();
 
-        CommandLine.getInstance().appendSwitch("force-use-overlay-embedded-video");
-
         int onRequestCallCount = mOnRequestExternalVideoSurface.getCallCount();
         int onPositionChangedCallCount = mOnExternalVideoSurfacePositionChanged.getCallCount();
 
-        assertTrue(VideoTestUtil.runVideoTest(this, false, WAIT_TIMEOUT_MS));
+        assertTrue(VideoTestUtil.runVideoTest(this, false, true, WAIT_TIMEOUT_MS));
 
         mOnRequestExternalVideoSurface.waitForCallback(onRequestCallCount);
         waitForVideoSizeChangeTo(mOnExternalVideoSurfacePositionChanged,
@@ -124,7 +121,7 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
     public void testDisableVideoOverlayForEmbeddedVideo() throws Throwable {
         setUpMockExternalVideoSurfaceContainer();
 
-        assertTrue(VideoTestUtil.runVideoTest(this, false, WAIT_TIMEOUT_MS));
+        assertTrue(VideoTestUtil.runVideoTest(this, false, false, WAIT_TIMEOUT_MS));
 
         assertEquals(0, mOnRequestExternalVideoSurface.getCallCount());
         assertEquals(0, mOnExternalVideoSurfacePositionChanged.getCallCount());

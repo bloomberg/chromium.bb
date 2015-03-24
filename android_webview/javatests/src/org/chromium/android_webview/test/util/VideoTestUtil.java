@@ -21,7 +21,7 @@ public class VideoTestUtil {
      * @throws Throwable throw exception if timeout.
      */
     public static boolean runVideoTest(final AwTestBase testCase, final boolean requiredUserGesture,
-            long waitTime) throws Throwable {
+            final boolean forceVideoOverlay, long waitTime) throws Throwable {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
         TestAwContentsClient client = new TestAwContentsClient();
         final AwContents awContents =
@@ -32,6 +32,7 @@ public class VideoTestUtil {
                 AwSettings awSettings = awContents.getSettings();
                 awSettings.setJavaScriptEnabled(true);
                 awSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
+                awSettings.setForceVideoOverlayForTests(forceVideoOverlay);
                 observer.register(awContents.getContentViewCore(), "javaObserver");
             }
         });

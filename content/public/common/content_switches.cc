@@ -919,10 +919,6 @@ const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";
 
-// Always use the video overlay for the embedded video.
-// This switch is intended only for tests.
-const char kForceUseOverlayEmbeddedVideo[] = "force-use-overlay-embedded-video";
-
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

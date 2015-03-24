@@ -42,8 +42,14 @@ public class MultipleVideosTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testFirstVideoPausesWhenSecondVideoStarts()
             throws Throwable {
-        // To test video hole surfaces we must set force-flag before loading page.
-        VideoSurfaceViewUtils.forceUseVideoHoleSurfaceView();
+        // To test video hole surfaces we must force video overlay before loading page.
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mTestContainerView.getAwContents().getSettings().setForceVideoOverlayForTests(true);
+            }
+        });
+
         loadTestPage();
 
         // Play the first video.

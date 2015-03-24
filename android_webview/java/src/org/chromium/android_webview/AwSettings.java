@@ -93,6 +93,7 @@ public class AwSettings {
     private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
     private int mMixedContentMode = MIXED_CONTENT_NEVER_ALLOW;
     private boolean mVideoOverlayForEmbeddedVideoEnabled = false;
+    private boolean mForceVideoOverlayForTests = false;
     private boolean mOffscreenPreRaster = false;
 
     // Although this bit is stored on AwSettings it is actually controlled via the CookieManager.
@@ -1701,6 +1702,29 @@ public class AwSettings {
     private boolean getVideoOverlayForEmbeddedVideoEnabledLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mVideoOverlayForEmbeddedVideoEnabled;
+    }
+
+    @VisibleForTesting
+    public void setForceVideoOverlayForTests(final boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mForceVideoOverlayForTests != enabled) {
+                mForceVideoOverlayForTests = enabled;
+                mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    @CalledByNative
+    private boolean getForceVideoOverlayForTests() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mForceVideoOverlayForTests;
     }
 
     @CalledByNative

@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 
 import org.chromium.android_webview.ExternalVideoSurfaceContainer.NoPunchingSurfaceView;
 import org.chromium.android_webview.test.AwTestBase;
-import org.chromium.base.CommandLine;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -27,15 +26,6 @@ public class VideoSurfaceViewUtils {
      * the Android system needs to setup a video hole surface.
      */
     private static final long MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED = scaleTimeout(100);
-
-    /**
-     * Force the use of video hole surfaces (see VIDEO_HOLE). If this method is
-     * called video hole surfaces will also be created for clear video and not just for
-     * encrypted video.
-     */
-    public static void forceUseVideoHoleSurfaceView() {
-        CommandLine.getInstance().appendSwitch("force-use-overlay-embedded-video");
-    }
 
     /**
      * Asserts that the given ViewGroup contains exactly one ContentVideoView.

@@ -107,7 +107,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kEnableOverlayFullscreenVideo, ""},
   { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
-  { switches::kForceUseOverlayEmbeddedVideo, ""},
 #endif
   // Always enable HTMLMediaElement logs.
   { switches::kBlinkPlatformLogChannels, "Media"},

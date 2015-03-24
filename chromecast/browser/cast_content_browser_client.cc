@@ -139,9 +139,6 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   if (process_type == switches::kRendererProcess) {
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
-#if defined(OS_ANDROID)
-    command_line->AppendSwitch(switches::kForceUseOverlayEmbeddedVideo);
-#endif  // defined(OS_ANDROID)
 
     if (browser_command_line->HasSwitch(switches::kEnableCmaMediaPipeline))
       command_line->AppendSwitch(switches::kEnableCmaMediaPipeline);
