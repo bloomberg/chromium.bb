@@ -338,10 +338,6 @@ bool PluginObserver::OnMessageReceived(
                         OnBlockedOutdatedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
                         OnNPAPINotSupported)
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
-                        OnFindMissingPlugin)
-#endif
 
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
@@ -389,43 +385,6 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-void PluginObserver::OnFindMissingPlugin(int placeholder_id,
-                                         const std::string& mime_type) {
-  std::string lang = "en-US";  // Oh yes.
-  scoped_ptr<PluginMetadata> plugin_metadata;
-  PluginInstaller* installer = NULL;
-  bool found_plugin = PluginFinder::GetInstance()->FindPlugin(
-      mime_type, lang, &installer, &plugin_metadata);
-  if (!found_plugin) {
-    Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
-    return;
-  }
-  DCHECK(installer);
-  DCHECK(plugin_metadata.get());
-
-  plugin_placeholders_[placeholder_id] =
-      new PluginPlaceholderHost(this, placeholder_id, plugin_metadata->name(),
-                                installer);
-  PluginInstallerInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), installer,
-      plugin_metadata.Pass(),
-      base::Bind(&PluginObserver::InstallMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), installer));
-}
-
-void PluginObserver::InstallMissingPlugin(
-    PluginInstaller* installer,
-    const PluginMetadata* plugin_metadata) {
-  if (plugin_metadata->url_for_display()) {
-    installer->OpenDownloadURL(plugin_metadata->plugin_url(), web_contents());
-  } else {
-    TabModalConfirmDialog::Create(
-        new ConfirmInstallDialogDelegate(
-            web_contents(), installer, plugin_metadata->Clone()),
-        web_contents());
-  }
-}
-
 void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
   std::map<int, PluginPlaceholderHost*>::iterator it =
       plugin_placeholders_.find(placeholder_id);

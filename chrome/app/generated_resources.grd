@@ -7185,9 +7185,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plugin that is not installed.">
         No plugin available to display this content.
       </message>
-      <message name="IDS_PLUGIN_SEARCHING" desc="The placeholder text when searching for a missing plugin.">
-        Looking for plugin...
-      </message>
       <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plugin.">
         Downloading <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>...
       </message>
@@ -12203,18 +12200,6 @@ Chrome ran out of memory.
         </message>
       </if>
 
-      <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
-        <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
-      </message>
-      <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON" desc="Info Bar button to install missing plugin">
-        Install plugin...
-      </message>
-      <message name="IDS_PLUGININSTALLER_PROBLEMSINSTALLING" desc="Infobar text for link to help center">
-        Problems installing?
-      </message>
-      <message name="IDS_PLUGININSTALLER_PROBLEMSUPDATING" desc="Infobar text for link to help center">
-        Problems updating?
-      </message>
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> was blocked because it is out of date.
       </message>

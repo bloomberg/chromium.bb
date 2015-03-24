@@ -55,6 +55,13 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                      PluginInstaller* installer,
                      scoped_ptr<PluginMetadata> metadata);
 
+  // Replaces |infobar|, which must currently be owned, with an infobar asking
+  // the user to update a particular plugin.
+  static void Replace(infobars::InfoBar* infobar,
+                      PluginInstaller* installer,
+                      scoped_ptr<PluginMetadata> plugin_metadata,
+                      const base::string16& message);
+
  private:
   OutdatedPluginInfoBarDelegate(PluginInstaller* installer,
                                 scoped_ptr<PluginMetadata> metadata,
@@ -88,72 +95,6 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   base::string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(OutdatedPluginInfoBarDelegate);
-};
-
-// The main purpose for this class is to popup/close the infobar when there is
-// a missing plugin.
-class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
-                                       public WeakPluginInstallerObserver {
- public:
-  typedef base::Callback<void(const PluginMetadata*)> InstallCallback;
-
-  // Shows an infobar asking whether to install the plugin represented by
-  // |installer|. When the user accepts, |callback| is called.
-  // During installation of the plugin, the infobar will change to reflect the
-  // installation state.
-  static void Create(InfoBarService* infobar_service,
-                     PluginInstaller* installer,
-                     scoped_ptr<PluginMetadata> plugin_metadata,
-                     const InstallCallback& callback);
-
-  // Replaces |infobar|, which must currently be owned, with an infobar asking
-  // the user to install or update a particular plugin.
-  static void Replace(infobars::InfoBar* infobar,
-                      PluginInstaller* installer,
-                      scoped_ptr<PluginMetadata> plugin_metadata,
-                      bool new_install,
-                      const base::string16& message);
-
- private:
-  PluginInstallerInfoBarDelegate(PluginInstaller* installer,
-                                 scoped_ptr<PluginMetadata> metadata,
-                                 const InstallCallback& callback,
-                                 bool new_install,
-                                 const base::string16& message);
-  ~PluginInstallerInfoBarDelegate() override;
-
-  // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
-  base::string16 GetMessageText() const override;
-  int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool Accept() override;
-  base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
-
-  // PluginInstallerObserver:
-  void DownloadStarted() override;
-  void DownloadError(const std::string& message) override;
-  void DownloadCancelled() override;
-  void DownloadFinished() override;
-
-  // WeakPluginInstallerObserver:
-  void OnlyWeakObserversLeft() override;
-
-  // Replaces this infobar with one showing |message|. The new infobar will
-  // not have any buttons (and not call the callback).
-  void ReplaceWithInfoBar(const base::string16& message);
-
-  scoped_ptr<PluginMetadata> plugin_metadata_;
-
-  InstallCallback callback_;
-
-  // True iff the plugin isn't installed yet.
-  bool new_install_;
-
-  base::string16 message_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginInstallerInfoBarDelegate);
 };
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 

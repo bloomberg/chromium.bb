@@ -48,10 +48,6 @@ bool ChromeWebViewPermissionHelperDelegate::OnMessageReceived(
                         OnBlockedUnauthorizedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
                         OnNPAPINotSupported)
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
-                        OnFindMissingPlugin)
-#endif
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -112,12 +108,6 @@ void ChromeWebViewPermissionHelperDelegate::OnOpenAboutPlugins() {
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-void ChromeWebViewPermissionHelperDelegate::OnFindMissingPlugin(
-    int placeholder_id,
-    const std::string& mime_type) {
-  Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
-}
-
 void ChromeWebViewPermissionHelperDelegate::OnRemovePluginPlaceholderHost(
     int placeholder_id) {
 }

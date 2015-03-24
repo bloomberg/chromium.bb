@@ -98,12 +98,8 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
           IDR_BLOCKED_PLUGIN_HTML));
 
   base::DictionaryValue values;
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  values.SetString("message", l10n_util::GetStringUTF8(IDS_PLUGIN_SEARCHING));
-#else
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
-#endif
 
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
@@ -111,12 +107,6 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
   ChromePluginPlaceholder* missing_plugin = new ChromePluginPlaceholder(
       render_frame, frame, params, html_data, params.mimeType);
   missing_plugin->set_allow_loading(true);
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  RenderThread::Get()->Send(
-      new ChromeViewHostMsg_FindMissingPlugin(missing_plugin->routing_id(),
-                                              missing_plugin->CreateRoutingId(),
-                                              params.mimeType.utf8()));
-#endif
   return missing_plugin;
 }
 

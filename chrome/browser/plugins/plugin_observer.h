@@ -50,19 +50,12 @@ class PluginObserver : public content::WebContentsObserver,
 
   class PluginPlaceholderHost;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  void InstallMissingPlugin(PluginInstaller* installer,
-                            const PluginMetadata* plugin_metadata);
-#endif
-
   // Message handlers:
   void OnBlockedUnauthorizedPlugin(const base::string16& name,
                                    const std::string& identifier);
   void OnBlockedOutdatedPlugin(int placeholder_id,
                                const std::string& identifier);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
-
   void OnRemovePluginPlaceholderHost(int placeholder_id);
 #endif
   void OnOpenAboutPlugins();
