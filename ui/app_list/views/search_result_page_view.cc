@@ -192,7 +192,9 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
 }
 
 int SearchResultPageView::GetSearchBoxZHeight() const {
-  return kSearchResultZHeight;
+  return switches::IsExperimentalAppListEnabled()
+             ? kSearchResultZHeight
+             : AppListPage::GetSearchBoxZHeight();
 }
 
 }  // namespace app_list
