@@ -47,4 +47,5 @@ def main(argv):
   filename = binhost.PrebuiltMapping.GetFilename(opts.buildroot, 'chrome')
   pfq_configs.Dump(filename)
   git.AddPath(filename)
-  git.Commit(os.path.dirname(filename), 'Update PFQ config dump')
+  git.Commit(os.path.dirname(filename), 'Update PFQ config dump',
+             allow_empty=True)

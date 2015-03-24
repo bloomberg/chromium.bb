@@ -147,7 +147,10 @@ class GitWrappersTest(cros_build_lib_unittest.RunCommandTestCase):
     self.assertCommandContains(['--amend'], expected=False)
     cid = git.Commit(self.fake_git_dir, 'bar', amend=True)
     self.assertCommandContains(['--amend'])
+    self.assertCommandContains(['--allow-empty'], expected=False)
     self.assertEqual(cid, self.CHANGE_ID)
+    cid = git.Commit(self.fake_git_dir, 'new', allow_empty=True)
+    self.assertCommandContains(['--allow-empty'])
 
   def testUploadCLNormal(self):
     git.UploadCL(self.fake_git_dir, self.PUSH_REMOTE, self.PUSH_BRANCH,

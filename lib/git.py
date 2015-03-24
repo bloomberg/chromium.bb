@@ -1044,13 +1044,14 @@ def RevertPath(git_repo, filename, rev):
   RunGit(git_repo, ['checkout', rev, '--', filename])
 
 
-def Commit(git_repo, message, amend=False):
+def Commit(git_repo, message, amend=False, allow_empty=False):
   """Commit with git.
 
   Args:
     git_repo: Path to the git repository to commit in.
     message: Commit message to use.
     amend: Whether to 'amend' the CL, default False
+    allow_empty: Whether to allow an empty commit. Default False.
 
   Returns:
     The Gerrit Change-ID assigned to the CL if it exists.
@@ -1058,6 +1059,8 @@ def Commit(git_repo, message, amend=False):
   cmd = ['commit', '-m', message]
   if amend:
     cmd.append('--amend')
+  if allow_empty:
+    cmd.append('--allow-empty')
   RunGit(git_repo, cmd)
 
   log = RunGit(git_repo, ['log', '-n', '1', '--format=format:%B']).output
