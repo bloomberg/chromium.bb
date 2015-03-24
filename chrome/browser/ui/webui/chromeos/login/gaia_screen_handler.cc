@@ -332,6 +332,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_SUPERVISED_USER_FEATURE_NAME);
   builder->Add("consumerManagementEnrollmentSigninMessage",
                IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT);
+  builder->Add("backButton", IDS_ACCNAME_BACK);
   builder->Add("closeButton", IDS_CLOSE);
 
   // Strings used by the SAML fatal error dialog.

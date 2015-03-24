@@ -119,6 +119,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'dialogShown', this.onDialogShown_.bind(this));
       this.gaiaAuthHost_.addEventListener(
           'dialogHidden', this.onDialogHidden_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'backButton', this.onBackButton_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
@@ -139,6 +141,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         e.preventDefault();
       });
 
+      $('back-button-item').addEventListener('click', function(e) {
+        $('back-button-item').hidden = true;
+        $('signin-frame').back();
+        e.preventDefault();
+      }.bind(this));
       $('close-button-item').addEventListener('click', function(e) {
         this.cancel();
         e.preventDefault();
@@ -261,6 +268,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       window.requestAnimationFrame(function() {
         chrome.send('loginVisible', ['gaia-loading']);
       });
+      $('back-button-item').disabled = false;
+      $('back-button-item').hidden = true;
       $('close-button-item').disabled = false;
       this.classList.toggle('loading', this.loading);
 
@@ -465,6 +474,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onDialogShown_: function() {
+      $('back-button-item').disabled = true;
       $('close-button-item').disabled = true;
     },
 
@@ -473,7 +483,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onDialogHidden_: function() {
+      $('back-button-item').disabled = false;
       $('close-button-item').disabled = false;
+    },
+
+    /**
+     * Invoked when the auth host emits 'backButton' event.
+     * @private
+     */
+    onBackButton_: function(e) {
+      $('back-button-item').hidden = !e.detail;
     },
 
     /**

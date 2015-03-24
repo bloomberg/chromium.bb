@@ -73,6 +73,28 @@ html[dir=rtl] #close-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_MASKED);
 }
 
+#back-button-item {
+  background: transparent none;
+  background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 18px;
+  left: 14px;
+  position: absolute;
+  top: 14px;
+  width: 18px;
+  z-index: 1;
+}
+
+html[dir=rtl] #close-button-item {
+  left: auto;
+  right: 14px;
+}
+
+#back-button-item:disabled {
+  background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON_MASKED);
+}
+
 .signin-text {
   color: #666;
   margin-top: 20px;

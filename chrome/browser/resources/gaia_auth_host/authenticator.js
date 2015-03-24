@@ -356,8 +356,10 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new Event('dialogShown'));
     } else if (msg.method == 'dialogHidden') {
       this.dispatchEvent(new Event('dialogHidden'));
+    } else if (msg.method == 'backButton') {
+      this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
     } else {
-      console.warning('Unrecognized message from GAIA: ' + msg.method);
+      console.warn('Unrecognized message from GAIA: ' + msg.method);
     }
   };
 
