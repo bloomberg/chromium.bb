@@ -103,6 +103,7 @@ class OzonePlatformDrm : public OzonePlatform {
     ForceInitializationOfPrimaryDisplay(drm_, screen_manager_.get());
     drm_device_manager_.reset(new DrmDeviceManager(drm_));
     display_manager_.reset(new DisplayManager());
+    window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
     surface_factory_ozone_.reset(
         new DrmSurfaceFactory(&window_delegate_manager_));
@@ -114,7 +115,6 @@ class OzonePlatformDrm : public OzonePlatform {
         screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
-    window_manager_.reset(new DrmWindowHostManager());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
@@ -147,9 +147,9 @@ class OzonePlatformDrm : public OzonePlatform {
   // Objects in the "Browser" process.
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<DrmWindowHostManager> window_manager_;
   scoped_ptr<DrmCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-  scoped_ptr<DrmWindowHostManager> window_manager_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
 

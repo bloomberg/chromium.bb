@@ -154,10 +154,10 @@ class OzonePlatformGbm : public OzonePlatform {
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
     device_manager_ = CreateDeviceManager();
+    window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
-    window_manager_.reset(new DrmWindowHostManager());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
@@ -221,10 +221,10 @@ class OzonePlatformGbm : public OzonePlatform {
   base::FilePath primary_graphics_card_path_;
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<DrmWindowHostManager> window_manager_;
   scoped_ptr<DrmCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   scoped_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<DrmWindowHostManager> window_manager_;
   scoped_ptr<DisplayManager> display_manager_;
 
 #if defined(USE_XKBCOMMON)
