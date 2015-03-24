@@ -243,6 +243,7 @@
       'login/screens/screen_context_unittest.cc',
     ],
     'metrics_unittest_sources': [
+      'metrics/call_stack_profile_metrics_provider_unittest.cc',
       'metrics/compression_utils_unittest.cc',
       'metrics/daily_event_unittest.cc',
       'metrics/gpu/gpu_metrics_provider_unittest.cc',

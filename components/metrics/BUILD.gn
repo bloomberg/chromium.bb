@@ -5,6 +5,8 @@
 # GYP version: components/metrics.gypi:metrics
 source_set("metrics") {
   sources = [
+    "call_stack_profile_metrics_provider.cc",
+    "call_stack_profile_metrics_provider.h",
     "clean_exit_beacon.cc",
     "clean_exit_beacon.h",
     "client_info.cc",

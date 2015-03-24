@@ -23,6 +23,8 @@
         'component_metrics_proto',
       ],
       'sources': [
+        'metrics/call_stack_profile_metrics_provider.cc',
+        'metrics/call_stack_profile_metrics_provider.h',
         'metrics/clean_exit_beacon.cc',
         'metrics/clean_exit_beacon.h',
         'metrics/client_info.cc',
@@ -158,6 +160,7 @@
       'target_name': 'component_metrics_proto',
       'type': 'static_library',
       'sources': [
+        'metrics/proto/call_stack_profile.proto',
         'metrics/proto/cast_logs.proto',
         'metrics/proto/chrome_user_metrics_extension.proto',
         'metrics/proto/histogram_event.proto',

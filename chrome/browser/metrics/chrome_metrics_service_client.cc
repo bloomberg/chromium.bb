@@ -32,6 +32,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
@@ -333,6 +334,10 @@ void ChromeMetricsServiceClient::Initialize() {
       new metrics::ProfilerMetricsProvider(cellular_callback_);
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
+
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new metrics::CallStackProfileMetricsProvider));
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(

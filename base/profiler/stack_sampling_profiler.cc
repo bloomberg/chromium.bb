@@ -65,12 +65,21 @@ void PendingProfiles::GetProfiles(
 }  // namespace
 
 StackSamplingProfiler::Module::Module() : base_address(nullptr) {}
+StackSamplingProfiler::Module::Module(const void* base_address,
+                                      const std::string& id,
+                                      const FilePath& filename)
+    : base_address(base_address), id(id), filename(filename) {}
 
 StackSamplingProfiler::Module::~Module() {}
 
 StackSamplingProfiler::Frame::Frame()
     : instruction_pointer(nullptr),
       module_index(-1) {}
+
+StackSamplingProfiler::Frame::Frame(const void* instruction_pointer,
+                                    int module_index)
+    : instruction_pointer(instruction_pointer),
+      module_index(module_index) {}
 
 StackSamplingProfiler::Frame::~Frame() {}
 

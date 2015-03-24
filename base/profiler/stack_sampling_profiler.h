@@ -53,6 +53,8 @@ class BASE_EXPORT StackSamplingProfiler {
   // Module represents the module (DLL or exe) corresponding to a stack frame.
   struct BASE_EXPORT Module {
     Module();
+    Module(const void* base_address, const std::string& id,
+           const FilePath& filename);
     ~Module();
 
     // Points to the base address of the module.
@@ -72,6 +74,7 @@ class BASE_EXPORT StackSamplingProfiler {
   // Frame represents an individual sampled stack frame with module information.
   struct BASE_EXPORT Frame {
     Frame();
+    Frame(const void* instruction_pointer, int module_index);
     ~Frame();
 
     // The sampled instruction pointer within the function.
