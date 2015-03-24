@@ -80,89 +80,68 @@ static TransformOperation::OperationType getTransformOperationType(CSSValueID ty
     }
 }
 
-bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToLengthConversionData& conversionData, TransformOperations& outOperations)
+void TransformBuilder::createTransformOperations(CSSValue& inValue, const CSSToLengthConversionData& conversionData, TransformOperations& outOperations)
 {
-    if (!inValue || !inValue->isValueList()) {
-        outOperations.clear();
-        return false;
+    ASSERT(!outOperations.size());
+    if (!inValue.isValueList()) {
+        ASSERT(inValue.isPrimitiveValue() && toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
+        return;
     }
 
     float zoomFactor = conversionData.zoom();
-    TransformOperations operations;
-    for (auto& value : toCSSValueList(*inValue)) {
+    for (auto& value : toCSSValueList(inValue)) {
         CSSFunctionValue* transformValue = toCSSFunctionValue(value.get());
-        if (!transformValue->length())
-            continue;
-
-        bool haveNonPrimitiveValue = false;
-        for (unsigned j = 0; j < transformValue->length(); ++j) {
-            if (!transformValue->item(j)->isPrimitiveValue()) {
-                haveNonPrimitiveValue = true;
-                break;
-            }
-        }
-        if (haveNonPrimitiveValue)
-            continue;
+        TransformOperation::OperationType transformType = getTransformOperationType(transformValue->functionType());
 
         CSSPrimitiveValue* firstValue = toCSSPrimitiveValue(transformValue->item(0));
 
-        switch (transformValue->functionType()) {
-        case CSSValueScale:
-        case CSSValueScaleX:
-        case CSSValueScaleY: {
+        switch (transformType) {
+        case TransformOperation::Scale:
+        case TransformOperation::ScaleX:
+        case TransformOperation::ScaleY: {
             double sx = 1.0;
             double sy = 1.0;
-            if (transformValue->functionType() == CSSValueScaleY)
+            if (transformType == TransformOperation::ScaleY) {
                 sy = firstValue->getDoubleValue();
-            else {
+            } else {
                 sx = firstValue->getDoubleValue();
-                if (transformValue->functionType() != CSSValueScaleX) {
+                if (transformType != TransformOperation::ScaleX) {
                     if (transformValue->length() > 1) {
                         CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
                         sy = secondValue->getDoubleValue();
-                    } else
+                    } else {
                         sy = sx;
+                    }
                 }
             }
-            operations.operations().append(ScaleTransformOperation::create(sx, sy, 1.0, getTransformOperationType(transformValue->functionType())));
+            outOperations.operations().append(ScaleTransformOperation::create(sx, sy, 1.0, transformType));
             break;
         }
-        case CSSValueScaleZ:
-        case CSSValueScale3d: {
+        case TransformOperation::ScaleZ:
+        case TransformOperation::Scale3D: {
             double sx = 1.0;
             double sy = 1.0;
             double sz = 1.0;
-            if (transformValue->functionType() == CSSValueScaleZ)
+            if (transformType == TransformOperation::ScaleZ) {
                 sz = firstValue->getDoubleValue();
-            else if (transformValue->functionType() == CSSValueScaleY)
-                sy = firstValue->getDoubleValue();
-            else {
+            } else {
                 sx = firstValue->getDoubleValue();
-                if (transformValue->functionType() != CSSValueScaleX) {
-                    if (transformValue->length() > 2) {
-                        CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->item(2));
-                        sz = thirdValue->getDoubleValue();
-                    }
-                    if (transformValue->length() > 1) {
-                        CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
-                        sy = secondValue->getDoubleValue();
-                    } else
-                        sy = sx;
-                }
+                sy = toCSSPrimitiveValue(transformValue->item(1))->getDoubleValue();
+                sz = toCSSPrimitiveValue(transformValue->item(2))->getDoubleValue();
             }
-            operations.operations().append(ScaleTransformOperation::create(sx, sy, sz, getTransformOperationType(transformValue->functionType())));
+            outOperations.operations().append(ScaleTransformOperation::create(sx, sy, sz, transformType));
             break;
         }
-        case CSSValueTranslate:
-        case CSSValueTranslateX:
-        case CSSValueTranslateY: {
+        case TransformOperation::Translate:
+        case TransformOperation::TranslateX:
+        case TransformOperation::TranslateY: {
             Length tx = Length(0, Fixed);
             Length ty = Length(0, Fixed);
-            if (transformValue->functionType() == CSSValueTranslateY)
+            if (transformType == TransformOperation::TranslateY)
                 ty = convertToFloatLength(firstValue, conversionData);
             else {
                 tx = convertToFloatLength(firstValue, conversionData);
-                if (transformValue->functionType() != CSSValueTranslateX) {
+                if (transformType != TransformOperation::TranslateX) {
                     if (transformValue->length() > 1) {
                         CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
                         ty = convertToFloatLength(secondValue, conversionData);
@@ -170,60 +149,36 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                 }
             }
 
-            operations.operations().append(TranslateTransformOperation::create(tx, ty, 0, getTransformOperationType(transformValue->functionType())));
+            outOperations.operations().append(TranslateTransformOperation::create(tx, ty, 0, transformType));
             break;
         }
-        case CSSValueTranslateZ:
-        case CSSValueTranslate3d: {
+        case TransformOperation::TranslateZ:
+        case TransformOperation::Translate3D: {
             Length tx = Length(0, Fixed);
             Length ty = Length(0, Fixed);
             double tz = 0;
-            if (transformValue->functionType() == CSSValueTranslateZ)
+            if (transformType == TransformOperation::TranslateZ) {
                 tz = firstValue->computeLength<double>(conversionData);
-            else if (transformValue->functionType() == CSSValueTranslateY)
-                ty = convertToFloatLength(firstValue, conversionData);
-            else {
+            } else {
                 tx = convertToFloatLength(firstValue, conversionData);
-                if (transformValue->functionType() != CSSValueTranslateX) {
-                    if (transformValue->length() > 2) {
-                        CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->item(2));
-                        tz = thirdValue->computeLength<double>(conversionData);
-                    }
-                    if (transformValue->length() > 1) {
-                        CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
-                        ty = convertToFloatLength(secondValue, conversionData);
-                    }
-                }
+                ty = convertToFloatLength(toCSSPrimitiveValue(transformValue->item(1)), conversionData);
+                tz = toCSSPrimitiveValue(transformValue->item(2))->computeLength<double>(conversionData);
             }
 
-            operations.operations().append(TranslateTransformOperation::create(tx, ty, tz, getTransformOperationType(transformValue->functionType())));
+            outOperations.operations().append(TranslateTransformOperation::create(tx, ty, tz, transformType));
             break;
         }
-        case CSSValueRotate: {
+        case TransformOperation::RotateX:
+        case TransformOperation::RotateY:
+        case TransformOperation::RotateZ: {
             double angle = firstValue->computeDegrees();
-            operations.operations().append(RotateTransformOperation::create(0, 0, 1, angle, getTransformOperationType(transformValue->functionType())));
+            double x = transformType == TransformOperation::RotateX;
+            double y = transformType == TransformOperation::RotateY;
+            double z = transformType == TransformOperation::RotateZ;
+            outOperations.operations().append(RotateTransformOperation::create(x, y, z, angle, transformType));
             break;
         }
-        case CSSValueRotateX:
-        case CSSValueRotateY:
-        case CSSValueRotateZ: {
-            double x = 0;
-            double y = 0;
-            double z = 0;
-            double angle = firstValue->computeDegrees();
-
-            if (transformValue->functionType() == CSSValueRotateX)
-                x = 1;
-            else if (transformValue->functionType() == CSSValueRotateY)
-                y = 1;
-            else
-                z = 1;
-            operations.operations().append(RotateTransformOperation::create(x, y, z, angle, getTransformOperationType(transformValue->functionType())));
-            break;
-        }
-        case CSSValueRotate3d: {
-            if (transformValue->length() < 4)
-                break;
+        case TransformOperation::Rotate3D: {
             CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
             CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->item(2));
             CSSPrimitiveValue* fourthValue = toCSSPrimitiveValue(transformValue->item(3));
@@ -231,44 +186,40 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
             double y = secondValue->getDoubleValue();
             double z = thirdValue->getDoubleValue();
             double angle = fourthValue->computeDegrees();
-            operations.operations().append(RotateTransformOperation::create(x, y, z, angle, getTransformOperationType(transformValue->functionType())));
+            outOperations.operations().append(RotateTransformOperation::create(x, y, z, angle, transformType));
             break;
         }
-        case CSSValueSkew:
-        case CSSValueSkewX:
-        case CSSValueSkewY: {
+        case TransformOperation::Skew:
+        case TransformOperation::SkewX:
+        case TransformOperation::SkewY: {
             double angleX = 0;
             double angleY = 0;
             double angle = firstValue->computeDegrees();
-            if (transformValue->functionType() == CSSValueSkewY)
+            if (transformType == TransformOperation::SkewY)
                 angleY = angle;
             else {
                 angleX = angle;
-                if (transformValue->functionType() == CSSValueSkew) {
+                if (transformType == TransformOperation::Skew) {
                     if (transformValue->length() > 1) {
                         CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
                         angleY = secondValue->computeDegrees();
                     }
                 }
             }
-            operations.operations().append(SkewTransformOperation::create(angleX, angleY, getTransformOperationType(transformValue->functionType())));
+            outOperations.operations().append(SkewTransformOperation::create(angleX, angleY, transformType));
             break;
         }
-        case CSSValueMatrix: {
-            if (transformValue->length() < 6)
-                break;
+        case TransformOperation::Matrix: {
             double a = firstValue->getDoubleValue();
             double b = toCSSPrimitiveValue(transformValue->item(1))->getDoubleValue();
             double c = toCSSPrimitiveValue(transformValue->item(2))->getDoubleValue();
             double d = toCSSPrimitiveValue(transformValue->item(3))->getDoubleValue();
             double e = zoomFactor * toCSSPrimitiveValue(transformValue->item(4))->getDoubleValue();
             double f = zoomFactor * toCSSPrimitiveValue(transformValue->item(5))->getDoubleValue();
-            operations.operations().append(MatrixTransformOperation::create(a, b, c, d, e, f));
+            outOperations.operations().append(MatrixTransformOperation::create(a, b, c, d, e, f));
             break;
         }
-        case CSSValueMatrix3d: {
-            if (transformValue->length() < 16)
-                break;
+        case TransformOperation::Matrix3D: {
             TransformationMatrix matrix(toCSSPrimitiveValue(transformValue->item(0))->getDoubleValue(),
                 toCSSPrimitiveValue(transformValue->item(1))->getDoubleValue(),
                 toCSSPrimitiveValue(transformValue->item(2))->getDoubleValue(),
@@ -285,22 +236,18 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                 zoomFactor * toCSSPrimitiveValue(transformValue->item(13))->getDoubleValue(),
                 toCSSPrimitiveValue(transformValue->item(14))->getDoubleValue(),
                 toCSSPrimitiveValue(transformValue->item(15))->getDoubleValue());
-            operations.operations().append(Matrix3DTransformOperation::create(matrix));
+            outOperations.operations().append(Matrix3DTransformOperation::create(matrix));
             break;
         }
-        case CSSValuePerspective: {
+        case TransformOperation::Perspective: {
             double p;
             if (firstValue->isLength())
                 p = firstValue->computeLength<double>(conversionData);
-            else {
-                // This is a quirk that should go away when 3d transforms are finalized.
-                double val = firstValue->getDoubleValue();
-                if (val < 0)
-                    return false;
-                p = clampTo<int>(val, 0);
-            }
+            else
+                p = firstValue->getDoubleValue();
+            ASSERT(p >= 0);
 
-            operations.operations().append(PerspectiveTransformOperation::create(p));
+            outOperations.operations().append(PerspectiveTransformOperation::create(p));
             break;
         }
         default:
@@ -308,9 +255,6 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
             break;
         }
     }
-
-    outOperations = operations;
-    return true;
 }
 
 } // namespace blink

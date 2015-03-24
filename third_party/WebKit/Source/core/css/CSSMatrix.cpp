@@ -77,10 +77,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
 
         DEFINE_STATIC_REF(LayoutStyle, initialStyle, createInitialStyle());
         TransformOperations operations;
-        if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(initialStyle, initialStyle, nullptr, 1.0f), operations)) {
-            exceptionState.throwDOMException(SyntaxError, "Failed to interpret '" + string + "' as a transformation operation.");
-            return;
-        }
+        TransformBuilder::createTransformOperations(*value, CSSToLengthConversionData(initialStyle, initialStyle, nullptr, 1.0f), operations);
 
         // Convert transform operations to a TransformationMatrix. This can fail
         // if a param has a percentage ('%')

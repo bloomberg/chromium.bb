@@ -529,8 +529,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
 
 void StyleBuilderFunctions::applyValueCSSPropertyTransform(StyleResolverState& state, CSSValue* value)
 {
+    // FIXME: We should just make this a converter
     TransformOperations operations;
-    TransformBuilder::createTransformOperations(value, state.cssToLengthConversionData(), operations);
+    TransformBuilder::createTransformOperations(*value, state.cssToLengthConversionData(), operations);
     state.style()->setTransform(operations);
 }
 
