@@ -1106,9 +1106,6 @@ crbug.com/467477 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-co
 crbug.com/453794 virtual/slimmingpaint/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
 crbug.com/453794 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
 
-# so we can land a skia fix and then rebaseline (reed)
-crbug.com/470123 svg/css/text-gradient-shadow.svg [ NeedsRebaseline ]
-
 # virtual/slimmingpaint/fast/multicol runs with region based columns, and therefore needs to
 # duplicate all expectations that virtual/regionbasedmulticol/fast/multicol has:
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/border-padding-pagination.html [ Skip ]
