@@ -53,6 +53,8 @@ typedef intptr_t EGLNativeWindowType;
 #define EGL_PLATFORM_X11_KHR 0x31D5
 #endif
 
+#define NO_EGL_PLATFORM 0
+
 enum gl_renderer_border_side {
 	GL_RENDERER_BORDER_TOP = 0,
 	GL_RENDERER_BORDER_LEFT = 1,
@@ -63,9 +65,6 @@ enum gl_renderer_border_side {
 struct gl_renderer_interface {
 	const EGLint *opaque_attribs;
 	const EGLint *alpha_attribs;
-
-	int (*supports)(struct weston_compositor *ec,
-			const char *extension_suffix);
 
 	int (*create)(struct weston_compositor *ec,
 		      EGLenum platform,

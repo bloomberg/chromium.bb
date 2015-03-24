@@ -2240,6 +2240,21 @@ gl_renderer_supports(struct weston_compositor *ec,
 	return -1;
 }
 
+static const char *
+platform_to_extension(EGLenum platform)
+{
+	switch (platform) {
+	case EGL_PLATFORM_GBM_KHR:
+		return "gbm";
+	case EGL_PLATFORM_WAYLAND_KHR:
+		return "wayland";
+	case EGL_PLATFORM_X11_KHR:
+		return "x11";
+	default:
+		assert(0 && "bad EGL platform enum");
+	}
+}
+
 static int
 gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	void *native_window, const EGLint *attribs,
@@ -2247,6 +2262,14 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 {
 	struct gl_renderer *gr;
 	EGLint major, minor;
+	int supports = 0;
+
+	if (platform) {
+		supports = gl_renderer_supports(
+			ec, platform_to_extension(platform));
+		if (supports < 0)
+			return -1;
+	}
 
 	gr = zalloc(sizeof *gr);
 	if (gr == NULL)
@@ -2261,26 +2284,34 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	gr->base.surface_get_content_size =
 		gl_renderer_surface_get_content_size;
 	gr->base.surface_copy_content = gl_renderer_surface_copy_content;
+	gr->egl_display = NULL;
 
 #ifdef EGL_EXT_platform_base
-	if (!get_platform_display) {
-		get_platform_display =
-			(void *) eglGetProcAddress("eglGetPlatformDisplayEXT");
-	}
+	/* the platform extension is supported */
+	if (supports) {
+		if (!get_platform_display) {
+			get_platform_display = (void *) eglGetProcAddress(
+					"eglGetPlatformDisplayEXT");
+		}
 
-	if (get_platform_display && platform) {
-		gr->egl_display =
-			get_platform_display(platform, native_window,
-					     NULL);
-	} else {
+		/* also wrap this in the supports check because
+		 * eglGetProcAddress can return non-NULL and still not
+		 * support the feature at runtime, so ensure the
+		 * appropriate extension checks have been done. */
+		if (get_platform_display && platform) {
+			gr->egl_display = get_platform_display(platform,
+							       native_window,
+							       NULL);
+		}
+	}
 #endif
+
+	if (!gr->egl_display) {
 		weston_log("warning: either no EGL_EXT_platform_base "
 			   "support or specific platform support; "
 			   "falling back to eglGetDisplay.\n");
 		gr->egl_display = eglGetDisplay(native_window);
-#ifdef EGL_EXT_platform_base
 	}
-#endif
 
 	if (gr->egl_display == EGL_NO_DISPLAY) {
 		weston_log("failed to create display\n");
@@ -2493,7 +2524,6 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 	.opaque_attribs = gl_renderer_opaque_attribs,
 	.alpha_attribs = gl_renderer_alpha_attribs,
 
-	.supports = gl_renderer_supports,
 	.create = gl_renderer_create,
 	.display = gl_renderer_display,
 	.output_create = gl_renderer_output_create,

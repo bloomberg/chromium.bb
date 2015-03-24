@@ -1962,12 +1962,7 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 	}
 
 	if (!c->use_pixman) {
-		if (gl_renderer->supports(&c->base, "wayland") < 0) {
-			weston_log("No support for "
-			           "EGL_{KHR,EXT,MESA}_platform_wayland; "
-			           "falling back to pixman.\n");
-			c->use_pixman = 1;
-		} else if (gl_renderer->create(&c->base,
+		if (gl_renderer->create(&c->base,
 					       EGL_PLATFORM_WAYLAND_KHR,
 					       c->parent.wl_display,
 					       gl_renderer->alpha_attribs,

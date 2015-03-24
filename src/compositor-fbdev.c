@@ -868,7 +868,8 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 			goto out_launcher;
 		}
 
-		if (gl_renderer->create(&compositor->base, 0, EGL_DEFAULT_DISPLAY,
+		if (gl_renderer->create(&compositor->base, NO_EGL_PLATFORM,
+					EGL_DEFAULT_DISPLAY,
 					gl_renderer->opaque_attribs,
 					NULL) < 0) {
 			weston_log("gl_renderer_create failed.\n");

@@ -1396,10 +1396,6 @@ drm_compositor_create_gl_renderer(struct drm_compositor *ec)
 {
 	EGLint format;
 
-	if (gl_renderer->supports(&ec->base, "gbm") < 0) {
-		return -1;
-	}
-
 	format = ec->format;
 	if (gl_renderer->create(&ec->base, EGL_PLATFORM_GBM_KHR, (void *) ec->gbm,
 			       gl_renderer->opaque_attribs, &format) < 0) {
