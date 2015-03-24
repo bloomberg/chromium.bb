@@ -86,6 +86,14 @@ void PresentationController::didStartDefaultSession(WebPresentationSessionClient
     m_presentation->didStartDefaultSession(session);
 }
 
+void PresentationController::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState state)
+{
+    if (m_presentation)
+        m_presentation->didChangeSessionState(sessionClient, state);
+    else
+        PresentationSession::dispose(sessionClient);
+}
+
 void PresentationController::startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)
 {
     if (!m_client) {

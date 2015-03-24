@@ -17,6 +17,7 @@
 #include "modules/presentation/DefaultSessionStartEvent.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationSessionClientCallbacks.h"
+#include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 
 namespace blink {
 
@@ -151,6 +152,15 @@ void Presentation::didStartDefaultSession(PresentationSession* session)
     dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::defaultsessionstart, session));
 }
 
+void Presentation::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState sessionState)
+{
+    PresentationSession* session = findSession(sessionClient);
+    if (session)
+        session->didChangeState(sessionState);
+
+    PresentationSession::dispose(sessionClient);
+}
+
 void Presentation::registerSession(PresentationSession* session)
 {
     m_openSessions.add(session);
@@ -161,6 +171,15 @@ PresentationController* Presentation::presentationController()
     if (!frame())
         return nullptr;
     return PresentationController::from(*frame());
+}
+
+PresentationSession* Presentation::findSession(WebPresentationSessionClient* sessionClient)
+{
+    for (const auto& session : m_openSessions) {
+        if (session->matches(sessionClient))
+            return session.get();
+    }
+    return nullptr;
 }
 
 } // namespace blink

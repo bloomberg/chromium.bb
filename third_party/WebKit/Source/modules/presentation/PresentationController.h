@@ -16,6 +16,7 @@ namespace blink {
 
 class LocalFrame;
 class WebPresentationSessionClient;
+enum class WebPresentationSessionState;
 
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
@@ -43,6 +44,7 @@ public:
     virtual void didChangeAvailability(bool available) override;
     virtual bool isAvailableChangeWatched() const override;
     virtual void didStartDefaultSession(WebPresentationSessionClient*) override;
+    virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
 
     // Called when the first listener was added to or the last listener was removed from the
     // |availablechange| event.

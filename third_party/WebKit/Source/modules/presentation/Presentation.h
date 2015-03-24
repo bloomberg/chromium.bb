@@ -21,6 +21,8 @@ namespace blink {
 class LocalFrame;
 class PresentationController;
 class ScriptState;
+class WebPresentationSessionClient;
+enum class WebPresentationSessionState;
 
 // Implements the main entry point of the Presentation API corresponding to the Presentation.idl
 // See https://w3c.github.io/presentation-api/#navigatorpresentation for details.
@@ -62,6 +64,9 @@ public:
     // Called when the |defaultsessionstart| event needs to be fired.
     void didStartDefaultSession(PresentationSession*);
 
+    // Called when the |onstatechange| event needs to be fired to the right session.
+    void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState);
+
     // Adds a session to the open sessions list.
     void registerSession(PresentationSession*);
 
@@ -71,6 +76,9 @@ private:
     // Returns the |PresentationController| object associated with the frame |Presentation| corresponds to.
     // Can return |nullptr| if the frame is detached from the document.
     PresentationController* presentationController();
+
+    // Returns the session that matches the WebPresentationSessionClient or null.
+    PresentationSession* findSession(WebPresentationSessionClient*);
 
     // The session object provided to the presentation page. Not supported.
     Member<PresentationSession> m_session;

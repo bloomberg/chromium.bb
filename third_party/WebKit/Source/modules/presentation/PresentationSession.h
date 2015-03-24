@@ -7,15 +7,17 @@
 
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "wtf/text/AtomicString.h"
+#include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 #include "wtf/text/WTFString.h"
+
+namespace WTF {
+class AtomicString;
+} // namespace WTF
 
 namespace blink {
 
 class Presentation;
 class PresentationController;
-class WebPresentationSessionClient;
-class WebString;
 
 class PresentationSession final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>
@@ -34,8 +36,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    const String& id() const { return m_id; }
-    const AtomicString& state() const { return m_state; }
+    const String id() const { return m_id; }
+    const WTF::AtomicString& state() const;
 
     void postMessage(const String& message);
     void close();
@@ -43,8 +45,14 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
+    // Returns true if and only if the WebPresentationSessionClient represents this session.
+    bool matches(WebPresentationSessionClient*) const;
+
+    // Notifies the session about its state change.
+    void didChangeState(WebPresentationSessionState);
+
 private:
-    PresentationSession(LocalFrame*, const WebString& id, const WebString& url);
+    PresentationSession(LocalFrame*, const String& id, const String& url);
 
     // Returns the |PresentationController| object associated with the frame
     // |Presentation| corresponds to. Can return |nullptr| if the frame is
@@ -53,7 +61,7 @@ private:
 
     String m_id;
     String m_url;
-    AtomicString m_state;
+    WebPresentationSessionState m_state;
 };
 
 } // namespace blink

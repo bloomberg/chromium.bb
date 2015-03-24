@@ -8,6 +8,7 @@
 namespace blink {
 
 class WebPresentationSessionClient;
+enum class WebPresentationSessionState;
 
 // The delegate Blink provides to WebPresentationClient in order to get updates.
 class WebPresentationController {
@@ -24,6 +25,9 @@ public:
     // Called when the presentation session is started by the embedder using
     // the default presentation URL and id.
     virtual void didStartDefaultSession(WebPresentationSessionClient*) = 0;
+
+    // Called when the state of a session changes.
+    virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) = 0;
 };
 
 } // namespace blink

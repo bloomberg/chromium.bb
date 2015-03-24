@@ -9,6 +9,11 @@
 
 namespace blink {
 
+enum class WebPresentationSessionState {
+    Connected = 0,
+    Disconnected,
+};
+
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationSessionClient {
 public:
