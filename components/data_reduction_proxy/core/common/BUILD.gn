@@ -7,6 +7,8 @@ import("//chrome/version.gni")
 static_library("common") {
   sources = [
     "data_reduction_proxy_bypass_type_list.h",
+    "data_reduction_proxy_client_config_parser.cc",
+    "data_reduction_proxy_client_config_parser.h",
     "data_reduction_proxy_config_values.h",
     "data_reduction_proxy_event_store.cc",
     "data_reduction_proxy_event_store.h",
@@ -25,6 +27,7 @@ static_library("common") {
   ]
   deps = [
     "//base",
+    "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
     "//net",
     "//url",
   ]
@@ -54,6 +57,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "data_reduction_proxy_client_config_parser_unittest.cc",
     "data_reduction_proxy_event_store_unittest.cc",
     "data_reduction_proxy_headers_unittest.cc",
     "data_reduction_proxy_params_unittest.cc",
@@ -64,6 +68,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
     "//net:test_support",
     "//testing/gtest",
   ]

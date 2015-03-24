@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 namespace base {
+class DictionaryValue;
 class TimeDelta;
 }
 
@@ -130,6 +131,10 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
   void EnableQuic(bool enable);
+
+  // Populates |response| with the Data Reduction Proxy server configuration.
+  // Virtual for mocking.
+  virtual void PopulateConfigResponse(base::DictionaryValue* response) const;
 
   // Overrides of |DataReductionProxyConfigValues|
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
