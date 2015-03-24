@@ -25,8 +25,8 @@ def ImportModule(target):
     module = chromite.lib.cros_build_lib
 
   Args:
-    target: A name like you'd use with the "import" statement (ignoring the "from" part).
-      May also be an iterable of the path components.
+    target: A name like you'd use with the "import" statement (ignoring the
+      "from" part). May also be an iterable of the path components.
 
   Returns:
     A reference to the module.

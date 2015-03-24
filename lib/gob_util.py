@@ -195,7 +195,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     if response.status >= 400:
       # The 'X-ErrorId' header is set only on >= 400 response code.
       logging.warn('%s\n%s\nX-ErrorId: %s', err_prefix, msg,
-                  response.getheader('X-ErrorId'))
+                   response.getheader('X-ErrorId'))
     else:
       logging.warn('%s\n%s', err_prefix, msg)
 
