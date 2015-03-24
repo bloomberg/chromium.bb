@@ -1165,6 +1165,7 @@ crbug.com/469190 [ XP ] virtual/slimmingpaint/svg/text/text-ws-02-t.svg [ NeedsR
 crbug.com/469190 [ XP ] virtual/threaded/printing/iframe-print.html [ NeedsRebaseline ]
 crbug.com/469190 [ XP Release ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
 crbug.com/469190 [ XP Release ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure Failure ]
+crbug.com/469190 [ XP Release ] svg/as-background-image/svg-as-background-4.html [ Pass ImageOnlyFailure Failure ]
 
 # TODO(enne): rebaseline these and leave them as flaky timeouts
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout NeedsManualRebaseline ]
