@@ -227,7 +227,12 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
   }
   base::string16 error16 = base::UTF8ToUTF16(error);
   base::string16 message16 = base::UTF8ToUTF16(message);
-  for (blink::WebMIDIAccessorClient* client : clients_waiting_session_queue_) {
+
+  // A for-loop using iterators does not work because |client| may touch
+  // |clients_waiting_session_queue_| in callbacks.
+  while (!clients_waiting_session_queue_.empty()) {
+    auto client = clients_waiting_session_queue_.back();
+    clients_waiting_session_queue_.pop_back();
     if (result == media::MIDI_OK) {
       // Add the client's input and output ports.
       for (const auto& info : inputs_) {
@@ -251,7 +256,6 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
     client->didStartSession(result == media::MIDI_OK, error16, message16);
     clients_.insert(client);
   }
-  clients_waiting_session_queue_.clear();
 }
 
 void MidiMessageFilter::HandleAddInputPort(media::MidiPortInfo info) {
@@ -287,7 +291,7 @@ void MidiMessageFilter::HandleDataReceived(uint32 port,
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   DCHECK(!data.empty());
 
-  for (blink::WebMIDIAccessorClient* client : clients_)
+  for (auto client : clients_)
     client->didReceiveMIDIData(port, &data[0], data.size(), timestamp);
 }
 

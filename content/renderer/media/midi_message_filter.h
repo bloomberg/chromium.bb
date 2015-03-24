@@ -126,11 +126,15 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
    * Notice: Following members are designed to be accessed only on
    * |main_message_loop_|.
    */
-  // Keeps track of all MIDI clients.
+  // Keeps track of all MIDI clients. This should be std::set so that various
+  // for-loops work correctly. To change the type, make sure that the new type
+  // is safe to modify the container inside for-loops.
   typedef std::set<blink::WebMIDIAccessorClient*> ClientsSet;
   ClientsSet clients_;
 
   // Represents clients that are waiting for a session being open.
+  // Note: std::vector is not safe to invoke callbacks inside iterator based
+  // for-loops.
   typedef std::vector<blink::WebMIDIAccessorClient*> ClientsQueue;
   ClientsQueue clients_waiting_session_queue_;
 
