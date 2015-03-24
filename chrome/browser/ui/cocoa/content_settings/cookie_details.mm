@@ -147,13 +147,8 @@
     created_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(cookie->CreationDate())) retain]);
 
-    if (cookie->IsSecure()) {
-      sendFor_.reset([l10n_util::GetNSStringWithFixup(
-          IDS_COOKIES_COOKIE_SENDFOR_SECURE) retain]);
-    } else {
-      sendFor_.reset([l10n_util::GetNSStringWithFixup(
-          IDS_COOKIES_COOKIE_SENDFOR_ANY) retain]);
-    }
+    sendFor_.reset([l10n_util::GetNSStringWithFixup(
+        CookiesTreeModel::GetSendForMessageID(*cookie)) retain]);
   }
   return self;
 }

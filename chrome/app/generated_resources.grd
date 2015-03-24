@@ -11508,6 +11508,12 @@ Chrome ran out of memory.
       <message name="IDS_COOKIES_COOKIE_SENDFOR_SECURE" desc="Send Cookie for any kind of connection">
         Secure connections only
       </message>
+      <message name="IDS_COOKIES_COOKIE_SENDFOR_FIRSTPARTY" desc="Send Cookie for any first-party connection">
+        First-party connections only
+      </message>
+      <message name="IDS_COOKIES_COOKIE_SENDFOR_SECURE_FIRSTPARTY" desc="Send Cookie for secure, first-party connections">
+        Secure first-party connections only
+      </message>
       <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_YES" desc="Accessible to Script">
         Yes
       </message>

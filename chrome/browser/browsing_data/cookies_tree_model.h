@@ -636,6 +636,10 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
                    bool group_by_cookie_source);
   ~CookiesTreeModel() override;
 
+  // Given a CanonicalCookie, return the ID of the message which should be
+  // displayed in various ports' "Send for:" UI.
+  static int GetSendForMessageID(const net::CanonicalCookie& cookie);
+
   // Because non-cookie nodes are fetched in a background thread, they are not
   // present at the time the Model is created. The Model then notifies its
   // observers for every item added from databases, local storage, and

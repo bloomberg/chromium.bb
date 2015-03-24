@@ -953,6 +953,18 @@ CookiesTreeModel::CookiesTreeModel(
 CookiesTreeModel::~CookiesTreeModel() {
 }
 
+// static
+int CookiesTreeModel::GetSendForMessageID(const net::CanonicalCookie& cookie) {
+  if (cookie.IsSecure()) {
+    if (cookie.IsFirstPartyOnly())
+      return IDS_COOKIES_COOKIE_SENDFOR_SECURE_FIRSTPARTY;
+    return IDS_COOKIES_COOKIE_SENDFOR_SECURE;
+  }
+  if (cookie.IsFirstPartyOnly())
+    return IDS_COOKIES_COOKIE_SENDFOR_FIRSTPARTY;
+  return IDS_COOKIES_COOKIE_SENDFOR_ANY;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesTreeModel, TreeModel methods (public):
 

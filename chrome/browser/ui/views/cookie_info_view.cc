@@ -63,9 +63,8 @@ void CookieInfoView::SetCookie(const std::string& domain,
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
 
   expires_value_field_->SetText(expire_text);
-  send_for_value_field_->SetText(cookie.IsSecure() ?
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_SENDFOR_SECURE) :
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_SENDFOR_ANY));
+  send_for_value_field_->SetText(
+      l10n_util::GetStringUTF16(CookiesTreeModel::GetSendForMessageID(cookie)));
   EnableCookieDisplay(true);
   Layout();
 }
