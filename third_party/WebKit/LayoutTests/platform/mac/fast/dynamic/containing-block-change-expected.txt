@@ -22,7 +22,7 @@ layer at (8,60) size 6x6
       LayoutTableRow {TR} at (0,2) size 6x2
         LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
 layer at (11,63) size 43x36
-  LayoutBlockFlow (positioned) {DIV} at (3,3) size 42.64x36
+  LayoutBlockFlow (positioned) {DIV} at (3,3) size 42.66x36
     LayoutText {#text} at (0,0) size 43x36
       text run at (0,0) width 43: "Lorem"
       text run at (0,18) width 40: "ipsum"

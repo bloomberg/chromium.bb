@@ -21,7 +21,7 @@ layer at (0,0) size 800x166
         LayoutBR {BR} at (31,1) size 1x17
         LayoutText {#text} at (1,19) size 75x17
           text run at (1,19) width 75: "width:50%;"
-      LayoutBlockFlow (floating) {DIV} at (0,102) size 113.09x56 [border: (1px solid #FF0000)]
+      LayoutBlockFlow (floating) {DIV} at (0,102) size 113.11x56 [border: (1px solid #FF0000)]
         LayoutText {#text} at (1,1) size 112x17
           text run at (1,1) width 112: "BOTTOM-LEFT"
         LayoutBR {BR} at (112,1) size 1x17

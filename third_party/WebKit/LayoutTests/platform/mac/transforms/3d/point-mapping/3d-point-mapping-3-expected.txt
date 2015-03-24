@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (30,500) size 347x72
-  LayoutBlockFlow (positioned) {DIV} at (30,500) size 346.59x72
+  LayoutBlockFlow (positioned) {DIV} at (30,500) size 346.61x72
     LayoutInline {SPAN} at (0,0) size 307x18 [color=#008000]
       LayoutText {#text} at (0,0) size 307x18
         text run at (0,0) width 307: "PASS: event at (158, 83) hit card at offset (2, 2)"

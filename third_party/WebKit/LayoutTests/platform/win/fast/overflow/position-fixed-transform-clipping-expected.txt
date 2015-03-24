@@ -4,7 +4,7 @@ layer at (0,0) size 785x2000 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x2000
     LayoutBlockFlow {BODY} at (0,0) size 785x2000
 layer at (0,116) size 310x36
-  LayoutBlockFlow (positioned) {P} at (0,116) size 309.89x36
+  LayoutBlockFlow (positioned) {P} at (0,116) size 309.91x36
     LayoutInline {A} at (0,0) size 310x17 [color=#0000EE]
       LayoutText {#text} at (0,0) size 310x17
         text run at (0,0) width 310: "https://bugs.webkit.org/show_bug.cgi?id=29346"

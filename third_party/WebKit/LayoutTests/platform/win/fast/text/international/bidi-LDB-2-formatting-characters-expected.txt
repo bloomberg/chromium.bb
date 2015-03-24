@@ -36,15 +36,15 @@ layer at (0,0) size 800x578
         LayoutText {#text} at (0,0) size 287x17
           text run at (0,0) width 287: "In each box, all the lines should be the same."
       LayoutBlockFlow (anonymous) at (0,160.44) size 784x226
-        LayoutBlockFlow {DIV} at (3,3) size 99.56x170 [border: (1px solid #008000)]
-          LayoutBlockFlow {P} at (4,4) size 91.56x18
+        LayoutBlockFlow {DIV} at (3,3) size 99.58x170 [border: (1px solid #008000)]
+          LayoutBlockFlow {P} at (4,4) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 92: "ABCDEFGHI"
-          LayoutBlockFlow {P} at (4,22) size 91.56x18
+          LayoutBlockFlow {P} at (4,22) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 92: "\x{202B}ABCDEFGHI"
-          LayoutBlockFlow {P} at (4,40) size 91.56x18
+          LayoutBlockFlow {P} at (4,40) size 91.58x18
             LayoutText {#text} at (0,0) size 33x17
               text run at (0,0) width 33: "\x{202B}ABC"
             LayoutInline {SPAN} at (0,0) size 32x17
@@ -53,11 +53,11 @@ layer at (0,0) size 800x578
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (63,0) width 29: "GHI"
-          LayoutBlockFlow {P} at (4,58) size 91.56x18
+          LayoutBlockFlow {P} at (4,58) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 92 RTL override: "\x{202E}IHGFEDCBA"
-          LayoutBlockFlow {P} at (4,76) size 91.56x18
+          LayoutBlockFlow {P} at (4,76) size 91.58x18
             LayoutText {#text} at (63,0) size 29x17
               text run at (63,0) width 29 RTL override: "\x{202E}IHG"
             LayoutInline {SPAN} at (0,0) size 32x17
@@ -66,25 +66,25 @@ layer at (0,0) size 800x578
             LayoutText {#text} at (0,0) size 33x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 33 RTL override: "CBA"
-          LayoutBlockFlow {P} at (4,94) size 91.56x18
+          LayoutBlockFlow {P} at (4,94) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 33 RTL override: "\x{202C}CBA"
               text run at (32,0) width 32: "\x{202B}DEF"
               text run at (63,0) width 29 RTL override: "\x{202E}IHG"
-          LayoutBlockFlow {P} at (4,112) size 91.56x18
+          LayoutBlockFlow {P} at (4,112) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 33 RTL override: "\x{202C}CBA"
               text run at (32,0) width 32 RTL override: "\x{202E}FED"
               text run at (63,0) width 29 RTL override: "\x{202E}IHG"
-          LayoutBlockFlow {P} at (4,130) size 91.56x18
+          LayoutBlockFlow {P} at (4,130) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 33 RTL override: "\x{202C}CBA"
               text run at (32,0) width 32 RTL override: "\x{202E}FED"
               text run at (63,0) width 29 RTL override: "\x{202E}IHG"
-          LayoutBlockFlow {P} at (4,148) size 91.56x18
+          LayoutBlockFlow {P} at (4,148) size 91.58x18
             LayoutText {#text} at (0,0) size 92x17
               text run at (0,0) width 0 RTL: "\x{202C}"
               text run at (0,0) width 33 RTL override: "\x{202C}CBA"
@@ -92,7 +92,7 @@ layer at (0,0) size 800x578
               text run at (63,0) width 29 RTL override: "\x{202E}IHG"
         LayoutText {#text} at (105,78) size 5x17
           text run at (105,78) width 5: " "
-        LayoutBlockFlow {DIV} at (112.56,48) size 30x80 [border: (1px solid #008000)]
+        LayoutBlockFlow {DIV} at (112.58,48) size 30x80 [border: (1px solid #008000)]
           LayoutTable {TABLE} at (4,4) size 22x18
             LayoutTableSection {TBODY} at (0,0) size 22x18
               LayoutTableRow {TR} at (0,0) size 22x18
@@ -118,7 +118,7 @@ layer at (0,0) size 800x578
               text run at (20,0) width 1: "\x{202C}"
         LayoutText {#text} at (145,78) size 5x17
           text run at (145,78) width 5: " "
-        LayoutBlockFlow {DIV} at (152.56,57) size 92x62 [border: (1px solid #008000)]
+        LayoutBlockFlow {DIV} at (152.58,57) size 92x62 [border: (1px solid #008000)]
           LayoutTable {TABLE} at (4,4) size 84x18
             LayoutTableSection {TBODY} at (0,0) size 84x18
               LayoutTableRow {TR} at (0,0) size 84x18
@@ -167,7 +167,7 @@ layer at (0,0) size 800x578
               text run at (57,0) width 23 RTL: "\x{5D3}\x{5D4}\x{5D5} "
         LayoutText {#text} at (247,78) size 5x17
           text run at (247,78) width 5: " "
-        LayoutBlockFlow {DIV} at (254.56,3) size 152x170 [border: (1px solid #008000)]
+        LayoutBlockFlow {DIV} at (254.58,3) size 152x170 [border: (1px solid #008000)]
           LayoutTable {TABLE} at (4,4) size 144x18
             LayoutTableSection {TBODY} at (0,0) size 144x18
               LayoutTableRow {TR} at (0,0) size 144x18
@@ -290,7 +290,7 @@ layer at (0,0) size 800x578
               text run at (114,0) width 24 RTL: "\x{5D6}\x{5D7}\x{5D8} "
         LayoutText {#text} at (409,78) size 5x17
           text run at (409,78) width 5: " "
-        LayoutBlockFlow {DIV} at (416.56,66) size 186x44 [border: (1px solid #008000)]
+        LayoutBlockFlow {DIV} at (416.58,66) size 186x44 [border: (1px solid #008000)]
           LayoutTable {TABLE} at (4,4) size 178x18
             LayoutTableSection {TBODY} at (0,0) size 178x18
               LayoutTableRow {TR} at (0,0) size 178x18

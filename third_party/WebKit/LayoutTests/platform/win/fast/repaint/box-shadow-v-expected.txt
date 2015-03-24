@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x514
   LayoutBlockFlow {HTML} at (0,0) size 800x514
     LayoutBlockFlow {BODY} at (8,8) size 784x0
-      LayoutBlockFlow (floating) {DIV} at (0,0) size 123.55x506
+      LayoutBlockFlow (floating) {DIV} at (0,0) size 123.56x506
         LayoutBlockFlow {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
-        LayoutBlockFlow (anonymous) at (0,340) size 123.55x64
+        LayoutBlockFlow (anonymous) at (0,340) size 123.56x64
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {P} at (0,420) size 123.55x18
+        LayoutBlockFlow {P} at (0,420) size 123.56x18
           LayoutText {#text} at (0,0) size 47x17
             text run at (0,0) width 47: "Lorem "
           LayoutInline {SPAN} at (0,0) size 40x17
@@ -16,18 +16,18 @@ layer at (0,0) size 800x514
               text run at (46,0) width 40: "ipsum"
           LayoutText {#text} at (85,0) size 39x17
             text run at (85,0) width 39: " dolor"
-        LayoutBlockFlow {P} at (0,454) size 123.55x36
+        LayoutBlockFlow {P} at (0,454) size 123.56x36
           LayoutText {#text} at (0,0) size 86x17
             text run at (0,0) width 86: "Lorem ipsum"
           LayoutBR {BR} at (85,0) size 1x17
           LayoutText {#text} at (0,18) size 88x17
             text run at (0,18) width 88: "dolor sit amet"
-      LayoutBlockFlow (floating) {DIV} at (133.55,0) size 123.55x454
+      LayoutBlockFlow (floating) {DIV} at (133.56,0) size 123.56x454
         LayoutBlockFlow {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
-        LayoutBlockFlow (anonymous) at (0,340) size 123.55x64
+        LayoutBlockFlow (anonymous) at (0,340) size 123.56x64
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {P} at (0,420) size 123.55x18
+        LayoutBlockFlow {P} at (0,420) size 123.56x18
           LayoutText {#text} at (0,0) size 47x17
             text run at (0,0) width 47: "Lorem "
           LayoutInline {SPAN} at (0,0) size 40x17
@@ -35,12 +35,12 @@ layer at (0,0) size 800x514
               text run at (46,0) width 40: "ipsum"
           LayoutText {#text} at (85,0) size 39x17
             text run at (85,0) width 39: " dolor"
-      LayoutBlockFlow (floating) {DIV} at (267.09,0) size 123.55x454
+      LayoutBlockFlow (floating) {DIV} at (267.13,0) size 123.56x454
         LayoutBlockFlow {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
-        LayoutBlockFlow (anonymous) at (0,340) size 123.55x64
+        LayoutBlockFlow (anonymous) at (0,340) size 123.56x64
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {P} at (0,420) size 123.55x18
+        LayoutBlockFlow {P} at (0,420) size 123.56x18
           LayoutText {#text} at (0,0) size 47x17
             text run at (0,0) width 47: "Lorem "
           LayoutInline {SPAN} at (0,0) size 40x17
@@ -48,12 +48,12 @@ layer at (0,0) size 800x514
               text run at (46,0) width 40: "ipsum"
           LayoutText {#text} at (85,0) size 39x17
             text run at (85,0) width 39: " dolor"
-      LayoutBlockFlow (floating) {DIV} at (400.64,0) size 123.55x454
+      LayoutBlockFlow (floating) {DIV} at (400.69,0) size 123.56x454
         LayoutBlockFlow {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
-        LayoutBlockFlow (anonymous) at (0,340) size 123.55x64
+        LayoutBlockFlow (anonymous) at (0,340) size 123.56x64
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {P} at (0,420) size 123.55x18
+        LayoutBlockFlow {P} at (0,420) size 123.56x18
           LayoutText {#text} at (0,0) size 47x17
             text run at (0,0) width 47: "Lorem "
           LayoutInline {SPAN} at (0,0) size 40x17
@@ -61,12 +61,12 @@ layer at (0,0) size 800x514
               text run at (46,0) width 40: "ipsum"
           LayoutText {#text} at (85,0) size 39x17
             text run at (85,0) width 39: " dolor"
-      LayoutBlockFlow (floating) {DIV} at (534.19,0) size 123.55x454
+      LayoutBlockFlow (floating) {DIV} at (534.25,0) size 123.56x454
         LayoutBlockFlow {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
-        LayoutBlockFlow (anonymous) at (0,340) size 123.55x64
+        LayoutBlockFlow (anonymous) at (0,340) size 123.56x64
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {P} at (0,420) size 123.55x18
+        LayoutBlockFlow {P} at (0,420) size 123.56x18
           LayoutText {#text} at (0,0) size 47x17
             text run at (0,0) width 47: "Lorem "
           LayoutInline {SPAN} at (0,0) size 40x17

@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
             text run at (569,0) width 39: "above"
         LayoutText {#text} at (607,0) size 41x17
           text run at (607,0) width 41: " them."
-      LayoutBlockFlow (floating) {DIV} at (0,86) size 85.77x80 [bgcolor=#FFFFAA]
+      LayoutBlockFlow (floating) {DIV} at (0,86) size 85.78x80 [bgcolor=#FFFFAA]
         LayoutInline {SPAN} at (0,0) size 86x17 [bgcolor=#FFFFFF]
           LayoutText {#text} at (0,31) size 47x17
             text run at (0,31) width 47: "Lorem "
