@@ -167,7 +167,7 @@ pixman_renderer_compute_transform(pixman_transform_t *transform_out,
 	/* Set up the source transformation based on the surface
 	   position, the output position/transform/scale and the client
 	   specified buffer transform/scale */
-	weston_matrix_invert(&matrix, &output->matrix);
+	matrix = output->inverse_matrix;
 
 	if (ev->transform.enabled) {
 		weston_matrix_multiply(&matrix, &ev->transform.inverse);
