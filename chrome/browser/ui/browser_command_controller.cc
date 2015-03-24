@@ -570,7 +570,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_ENCODING_WINDOWS1252:
     case IDC_ENCODING_GBK:
     case IDC_ENCODING_GB18030:
-    case IDC_ENCODING_BIG5HKSCS:
     case IDC_ENCODING_BIG5:
     case IDC_ENCODING_KOREAN:
     case IDC_ENCODING_SHIFTJIS:
@@ -585,6 +584,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_ENCODING_WINDOWS1251:
     case IDC_ENCODING_KOI8R:
     case IDC_ENCODING_KOI8U:
+    case IDC_ENCODING_IBM866:
     case IDC_ENCODING_ISO88597:
     case IDC_ENCODING_WINDOWS1253:
     case IDC_ENCODING_ISO88594:
@@ -919,7 +919,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_WINDOWS1252, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_GBK, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_GB18030, true);
-  command_updater_.UpdateCommandEnabled(IDC_ENCODING_BIG5HKSCS, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_BIG5, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_THAI, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_KOREAN, true);
@@ -934,6 +933,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_WINDOWS1251, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_KOI8R, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_KOI8U, true);
+  command_updater_.UpdateCommandEnabled(IDC_ENCODING_IBM866, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_ISO88597, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_WINDOWS1253, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_ISO88594, true);
