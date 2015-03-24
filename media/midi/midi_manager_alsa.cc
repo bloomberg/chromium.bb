@@ -268,8 +268,8 @@ MidiManagerAlsa::AlsaRawmidi::AlsaRawmidi(const MidiManagerAlsa* outer,
       device::UdevDeviceGetPropertyValue(udev_device.get(), kIdVendorEnc));
   // Sometimes it is not encoded.
   if (vendor.empty())
-    UdevDeviceGetPropertyOrSysattr(udev_device.get(), kIdVendor,
-                                   kSysattrVendorName);
+    vendor = UdevDeviceGetPropertyOrSysattr(udev_device.get(), kIdVendor,
+                                            kSysattrVendorName);
   // Also get the vendor string from the hardware database.
   vendor_from_database = device::UdevDeviceGetPropertyValue(
       udev_device.get(), kIdVendorFromDatabase);
@@ -351,8 +351,8 @@ std::string MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
   //  2. Vendor name from the udev database (property ID_VENDOR_FROM_DATABASE).
   //  3. Heuristic from ALSA.
 
-  // Is the vendor string not just the vendor hex id?
-  if (udev_id_vendor != udev_id_vendor_id) {
+  // Is the vendor string present and not just the vendor hex id?
+  if (!udev_id_vendor.empty() && (udev_id_vendor != udev_id_vendor_id)) {
     return udev_id_vendor;
   }
 
@@ -448,11 +448,9 @@ std::string MidiManagerAlsa::AlsaPortMetadata::OpaqueKey() const {
 ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
   ScopedVector<AlsaRawmidi> devices;
   snd_ctl_card_info_t* card;
-  snd_rawmidi_info_t* midi_out;
-  snd_rawmidi_info_t* midi_in;
+  snd_hwdep_info_t* hwdep;
   snd_ctl_card_info_alloca(&card);
-  snd_rawmidi_info_alloca(&midi_out);
-  snd_rawmidi_info_alloca(&midi_in);
+  snd_hwdep_info_alloca(&hwdep);
   for (int card_index = -1; !snd_card_next(&card_index) && card_index >= 0;) {
     const std::string id = base::StringPrintf("hw:CARD=%i", card_index);
     snd_ctl_t* handle;
@@ -467,28 +465,46 @@ ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
       snd_ctl_close(handle);
       continue;
     }
-    // Enumerate any rawmidi devices (not subdevices) and extract AlsaRawmidi.
+    std::string name = snd_ctl_card_info_get_name(card);
+    std::string longname = snd_ctl_card_info_get_longname(card);
+    std::string driver = snd_ctl_card_info_get_driver(card);
+
+    // Count rawmidi devices (not subdevices).
     for (int device = -1;
          !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0;) {
-      bool output;
-      bool input;
-      snd_rawmidi_info_set_device(midi_out, device);
-      snd_rawmidi_info_set_subdevice(midi_out, 0);
-      snd_rawmidi_info_set_stream(midi_out, SND_RAWMIDI_STREAM_OUTPUT);
-      output = snd_ctl_rawmidi_info(handle, midi_out) == 0;
-      snd_rawmidi_info_set_device(midi_in, device);
-      snd_rawmidi_info_set_subdevice(midi_in, 0);
-      snd_rawmidi_info_set_stream(midi_in, SND_RAWMIDI_STREAM_INPUT);
-      input = snd_ctl_rawmidi_info(handle, midi_in) == 0;
-      if (!output && !input)
-        continue;
+      devices.push_back(
+          new AlsaRawmidi(this, name, longname, driver, card_index));
+    }
 
-      // Compute and save ALSA and udev properties.
-      snd_rawmidi_info_t* midi = midi_out ? midi_out : midi_in;
-      devices.push_back(new AlsaRawmidi(this, snd_rawmidi_info_get_name(midi),
-                                        snd_ctl_card_info_get_longname(card),
-                                        snd_ctl_card_info_get_driver(card),
-                                        card_index));
+    // Count any hwdep synths that become MIDI devices.
+    //
+    // Explanation:
+    // Any kernel driver can create an ALSA client (visible to us).
+    // With modern hardware, only rawmidi devices do this. Kernel
+    // drivers create rawmidi devices and the rawmidi subsystem makes
+    // the seq clients. But the OPL3 driver is special, it does not
+    // make a rawmidi device but a seq client directly. (This is the
+    // only one to worry about in the kernel code, as of 2015-03-23.)
+    //
+    // OPL3 is very old (but still possible to get in new
+    // hardware). It is unlikely that new drivers would not use
+    // rawmidi and defeat our heuristic.
+    //
+    // Longer term, support should be added in the kernel to expose a
+    // direct link from card->client (or client->card) so that all
+    // these heuristics will be obsolete.  Once that is there, we can
+    // assume our old heuristics will work on old kernels and the new
+    // robust code will be used on new. Then we will not need to worry
+    // about changes to kernel internals breaking our code.
+    // See the TODO above at kMinimumClientIdForCards.
+    for (int device = -1;
+         !snd_ctl_hwdep_next_device(handle, &device) && device >= 0;) {
+      snd_ctl_hwdep_info(handle, hwdep);
+      snd_hwdep_iface_t iface = snd_hwdep_info_get_iface(hwdep);
+      if (iface == SND_HWDEP_IFACE_OPL2 || iface == SND_HWDEP_IFACE_OPL3 ||
+          iface == SND_HWDEP_IFACE_OPL4)
+        devices.push_back(
+            new AlsaRawmidi(this, name, longname, driver, card_index));
     }
     snd_ctl_close(handle);
   }

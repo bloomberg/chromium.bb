@@ -51,6 +51,14 @@ TEST(MidiManagerAlsaTest, ExtractManufacturer) {
                     "Serial MIDI (UART16550A) [Soundcanvas] at 0x3f8, irq 4"));
   ASSERT_EQ("", MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
                     "", "", "", "VirMIDI", "Virtual MIDI Card 1"));
+  ASSERT_EQ("C-Media Electronics Inc",
+            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+                "", "0x13f6", "C-Media Electronics Inc", "C-Media CMI8738 MIDI",
+                "C-Media CMI8738 (model 55) at 0xd000, irq 19"));
+  ASSERT_EQ("C-Media Electronics Inc",
+            MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
+                "", "0x13f6", "C-Media Electronics Inc", "C-Media CMI8738 FM",
+                "C-Media CMI8738 (model 55) at 0xd000, irq 19"));
 }
 
 TEST(MidiManagerAlsaTest, JSONPortMetadata) {
