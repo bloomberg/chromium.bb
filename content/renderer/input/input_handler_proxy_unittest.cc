@@ -961,6 +961,8 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
   VERIFY_AND_RESET_MOCKS();
 
+  // Flings ignored by the InputHandler should be dropped, signalling the end
+  // of the touch scroll sequence.
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
       .WillOnce(testing::Return(cc::InputHandler::SCROLL_IGNORED));
 
@@ -970,9 +972,12 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
 
   VERIFY_AND_RESET_MOCKS();
 
-  // Even if we didn't start a fling ourselves, we still need to send the cancel
-  // event to the widget.
-  gesture_.type = WebInputEvent::GestureFlingCancel;
+  // Subsequent scrolls should behave normally, even without an intervening
+  // GestureFlingCancel, as the original GestureFlingStart was dropped.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+  gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
