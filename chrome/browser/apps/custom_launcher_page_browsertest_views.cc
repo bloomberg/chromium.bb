@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
 // Currently this is flaky.
 // Disabled test http://crbug.com/463456
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
-                       DISABLED_LauncherPageFocusTraversal) {
+                       LauncherPageFocusTraversal) {
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::ContentsView* contents_view =
@@ -400,31 +400,34 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 
   ASSERT_TRUE(
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
-  EXPECT_EQ(app_list_view->GetFocusManager()->GetFocusedView(),
-            search_box_view->search_box());
 
   {
     ExtensionTestMessageListener listener("onPageProgressAt1", false);
     contents_view->SetActiveState(
         app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
     listener.WaitUntilSatisfied();
-    EXPECT_TRUE(contents_view->IsStateActive(
-        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
-    EXPECT_EQ(app_list_view->GetFocusManager()->GetFocusedView(),
-              search_box_view->search_box());
   }
-  {
-    ExtensionTestMessageListener listener("textfieldFocused", false);
-    app_list_view->GetFocusManager()->AdvanceFocus(false);
-    listener.WaitUntilSatisfied();
-    EXPECT_NE(app_list_view->GetFocusManager()->GetFocusedView(),
-              search_box_view->search_box());
-  }
-  {
-    ExtensionTestMessageListener listener("textfieldBlurred", false);
-    app_list_view->GetFocusManager()->AdvanceFocus(false);
-    listener.WaitUntilSatisfied();
-    EXPECT_EQ(app_list_view->GetFocusManager()->GetFocusedView(),
-              search_box_view->search_box());
-  }
+
+  // Expect that the search box and webview are the only two focusable views.
+  views::View* search_box_textfield = search_box_view->search_box();
+  views::WebView* custom_page_webview = static_cast<views::WebView*>(
+      contents_view->custom_page_view()->custom_launcher_page_contents());
+  EXPECT_EQ(custom_page_webview,
+            app_list_view->GetFocusManager()->GetNextFocusableView(
+                search_box_textfield, search_box_textfield->GetWidget(), false,
+                false));
+  EXPECT_EQ(
+      search_box_textfield,
+      app_list_view->GetFocusManager()->GetNextFocusableView(
+          custom_page_webview, custom_page_webview->GetWidget(), false, false));
+
+  // And in reverse.
+  EXPECT_EQ(
+      search_box_textfield,
+      app_list_view->GetFocusManager()->GetNextFocusableView(
+          custom_page_webview, custom_page_webview->GetWidget(), true, false));
+  EXPECT_EQ(custom_page_webview,
+            app_list_view->GetFocusManager()->GetNextFocusableView(
+                search_box_textfield, search_box_textfield->GetWidget(), true,
+                false));
 }
