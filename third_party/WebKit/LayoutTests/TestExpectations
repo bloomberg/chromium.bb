@@ -1907,9 +1907,6 @@ crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFail
 crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
 crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
 
-crbug.com/462013 fast/repaint/invalidation-after-opacity-change-subtree.html [ NeedsRebaseline ]
-crbug.com/462013 virtual/slimmingpaint/fast/repaint/invalidation-after-opacity-change-subtree.html [ NeedsRebaseline ]
-
 crbug.com/467871 [ Mac ] compositing/plugins/composited-plugin.html [ NeedsRebaseline ]
 
 # This needs to be removed after chromium patch lands (crbug.com/455241)

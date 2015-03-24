@@ -1,0 +1,27 @@
+{
+  "bounds": [785, 2350],
+  "children": [
+    {
+      "bounds": [785, 2350],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 2195, 777, 109],
+        [8, 2195, 653, 109],
+        [8, 2045, 777, 109],
+        [8, 2045, 774, 109],
+        [8, 2000, 777, 350]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='container'",
+        "LayoutBlockFlow (positioned) DIV id='absolute'",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutBlockFlow DIV id='container'"
+      ]
+    }
+  ]
+}
+
