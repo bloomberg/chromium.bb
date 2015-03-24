@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PREF_NAMES_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PREF_NAMES_H_
 
+#include "base/logging.h"
+
 namespace prefs {
 
 extern const char kContentSettingsVersion[];
@@ -12,6 +14,34 @@ extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsWindowLastTabIndex[];
 extern const char kDefaultContentSettings[];
 extern const char kOverrideContentSettings[];
+extern const char kMigratedDefaultContentSettings[];
+
+extern const char kDefaultCookiesSetting[];
+extern const char kDefaultImagesSetting[];
+extern const char kDefaultJavaScriptSetting[];
+extern const char kDefaultPluginsSetting[];
+extern const char kDefaultPopupsSetting[];
+extern const char kDefaultGeolocationSetting[];
+extern const char kDefaultNotificationsSetting[];
+extern const char kDefaultAutoSelectCertificateSetting[];
+extern const char kDefaultFullScreenSetting[];
+extern const char kDefaultMouseLockSetting[];
+extern const char kDefaultMixedScriptSetting[];
+extern const char kDefaultMediaStreamSetting[];
+extern const char kDefaultMediaStreamMicSetting[];
+extern const char kDefaultMediaStreamCameraSetting[];
+extern const char kDefaultProtocolHandlersSetting[];
+extern const char kDefaultPpapiBrokerSetting[];
+extern const char kDefaultAutomaticDownloadsSetting[];
+extern const char kDefaultMidiSysexSetting[];
+extern const char kDefaultPushMessagingSetting[];
+extern const char kDefaultSSLCertDecisionsSetting[];
+#if defined(OS_WIN)
+extern const char kDefaultMetroSwitchToDesktopSetting[];
+#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+extern const char kDefaultProtectedMediaIdentifierSetting[];
+#endif
+extern const char kDefaultAppBannerSetting[];
 
 extern const char kManagedDefaultCookiesSetting[];
 extern const char kManagedDefaultImagesSetting[];

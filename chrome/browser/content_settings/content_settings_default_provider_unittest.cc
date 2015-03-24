@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/common/pref_names.h"
@@ -250,4 +251,54 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
                               std::string(),
                               true));
   otr_provider.ShutdownOnUIThread();
+}
+
+
+// TODO(msramek): The two tests below test syncing between old versions
+// of Chrome using a dictionary pref and new versions using individual integer
+// prefs for default content settings. Remove the tests together with
+// the dictionary setting after two stable releases.
+TEST_F(DefaultProviderTest, SyncFromDictionaryToIndividualPreferences) {
+  PrefService* prefs = profile_.GetPrefs();
+
+  {
+    DictionaryPrefUpdate update(prefs, prefs::kDefaultContentSettings);
+    base::DictionaryValue* default_settings_dictionary = update.Get();
+
+    default_settings_dictionary->SetWithoutPathExpansion(
+        content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_COOKIES),
+        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+    default_settings_dictionary->SetWithoutPathExpansion(
+        content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_GEOLOCATION),
+        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  }
+
+  // Cookies should sync, but geolocation should not.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(
+      prefs->GetInteger(prefs::kDefaultCookiesSetting)));
+  EXPECT_EQ(CONTENT_SETTING_ASK, IntToContentSetting(
+      prefs->GetInteger(prefs::kDefaultGeolocationSetting)));
+}
+
+TEST_F(DefaultProviderTest, SyncFromIndividualPreferencesToDictionary) {
+  PrefService* prefs = profile_.GetPrefs();
+
+  prefs->SetInteger(prefs::kDefaultJavaScriptSetting, CONTENT_SETTING_BLOCK);
+  prefs->SetInteger(prefs::kDefaultSSLCertDecisionsSetting,
+                    CONTENT_SETTING_BLOCK);
+
+  // Javascript should sync, but cert decisions should not.
+  const base::DictionaryValue* default_settings_dictionary =
+      prefs->GetDictionary(prefs::kDefaultContentSettings);
+  int js_setting;
+  bool has_cd_setting;
+
+  default_settings_dictionary->GetIntegerWithoutPathExpansion(
+      content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_JAVASCRIPT),
+      &js_setting);
+  has_cd_setting = default_settings_dictionary->HasKey(
+      content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS));
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(js_setting));
+  EXPECT_FALSE(has_cd_setting);
 }

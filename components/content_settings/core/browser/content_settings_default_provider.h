@@ -50,22 +50,53 @@ class DefaultProvider : public ObservableProvider {
   void ShutdownOnUIThread() override;
 
  private:
-  // Sets the fields of |settings| based on the values in |dictionary|.
-  void GetSettingsFromDictionary(const base::DictionaryValue* dictionary);
+  typedef linked_ptr<base::Value> ValuePtr;
+  typedef std::map<ContentSettingsType, ValuePtr> ValueMap;
 
-  // Forces the default settings to be explicitly set instead of themselves
-  // being CONTENT_SETTING_DEFAULT.
-  void ForceDefaultsToBeExplicit();
+  // Reads all individual settings from the pref service.
+  void ReadDefaultSettings();
 
-  // Reads the default settings from the preferences service. If |overwrite| is
-  // true and the preference is missing, the local copy will be cleared as well.
-  void ReadDefaultSettings(bool overwrite);
+  // Change the remembered setting in the memory.
+  void ChangeSetting(ContentSettingsType content_type, base::Value* value);
+
+  // True if |value| is NULL or it is the default value for |content_type|.
+  bool IsValueEmptyOrDefault(ContentSettingsType content_type,
+                             base::Value* value);
+
+  // Parses a |DictionaryValue| into a |ValueMap|.
+  scoped_ptr<ValueMap> GetSettingsFromDictionary(
+      const base::DictionaryValue* dictionary);
+
+  // Forces the default settings in |value_map| to be explicitly set instead
+  // of themselves being CONTENT_SETTING_DEFAULT.
+  void ForceDefaultsToBeExplicit(ValueMap* value_map);
+
+  // Reads the dictionary prefrence and returns the dictionary parsed as
+  // a |ValueMap|.
+  scoped_ptr<ValueMap> ReadDictionaryPref();
+
+  // Reads an individual preference.
+  scoped_ptr<base::Value> ReadIndividualPref(ContentSettingsType content_type);
+
+  // Writes the value |value| to the individual preference corresponding
+  // to |content_type|. It's the responsibility of caller to obtain a lock
+  // and notify observers.
+  void WriteIndividualPref(ContentSettingsType content_type,
+                           base::Value* value);
+
+  // Writes the value |value| to the dictionary preference entry corresponding
+  // to |content_type|. It's the responsibility of caller to obtain a lock
+  // and notify observers.
+  void WriteDictionaryPref(ContentSettingsType content_type,
+                           base::Value* value);
 
   // Called on prefs change.
   void OnPreferenceChanged(const std::string& pref_name);
 
-  typedef linked_ptr<base::Value> ValuePtr;
-  typedef std::map<ContentSettingsType, ValuePtr> ValueMap;
+  // Migrates the dictionary settings to the individual settings. Only called
+  // once during the first run.
+  void MigrateDefaultSettings();
+
   // Copies of the pref data, so that we can read it on the IO thread.
   ValueMap default_settings_;
 
@@ -74,7 +105,7 @@ class DefaultProvider : public ObservableProvider {
   // Whether this settings map is for an Incognito session.
   bool is_incognito_;
 
-  // Used around accesses to the |default_content_settings_| object to guarantee
+  // Used around accesses to the |default_settings_| object to guarantee
   // thread safety.
   mutable base::Lock lock_;
 
