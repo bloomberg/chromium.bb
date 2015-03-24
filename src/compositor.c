@@ -5215,16 +5215,21 @@ weston_transform_to_string(uint32_t output_transform)
 static int
 load_configuration(struct weston_config **config, int32_t noconfig)
 {
+	const char *full_path;
+
 	*config = NULL;
 
 	if (noconfig == 0)
 		*config = weston_config_parse("weston.ini");
 
 	if (*config) {
-		weston_log("Using config file '%s'\n",
-			   weston_config_get_full_path(*config));
+		full_path = weston_config_get_full_path(*config);
+
+		weston_log("Using config file '%s'\n", full_path);
+		setenv(WESTON_CONFIG_FILE_ENV_VAR, full_path, 1);
 	} else {
 		weston_log("Starting with no config file.\n");
+		setenv(WESTON_CONFIG_FILE_ENV_VAR, "", 1);
 	}
 
 	return 0;

@@ -3050,6 +3050,7 @@ int main(int argc, char *argv[])
 {
 	struct display *d;
 	struct terminal *terminal;
+	const char *config_file;
 	struct weston_config *config;
 	struct weston_config_section *s;
 
@@ -3061,7 +3062,8 @@ int main(int argc, char *argv[])
 	if (!option_shell)
 		option_shell = "/bin/bash";
 
-	config = weston_config_parse("weston.ini");
+	config_file = weston_config_get_name_from_env();
+	config = weston_config_parse(config_file);
 	s = weston_config_get_section(config, "terminal", NULL, NULL);
 	weston_config_section_get_string(s, "font", &option_font, "mono");
 	weston_config_section_get_int(s, "font-size", &option_font_size, 14);

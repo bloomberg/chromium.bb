@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+#define WESTON_CONFIG_FILE_ENV_VAR "WESTON_CONFIG_FILE"
+
 enum config_key_type {
 	CONFIG_KEY_INTEGER,		/* typeof data = int */
 	CONFIG_KEY_UNSIGNED_INTEGER,	/* typeof data = unsigned int */
@@ -94,6 +96,9 @@ weston_config_section_get_bool(struct weston_config_section *section,
 			       int *value, int default_value);
 const char *
 weston_config_get_libexec_dir(void);
+
+const char *
+weston_config_get_name_from_env(void);
 
 struct weston_config *
 weston_config_parse(const char *name);

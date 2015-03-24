@@ -1073,6 +1073,7 @@ create_launchers(struct wlContextCommon *cmm, struct wl_list *launcher_list)
 static struct hmi_homescreen_setting *
 hmi_homescreen_setting_create(void)
 {
+	const char *config_file;
 	struct weston_config *config = NULL;
 	struct weston_config_section *shellSection = NULL;
 	struct hmi_homescreen_setting *setting = MEM_ALLOC(sizeof(*setting));
@@ -1084,7 +1085,8 @@ hmi_homescreen_setting_create(void)
 	wl_list_init(&setting->workspace_list);
 	wl_list_init(&setting->launcher_list);
 
-	config = weston_config_parse("weston.ini");
+	config_file = weston_config_get_name_from_env();
+	config = weston_config_parse(config_file);
 
 	shellSection =
 		weston_config_get_section(config, "ivi-shell", NULL, NULL);

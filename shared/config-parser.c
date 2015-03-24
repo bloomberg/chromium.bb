@@ -294,6 +294,18 @@ weston_config_get_libexec_dir(void)
 	return LIBEXECDIR;
 }
 
+const char *
+weston_config_get_name_from_env(void)
+{
+	const char *name;
+
+	name = getenv(WESTON_CONFIG_FILE_ENV_VAR);
+	if (name)
+		return name;
+
+	return "weston.ini";
+}
+
 static struct weston_config_section *
 config_add_section(struct weston_config *config, const char *name)
 {

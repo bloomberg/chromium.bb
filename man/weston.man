@@ -255,6 +255,15 @@ This allows launching Weston as a nested server.
 For Wayland clients, holds the file descriptor of an open local socket
 to a Wayland server.
 .TP
+.B WESTON_CONFIG_FILE
+Weston sets this variable to the absolute path of the configuration file
+it loads, or to the empty string if no file is used. Programs that use
+.I weston.ini
+will read the file specified by this variable instead, or do not read any
+file if it is empty. Unset variable causes falling back to the default
+name
+.IR weston.ini .
+.TP
 .B XCURSOR_PATH
 Set the list of paths to look for cursors in. It changes both
 libwayland-cursor and libXcursor, so it affects both Wayland and X11 based
