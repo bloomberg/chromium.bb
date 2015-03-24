@@ -721,18 +721,15 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
     if (portaled) {
       const std::string kPortaledWifiPath = "/service/portaled_wifi";
-      services->AddService(kPortaledWifiPath,
-                           "portaled_wifi_guid",
-                           "Portaled Wifi" /* name */,
-                           shill::kTypeWifi,
-                           shill::kStatePortal,
-                           add_to_visible);
+      services->AddService(kPortaledWifiPath, "portaled_wifi_guid",
+                           "Portaled Wifi" /* name */, shill::kTypeWifi,
+                           shill::kStateIdle, add_to_visible);
       services->SetServiceProperty(kPortaledWifiPath,
                                    shill::kSecurityClassProperty,
                                    base::StringValue(shill::kSecurityNone));
-      services->SetConnectBehavior(kPortaledWifiPath,
-                                   base::Bind(&UpdatePortaledWifiState,
-                                              "portaled_wifi"));
+      services->SetConnectBehavior(
+          kPortaledWifiPath,
+          base::Bind(&UpdatePortaledWifiState, kPortaledWifiPath));
       services->SetServiceProperty(kPortaledWifiPath,
                                    shill::kConnectableProperty,
                                    base::FundamentalValue(true));
