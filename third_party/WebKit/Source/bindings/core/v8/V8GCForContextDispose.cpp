@@ -32,6 +32,7 @@
 #include "bindings/core/v8/V8GCForContextDispose.h"
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include <v8.h>
@@ -69,7 +70,7 @@ V8GCForContextDispose& V8GCForContextDispose::instance()
 
 void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
 {
-    V8PerIsolateData::mainThreadIsolate()->IdleNotification(0);
+    V8PerIsolateData::mainThreadIsolate()->IdleNotificationDeadline(Platform::current()->monotonicallyIncreasingTime());
     reset();
 }
 

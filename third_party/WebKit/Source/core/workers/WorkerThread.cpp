@@ -514,7 +514,7 @@ void WorkerThread::idleHandler()
     const double kMinIdleTimespan = 0.3;
     const double nextFireTime = PlatformThreadData::current().threadTimers().nextFireTime();
     if (nextFireTime == 0.0 || nextFireTime > currentTime() + kMinIdleTimespan) {
-        bool hasMoreWork = !isolate()->IdleNotification(1000);
+        bool hasMoreWork = !isolate()->IdleNotificationDeadline(Platform::current()->monotonicallyIncreasingTime() + 1.0);
         if (hasMoreWork)
             delay = kShortIdleHandlerDelayMs;
     }
