@@ -30,8 +30,7 @@ testcase.searchBoxFocus = function() {
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, ['#search-box input:focus']).
-          then(this.next);
-    },
+          then(this.next); },
     // Press the Esc key.
     function(element) {
       remoteCall.callRemoteTestUtil('fakeKeyDown',
@@ -46,6 +45,109 @@ testcase.searchBoxFocus = function() {
     },
     // Check for errors.
     function(element) {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests the tab focus behavior of Files.app when no file is selected.
+ */
+testcase.tabindexFocus = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+    },
+    // Check that the file list has the focus on launch.
+    function(inAppId) {
+      appId = inAppId;
+      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
+    },
+    // Press the Tab key.
+    function(element) {
+      remoteCall.callRemoteTestUtil('getActiveElement',
+                                    appId,
+                                    [],
+                                    this.next);
+    }, function(element) {
+      chrome.test.assertEq('list', element.attributes['class']);
+      remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'drive-welcome-link').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests the tab focus behavior of Files.app when a directory is selected.
+ */
+testcase.tabindexFocusDirectorySelected = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+    },
+    // Check that the file list has the focus on launch.
+    function(inAppId) {
+      appId = inAppId;
+      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
+    },
+    // Press the Tab key.
+    function(element) {
+      remoteCall.callRemoteTestUtil('getActiveElement',
+                                    appId,
+                                    [],
+                                    this.next);
+    }, function(element) {
+      chrome.test.assertEq('list', element.attributes['class']);
+      // Select the directory named 'photos'.
+      remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['photos']).then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'share-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'delete-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'drive-welcome-link').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
       checkIfNoErrorsOccured(this.next);
     }
   ]);

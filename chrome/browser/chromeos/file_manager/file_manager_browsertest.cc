@@ -1100,6 +1100,17 @@ INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
+INSTANTIATE_TEST_CASE_P(TabindexFocus,
+                        FileManagerBrowserTest,
+                        ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                                        "tabindexFocus")));
+
+INSTANTIATE_TEST_CASE_P(
+    TabindexFocusDirectorySelected,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "tabindexFocusDirectorySelected")));
+
 // Fails on official build. http://crbug.com/429294
 #if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenFileDialog DISABLED_OpenFileDialog

@@ -332,6 +332,37 @@ RemoteCallFilesApp.prototype.waitUntilTaskExecutes =
 };
 
 /**
+ * Check if the next tabforcus'd element has the given ID or not.
+ * @param {string} windowId Target window ID.
+ * @param {string} elementId String of 'id' attribute which the next tabfocus'd
+ *     element should have.
+ * @return {Promise} Promise to be fulfilled with the result.
+ */
+RemoteCallFilesApp.prototype.checkNextTabFocus =
+    function(windowId, elementId) {
+  return remoteCall.callRemoteTestUtil('fakeKeyDown',
+                                       windowId,
+                                       ['body', 'U+0009', false]).then(
+  function(result) {
+    chrome.test.assertTrue(result);
+    return remoteCall.callRemoteTestUtil('getActiveElement',
+                                         windowId,
+                                         []);
+  }).then(function(element) {
+    if (!element || !element.attributes['id'])
+      return false;
+
+    if (element.attributes['id'] === elementId) {
+      return true;
+    } else {
+      console.error('The ID of the element should be "' + elementId +
+                    '", but "' + element.attributes['id'] + '"');
+      return false;
+    }
+  });
+};
+
+/**
  * Waits until the current directory is changed.
  * @param {string} windowId Target window ID.
  * @param {string} expectedPath Path to be changed to.
