@@ -199,7 +199,8 @@ class PageCyclerToughLayoutCases(_PageCycler):
 
 
 # crbug.com/273986: This test is flakey on Windows.
-@benchmark.Disabled('win')
+# crbug.com/470071: This test is failing on N10
+@benchmark.Disabled('win', 'android')
 class PageCyclerTypical25(_PageCycler):
   """Page load time benchmark for a 25 typical web pages.
 
