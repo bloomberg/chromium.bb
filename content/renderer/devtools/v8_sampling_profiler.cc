@@ -117,9 +117,16 @@ class Sampler {
 
   void DoSample(const v8::RegisterState& state);
 
+  void SetEventsToCollectForTest(int code_added_events, int sample_events) {
+    code_added_events_to_collect_for_test_ = code_added_events;
+    sample_events_to_collect_for_test_ = sample_events;
+  }
+
   bool EventsCollectedForTest() const {
-    return base::subtle::NoBarrier_Load(&code_added_events_count_) != 0 ||
-           base::subtle::NoBarrier_Load(&samples_count_) != 0;
+    return base::subtle::NoBarrier_Load(&code_added_events_count_) >=
+               code_added_events_to_collect_for_test_ &&
+           base::subtle::NoBarrier_Load(&samples_count_) >=
+               sample_events_to_collect_for_test_;
   }
 
  private:
@@ -142,6 +149,8 @@ class Sampler {
   scoped_ptr<SamplingQueue> samples_data_;
   base::subtle::Atomic32 code_added_events_count_;
   base::subtle::Atomic32 samples_count_;
+  int code_added_events_to_collect_for_test_;
+  int sample_events_to_collect_for_test_;
 
   static base::LazyInstance<base::ThreadLocalPointer<Sampler>>::Leaky
       tls_instance_;
@@ -155,7 +164,9 @@ Sampler::Sampler()
       thread_handle_(Sampler::GetCurrentThreadHandle()),
       isolate_(Isolate::GetCurrent()),
       code_added_events_count_(0),
-      samples_count_(0) {
+      samples_count_(0),
+      code_added_events_to_collect_for_test_(0),
+      sample_events_to_collect_for_test_(0) {
   DCHECK(isolate_);
   DCHECK(!GetInstance());
   tls_instance_.Pointer()->Set(this);
@@ -213,7 +224,6 @@ void Sampler::DoSample(const v8::RegisterState& state) {
     return;
   record->Collect(isolate_, timestamp, state);
   samples_data_->FinishEnqueue();
-  base::subtle::NoBarrier_AtomicIncrement(&samples_count_, 1);
 }
 
 void Sampler::InjectPendingEvents() {
@@ -225,6 +235,7 @@ void Sampler::InjectPendingEvents() {
         record->ToTraceFormat());
     samples_data_->Remove();
     record = samples_data_->Peek();
+    base::subtle::NoBarrier_AtomicIncrement(&samples_count_, 1);
   }
 }
 
@@ -548,7 +559,10 @@ void V8SamplingProfiler::OnTraceLogDisabled() {
   sampling_thread_.reset();
 }
 
-void V8SamplingProfiler::EnableSamplingEventForTesting() {
+void V8SamplingProfiler::EnableSamplingEventForTesting(int code_added_events,
+                                                       int sample_events) {
+  render_thread_sampler_->SetEventsToCollectForTest(code_added_events,
+                                                    sample_events);
   waitable_event_for_testing_.reset(new base::WaitableEvent(false, false));
 }
 
