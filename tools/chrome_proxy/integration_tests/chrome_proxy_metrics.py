@@ -283,34 +283,25 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     lo_fi_count = 0
 
     for resp in self.IterResponses(tab):
-      if resp.HasChromeProxyViaHeader():
+      if resp.HasChromeProxyLoFi():
         lo_fi_count += 1
       else:
-        r = resp.response
         raise ChromeProxyMetricException, (
-            '%s: LoFi not in request header.' % (r.url))
+            '%s: LoFi not in request header.' % (resp.response.url))
 
-      cl = resp.content_length
-      resource = resp.response.url
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'lo_fi', 'count', lo_fi_count))
-
-    for resp in self.IterResponses(tab):
-      r = resp.response
-      cl = resp.content_length
-      ocl = resp.original_content_length
-      saving = resp.data_saving_rate * 100
-      if cl > 100:
+      if resp.content_length > 100:
         raise ChromeProxyMetricException, (
             'Image %s is %d bytes. Expecting less than 100 bytes.' %
-            (resource, cl))
+            (resp.response.url, resp.content_length))
+
+    if lo_fi_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one LoFi response, but zero such responses were '
+          'received.')
 
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'content_length', 'bytes', cl))
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'original_content_length', 'bytes', ocl))
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'data_saving', 'percent', saving))
+        results.current_page, 'lo_fi', 'count', lo_fi_count))
+    super(ChromeProxyMetric, self).AddResults(tab, results)
 
   def AddResultsForBypass(self, tab, results):
     bypass_count = 0
