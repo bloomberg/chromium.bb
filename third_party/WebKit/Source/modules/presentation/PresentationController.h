@@ -5,7 +5,7 @@
 #ifndef PresentationController_h
 #define PresentationController_h
 
-#include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/presentation/Presentation.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -22,7 +22,7 @@ class WebPresentationSessionClient;
 class PresentationController final
     : public NoBaseWillBeGarbageCollectedFinalized<PresentationController>
     , public WillBeHeapSupplement<LocalFrame>
-    , public FrameDestructionObserver
+    , public LocalFrameLifecycleObserver
     , public WebPresentationController {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
     WTF_MAKE_NONCOPYABLE(PresentationController);
@@ -63,7 +63,7 @@ public:
 private:
     PresentationController(LocalFrame&, WebPresentationClient*);
 
-    // Implementation of FrameDestructionObserver.
+    // Implementation of LocalFrameLifecycleObserver.
     virtual void willDetachFrameHost() override;
 
     WebPresentationClient* m_client;

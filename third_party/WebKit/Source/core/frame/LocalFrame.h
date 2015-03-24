@@ -30,8 +30,8 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/Frame.h"
-#include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/LocalFrameLifecycleNotifier.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"

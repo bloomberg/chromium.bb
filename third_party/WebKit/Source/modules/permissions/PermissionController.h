@@ -5,7 +5,7 @@
 #ifndef PermissionController_h
 #define PermissionController_h
 
-#include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/Supplementable.h"
 
 namespace blink {
@@ -15,7 +15,7 @@ class WebPermissionClient;
 class PermissionController final
     : public NoBaseWillBeGarbageCollectedFinalized<PermissionController>
     , public WillBeHeapSupplement<LocalFrame>
-    , public FrameDestructionObserver {
+    , public LocalFrameLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(PermissionController);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionController);
 public:
@@ -32,7 +32,7 @@ public:
 private:
     PermissionController(LocalFrame&, WebPermissionClient*);
 
-    // Inherited from FrameDestructionObserver.
+    // Inherited from LocalFrameLifecycleObserver.
     virtual void willDetachFrameHost() override;
 
     WebPermissionClient* m_client;

@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameDestructionObserver_h
-#define FrameDestructionObserver_h
+#ifndef LocalFrameLifecycleObserver_h
+#define LocalFrameLifecycleObserver_h
 
 #include "core/CoreExport.h"
 #include "core/frame/LocalFrame.h"
@@ -36,7 +36,7 @@ namespace blink {
 class LocalFrame;
 class LocalFrameLifecycleNotifier;
 
-class CORE_EXPORT FrameDestructionObserver : public LifecycleObserver<LocalFrame, FrameDestructionObserver, LocalFrameLifecycleNotifier> {
+class CORE_EXPORT LocalFrameLifecycleObserver : public LifecycleObserver<LocalFrame, LocalFrameLifecycleObserver, LocalFrameLifecycleNotifier> {
 public:
     virtual void willDetachFrameHost() { }
     virtual void contextDestroyed()
@@ -47,7 +47,7 @@ public:
     LocalFrame* frame() const { return lifecycleContext(); }
 
 protected:
-    explicit FrameDestructionObserver(LocalFrame* frame)
+    explicit LocalFrameLifecycleObserver(LocalFrame* frame)
         : LifecycleObserver(frame)
     {
     }
@@ -55,4 +55,4 @@ protected:
 
 } // namespace blink
 
-#endif // FrameDestructionObserver_h
+#endif // LocalFrameLifecycleObserver_h

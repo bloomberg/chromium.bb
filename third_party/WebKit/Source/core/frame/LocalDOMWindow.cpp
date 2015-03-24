@@ -112,7 +112,7 @@ using std::max;
 namespace blink {
 
 LocalDOMWindow::WindowFrameObserver::WindowFrameObserver(LocalDOMWindow* window, LocalFrame& frame)
-    : FrameDestructionObserver(&frame)
+    : LocalFrameLifecycleObserver(&frame)
     , m_window(window)
 {
 }
@@ -131,7 +131,7 @@ LocalDOMWindow::WindowFrameObserver::~WindowFrameObserver()
 DEFINE_TRACE(LocalDOMWindow::WindowFrameObserver)
 {
     visitor->trace(m_window);
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
@@ -142,7 +142,7 @@ void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
 void LocalDOMWindow::WindowFrameObserver::contextDestroyed()
 {
     m_window->frameDestroyed();
-    FrameDestructionObserver::contextDestroyed();
+    LocalFrameLifecycleObserver::contextDestroyed();
 }
 
 class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {

@@ -5,14 +5,14 @@
 #include "config.h"
 #include "core/frame/LocalFrameLifecycleNotifier.h"
 
-#include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 
 namespace blink {
 
 void LocalFrameLifecycleNotifier::notifyWillDetachFrameHost()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    for (FrameDestructionObserver* observer : m_observers)
+    for (LocalFrameLifecycleObserver* observer : m_observers)
         observer->willDetachFrameHost();
 }
 

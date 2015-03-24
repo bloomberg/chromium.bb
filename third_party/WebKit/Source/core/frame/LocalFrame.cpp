@@ -42,7 +42,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -354,7 +353,7 @@ void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
     // is acceptable as its actions are either not needed or handled
     // by other means --
     //
-    //  - FrameDestructionObserver::willDetachFrameHost() will have
+    //  - LocalFrameLifecycleObserver::willDetachFrameHost() will have
     //    signalled the Inspector frameWindowDiscarded() notifications.
     //    We assume that all LocalFrames are detached, where that notification
     //    will have been done.

@@ -35,7 +35,7 @@ ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame
 }
 
 ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebScreenOrientationClient* client)
-    : FrameDestructionObserver(&frame)
+    : LocalFrameLifecycleObserver(&frame)
     , PlatformEventController(frame.page())
     , m_client(client)
     , m_dispatchEventTimer(this, &ScreenOrientationController::dispatchEventTimerFired)
@@ -212,7 +212,7 @@ void ScreenOrientationController::notifyDispatcher()
 DEFINE_TRACE(ScreenOrientationController)
 {
     visitor->trace(m_orientation);
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
     PlatformEventController::trace(visitor);
 }

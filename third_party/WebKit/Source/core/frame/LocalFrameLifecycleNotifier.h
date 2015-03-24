@@ -11,10 +11,10 @@
 
 namespace blink {
 
-class FrameDestructionObserver;
+class LocalFrameLifecycleObserver;
 class LocalFrame;
 
-class CORE_EXPORT LocalFrameLifecycleNotifier : public LifecycleNotifier<LocalFrame, FrameDestructionObserver> {
+class CORE_EXPORT LocalFrameLifecycleNotifier : public LifecycleNotifier<LocalFrame, LocalFrameLifecycleObserver> {
 public:
     void notifyWillDetachFrameHost();
 };

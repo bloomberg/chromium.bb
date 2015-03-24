@@ -25,7 +25,7 @@
 namespace blink {
 
 DOMPlugin::DOMPlugin(PluginData* pluginData, LocalFrame* frame, unsigned index)
-    : FrameDestructionObserver(frame)
+    : LocalFrameLifecycleObserver(frame)
     , m_pluginData(pluginData)
     , m_index(index)
 {
@@ -37,7 +37,7 @@ DOMPlugin::~DOMPlugin()
 
 DEFINE_TRACE(DOMPlugin)
 {
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 String DOMPlugin::name() const

@@ -21,7 +21,7 @@
 #define DOMMimeType_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/Forward.h"
@@ -34,7 +34,7 @@ namespace blink {
 class DOMPlugin;
 class LocalFrame;
 
-class DOMMimeType final : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+class DOMMimeType final : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
     DEFINE_WRAPPERTYPEINFO();
 public:

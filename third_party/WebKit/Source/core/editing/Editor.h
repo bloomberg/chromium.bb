@@ -35,7 +35,6 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/frame/FrameDestructionObserver.h"
 #include "platform/PasteMode.h"
 #include "platform/heap/Handle.h"
 

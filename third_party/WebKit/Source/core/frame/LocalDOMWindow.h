@@ -32,8 +32,8 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
-#include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -213,13 +213,13 @@ public:
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
 
 private:
-    // Rather than simply inheriting FrameDestructionObserver like most other
-    // classes, LocalDOMWindow hides its FrameDestructionObserver with
+    // Rather than simply inheriting LocalFrameLifecycleObserver like most other
+    // classes, LocalDOMWindow hides its LocalFrameLifecycleObserver with
     // composition. This prevents conflicting overloads between DOMWindow, which
     // has a frame() accessor that returns Frame* for bindings code, and
-    // FrameDestructionObserver, which has a frame() accessor that returns a
+    // LocalFrameLifecycleObserver, which has a frame() accessor that returns a
     // LocalFrame*.
-    class WindowFrameObserver final : public NoBaseWillBeGarbageCollected<WindowFrameObserver>, public FrameDestructionObserver {
+    class WindowFrameObserver final : public NoBaseWillBeGarbageCollected<WindowFrameObserver>, public LocalFrameLifecycleObserver {
         WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WindowFrameObserver);
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
         DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(WindowFrameObserver);
@@ -231,7 +231,7 @@ private:
     private:
         WindowFrameObserver(LocalDOMWindow*, LocalFrame&);
 
-        // FrameDestructionObserver overrides:
+        // LocalFrameLifecycleObserver overrides:
         void willDetachFrameHost() override;
         void contextDestroyed() override;
 

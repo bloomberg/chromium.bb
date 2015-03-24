@@ -29,7 +29,7 @@ PermissionController* PermissionController::from(LocalFrame& frame)
 }
 
 PermissionController::PermissionController(LocalFrame& frame, WebPermissionClient* client)
-    : FrameDestructionObserver(&frame)
+    : LocalFrameLifecycleObserver(&frame)
     , m_client(client)
 {
 }
@@ -51,7 +51,7 @@ void PermissionController::willDetachFrameHost()
 
 DEFINE_TRACE(PermissionController)
 {
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }
 

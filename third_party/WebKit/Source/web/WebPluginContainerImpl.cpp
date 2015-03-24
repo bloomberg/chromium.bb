@@ -698,7 +698,7 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : FrameDestructionObserver(element->document().frame())
+    : LocalFrameLifecycleObserver(element->document().frame())
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(nullptr)
@@ -758,7 +758,7 @@ void WebPluginContainerImpl::shouldDisposePlugin()
 DEFINE_TRACE(WebPluginContainerImpl)
 {
     visitor->trace(m_element);
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
     PluginView::trace(visitor);
 }
 

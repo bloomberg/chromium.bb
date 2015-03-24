@@ -12,7 +12,7 @@
 namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame, WebPresentationClient* client)
-    : FrameDestructionObserver(&frame)
+    : LocalFrameLifecycleObserver(&frame)
     , m_client(client)
 {
     if (m_client)
@@ -53,7 +53,7 @@ DEFINE_TRACE(PresentationController)
 {
     visitor->trace(m_presentation);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 void PresentationController::didChangeAvailability(bool available)

@@ -32,7 +32,7 @@
 #ifndef WebPluginContainerImpl_h
 #define WebPluginContainerImpl_h
 
-#include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Widget.h"
 #include "public/web/WebPluginContainer.h"
@@ -62,7 +62,7 @@ class Widget;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 
-class WebPluginContainerImpl final : public PluginView, public WebPluginContainer, public FrameDestructionObserver {
+class WebPluginContainerImpl final : public PluginView, public WebPluginContainer, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
 public:
     static PassRefPtrWillBeRawPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)

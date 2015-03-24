@@ -53,7 +53,7 @@ PassOwnPtrWillBeRawPtr<StorageArea> StorageArea::create(PassOwnPtr<WebStorageAre
 }
 
 StorageArea::StorageArea(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
-    : FrameDestructionObserver(nullptr)
+    : LocalFrameLifecycleObserver(nullptr)
     , m_storageArea(storageArea)
     , m_storageType(storageType)
     , m_canAccessStorageCachedResult(false)
@@ -66,7 +66,7 @@ StorageArea::~StorageArea()
 
 DEFINE_TRACE(StorageArea)
 {
-    FrameDestructionObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 unsigned StorageArea::length(ExceptionState& exceptionState, LocalFrame* frame)
@@ -140,7 +140,7 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
     if (!frame || !frame->page())
         return false;
 
-    // FrameDestructionObserver is used to safely keep the cached
+    // LocalFrameLifecycleObserver is used to safely keep the cached
     // reference to the LocalFrame. Should the LocalFrame die before
     // this StorageArea does, that cached reference will be cleared.
     if (this->frame() == frame)
@@ -150,7 +150,7 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
         return false;
     bool result = controller->storageClient()->canAccessStorage(frame, m_storageType);
     // Move attention to the new LocalFrame.
-    FrameDestructionObserver::setContext(frame);
+    LocalFrameLifecycleObserver::setContext(frame);
     m_canAccessStorageCachedResult = result;
     return result;
 }
