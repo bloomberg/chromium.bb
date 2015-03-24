@@ -287,6 +287,7 @@
               'proxy/ppb_flash_proxy.cc',
               'proxy/ppb_pdf_proxy.cc',
               'proxy/ppb_talk_private_proxy.cc',
+              'proxy/ppb_var_deprecated_proxy.cc',
               'proxy/ppb_video_capture_proxy.cc',
               'proxy/ppb_video_decoder_proxy.cc',
               'proxy/ppp_content_decryptor_private_proxy.cc',

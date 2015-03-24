@@ -48,7 +48,9 @@ namespace {
 // Assert that we are not called more than once.  Even though calling this
 // function isn't harmful (ICU can handle it), being called twice probably
 // indicates a programming error.
+#if !defined(OS_NACL)
 bool g_called_once = false;
+#endif
 bool g_check_called_once = true;
 #endif
 }
@@ -81,6 +83,7 @@ bool InitializeICUWithFileDescriptor(
 #endif
 
 
+#if !defined(OS_NACL)
 bool InitializeICU() {
 #if !defined(NDEBUG)
   DCHECK(!g_check_called_once || !g_called_once);
@@ -158,6 +161,7 @@ bool InitializeICU() {
   return err == U_ZERO_ERROR;
 #endif
 }
+#endif
 
 void AllowMultipleInitializeCallsForTesting() {
 #if !defined(NDEBUG)
