@@ -31,7 +31,7 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
   bool IsEnabled() const override;
   void CreateURLAccessRequest(const GURL& url_requested,
                               const SuccessCallback& callback) override;
-  void CreateExtensionUpdateRequest(const std::string& extension_id,
+  void CreateExtensionUpdateRequest(const std::string& id,
                                     const SuccessCallback& callback) override;
 
  private:

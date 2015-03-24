@@ -43,6 +43,7 @@ class SupervisedUserWhitelistService;
 
 namespace base {
 class FilePath;
+class Version;
 }
 
 namespace content {
@@ -120,6 +121,7 @@ class SupervisedUserService : public KeyedService,
 
   // Adds an update request for the given WebStore item (App/Extension).
   void AddExtensionUpdateRequest(const std::string& extension_id,
+                                 const base::Version& version,
                                  const SuccessCallback& callback);
 
   // Returns the email address of the custodian.

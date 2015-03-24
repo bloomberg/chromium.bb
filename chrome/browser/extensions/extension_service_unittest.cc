@@ -6642,7 +6642,7 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   }
 
   MOCK_METHOD2(CreateExtensionUpdateRequest,
-               void(const std::string& extension_id,
+               void(const std::string& id,
                     const SupervisedUserService::SuccessCallback& callback));
 
  private:
@@ -6737,7 +6737,8 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
   std::string old_version = extension->VersionString();
 
   // Update to a new version with increased permissions.
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(id, testing::_));
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequest(id + ":2", testing::_));
   path = base_path.AppendASCII("v2");
   PackCRXAndUpdateExtension(id, path, pem_path, DISABLED);
 

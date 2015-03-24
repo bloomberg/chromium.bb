@@ -28,10 +28,10 @@ class PermissionRequestCreator {
   virtual void CreateURLAccessRequest(const GURL& url_requested,
                                       const SuccessCallback& callback) = 0;
 
-  // Creates a request to re-enable the extension with the given |extension_id|,
-  // which was disabled due to a permission increase.
+  // Creates a request to re-enable the extension with the given |id| (composed
+  // of extension_id:version), which was disabled due to a permission increase.
   virtual void CreateExtensionUpdateRequest(
-      const std::string& extension_id,
+      const std::string& id,
       const SuccessCallback& callback) = 0;
 };
 

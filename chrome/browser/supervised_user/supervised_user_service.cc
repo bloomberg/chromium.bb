@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -86,10 +87,10 @@ void CreateURLAccessRequest(
 }
 
 void CreateExtensionUpdateRequest(
-    const std::string& extension_id,
+    const std::string& id,
     PermissionRequestCreator* creator,
     const SupervisedUserService::SuccessCallback& callback) {
-  creator->CreateExtensionUpdateRequest(extension_id, callback);
+  creator->CreateExtensionUpdateRequest(id, callback);
 }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -657,9 +658,11 @@ void SupervisedUserService::AddURLAccessRequest(
 
 void SupervisedUserService::AddExtensionUpdateRequest(
     const std::string& extension_id,
+    const base::Version& version,
     const SuccessCallback& callback) {
+  std::string id = extension_id + ":" + version.GetString();
   AddPermissionRequestInternal(
-      base::Bind(CreateExtensionUpdateRequest, extension_id),
+      base::Bind(CreateExtensionUpdateRequest, id),
       callback, 0);
 }
 

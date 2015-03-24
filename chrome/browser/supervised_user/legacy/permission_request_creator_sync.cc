@@ -57,9 +57,9 @@ void PermissionRequestCreatorSync::CreateURLAccessRequest(
 }
 
 void PermissionRequestCreatorSync::CreateExtensionUpdateRequest(
-    const std::string& extension_id,
+    const std::string& id,
     const SuccessCallback& callback) {
-  CreateRequest(kSupervisedUserUpdateRequestKeyPrefix, extension_id, callback);
+  CreateRequest(kSupervisedUserUpdateRequestKeyPrefix, id, callback);
 }
 
 void PermissionRequestCreatorSync::CreateRequest(

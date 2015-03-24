@@ -117,9 +117,9 @@ void PermissionRequestCreatorApiary::CreateURLAccessRequest(
 }
 
 void PermissionRequestCreatorApiary::CreateExtensionUpdateRequest(
-    const std::string& extension_id,
+    const std::string& id,
     const SuccessCallback& callback) {
-  CreateRequest(kNamespaceUpdateRequest, extension_id, callback);
+  CreateRequest(kNamespaceUpdateRequest, id, callback);
 }
 
 GURL PermissionRequestCreatorApiary::GetApiUrl() const {
