@@ -255,10 +255,6 @@ extern const char kChromeUIThemePath[];
 extern const char kChromeUIPrintHost[];
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if defined(OS_ANDROID)
-extern const char kChromeUIWelcomeHost[];
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 extern const char kChromeUILinuxProxyConfigHost[];
 extern const char kChromeUISandboxHost[];
