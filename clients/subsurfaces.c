@@ -422,9 +422,9 @@ triangle_create_egl_surface(struct triangle *tri, int width, int height)
 
 	tri->wl_surface = widget_get_wl_surface(tri->widget);
 	tri->egl_window = wl_egl_window_create(tri->wl_surface, width, height);
-	tri->egl_surface = weston_platform_create_egl_window(tri->egl->dpy,
-							     tri->egl->conf,
-							     tri->egl_window, NULL);
+	tri->egl_surface = weston_platform_create_egl_surface(tri->egl->dpy,
+							      tri->egl->conf,
+							      tri->egl_window, NULL);
 
 	ret = eglMakeCurrent(tri->egl->dpy, tri->egl_surface,
 			     tri->egl_surface, tri->egl->ctx);

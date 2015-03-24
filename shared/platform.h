@@ -77,9 +77,9 @@ weston_platform_get_egl_display(EGLenum platform, void *native_display,
 }
 
 static inline EGLSurface
-weston_platform_create_egl_window(EGLDisplay dpy, EGLConfig config,
-				  void *native_window,
-				  const EGLint *attrib_list)
+weston_platform_create_egl_surface(EGLDisplay dpy, EGLConfig config,
+				   void *native_window,
+				   const EGLint *attrib_list)
 {
 	static PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC
 		create_platform_window = NULL;
@@ -109,9 +109,9 @@ weston_platform_get_egl_display(void *platform, void *native_display,
 }
 
 static inline void *
-weston_platform_create_egl_window(void *dpy, void *config,
-				  void *native_window,
-				  const int *attrib_list)
+weston_platform_create_egl_surface(void *dpy, void *config,
+				   void *native_window,
+				   const int *attrib_list)
 {
 	return NULL;
 }

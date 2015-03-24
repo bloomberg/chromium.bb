@@ -641,9 +641,9 @@ egl_window_surface_create(struct display *display,
 						   rectangle->height);
 
 	surface->egl_surface =
-		weston_platform_create_egl_window(display->dpy,
-						  display->argb_config,
-						  surface->egl_window, NULL);
+		weston_platform_create_egl_surface(display->dpy,
+						   display->argb_config,
+						   surface->egl_window, NULL);
 
 	surface->cairo_surface =
 		cairo_gl_surface_create_for_egl(display->argb_device,
