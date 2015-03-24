@@ -64,7 +64,7 @@ base::StringPiece ShellContentClient::GetDataResource(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRunLayoutTest)) {
     switch (resource_id) {
-      case IDR_BROKENIMAGE:
+      case IDR2_BROKENIMAGE:
 #if defined(OS_MACOSX)
         resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_PNG;
 #else
@@ -72,7 +72,7 @@ base::StringPiece ShellContentClient::GetDataResource(
 #endif
         break;
 
-      case IDR_TEXTAREA_RESIZER:
+      case IDR2_TEXTAREA_RESIZER:
         resource_id = IDR_CONTENT_SHELL_TEXT_AREA_RESIZE_CORNER_PNG;
         break;
     }
