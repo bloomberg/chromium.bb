@@ -112,10 +112,11 @@ public:
     State readyState() const;
     bool withCredentials() const { return m_includeCredentials; }
     void setWithCredentials(bool, ExceptionState&);
-    void open(const AtomicString& method, const KURL&, ExceptionState&);
+    void open(const AtomicString& method, const String& url, ExceptionState&);
+    void open(const AtomicString& method, const String& url, bool async, ExceptionState&);
+    void open(const AtomicString& method, const String& url, bool async, const String& user, ExceptionState&);
+    void open(const AtomicString& method, const String& url, bool async, const String& user, const String& password, ExceptionState&);
     void open(const AtomicString& method, const KURL&, bool async, ExceptionState&);
-    void open(const AtomicString& method, const KURL&, bool async, const String& user, ExceptionState&);
-    void open(const AtomicString& method, const KURL&, bool async, const String& user, const String& password, ExceptionState&);
     void send(ExceptionState&);
     void send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData&, ExceptionState&);
     void abort();

@@ -687,9 +687,14 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
     m_includeCredentials = value;
 }
 
-void XMLHttpRequest::open(const AtomicString& method, const KURL& url, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const String& url, ExceptionState& exceptionState)
 {
     open(method, url, true, exceptionState);
+}
+
+void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, ExceptionState& exceptionState)
+{
+    open(method, executionContext()->completeURL(urlString), async, exceptionState);
 }
 
 void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, ExceptionState& exceptionState)
@@ -763,19 +768,22 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
         m_state = OPENED;
 }
 
-void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, const String& user, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& user, ExceptionState& exceptionState)
 {
-    KURL urlWithCredentials(url);
-    urlWithCredentials.setUser(user);
+    KURL urlWithCredentials(executionContext()->completeURL(urlString));
+    if (!user.isNull())
+        urlWithCredentials.setUser(user);
 
     open(method, urlWithCredentials, async, exceptionState);
 }
 
-void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, const String& user, const String& password, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& user, const String& password, ExceptionState& exceptionState)
 {
-    KURL urlWithCredentials(url);
-    urlWithCredentials.setUser(user);
-    urlWithCredentials.setPass(password);
+    KURL urlWithCredentials(executionContext()->completeURL(urlString));
+    if (!user.isNull())
+        urlWithCredentials.setUser(user);
+    if (!password.isNull())
+        urlWithCredentials.setPass(password);
 
     open(method, urlWithCredentials, async, exceptionState);
 }
