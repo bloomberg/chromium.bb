@@ -163,6 +163,7 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
 
 class BspTreePerfTest : public CalcDrawPropsImplTest {
  public:
+  BspTreePerfTest() : num_duplicates_(1) {}
   void RunSortLayers() { RunTest(false, false, false); }
 
   void SetNumberOfDuplicates(int num_duplicates) {
