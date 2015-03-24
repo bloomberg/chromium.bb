@@ -103,6 +103,7 @@
             }],
           ],
           'dependencies': [
+            'base_java',
             'base_jni_headers',
             '../third_party/ashmem/ashmem.gyp:ashmem',
           ],
@@ -116,11 +117,6 @@
           ],
           'includes': [
             '../build/android/cpufeatures.gypi',
-          ],
-        }],
-        ['OS == "android" and _toolset == "target" and android_webview_build == 0', {
-          'dependencies': [
-            'base_java',
           ],
         }],
         ['os_bsd==1', {
@@ -1412,15 +1408,9 @@
             'base_java_library_process_type',
             'base_java_memory_pressure_level',
             'base_native_libraries_gen',
+            '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
           ],
           'includes': [ '../build/java.gypi' ],
-          'conditions': [
-            ['android_webview_build==0', {
-              'dependencies': [
-                '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
-              ],
-            }]
-          ],
         },
         {
           # GN: //base:base_java_unittest_support
@@ -1490,25 +1480,18 @@
           # GN: //base/android/linker:chromium_android_linker
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
-          'conditions': [
-            # Avoid breaking the webview build because it
-            # does not have <(android_ndk_root)/crazy_linker.gyp.
-            # Note that webview never uses the linker anyway.
-            ['android_webview_build == 0', {
-              'sources': [
-                'android/linker/linker_jni.cc',
-              ],
-              # The crazy linker is never instrumented.
-              'cflags!': [
-                '-finstrument-functions',
-              ],
-              'dependencies': [
-                # The NDK contains the crazy_linker here:
-                #   '<(android_ndk_root)/crazy_linker.gyp:crazy_linker'
-                # However, we use our own fork.  See bug 384700.
-                '../third_party/android_crazy_linker/crazy_linker.gyp:crazy_linker',
-              ],
-            }],
+          'sources': [
+            'android/linker/linker_jni.cc',
+          ],
+          # The crazy linker is never instrumented.
+          'cflags!': [
+            '-finstrument-functions',
+          ],
+          'dependencies': [
+            # The NDK contains the crazy_linker here:
+            #   '<(android_ndk_root)/crazy_linker.gyp:crazy_linker'
+            # However, we use our own fork.  See bug 384700.
+            '../third_party/android_crazy_linker/crazy_linker.gyp:crazy_linker',
           ],
         },
         {
