@@ -32,6 +32,8 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
+#include "../shared/platform.h"
+
 struct window;
 struct seat;
 
