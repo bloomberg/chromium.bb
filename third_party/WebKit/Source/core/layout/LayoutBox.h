@@ -90,10 +90,34 @@ public:
     int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
     int pixelSnappedHeight() const { return m_frameRect.pixelSnappedHeight(); }
 
-    void setX(LayoutUnit x) { m_frameRect.setX(x); }
-    void setY(LayoutUnit y) { m_frameRect.setY(y); }
-    void setWidth(LayoutUnit width) { m_frameRect.setWidth(width); }
-    void setHeight(LayoutUnit height) { m_frameRect.setHeight(height); }
+    void setX(LayoutUnit x)
+    {
+        if (x == m_frameRect.x())
+            return;
+        m_frameRect.setX(x);
+        frameRectChanged();
+    }
+    void setY(LayoutUnit y)
+    {
+        if (y == m_frameRect.y())
+            return;
+        m_frameRect.setY(y);
+        frameRectChanged();
+    }
+    void setWidth(LayoutUnit width)
+    {
+        if (width == m_frameRect.width())
+            return;
+        m_frameRect.setWidth(width);
+        frameRectChanged();
+    }
+    void setHeight(LayoutUnit height)
+    {
+        if (height == m_frameRect.height())
+            return;
+        m_frameRect.setHeight(height);
+        frameRectChanged();
+    }
 
     LayoutUnit logicalLeft() const { return style()->isHorizontalWritingMode() ? m_frameRect.x() : m_frameRect.y(); }
     LayoutUnit logicalRight() const { return logicalLeft() + logicalWidth(); }
@@ -156,7 +180,13 @@ public:
     LayoutSize size() const { return m_frameRect.size(); }
     IntSize pixelSnappedSize() const { return m_frameRect.pixelSnappedSize(); }
 
-    void setLocation(const LayoutPoint& location) { m_frameRect.setLocation(location); }
+    void setLocation(const LayoutPoint& location)
+    {
+        if (location == m_frameRect.location())
+            return;
+        m_frameRect.setLocation(location);
+        frameRectChanged();
+    }
 
     // FIXME: Currently scrollbars are using int geometry and positioned based on
     // pixelSnappedBorderBoxRect whose size may change when location changes because of
@@ -164,11 +194,29 @@ public:
     // of RenderBox::layout(). Will remove when we use LayoutUnits for scrollbars.
     void setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint&);
 
-    void setSize(const LayoutSize& size) { m_frameRect.setSize(size); }
-    void move(LayoutUnit dx, LayoutUnit dy) { m_frameRect.move(dx, dy); }
+    void setSize(const LayoutSize& size)
+    {
+        if (size == m_frameRect.size())
+            return;
+        m_frameRect.setSize(size);
+        frameRectChanged();
+    }
+    void move(LayoutUnit dx, LayoutUnit dy)
+    {
+        if (!dx && !dy)
+            return;
+        m_frameRect.move(dx, dy);
+        frameRectChanged();
+    }
 
     LayoutRect frameRect() const { return m_frameRect; }
-    void setFrameRect(const LayoutRect& rect) { m_frameRect = rect; }
+    void setFrameRect(const LayoutRect& rect)
+    {
+        if (rect == m_frameRect)
+            return;
+        m_frameRect = rect;
+        frameRectChanged();
+    }
 
     LayoutRect borderBoxRect() const { return LayoutRect(LayoutPoint(), size()); }
     LayoutRect paddingBoxRect() const { return LayoutRect(borderLeft(), borderTop(), clientWidth(), clientHeight()); }
@@ -760,6 +808,14 @@ private:
     bool logicalHeightComputesAsNone(SizeType) const;
 
     bool isBox() const = delete; // This will catch anyone doing an unnecessary check.
+
+    void frameRectChanged()
+    {
+        // The frame rect may change because of layout of other objects.
+        // Should check this object for paint invalidation.
+        if (!needsLayout())
+            setMayNeedPaintInvalidation();
+    }
 
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
     LayoutRect m_frameRect;
