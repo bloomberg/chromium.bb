@@ -24,6 +24,7 @@
  */
 
 interface SpeechSynthesisEvent : Event {
+    readonly attribute SpeechSynthesisUtterance utterance;
     readonly attribute unsigned long charIndex;
     readonly attribute float elapsedTime;
     readonly attribute DOMString name;

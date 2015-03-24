@@ -145,7 +145,7 @@ void SpeechSynthesis::resume()
 void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned long charIndex, const String& name)
 {
     if (executionContext() && !executionContext()->activeDOMObjectsAreStopped())
-        utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (currentTime() - utterance->startTime()), name));
+        utterance->dispatchEvent(SpeechSynthesisEvent::create(type, utterance, charIndex, (currentTime() - utterance->startTime()), name));
 }
 
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)

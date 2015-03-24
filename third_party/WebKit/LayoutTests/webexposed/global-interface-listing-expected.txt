@@ -5096,6 +5096,7 @@ interface SpeechSynthesisEvent
     getter charIndex
     getter elapsedTime
     getter name
+    getter utterance
     method constructor
 interface SpeechSynthesisUtterance
     getter lang
