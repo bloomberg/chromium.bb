@@ -49,24 +49,9 @@ public:
 
 private:
     bool initialCommandIsMoveTo();
-    bool decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData&);
-    void emitMoveToSegment(PathSegmentData&);
-    void emitLineToSegment(PathSegmentData&);
-    void emitLineToHorizontalSegment(PathSegmentData&);
-    void emitLineToVerticalSegment(PathSegmentData&);
-    void emitCurveToCubicSegment(PathSegmentData&);
-    void emitCurveToCubicSmoothSegment(PathSegmentData&);
-    void emitCurveToQuadraticSegment(PathSegmentData&);
-    void emitCurveToQuadraticSmoothSegment(PathSegmentData&);
-    void emitArcToSegment(PathSegmentData&);
 
     RawPtrWillBeMember<SVGPathSource> m_source;
     RawPtrWillBeMember<SVGPathConsumer> m_consumer;
-    PathCoordinateMode m_mode;
-    SVGPathSegType m_lastCommand;
-    FloatPoint m_controlPoint;
-    FloatPoint m_currentPoint;
-    FloatPoint m_subPathPoint;
 };
 
 } // namespace blink

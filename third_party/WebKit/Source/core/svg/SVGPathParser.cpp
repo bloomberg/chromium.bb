@@ -47,79 +47,32 @@ bool SVGPathParser::initialCommandIsMoveTo()
     return command == PathSegMoveToAbs || command == PathSegMoveToRel;
 }
 
-void SVGPathParser::emitMoveToSegment(PathSegmentData& segment)
-{
-    if (m_mode == RelativeCoordinates)
-        m_currentPoint += segment.targetPoint;
-    else
-        m_currentPoint = segment.targetPoint;
-    m_subPathPoint = m_currentPoint;
-    m_consumer->moveTo(m_currentPoint, AbsoluteCoordinates);
-}
 
-void SVGPathParser::emitLineToSegment(PathSegmentData& segment)
-{
-    if (m_mode == RelativeCoordinates)
-        m_currentPoint += segment.targetPoint;
-    else
-        m_currentPoint = segment.targetPoint;
-    m_consumer->lineTo(m_currentPoint, AbsoluteCoordinates);
-}
-
-void SVGPathParser::emitLineToHorizontalSegment(PathSegmentData& segment)
-{
-    if (m_mode == RelativeCoordinates)
-        m_currentPoint += segment.targetPoint;
-    else
-        m_currentPoint.setX(segment.targetPoint.x());
-    m_consumer->lineTo(m_currentPoint, AbsoluteCoordinates);
-}
-
-void SVGPathParser::emitLineToVerticalSegment(PathSegmentData& segment)
-{
-    if (m_mode == RelativeCoordinates)
-        m_currentPoint += segment.targetPoint;
-    else
-        m_currentPoint.setY(segment.targetPoint.y());
-    m_consumer->lineTo(m_currentPoint, AbsoluteCoordinates);
-}
-
-void SVGPathParser::emitCurveToCubicSegment(PathSegmentData& segment)
-{
-    if (m_mode == RelativeCoordinates) {
-        segment.point1 += m_currentPoint;
-        segment.point2 += m_currentPoint;
-        segment.targetPoint += m_currentPoint;
+class NormalizingConsumer {
+    STACK_ALLOCATED();
+public:
+    NormalizingConsumer(SVGPathConsumer* consumer)
+        : m_consumer(consumer)
+        , m_lastCommand(PathSegUnknown)
+    {
+        ASSERT(m_consumer);
     }
-    m_consumer->curveToCubic(segment.point1, segment.point2, segment.targetPoint, AbsoluteCoordinates);
 
-    m_controlPoint = segment.point2;
-    m_currentPoint = segment.targetPoint;
-}
+    void emitSegment(PathSegmentData&);
+
+private:
+    bool decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData&);
+
+    RawPtrWillBeMember<SVGPathConsumer> m_consumer;
+    FloatPoint m_controlPoint;
+    FloatPoint m_currentPoint;
+    FloatPoint m_subPathPoint;
+    SVGPathSegType m_lastCommand;
+};
 
 static FloatPoint reflectedPoint(const FloatPoint& reflectIn, const FloatPoint& pointToReflect)
 {
     return FloatPoint(2 * reflectIn.x() - pointToReflect.x(), 2 * reflectIn.y() - pointToReflect.y());
-}
-
-void SVGPathParser::emitCurveToCubicSmoothSegment(PathSegmentData& segment)
-{
-    if (m_lastCommand != PathSegCurveToCubicAbs
-        && m_lastCommand != PathSegCurveToCubicRel
-        && m_lastCommand != PathSegCurveToCubicSmoothAbs
-        && m_lastCommand != PathSegCurveToCubicSmoothRel)
-        m_controlPoint = m_currentPoint;
-
-    FloatPoint point1 = reflectedPoint(m_currentPoint, m_controlPoint);
-    if (m_mode == RelativeCoordinates) {
-        segment.point2 += m_currentPoint;
-        segment.targetPoint += m_currentPoint;
-    }
-
-    m_consumer->curveToCubic(point1, segment.point2, segment.targetPoint, AbsoluteCoordinates);
-
-    m_controlPoint = segment.point2;
-    m_currentPoint = segment.targetPoint;
 }
 
 // Blend the points with a ratio (1/3):(2/3).
@@ -129,50 +82,146 @@ static FloatPoint blendPoints(const FloatPoint& p1, const FloatPoint& p2)
     return FloatPoint((p1.x() + 2 * p2.x()) * oneOverThree, (p1.y() + 2 * p2.y()) * oneOverThree);
 }
 
-void SVGPathParser::emitCurveToQuadraticSegment(PathSegmentData& segment)
+static inline bool isCubicCommand(SVGPathSegType command)
 {
-    m_controlPoint = segment.point1;
-
-    if (m_mode == RelativeCoordinates) {
-        m_controlPoint += m_currentPoint;
-        segment.targetPoint += m_currentPoint;
-    }
-    segment.point1 = blendPoints(m_currentPoint, m_controlPoint);
-    FloatPoint point2 = blendPoints(segment.targetPoint, m_controlPoint);
-
-    m_consumer->curveToCubic(segment.point1, point2, segment.targetPoint, AbsoluteCoordinates);
-
-    m_currentPoint = segment.targetPoint;
+    return command == PathSegCurveToCubicAbs
+        || command == PathSegCurveToCubicRel
+        || command == PathSegCurveToCubicSmoothAbs
+        || command == PathSegCurveToCubicSmoothRel;
 }
 
-void SVGPathParser::emitCurveToQuadraticSmoothSegment(PathSegmentData& segment)
+static inline bool isQuadraticCommand(SVGPathSegType command)
 {
-    if (m_lastCommand != PathSegCurveToQuadraticAbs
-        && m_lastCommand != PathSegCurveToQuadraticRel
-        && m_lastCommand != PathSegCurveToQuadraticSmoothAbs
-        && m_lastCommand != PathSegCurveToQuadraticSmoothRel)
+    return command == PathSegCurveToQuadraticAbs
+        || command == PathSegCurveToQuadraticRel
+        || command == PathSegCurveToQuadraticSmoothAbs
+        || command == PathSegCurveToQuadraticSmoothRel;
+}
+
+void NormalizingConsumer::emitSegment(PathSegmentData& segment)
+{
+    SVGPathSegType originalCommand = segment.command;
+
+    // Convert relative points to absolute points.
+    switch (segment.command) {
+    case PathSegCurveToQuadraticRel:
+        segment.point1 += m_currentPoint;
+        segment.targetPoint += m_currentPoint;
+        break;
+    case PathSegCurveToCubicRel:
+        segment.point1 += m_currentPoint;
+        /* fall through */
+    case PathSegCurveToCubicSmoothRel:
+        segment.point2 += m_currentPoint;
+        /* fall through */
+    case PathSegMoveToRel:
+    case PathSegLineToRel:
+    case PathSegLineToHorizontalRel:
+    case PathSegLineToVerticalRel:
+    case PathSegCurveToQuadraticSmoothRel:
+    case PathSegArcRel:
+        segment.targetPoint += m_currentPoint;
+        break;
+    case PathSegLineToHorizontalAbs:
+        segment.targetPoint.setY(m_currentPoint.y());
+        break;
+    case PathSegLineToVerticalAbs:
+        segment.targetPoint.setX(m_currentPoint.x());
+        break;
+    case PathSegClosePath:
+        // Reset m_currentPoint for the next path.
+        segment.targetPoint = m_subPathPoint;
+        break;
+    default:
+        break;
+    }
+
+    // Update command verb, handle smooth segments and convert quadratic curve
+    // segments to cubics.
+    switch (segment.command) {
+    case PathSegMoveToRel:
+    case PathSegMoveToAbs:
+        m_subPathPoint = segment.targetPoint;
+        segment.command = PathSegMoveToAbs;
+        break;
+    case PathSegLineToRel:
+    case PathSegLineToAbs:
+    case PathSegLineToHorizontalRel:
+    case PathSegLineToHorizontalAbs:
+    case PathSegLineToVerticalRel:
+    case PathSegLineToVerticalAbs:
+        segment.command = PathSegLineToAbs;
+        break;
+    case PathSegClosePath:
+        break;
+    case PathSegCurveToCubicSmoothRel:
+    case PathSegCurveToCubicSmoothAbs:
+        if (!isCubicCommand(m_lastCommand))
+            segment.point1 = m_currentPoint;
+        else
+            segment.point1 = reflectedPoint(m_currentPoint, m_controlPoint);
+        /* fall through */
+    case PathSegCurveToCubicRel:
+    case PathSegCurveToCubicAbs:
+        m_controlPoint = segment.point2;
+        segment.command = PathSegCurveToCubicAbs;
+        break;
+    case PathSegCurveToQuadraticSmoothRel:
+    case PathSegCurveToQuadraticSmoothAbs:
+        if (!isQuadraticCommand(m_lastCommand))
+            segment.point1 = m_currentPoint;
+        else
+            segment.point1 = reflectedPoint(m_currentPoint, m_controlPoint);
+        /* fall through */
+    case PathSegCurveToQuadraticRel:
+    case PathSegCurveToQuadraticAbs:
+        // Save the unmodified control point.
+        m_controlPoint = segment.point1;
+        segment.point1 = blendPoints(m_currentPoint, m_controlPoint);
+        segment.point2 = blendPoints(segment.targetPoint, m_controlPoint);
+        segment.command = PathSegCurveToCubicAbs;
+        break;
+    case PathSegArcRel:
+    case PathSegArcAbs:
+        if (!decomposeArcToCubic(m_currentPoint, segment)) {
+            // On failure, emit a line segment to the target point.
+            segment.command = PathSegLineToAbs;
+        } else {
+            // decomposeArcToCubic() has already emitted the normalized
+            // segments, so set command to PathSegArcAbs, to skip any further
+            // emit.
+            segment.command = PathSegArcAbs;
+        }
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    switch (segment.command) {
+    case PathSegMoveToAbs:
+        m_consumer->moveTo(segment.targetPoint, AbsoluteCoordinates);
+        break;
+    case PathSegLineToAbs:
+        m_consumer->lineTo(segment.targetPoint, AbsoluteCoordinates);
+        break;
+    case PathSegClosePath:
+        m_consumer->closePath();
+        break;
+    case PathSegCurveToCubicAbs:
+        m_consumer->curveToCubic(segment.point1, segment.point2, segment.targetPoint, AbsoluteCoordinates);
+        break;
+    case PathSegArcAbs:
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    m_currentPoint = segment.targetPoint;
+
+    if (!isCubicCommand(originalCommand) && !isQuadraticCommand(originalCommand))
         m_controlPoint = m_currentPoint;
 
-    if (m_mode == RelativeCoordinates)
-        segment.targetPoint += m_currentPoint;
-
-    m_controlPoint = reflectedPoint(m_currentPoint, m_controlPoint);
-    FloatPoint point1 = blendPoints(m_currentPoint, m_controlPoint);
-    FloatPoint point2 = blendPoints(segment.targetPoint, m_controlPoint);
-
-    m_consumer->curveToCubic(point1, point2, segment.targetPoint, AbsoluteCoordinates);
-
-    m_currentPoint = segment.targetPoint;
-}
-
-void SVGPathParser::emitArcToSegment(PathSegmentData& segment)
-{
-    if (m_mode == RelativeCoordinates)
-        segment.targetPoint += m_currentPoint;
-
-    if (!decomposeArcToCubic(m_currentPoint, segment))
-        m_consumer->lineTo(segment.targetPoint, AbsoluteCoordinates);
-    m_currentPoint = segment.targetPoint;
+    m_lastCommand = originalCommand;
 }
 
 bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, bool checkForInitialMoveTo)
@@ -180,76 +229,18 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
     ASSERT(m_source);
     ASSERT(m_consumer);
 
-    m_controlPoint = FloatPoint();
-    m_currentPoint = FloatPoint();
-    m_subPathPoint = FloatPoint();
-
     if (checkForInitialMoveTo && !initialCommandIsMoveTo())
         return false;
 
-    m_lastCommand = PathSegUnknown;
+    NormalizingConsumer normalizer(m_consumer);
+
     while (m_source->hasMoreData()) {
         PathSegmentData segment = m_source->parseSegment();
         if (segment.command == PathSegUnknown)
             return false;
 
         if (pathParsingMode == NormalizedParsing) {
-            m_mode = AbsoluteCoordinates;
-
-            switch (segment.command) {
-            case PathSegMoveToRel:
-                m_mode = RelativeCoordinates;
-            case PathSegMoveToAbs:
-                emitMoveToSegment(segment);
-                break;
-            case PathSegLineToRel:
-                m_mode = RelativeCoordinates;
-            case PathSegLineToAbs:
-                emitLineToSegment(segment);
-                break;
-            case PathSegLineToHorizontalRel:
-                m_mode = RelativeCoordinates;
-            case PathSegLineToHorizontalAbs:
-                emitLineToHorizontalSegment(segment);
-                break;
-            case PathSegLineToVerticalRel:
-                m_mode = RelativeCoordinates;
-            case PathSegLineToVerticalAbs:
-                emitLineToVerticalSegment(segment);
-                break;
-            case PathSegClosePath:
-                m_consumer->closePath();
-                // Reset m_currentPoint for the next path.
-                m_currentPoint = m_subPathPoint;
-                break;
-            case PathSegCurveToCubicRel:
-                m_mode = RelativeCoordinates;
-            case PathSegCurveToCubicAbs:
-                emitCurveToCubicSegment(segment);
-                break;
-            case PathSegCurveToCubicSmoothRel:
-                m_mode = RelativeCoordinates;
-            case PathSegCurveToCubicSmoothAbs:
-                emitCurveToCubicSmoothSegment(segment);
-                break;
-            case PathSegCurveToQuadraticRel:
-                m_mode = RelativeCoordinates;
-            case PathSegCurveToQuadraticAbs:
-                emitCurveToQuadraticSegment(segment);
-                break;
-            case PathSegCurveToQuadraticSmoothRel:
-                m_mode = RelativeCoordinates;
-            case PathSegCurveToQuadraticSmoothAbs:
-                emitCurveToQuadraticSmoothSegment(segment);
-                break;
-            case PathSegArcRel:
-                m_mode = RelativeCoordinates;
-            case PathSegArcAbs:
-                emitArcToSegment(segment);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
+            normalizer.emitSegment(segment);
         } else {
             PathCoordinateMode mode = AbsoluteCoordinates;
 
@@ -310,18 +301,6 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
         if (!m_consumer->continueConsuming())
             return true;
 
-        m_lastCommand = segment.command;
-
-        if (m_lastCommand != PathSegCurveToCubicAbs
-            && m_lastCommand != PathSegCurveToCubicRel
-            && m_lastCommand != PathSegCurveToCubicSmoothAbs
-            && m_lastCommand != PathSegCurveToCubicSmoothRel
-            && m_lastCommand != PathSegCurveToQuadraticAbs
-            && m_lastCommand != PathSegCurveToQuadraticRel
-            && m_lastCommand != PathSegCurveToQuadraticSmoothAbs
-            && m_lastCommand != PathSegCurveToQuadraticSmoothRel)
-            m_controlPoint = m_currentPoint;
-
         if (m_source->hasMoreData())
             m_consumer->incrementPathSegmentCount();
     }
@@ -331,7 +310,7 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
 // This works by converting the SVG arc to "simple" beziers.
 // Partly adapted from Niko's code in kdelibs/kdecore/svgicons.
 // See also SVG implementation notes: http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
-bool SVGPathParser::decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData& arcSegment)
+bool NormalizingConsumer::decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData& arcSegment)
 {
     // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints.
     // http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
