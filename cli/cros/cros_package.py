@@ -16,7 +16,6 @@ import os
 
 from chromite.cli import command
 from chromite.lib import brick_lib
-from chromite.lib import chroot_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -136,9 +135,7 @@ To enable building a package from latest or stable ebuilds:
     return 'Not working on' in output
 
   def _EnableBuild(self):
-    """Enable latest/stable build, setting up the build sysroot as necessary."""
-    chroot_util.SetupBoard(brick=self.brick)
-
+    """Enable latest/stable build."""
     latest = self.options.enable == 'latest'
     cmd = ['cros_workon',
            'start' if latest else 'stop',
