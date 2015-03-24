@@ -23,6 +23,11 @@ template <class Type>
 void postMessageMethodCommon(const char* interfaceName, Type* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
     MessagePortArray ports;
     ArrayBufferArray arrayBuffers;
     if (info.Length() > 1) {

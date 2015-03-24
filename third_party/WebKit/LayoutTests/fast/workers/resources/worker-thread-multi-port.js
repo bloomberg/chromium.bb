@@ -26,6 +26,13 @@ onmessage = function(event) {
     } else if (event.data == "done") {
         postMessage("done");
         event.ports[0].postMessage("done");
+    } else if (event.data == "noargs") {
+        try {
+            postMessage();
+            testFailed("postMessage() did not throw");
+        } catch (e) {
+            testPassed("postMessage() threw exception: " + e);
+        }
     } else
         testFailed("Received unexpected message: " + event.data);
 };

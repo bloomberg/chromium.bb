@@ -10,6 +10,8 @@ var channel2 = new MessageChannel();
 var channel3 = new MessageChannel();
 var channel4 = new MessageChannel();
 
+shouldThrow("channel.port1.postMessage()");
+
 channel.port1.postMessage("noport");
 channel.port1.postMessage("zero ports", []);
 channel.port1.postMessage("two ports", [channel2.port1, channel2.port2]);

@@ -11,11 +11,13 @@ var channel3 = new MessageChannel();
 var channel4 = new MessageChannel();
 
 var worker = new Worker("resources/worker-thread-multi-port.js");
+worker.postMessage("noargs");
 worker.postMessage("noport");
 worker.postMessage("zero ports", []);
 worker.postMessage("two ports", [channel2.port1, channel2.port2]);
 
 // Now test various failure cases
+shouldThrow("worker.postMessage()");
 shouldThrow('worker.postMessage("null port", [channel3.port1, null, channel3.port2])');
 shouldThrow('worker.postMessage("notAPort", [channel3.port1, {}, channel3.port2])');
 // Should be OK to send channel3.port1/2 (should not have been disentangled by the previous failed calls).
@@ -36,4 +38,3 @@ worker.onmessage = function(event) {
     else
         testFailed("Unexpected result: " + event.data);
 }
-
