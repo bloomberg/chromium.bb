@@ -1,0 +1,91 @@
+Baseline: top
+Width: 216.2109375
+Alphabetic Baseline: 45
+Hanging Baseline: 9
+Ideographic Baseline: 57
+Font Bounding Box Ascent: 0
+Font Bounding Box Descent: 57
+eM Height Ascent: 0
+eM Height Descent: 0
+Actual Bounding Box Left: 0
+Actual Bounding Box Right: 216
+Actual Bounding Box Ascent (high): -12.6513671875
+Actual Bounding Box Ascent (low): -22.9052734375
+Actual Bounding Box Descent (high): 45.5126953125
+Actual Bounding Box Descent (low): 56.6943359375
+Baseline: hanging
+Width: 216.2109375
+Alphabetic Baseline: 36
+Hanging Baseline: 0
+Ideographic Baseline: 48
+Font Bounding Box Ascent: 9
+Font Bounding Box Descent: 48
+eM Height Ascent: 0
+eM Height Descent: 0
+Actual Bounding Box Left: 0
+Actual Bounding Box Right: 216
+Actual Bounding Box Ascent (high): -3.6513671875
+Actual Bounding Box Ascent (low): -13.9052734375
+Actual Bounding Box Descent (high): 36.5126953125
+Actual Bounding Box Descent (low): 47.6943359375
+Baseline: middle
+Width: 216.2109375
+Alphabetic Baseline: 16
+Hanging Baseline: -20
+Ideographic Baseline: 28
+Font Bounding Box Ascent: 29
+Font Bounding Box Descent: 28
+eM Height Ascent: 0
+eM Height Descent: 0
+Actual Bounding Box Left: 0
+Actual Bounding Box Right: 216
+Actual Bounding Box Ascent (high): 16.3486328125
+Actual Bounding Box Ascent (low): 6.0947265625
+Actual Bounding Box Descent (high): 16.5126953125
+Actual Bounding Box Descent (low): 27.6943359375
+Baseline: alphabetic
+Width: 216.2109375
+Alphabetic Baseline: 0
+Hanging Baseline: -36
+Ideographic Baseline: 12
+Font Bounding Box Ascent: 45
+Font Bounding Box Descent: 12
+eM Height Ascent: 0
+eM Height Descent: 0
+Actual Bounding Box Left: 0
+Actual Bounding Box Right: 216
+Actual Bounding Box Ascent (high): 32.3486328125
+Actual Bounding Box Ascent (low): 22.0947265625
+Actual Bounding Box Descent (high): 0.5126953125
+Actual Bounding Box Descent (low): 11.6943359375
+Baseline: ideographic
+Width: 216.2109375
+Alphabetic Baseline: -12
+Hanging Baseline: -48
+Ideographic Baseline: 0
+Font Bounding Box Ascent: 57
+Font Bounding Box Descent: 0
+eM Height Ascent: 0
+eM Height Descent: 0
+Actual Bounding Box Left: 0
+Actual Bounding Box Right: 216
+Actual Bounding Box Ascent (high): 44.3486328125
+Actual Bounding Box Ascent (low): 34.0947265625
+Actual Bounding Box Descent (high): -11.4873046875
+Actual Bounding Box Descent (low): -0.3056640625
+Baseline: bottom
+Width: 216.2109375
+Alphabetic Baseline: -12
+Hanging Baseline: -48
+Ideographic Baseline: 0
+Font Bounding Box Ascent: 57
+Font Bounding Box Descent: 0
+eM Height Ascent: 0
+eM Height Descent: 0
+Actual Bounding Box Left: 0
+Actual Bounding Box Right: 216
+Actual Bounding Box Ascent (high): 44.3486328125
+Actual Bounding Box Ascent (low): 34.0947265625
+Actual Bounding Box Descent (high): -11.4873046875
+Actual Bounding Box Descent (low): -0.3056640625
+Cannot automatically verify result

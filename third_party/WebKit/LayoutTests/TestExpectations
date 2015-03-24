@@ -827,10 +827,6 @@ crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 
-crbug.com/460866 canvas/philip/tests/2d.text.draw.text.metrics.html [ NeedsRebaseline ]
-crbug.com/460866 virtual/gpu/canvas/philip/tests/2d.text.draw.text.metrics.html [ NeedsRebaseline ]
-crbug.com/460866 virtual/display_list_2d_canvas/canvas/philip/tests/2d.text.draw.text.metrics.html [ NeedsRebaseline ]
-
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 
