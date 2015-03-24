@@ -266,7 +266,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
         KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted) ? elementDocument.url() : KURL();
-        executeScript(ScriptSourceCode(scriptContent(), scriptURL, position));
+        if (!executeScript(ScriptSourceCode(scriptContent(), scriptURL, position)))
+            return false;
     }
 
     return true;
@@ -317,17 +318,17 @@ bool isSVGScriptLoader(Element* element)
     return isSVGScriptElement(*element);
 }
 
-void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* compilationFinishTime)
+bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* compilationFinishTime)
 {
     ASSERT(m_alreadyStarted);
 
     if (sourceCode.isEmpty())
-        return;
+        return true;
 
     RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
     RefPtrWillBeRawPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
-        return;
+        return true;
 
     LocalFrame* frame = contextDocument->frame();
 
@@ -337,26 +338,26 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
         || csp->allowScriptWithHash(sourceCode.source());
 
     if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_startLineNumber, sourceCode.source())))
-        return;
+        return true;
 
     if (m_isExternalScript) {
         ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
         if (resource && !resource->mimeTypeAllowedByNosniff()) {
             contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled."));
-            return;
+            return true;
         }
 
         if (resource && resource->mimeType().lower().startsWith("image/")) {
             contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable."));
             UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
-            return;
+            return true;
         }
     }
 
     // FIXME: Can this be moved earlier in the function?
     // Why are we ever attempting to execute scripts without a frame?
     if (!frame)
-        return;
+        return true;
 
     AccessControlStatus corsCheck = NotSharableCrossOrigin;
     if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())))
@@ -365,7 +366,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     if (m_isExternalScript) {
         const KURL resourceUrl = sourceCode.resource()->resourceRequest().url();
         if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), sourceCode.resource()->mimeType(), *sourceCode.resource())) {
-            return;
+            return false;
         }
     }
 
@@ -386,6 +387,8 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
         ASSERT(contextDocument->currentScript() == m_element);
         contextDocument->popCurrentScript();
     }
+
+    return true;
 }
 
 void ScriptLoader::execute()
@@ -399,8 +402,10 @@ void ScriptLoader::execute()
     if (errorOccurred) {
         dispatchErrorEvent();
     } else if (!m_resource->wasCanceled()) {
-        executeScript(source);
-        dispatchLoadEvent();
+        if (executeScript(source))
+            dispatchLoadEvent();
+        else
+            dispatchErrorEvent();
     }
     m_resource = 0;
 }

@@ -485,8 +485,10 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     if (errorOccurred) {
         scriptLoader->dispatchErrorEvent();
     } else if (!wasCanceled) {
-        scriptLoader->executeScript(sourceCode);
-        scriptLoader->dispatchLoadEvent();
+        if (!scriptLoader->executeScript(sourceCode))
+            scriptLoader->dispatchErrorEvent();
+        else
+            scriptLoader->dispatchLoadEvent();
     }
 
     m_scriptElement = nullptr;
@@ -1102,13 +1104,16 @@ void XMLDocumentParser::endElementNs()
         // FIXME: Script execution should be shared between
         // the libxml2 and Qt XMLDocumentParser implementations.
 
+
         if (scriptLoader->readyToBeParserExecuted()) {
-            scriptLoader->executeScript(ScriptSourceCode(scriptLoader->scriptContent(), document()->url(), m_scriptStartPosition));
+            if (!scriptLoader->executeScript(ScriptSourceCode(scriptLoader->scriptContent(), document()->url(), m_scriptStartPosition))) {
+                scriptLoader->dispatchErrorEvent();
+                return;
+            }
         } else if (scriptLoader->willBeParserExecuted()) {
             m_pendingScript = scriptLoader->resource();
             m_scriptElement = element;
             m_pendingScript->addClient(this);
-
             // m_pendingScript will be 0 if script was already loaded and
             // addClient() executed it.
             if (m_pendingScript)

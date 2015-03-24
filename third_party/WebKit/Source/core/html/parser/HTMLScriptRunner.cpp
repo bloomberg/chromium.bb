@@ -152,8 +152,11 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
             scriptLoader->dispatchErrorEvent();
         else {
             ASSERT(isExecutingScript());
-            scriptLoader->executeScript(sourceCode, &compilationFinishTime);
-            element->dispatchEvent(createScriptLoadEvent());
+            if (!scriptLoader->executeScript(sourceCode, &compilationFinishTime)) {
+                scriptLoader->dispatchErrorEvent();
+            } else {
+                element->dispatchEvent(createScriptLoadEvent());
+            }
         }
     }
     // The exact value doesn't matter; valid time stamps are much bigger than this value.

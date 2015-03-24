@@ -12,6 +12,7 @@
             done();
         };
         var scriptError = function() {
+            assert_equals(result, '', 'Script did not run.');
             done();
         };
     </script>
