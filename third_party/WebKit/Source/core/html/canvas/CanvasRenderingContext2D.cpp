@@ -1190,15 +1190,19 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
     }
 }
 
-// FIXME(crbug.com/425531): Funtional.h cannot handle override function signature.
-static void fillRectOnContext(GraphicsContext* context, const FloatRect& rect)
+static void drawRectOnCanvas(const FloatRect& rect, SkCanvas* canvas, const SkPaint* paint)
 {
-    context->fillRect(rect);
-}
+    if (paint->getStyle() == SkPaint::kStroke_Style && ((rect.width() > 0) != (rect.height() > 0))) {
+        // When stroking, we must skip the zero-dimension segments
+        SkPath path;
+        path.moveTo(rect.x(), rect.y());
+        path.lineTo(rect.maxX(), rect.maxY());
+        path.close();
+        canvas->drawPath(path, *paint);
+        return;
+    }
 
-static void strokeRectOnContext(GraphicsContext* context, const FloatRect& rect)
-{
-    context->strokeRect(rect);
+    canvas->drawRect(rect, *paint);
 }
 
 void CanvasRenderingContext2D::fillRect(float x, float y, float width, float height)
@@ -1206,8 +1210,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
-    GraphicsContext* c = drawingContext();
-    if (!c)
+    if (!drawingCanvas())
         return;
     if (!state().isTransformInvertible())
         return;
@@ -1218,28 +1221,29 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
     // from the HTML5 Canvas spec:
     // If x0 = x1 and y0 = y1, then the linear gradient must paint nothing
     // If x0 = x1 and y0 = y1 and r0 = r1, then the radial gradient must paint nothing
-    Gradient* gradient = c->fillGradient();
-    if (gradient && gradient->isZeroSize())
+    CanvasGradient* gradient = state().fillStyle()->canvasGradient();
+    if (gradient && gradient->gradient()->isZeroSize())
         return;
 
     FloatRect rect(x, y, width, height);
     if (rectContainsTransformedRect(rect, clipBounds)) {
-        checkOverdraw(rect, &c->fillPaint(), NoImage, ClipFill);
-        c->fillRect(rect);
+        const SkPaint* paint = state().getPaint(CanvasRenderingContext2DState::FillPaintType, DrawShadowAndForeground);
+        checkOverdraw(rect, paint, NoImage, ClipFill);
+        drawRectOnCanvas(rect, drawingCanvas(), paint);
         didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(state().globalComposite())) {
-        fullCanvasCompositedDraw(bind(&fillRectOnContext, c, rect));
+        fullCanvasCompositedDraw(bind<SkCanvas*, const SkPaint*>(drawRectOnCanvas, rect), CanvasRenderingContext2DState::FillPaintType, Opaque);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas();
-        c->clearShadow(); // Takes care of signaling the overdraw
-        c->fillRect(rect);
-        applyShadow(DrawShadowAndForeground);
+        const SkPaint* paint = state().getPaint(CanvasRenderingContext2DState::FillPaintType, DrawForegroundOnly);
+        drawRectOnCanvas(rect, drawingCanvas(), paint);
         didDraw(clipBounds);
     } else {
         SkIRect dirtyRect;
         if (computeDirtyRect(rect, clipBounds, &dirtyRect)) {
-            c->fillRect(rect);
+            const SkPaint* paint = state().getPaint(CanvasRenderingContext2DState::FillPaintType, DrawShadowAndForeground);
+            drawRectOnCanvas(rect, drawingCanvas(), paint);
             didDraw(dirtyRect);
         }
     }
@@ -1253,36 +1257,37 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     if (!(state().lineWidth() >= 0))
         return;
 
-    GraphicsContext* c = drawingContext();
-    if (!c)
+    if (!drawingCanvas())
         return;
+
     if (!state().isTransformInvertible())
         return;
+
     SkIRect clipBounds;
     if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return;
 
     // If gradient size is zero, then paint nothing.
-    Gradient* gradient = c->strokeGradient();
-    if (gradient && gradient->isZeroSize())
+    CanvasGradient* gradient = state().strokeStyle()->canvasGradient();
+    if (gradient && gradient->gradient()->isZeroSize())
         return;
 
     FloatRect rect(x, y, width, height);
     if (isFullCanvasCompositeMode(state().globalComposite())) {
-        fullCanvasCompositedDraw(bind(&strokeRectOnContext, c, rect));
+        fullCanvasCompositedDraw(bind<SkCanvas*, const SkPaint*>(drawRectOnCanvas, rect), CanvasRenderingContext2DState::StrokePaintType, Opaque);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas();
-        c->clearShadow();
-        c->strokeRect(rect);
-        applyShadow(DrawShadowAndForeground);
+        const SkPaint* paint = state().getPaint(CanvasRenderingContext2DState::StrokePaintType, DrawForegroundOnly);
+        drawRectOnCanvas(rect, drawingCanvas(), paint);
         didDraw(clipBounds);
     } else {
         FloatRect boundingRect = rect;
         boundingRect.inflate(state().lineWidth() / 2);
         SkIRect dirtyRect;
         if (computeDirtyRect(boundingRect, clipBounds, &dirtyRect)) {
-            c->strokeRect(rect);
+            const SkPaint* paint = state().getPaint(CanvasRenderingContext2DState::StrokePaintType, DrawShadowAndForeground);
+            drawRectOnCanvas(rect, drawingCanvas(), paint);
             didDraw(dirtyRect);
         }
     }
@@ -1294,17 +1299,12 @@ void CanvasRenderingContext2D::applyShadow(ShadowMode shadowMode)
     if (!c)
         return;
 
-    if (shouldDrawShadows()) {
+    if (state().shouldDrawShadows()) {
         c->setShadow(state().shadowOffset(), state().shadowBlur(), state().shadowColor(),
             DrawLooperBuilder::ShadowIgnoresTransforms, DrawLooperBuilder::ShadowRespectsAlpha, shadowMode);
     } else {
         c->clearShadow();
     }
-}
-
-bool CanvasRenderingContext2D::shouldDrawShadows() const
-{
-    return alphaChannel(state().shadowColor()) && (state().shadowBlur() || !state().shadowOffset().isZero());
 }
 
 static inline FloatRect normalizeRect(const FloatRect& rect)
@@ -1499,6 +1499,32 @@ bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect
     return state().transform().mapQuad(quad).containsQuad(transformedQuad);
 }
 
+void CanvasRenderingContext2D::fullCanvasCompositedDraw(PassOwnPtr<Function<void(SkCanvas*, const SkPaint*)>> draw, CanvasRenderingContext2DState::PaintType paintType, OpacityMode bitmapOpacity)
+{
+    ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
+    ASSERT(draw);
+
+    SkCanvas* c = drawingCanvas();
+    ASSERT(c);
+
+    SkPaint layerPaint;
+    layerPaint.setXfermodeMode(state().globalComposite());
+    if (state().shouldDrawShadows()) {
+        // unroll into two independently composited passes if drawing shadows
+        c->saveLayer(0, &layerPaint);
+        SkPaint shadowPaint = *state().getPaint(paintType, DrawShadowOnly, bitmapOpacity);
+        shadowPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+        (*draw)(c, &shadowPaint);
+        c->restore();
+    }
+
+    c->saveLayer(0, &layerPaint);
+    SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, bitmapOpacity);
+    foregroundPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    (*draw)(c, &foregroundPaint);
+    c->restore();
+}
+
 void CanvasRenderingContext2D::fullCanvasCompositedDraw(PassOwnPtr<Closure> draw)
 {
     ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
@@ -1506,7 +1532,7 @@ void CanvasRenderingContext2D::fullCanvasCompositedDraw(PassOwnPtr<Closure> draw
     GraphicsContext* c = drawingContext();
     ASSERT(c);
 
-    if (shouldDrawShadows()) {
+    if (state().shouldDrawShadows()) {
         // unroll into two independently composited passes if drawing shadows
         c->beginLayer(1, state().globalComposite());
         c->setCompositeOperation(SkXfermode::kSrcOver_Mode);
@@ -1614,7 +1640,7 @@ void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
     if (dirtyRect.isEmpty())
         return;
 
-    if (ExpensiveCanvasHeuristicParameters::BlurredShadowsAreExpensive && shouldDrawShadows() && state().shadowBlur() > 0) {
+    if (ExpensiveCanvasHeuristicParameters::BlurredShadowsAreExpensive && state().shouldDrawShadows() && state().shadowBlur() > 0) {
         ImageBuffer* buffer = canvas()->buffer();
         if (buffer)
             buffer->setHasExpensiveOp();

@@ -70,9 +70,17 @@ enum CompositeOperator {
     CompositePlusLighter
 };
 
+enum OpacityMode {
+    NonOpaque,
+    Opaque,
+};
+
+// TODO(junov): crbug.com/453113 relocate ShadowMode to CanvasRenderingContext2DState.h once
+// GraphicsContext no longer uses it.
 enum ShadowMode {
     DrawShadowAndForeground,
     DrawShadowOnly,
+    DrawForegroundOnly
 };
 
 enum AntiAliasingMode {

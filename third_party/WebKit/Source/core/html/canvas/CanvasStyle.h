@@ -33,6 +33,8 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
+class SkShader;
+
 namespace blink {
 
     class CanvasGradient;
@@ -50,8 +52,10 @@ namespace blink {
         CanvasGradient* canvasGradient() const { return m_gradient.get(); }
         CanvasPattern* canvasPattern() const { return m_pattern.get(); }
 
-        void applyFillColor(GraphicsContext*);
-        void applyStrokeColor(GraphicsContext*);
+        void applyFillColor(GraphicsContext*); // Deprecated
+        void applyStrokeColor(GraphicsContext*); // Deprecated
+        SkShader* shader() const;
+        RGBA32 paintColor() const;
 
         bool isEquivalentRGBA(RGBA32 rgba) const { return m_type == ColorRGBA && m_rgba == rgba; }
 

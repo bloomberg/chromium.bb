@@ -27,6 +27,11 @@ public:
         DontCopyClipList
     };
 
+    enum PaintType {
+        FillPaintType,
+        StrokePaintType,
+    };
+
     CanvasRenderingContext2DState(const CanvasRenderingContext2DState&, ClipListCopyMode = CopyClipList);
     CanvasRenderingContext2DState& operator=(const CanvasRenderingContext2DState&);
 
@@ -41,7 +46,7 @@ public:
     void setLineDash(const Vector<float>&);
     const Vector<float>& lineDash() const { return m_lineDash; }
 
-    void setLineDashOffset(float offset) { m_lineDashOffset = offset; }
+    void setLineDashOffset(float);
     float lineDashOffset() const { return m_lineDashOffset; }
 
     // setTransform returns true iff transform is invertible;
@@ -61,10 +66,10 @@ public:
     void setUnparsedFont(const String& font) { m_unparsedFont = font; }
     const String& unparsedFont() const { return m_unparsedFont; }
 
-    void setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle> style) { m_strokeStyle = style; }
+    void setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
     CanvasStyle* strokeStyle() const { return m_strokeStyle.get(); }
 
-    void setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle> style) { m_fillStyle = style; }
+    void setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
     CanvasStyle* fillStyle() const { return m_fillStyle.get(); }
 
     enum Direction {
@@ -82,36 +87,36 @@ public:
     void setTextBaseline(TextBaseline baseline) { m_textBaseline = baseline; }
     TextBaseline textBaseline() const { return m_textBaseline; }
 
-    void setLineWidth(float lineWidth) { m_lineWidth = lineWidth; }
-    float lineWidth() const { return m_lineWidth; }
+    void setLineWidth(float lineWidth) { m_strokePaint.setStrokeWidth(lineWidth); }
+    float lineWidth() const { return m_strokePaint.getStrokeWidth(); }
 
-    void setLineCap(LineCap lineCap) { m_lineCap = lineCap; }
-    LineCap lineCap() const { return m_lineCap; }
+    void setLineCap(LineCap lineCap) { m_strokePaint.setStrokeCap(static_cast<SkPaint::Cap>(lineCap)); }
+    LineCap lineCap() const { return static_cast<LineCap>(m_strokePaint.getStrokeCap()); }
 
-    void setLineJoin(LineJoin lineJoin) { m_lineJoin = lineJoin; }
-    LineJoin lineJoin() const { return m_lineJoin; }
+    void setLineJoin(LineJoin lineJoin) { m_strokePaint.setStrokeJoin(static_cast<SkPaint::Join>(lineJoin)); }
+    LineJoin lineJoin() const { return static_cast<LineJoin>(m_strokePaint.getStrokeJoin()); }
 
-    void setMiterLimit(float miterLimit) { m_miterLimit = miterLimit; }
-    float miterLimit() const { return m_miterLimit; }
+    void setMiterLimit(float miterLimit) { m_strokePaint.setStrokeMiter(miterLimit); }
+    float miterLimit() const { return m_strokePaint.getStrokeMiter(); }
 
-    void setShadowOffsetX(float x) { m_shadowOffset.setWidth(x); }
-    void setShadowOffsetY(float y) { m_shadowOffset.setHeight(y); }
+    void setShadowOffsetX(float);
+    void setShadowOffsetY(float);
     const FloatSize& shadowOffset() const { return m_shadowOffset; }
 
-    void setShadowBlur(float shadowBlur) { m_shadowBlur = shadowBlur; }
+    void setShadowBlur(float);
     float shadowBlur() const { return m_shadowBlur; }
 
-    void setShadowColor(SkColor shadowColor) { m_shadowColor = shadowColor; }
+    void setShadowColor(SkColor);
     SkColor shadowColor() const { return m_shadowColor; }
 
-    void setGlobalAlpha(float alpha) { m_globalAlpha = alpha; }
+    void setGlobalAlpha(float);
     float globalAlpha() const { return m_globalAlpha; }
 
-    void setGlobalComposite(SkXfermode::Mode mode) { m_globalComposite = mode; }
-    SkXfermode::Mode globalComposite() const { return m_globalComposite; }
+    void setGlobalComposite(SkXfermode::Mode);
+    SkXfermode::Mode globalComposite() const;
 
-    void setImageSmoothingEnabled(bool enabled) { m_imageSmoothingEnabled = enabled; }
-    bool imageSmoothingEnabled() const { return m_imageSmoothingEnabled; }
+    void setImageSmoothingEnabled(bool);
+    bool imageSmoothingEnabled() const;
 
     void setUnparsedStrokeColor(const String& color) { m_unparsedStrokeColor = color; }
     const String& unparsedStrokeColor() const { return m_unparsedStrokeColor; }
@@ -119,7 +124,22 @@ public:
     void setUnparsedFillColor(const String& color) { m_unparsedFillColor = color; }
     const String& unparsedFillColor() const { return m_unparsedFillColor; }
 
+    bool shouldDrawShadows() const;
+
+    // If paint will not be used for painting a bitmap, set bitmapOpacity to Opaque
+    const SkPaint* getPaint(PaintType, ShadowMode, OpacityMode bitmapOpacity = Opaque) const;
+
 private:
+    void updateLineDash() const;
+    void updateStrokeStyle() const;
+    void updateFillStyle() const;
+    void shadowParameterChanged();
+    SkDrawLooper* emptyDrawLooper() const;
+    SkDrawLooper* shadowOnlyDrawLooper() const;
+    SkDrawLooper* shadowAndForegroundDrawLooper() const;
+    SkImageFilter* shadowOnlyImageFilter() const;
+    SkImageFilter* shadowAndForegroundImageFilter() const;
+
     unsigned m_unrealizedSaveCount;
 
     String m_unparsedStrokeColor;
@@ -127,32 +147,38 @@ private:
     RefPtrWillBeMember<CanvasStyle> m_strokeStyle;
     RefPtrWillBeMember<CanvasStyle> m_fillStyle;
 
-    float m_lineWidth;
-    LineCap m_lineCap;
-    LineJoin m_lineJoin;
-    float m_miterLimit;
+    mutable SkPaint m_strokePaint;
+    mutable SkPaint m_fillPaint;
+
     FloatSize m_shadowOffset;
     float m_shadowBlur;
     SkColor m_shadowColor;
+    mutable RefPtr<SkDrawLooper> m_emptyDrawLooper;
+    mutable RefPtr<SkDrawLooper> m_shadowOnlyDrawLooper;
+    mutable RefPtr<SkDrawLooper> m_shadowAndForegroundDrawLooper;
+    mutable RefPtr<SkImageFilter> m_shadowOnlyImageFilter;
+    mutable RefPtr<SkImageFilter> m_shadowAndForegroundImageFilter;
+
     float m_globalAlpha;
-    SkXfermode::Mode m_globalComposite;
     AffineTransform m_transform;
-    bool m_isTransformInvertible;
     Vector<float> m_lineDash;
     float m_lineDashOffset;
-    bool m_imageSmoothingEnabled;
+
+    String m_unparsedFont;
+    Font m_font;
 
     // Text state.
     TextAlign m_textAlign;
     TextBaseline m_textBaseline;
     Direction m_direction;
 
-    String m_unparsedFont;
-    Font m_font;
-    bool m_realizedFont;
-
-    bool m_hasClip;
-    bool m_hasComplexClip;
+    bool m_realizedFont : 1;
+    bool m_isTransformInvertible : 1;
+    bool m_hasClip : 1;
+    bool m_hasComplexClip : 1;
+    mutable bool m_fillStyleDirty : 1;
+    mutable bool m_strokeStyleDirty : 1;
+    mutable bool m_lineDashDirty : 1;
 
     ClipList m_clipList;
 };

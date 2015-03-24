@@ -129,6 +129,13 @@ InterpolationQuality computeInterpolationQuality(
 
 bool shouldDrawAntiAliased(const GraphicsContext*, const SkRect& destRect);
 
+// This replicates the old skia behavior when it used to take radius for blur. Now it takes sigma.
+inline SkScalar skBlurRadiusToSigma(SkScalar radius)
+{
+    SkASSERT(radius > 0);
+    return 0.288675f * radius + 0.5f;
+}
+
 } // namespace blink
 
 #endif  // SkiaUtils_h

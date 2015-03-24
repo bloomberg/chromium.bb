@@ -33,6 +33,7 @@
 
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -61,13 +62,6 @@ void DrawLooperBuilder::addUnmodifiedContent()
 {
     SkLayerDrawLooper::LayerInfo info;
     m_skDrawLooperBuilder.addLayerOnTop(info);
-}
-
-// This replicates the old skia behavior when it used to take radius for blur. Now it takes sigma.
-static SkScalar RadiusToSigma(SkScalar radius)
-{
-    SkASSERT(radius > 0);
-    return 0.57735f * radius + 0.5f;
 }
 
 void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Color& color,
@@ -101,7 +95,7 @@ void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Col
     SkPaint* paint = m_skDrawLooperBuilder.addLayerOnTop(info);
 
     if (blur) {
-        const SkScalar sigma = RadiusToSigma(blur / 2);
+        const SkScalar sigma = skBlurRadiusToSigma(blur);
         uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
         if (shadowTransformMode == ShadowIgnoresTransforms)
             mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;

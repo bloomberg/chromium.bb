@@ -52,11 +52,6 @@ class WebLayer;
 class FloatRect;
 class GraphicsContext;
 
-enum OpacityMode {
-    NonOpaque,
-    Opaque,
-};
-
 class PLATFORM_EXPORT ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(ImageBufferSurface); WTF_MAKE_FAST_ALLOCATED(ImageBufferSurface);
 public:

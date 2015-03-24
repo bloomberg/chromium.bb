@@ -145,6 +145,29 @@ void CanvasStyle::applyFillColor(GraphicsContext* context)
     }
 }
 
+SkShader* CanvasStyle::shader() const
+{
+    switch (m_type) {
+    case ColorRGBA:
+        return nullptr;
+    case Gradient:
+        return canvasGradient()->gradient()->shader();
+    case ImagePattern:
+        return canvasPattern()->pattern()->shader();
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return nullptr;
+}
+
+RGBA32 CanvasStyle::paintColor() const
+{
+    if (m_type == ColorRGBA)
+        return m_rgba;
+    ASSERT(m_type == Gradient || m_type == ImagePattern);
+    return Color::black;
+}
+
 DEFINE_TRACE(CanvasStyle)
 {
     visitor->trace(m_gradient);

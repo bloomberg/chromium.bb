@@ -32,6 +32,7 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/CanvasRenderingContext2DState.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -43,7 +44,6 @@ namespace blink { class WebLayer; }
 namespace blink {
 
 class CanvasImageSource;
-class CanvasRenderingContext2DState;
 class Element;
 class ExceptionState;
 class FloatRect;
@@ -223,7 +223,6 @@ private:
     void applyLineDash() const;
     void setShadow(const FloatSize& offset, float blur, RGBA32 color);
     void applyShadow(ShadowMode = DrawShadowAndForeground);
-    bool shouldDrawShadows() const;
 
     void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);
     void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
@@ -261,7 +260,8 @@ private:
 
     void inflateStrokeRect(FloatRect&) const;
 
-    void fullCanvasCompositedDraw(PassOwnPtr<Closure> draw);
+    void fullCanvasCompositedDraw(PassOwnPtr<Closure> draw); // deprecated
+    void fullCanvasCompositedDraw(PassOwnPtr<Function<void(SkCanvas*, const SkPaint*)>>, CanvasRenderingContext2DState::PaintType, OpacityMode bitmapOpacity);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
