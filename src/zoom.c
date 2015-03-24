@@ -96,8 +96,8 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	global_x = wl_fixed_to_double(x);
 	global_y = wl_fixed_to_double(y);
 
-	output->zoom.trans_x = global_x - (output->x + output->width / 2);
-	output->zoom.trans_y = global_y - (output->y + output->height / 2);
+	output->zoom.trans_x = global_x - output->width / 2;
+	output->zoom.trans_y = global_y - output->height / 2;
 
 	if (output->zoom.trans_x < 0)
 		output->zoom.trans_x = 0;
