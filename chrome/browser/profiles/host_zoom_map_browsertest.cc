@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -30,6 +31,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/test/test_utils.h"
@@ -238,8 +240,40 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ZoomEventsWorkForOffTheRecord) {
                                 test_scheme, test_host));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    HostZoomMapBrowserTest,
+    WebviewBasedSigninUsesDefaultStoragePartitionForEmbedder) {
+  GURL test_url = ConstructTestServerURL(chrome::kChromeUIChromeSigninURL);
+  std::string test_host(test_url.host());
+  std::string test_scheme(test_url.scheme());
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents);
+
+  // For the webview based sign-in code, the sign in page uses the default host
+  // zoom map.
+  HostZoomMap* default_profile_host_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
+  // Since ChromeOS still uses IFrame-based signin, we should expect the
+  // storage partition to be different if Webview signin is not enabled.
+  if (switches::IsEnableWebviewBasedSignin())
+    EXPECT_EQ(host_zoom_map, default_profile_host_zoom_map);
+  else
+    EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
+}
+
+class HostZoomMapIframeSigninBrowserTest : public HostZoomMapBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnableIframeBasedSignin);
+  }
+};
+
 // Regression test for crbug.com/435017.
-IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
+IN_PROC_BROWSER_TEST_F(HostZoomMapIframeSigninBrowserTest,
                        EventsForNonDefaultStoragePartition) {
   ZoomLevelChangeObserver observer(browser()->profile());
   // TODO(wjmaclean): Make this test more general by implementing a way to
@@ -255,17 +289,14 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Verify that our loaded page is using a HostZoomMap different from the
-  // one for the default StoragePartition.
+  // We are forcing non-webview based signin, so we expect the signin page to
+  // be in a different storage partition, and hence a different HostZoomMap.
   HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents);
 
-  // For the webview based sign-in code, the sign in page uses the default host
-  // zoom map.
-  if (!switches::IsEnableWebviewBasedSignin()) {
-    HostZoomMap* default_profile_host_zoom_map =
-        HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
-    EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
-  }
+  EXPECT_FALSE(switches::IsEnableWebviewBasedSignin());
+  HostZoomMap* default_profile_host_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
+  EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
 
   double new_zoom_level =
       host_zoom_map->GetZoomLevelForHostAndScheme(test_scheme, test_host) + 0.5;

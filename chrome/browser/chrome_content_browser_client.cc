@@ -795,9 +795,10 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
   // SiteInstance URL - "chrome-guest://app_id/persist?partition".
   if (site.SchemeIs(content::kGuestScheme)) {
     partition_id = site.spec();
-  } else if (site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
-    // Chrome signin page has an embedded iframe of extension and web content,
-    // thus it must be isolated from other webUI pages.
+  } else if (!switches::IsEnableWebviewBasedSignin() &&
+             site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
+    // The non-webview Chrome signin page has an embedded iframe of extension
+    // and web content, thus it must be isolated from other webUI pages.
     partition_id = site.GetOrigin().spec();
   }
 
@@ -859,9 +860,10 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   }
 #endif
 
-  if (!success && (site.GetOrigin().spec() == kChromeUIChromeSigninURL)) {
-    // Chrome signin page has an embedded iframe of extension and web content,
-    // thus it must be isolated from other webUI pages.
+  if (!success && (!switches::IsEnableWebviewBasedSignin() &&
+                   site.GetOrigin().spec() == kChromeUIChromeSigninURL)) {
+    // The non-webview Chrome signin page has an embedded iframe of extension
+    // and web content, thus it must be isolated from other webUI pages.
     *partition_domain = chrome::kChromeUIChromeSigninHost;
   }
 
