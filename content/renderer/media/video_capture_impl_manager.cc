@@ -36,11 +36,12 @@ namespace content {
 VideoCaptureImplManager::VideoCaptureImplManager()
     : next_client_id_(0),
       filter_(new VideoCaptureMessageFilter()),
+      render_main_message_loop_(base::MessageLoopProxy::current()),
       weak_factory_(this) {
 }
 
 VideoCaptureImplManager::~VideoCaptureImplManager() {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   if (devices_.empty())
     return;
   // Forcibly release all video capture resources.
@@ -58,7 +59,7 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
 
 base::Closure VideoCaptureImplManager::UseDevice(
     media::VideoCaptureSessionId id) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
 
   VideoCaptureImpl* impl = NULL;
   const VideoCaptureDeviceMap::iterator it = devices_.find(id);
@@ -83,7 +84,7 @@ base::Closure VideoCaptureImplManager::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureStateUpdateCB& state_update_cb,
     const VideoCaptureDeliverFrameCB& deliver_frame_cb) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
   VideoCaptureImpl* const impl = it->second.second;
@@ -107,7 +108,7 @@ base::Closure VideoCaptureImplManager::StartCapture(
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId id,
     const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
   VideoCaptureImpl* const impl = it->second.second;
@@ -120,7 +121,7 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
 void VideoCaptureImplManager::GetDeviceFormatsInUse(
     media::VideoCaptureSessionId id,
     const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
   VideoCaptureImpl* const impl = it->second.second;
@@ -137,9 +138,9 @@ VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
   return NULL;
 }
 
-void VideoCaptureImplManager::StopCapture(
-    int client_id, media::VideoCaptureSessionId id) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+void VideoCaptureImplManager::StopCapture(int client_id,
+                                          media::VideoCaptureSessionId id) {
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
   VideoCaptureImpl* const impl = it->second.second;
@@ -151,7 +152,7 @@ void VideoCaptureImplManager::StopCapture(
 
 void VideoCaptureImplManager::UnrefDevice(
     media::VideoCaptureSessionId id) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
   VideoCaptureImpl* const impl = it->second.second;
@@ -171,13 +172,12 @@ void VideoCaptureImplManager::UnrefDevice(
 }
 
 void VideoCaptureImplManager::SuspendDevices(bool suspend) {
-  DCHECK(render_main_thread_checker_.CalledOnValidThread());
+  DCHECK(render_main_message_loop_->BelongsToCurrentThread());
   for (const auto& device : devices_) {
     VideoCaptureImpl* const impl = device.second.second;
     ChildProcess::current()->io_message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureImpl::SuspendCapture,
-                   base::Unretained(impl), suspend));
+        FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
+                              base::Unretained(impl), suspend));
   }
 }
 

@@ -2,21 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VideoCaptureImpl represents a capture device in renderer process. It provides
-// interfaces for clients to Start/Stop capture. It also communicates to clients
-// when buffer is ready, state of capture device is changed.
-
-// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which relays
-// operation of a capture device to the browser process and receives responses
-// from browser process.
-//
-// VideoCaptureImpl is an IO thread only object. See the comments in
-// video_capture_impl_manager.cc for the lifetime of this object.
-// All methods must be called on the IO thread.
-//
-// This is an internal class used by VideoCaptureImplManager only. Do not access
-// this directly.
-
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 
@@ -45,6 +30,20 @@ class VideoFrame;
 
 namespace content {
 
+// VideoCaptureImpl represents a capture device in renderer process. It provides
+// interfaces for clients to Start/Stop capture. It also communicates to clients
+// when buffer is ready, state of capture device is changed.
+
+// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which relays
+// operation of a capture device to the browser process and receives responses
+// from browser process.
+//
+// VideoCaptureImpl is an IO thread only object. See the comments in
+// video_capture_impl_manager.cc for the lifetime of this object.
+// All methods must be called on the IO thread.
+//
+// This is an internal class used by VideoCaptureImplManager only. Do not access
+// this directly.
 class CONTENT_EXPORT VideoCaptureImpl
     : public VideoCaptureMessageFilter::Delegate {
  public:
@@ -170,8 +169,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   bool suspended_;
   VideoCaptureState state_;
 
-  // |weak_factory_| and |thread_checker_| are bound to the IO thread.
-  base::ThreadChecker render_io_thread_checker_;
+  // IO message loop reference for checking correct class operation.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   // WeakPtrFactory pointing back to |this| object, for use with
   // media::VideoFrames constructed in OnBufferReceived() from buffers cached
