@@ -756,7 +756,7 @@ cr.define('extensions', function() {
               dependentExtension.id;
           dependentList.appendChild(depNode);
         }, this);
-      });
+      }.bind(this));
 
       // The active views.
       this.updateVisibility_(row, '.active-views', extension.views.length > 0,
