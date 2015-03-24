@@ -108,7 +108,7 @@ class NSSSSLInitSingleton {
       disableECDSA = true;
 #endif
 
-    // Explicitly enable exactly those ciphers with keys of at least 80 bits
+    // Explicitly enable exactly those ciphers with keys of at least 80 bits.
     for (int i = 0; i < num_ciphers; i++) {
       SSLCipherSuiteInfo info;
       if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info,
@@ -130,10 +130,6 @@ class NSSSSLInitSingleton {
           enabled = false;
         }
 
-        if (ssl_ciphers[i] == TLS_DHE_DSS_WITH_AES_128_CBC_SHA) {
-          // Enabled to allow servers with only a DSA certificate to function.
-          enabled = true;
-        }
         SSL_CipherPrefSetDefault(ssl_ciphers[i], enabled);
       }
     }
