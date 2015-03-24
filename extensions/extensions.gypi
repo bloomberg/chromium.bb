@@ -787,6 +787,8 @@
       'browser/api/networking_config/networking_config_service.h',
       'browser/api/networking_config/networking_config_service_factory.cc',
       'browser/api/networking_config/networking_config_service_factory.h',
+      'browser/api/socket/app_firewall_hole_manager.cc',
+      'browser/api/socket/app_firewall_hole_manager.h',
       'browser/api/vpn_provider/vpn_provider_api.cc',
       'browser/api/vpn_provider/vpn_provider_api.h',
       'browser/api/vpn_provider/vpn_service.cc',

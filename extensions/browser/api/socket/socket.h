@@ -19,7 +19,7 @@
 #include "net/socket/tcp_client_socket.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/network/firewall_hole.h"
+#include "extensions/browser/api/socket/app_firewall_hole_manager.h"
 #endif  // OS_CHROMEOS
 
 namespace net {
@@ -60,8 +60,10 @@ class Socket : public ApiResource {
   void set_hostname(const std::string& hostname) { hostname_ = hostname; }
 
 #if defined(OS_CHROMEOS)
-  void set_firewall_hole(scoped_ptr<chromeos::FirewallHole> firewall_hole) {
-    firewall_hole_.reset(firewall_hole.release());
+  void set_firewall_hole(
+      scoped_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
+          firewall_hole) {
+    firewall_hole_ = firewall_hole.Pass();
   }
 #endif  // OS_CHROMEOS
 
@@ -148,7 +150,7 @@ class Socket : public ApiResource {
 
 #if defined(OS_CHROMEOS)
   // Represents a hole punched in the system firewall for this socket.
-  scoped_ptr<chromeos::FirewallHole, content::BrowserThread::DeleteOnUIThread>
+  scoped_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
       firewall_hole_;
 #endif  // OS_CHROMEOS
 };

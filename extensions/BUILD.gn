@@ -138,9 +138,6 @@ test("extensions_unittests") {
     # TODO(rockot): DisplayInfoProvider::Create() is only implemented in Chrome
     # and app_shell. This is wrong.
     "shell/browser/shell_display_info_provider.cc",
-
-    # TODO(rockot): See above, but the header is in //components.
-    "shell/browser/shell_web_contents_modal_dialog_manager.cc",
   ]
 
   deps = [

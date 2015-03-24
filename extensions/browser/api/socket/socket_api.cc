@@ -32,12 +32,12 @@
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/network/firewall_hole.h"
 #include "content/public/browser/browser_thread.h"
 #endif  // OS_CHROMEOS
 
 namespace extensions {
 
+using content::BrowserThread;
 using content::SocketPermissionRequest;
 
 const char kAddressKey[] = "address";
@@ -117,20 +117,14 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
       return;
     }
 
-    chromeos::FirewallHole::PortType port_type;
-    if (socket->GetSocketType() == Socket::TYPE_TCP) {
-      port_type = chromeos::FirewallHole::PortType::TCP;
-    } else {
-      port_type = chromeos::FirewallHole::PortType::UDP;
-    }
+    AppFirewallHole::PortType type = socket->GetSocketType() == Socket::TYPE_TCP
+                                         ? AppFirewallHole::PortType::TCP
+                                         : AppFirewallHole::PortType::UDP;
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &chromeos::FirewallHole::Open, port_type, local_address.port(),
-            "" /* all interfaces */,
-            base::Bind(&SocketAsyncApiFunction::OnFirewallHoleOpenedOnUIThread,
-                       this, socket_id)));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&SocketAsyncApiFunction::OpenFirewallHoleOnUIThread, this,
+                   type, local_address.port(), socket_id));
     return;
   }
 #endif
@@ -139,18 +133,25 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
 
 #if defined(OS_CHROMEOS)
 
-void SocketAsyncApiFunction::OnFirewallHoleOpenedOnUIThread(
-    int socket_id,
-    scoped_ptr<chromeos::FirewallHole> hole) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
+    AppFirewallHole::PortType type,
+    uint16_t port,
+    int socket_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  AppFirewallHoleManager* manager =
+      AppFirewallHoleManager::Get(browser_context());
+  scoped_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole(
+      manager->Open(type, port, extension_id()).release());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&SocketAsyncApiFunction::OnFirewallHoleOpened, this, socket_id,
                  base::Passed(&hole)));
 }
 
 void SocketAsyncApiFunction::OnFirewallHoleOpened(
     int socket_id,
-    scoped_ptr<chromeos::FirewallHole> hole) {
+    scoped_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!hole) {
     error_ = kFirewallFailure;
     SetResult(new base::FundamentalValue(-1));
@@ -774,9 +775,8 @@ void SocketGetInfoFunction::Work() {
 }
 
 bool SocketGetNetworkListFunction::RunAsync() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&SocketGetNetworkListFunction::GetNetworkListOnFileThread,
                  this));
   return true;
@@ -786,31 +786,28 @@ void SocketGetNetworkListFunction::GetNetworkListOnFileThread() {
   net::NetworkInterfaceList interface_list;
   if (GetNetworkList(&interface_list,
                      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SocketGetNetworkListFunction::SendResponseOnUIThread,
-                   this,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&SocketGetNetworkListFunction::SendResponseOnUIThread, this,
                    interface_list));
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&SocketGetNetworkListFunction::HandleGetNetworkListError,
                  this));
 }
 
 void SocketGetNetworkListFunction::HandleGetNetworkListError() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   error_ = kNetworkListError;
   SendResponse(false);
 }
 
 void SocketGetNetworkListFunction::SendResponseOnUIThread(
     const net::NetworkInterfaceList& interface_list) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<linked_ptr<core_api::socket::NetworkInterface> > create_arg;
   create_arg.reserve(interface_list.size());
@@ -1030,7 +1027,7 @@ SocketSecureFunction::~SocketSecureFunction() {
 }
 
 bool SocketSecureFunction::Prepare() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = core_api::socket::Secure::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   url_request_getter_ = browser_context()->GetRequestContext();
@@ -1040,7 +1037,7 @@ bool SocketSecureFunction::Prepare() {
 // Override the regular implementation, which would call AsyncWorkCompleted
 // immediately after Work().
 void SocketSecureFunction::AsyncWorkStart() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   Socket* socket = GetSocket(params_->socket_id);
   if (!socket) {
