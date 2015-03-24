@@ -104,13 +104,14 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
                 return;
             }
 
-            // Catch syntax error.
+            // Catch syntax error. Swallows an exception (when thrown) as the
+            // spec says. https://xhr.spec.whatwg.org/#response-body
             v8::TryCatch exceptionCatcher;
-            v8::Handle<v8::Value> json = v8::JSON::Parse(jsonSource.v8Value());
-            if (exceptionCatcher.HasCaught() || json.IsEmpty())
-                v8SetReturnValue(info, v8::Null(isolate));
-            else
+            v8::Local<v8::Value> json;
+            if (v8Call(v8::JSON::Parse(isolate, jsonSource.v8Value()), json, exceptionCatcher))
                 v8SetReturnValue(info, json);
+            else
+                v8SetReturnValue(info, v8::Null(isolate));
             return;
         }
 

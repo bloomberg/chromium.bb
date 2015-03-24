@@ -153,13 +153,11 @@ void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
         v8::Handle<v8::String> jsonString = v8AtomicString(scriptState->isolate(), utf8Data, length);
 
         v8::TryCatch exceptionCatcher;
-        v8::Handle<v8::Value> jsonDictionary = v8::JSON::Parse(jsonString);
-        if (exceptionCatcher.HasCaught() || jsonDictionary.IsEmpty()) {
-            ASSERT_NOT_REACHED();
-            resolver->reject(DOMException::create(OperationError, "Failed inflating JWK JSON to object"));
-        } else {
+        v8::Local<v8::Value> jsonDictionary;
+        if (v8Call(v8::JSON::Parse(scriptState->isolate(), jsonString), jsonDictionary, exceptionCatcher))
             resolver->resolve(jsonDictionary);
-        }
+        else
+            resolver->reject(exceptionCatcher.Exception());
     }
     clearResolver();
 }

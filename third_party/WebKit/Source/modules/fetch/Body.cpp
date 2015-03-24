@@ -418,15 +418,11 @@ void Body::resolveJSON(const String& string)
     v8::Isolate* isolate = m_resolver->scriptState()->isolate();
     v8::Local<v8::String> inputString = v8String(isolate, string);
     v8::TryCatch trycatch;
-    v8::Local<v8::Value> parsed = v8::JSON::Parse(inputString);
-    if (parsed.IsEmpty()) {
-        if (trycatch.HasCaught())
-            m_resolver->reject(trycatch.Exception());
-        else
-            m_resolver->reject(v8::Exception::Error(v8AtomicString(isolate, "JSON parse error")));
-        return;
-    }
-    m_resolver->resolve(parsed);
+    v8::Local<v8::Value> parsed;
+    if (v8Call(v8::JSON::Parse(isolate, inputString), parsed, trycatch))
+        m_resolver->resolve(parsed);
+    else
+        m_resolver->reject(trycatch.Exception());
 }
 
 // FileReaderLoaderClient functions.
