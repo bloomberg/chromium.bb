@@ -45,7 +45,7 @@ PASS: document.myCustomProperty should be 1 and is.
 PASS: document.body.myCustomProperty should be 1 and is.
 PASS: document.body.attributes.myCustomProperty should be 1 and is.
 PASS: document.getElementsByTagName('body').myCustomProperty should be 1 and is.
-FAIL: document.getElementsByTagName('canvas')[0].getContext('2d').myCustomProperty should be 1 but instead is undefined.
+PASS: document.getElementsByTagName('canvas')[0].getContext('2d').myCustomProperty should be 1 and is.
 PASS: document.getElementsByTagName('canvas')[0].getContext('2d').createLinearGradient(0, 0, 0, 0).myCustomProperty should be undefined and is.
 PASS: document.getElementsByTagName('canvas')[0].getContext('2d').createPattern(document.getElementsByTagName('canvas')[0], 'no-repeat').myCustomProperty should be undefined and is.
 PASS: document.getElementsByTagName('select')[0].options.myCustomProperty should be 1 and is.

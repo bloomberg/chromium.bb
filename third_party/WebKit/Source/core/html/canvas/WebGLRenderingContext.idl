@@ -27,6 +27,7 @@
 
 [
     DoNotCheckConstants,
+    SetWrapperReferenceFrom=canvas,
     TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface WebGLRenderingContext { };

@@ -5,6 +5,7 @@
 [
     RuntimeEnabled=UnsafeES3APIs,
     DoNotCheckConstants,
+    SetWrapperReferenceFrom=canvas,
     TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface WebGL2RenderingContext { };

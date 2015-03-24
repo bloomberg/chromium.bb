@@ -35,6 +35,7 @@ typedef (HTMLImageElement or
 enum CanvasFillRule { "nonzero", "evenodd" };
 
 [
+    SetWrapperReferenceFrom=canvas,
     TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface CanvasRenderingContext2D {
