@@ -850,9 +850,6 @@ function runTest(enableWatchDogWhileDebugging)
 
         var testPath = WebInspector.settings.testPath.get();
 
-        if (testPath.indexOf("layers/") !== -1)
-            Runtime.experiments.setEnabled("layersPanel", true);
-
         // 2. Show initial panel based on test path.
         var initialPanelByFolder = {
             "audits": "audits",
