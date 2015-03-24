@@ -5213,24 +5213,38 @@ weston_transform_to_string(uint32_t output_transform)
 }
 
 static int
-load_configuration(struct weston_config **config, int32_t noconfig)
+load_configuration(struct weston_config **config, int32_t noconfig,
+		   const char *config_file)
 {
+	const char *file = "weston.ini";
 	const char *full_path;
 
 	*config = NULL;
 
+	if (config_file)
+		file = config_file;
+
 	if (noconfig == 0)
-		*config = weston_config_parse("weston.ini");
+		*config = weston_config_parse(file);
 
 	if (*config) {
 		full_path = weston_config_get_full_path(*config);
 
 		weston_log("Using config file '%s'\n", full_path);
 		setenv(WESTON_CONFIG_FILE_ENV_VAR, full_path, 1);
-	} else {
-		weston_log("Starting with no config file.\n");
-		setenv(WESTON_CONFIG_FILE_ENV_VAR, "", 1);
+
+		return 0;
 	}
+
+	if (config_file && noconfig == 0) {
+		weston_log("fatal: error opening or reading config file"
+			   " '%s'.\n", config_file);
+
+		return -1;
+	}
+
+	weston_log("Starting with no config file.\n");
+	setenv(WESTON_CONFIG_FILE_ENV_VAR, "", 1);
 
 	return 0;
 }
@@ -5259,6 +5273,7 @@ int main(int argc, char *argv[])
 	int32_t version = 0;
 	int32_t noconfig = 0;
 	int32_t numlock_on;
+	char *config_file = NULL;
 	struct weston_config *config;
 	struct weston_config_section *section;
 	struct wl_client *primary_client;
@@ -5275,6 +5290,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
 		{ WESTON_OPTION_BOOLEAN, "version", 0, &version },
 		{ WESTON_OPTION_BOOLEAN, "no-config", 0, &noconfig },
+		{ WESTON_OPTION_STRING, "config", 'c', &config_file },
 	};
 
 	parse_options(core_options, ARRAY_LENGTH(core_options), &argc, argv);
@@ -5316,7 +5332,7 @@ int main(int argc, char *argv[])
 	if (!signals[0] || !signals[1] || !signals[2] || !signals[3])
 		goto out_signals;
 
-	if (load_configuration(&config, noconfig) < 0)
+	if (load_configuration(&config, noconfig, config_file) < 0)
 		goto out_signals;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
@@ -5436,6 +5452,7 @@ out_signals:
 
 	weston_log_file_close();
 
+	free(config_file);
 	free(backend);
 	free(shell);
 	free(socket_name);

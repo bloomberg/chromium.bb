@@ -111,6 +111,18 @@ or you can pass an absolute path. The default backend is
 unless the environment suggests otherwise, see
 .IR DISPLAY " and " WAYLAND_DISPLAY .
 .TP
+\fB\-\^c\fR\fIconfig.ini\fR, \fB\-\-config\fR=\fIconfig.ini\fR
+Load
+.IR config.ini " instead of " weston.ini .
+The argument can also be an absolute path starting with a
+.IR / .
+If the path is not absolute, it will be searched in the normal config
+paths, see
+.BR weston.ini (5).
+If also
+.B --no-config
+is given, no configuration file will be read.
+.TP
 .BR \-\-version
 Print the program version.
 .TP
