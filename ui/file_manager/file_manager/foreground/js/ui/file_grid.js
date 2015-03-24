@@ -161,6 +161,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
       continue;
 
     this.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement), entry);
+    this.updateSharedStatus_(assert(listItem), entry);
   }
 };
 
@@ -219,6 +220,8 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   bottom.appendChild(filelist.renderFileTypeIcon(li.ownerDocument, entry));
   bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
   frame.appendChild(bottom);
+
+  this.updateSharedStatus_(li, entry);
 };
 
 /**
@@ -226,12 +229,9 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
  *
  * @param {!HTMLDivElement} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
- * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
- *     when the image has been loaded before inserting it into the DOM.
  * @private
  */
-FileGrid.prototype.decorateThumbnailBox_ = function(
-    box, entry, opt_imageLoadCallback) {
+FileGrid.prototype.decorateThumbnailBox_ = function(box, entry) {
   box.className = 'img-container';
 
   if (this.importStatusVisible_ &&
@@ -245,12 +245,6 @@ FileGrid.prototype.decorateThumbnailBox_ = function(
 
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
-
-    var shared = !!this.metadataModel_.getCache([entry], ['shared'])[0].shared;
-    box.classList.toggle('shared', shared);
-
-    if (opt_imageLoadCallback)
-      setTimeout(opt_imageLoadCallback, 0, null /* callback parameter */);
     return;
   }
 
@@ -265,6 +259,25 @@ FileGrid.prototype.decorateThumbnailBox_ = function(
     var mediaType = FileType.getMediaType(entry);
     box.setAttribute('generic-thumbnail', mediaType);
   }
+};
+
+/**
+ * Added 'shared' class to icon and placeholder of a folder item.
+ * @param {!HTMLLIElement} li The grid item.
+ * @param {!Entry} entry File entry for the grid item.
+ * @private
+ */
+FileGrid.prototype.updateSharedStatus_ = function(li, entry) {
+  if (!entry.isDirectory)
+    return;
+
+  var shared = !!this.metadataModel_.getCache([entry], ['shared'])[0].shared;
+  var box = li.querySelector('.img-container');
+  if (box)
+    box.classList.toggle('shared', shared);
+  var icon = li.querySelector('.detail-icon');
+  if (icon)
+    icon.classList.toggle('shared', shared);
 };
 
 /**
