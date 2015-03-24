@@ -26,7 +26,6 @@ class WebRTC(recipe_util.Recipe):
           'safesync_url': '',
         },
       ],
-      'auto': True,  # Runs git auto-svn as a part of the fetch.
       'with_branch_heads': True,
     }
 
@@ -34,8 +33,8 @@ class WebRTC(recipe_util.Recipe):
       spec['target_os'] = props['target_os'].split(',')
 
     return {
-      'type': 'gclient_git_svn',
-      'gclient_git_svn_spec': spec,
+      'type': 'gclient_git',
+      'gclient_git_spec': spec,
     }
 
   @staticmethod
