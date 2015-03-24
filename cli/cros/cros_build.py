@@ -69,18 +69,18 @@ To just build a single package:
     target.add_argument('--brick', help='The brick to build packages for.')
     target.add_argument('--blueprint',
                         help='The blueprint to build packages for.')
-    target.add_argument('--host', help='Build packages for the chroot itself',
+    target.add_argument('--host', help='Build packages for the chroot itself.',
                         default=False, action='store_true')
-    parser.add_argument('--no-binary', help="Don't use binary packages",
+    parser.add_argument('--no-binary', help="Don't use binary packages.",
                         default=True, dest='binary', action='store_false')
-    parser.add_argument('--no-chroot-update', help="Don't update chroot",
+    parser.add_argument('--no-chroot-update', help="Don't update chroot.",
                         default=True, dest='chroot_update',
                         action='store_false')
     deps = parser.add_mutually_exclusive_group()
-    deps.add_argument('--no-deps', help="Don't update dependencies",
+    deps.add_argument('--no-deps', help="Don't update dependencies.",
                       default=True, dest='deps', action='store_false')
     deps.add_argument('--rebuild-deps', default=False, action='store_true',
-                      help='Automatically rebuild dependencies')
+                      help='Automatically rebuild dependencies.')
     parser.add_argument('packages',
                         help='Packages to build. If no packages listed, uses '
                         'the current brick main package.',
@@ -90,7 +90,7 @@ To just build a single package:
     advanced = parser.add_argument_group('Advanced options')
     advanced.add_argument('--jobs', default=None, type=int,
                           help='Maximium job count to run in parallel '
-                               '(Default: Use all available cores)')
+                               '(uses all available cores by default).')
 
     # Legacy options, for backward compatibiltiy.
     legacy = parser.add_argument_group('Options for backward compatibility')
