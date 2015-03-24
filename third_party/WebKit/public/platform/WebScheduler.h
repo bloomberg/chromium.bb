@@ -18,13 +18,7 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
 public:
     virtual ~WebScheduler() { }
 
-    // An IdleTask is passed a deadline in CLOCK_MONOTONIC seconds and is
-    // expected to complete before this deadline.
-    class IdleTask {
-    public:
-        virtual ~IdleTask() { }
-        virtual void run(double deadlineSeconds) = 0;
-    };
+    typedef WebThread::IdleTask IdleTask;
 
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.

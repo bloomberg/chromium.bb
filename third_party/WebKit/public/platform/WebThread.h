@@ -44,6 +44,14 @@ typedef uintptr_t PlatformThreadId;
 // run.
 class BLINK_PLATFORM_EXPORT WebThread {
 public:
+    // An IdleTask is passed a deadline in CLOCK_MONOTONIC seconds and is
+    // expected to complete before this deadline.
+    class IdleTask {
+    public:
+        virtual ~IdleTask() { }
+        virtual void run(double deadlineSeconds) = 0;
+    };
+
     class BLINK_PLATFORM_EXPORT Task {
     public:
         virtual ~Task() { }

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class IdleTaskRunner : public WebScheduler::IdleTask {
+class IdleTaskRunner : public WebThread::IdleTask {
     WTF_MAKE_NONCOPYABLE(IdleTaskRunner);
 
 public:
@@ -24,7 +24,7 @@ public:
     {
     }
 
-    // WebScheduler::IdleTask implementation.
+    // WebThread::IdleTask implementation.
     void run(double deadlineSeconds) override
     {
         (*m_task)(deadlineSeconds);

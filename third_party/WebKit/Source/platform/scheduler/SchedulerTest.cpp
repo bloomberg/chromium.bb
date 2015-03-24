@@ -62,7 +62,7 @@ public:
 protected:
     bool m_shouldYieldForHighPriorityWork;
 
-    OwnPtr<WebScheduler::IdleTask> m_latestIdleTask;
+    OwnPtr<blink::WebThread::IdleTask> m_latestIdleTask;
 };
 
 class SchedulerTest : public testing::Test {
