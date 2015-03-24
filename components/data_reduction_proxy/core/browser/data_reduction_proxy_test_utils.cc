@@ -22,54 +22,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 
-namespace {
-
-const char kTestKey[] = "test-key";
-
-}  // namespace
-
 namespace data_reduction_proxy {
-
-TestDataReductionProxyRequestOptions::TestDataReductionProxyRequestOptions(
-    Client client,
-    const std::string& version,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : DataReductionProxyRequestOptions(client, version, config, task_runner) {
-}
-
-std::string TestDataReductionProxyRequestOptions::GetDefaultKey() const {
-  return kTestKey;
-}
-
-base::Time TestDataReductionProxyRequestOptions::Now() const {
-  return base::Time::UnixEpoch() + now_offset_;
-}
-
-void TestDataReductionProxyRequestOptions::RandBytes(void* output,
-                                                     size_t length) const {
-  char* c = static_cast<char*>(output);
-  for (size_t i = 0; i < length; ++i) {
-    c[i] = 'a';
-  }
-}
-
-// Time after the unix epoch that Now() reports.
-void TestDataReductionProxyRequestOptions::set_offset(
-    const base::TimeDelta& now_offset) {
-  now_offset_ = now_offset;
-}
-
-MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
-    Client client,
-    const std::string& version,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : DataReductionProxyRequestOptions(client, version, config, task_runner) {
-}
-
-MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {
-}
 
 MockDataReductionProxyService::MockDataReductionProxyService(
     scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
@@ -112,7 +65,6 @@ DataReductionProxyTestContext::Builder::Builder()
       use_mock_config_(false),
       use_test_configurator_(false),
       use_mock_service_(false),
-      use_mock_request_options_(false),
       skip_settings_initialization_(false) {
 }
 
@@ -164,12 +116,6 @@ DataReductionProxyTestContext::Builder::WithTestConfigurator() {
 DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithMockDataReductionProxyService() {
   use_mock_service_ = true;
-  return *this;
-}
-
-DataReductionProxyTestContext::Builder&
-DataReductionProxyTestContext::Builder::WithMockRequestOptions() {
-  use_mock_request_options_ = true;
   return *this;
 }
 
@@ -227,15 +173,8 @@ DataReductionProxyTestContext::Builder::Build() {
         configurator.get(), event_store.get()));
   }
 
-  scoped_ptr<DataReductionProxyRequestOptions> request_options;
-  if (use_mock_request_options_) {
-    test_context_flags |= USE_MOCK_REQUEST_OPTIONS;
-    request_options.reset(new MockDataReductionProxyRequestOptions(
-        client_, std::string(), config.get(), task_runner));
-  } else {
-    request_options.reset(new DataReductionProxyRequestOptions(
-        client_, config.get(), task_runner));
-  }
+  scoped_ptr<DataReductionProxyRequestOptions> request_options(
+      new DataReductionProxyRequestOptions(client_, config.get(), task_runner));
 
   scoped_ptr<DataReductionProxySettings> settings(
       new DataReductionProxySettings());
@@ -403,14 +342,6 @@ DataReductionProxyTestContext::mock_data_reduction_proxy_service()
   DCHECK(test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE);
   return reinterpret_cast<MockDataReductionProxyService*>(
       data_reduction_proxy_service());
-}
-
-MockDataReductionProxyRequestOptions*
-DataReductionProxyTestContext::mock_request_options() const {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::USE_MOCK_REQUEST_OPTIONS);
-  return reinterpret_cast<MockDataReductionProxyRequestOptions*>(
-      io_data_->request_options());
 }
 
 DataReductionProxyUsageStats::UnreachableCallback

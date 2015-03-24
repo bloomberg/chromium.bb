@@ -7,11 +7,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
-#include "base/values.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_server.h"
@@ -39,11 +36,6 @@ const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 const char kAndroidOneIdentifier[] = "sprout";
 
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
-
-const char kConfigScheme[] = "scheme";
-const char kConfigHost[] = "host";
-const char kConfigPort[] = "port";
-
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -392,41 +384,6 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     return true;
   }
   return false;
-}
-
-void DataReductionProxyParams::PopulateConfigResponse(
-    base::DictionaryValue* response) const {
-  scoped_ptr<base::Value> proxy_config(new base::DictionaryValue());
-  if (!holdback_) {
-    base::DictionaryValue* proxy_config_dict = nullptr;
-    if (!proxy_config->GetAsDictionary(&proxy_config_dict))
-      return;
-
-    scoped_ptr<base::Value> proxy_servers(new base::ListValue());
-    base::ListValue* proxy_servers_list = nullptr;
-    if (!proxy_servers->GetAsList(&proxy_servers_list))
-      return;
-
-    proxy_servers->GetAsList(&proxy_servers_list);
-    scoped_ptr<base::DictionaryValue> server(new base::DictionaryValue());
-
-    server->SetString(kConfigScheme,
-                      config_parser::GetSchemeString(origin_.scheme()));
-    server->SetString(kConfigHost, origin_.host_port_pair().host());
-    server->SetInteger(kConfigPort, origin_.host_port_pair().port());
-    proxy_servers_list->Append(server.release());
-    server.reset(new base::DictionaryValue());
-
-    server->SetString(kConfigScheme, config_parser::GetSchemeString(
-                                         fallback_origin_.scheme()));
-    server->SetString(kConfigHost, fallback_origin_.host_port_pair().host());
-    server->SetInteger(kConfigPort, fallback_origin_.host_port_pair().port());
-    proxy_servers_list->Append(server.release());
-
-    proxy_config_dict->Set("httpProxyServers", proxy_servers.Pass());
-  }
-
-  response->Set("proxyConfig", proxy_config.Pass());
 }
 
 // Returns the data reduction proxy primary origin.

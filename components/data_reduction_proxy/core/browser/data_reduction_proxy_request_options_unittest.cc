@@ -28,6 +28,7 @@ const char kVersion[] = "0.1.2.3";
 const char kExpectedBuild[] = "2";
 const char kExpectedPatch[] = "3";
 const char kBogusVersion[] = "0.0";
+const char kTestKey[] = "test-key";
 const char kExpectedCredentials[] = "96bd72ec4a050ba60981743d41787768";
 const char kExpectedSession[] = "0-1633771873-1633771873-1633771873";
 
@@ -75,6 +76,41 @@ const char kClientStr[] = "qnx";
 const Client kClient = Client::UNKNOWN;
 const char kClientStr[] = "";
 #endif
+
+class TestDataReductionProxyRequestOptions
+    : public DataReductionProxyRequestOptions {
+ public:
+  TestDataReductionProxyRequestOptions(
+      Client client,
+      const std::string& version,
+      DataReductionProxyConfig* config,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : DataReductionProxyRequestOptions(
+            client, version, config, task_runner) {}
+
+  std::string GetDefaultKey() const override {
+    return kTestKey;
+  }
+
+  base::Time Now() const override {
+    return base::Time::UnixEpoch() + now_offset_;
+  }
+
+  void RandBytes(void* output, size_t length) override {
+    char* c =  static_cast<char*>(output);
+    for (size_t i = 0; i < length; ++i) {
+      c[i] = 'a';
+    }
+  }
+
+  // Time after the unix epoch that Now() reports.
+  void set_offset(const base::TimeDelta& now_offset) {
+    now_offset_ = now_offset;
+  }
+
+ private:
+  base::TimeDelta now_offset_;
+};
 
 void SetHeaderExpectations(const std::string& session,
                            const std::string& credentials,
@@ -301,66 +337,6 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
 
   CreateRequestOptions(kBogusVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, ParseLocalSessionKey) {
-  const struct {
-    bool should_succeed;
-    std::string session_key;
-    std::string expected_session;
-    std::string expected_credentials;
-  } tests[] = {
-      {
-          true,
-          "foobar|1234",
-          "foobar",
-          "1234",
-      },
-      {
-          false,
-          "foobar|1234|foobaz",
-          std::string(),
-          std::string(),
-      },
-      {
-          false,
-          "foobar",
-          std::string(),
-          std::string(),
-      },
-      {
-          false,
-          std::string(),
-          std::string(),
-          std::string(),
-      },
-  };
-
-  std::string session;
-  std::string credentials;
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    EXPECT_EQ(tests[i].should_succeed,
-              DataReductionProxyRequestOptions::ParseLocalSessionKey(
-                  tests[i].session_key, &session, &credentials));
-    if (tests[i].should_succeed) {
-      EXPECT_EQ(tests[i].expected_session, session);
-      EXPECT_EQ(tests[i].expected_credentials, credentials);
-    }
-  }
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, PopulateConfigResponse) {
-  CreateRequestOptions(kBogusVersion);
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue());
-  request_options()->PopulateConfigResponse(values.get());
-  std::string session;
-  std::string expire_time;
-  EXPECT_TRUE(values->GetString("sessionKey", &session));
-  EXPECT_TRUE(values->GetString("expireTime", &expire_time));
-  EXPECT_EQ(
-      "0-1633771873-1633771873-1633771873|96bd72ec4a050ba60981743d41787768",
-      session);
-  EXPECT_EQ("1970-01-02T00:00:00.000Z", expire_time);
 }
 
 }  // namespace data_reduction_proxy

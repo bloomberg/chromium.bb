@@ -13,10 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -69,29 +67,6 @@ bool DataReductionProxyRequestOptions::IsKeySetOnCommandLine() {
       *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(
       data_reduction_proxy::switches::kDataReductionProxyKey);
-}
-
-// static
-std::string DataReductionProxyRequestOptions::CreateLocalSessionKey(
-    const std::string& session,
-    const std::string& credentials) {
-  return base::StringPrintf("%s|%s", session.c_str(), credentials.c_str());
-}
-
-// static
-bool DataReductionProxyRequestOptions::ParseLocalSessionKey(
-    const std::string& session_key,
-    std::string* session,
-    std::string* credentials) {
-  std::vector<std::string> auth_values;
-  base::SplitString(session_key, '|', &auth_values);
-  if (auth_values.size() == 2) {
-    *session = auth_values[0];
-    *credentials = auth_values[1];
-    return true;
-  }
-
-  return false;
 }
 
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
@@ -197,8 +172,7 @@ base::Time DataReductionProxyRequestOptions::Now() const {
   return base::Time::Now();
 }
 
-void DataReductionProxyRequestOptions::RandBytes(void* output,
-                                                 size_t length) const {
+void DataReductionProxyRequestOptions::RandBytes(void* output, size_t length) {
   crypto::RandBytes(output, length);
 }
 
@@ -226,9 +200,10 @@ void DataReductionProxyRequestOptions::MaybeAddProxyTunnelRequestHandler(
 void DataReductionProxyRequestOptions::SetHeader(
     net::HttpRequestHeaders* headers) {
   base::Time now = Now();
-  // Authorization credentials must be regenerated if they are expired.
-  if (now > credentials_expiration_time_)
+  // Authorization credentials must be regenerated at least every 24 hours.
+  if (now - last_credentials_update_time_ > base::TimeDelta::FromHours(24)) {
     UpdateCredentials();
+  }
   UpdateLoFi();
   const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
@@ -244,7 +219,7 @@ void DataReductionProxyRequestOptions::SetHeader(
 void DataReductionProxyRequestOptions::ComputeCredentials(
     const base::Time& now,
     std::string* session,
-    std::string* credentials) const {
+    std::string* credentials) {
   DCHECK(session);
   DCHECK(credentials);
   int64 timestamp =
@@ -266,9 +241,8 @@ void DataReductionProxyRequestOptions::ComputeCredentials(
 void DataReductionProxyRequestOptions::UpdateCredentials() {
   std::string session;
   std::string credentials;
-  base::Time now = Now();
-  ComputeCredentials(now, &session_, &credentials_);
-  credentials_expiration_time_ = now + base::TimeDelta::FromHours(24);
+  last_credentials_update_time_ = Now();
+  ComputeCredentials(last_credentials_update_time_, &session_, &credentials_);
   RegenerateRequestHeaderValue();
 }
 
@@ -277,20 +251,6 @@ void DataReductionProxyRequestOptions::SetKeyOnIO(const std::string& key) {
     key_ = key;
     UpdateCredentials();
   }
-}
-
-void DataReductionProxyRequestOptions::PopulateConfigResponse(
-    base::DictionaryValue* response) const {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  std::string session;
-  std::string credentials;
-  base::Time now = Now();
-  base::Time expiration_time = now + base::TimeDelta::FromHours(24);
-  ComputeCredentials(now, &session, &credentials);
-  response->SetString("sessionKey",
-                      CreateLocalSessionKey(session, credentials));
-  response->SetString("expireTime",
-                      config_parser::TimeToISO8601(expiration_time));
 }
 
 std::string DataReductionProxyRequestOptions::GetDefaultKey() const {

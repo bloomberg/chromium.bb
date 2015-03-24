@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/command_line.h"
-#include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/proxy/proxy_server.h"
@@ -765,32 +764,6 @@ TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
       "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
   EXPECT_FALSE(DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
-}
-
-TEST_F(DataReductionProxyParamsTest, PopulateConfigResponse) {
-  DataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kAlternativeAllowed);
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue());
-  params.PopulateConfigResponse(values.get());
-  base::DictionaryValue* proxy_config;
-  EXPECT_TRUE(values->GetDictionary("proxyConfig", &proxy_config));
-  base::ListValue* proxy_servers;
-  EXPECT_TRUE(proxy_config->GetList("httpProxyServers", &proxy_servers));
-  EXPECT_TRUE(proxy_servers->GetSize() == 2);
-  base::DictionaryValue* server;
-  EXPECT_TRUE(proxy_servers->GetDictionary(0, &server));
-  std::string host;
-  int port;
-  EXPECT_TRUE(server->GetString("host", &host));
-  EXPECT_TRUE(server->GetInteger("port", &port));
-  EXPECT_EQ(params.origin().host_port_pair().host(), host);
-  EXPECT_EQ(params.origin().host_port_pair().port(), port);
-  EXPECT_TRUE(proxy_servers->GetDictionary(1, &server));
-  EXPECT_TRUE(server->GetString("host", &host));
-  EXPECT_TRUE(server->GetInteger("port", &port));
-  EXPECT_EQ(params.fallback_origin().host_port_pair().host(), host);
-  EXPECT_EQ(params.fallback_origin().host_port_pair().port(), port);
 }
 
 }  // namespace data_reduction_proxy
