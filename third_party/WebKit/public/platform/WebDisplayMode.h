@@ -12,7 +12,8 @@ enum WebDisplayMode {
     WebDisplayModeBrowser,
     WebDisplayModeMinimalUi,
     WebDisplayModeStandalone,
-    WebDisplayModeFullscreen
+    WebDisplayModeFullscreen,
+    WebDisplayModeLast = WebDisplayModeFullscreen
 };
 
 } // namespace blink
