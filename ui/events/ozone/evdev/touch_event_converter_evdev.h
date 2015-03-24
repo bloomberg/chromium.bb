@@ -89,9 +89,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   float y_min_tuxels_;
   float y_num_tuxels_;
 
-  // Size of the touchscreen as reported by the driver.
-  gfx::Size native_size_;
-
   // Number of touch points reported by driver
   int touch_points_;
 

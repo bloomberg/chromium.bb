@@ -114,8 +114,6 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
                                   cal.bezel_bottom);
   }
 
-  native_size_ = gfx::Size(x_num_tuxels_, y_num_tuxels_);
-
   events_.resize(touch_points_);
   for (size_t i = 0; i < events_.size(); ++i) {
     events_[i].finger_ = info.GetSlotValue(ABS_MT_TRACKING_ID, i);
@@ -143,7 +141,7 @@ bool TouchEventConverterEvdev::HasTouchscreen() const {
 }
 
 gfx::Size TouchEventConverterEvdev::GetTouchscreenSize() const {
-  return native_size_;
+  return gfx::Size(x_num_tuxels_, y_num_tuxels_);
 }
 
 int TouchEventConverterEvdev::GetTouchPoints() const {
