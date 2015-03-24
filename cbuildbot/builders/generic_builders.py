@@ -10,6 +10,7 @@ import multiprocessing
 import os
 import sys
 import tempfile
+import traceback
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -302,7 +303,7 @@ class Builder(object):
         if isinstance(ex, failures_lib.CompoundFailure):
           print(str(ex))
 
-        cros_build_lib.PrintDetailedTraceback(file=sys.stdout)
+        traceback.print_exc(file=sys.stdout)
         raise
 
       if not (print_report and isinstance(ex, failures_lib.StepFailure)):

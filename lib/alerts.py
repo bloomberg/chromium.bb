@@ -11,12 +11,12 @@ import gzip
 import smtplib
 import socket
 import sys
+import traceback
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
@@ -127,7 +127,7 @@ def SendEmailLog(subject, recipients, smtp_server=None, message='',
 
   if inc_trace:
     if sys.exc_info() != (None, None, None):
-      trace = cros_build_lib.FormatDetailedTraceback()
+      trace = traceback.format_exc()
       message += '\n\n' + trace
 
   attachment = None

@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import collections
 import sys
+import traceback
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -160,12 +161,12 @@ class SetFailureType(object):
       except self.source_exception:
         # Get the information about the original exception.
         exc_type, exc_value, _ = sys.exc_info()
+        exc_traceback = traceback.format_exc()
         if issubclass(exc_type, self.category_exception):
           # Do not re-raise if the exception is a subclass of the set
           # exception type because it offers more information.
           raise
         else:
-          exc_traceback = cros_build_lib.FormatDetailedTraceback()
           exc_infos = CreateExceptInfo(exc_value, exc_traceback)
           raise self.category_exception(exc_infos=exc_infos)
 
