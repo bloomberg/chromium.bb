@@ -20,16 +20,16 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 467x19
           text run at (0,0) width 467: "There should be a solid green square below mixed in with a paragraph of text."
       LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {DIV} at (0,112.72) size 784x139.72
-        LayoutBlockFlow {DIV} at (0,0) size 784x139.72
+      LayoutBlockFlow {DIV} at (0,112.72) size 784x141.72
+        LayoutBlockFlow {DIV} at (0,0) size 784x141.72
           LayoutBlockFlow (floating) {DIV} at (3,3) size 75x75 [bgcolor=#008000]
-          LayoutBlockFlow {H3} at (0,0) size 784x21
-            LayoutText {#text} at (81,0) size 152x20
-              text run at (81,0) width 152: "Stanley Park Forest"
-          LayoutBlockFlow {P} at (0,39.72) size 784x100
-            LayoutText {#text} at (81,0) size 784x99
+          LayoutBlockFlow {H3} at (0,0) size 784x23
+            LayoutText {#text} at (81,0) size 164x22
+              text run at (81,0) width 164: "Stanley Park Forest"
+          LayoutBlockFlow {P} at (0,41.72) size 784x100
+            LayoutText {#text} at (81,0) size 768x99
               text run at (81,0) width 673: "The forest is primarily second and third growth. The area was saved from development because of its status as a"
               text run at (81,20) width 630: "federal military reserve; it occupied a strategic location for defending the former provincial capital of New"
-              text run at (81,40) width 653: "Westminster in the case of an American naval invasion. Nevertheless, the federal government allowed logging"
-              text run at (0,60) width 784: "operations there in the mid-nineteenth century. Large swathes of the park were also deforested by natural causes on two occasions"
-              text run at (0,80) width 115: "in the 20th century."
+              text run at (0,40) width 768: "Westminster in the case of an American naval invasion. Nevertheless, the federal government allowed logging operations there in"
+              text run at (0,60) width 736: "the mid-nineteenth century. Large swathes of the park were also deforested by natural causes on two occasions in the 20th"
+              text run at (0,80) width 48: "century."
