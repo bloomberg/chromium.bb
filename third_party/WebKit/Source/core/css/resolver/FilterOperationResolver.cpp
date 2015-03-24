@@ -88,12 +88,8 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
         return false;
 
     FilterOperations operations;
-    for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
-        CSSValue* currValue = i.value();
-        if (!currValue->isFunctionValue())
-            continue;
-
-        CSSFunctionValue* filterValue = toCSSFunctionValue(i.value());
+    for (auto& currValue : toCSSValueList(*inValue)) {
+        CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->functionType());
 
         if (operationType == FilterOperation::REFERENCE) {

@@ -105,8 +105,8 @@ T StyleBuilderConverter::convertFlags(StyleResolverState& state, CSSValue* value
     T flags = static_cast<T>(0);
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone)
         return flags;
-    for (CSSValueListIterator i(value); i.hasMore(); i.advance())
-        flags |= *toCSSPrimitiveValue(i.value());
+    for (auto& flagValue : toCSSValueList(*value))
+        flags |= toCSSPrimitiveValue(*flagValue);
     return flags;
 }
 

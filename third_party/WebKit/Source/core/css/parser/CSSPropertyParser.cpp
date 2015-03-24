@@ -1761,11 +1761,11 @@ static bool isValidTransitionPropertyList(CSSValueList* value)
 {
     if (value->length() < 2)
         return true;
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
+    for (auto& property : *value) {
         // FIXME: Shorthand parsing shouldn't add initial to the list since it won't round-trip
-        if (i.value()->isInitialValue())
+        if (property->isInitialValue())
             continue;
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(i.value());
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(property.get());
         if (primitiveValue->isValueID() && primitiveValue->getValueID() == CSSValueNone)
             return false;
     }

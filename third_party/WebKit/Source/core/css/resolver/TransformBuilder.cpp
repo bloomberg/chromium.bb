@@ -89,13 +89,8 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
 
     float zoomFactor = conversionData.zoom();
     TransformOperations operations;
-    for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
-        CSSValue* currValue = i.value();
-
-        if (!currValue->isFunctionValue())
-            continue;
-
-        CSSFunctionValue* transformValue = toCSSFunctionValue(i.value());
+    for (auto& value : toCSSValueList(*inValue)) {
+        CSSFunctionValue* transformValue = toCSSFunctionValue(value.get());
         if (!transformValue->length())
             continue;
 

@@ -311,11 +311,10 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
     if (!contentValue->isValueList())
         return;
 
-    for (CSSValueListIterator i = contentValue; i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
+    for (auto& item : toCSSValueList(*contentValue)) {
         if (!item->isPrimitiveValue())
             continue;
-        CSSPrimitiveValue* primitiveItem = toCSSPrimitiveValue(item);
+        CSSPrimitiveValue* primitiveItem = toCSSPrimitiveValue(item.get());
         if (!primitiveItem->isAttr())
             continue;
         ensureAttributeInvalidationSet(AtomicString(primitiveItem->getStringValue()));

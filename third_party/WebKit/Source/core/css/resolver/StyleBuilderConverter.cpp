@@ -147,15 +147,11 @@ FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(Styl
     FontDescription::FamilyDescription desc(FontDescription::NoFamily);
     FontFamily* currFamily = nullptr;
 
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
-        if (!item->isPrimitiveValue())
-            continue;
-
+    for (auto& family : toCSSValueList(*value)) {
         FontDescription::GenericFamilyType genericFamily = FontDescription::NoFamily;
         AtomicString familyName;
 
-        if (!convertFontFamilyName(state, toCSSPrimitiveValue(item), genericFamily, familyName))
+        if (!convertFontFamilyName(state, toCSSPrimitiveValue(family.get()), genericFamily, familyName))
             continue;
 
         if (!currFamily) {
@@ -390,26 +386,26 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
     int gridLineNumber = 1;
     String gridLineName;
 
-    CSSValueListIterator it = values;
-    CSSPrimitiveValue* currentValue = toCSSPrimitiveValue(it.value());
+    auto it = values->begin();
+    CSSPrimitiveValue* currentValue = toCSSPrimitiveValue(it->get());
     if (currentValue->getValueID() == CSSValueSpan) {
         isSpanPosition = true;
-        it.advance();
-        currentValue = it.hasMore() ? toCSSPrimitiveValue(it.value()) : 0;
+        ++it;
+        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : 0;
     }
 
     if (currentValue && currentValue->isNumber()) {
         gridLineNumber = currentValue->getIntValue();
-        it.advance();
-        currentValue = it.hasMore() ? toCSSPrimitiveValue(it.value()) : 0;
+        ++it;
+        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : 0;
     }
 
     if (currentValue && currentValue->isString()) {
         gridLineName = currentValue->getStringValue();
-        it.advance();
+        ++it;
     }
 
-    ASSERT(!it.hasMore());
+    ASSERT(it == values->end());
     if (isSpanPosition)
         position.setSpanPosition(gridLineNumber, gridLineName);
     else
@@ -442,12 +438,10 @@ bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
         return false;
 
     size_t currentNamedGridLine = 0;
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        CSSValue* currValue = i.value();
+    for (auto& currValue : *toCSSValueList(value)) {
         if (currValue->isGridLineNamesValue()) {
-            CSSGridLineNamesValue* lineNamesValue = toCSSGridLineNamesValue(currValue);
-            for (CSSValueListIterator j = lineNamesValue; j.hasMore(); j.advance()) {
-                String namedGridLine = toCSSPrimitiveValue(j.value())->getStringValue();
+            for (auto& namedGridLineValue : toCSSGridLineNamesValue(*currValue)) {
+                String namedGridLine = toCSSPrimitiveValue(namedGridLineValue.get())->getStringValue();
                 NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
                 result.storedValue->value.append(currentNamedGridLine);
                 OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
@@ -457,7 +451,7 @@ bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
         }
 
         ++currentNamedGridLine;
-        trackSizes.append(convertGridTrackSize(state, currValue));
+        trackSizes.append(convertGridTrackSize(state, currValue.get()));
     }
 
     // The parser should have rejected any <track-list> without any <track-size> as

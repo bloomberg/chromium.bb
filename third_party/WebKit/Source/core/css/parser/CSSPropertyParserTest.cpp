@@ -15,8 +15,8 @@ namespace blink {
 static unsigned computeNumberOfTracks(CSSValueList* valueList)
 {
     unsigned numberOfTracks = 0;
-    for (CSSValueListIterator i = valueList; i.hasMore(); i.advance()) {
-        if (i.value()->isGridLineNamesValue())
+    for (auto& value : *valueList) {
+        if (value->isGridLineNamesValue())
             continue;
         ++numberOfTracks;
     }

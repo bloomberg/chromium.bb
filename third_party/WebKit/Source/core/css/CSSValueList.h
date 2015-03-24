@@ -29,6 +29,8 @@ namespace blink {
 
 class CSSValueList : public CSSValue {
 public:
+    using iterator = WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4>::iterator;
+
     static PassRefPtrWillBeRawPtr<CSSValueList> createCommaSeparated()
     {
         return adoptRefWillBeNoop(new CSSValueList(CommaSeparator));
@@ -41,6 +43,9 @@ public:
     {
         return adoptRefWillBeNoop(new CSSValueList(SlashSeparator));
     }
+
+    iterator begin() { return m_values.begin(); }
+    iterator end() { return m_values.end(); }
 
     size_t length() const { return m_values.size(); }
     CSSValue* item(size_t index) { return m_values[index].get(); }
@@ -71,22 +76,6 @@ private:
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());
-
-// FIXME: We should add begin() and end() to CSSValueList and use range-based
-// for loops instead of having an iterator class.
-class CSSValueListIterator {
-    STACK_ALLOCATED();
-public:
-    CSSValueListIterator(CSSValue* value) : m_list(toCSSValueList(value)), m_position(0) { }
-    bool hasMore() const { return m_position < m_list->length(); }
-    CSSValue* value() const { return m_list->item(m_position); }
-    bool isPrimitiveValue() const { return value()->isPrimitiveValue(); }
-    void advance() { m_position++; ASSERT(m_position <= m_list->length());}
-    size_t index() const { return m_position; }
-private:
-    RawPtrWillBeMember<CSSValueList> m_list;
-    size_t m_position;
-};
 
 } // namespace blink
 

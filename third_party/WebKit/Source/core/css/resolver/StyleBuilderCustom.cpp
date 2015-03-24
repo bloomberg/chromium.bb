@@ -510,8 +510,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     TextIndentLine textIndentLineValue = LayoutStyle::initialTextIndentLine();
     TextIndentType textIndentTypeValue = LayoutStyle::initialTextIndentType();
 
-    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(i.value());
+    for (auto& listValue : toCSSValueList(*value)) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(listValue.get());
         if (!primitiveValue->getValueID())
             lengthOrPercentageValue = primitiveValue->convertToLength(state.cssToLengthConversionData());
         else if (primitiveValue->getValueID() == CSSValueEachLine)
@@ -776,8 +776,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
     bool willChangeScrollPosition = false;
     Vector<CSSPropertyID> willChangeProperties;
 
-    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(i.value());
+    for (auto& willChangeValue : toCSSValueList(*value)) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(willChangeValue.get());
         if (CSSPropertyID propertyID = primitiveValue->getPropertyID())
             willChangeProperties.append(propertyID);
         else if (primitiveValue->getValueID() == CSSValueContents)
@@ -812,18 +812,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         return;
 
     bool didSet = false;
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
+    for (auto& item : toCSSValueList(*value)) {
         if (item->isImageGeneratorValue()) {
-            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item)), didSet);
+            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item.get())), didSet);
             didSet = true;
         } else if (item->isImageSetValue()) {
-            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item)), didSet);
+            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item.get())), didSet);
             didSet = true;
         }
 
         if (item->isImageValue()) {
-            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(item)), didSet);
+            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(item.get())), didSet);
             didSet = true;
             continue;
         }
@@ -831,7 +830,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         if (!item->isPrimitiveValue())
             continue;
 
-        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
+        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item.get());
 
         if (contentValue->isString()) {
             state.style()->setContent(contentValue->getStringValue().impl(), didSet);
