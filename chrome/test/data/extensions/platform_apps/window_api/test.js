@@ -254,6 +254,19 @@ function testCreate() {
           win2.contentWindow.close();
         }));
       }));
+    },
+
+    function hiddenAndNormal() {
+      chrome.app.window.create('test.html',
+                               {hidden: true},
+                               callbackPass(function(win1) {
+        chrome.app.window.create('test.html',
+                                 {hidden: false},
+                                 callbackPass(function(win2) {
+          win1.contentWindow.close();
+          win2.contentWindow.close();
+        }));
+      }));
     }
   ]);
 }

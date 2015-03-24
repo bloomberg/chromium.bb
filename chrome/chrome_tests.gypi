@@ -52,7 +52,6 @@
       'browser/accessibility/browser_accessibility_state_browsertest.cc',
       'browser/app_controller_mac_browsertest.mm',
       'browser/apps/app_browsertest.cc',
-      'browser/apps/app_crash_browsertest.cc',
       'browser/apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
       'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
       'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
