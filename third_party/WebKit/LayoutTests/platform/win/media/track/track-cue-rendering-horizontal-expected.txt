@@ -25,12 +25,7 @@ layer at (0,0) size 800x332
 layer at (8,8) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,8) size 320x240
-  LayoutFlexibleBox {DIV} at (0,0) size 320x240
-    LayoutBlockFlow {DIV} at (0,205) size 320x35
-layer at (8,8) size 320x205
-  LayoutFlexibleBox {DIV} at (0,0) size 320x205
-layer at (8,8) size 320x205
-  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 320x205 [color=#FFFFFF]
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 320x240 [color=#FFFFFF]
 layer at (8,8) size 320x15 scrollHeight 17
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 320x15
     LayoutInline {DIV} at (0,0) size 280x19 [bgcolor=#000000CC]
@@ -51,31 +46,18 @@ layer at (8,103) size 320x15 scrollHeight 17
     LayoutInline {DIV} at (0,0) size 294x19 [bgcolor=#000000CC]
       LayoutText {#text} at (15,0) size 290x15
         text run at (15,0) width 290: "Cue 4: should be fixed positioned around the middle."
-layer at (8,194) size 320x15 scrollHeight 17
-  LayoutBlockFlow (positioned) {DIV} at (0,186) size 320x15
+layer at (8,229) size 320x15 scrollHeight 17
+  LayoutBlockFlow (positioned) {DIV} at (0,221) size 320x15
     LayoutInline {DIV} at (0,0) size 296x19 [bgcolor=#000000CC]
       LayoutText {#text} at (14,0) size 292x15
         text run at (14,0) width 292: "Cue 5: should be displayed at the bottom of the video."
-layer at (8,175) size 320x15 scrollHeight 17
-  LayoutBlockFlow (positioned) {DIV} at (0,167) size 320x15
+layer at (8,210) size 320x15 scrollHeight 17
+  LayoutBlockFlow (positioned) {DIV} at (0,202) size 320x15
     LayoutInline {DIV} at (0,0) size 286x19 [bgcolor=#000000CC]
       LayoutText {#text} at (19,0) size 282x15
         text run at (19,0) width 282: "Cue 6: should be on top of bottom positioned cue 5."
-layer at (13,213) size 310x30
-  LayoutFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
-    LayoutButton {INPUT} at (9,0) size 30x30
-    LayoutSlider {INPUT} at (48,11) size 74x8
-      LayoutFlexibleBox {DIV} at (0,0) size 74x8 [border: (1px solid #E6E6E659)]
-        LayoutBlockFlow {DIV} at (1,-8) size 86x24
-          LayoutBlockFlow {DIV} at (-4.77,0) size 32x24
-    LayoutFlexibleBox {DIV} at (137,0) size 25x30 [color=#FFFFFF]
-      LayoutBlockFlow (anonymous) at (0,0) size 25x30
-        LayoutText {#text} at (0,7) size 25x16
-          text run at (0,7) width 25: "0:00"
-    LayoutButton {INPUT} at (171,0) size 35x30
-    LayoutSlider {INPUT} at (212,11) size 15x8
-      LayoutFlexibleBox {DIV} at (0,0) size 15x8 [border: (1px solid #E6E6E659)]
-        LayoutBlockFlow {DIV} at (1,-8) size 27x24
-          LayoutBlockFlow {DIV} at (-4,0) size 24x24
-    LayoutButton {INPUT} at (237,0) size 30x30
-    LayoutButton {INPUT} at (271,0) size 30x30
+layer at (8,8) size 320x240
+  LayoutFlexibleBox {DIV} at (0,0) size 320x240
+    LayoutBlockFlow {DIV} at (0,205) size 320x35
+layer at (8,8) size 320x205
+  LayoutFlexibleBox {DIV} at (0,0) size 320x205
