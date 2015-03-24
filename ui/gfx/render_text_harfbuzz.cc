@@ -10,6 +10,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
@@ -1296,10 +1297,13 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   // http://crbug.com/467459. On some Windows configurations the default font
   // could be a raster font like System, which would not give us a reasonable
   // fallback font list.
-  std::vector<std::string> default_fallback_families =
-      GetFallbackFontFamilies("Segoe UI");
-  fallback_families.insert(fallback_families.end(),
-      default_fallback_families.begin(), default_fallback_families.end());
+  if (!LowerCaseEqualsASCII(primary_family, "segoe ui") &&
+      !LowerCaseEqualsASCII(uniscribe_family, "segoe ui")) {
+    std::vector<std::string> default_fallback_families =
+        GetFallbackFontFamilies("Segoe UI");
+    fallback_families.insert(fallback_families.end(),
+        default_fallback_families.begin(), default_fallback_families.end());
+  }
 #endif
 
   // Get rid of duplicate fonts in the fallback list. We use the std::unique
