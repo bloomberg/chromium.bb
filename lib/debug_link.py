@@ -232,4 +232,4 @@ def InitializeDebugLink():
 
   raise DebugLinkMissingError(
       'Debug Link missing, cannot find USB device with VID=%s, PID=%s' %
-      (_PROPERTY_VENDOR_ID, _PROPERTY_PRODUCT_ID))
+      (_VENDOR_ID, _PRODUCT_ID))
