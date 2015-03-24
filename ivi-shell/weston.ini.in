@@ -1,8 +1,8 @@
 [core]
-shell=ivi-shell.so
+shell=@plugin_prefix@ivi-shell.so
 
 [ivi-shell]
-ivi-module=hmi-controller.so
+ivi-module=@plugin_prefix@hmi-controller.so
 ivi-shell-user-interface=@abs_top_builddir@/weston-ivi-shell-user-interface
 
 #developermode=true

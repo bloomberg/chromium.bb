@@ -24,6 +24,15 @@ ivi-shell/weston.ini : $(srcdir)/ivi-shell/weston.ini.in
 		-e 's|@bindir[@]|$(bindir)|g' \
 		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
 		-e 's|@libexecdir[@]|$(libexecdir)|g' \
+		-e 's|@plugin_prefix[@]||g' \
+		$< > $@
+
+tests/weston-ivi.ini : $(srcdir)/ivi-shell/weston.ini.in
+	$(AM_V_GEN)$(SED) \
+		-e 's|@bindir[@]|$(bindir)|g' \
+		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
+		-e 's|@libexecdir[@]|$(libexecdir)|g' \
+		-e 's|@plugin_prefix[@]|$(abs_top_builddir)/.libs/|g' \
 		$< > $@
 
 all-local : weston.ini ivi-shell/weston.ini
@@ -42,7 +51,10 @@ AM_CPPFLAGS = 					\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DBINDIR='"$(bindir)"'
 
-CLEANFILES = weston.ini ivi-shell/weston.ini $(BUILT_SOURCES)
+CLEANFILES = weston.ini				\
+	ivi-shell/weston.ini			\
+	tests/weston-ivi.ini			\
+	$(BUILT_SOURCES)
 
 bin_PROGRAMS += weston
 
@@ -920,7 +932,7 @@ libshared_cairo_la_SOURCES =			\
 # tests subdirectory
 #
 
-TESTS = $(shared_tests) $(module_tests) $(weston_tests)
+TESTS = $(shared_tests) $(module_tests) $(weston_tests) $(ivi_tests)
 
 shared_tests =					\
 	config-parser.test			\
@@ -941,6 +953,9 @@ weston_tests =					\
 	subsurface.weston			\
 	devices.weston
 
+ivi_tests =
+
+$(ivi_tests) : $(builddir)/tests/weston-ivi.ini
 
 AM_TESTS_ENVIRONMENT = \
 	abs_builddir='$(abs_builddir)'; export abs_builddir;
@@ -965,6 +980,7 @@ noinst_PROGRAMS +=			\
 	$(setbacklight)			\
 	$(shared_tests)			\
 	$(weston_tests)			\
+	$(ivi_tests)			\
 	matrix-test
 
 test_module_ldflags = \
