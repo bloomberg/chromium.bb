@@ -103,7 +103,7 @@ SSL* CreateSSLContext(SSL_CTX* ssl_ctx) {
 
 void PrintSslError() {
   char buf[128];  // this buffer must be at least 120 chars long.
-  int error_num = ERR_get_error();
+  uint32_t error_num = ERR_get_error();
   while (error_num != 0) {
     ERR_error_string_n(error_num, buf, sizeof(buf));
     LOG(ERROR) << buf;

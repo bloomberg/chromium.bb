@@ -17,7 +17,7 @@ namespace net {
 bool TestRootCerts::Add(X509Certificate* certificate) {
   if (!X509_STORE_add_cert(X509Certificate::cert_store(),
                            certificate->os_cert_handle())) {
-    unsigned long error_code = ERR_peek_error();
+    uint32_t error_code = ERR_peek_error();
     if (ERR_GET_LIB(error_code) != ERR_LIB_X509 ||
         ERR_GET_REASON(error_code) != X509_R_CERT_ALREADY_IN_HASH_TABLE) {
       crypto::ClearOpenSSLERRStack(FROM_HERE);
