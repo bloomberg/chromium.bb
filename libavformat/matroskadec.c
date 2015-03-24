@@ -77,6 +77,7 @@ typedef enum {
     EBML_UTF8,
     EBML_BIN,
     EBML_NEST,
+    EBML_LEVEL1,
     EBML_PASS,
     EBML_STOP,
     EBML_SINT,
@@ -96,18 +97,18 @@ typedef const struct EbmlSyntax {
     } def;
 } EbmlSyntax;
 
-typedef struct {
+typedef struct EbmlList {
     int nb_elem;
     void *elem;
 } EbmlList;
 
-typedef struct {
+typedef struct EbmlBin {
     int      size;
     uint8_t *data;
     int64_t  pos;
 } EbmlBin;
 
-typedef struct {
+typedef struct Ebml {
     uint64_t version;
     uint64_t max_size;
     uint64_t id_length;
@@ -115,24 +116,24 @@ typedef struct {
     uint64_t doctype_version;
 } Ebml;
 
-typedef struct {
+typedef struct MatroskaTrackCompression {
     uint64_t algo;
     EbmlBin  settings;
 } MatroskaTrackCompression;
 
-typedef struct {
+typedef struct MatroskaTrackEncryption {
     uint64_t algo;
     EbmlBin  key_id;
 } MatroskaTrackEncryption;
 
-typedef struct {
+typedef struct MatroskaTrackEncoding {
     uint64_t scope;
     uint64_t type;
     MatroskaTrackCompression compression;
     MatroskaTrackEncryption encryption;
 } MatroskaTrackEncoding;
 
-typedef struct {
+typedef struct MatroskaTrackVideo {
     double   frame_rate;
     uint64_t display_width;
     uint64_t display_height;
@@ -143,7 +144,7 @@ typedef struct {
     uint64_t alpha_mode;
 } MatroskaTrackVideo;
 
-typedef struct {
+typedef struct MatroskaTrackAudio {
     double   samplerate;
     double   out_samplerate;
     uint64_t bitdepth;
@@ -160,16 +161,16 @@ typedef struct {
     uint8_t *buf;
 } MatroskaTrackAudio;
 
-typedef struct {
+typedef struct MatroskaTrackPlane {
     uint64_t uid;
     uint64_t type;
 } MatroskaTrackPlane;
 
-typedef struct {
+typedef struct MatroskaTrackOperation {
     EbmlList combine_planes;
 } MatroskaTrackOperation;
 
-typedef struct {
+typedef struct MatroskaTrack {
     uint64_t num;
     uint64_t uid;
     uint64_t type;
@@ -194,7 +195,7 @@ typedef struct {
     uint64_t max_block_additional_id;
 } MatroskaTrack;
 
-typedef struct {
+typedef struct MatroskaAttachment {
     uint64_t uid;
     char *filename;
     char *mime;
@@ -203,7 +204,7 @@ typedef struct {
     AVStream *stream;
 } MatroskaAttachment;
 
-typedef struct {
+typedef struct MatroskaChapter {
     uint64_t start;
     uint64_t end;
     uint64_t uid;
@@ -212,17 +213,17 @@ typedef struct {
     AVChapter *chapter;
 } MatroskaChapter;
 
-typedef struct {
+typedef struct MatroskaIndexPos {
     uint64_t track;
     uint64_t pos;
 } MatroskaIndexPos;
 
-typedef struct {
+typedef struct MatroskaIndex {
     uint64_t time;
     EbmlList pos;
 } MatroskaIndex;
 
-typedef struct {
+typedef struct MatroskaTag {
     char *name;
     char *string;
     char *lang;
@@ -230,7 +231,7 @@ typedef struct {
     EbmlList sub;
 } MatroskaTag;
 
-typedef struct {
+typedef struct MatroskaTagTarget {
     char    *type;
     uint64_t typevalue;
     uint64_t trackuid;
@@ -238,27 +239,33 @@ typedef struct {
     uint64_t attachuid;
 } MatroskaTagTarget;
 
-typedef struct {
+typedef struct MatroskaTags {
     MatroskaTagTarget target;
     EbmlList tag;
 } MatroskaTags;
 
-typedef struct {
+typedef struct MatroskaSeekhead {
     uint64_t id;
     uint64_t pos;
 } MatroskaSeekhead;
 
-typedef struct {
+typedef struct MatroskaLevel {
     uint64_t start;
     uint64_t length;
 } MatroskaLevel;
 
-typedef struct {
+typedef struct MatroskaCluster {
     uint64_t timecode;
     EbmlList blocks;
 } MatroskaCluster;
 
-typedef struct {
+typedef struct MatroskaLevel1Element {
+    uint64_t id;
+    uint64_t pos;
+    int parsed;
+} MatroskaLevel1Element;
+
+typedef struct MatroskaDemuxContext {
     AVFormatContext *ctx;
 
     /* EBML stuff */
@@ -296,6 +303,10 @@ typedef struct {
     /* File has a CUES element, but we defer parsing until it is needed. */
     int cues_parsing_deferred;
 
+    /* Level1 elements and whether they were read yet */
+    MatroskaLevel1Element level1_elems[64];
+    int num_level1_elems;
+
     int current_cluster_num_blocks;
     int64_t current_cluster_pos;
     MatroskaCluster current_cluster;
@@ -304,7 +315,7 @@ typedef struct {
     int contains_ssa;
 } MatroskaDemuxContext;
 
-typedef struct {
+typedef struct MatroskaBlock {
     uint64_t duration;
     int64_t  reference;
     uint64_t non_simple;
@@ -557,13 +568,13 @@ static EbmlSyntax matroska_seekhead[] = {
 };
 
 static EbmlSyntax matroska_segment[] = {
-    { MATROSKA_ID_INFO,        EBML_NEST, 0, 0, { .n = matroska_info } },
-    { MATROSKA_ID_TRACKS,      EBML_NEST, 0, 0, { .n = matroska_tracks } },
-    { MATROSKA_ID_ATTACHMENTS, EBML_NEST, 0, 0, { .n = matroska_attachments } },
-    { MATROSKA_ID_CHAPTERS,    EBML_NEST, 0, 0, { .n = matroska_chapters } },
-    { MATROSKA_ID_CUES,        EBML_NEST, 0, 0, { .n = matroska_index } },
-    { MATROSKA_ID_TAGS,        EBML_NEST, 0, 0, { .n = matroska_tags } },
-    { MATROSKA_ID_SEEKHEAD,    EBML_NEST, 0, 0, { .n = matroska_seekhead } },
+    { MATROSKA_ID_INFO,        EBML_LEVEL1, 0, 0, { .n = matroska_info } },
+    { MATROSKA_ID_TRACKS,      EBML_LEVEL1, 0, 0, { .n = matroska_tracks } },
+    { MATROSKA_ID_ATTACHMENTS, EBML_LEVEL1, 0, 0, { .n = matroska_attachments } },
+    { MATROSKA_ID_CHAPTERS,    EBML_LEVEL1, 0, 0, { .n = matroska_chapters } },
+    { MATROSKA_ID_CUES,        EBML_LEVEL1, 0, 0, { .n = matroska_index } },
+    { MATROSKA_ID_TAGS,        EBML_LEVEL1, 0, 0, { .n = matroska_tags } },
+    { MATROSKA_ID_SEEKHEAD,    EBML_LEVEL1, 0, 0, { .n = matroska_seekhead } },
     { MATROSKA_ID_CLUSTER,     EBML_STOP },
     { 0 }
 };
@@ -933,9 +944,7 @@ static int ebml_parse_id(MatroskaDemuxContext *matroska, EbmlSyntax *syntax,
         matroska->levels[matroska->num_levels - 1].length == 0xffffffffffffff)
         return 0;  // we reached the end of an unknown size cluster
     if (!syntax[i].id && id != EBML_ID_VOID && id != EBML_ID_CRC32) {
-        av_log(matroska->ctx, AV_LOG_INFO, "Unknown entry 0x%"PRIX32"\n", id);
-        if (matroska->ctx->error_recognition & AV_EF_EXPLODE)
-            return AVERROR_INVALIDDATA;
+        av_log(matroska->ctx, AV_LOG_DEBUG, "Unknown entry 0x%"PRIX32"\n", id);
     }
     return ebml_parse_elem(matroska, &syntax[i], data);
 }
@@ -984,6 +993,42 @@ static int ebml_parse_nest(MatroskaDemuxContext *matroska, EbmlSyntax *syntax,
     return res;
 }
 
+/*
+ * Allocate and return the entry for the level1 element with the given ID. If
+ * an entry already exists, return the existing entry.
+ */
+static MatroskaLevel1Element *matroska_find_level1_elem(MatroskaDemuxContext *matroska,
+                                                        uint32_t id)
+{
+    int i;
+    MatroskaLevel1Element *elem;
+
+    // Some files link to all clusters; useless.
+    if (id == MATROSKA_ID_CLUSTER)
+        return NULL;
+
+    // There can be multiple seekheads.
+    if (id != MATROSKA_ID_SEEKHEAD) {
+        for (i = 0; i < matroska->num_level1_elems; i++) {
+            if (matroska->level1_elems[i].id == id)
+                return &matroska->level1_elems[i];
+        }
+    }
+
+    // Only a completely broken file would have more elements.
+    // It also provides a low-effort way to escape from circular seekheads
+    // (every iteration will add a level1 entry).
+    if (matroska->num_level1_elems >= FF_ARRAY_ELEMS(matroska->level1_elems)) {
+        av_log(matroska->ctx, AV_LOG_ERROR, "Too many level1 elements or circular seekheads.\n");
+        return NULL;
+    }
+
+    elem = &matroska->level1_elems[matroska->num_level1_elems++];
+    *elem = (MatroskaLevel1Element){.id = id};
+
+    return elem;
+}
+
 static int ebml_parse_elem(MatroskaDemuxContext *matroska,
                            EbmlSyntax *syntax, void *data)
 {
@@ -1002,6 +1047,7 @@ static int ebml_parse_elem(MatroskaDemuxContext *matroska,
     uint64_t length;
     int res;
     void *newelem;
+    MatroskaLevel1Element *level1_elem;
 
     data = (char *) data + syntax->data_offset;
     if (syntax->list_elem_size) {
@@ -1044,11 +1090,20 @@ static int ebml_parse_elem(MatroskaDemuxContext *matroska,
     case EBML_BIN:
         res = ebml_read_binary(pb, length, data);
         break;
+    case EBML_LEVEL1:
     case EBML_NEST:
         if ((res = ebml_read_master(matroska, length)) < 0)
             return res;
         if (id == MATROSKA_ID_SEGMENT)
             matroska->segment_start = avio_tell(matroska->ctx->pb);
+        if (id == MATROSKA_ID_CUES)
+            matroska->cues_parsing_deferred = 0;
+        if (syntax->type == EBML_LEVEL1 &&
+            (level1_elem = matroska_find_level1_elem(matroska, syntax->id))) {
+            if (level1_elem->parsed)
+                av_log(matroska->ctx, AV_LOG_ERROR, "Duplicate element\n");
+            level1_elem->parsed = 1;
+        }
         return ebml_parse_nest(matroska, syntax->def.n, data);
     case EBML_PASS:
         return ebml_parse_id(matroska, syntax->def.n, id, data);
@@ -1079,6 +1134,7 @@ static void ebml_free(EbmlSyntax *syntax, void *data)
         case EBML_BIN:
             av_freep(&((EbmlBin *) data_off)->data);
             break;
+        case EBML_LEVEL1:
         case EBML_NEST:
             if (syntax[i].list_elem_size) {
                 EbmlList *list = data_off;
@@ -1364,24 +1420,17 @@ static void matroska_convert_tags(AVFormatContext *s)
 }
 
 static int matroska_parse_seekhead_entry(MatroskaDemuxContext *matroska,
-                                         int idx)
+                                         uint64_t pos)
 {
-    EbmlList *seekhead_list = &matroska->seekhead;
     uint32_t level_up       = matroska->level_up;
     uint32_t saved_id       = matroska->current_id;
-    MatroskaSeekhead *seekhead = seekhead_list->elem;
     int64_t before_pos = avio_tell(matroska->ctx->pb);
     MatroskaLevel level;
     int64_t offset;
     int ret = 0;
 
-    if (idx >= seekhead_list->nb_elem            ||
-        seekhead[idx].id == MATROSKA_ID_SEEKHEAD ||
-        seekhead[idx].id == MATROSKA_ID_CLUSTER)
-        return 0;
-
     /* seek */
-    offset = seekhead[idx].pos + matroska->segment_start;
+    offset = pos + matroska->segment_start;
     if (avio_seek(matroska->ctx->pb, offset, SEEK_SET) == offset) {
         /* We don't want to lose our seekhead level, so we add
          * a dummy. This is a crude hack. */
@@ -1418,37 +1467,34 @@ static int matroska_parse_seekhead_entry(MatroskaDemuxContext *matroska,
 static void matroska_execute_seekhead(MatroskaDemuxContext *matroska)
 {
     EbmlList *seekhead_list = &matroska->seekhead;
-    int64_t before_pos = avio_tell(matroska->ctx->pb);
     int i;
-    int nb_elem;
 
     // we should not do any seeking in the streaming case
-    if (!matroska->ctx->pb->seekable ||
-        (matroska->ctx->flags & AVFMT_FLAG_IGNIDX))
+    if (!matroska->ctx->pb->seekable)
         return;
 
-    // do not read entries that are added while parsing seekhead entries
-    nb_elem = seekhead_list->nb_elem;
+    for (i = 0; i < seekhead_list->nb_elem; i++) {
+        MatroskaSeekhead *seekheads = seekhead_list->elem;
+        uint32_t id  = seekheads[i].id;
+        uint64_t pos = seekheads[i].pos;
 
-    for (i = 0; i < nb_elem; i++) {
-        MatroskaSeekhead *seekhead = seekhead_list->elem;
-        if (seekhead[i].pos <= before_pos)
+        MatroskaLevel1Element *elem = matroska_find_level1_elem(matroska, id);
+        if (!elem || elem->parsed)
             continue;
+
+        elem->pos = pos;
 
         // defer cues parsing until we actually need cue data.
-        if (seekhead[i].id == MATROSKA_ID_CUES) {
-            matroska->cues_parsing_deferred = 1;
+        if (id == MATROSKA_ID_CUES)
             continue;
-        }
 
-        if (matroska_parse_seekhead_entry(matroska, i) < 0) {
+        if (matroska_parse_seekhead_entry(matroska, pos) < 0) {
             // mark index as broken
             matroska->cues_parsing_deferred = -1;
             break;
         }
-    }
-    if (nb_elem != seekhead_list->nb_elem) {
-        avpriv_request_sample(matroska->ctx, "recursive SeekHead elements");
+
+        elem->parsed = 1;
     }
 }
 
@@ -1458,6 +1504,9 @@ static void matroska_add_index_entries(MatroskaDemuxContext *matroska)
     MatroskaIndex *index;
     int index_scale = 1;
     int i, j;
+
+    if (matroska->ctx->flags & AVFMT_FLAG_IGNIDX)
+        return;
 
     index_list = &matroska->index;
     index      = index_list->elem;
@@ -1482,17 +1531,21 @@ static void matroska_add_index_entries(MatroskaDemuxContext *matroska)
 }
 
 static void matroska_parse_cues(MatroskaDemuxContext *matroska) {
-    EbmlList *seekhead_list = &matroska->seekhead;
-    MatroskaSeekhead *seekhead = seekhead_list->elem;
     int i;
 
-    for (i = 0; i < seekhead_list->nb_elem; i++)
-        if (seekhead[i].id == MATROSKA_ID_CUES)
-            break;
-    av_assert1(i <= seekhead_list->nb_elem);
+    if (matroska->ctx->flags & AVFMT_FLAG_IGNIDX)
+        return;
 
-    if (matroska_parse_seekhead_entry(matroska, i) < 0)
-       matroska->cues_parsing_deferred = -1;
+    for (i = 0; i < matroska->num_level1_elems; i++) {
+        MatroskaLevel1Element *elem = &matroska->level1_elems[i];
+        if (elem->id == MATROSKA_ID_CUES && !elem->parsed) {
+            if (matroska_parse_seekhead_entry(matroska, elem->pos) < 0)
+                matroska->cues_parsing_deferred = -1;
+            elem->parsed = 1;
+            break;
+        }
+    }
+
     matroska_add_index_entries(matroska);
 }
 
@@ -1941,8 +1994,8 @@ static int matroska_parse_tracks(AVFormatContext *s)
                 av_reduce(&st->avg_frame_rate.num, &st->avg_frame_rate.den,
                           1000000000, track->default_duration, 30000);
 #if FF_API_R_FRAME_RATE
-                if (   st->avg_frame_rate.num < st->avg_frame_rate.den * 1000L
-                    && st->avg_frame_rate.num > st->avg_frame_rate.den * 5L)
+                if (   st->avg_frame_rate.num < st->avg_frame_rate.den * 1000LL
+                    && st->avg_frame_rate.num > st->avg_frame_rate.den * 5LL)
                     st->r_frame_rate = st->avg_frame_rate;
 #endif
             }
@@ -2028,6 +2081,7 @@ static int matroska_read_header(AVFormatContext *s)
     int i, j, res;
 
     matroska->ctx = s;
+    matroska->cues_parsing_deferred = 1;
 
     /* First read the EBML header. */
     if (ebml_parse(matroska, ebml_syntax, &ebml) ||
@@ -2611,8 +2665,11 @@ static int matroska_parse_frame(MatroskaDemuxContext *matroska,
         offset = 8;
 
     pkt = av_mallocz(sizeof(AVPacket));
-    if (!pkt)
+    if (!pkt) {
+        if (pkt_data != data)
+            av_freep(&pkt_data);
         return AVERROR(ENOMEM);
+    }
     /* XXX: prevent data copy... */
     if (av_new_packet(pkt, pkt_size + offset) < 0) {
         av_free(pkt);

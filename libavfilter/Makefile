@@ -65,6 +65,7 @@ OBJS-$(CONFIG_BS2B_FILTER)                   += af_bs2b.o
 OBJS-$(CONFIG_CHANNELMAP_FILTER)             += af_channelmap.o
 OBJS-$(CONFIG_CHANNELSPLIT_FILTER)           += af_channelsplit.o
 OBJS-$(CONFIG_COMPAND_FILTER)                += af_compand.o
+OBJS-$(CONFIG_DCSHIFT_FILTER)                += af_dcshift.o
 OBJS-$(CONFIG_EARWAX_FILTER)                 += af_earwax.o
 OBJS-$(CONFIG_EBUR128_FILTER)                += f_ebur128.o
 OBJS-$(CONFIG_EQUALIZER_FILTER)              += af_biquads.o
@@ -119,6 +120,7 @@ OBJS-$(CONFIG_EDGEDETECT_FILTER)             += vf_edgedetect.o
 OBJS-$(CONFIG_EQ_FILTER)                     += vf_eq.o
 OBJS-$(CONFIG_EXTRACTPLANES_FILTER)          += vf_extractplanes.o
 OBJS-$(CONFIG_FADE_FILTER)                   += vf_fade.o
+OBJS-$(CONFIG_FFTFILT_FILTER)                += vf_fftfilt.o
 OBJS-$(CONFIG_FIELD_FILTER)                  += vf_field.o
 OBJS-$(CONFIG_FIELDMATCH_FILTER)             += vf_fieldmatch.o
 OBJS-$(CONFIG_FIELDORDER_FILTER)             += vf_fieldorder.o
@@ -149,7 +151,6 @@ OBJS-$(CONFIG_LUTRGB_FILTER)                 += vf_lut.o
 OBJS-$(CONFIG_LUTYUV_FILTER)                 += vf_lut.o
 OBJS-$(CONFIG_MCDEINT_FILTER)                += vf_mcdeint.o
 OBJS-$(CONFIG_MERGEPLANES_FILTER)            += vf_mergeplanes.o framesync.o
-OBJS-$(CONFIG_MP_FILTER)                     += vf_mp.o
 OBJS-$(CONFIG_MPDECIMATE_FILTER)             += vf_mpdecimate.o
 OBJS-$(CONFIG_NEGATE_FILTER)                 += vf_lut.o
 OBJS-$(CONFIG_NOFORMAT_FILTER)               += vf_format.o
@@ -160,6 +161,8 @@ OBJS-$(CONFIG_OPENCL)                        += deshake_opencl.o unsharp_opencl.
 OBJS-$(CONFIG_OVERLAY_FILTER)                += vf_overlay.o dualinput.o framesync.o
 OBJS-$(CONFIG_OWDENOISE_FILTER)              += vf_owdenoise.o
 OBJS-$(CONFIG_PAD_FILTER)                    += vf_pad.o
+OBJS-$(CONFIG_PALETTEGEN_FILTER)             += vf_palettegen.o
+OBJS-$(CONFIG_PALETTEUSE_FILTER)             += vf_paletteuse.o dualinput.o framesync.o
 OBJS-$(CONFIG_PERMS_FILTER)                  += f_perms.o
 OBJS-$(CONFIG_PERSPECTIVE_FILTER)            += vf_perspective.o
 OBJS-$(CONFIG_PHASE_FILTER)                  += vf_phase.o
@@ -170,6 +173,7 @@ OBJS-$(CONFIG_PSNR_FILTER)                   += vf_psnr.o dualinput.o framesync.
 OBJS-$(CONFIG_PULLUP_FILTER)                 += vf_pullup.o
 OBJS-$(CONFIG_QP_FILTER)                     += vf_qp.o
 OBJS-$(CONFIG_REMOVELOGO_FILTER)             += bbox.o lswsutils.o lavfutils.o vf_removelogo.o
+OBJS-$(CONFIG_REPEATFIELDS_FILTER)           += vf_repeatfields.o
 OBJS-$(CONFIG_ROTATE_FILTER)                 += vf_rotate.o
 OBJS-$(CONFIG_SEPARATEFIELDS_FILTER)         += vf_separatefields.o
 OBJS-$(CONFIG_SAB_FILTER)                    += vf_sab.o
@@ -192,7 +196,7 @@ OBJS-$(CONFIG_STEREO3D_FILTER)               += vf_stereo3d.o
 OBJS-$(CONFIG_SUBTITLES_FILTER)              += vf_subtitles.o
 OBJS-$(CONFIG_SUPER2XSAI_FILTER)             += vf_super2xsai.o
 OBJS-$(CONFIG_SWAPUV_FILTER)                 += vf_swapuv.o
-OBJS-$(CONFIG_TBLEND_FILTER)                 += vf_blend.o
+OBJS-$(CONFIG_TBLEND_FILTER)                 += vf_blend.o dualinput.o framesync.o
 OBJS-$(CONFIG_TELECINE_FILTER)               += vf_telecine.o
 OBJS-$(CONFIG_THUMBNAIL_FILTER)              += vf_thumbnail.o
 OBJS-$(CONFIG_TILE_FILTER)                   += vf_tile.o
@@ -226,16 +230,13 @@ OBJS-$(CONFIG_TESTSRC_FILTER)                += vsrc_testsrc.o
 
 OBJS-$(CONFIG_NULLSINK_FILTER)               += vsink_nullsink.o
 
-OBJS-$(CONFIG_MP_FILTER) += libmpcodecs/mp_image.o
-OBJS-$(CONFIG_MP_FILTER) += libmpcodecs/img_format.o
-OBJS-$(CONFIG_MP_FILTER) += libmpcodecs/vf_softpulldown.o
-
 # multimedia filters
 OBJS-$(CONFIG_AVECTORSCOPE_FILTER)           += avf_avectorscope.o
 OBJS-$(CONFIG_CONCAT_FILTER)                 += avf_concat.o
 OBJS-$(CONFIG_SHOWCQT_FILTER)                += avf_showcqt.o
 OBJS-$(CONFIG_SHOWSPECTRUM_FILTER)           += avf_showspectrum.o
 OBJS-$(CONFIG_SHOWWAVES_FILTER)              += avf_showwaves.o
+OBJS-$(CONFIG_SHOWWAVESPIC_FILTER)           += avf_showwaves.o
 
 # multimedia sources
 OBJS-$(CONFIG_AMOVIE_FILTER)                 += src_movie.o

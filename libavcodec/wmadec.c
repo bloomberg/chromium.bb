@@ -39,9 +39,6 @@
 #include "internal.h"
 #include "wma.h"
 
-#undef NDEBUG
-#include <assert.h>
-
 #define EXPVLCBITS 8
 #define EXPMAX     ((19 + EXPVLCBITS - 1) / EXPVLCBITS)
 
@@ -700,7 +697,7 @@ static int wma_decode_block(WMACodecContext *s)
 
                 /* very high freqs : noise */
                 n     = s->block_len - s->coefs_end[bsize];
-                mult1 = mult * exponents[((-1 << bsize)) >> esize];
+                mult1 = mult * exponents[(-(1 << bsize)) >> esize];
                 for (i = 0; i < n; i++) {
                     *coefs++       = s->noise_table[s->noise_index] * mult1;
                     s->noise_index = (s->noise_index + 1) & (NOISE_TAB_SIZE - 1);

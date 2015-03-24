@@ -1721,7 +1721,8 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
             { 1, 0, 1, 0, 7 },        /* B */
             { 3, 0, 1, 0, 7 },        /* A */
         },
-        .flags = AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB | AV_PIX_FMT_FLAG_ALPHA,
+        .flags = AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB |
+                 AV_PIX_FMT_FLAG_ALPHA,
     },
     [AV_PIX_FMT_GBRAP16LE] = {
         .name = "gbrap16le",
@@ -1734,7 +1735,8 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
             { 1, 1, 1, 0, 15 },       /* B */
             { 3, 1, 1, 0, 15 },       /* A */
         },
-        .flags = AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB | AV_PIX_FMT_FLAG_ALPHA,
+        .flags = AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB |
+                 AV_PIX_FMT_FLAG_ALPHA,
     },
     [AV_PIX_FMT_GBRAP16BE] = {
         .name = "gbrap16be",
@@ -1747,7 +1749,8 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
             { 1, 1, 1, 0, 15 },       /* B */
             { 3, 1, 1, 0, 15 },       /* A */
         },
-        .flags = AV_PIX_FMT_FLAG_BE | AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB | AV_PIX_FMT_FLAG_ALPHA,
+        .flags = AV_PIX_FMT_FLAG_BE | AV_PIX_FMT_FLAG_PLANAR |
+                 AV_PIX_FMT_FLAG_RGB | AV_PIX_FMT_FLAG_ALPHA,
     },
     [AV_PIX_FMT_VDPAU] = {
         .name = "vdpau",
@@ -1900,6 +1903,10 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .name = "vda",
         .flags = AV_PIX_FMT_FLAG_HWACCEL,
     },
+    [AV_PIX_FMT_QSV] = {
+        .name = "qsv",
+        .flags = AV_PIX_FMT_FLAG_HWACCEL,
+    },
 };
 
 static const char *color_range_names[AVCOL_RANGE_NB] = {
@@ -2049,7 +2056,6 @@ enum AVPixelFormat av_pix_fmt_desc_get_id(const AVPixFmtDescriptor *desc)
 
     return desc - av_pix_fmt_descriptors;
 }
-FF_ENABLE_DEPRECATION_WARNINGS
 
 int av_pix_fmt_get_chroma_sub_sample(enum AVPixelFormat pix_fmt,
                                      int *h_shift, int *v_shift)
@@ -2118,6 +2124,7 @@ void ff_check_pixfmt_descriptors(void){
         }
     }
 }
+FF_ENABLE_DEPRECATION_WARNINGS
 
 
 enum AVPixelFormat av_pix_fmt_swap_endianness(enum AVPixelFormat pix_fmt)

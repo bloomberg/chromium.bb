@@ -33,9 +33,11 @@
 #include "avi.h"
 #include "dv.h"
 #include "internal.h"
+#include "isom.h"
 #include "riff.h"
 #include "libavcodec/bytestream.h"
 #include "libavcodec/exif.h"
+#include "libavcodec/internal.h"
 
 typedef struct AVIStream {
     int64_t frame_offset;   /* current frame (video) or byte (audio) counter
@@ -64,7 +66,7 @@ typedef struct AVIStream {
     int64_t seek_pos;
 } AVIStream;
 
-typedef struct {
+typedef struct AVIContext {
     const AVClass *class;
     int64_t riff_end;
     int64_t movi_end;
@@ -136,7 +138,7 @@ static inline int get_duration(AVIStream *ast, int len)
 static int get_riff(AVFormatContext *s, AVIOContext *pb)
 {
     AVIContext *avi = s->priv_data;
-    char header[8];
+    char header[8] = {0};
     int i;
 
     /* check RIFF header */
@@ -178,12 +180,13 @@ static int read_braindead_odml_indx(AVFormatContext *s, int frame_num)
 
     av_dlog(s,
             "longs_pre_entry:%d index_type:%d entries_in_use:%d "
-            "chunk_id:%X base:%16"PRIX64"\n",
+            "chunk_id:%X base:%16"PRIX64" frame_num:%d\n",
             longs_pre_entry,
             index_type,
             entries_in_use,
             chunk_id,
-            base);
+            base,
+            frame_num);
 
     if (stream_id >= s->nb_streams || stream_id < 0)
         return AVERROR_INVALIDDATA;
@@ -308,7 +311,8 @@ static int avi_read_tag(AVFormatContext *s, AVStream *st, uint32_t tag,
     value = av_malloc(size + 1);
     if (!value)
         return AVERROR(ENOMEM);
-    avio_read(pb, value, size);
+    if (avio_read(pb, value, size) != size)
+        return AVERROR_INVALIDDATA;
     value[size] = 0;
 
     AV_WL32(key, tag);
@@ -772,6 +776,17 @@ static int avi_read_header(AVFormatContext *s)
                     st->codec->codec_tag  = tag1;
                     st->codec->codec_id   = ff_codec_get_id(ff_codec_bmp_tags,
                                                             tag1);
+                    /* If codec is not found yet, try with the mov tags. */
+                    if (!st->codec->codec_id) {
+                        char tag_buf[32];
+                        av_get_codec_tag_string(tag_buf, sizeof(tag_buf), tag1);
+                        st->codec->codec_id =
+                            ff_codec_get_id(ff_codec_movvideo_tags, tag1);
+                        if (st->codec->codec_id)
+                           av_log(s, AV_LOG_WARNING,
+                                  "mov tag found in avi (fourcc %s)\n",
+                                  tag_buf);
+                    }
                     /* This is needed to get the pict type which is necessary
                      * for generating correct pts. */
                     st->need_parsing = AVSTREAM_PARSE_HEADERS;
@@ -1438,17 +1453,16 @@ FF_ENABLE_DEPRECATION_WARNINGS
                 if (index >= 0 && e->timestamp == ast->frame_offset) {
                     if (index == st->nb_index_entries-1) {
                         int key=1;
-                        int i;
                         uint32_t state=-1;
-                        for (i=0; i<FFMIN(size,256); i++) {
-                            if (st->codec->codec_id == AV_CODEC_ID_MPEG4) {
-                                if (state == 0x1B6) {
-                                    key= !(pkt->data[i]&0xC0);
+                        if (st->codec->codec_id == AV_CODEC_ID_MPEG4) {
+                            const uint8_t *ptr = pkt->data, *end = ptr + FFMIN(size, 256);
+                            while (ptr < end) {
+                                ptr = avpriv_find_start_code(ptr, end, &state);
+                                if (state == 0x1B6 && ptr < end) {
+                                    key = !(*ptr & 0xC0);
                                     break;
                                 }
-                            }else
-                                break;
-                            state= (state<<8) + pkt->data[i];
+                            }
                         }
                         if (!key)
                             e->flags &= ~AVINDEX_KEYFRAME;

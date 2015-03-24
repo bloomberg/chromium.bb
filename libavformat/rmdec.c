@@ -56,7 +56,7 @@ struct RMStream {
     int32_t deint_id;  ///< deinterleaver used in audio stream
 };
 
-typedef struct {
+typedef struct RMDemuxContext {
     int nb_packets;
     int old_format;
     int current_stream;
@@ -112,6 +112,8 @@ static void rm_read_metadata(AVFormatContext *s, AVIOContext *pb, int wide)
 RMStream *ff_rm_alloc_rmstream (void)
 {
     RMStream *rms = av_mallocz(sizeof(RMStream));
+    if (!rms)
+        return NULL;
     rms->curpic_num = -1;
     return rms;
 }
@@ -493,6 +495,8 @@ static int rm_read_header_old(AVFormatContext *s)
     if (!st)
         return -1;
     st->priv_data = ff_rm_alloc_rmstream();
+    if (!st->priv_data)
+        return AVERROR(ENOMEM);
     return rm_read_audio_stream_info(s, s->pb, st, st->priv_data, 1);
 }
 
@@ -576,6 +580,8 @@ static int rm_read_header(AVFormatContext *s)
             get_str8(pb, mime, sizeof(mime)); /* mimetype */
             st->codec->codec_type = AVMEDIA_TYPE_DATA;
             st->priv_data = ff_rm_alloc_rmstream();
+            if (!st->priv_data)
+                return AVERROR(ENOMEM);
             if (ff_rm_read_mdpr_codecdata(s, s->pb, st, st->priv_data,
                                           avio_rb32(pb), mime) < 0)
                 goto fail;
@@ -702,7 +708,7 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
                                    int64_t *timestamp)
 {
     int hdr;
-    int seq = 0, pic_num = 0, len2 = 0, pos = 0; //init to silcense compiler warning
+    int seq = 0, pic_num = 0, len2 = 0, pos = 0; //init to silence compiler warning
     int type;
     int ret;
 

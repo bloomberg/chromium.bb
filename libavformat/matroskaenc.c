@@ -71,7 +71,7 @@ typedef struct mkv_seekhead {
     int                     num_entries;
 } mkv_seekhead;
 
-typedef struct {
+typedef struct mkv_cuepoint {
     uint64_t        pts;
     int             stream_idx;
     int             tracknum;
@@ -80,13 +80,13 @@ typedef struct {
     int64_t         duration;           ///< duration of the block according to time base
 } mkv_cuepoint;
 
-typedef struct {
+typedef struct mkv_cues {
     int64_t         segment_offset;
     mkv_cuepoint    *entries;
     int             num_entries;
 } mkv_cues;
 
-typedef struct {
+typedef struct mkv_track {
     int             write_dts;
     int             has_cue;
     int64_t         ts_offset;
@@ -123,6 +123,8 @@ typedef struct MatroskaMuxContext {
 
     uint32_t chapter_id_offset;
     int wrote_chapters;
+
+    int allow_raw_vfw;
 } MatroskaMuxContext;
 
 
@@ -603,8 +605,9 @@ static int mkv_write_native_codecprivate(AVFormatContext *s,
         return ff_isom_write_avcc(dyn_cp, codec->extradata,
                                   codec->extradata_size);
     case AV_CODEC_ID_HEVC:
-        return ff_isom_write_hvcc(dyn_cp, codec->extradata,
-                                  codec->extradata_size, 0);
+        ff_isom_write_hvcc(dyn_cp, codec->extradata,
+                           codec->extradata_size, 0);
+        return 0;
     case AV_CODEC_ID_ALAC:
         if (codec->extradata_size < 36) {
             av_log(s, AV_LOG_ERROR,
@@ -665,7 +668,7 @@ static int mkv_write_codecprivate(AVFormatContext *s, AVIOContext *pb,
             if (!codec->codec_tag)
                 codec->codec_tag = ff_codec_get_tag(ff_codec_bmp_tags,
                                                     codec->codec_id);
-            if (!codec->codec_tag) {
+            if (!codec->codec_tag && codec->codec_id != AV_CODEC_ID_RAWVIDEO) {
                 av_log(s, AV_LOG_ERROR, "No bmp codec tag found for codec %s\n",
                        avcodec_get_name(codec->codec_id));
                 ret = AVERROR(EINVAL);
@@ -879,6 +882,15 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
                 break;
             }
         }
+        if (codec->codec_id == AV_CODEC_ID_RAWVIDEO && !codec->codec_tag) {
+            if (mkv->allow_raw_vfw) {
+                native_id = 0;
+            } else {
+                av_log(s, AV_LOG_ERROR, "Raw RGB is not supported Natively in Matroska, you can use AVI or NUT or\n"
+                                        "If you would like to store it anyway using VFW mode, enable allow_raw_vfw (-allow_raw_vfw 1)\n");
+                return AVERROR(EINVAL);
+            }
+        }
     }
 
     if (codec->codec_type == AVMEDIA_TYPE_AUDIO && codec->initial_padding && codec->codec_id == AV_CODEC_ID_OPUS) {
@@ -917,7 +929,7 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
 
         if (!native_id &&
             ff_codec_get_tag(ff_codec_movvideo_tags, codec->codec_id) &&
-            (!ff_codec_get_tag(ff_codec_bmp_tags,   codec->codec_id) ||
+            ((!ff_codec_get_tag(ff_codec_bmp_tags,   codec->codec_id) && codec->codec_id != AV_CODEC_ID_RAWVIDEO) ||
              codec->codec_id == AV_CODEC_ID_SVQ1 ||
              codec->codec_id == AV_CODEC_ID_SVQ3 ||
              codec->codec_id == AV_CODEC_ID_CINEPAK))
@@ -1063,14 +1075,20 @@ static int mkv_write_chapters(AVFormatContext *s)
     for (i = 0; i < s->nb_chapters; i++) {
         ebml_master chapteratom, chapterdisplay;
         AVChapter *c     = s->chapters[i];
+        int64_t chapterstart = av_rescale_q(c->start, c->time_base, scale);
+        int64_t chapterend   = av_rescale_q(c->end,   c->time_base, scale);
         AVDictionaryEntry *t = NULL;
+        if (chapterstart < 0 || chapterstart > chapterend || chapterend < 0) {
+            av_log(s, AV_LOG_ERROR,
+                   "Invalid chapter start (%"PRId64") or end (%"PRId64").\n",
+                   chapterstart, chapterend);
+            return AVERROR_INVALIDDATA;
+        }
 
         chapteratom = start_ebml_master(pb, MATROSKA_ID_CHAPTERATOM, 0);
         put_ebml_uint(pb, MATROSKA_ID_CHAPTERUID, c->id + mkv->chapter_id_offset);
-        put_ebml_uint(pb, MATROSKA_ID_CHAPTERTIMESTART,
-                      av_rescale_q(c->start, c->time_base, scale));
-        put_ebml_uint(pb, MATROSKA_ID_CHAPTERTIMEEND,
-                      av_rescale_q(c->end,   c->time_base, scale));
+        put_ebml_uint(pb, MATROSKA_ID_CHAPTERTIMESTART, chapterstart);
+        put_ebml_uint(pb, MATROSKA_ID_CHAPTERTIMEEND, chapterend);
         put_ebml_uint(pb, MATROSKA_ID_CHAPTERFLAGHIDDEN , 0);
         put_ebml_uint(pb, MATROSKA_ID_CHAPTERFLAGENABLED, 1);
         if ((t = av_dict_get(c->metadata, "title", NULL, 0))) {
@@ -1982,6 +2000,12 @@ static const AVCodecTag additional_video_tags[] = {
     { AV_CODEC_ID_NONE,      0xFFFFFFFF }
 };
 
+static const AVCodecTag additional_subtitle_tags[] = {
+    { AV_CODEC_ID_DVB_SUBTITLE,      0xFFFFFFFF },
+    { AV_CODEC_ID_HDMV_PGS_SUBTITLE, 0xFFFFFFFF },
+    { AV_CODEC_ID_NONE,              0xFFFFFFFF }
+};
+
 #define OFFSET(x) offsetof(MatroskaMuxContext, x)
 #define FLAGS AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
@@ -1990,6 +2014,7 @@ static const AVOption options[] = {
     { "cluster_time_limit",  "Store at most the provided number of milliseconds in a cluster.",                               OFFSET(cluster_time_limit), AV_OPT_TYPE_INT64, { .i64 = -1 }, -1, INT64_MAX, FLAGS },
     { "dash", "Create a WebM file conforming to WebM DASH specification", OFFSET(is_dash), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, FLAGS },
     { "dash_track_number", "Track number for the DASH stream", OFFSET(dash_track_number), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, 127, FLAGS },
+    { "allow_raw_vfw", "allow RAW VFW mode", OFFSET(allow_raw_vfw), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, FLAGS },
     { NULL },
 };
 
@@ -2018,7 +2043,7 @@ AVOutputFormat ff_matroska_muxer = {
                          AVFMT_TS_NONSTRICT | AVFMT_ALLOW_FLUSH,
     .codec_tag         = (const AVCodecTag* const []){
          ff_codec_bmp_tags, ff_codec_wav_tags,
-         additional_audio_tags, additional_video_tags, 0
+         additional_audio_tags, additional_video_tags, additional_subtitle_tags, 0
     },
     .subtitle_codec    = AV_CODEC_ID_ASS,
     .query_codec       = mkv_query_codec,

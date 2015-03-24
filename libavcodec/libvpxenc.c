@@ -253,7 +253,7 @@ static av_cold int vp8_free(AVCodecContext *avctx)
     if (ctx->is_alpha)
         vpx_codec_destroy(&ctx->encoder_alpha);
     av_freep(&ctx->twopass_stats.buf);
-    av_freep(&avctx->coded_frame);
+    av_frame_free(&avctx->coded_frame);
     av_freep(&avctx->stats_out);
     free_frame_list(ctx->coded_frame_list);
     return 0;
@@ -330,10 +330,15 @@ static av_cold int vpx_init(AVCodecContext *avctx,
         }
     }
 
-    if (avctx->qmin >= 0)
-        enccfg.rc_min_quantizer = avctx->qmin;
-    if (avctx->qmax >= 0)
-        enccfg.rc_max_quantizer = avctx->qmax;
+    if (avctx->codec_id == AV_CODEC_ID_VP9 && ctx->lossless == 1) {
+        enccfg.rc_min_quantizer =
+        enccfg.rc_max_quantizer = 0;
+    } else {
+        if (avctx->qmin >= 0)
+            enccfg.rc_min_quantizer = avctx->qmin;
+        if (avctx->qmax >= 0)
+            enccfg.rc_max_quantizer = avctx->qmax;
+    }
 
     if (enccfg.rc_end_usage == VPX_CQ
 #if CONFIG_LIBVPX_VP9_ENCODER
@@ -377,7 +382,7 @@ static av_cold int vpx_init(AVCodecContext *avctx,
     if (enccfg.g_pass == VPX_RC_FIRST_PASS)
         enccfg.g_lag_in_frames = 0;
     else if (enccfg.g_pass == VPX_RC_LAST_PASS) {
-        int decode_size;
+        int decode_size, ret;
 
         if (!avctx->stats_in) {
             av_log(avctx, AV_LOG_ERROR, "No stats file for second pass\n");
@@ -385,12 +390,13 @@ static av_cold int vpx_init(AVCodecContext *avctx,
         }
 
         ctx->twopass_stats.sz  = strlen(avctx->stats_in) * 3 / 4;
-        ctx->twopass_stats.buf = av_malloc(ctx->twopass_stats.sz);
-        if (!ctx->twopass_stats.buf) {
+        ret = av_reallocp(&ctx->twopass_stats.buf, ctx->twopass_stats.sz);
+        if (ret < 0) {
             av_log(avctx, AV_LOG_ERROR,
                    "Stat buffer alloc (%"SIZE_SPECIFIER" bytes) failed\n",
                    ctx->twopass_stats.sz);
-            return AVERROR(ENOMEM);
+            ctx->twopass_stats.sz = 0;
+            return ret;
         }
         decode_size = av_base64_decode(ctx->twopass_stats.buf, avctx->stats_in,
                                        ctx->twopass_stats.sz);
@@ -717,9 +723,14 @@ static int vp8_encode(AVCodecContext *avctx, AVPacket *pkt,
             rawimg_alpha = &ctx->rawimg_alpha;
             rawimg_alpha->planes[VPX_PLANE_Y] = frame->data[3];
             u_plane = av_malloc(frame->linesize[1] * frame->height);
+            v_plane = av_malloc(frame->linesize[2] * frame->height);
+            if (!u_plane || !v_plane) {
+                av_free(u_plane);
+                av_free(v_plane);
+                return AVERROR(ENOMEM);
+            }
             memset(u_plane, 0x80, frame->linesize[1] * frame->height);
             rawimg_alpha->planes[VPX_PLANE_U] = u_plane;
-            v_plane = av_malloc(frame->linesize[2] * frame->height);
             memset(v_plane, 0x80, frame->linesize[2] * frame->height);
             rawimg_alpha->planes[VPX_PLANE_V] = v_plane;
             rawimg_alpha->stride[VPX_PLANE_Y] = frame->linesize[0];

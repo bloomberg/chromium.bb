@@ -1,4 +1,5 @@
 \input texinfo @c -*- texinfo -*-
+@documentencoding UTF-8
 
 @settitle General Documentation
 @titlepage
@@ -251,6 +252,8 @@ library:
     @tab Used in the game Cyberia from Interplay.
 @item Delphine Software International CIN @tab   @tab X
     @tab Multimedia format used by Delphine Software games.
+@item Digital Speech Standard (DSS) @tab   @tab X
+@item Canopus HQX               @tab   @tab X
 @item CD+G                      @tab   @tab X
     @tab Video format used by CD+G karaoke disks
 @item Phantom Cine              @tab   @tab X
@@ -463,6 +466,7 @@ library:
 @item SoX native format         @tab X @tab X
 @item SUN AU format             @tab X @tab X
 @item SUP raw PGS subtitles     @tab   @tab X
+@item TDSC                      @tab   @tab X
 @item Text files                @tab   @tab X
 @item THP                       @tab   @tab X
     @tab Used on the Nintendo GameCube.
@@ -897,10 +901,12 @@ following image formats are supported:
     @tab decoding supported through external library libcelt
 @item Delphine Software International CIN audio  @tab     @tab  X
     @tab Codec used in Delphine Software International games.
+@item Digital Speech Standard - Standard Play mode (DSS SP) @tab     @tab  X
 @item Discworld II BMV Audio @tab     @tab  X
 @item COOK                   @tab     @tab  X
     @tab All versions except 5.1 are supported.
 @item DCA (DTS Coherent Acoustics)  @tab  X  @tab  X
+    @tab supported extensions: XCh, XLL (partially)
 @item DPCM id RoQ            @tab  X  @tab  X
     @tab Used in Quake III, Jedi Knight 2 and other computer games.
 @item DPCM Interplay         @tab     @tab  X

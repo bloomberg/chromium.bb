@@ -1,4 +1,4 @@
-Current Status as of February 2, 2015
+Current Status as of Mar 24, 2015
 
 Upstream cherry-picks:
 
@@ -36,9 +36,6 @@ Current patches:
     libavutil/internal.h.
 
   Misc things that were not documented
-    Add CONFIG_ERROR_RESILIENCE guard around some code in
-    libavcodec/h264_slice.c.
-
     Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
 
     Misc changes in libavformat/mp3dec.c.
@@ -46,5 +43,5 @@ Current patches:
     Add FF_DISABLE_DEPRECATION_WARNINGS/FF_ENABLE_DEPRECATION_WARNINGS pairs in
     libavformat/mux.c.
 
-    Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() from
-    libavutil/arm/intmath.h due to compilation failure.
+    Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
+    av_clip_intp2_arm() from libavutil/arm/intmath.h due to compilation failure.

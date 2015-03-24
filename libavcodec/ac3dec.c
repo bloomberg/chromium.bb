@@ -112,7 +112,7 @@ static const uint8_t ac3_default_coeffs[8][5][2] = {
 static inline int
 symmetric_dequant(int code, int levels)
 {
-    return ((code - (levels >> 1)) << 24) / levels;
+    return ((code - (levels >> 1)) * (1 << 24)) / levels;
 }
 
 /*
@@ -196,10 +196,10 @@ static av_cold int ac3_decode_init(AVCodecContext *avctx)
     s->fdsp = avpriv_alloc_fixed_dsp(avctx->flags & CODEC_FLAG_BITEXACT);
 #else
     s->fdsp = avpriv_float_dsp_alloc(avctx->flags & CODEC_FLAG_BITEXACT);
+    ff_fmt_convert_init(&s->fmt_conv, avctx);
 #endif
 
     ff_ac3dsp_init(&s->ac3dsp, avctx->flags & CODEC_FLAG_BITEXACT);
-    ff_fmt_convert_init(&s->fmt_conv, avctx);
     av_lfg_init(&s->dith_state, 0);
 
     if (USE_FIXED)
@@ -470,7 +470,7 @@ static void calc_transform_coeffs_cpl(AC3DecodeContext *s)
                 int cpl_coord = s->cpl_coords[ch][band] << 5;
                 for (bin = band_start; bin < band_end; bin++) {
                     s->fixed_coeffs[ch][bin] =
-                        MULH(s->fixed_coeffs[CPL_CH][bin] << 4, cpl_coord);
+                        MULH(s->fixed_coeffs[CPL_CH][bin] * (1 << 4), cpl_coord);
                 }
                 if (ch == 2 && s->phase_flags[band]) {
                     for (bin = band_start; bin < band_end; bin++)
@@ -485,7 +485,7 @@ static void calc_transform_coeffs_cpl(AC3DecodeContext *s)
 /**
  * Grouped mantissas for 3-level 5-level and 11-level quantization
  */
-typedef struct {
+typedef struct mant_groups {
     int b1_mant[2];
     int b2_mant[2];
     int b4_mant;
@@ -567,8 +567,7 @@ static void ac3_decode_transform_coeffs_ch(AC3DecodeContext *s, int ch_index, ma
                 av_log(s->avctx, AV_LOG_ERROR, "bap %d is invalid in plain AC-3\n", bap);
                 bap = 15;
             }
-            mantissa = get_sbits(gbc, quantization_tab[bap]);
-            mantissa <<= 24 - quantization_tab[bap];
+            mantissa = (unsigned)get_sbits(gbc, quantization_tab[bap]) << (24 - quantization_tab[bap]);
             break;
         }
         coeffs[freq] = mantissa >> exps[freq];
@@ -872,7 +871,7 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
                 start_subband += start_subband - 7;
             end_subband    = get_bits(gbc, 3) + 5;
 #if USE_FIXED
-            s->spx_dst_end_freq = end_freq_inv_tab[end_subband];
+            s->spx_dst_end_freq = end_freq_inv_tab[end_subband-5];
 #endif
             if (end_subband   > 7)
                 end_subband   += end_subband   - 7;
@@ -924,14 +923,13 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
 
                     bin = s->spx_src_start_freq;
                     for (bnd = 0; bnd < s->num_spx_bands; bnd++) {
-                        int bandsize;
+                        int bandsize = s->spx_band_sizes[bnd];
                         int spx_coord_exp, spx_coord_mant;
                         INTFLOAT nratio, sblend, nblend;
 #if USE_FIXED
-                        int64_t accu;
                         /* calculate blending factors */
-                        bandsize = s->spx_band_sizes[bnd];
-                        accu = (int64_t)((bin << 23) + (bandsize << 22)) * s->spx_dst_end_freq;
+                        int64_t accu = ((bin << 23) + (bandsize << 22))
+                                     * (int64_t)s->spx_dst_end_freq;
                         nratio = (int)(accu >> 32);
                         nratio -= spx_blend << 18;
 
@@ -939,7 +937,7 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
                             nblend = 0;
                             sblend = 0x800000;
                         } else if (nratio > 0x7fffff) {
-                            nblend = 0x800000;
+                            nblend = 14529495; // sqrt(3) in FP.23
                             sblend = 0;
                         } else {
                             nblend = fixed_sqrt(nratio, 23);
@@ -951,7 +949,6 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
                         float spx_coord;
 
                         /* calculate blending factors */
-                        bandsize = s->spx_band_sizes[bnd];
                         nratio = ((float)((bin + (bandsize >> 1))) / s->spx_dst_end_freq) - spx_blend;
                         nratio = av_clipf(nratio, 0.0f, 1.0f);
                         nblend = sqrtf(3.0f * nratio); // noise is scaled by sqrt(3)
@@ -1429,7 +1426,8 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
         memcpy(s->input_buffer, buf, FFMIN(buf_size, AC3_FRAME_BUFFER_SIZE));
     buf = s->input_buffer;
     /* initialize the GetBitContext with the start of valid AC-3 Frame */
-    init_get_bits(&s->gbc, buf, buf_size * 8);
+    if ((ret = init_get_bits8(&s->gbc, buf, buf_size)) < 0)
+        return ret;
 
     /* parse the syncinfo */
     err = parse_frame_header(s);

@@ -223,7 +223,7 @@ static int xface_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
 static av_cold int xface_encode_close(AVCodecContext *avctx)
 {
-    av_freep(&avctx->coded_frame);
+    av_frame_free(&avctx->coded_frame);
 
     return 0;
 }
@@ -237,5 +237,5 @@ AVCodec ff_xface_encoder = {
     .init           = xface_encode_init,
     .close          = xface_encode_close,
     .encode2        = xface_encode_frame,
-    .pix_fmts       = (const enum PixelFormat[]) { AV_PIX_FMT_MONOWHITE, AV_PIX_FMT_NONE },
+    .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_MONOWHITE, AV_PIX_FMT_NONE },
 };

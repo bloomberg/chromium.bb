@@ -54,7 +54,6 @@ typedef struct XCBGrabContext {
 #if CONFIG_LIBXCB_SHM
     xcb_shm_seg_t segment;
 #endif
-
     int64_t time_frame;
     AVRational time_base;
 
@@ -82,6 +81,8 @@ typedef struct XCBGrabContext {
 static const AVOption options[] = {
     { "x", "Initial x coordinate.", OFFSET(x), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, D },
     { "y", "Initial y coordinate.", OFFSET(y), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, D },
+    { "grab_x", "Initial x coordinate.", OFFSET(x), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, D },
+    { "grab_y", "Initial y coordinate.", OFFSET(y), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, D },
     { "video_size", "A string describing frame size, such as 640x480 or hd720.", OFFSET(video_size), AV_OPT_TYPE_STRING, {.str = "vga" }, 0, 0, D },
     { "framerate", "", OFFSET(framerate), AV_OPT_TYPE_STRING, {.str = "ntsc" }, 0, 0, D },
     { "draw_mouse", "Draw the mouse pointer.", OFFSET(draw_mouse), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, 1, D },
@@ -614,11 +615,13 @@ static av_cold int xcbgrab_read_header(AVFormatContext *s)
 
     c->conn = xcb_connect(display_name[0] ? display_name : NULL, &screen_num);
     av_freep(&display_name);
+
     if ((ret = xcb_connection_has_error(c->conn))) {
         av_log(s, AV_LOG_ERROR, "Cannot open display %s, error %d.\n",
                s->filename[0] ? s->filename : "default", ret);
         return AVERROR(EIO);
     }
+
     setup = xcb_get_setup(c->conn);
 
     c->screen = get_screen(setup, screen_num);
@@ -629,10 +632,6 @@ static av_cold int xcbgrab_read_header(AVFormatContext *s)
         return AVERROR(EIO);
     }
 
-#if CONFIG_LIBXCB_SHM
-    c->segment = xcb_generate_id(c->conn);
-#endif
-
     ret = create_stream(s);
 
     if (ret < 0) {
@@ -641,7 +640,8 @@ static av_cold int xcbgrab_read_header(AVFormatContext *s)
     }
 
 #if CONFIG_LIBXCB_SHM
-    c->has_shm = check_shm(c->conn);
+    if ((c->has_shm = check_shm(c->conn)))
+        c->segment = xcb_generate_id(c->conn);
 #endif
 
 #if CONFIG_LIBXCB_XFIXES

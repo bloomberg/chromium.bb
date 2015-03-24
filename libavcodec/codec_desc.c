@@ -1238,6 +1238,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("SGI RLE 8-bit"),
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSLESS,
     },
+    {
+        .id        = AV_CODEC_ID_HQX,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "hqx",
+        .long_name = NULL_IF_CONFIG_SMALL("Canopus HQX"),
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+    },
 
     /* image codecs */
     {
@@ -1386,6 +1393,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("Truevision Targa image"),
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSLESS,
         .mime_types= MT("image/x-targa", "image/x-tga"),
+    },
+    {
+        .id        = AV_CODEC_ID_TDSC,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "tdsc",
+        .long_name = NULL_IF_CONFIG_SMALL("TDSC"),
+        .props     = AV_CODEC_PROP_LOSSY,
     },
     {
         .id        = AV_CODEC_ID_TIFF,
@@ -2366,6 +2380,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .props     = AV_CODEC_PROP_LOSSY,
     },
     {
+        .id        = AV_CODEC_ID_DSS_SP,
+        .type      = AVMEDIA_TYPE_AUDIO,
+        .name      = "dss_sp",
+        .long_name = NULL_IF_CONFIG_SMALL("Digital Speech Standard - Standard Play mode (DSS SP)"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
         .id        = AV_CODEC_ID_G729,
         .type      = AVMEDIA_TYPE_AUDIO,
         .name      = "g729",
@@ -2807,6 +2828,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
                      AV_CODEC_PROP_LOSSLESS,
     },
 
+#if FF_API_VIMA_DECODER
     {
         .id        = AV_CODEC_ID_VIMA,
         .type      = AVMEDIA_TYPE_AUDIO,
@@ -2814,6 +2836,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("LucasArts VIMA audio (deprecated id)"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
+#endif
     {
         .id        = AV_CODEC_ID_ADPCM_VIMA_DEPRECATED,
         .type      = AVMEDIA_TYPE_AUDIO,

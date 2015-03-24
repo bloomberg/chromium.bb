@@ -79,13 +79,6 @@ static const int factor[16] = {
     N / (N2 * N0), N / (N2 * N1), N / (N2 * N0), N / (N2 * N2),
 };
 
-static const int thres[16] = {
-    N / (SN0 * SN0), N / (SN0 * SN2), N / (SN0 * SN0), N / (SN0 * SN2),
-    N / (SN2 * SN0), N / (SN2 * SN2), N / (SN2 * SN0), N / (SN2 * SN2),
-    N / (SN0 * SN0), N / (SN0 * SN2), N / (SN0 * SN0), N / (SN0 * SN2),
-    N / (SN2 * SN0), N / (SN2 * SN2), N / (SN2 * SN0), N / (SN2 * SN2),
-};
-
 static void init_thres2(PP7Context *p)
 {
     int qp, i;
@@ -272,7 +265,7 @@ static void filter(PP7Context *p, uint8_t *dst, uint8_t *src,
 
 static int query_formats(AVFilterContext *ctx)
 {
-    static const enum PixelFormat pix_fmts[] = {
+    static const enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV422P,
         AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV411P,
         AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUV440P,

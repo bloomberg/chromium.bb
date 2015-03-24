@@ -23,6 +23,7 @@ cmp_target=${13:-0}
 size_tolerance=${14:-0}
 cmp_unit=${15:-2}
 gen=${16:-no}
+hwaccel=${17:-none}
 
 outdir="tests/data/fate"
 outfile="${outdir}/${test}"
@@ -38,7 +39,7 @@ target_path(){
 # $1=value1, $2=value2, $3=threshold
 # prints 0 if absolute difference between value1 and value2 is <= threshold
 compare(){
-    echo "scale=2; v = $1 - $2; if (v < 0) v = -v; if (v > $3) r = 1; r" | bc
+    awk "BEGIN { v = $1 - $2; printf ((v < 0 ? -v : v) > $3) }"
 }
 
 do_tiny_psnr(){
@@ -50,6 +51,12 @@ do_tiny_psnr(){
     size_cmp=$(compare $size1 $size2 $size_tolerance)
     if [ "$val_cmp" != 0 ] || [ "$size_cmp" != 0 ]; then
         echo "$psnr"
+        if [ "$val_cmp" != 0 ]; then
+            echo "$3: |$val - $cmp_target| >= $fuzz"
+        fi
+        if [ "$size_cmp" != 0 ]; then
+            echo "size: |$size1 - $size2| >= $size_tolerance"
+        fi
         return 1
     fi
 }
@@ -85,7 +92,7 @@ probeframes(){
 }
 
 ffmpeg(){
-    dec_opts="-threads $threads -thread_type $thread_type"
+    dec_opts="-hwaccel $hwaccel -threads $threads -thread_type $thread_type"
     ffmpeg_args="-nostats -cpuflags $cpuflags"
     for arg in $@; do
         [ x${arg} = x-i ] && ffmpeg_args="${ffmpeg_args} ${dec_opts}"

@@ -168,7 +168,6 @@ static void build_frame_code(AVFormatContext *s)
         int start2 = start + (end - start) * stream_id       / s->nb_streams;
         int end2   = start + (end - start) * (stream_id + 1) / s->nb_streams;
         AVCodecContext *codec = s->streams[stream_id]->codec;
-        const AVCodecDescriptor *desc = avcodec_descriptor_get(codec->codec_id);
         int is_audio          = codec->codec_type == AVMEDIA_TYPE_AUDIO;
         int intra_only        = /*codec->intra_only || */ is_audio;
         int pred_count;
@@ -420,7 +419,6 @@ static int write_streamheader(AVFormatContext *avctx, AVIOContext *bc,
 {
     NUTContext *nut       = avctx->priv_data;
     AVCodecContext *codec = st->codec;
-    const AVCodecDescriptor *desc = avcodec_descriptor_get(codec->codec_id);
 
     ff_put_v(bc, i);
     switch (codec->codec_type) {
@@ -668,11 +666,8 @@ static int write_headers(AVFormatContext *avctx, AVIOContext *bc)
             return ret;
         if (ret > 0)
             put_packet(nut, bc, dyn_bc, 1, INFO_STARTCODE);
-        else {
-            uint8_t *buf;
-            avio_close_dyn_buf(dyn_bc, &buf);
-            av_free(buf);
-        }
+        else
+            ffio_free_dyn_buf(&dyn_bc);
     }
 
     for (i = 0; i < nut->avf->nb_chapters; i++) {
@@ -681,9 +676,7 @@ static int write_headers(AVFormatContext *avctx, AVIOContext *bc)
             return ret;
         ret = write_chapter(nut, dyn_bc, i);
         if (ret < 0) {
-            uint8_t *buf;
-            avio_close_dyn_buf(dyn_bc, &buf);
-            av_freep(&buf);
+            ffio_free_dyn_buf(&dyn_bc);
             return ret;
         }
         put_packet(nut, bc, dyn_bc, 1, INFO_STARTCODE);
