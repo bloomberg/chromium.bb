@@ -50,11 +50,11 @@ namespace mojo {
 // waiting for calls to arrive. Normally it is fine to use the default waiter.
 // However, the caller may provide their own implementation if needed. The
 // |Binding| will not take ownership of the waiter, and the waiter must outlive
-// the |Binding|.
-//
-// TODO(ggowan): Find out under what circumstances the caller may need to
-// provide their own implementation of MojoAsyncWaiter, and then describe those
-// circumstances.
+// the |Binding|. The provided waiter must be able to signal the implementation
+// which generally means it needs to be able to schedule work on the thread the
+// implementation runs on. If writing library code that has to work on different
+// types of threads callers may need to provide different waiter
+// implementations.
 template <typename Interface>
 class Binding : public ErrorHandler {
  public:
@@ -106,7 +106,7 @@ class Binding : public ErrorHandler {
   }
 
   // Completes a binding that was constructed with only an interface
-  // implementation.  Takes ownership of |handle| and binds it to the previously
+  // implementation. Takes ownership of |handle| and binds it to the previously
   // specified implementation. See class comment for definition of |waiter|.
   void Bind(
       ScopedMessagePipeHandle handle,

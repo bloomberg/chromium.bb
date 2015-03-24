@@ -9,6 +9,7 @@ mojo_sdk_source_set("tests") {
 
   sources = [
     "array_unittest.cc",
+    "binding_unittest.cc",
     "bounds_checker_unittest.cc",
     "buffer_unittest.cc",
     "callback_unittest.cc",

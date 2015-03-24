@@ -11,4 +11,9 @@ mojom("application") {
     "service_provider.mojom",
     "shell.mojom",
   ]
+
+  # This base dir ensures that Dart's Mojo SDK can be imported with, e.g.,
+  # import 'package:mojo/public/dart/core.dart' even when the Mojo SDK lives
+  # somewhere else in the source tree.
+  base_dir = mojo_root
 }

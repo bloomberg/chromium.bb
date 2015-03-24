@@ -15,6 +15,10 @@ namespace {
 // Used for scrolling. This matches Firefox behavior.
 const int kPixelsPerTick = 53;
 
+double EventTimeToWebEventTime(const EventPtr& event) {
+  return base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
+}
+
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
 
@@ -57,24 +61,21 @@ int GetClickCount(int flags) {
   return 1;
 }
 
+void SetWebMouseEventLocation(const mojo::PointerData& pointer_data,
+                              blink::WebMouseEvent* web_event) {
+  web_event->x = static_cast<int>(pointer_data.x);
+  web_event->y = static_cast<int>(pointer_data.y);
+  web_event->globalX = static_cast<int>(pointer_data.screen_x);
+  web_event->globalY = static_cast<int>(pointer_data.screen_y);
+}
+
 scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(const EventPtr& event) {
   scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
-  web_event->x = event->location_data->in_view_location->x;
-  web_event->y = event->location_data->in_view_location->y;
 
-  // TODO(erg): Remove this if check once we can rely on screen_location
-  // actually being passed to us. As written today, getting the screen
-  // location from ui::Event objects can only be done by querying the
-  // underlying native events, so all synthesized events don't have screen
-  // locations.
-  if (!event->location_data->screen_location.is_null()) {
-    web_event->globalX = event->location_data->screen_location->x;
-    web_event->globalY = event->location_data->screen_location->y;
-  }
+  SetWebMouseEventLocation(*(event->pointer_data), web_event.get());
 
   web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
-  web_event->timeStampSeconds =
-      base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
+  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
   web_event->button = blink::WebMouseEvent::ButtonNone;
   if (event->flags & mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON)
@@ -85,19 +86,13 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(const EventPtr& event) {
     web_event->button = blink::WebMouseEvent::ButtonRight;
 
   switch (event->action) {
-    case EVENT_TYPE_MOUSE_PRESSED:
+    case mojo::EVENT_TYPE_POINTER_DOWN:
       web_event->type = blink::WebInputEvent::MouseDown;
       break;
-    case EVENT_TYPE_MOUSE_RELEASED:
+    case mojo::EVENT_TYPE_POINTER_UP:
       web_event->type = blink::WebInputEvent::MouseUp;
       break;
-    case EVENT_TYPE_MOUSE_ENTERED:
-      web_event->type = blink::WebInputEvent::MouseLeave;
-      web_event->button = blink::WebMouseEvent::ButtonNone;
-      break;
-    case EVENT_TYPE_MOUSE_EXITED:
-    case EVENT_TYPE_MOUSE_MOVED:
-    case EVENT_TYPE_MOUSE_DRAGGED:
+    case mojo::EVENT_TYPE_POINTER_MOVE:
       web_event->type = blink::WebInputEvent::MouseMove;
       break;
     default:
@@ -115,8 +110,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
   scoped_ptr<blink::WebKeyboardEvent> web_event(new blink::WebKeyboardEvent);
 
   web_event->modifiers = EventFlagsToWebInputEventModifiers(event->flags);
-  web_event->timeStampSeconds =
-      base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
+  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
   switch (event->action) {
     case EVENT_TYPE_KEY_PRESSED:
@@ -149,27 +143,20 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   web_event->type = blink::WebInputEvent::MouseWheel;
   web_event->button = blink::WebMouseEvent::ButtonNone;
   web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
-  web_event->timeStampSeconds =
-      base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
+  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
-  web_event->x = event->location_data->in_view_location->x;
-  web_event->y = event->location_data->in_view_location->y;
-
-  // TODO(erg): Remove this null check as parallel to above.
-  if (!event->location_data->screen_location.is_null()) {
-    web_event->globalX = event->location_data->screen_location->x;
-    web_event->globalY = event->location_data->screen_location->y;
-  }
+  SetWebMouseEventLocation(*(event->pointer_data), web_event.get());
 
   if ((event->flags & mojo::EVENT_FLAGS_SHIFT_DOWN) != 0 &&
-      event->wheel_data->x_offset == 0) {
-    web_event->deltaX = event->wheel_data->y_offset;
+      event->pointer_data->horizontal_wheel == 0) {
+    web_event->deltaX = event->pointer_data->horizontal_wheel;
     web_event->deltaY = 0;
   } else {
-    web_event->deltaX = event->wheel_data->x_offset;
-    web_event->deltaY = event->wheel_data->y_offset;
+    web_event->deltaX = event->pointer_data->horizontal_wheel;
+    web_event->deltaY = event->pointer_data->vertical_wheel;
   }
 
+  // TODO(sky): resole this, doesn't work for desktop.
   web_event->wheelTicksX = web_event->deltaX / kPixelsPerTick;
   web_event->wheelTicksY = web_event->deltaY / kPixelsPerTick;
 
@@ -182,22 +169,22 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
 scoped_ptr<blink::WebInputEvent>
 TypeConverter<scoped_ptr<blink::WebInputEvent>, EventPtr>::Convert(
     const EventPtr& event) {
-  if (event->action == EVENT_TYPE_MOUSE_PRESSED ||
-      event->action == EVENT_TYPE_MOUSE_RELEASED ||
-      event->action == EVENT_TYPE_MOUSE_ENTERED ||
-      event->action == EVENT_TYPE_MOUSE_EXITED ||
-      event->action == EVENT_TYPE_MOUSE_MOVED ||
-      event->action == EVENT_TYPE_MOUSE_DRAGGED) {
-    return BuildWebMouseEventFrom(event);
-  } else if ((event->action == EVENT_TYPE_KEY_PRESSED ||
-              event->action == EVENT_TYPE_KEY_RELEASED) &&
+  if (event->action == mojo::EVENT_TYPE_POINTER_DOWN ||
+      event->action == mojo::EVENT_TYPE_POINTER_UP ||
+      event->action == mojo::EVENT_TYPE_POINTER_CANCEL ||
+      event->action == mojo::EVENT_TYPE_POINTER_MOVE) {
+    if (event->pointer_data->horizontal_wheel != 0 ||
+        event->pointer_data->vertical_wheel != 0) {
+      return BuildWebMouseWheelEventFrom(event);
+    }
+    if (event->pointer_data->kind == mojo::POINTER_KIND_MOUSE)
+      return BuildWebMouseEventFrom(event);
+  } else if ((event->action == mojo::EVENT_TYPE_KEY_PRESSED ||
+              event->action == mojo::EVENT_TYPE_KEY_RELEASED) &&
              event->key_data) {
     return BuildWebKeyboardEvent(event);
-  } else if (event->action == EVENT_TYPE_MOUSEWHEEL) {
-    return BuildWebMouseWheelEventFrom(event);
   }
-
-  return scoped_ptr<blink::WebInputEvent>();
+  return nullptr;
 }
 
 }  // namespace mojo

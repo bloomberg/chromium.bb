@@ -334,7 +334,14 @@ template("mojom") {
       output,
     ]
 
-    rebase_base_dir = rebase_path("$root_build_dir/gen/", root_build_dir)
+    invoker_base_dir = ""
+    if (defined(invoker.base_dir)) {
+      invoker_base_dir =
+          rebase_path(invoker.base_dir, "$root_build_dir/../../", ".")
+    }
+
+    rebase_base_dir =
+        rebase_path("$root_build_dir/gen/$invoker_base_dir", root_build_dir)
     if (defined(invoker.sources)) {
       rebase_inputs = rebase_path(inputs, root_build_dir)
     }
