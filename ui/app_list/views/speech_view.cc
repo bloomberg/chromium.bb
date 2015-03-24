@@ -138,10 +138,9 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
 
   // TODO(mukai): use BoundedLabel to cap 2 lines.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  // TODO(calamity): make this label multiline once Label caches its RenderText.
-  // See http://crbug.com/450791.
   speech_result_ = new views::Label(
       base::string16(), bundle.GetFontList(ui::ResourceBundle::LargeFont));
+  speech_result_->SetMultiLine(true);
   speech_result_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   container->AddChildView(speech_result_);
@@ -223,6 +222,7 @@ void SpeechView::OnSpeechResult(const base::string16& result,
                                 bool is_final) {
   speech_result_->SetText(result);
   speech_result_->SetEnabledColor(kResultTextColor);
+  Layout();
 }
 
 void SpeechView::OnSpeechRecognitionStateChanged(
