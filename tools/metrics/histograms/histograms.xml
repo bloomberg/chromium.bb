@@ -42927,6 +42927,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.Scripts.Async.NotStreamingReason"
+    units="NotStreamingReason">
+  <owner>marja@chromium.org</owner>
+  <summary>Reason for not streaming an async script.</summary>
+</histogram>
+
 <histogram name="WebCore.Scripts.Async.StartedStreaming"
     units="BooleanStreamed">
   <owner>marja@chromium.org</owner>
@@ -42935,12 +42941,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.Scripts.Deferred.StartedStreaming"
     units="BooleanStreamed">
+  <obsolete>
+    Deprecated as deferred scripts are not streamed.
+  </obsolete>
   <owner>marja@chromium.org</owner>
   <summary>Whether a deferred script was streamed or not.</summary>
 </histogram>
 
 <histogram name="WebCore.Scripts.ParsingBlocking.AlreadyLoaded"
     enum="BooleanLoaded">
+  <obsolete>
+    Deprecated as this data was needed for streaming investigations, no longer
+    needed.
+  </obsolete>
   <owner>marja@chromium.org</owner>
   <summary>
     Whether a parsing blocking script was already preloaded from the net or the
@@ -42950,12 +42963,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.Scripts.ParsingBlocking.StartedStreaming"
     units="BooleanStreamed">
+  <obsolete>
+    Deprecated as parsing blocking scripts are not streamed.
+  </obsolete>
   <owner>marja@chromium.org</owner>
   <summary>Whether a parsing blocking script was streamed or not.</summary>
 </histogram>
 
 <histogram name="WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled"
     units="milliseconds">
+  <obsolete>
+    Deprecated as this data was needed for streaming investigations, no longer
+    needed.
+  </obsolete>
   <owner>marja@chromium.org</owner>
   <summary>
     Time between the events &quot;script is loaded&quot; and &quot;script is
@@ -55325,6 +55345,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Notification displayed"/>
   <int value="6" label="Notification closed by user"/>
   <int value="7" label="Notification closed by system"/>
+</enum>
+
+<enum name="NotStreamingReason" type="int">
+  <int value="0" label="Already loaded"/>
+  <int value="1" label="Not HTTP"/>
+  <int value="2" label="Reload"/>
+  <int value="3" label="Context not valid"/>
+  <int value="4" label="Encoding not supported"/>
+  <int value="5" label="Thread busy"/>
+  <int value="6" label="V8 cannot stream"/>
+  <int value="7" label="Script too small"/>
 </enum>
 
 <enum name="NPAPIPluginStatus" type="int">
