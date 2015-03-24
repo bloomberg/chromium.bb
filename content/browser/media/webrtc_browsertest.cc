@@ -33,9 +33,11 @@ namespace content {
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
-#else
-// Test is flaky on all platforms. http://crbug.com/470013.
+#elif defined(OS_WIN)
+// Test is flaky on Win. http://crbug.com/470013.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
+#else
+#define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
 #endif
 
 class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
