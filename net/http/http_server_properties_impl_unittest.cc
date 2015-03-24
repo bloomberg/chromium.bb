@@ -445,6 +445,23 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
             impl_.GetCanonicalSuffix(canonical_port_pair.host()));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, CanonicalDefaultHost) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+  EXPECT_FALSE(HasAlternativeService(canonical_port_pair));
+
+  AlternativeService canonical_altsvc(QUIC, "", 1234);
+  impl_.SetAlternativeService(canonical_port_pair, canonical_altsvc, 1.0);
+  ASSERT_TRUE(HasAlternativeService(test_host_port_pair));
+  const AlternativeService alternative_service =
+      impl_.GetAlternativeService(test_host_port_pair);
+  EXPECT_EQ(canonical_altsvc.protocol, alternative_service.protocol);
+  EXPECT_EQ(test_host_port_pair.host(), alternative_service.host);
+  EXPECT_EQ(canonical_altsvc.port, alternative_service.port);
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBelowThreshold) {
   impl_.SetAlternateProtocolProbabilityThreshold(0.02);
 
