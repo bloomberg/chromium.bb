@@ -775,6 +775,8 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
     FloatWillBeLayoutUnit& minWidth, FloatWillBeLayoutUnit& maxWidth, bool& stripFrontSpaces,
     TextDirection direction)
 {
+    float floatMinWidth = 0.0f, floatMaxWidth = 0.0f;
+
     bool collapseWhiteSpace = style()->collapseWhiteSpace();
     if (!collapseWhiteSpace)
         stripFrontSpaces = false;
@@ -798,8 +800,8 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
         return;
     }
 
-    minWidth = m_minWidth;
-    maxWidth = m_maxWidth;
+    floatMinWidth = m_minWidth;
+    floatMaxWidth = m_maxWidth;
 
     firstLineMinWidth = m_firstLineMinWidth;
     lastLineMinWidth = m_lastLineLineMinWidth;
@@ -816,23 +818,23 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
             TextRun run = constructTextRun(this, font, &spaceChar, 1, styleRef(), direction);
             run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
             float spaceWidth = font.width(run);
-            maxWidth -= spaceWidth;
+            floatMaxWidth -= spaceWidth;
         } else {
-            maxWidth += font.fontDescription().wordSpacing();
+            floatMaxWidth += font.fontDescription().wordSpacing();
         }
     }
 
     stripFrontSpaces = collapseWhiteSpace && m_hasEndWhiteSpace;
 
-    if (!style()->autoWrap() || minWidth > maxWidth)
-        minWidth = maxWidth;
+    if (!style()->autoWrap() || floatMinWidth > floatMaxWidth)
+        floatMinWidth = floatMaxWidth;
 
     // Compute our max widths by scanning the string for newlines.
     if (hasBreak) {
         const Font& f = style()->font(); // FIXME: This ignores first-line.
         bool firstLine = true;
-        firstLineMaxWidth = maxWidth;
-        lastLineMaxWidth = maxWidth;
+        firstLineMaxWidth = floatMaxWidth;
+        lastLineMaxWidth = floatMaxWidth;
         for (int i = 0; i < len; i++) {
             int linelen = 0;
             while (i + linelen < len && text[i + linelen] != newlineCharacter)
@@ -859,6 +861,9 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
             }
         }
     }
+
+    minWidth = LayoutUnit::fromFloatCeil(floatMinWidth);
+    maxWidth = LayoutUnit::fromFloatCeil(floatMaxWidth);
 }
 
 float LayoutText::minLogicalWidth() const
