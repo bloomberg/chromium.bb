@@ -381,8 +381,6 @@ Status ApplyEnsemblePatch(SourceStream* base,
 Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
                           const base::FilePath::CharType* patch_file_name,
                           const base::FilePath::CharType* new_file_name) {
-  // First read enough of the patch file to validate the header is well-formed.
-  // A few varint32 numbers should fit in 100.
   base::FilePath patch_file_path(patch_file_name);
   base::MemoryMappedFile patch_file;
   if (!patch_file.Initialize(patch_file_path))
