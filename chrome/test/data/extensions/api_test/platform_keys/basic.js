@@ -180,14 +180,12 @@ function testStaticMethods() {
   assertTrue(!!chrome.platformKeys, "No platformKeys namespace.");
   assertTrue(!!chrome.platformKeys.selectClientCertificates,
              "No selectClientCertificates function.");
-  succeed();
-}
-
-function testHasSubtleCryptoMethods(token) {
-  assertTrue(!!token.subtleCrypto.generateKey,
-             "token has no generateKey method");
-  assertTrue(!!token.subtleCrypto.sign, "token has no sign method");
-  assertTrue(!!token.subtleCrypto.exportKey, "token has no exportKey method");
+  assertTrue(!!chrome.platformKeys.getKeyPair, "No getKeyPair method.");
+  assertTrue(!!chrome.platformKeys.subtleCrypto, "No subtleCrypto getter.");
+  assertTrue(!!chrome.platformKeys.subtleCrypto(), "No subtleCrypto object.");
+  assertTrue(!!chrome.platformKeys.subtleCrypto().sign, "No sign method.");
+  assertTrue(!!chrome.platformKeys.subtleCrypto().exportKey,
+             "No exportKey method.");
   succeed();
 }
 
@@ -252,10 +250,28 @@ function testMatchResult() {
       }));
 }
 
+function testGetKeyPairMissingAlgorithName() {
+  var keyParams = {
+    // This is missing the algorithm name.
+    hash: {name: 'SHA-1'}
+  };
+  try {
+    chrome.platformKeys.getKeyPair(
+        data.client_1.buffer, keyParams, function(error) {
+          fail('getKeyPair call was expected to fail.');
+        });
+    fail('getKeyPair did not throw error');
+  } catch (e) {
+    assertEq('Algorithm: name: Missing or not a String', e.message);
+    succeed();
+  }
+}
+
 function testGetKeyPair() {
   var keyParams = {
     // Algorithm names are case-insensitive.
-    'hash': {'name': 'sha-1'}
+    name: 'RSASSA-Pkcs1-V1_5',
+    hash: {name: 'sha-1'}
   };
   chrome.platformKeys.getKeyPair(
       data.client_1.buffer, keyParams,
@@ -286,6 +302,7 @@ function testGetKeyPair() {
 function testSignNoHash() {
   var keyParams = {
     // Algorithm names are case-insensitive.
+    name: 'RSASSA-PKCS1-V1_5',
     hash: {name: 'NONE'}
   };
   var signParams = {
@@ -307,6 +324,7 @@ function testSignNoHash() {
 
 function testSignSha1Client1() {
   var keyParams = {
+    name: 'RSASSA-PKCS1-v1_5',
     // Algorithm names are case-insensitive.
     hash: {name: 'Sha-1'}
   };
@@ -332,6 +350,7 @@ function testSignSha1Client1() {
 // that's implemented.
 function testSignFails(cert) {
   var keyParams = {
+    name: 'RSASSA-PKCS1-v1_5',
     hash: {name: 'SHA-1'}
   };
   var signParams = {
@@ -370,6 +389,7 @@ var testSuites = {
       testSelectCA1Certs,
       testInteractiveSelectNoCerts,
       testMatchResult,
+      testGetKeyPairMissingAlgorithName,
       testGetKeyPair,
       testSignNoHash,
       testSignSha1Client1,

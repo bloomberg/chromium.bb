@@ -7,44 +7,56 @@ var internalAPI = require('platformKeys.internalAPI');
 var normalizeAlgorithm =
     requireNative('platform_keys_natives').NormalizeAlgorithm;
 
+// Returns the normalized parameters of |importParams|.
+// Any unknown parameters will be ignored.
+function normalizeImportParams(importParams) {
+  if (!importParams.name ||
+      Object.prototype.toString.call(importParams.name) != '[object String]') {
+    throw new Error('Algorithm: name: Missing or not a String');
+  }
+
+  var filteredParams = { name: importParams.name };
+
+  var hashIsNone = false;
+  if (importParams.hash) {
+    if (importParams.hash.name.toLowerCase() === 'none') {
+      hashIsNone = true;
+      // Temporarily replace |hash| by a valid WebCrypto Hash for normalization.
+      // This will be reverted to 'none' after normalization.
+      filteredParams.hash = { name: 'SHA-1' };
+    } else {
+      filteredParams.hash = { name: importParams.hash.name }
+    }
+  }
+
+  // Apply WebCrypto's algorithm normalization.
+  var resultParams = normalizeAlgorithm(filteredParams, 'ImportKey');
+  if (!resultParams ) {
+    throw new Error('A required parameter was missing or out-of-range');
+  }
+  if (hashIsNone) {
+    resultParams.hash = { name: 'none' };
+  }
+  return resultParams;
+}
+
 function combineAlgorithms(algorithm, importParams) {
-  if (importParams.name === undefined) {
-    importParams.name = algorithm.name;
-  }
-
-  // Verify whether importParams.hash equals
-  //   { name: 'none' }
-  if (importParams.hash &&
-      importParams.hash.name.toLowerCase() === 'none') {
-    if (Object.keys(importParams.hash).length != 1 ||
-        Object.keys(importParams).length != 2) {
-      // 'name' must be the only hash property in this case.
-      throw new Error('A required parameter was missing or out-of-range');
-    }
-    importParams.hash.name = 'none';
-  } else {
-    // Otherwise apply WebCrypto's algorithm normalization.
-    importParams = normalizeAlgorithm(importParams, 'ImportKey');
-    if (!importParams) {
-      //    throw CreateSyntaxError();
-      throw new Error('A required parameter was missing or out-of-range');
-    }
-  }
-
   // internalAPI.getPublicKey returns publicExponent as ArrayBuffer, but it
   // should be a Uint8Array.
   if (algorithm.publicExponent) {
     algorithm.publicExponent = new Uint8Array(algorithm.publicExponent);
   }
 
-  for (var key in importParams) {
-    algorithm[key] = importParams[key];
-  }
-
+  algorithm.hash = importParams.hash;
   return algorithm;
 }
 
 function getPublicKey(cert, importParams, callback) {
+  importParams = normalizeImportParams(importParams);
+  // TODO(pneubeck): pass importParams.name to the internal getPublicKey and
+  // verify on the C++ side that the requested algorithm is compatible with the
+  // given SubjectPublicKeyInfo of the certificate.
+  // https://crbug.com/466584
   internalAPI.getPublicKey(cert, function(publicKey, algorithm) {
     var combinedAlgorithm = combineAlgorithms(algorithm, importParams);
     callback(publicKey, combinedAlgorithm);
