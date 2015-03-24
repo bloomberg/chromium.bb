@@ -61,3 +61,12 @@ configs['cros-test'] = dict(
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
 )
+
+# Config to use to launch an instance with the image created for the purposes of
+# testing changes to cros_compute.
+configs['cros-bot-testing'] = dict(
+    machine_type='n1-highmem-16',
+    zone=DEFAULT_ZONE,
+    image='%s-testing' % DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
+)
