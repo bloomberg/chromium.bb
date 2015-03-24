@@ -154,8 +154,6 @@ scoped_ptr<base::Value> AsValue(const SkColorFilter& filter) {
     FlagsBuilder builder('|');
     builder.addFlag(flags & SkColorFilter::kAlphaUnchanged_Flag,
                     "kAlphaUnchanged_Flag");
-    builder.addFlag(flags & SkColorFilter::kHasFilter16_Flag,
-                    "kHasFilter16_Flag");
 
     val->SetString("flags", builder.str());
   }
