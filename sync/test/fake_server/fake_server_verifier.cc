@@ -4,12 +4,14 @@
 
 #include "sync/test/fake_server/fake_server_verifier.h"
 
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::JSONWriter;
 using std::string;
 using testing::AssertionFailure;
 using testing::AssertionResult;
@@ -31,6 +33,18 @@ AssertionResult VerificationCountAssertionFailure(size_t actual_count,
 AssertionResult UnknownTypeAssertionFailure(const string& model_type) {
   return AssertionFailure() << "Verification not attempted. Unknown ModelType: "
                             << model_type;
+}
+
+// Caller maintains ownership of |entities|.
+string ConvertFakeServerContentsToString(
+    const base::DictionaryValue& entities) {
+  string entities_str;
+  if (!JSONWriter::WriteWithOptions(&entities,
+                                    JSONWriter::OPTIONS_PRETTY_PRINT,
+                                    &entities_str)) {
+    entities_str = "Could not convert FakeServer contents to string.";
+  }
+  return "FakeServer contents:\n" + entities_str;
 }
 
 }  // namespace
@@ -57,7 +71,9 @@ AssertionResult FakeServerVerifier::VerifyEntityCountByType(
     return UnknownTypeAssertionFailure(model_type_string);
   } else if  (expected_count != entity_list->GetSize()) {
     return VerificationCountAssertionFailure(entity_list->GetSize(),
-                                             expected_count);
+                                             expected_count)
+        << "\n\n"
+        << ConvertFakeServerContentsToString(*entities);
   }
 
   return AssertionSuccess();
@@ -90,7 +106,10 @@ AssertionResult FakeServerVerifier::VerifyEntityCountByTypeAndName(
     return UnknownTypeAssertionFailure(model_type_string);
   } else if (actual_count != expected_count) {
     return VerificationCountAssertionFailure(actual_count, expected_count)
-        << "; Name: " << name;
+        << "; Name: "
+        << name
+        << "\n\n"
+        << ConvertFakeServerContentsToString(*entities);
   }
 
   return AssertionSuccess();
