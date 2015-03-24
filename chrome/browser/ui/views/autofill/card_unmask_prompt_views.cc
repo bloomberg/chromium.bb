@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -51,13 +52,16 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     : controller_(controller),
       main_contents_(nullptr),
       permanent_error_label_(nullptr),
+      input_row_(nullptr),
       cvc_input_(nullptr),
       month_input_(nullptr),
       year_input_(nullptr),
       error_label_(nullptr),
+      storage_row_(nullptr),
       storage_checkbox_(nullptr),
       progress_overlay_(nullptr),
       progress_label_(nullptr),
+      overlay_animation_(this),
       weak_ptr_factory_(this) {
 }
 
@@ -78,7 +82,9 @@ void CardUnmaskPromptViews::ControllerGone() {
 
 void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   SetInputsEnabled(false);
+  progress_overlay_->SetOpacity(0.0);
   progress_overlay_->SetVisible(true);
+  overlay_animation_.Show();
   GetDialogClientView()->UpdateDialogButtons();
   Layout();
 }
@@ -96,6 +102,8 @@ void CardUnmaskPromptViews::GotVerificationResult(
   } else {
     // TODO(estade): it's somewhat jarring when the error comes back too
     // quickly.
+    overlay_animation_.Reset();
+    storage_row_->SetOpacity(1.0);
     progress_overlay_->SetVisible(false);
 
     if (allow_retry) {
@@ -159,25 +167,25 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
     return nullptr;
 
   // Local storage checkbox and (?) tooltip.
-  views::View* storage_row = new views::View();
+  storage_row_ = new FadeOutView();
   views::BoxLayout* storage_row_layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, kEdgePadding, kEdgePadding, 0);
-  storage_row->SetLayoutManager(storage_row_layout);
-  storage_row->SetBorder(
+  storage_row_->SetLayoutManager(storage_row_layout);
+  storage_row_->SetBorder(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
-  storage_row->set_background(
+  storage_row_->set_background(
       views::Background::CreateSolidBackground(kShadingColor));
 
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
   storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
-  storage_row->AddChildView(storage_checkbox_);
+  storage_row_->AddChildView(storage_checkbox_);
   storage_row_layout->SetFlexForView(storage_checkbox_, 1);
 
-  storage_row->AddChildView(new TooltipIcon(l10n_util::GetStringUTF16(
+  storage_row_->AddChildView(new TooltipIcon(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP)));
 
-  return storage_row;
+  return storage_row_;
 }
 
 gfx::Size CardUnmaskPromptViews::GetPreferredSize() const {
@@ -189,9 +197,16 @@ gfx::Size CardUnmaskPromptViews::GetPreferredSize() const {
 }
 
 void CardUnmaskPromptViews::Layout() {
-  for (int i = 0; i < child_count(); ++i) {
-    child_at(i)->SetBoundsRect(GetContentsBounds());
-  }
+  gfx::Rect contents_bounds = GetContentsBounds();
+  main_contents_->SetBoundsRect(contents_bounds);
+
+  // The progress overlay extends from the top of the input row
+  // to the bottom of the content area.
+  gfx::RectF input_rect = input_row_->GetContentsBounds();
+  View::ConvertRectToTarget(input_row_, this, &input_rect);
+  input_rect.set_height(contents_bounds.height());
+  contents_bounds.Intersect(gfx::ToNearestRect(input_rect));
+  progress_overlay_->SetBoundsRect(contents_bounds);
 }
 
 int CardUnmaskPromptViews::GetHeightForWidth(int width) const {
@@ -205,7 +220,6 @@ int CardUnmaskPromptViews::GetHeightForWidth(int width) const {
 void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SkColor bg_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-  bg_color = SkColorSetA(bg_color, 0xDD);
   progress_overlay_->set_background(
       views::Background::CreateSolidBackground(bg_color));
 }
@@ -303,6 +317,12 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
   GetDialogClientView()->UpdateDialogButtons();
 }
 
+void CardUnmaskPromptViews::AnimationProgressed(
+    const gfx::Animation* animation) {
+  progress_overlay_->SetOpacity(animation->GetCurrentValue());
+  storage_row_->SetOpacity(1.0 - animation->GetCurrentValue());
+}
+
 void CardUnmaskPromptViews::InitIfNecessary() {
   if (has_children())
     return;
@@ -338,33 +358,33 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   instructions->SetBorder(views::Border::CreateEmptyBorder(0, 0, 15, 0));
   controls_container->AddChildView(instructions);
 
-  views::View* input_row = new views::View();
-  input_row->SetLayoutManager(
+  input_row_ = new views::View();
+  input_row_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
-  controls_container->AddChildView(input_row);
+  controls_container->AddChildView(input_row_);
 
   if (controller_->ShouldRequestExpirationDate()) {
     month_input_ = new views::Combobox(&month_combobox_model_);
     month_input_->set_listener(this);
-    input_row->AddChildView(month_input_);
-    input_row->AddChildView(new views::Label(l10n_util::GetStringUTF16(
+    input_row_->AddChildView(month_input_);
+    input_row_->AddChildView(new views::Label(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR)));
     year_input_ = new views::Combobox(&year_combobox_model_);
     year_input_->set_listener(this);
-    input_row->AddChildView(year_input_);
-    input_row->AddChildView(new views::Label(base::ASCIIToUTF16("    ")));
+    input_row_->AddChildView(year_input_);
+    input_row_->AddChildView(new views::Label(base::ASCIIToUTF16("    ")));
   }
 
   cvc_input_ = new DecoratedTextfield(
       base::string16(),
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC), this);
   cvc_input_->set_default_width_in_chars(8);
-  input_row->AddChildView(cvc_input_);
+  input_row_->AddChildView(cvc_input_);
 
   views::ImageView* cvc_image = new views::ImageView();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
-  input_row->AddChildView(cvc_image);
+  input_row_->AddChildView(cvc_image);
 
   // Reserve vertical space for the error label, assuming it's one line.
   error_label_ = new views::Label(base::ASCIIToUTF16(" "));
@@ -373,7 +393,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   error_label_->SetBorder(views::Border::CreateEmptyBorder(3, 0, 5, 0));
   controls_container->AddChildView(error_label_);
 
-  progress_overlay_ = new views::View();
+  progress_overlay_ = new FadeOutView();
+  progress_overlay_->set_fade_everything(true);
   views::BoxLayout* progress_layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   progress_layout->set_main_axis_alignment(
@@ -401,6 +422,37 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
 
 void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
+}
+
+CardUnmaskPromptViews::FadeOutView::FadeOutView()
+    : fade_everything_(false), opacity_(1.0) {
+}
+CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
+}
+
+void CardUnmaskPromptViews::FadeOutView::PaintChildren(
+    gfx::Canvas* canvas,
+    const views::CullSet& cull_set) {
+  if (opacity_ > 0.99)
+    return views::View::PaintChildren(canvas, cull_set);
+
+  canvas->SaveLayerAlpha(0xff * opacity_);
+  views::View::PaintChildren(canvas, cull_set);
+  canvas->Restore();
+}
+
+void CardUnmaskPromptViews::FadeOutView::OnPaint(gfx::Canvas* canvas) {
+  if (!fade_everything_ || opacity_ > 0.99)
+    return views::View::OnPaint(canvas);
+
+  canvas->SaveLayerAlpha(0xff * opacity_);
+  views::View::OnPaint(canvas);
+  canvas->Restore();
+}
+
+void CardUnmaskPromptViews::FadeOutView::SetOpacity(double opacity) {
+  opacity_ = opacity;
+  SchedulePaint();
 }
 
 }  // namespace autofill

@@ -7,6 +7,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -23,7 +25,8 @@ class DecoratedTextfield;
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::ComboboxListener,
                               views::DialogDelegateView,
-                              views::TextfieldController {
+                              views::TextfieldController,
+                              gfx::AnimationDelegate {
  public:
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller);
 
@@ -63,8 +66,39 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override;
 
+  // gfx::AnimationDelegate
+  void AnimationProgressed(const gfx::Animation* animation) override;
+
  private:
   friend class CardUnmaskPromptViewTesterViews;
+
+  // A view that allows changing the opacity of its contents.
+  class FadeOutView : public views::View {
+   public:
+    FadeOutView();
+    ~FadeOutView() override;
+
+    // views::View
+    void PaintChildren(gfx::Canvas* canvas,
+                       const views::CullSet& cull_set) override;
+    void OnPaint(gfx::Canvas* canvas) override;
+
+    void set_fade_everything(bool fade_everything) {
+      fade_everything_ = fade_everything;
+    }
+    void SetOpacity(double opacity);
+
+   private:
+    // Controls whether the background and border are faded out as well. Default
+    // is false, meaning only children are faded.
+    bool fade_everything_;
+
+    // On a scale of 0-1, how much to fade out the contents of this view. 0 is
+    // totally invisible, 1 is totally visible.
+    double opacity_;
+
+    DISALLOW_COPY_AND_ASSIGN(FadeOutView);
+  };
 
   void InitIfNecessary();
   void SetRetriableErrorMessage(const base::string16& message);
@@ -79,6 +113,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // The error label for permanent errors (where the user can't retry).
   views::Label* permanent_error_label_;
 
+  // Holds the cvc and expiration inputs.
+  views::View* input_row_;
+
   DecoratedTextfield* cvc_input_;
 
   // These will be null when expiration date is not required.
@@ -91,10 +128,13 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // The error label for most errors, which lives beneath the inputs.
   views::Label* error_label_;
 
+  FadeOutView* storage_row_;
   views::Checkbox* storage_checkbox_;
 
-  views::View* progress_overlay_;
+  FadeOutView* progress_overlay_;
   views::Label* progress_label_;
+
+  gfx::SlideAnimation overlay_animation_;
 
   base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_;
 
