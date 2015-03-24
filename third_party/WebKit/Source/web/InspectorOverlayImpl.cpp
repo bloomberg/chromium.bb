@@ -88,7 +88,7 @@ private:
     InspectorOverlayImpl* m_overlay;
 };
 
-class InspectorOverlayStub : public NoBaseWillBeGarbageCollected<InspectorOverlayStub>, public InspectorOverlay {
+class InspectorOverlayStub : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayStub>, public InspectorOverlay {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayStub);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayStub);
 public:
