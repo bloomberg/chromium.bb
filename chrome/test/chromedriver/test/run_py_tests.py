@@ -800,6 +800,10 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
 
   def testEmulateNetworkConditions(self):
+    # Network conditions must be set before it can be retrieved.
+    self.assertRaises(chromedriver.UnknownError,
+                      self._driver.GetNetworkConditions)
+
     # DSL: 2Mbps throughput, 5ms RTT
     latency = 5
     throughput = 2048 * 1024
@@ -810,6 +814,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(throughput, network['download_throughput']);
     self.assertEquals(throughput, network['upload_throughput']);
     self.assertEquals(False, network['offline']);
+
+    # Network Conditions again cannot be retrieved after they've been deleted.
+    self._driver.DeleteNetworkConditions()
+    self.assertRaises(chromedriver.UnknownError,
+                      self._driver.GetNetworkConditions)
 
   def testEmulateNetworkConditionsName(self):
     # DSL: 2Mbps throughput, 5ms RTT

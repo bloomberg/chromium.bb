@@ -930,6 +930,29 @@ Status ExecuteSetNetworkConditions(
       *session->overridden_network_conditions);
 }
 
+Status ExecuteDeleteNetworkConditions(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  // Chrome does not have any command to stop overriding network conditions, so
+  // we just override the network conditions with the "No throttling" preset.
+  NetworkConditions network_conditions;
+  // Get conditions from preset list.
+  Status status = FindPresetNetwork("No throttling", &network_conditions);
+  if (status.IsError())
+    return status;
+
+  status = web_view->OverrideNetworkConditions(network_conditions);
+  if (status.IsError())
+    return status;
+
+  // After we've successfully overridden the network conditions with
+  // "No throttling", we can delete them from |session|.
+  session->overridden_network_conditions.reset();
+  return status;
+}
+
 Status ExecuteTakeHeapSnapshot(
     Session* session,
     WebView* web_view,

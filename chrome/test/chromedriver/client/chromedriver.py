@@ -384,3 +384,6 @@ class ChromeDriver(object):
         'upload_throughput': conditions['upload_throughput'],
         'offline': conditions['offline']
     }
+
+  def DeleteNetworkConditions(self):
+    self.ExecuteCommand(Command.DELETE_NETWORK_CONDITIONS)

@@ -99,6 +99,8 @@ class Command(object):
       _Method.GET, '/session/:sessionId/chromium/network_conditions')
   SET_NETWORK_CONDITIONS = (
       _Method.POST, '/session/:sessionId/chromium/network_conditions')
+  DELETE_NETWORK_CONDITIONS = (
+      _Method.DELETE, '/session/:sessionId/chromium/network_conditions')
   GET_STATUS = (_Method.GET, '/session/:sessionId/application_cache/status')
   IS_BROWSER_ONLINE = (_Method.GET, '/session/:sessionId/browser_connection')
   SET_BROWSER_ONLINE = (_Method.POST, '/session/:sessionId/browser_connection')

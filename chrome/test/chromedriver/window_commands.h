@@ -296,6 +296,12 @@ Status ExecuteSetNetworkConditions(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+Status ExecuteDeleteNetworkConditions(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 Status ExecuteTakeHeapSnapshot(
     Session* session,
     WebView* web_view,
