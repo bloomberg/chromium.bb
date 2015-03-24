@@ -79,6 +79,10 @@ bool ShouldShowLocationBar(const Extension* extension,
   if (!extension->from_bookmark())
     return false;
 
+  // Don't show a location bar until a navigation has occurred.
+  if (web_contents->GetLastCommittedURL().is_empty())
+    return false;
+
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
   return !(IsSameOriginOrMoreSecure(launch_url,
                                     web_contents->GetVisibleURL()) &&
