@@ -262,6 +262,8 @@ NOTES:
     logging.info('Attempting to stage: %s as Image: %s at Location: %s',
                  self.options.image, self.staged_image_name,
                  self.options.remote)
+    osutils.SafeMakedirsNonRoot(DEVSERVER_STATIC_DIR)
+
     with osutils.TempDir() as tempdir:
       if self._remote_image:
         self._DownloadPayloads(tempdir)
