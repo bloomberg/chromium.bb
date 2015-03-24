@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
         text run at (210,134) width 416: "This text should line up with the bottom of the text in the editable div. "
       LayoutBR {BR} at (626,149) size 0x0
       LayoutBR {BR} at (0,184) size 0x19
-      LayoutBlockFlow {DIV} at (0,204) size 180x176 [border: (5px solid #FF0000)]
-        LayoutBlockFlow {DIV} at (5,5) size 170x166 [border: (10px solid #008000)]
-      LayoutText {#text} at (180,321) size 412x19
-        text run at (180,321) width 412: "This text should line up with the bottom of the text in the editable div."
+      LayoutBlockFlow {DIV} at (0,204) size 180x177 [border: (5px solid #FF0000)]
+        LayoutBlockFlow {DIV} at (5,5) size 170x167 [border: (10px solid #008000)]
+      LayoutText {#text} at (180,322) size 412x19
+        text run at (180,322) width 412: "This text should line up with the bottom of the text in the editable div."

@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {H3} at (0,0) size 784x21
-        LayoutText {#text} at (0,0) size 151x20
-          text run at (0,0) width 151: "Thead/Tfoot/Tbody"
-      LayoutBlockFlow {PRE} at (0,39.72) size 784x111
+      LayoutBlockFlow {H3} at (0,0) size 784x23
+        LayoutText {#text} at (0,0) size 159x22
+          text run at (0,0) width 159: "Thead/Tfoot/Tbody"
+      LayoutBlockFlow {PRE} at (0,41.72) size 784x111
         LayoutInline {FONT} at (0,0) size 318x111
           LayoutText {#text} at (0,0) size 6x12
             text run at (0,0) width 6: " "
@@ -39,7 +39,7 @@ layer at (0,0) size 800x600
             text run at (108,87) width 0: " "
             text run at (0,99) width 318: "      background-color: #ff99ff;  text-align: center;"
             text run at (318,99) width 0: " "
-      LayoutTable {TABLE} at (0,163.72) size 784x222 [border: (1px outset #808080)]
+      LayoutTable {TABLE} at (0,165.72) size 784x222 [border: (1px outset #808080)]
         LayoutTableSection {THEAD} at (1,1) size 782x40 [bgcolor=#00FFFF]
           LayoutTableRow {TR} at (0,4) size 782x32
             LayoutTableCell {TD} at (4,4) size 136x32 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
