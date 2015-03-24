@@ -25,26 +25,32 @@
 
 #include <string.h>
 
+#ifdef ENABLE_EGL
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#endif
+
+#ifndef EGL_PLATFORM_WAYLAND_KHR
+#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
+#endif
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-#ifdef EGL_EXT_platform_base
+#ifdef ENABLE_EGL
+
+#ifndef EGL_EXT_platform_base
+typedef void (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (void);
+typedef void (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (void);
+#endif
+
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display_ext = NULL;
 static PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window_surface_ext = NULL;
-
-#ifndef EGL_PLATFORM_WAYLAND_KHR
-#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
-#endif
-#endif /* EGL_EXT_platform_base */
 
 static inline void
 weston_platform_get_egl_proc_addresses(void)
 {
-#ifdef EGL_EXT_platform_base
 	if (!get_platform_display_ext) {
 		const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
@@ -56,23 +62,20 @@ weston_platform_get_egl_proc_addresses(void)
 				(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
 		}
 	}
-#endif
 }
 
 static inline EGLDisplay
 weston_platform_get_egl_display(EGLenum platform, void *native_display,
 				const EGLint *attrib_list)
 {
-#ifdef EGL_EXT_platform_base
 	if (!get_platform_display_ext)
 		weston_platform_get_egl_proc_addresses();
 
 	if (get_platform_display_ext)
 		return get_platform_display_ext(platform,
 						native_display, attrib_list);
-	else
-#endif
-		return eglGetDisplay((EGLNativeDisplayType) native_display);
+
+	return eglGetDisplay((EGLNativeDisplayType) native_display);
 }
 
 static inline EGLSurface
@@ -80,7 +83,6 @@ weston_platform_create_egl_window(EGLDisplay dpy, EGLConfig config,
 				  void *native_window,
 				  const EGLint *attrib_list)
 {
-#ifdef EGL_EXT_platform_base
 	if (!create_platform_window_surface_ext)
 		weston_platform_get_egl_proc_addresses();
 
@@ -88,12 +90,29 @@ weston_platform_create_egl_window(EGLDisplay dpy, EGLConfig config,
 		return create_platform_window_surface_ext(dpy, config,
 							  native_window,
 							  attrib_list);
-#endif
 
 	return eglCreateWindowSurface(dpy, config,
 				      (EGLNativeWindowType) native_window,
 				      attrib_list);
 }
+
+#else /* ENABLE_EGL */
+
+static inline void *
+weston_platform_get_egl_display(void *platform, void *native_display,
+				const int *attrib_list)
+{
+	return NULL;
+}
+
+static inline void *
+weston_platform_create_egl_window(void *dpy, void *config,
+				  void *native_window,
+				  const int *attrib_list)
+{
+	return NULL;
+}
+#endif /* ENABLE_EGL */
 
 #ifdef  __cplusplus
 }
