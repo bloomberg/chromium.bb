@@ -1075,6 +1075,7 @@ private:
     static size_t s_externallyAllocatedBytes;
     static size_t s_externallyAllocatedBytesAlive;
     static unsigned s_requestedUrgentGC;
+    static double s_markingTimeInLastGC;
 
     friend class ThreadState;
 };

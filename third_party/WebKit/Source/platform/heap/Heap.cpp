@@ -2203,6 +2203,7 @@ void Heap::init()
     s_allocatedObjectSize = 0;
     s_allocatedSpace = 0;
     s_markedObjectSize = 0;
+    s_markingTimeInLastGC = 0.0;
 
     GCInfoTable::init();
 }
@@ -2524,8 +2525,11 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->reportStats();
 #endif
 
+    double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
+    s_markingTimeInLastGC = markingTimeInMilliseconds / 1000;
+
     if (Platform::current()) {
-        Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
+        Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
         Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReasonForTracing);
@@ -2636,8 +2640,22 @@ void Heap::collectAllGarbage()
 
 double Heap::estimatedMarkingTime()
 {
-    // FIXME: Implement heuristics
-    return 0.0;
+    ASSERT(ThreadState::current()->isMainThread());
+
+    // Marking algorithm takes O(N_live_objs), so the next marking time can be estimated as:
+    //        ~             N_live_objs
+    // t_next = t_last * ------------------
+    //                    N_last_live_objs
+    // By estimating N_{,last}_live_objs ratio using object size ratio, we get:
+    //        ~           (Size_new_objs + Size_last_marked_objs) * Rate_alive
+    // t_next = t_last * ------------------------------------------------------
+    //                                     Size_last_marked_objs
+
+    double estimatedObjectCountIncreaseRatio = 1.0;
+    if (Heap::markedObjectSize() > 0)
+        estimatedObjectCountIncreaseRatio = (Heap::allocatedObjectSize() + Heap::markedObjectSize()) * ThreadState::current()->collectionRate() / Heap::markedObjectSize();
+
+    return s_markingTimeInLastGC * estimatedObjectCountIncreaseRatio;
 }
 
 size_t Heap::objectPayloadSizeForTesting()
@@ -2899,5 +2917,6 @@ size_t Heap::s_markedObjectSize = 0;
 size_t Heap::s_externallyAllocatedBytes = 0;
 size_t Heap::s_externallyAllocatedBytesAlive = 0;
 unsigned Heap::s_requestedUrgentGC = false;
+double Heap::s_markingTimeInLastGC = 0.0;
 
 } // namespace blink
