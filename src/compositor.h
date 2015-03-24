@@ -185,6 +185,8 @@ struct weston_output {
 
 	/** From global to output buffer coordinates. */
 	struct weston_matrix matrix;
+	/** From output buffer to global coordinates. */
+	struct weston_matrix inverse_matrix;
 
 	struct wl_list animation_list;
 	int32_t x, y, width, height;

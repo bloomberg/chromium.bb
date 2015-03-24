@@ -4003,6 +4003,8 @@ weston_output_update_matrix(struct weston_output *output)
 				    output->current_scale, 1);
 
 	output->dirty = 0;
+
+	weston_matrix_invert(&output->inverse_matrix, &output->matrix);
 }
 
 static void
