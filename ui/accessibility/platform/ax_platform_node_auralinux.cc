@@ -86,6 +86,28 @@ static const gchar* ax_platform_node_auralinux_get_description(
       ui::AX_ATTR_DESCRIPTION).c_str();
 }
 
+static gint ax_platform_node_auralinux_get_index_in_parent(
+    AtkObject* atk_object) {
+  ui::AXPlatformNodeAuraLinux* obj =
+    AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+
+  if (!obj || !obj->GetParent())
+    return -1;
+
+  AtkObject* obj_parent = obj->GetParent();
+
+  unsigned child_count = atk_object_get_n_accessible_children(obj_parent);
+  for (unsigned index = 0; index < child_count; index++) {
+    AtkObject* child = atk_object_ref_accessible_child(obj_parent, index);
+    bool atk_object_found = child == atk_object;
+    g_object_unref(child);
+    if (atk_object_found)
+      return index;
+  }
+
+  return obj->GetIndexInParent();
+}
+
 static AtkObject* ax_platform_node_auralinux_get_parent(AtkObject* atk_object) {
   ui::AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(atk_object);
@@ -115,6 +137,21 @@ static AtkObject* ax_platform_node_auralinux_ref_child(
   if (result)
     g_object_ref(result);
   return result;
+}
+
+static AtkRelationSet* ax_platform_node_auralinux_ref_relation_set(
+    AtkObject* atk_object) {
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  AtkRelationSet* atk_relation_set =
+      ATK_OBJECT_CLASS(ax_platform_node_auralinux_parent_class)->
+      ref_relation_set(atk_object);
+
+  if (!obj)
+    return atk_relation_set;
+
+  obj->GetAtkRelations(atk_relation_set);
+  return atk_relation_set;
 }
 
 static AtkRole ax_platform_node_auralinux_get_role(AtkObject* atk_object) {
@@ -175,6 +212,8 @@ static void ax_platform_node_auralinux_class_init(AtkObjectClass* klass) {
   klass->ref_child = ax_platform_node_auralinux_ref_child;
   klass->get_role = ax_platform_node_auralinux_get_role;
   klass->ref_state_set = ax_platform_node_auralinux_ref_state_set;
+  klass->get_index_in_parent = ax_platform_node_auralinux_get_index_in_parent;
+  klass->ref_relation_set = ax_platform_node_auralinux_ref_relation_set;
 }
 
 GType ax_platform_node_auralinux_get_type() {
@@ -313,6 +352,10 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* state_set) {
     atk_state_set_add_state(state_set, ATK_STATE_SELECTABLE);
   if (state & (1 << ui::AX_STATE_SELECTED))
     atk_state_set_add_state(state_set, ATK_STATE_SELECTED);
+}
+
+void AXPlatformNodeAuraLinux::GetAtkRelations(AtkRelationSet* atk_relation_set)
+{
 }
 
 AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
