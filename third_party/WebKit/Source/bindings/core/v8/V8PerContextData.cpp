@@ -92,7 +92,8 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
-    v8::Context::Scope scope(context());
+    v8::Local<v8::Context> currentContext = context();
+    v8::Context::Scope scope(currentContext);
     v8::Handle<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
     // Getting the function might fail if we're running out of stack or memory.
     v8::Local<v8::Function> function = functionTemplate->GetFunction();
@@ -103,7 +104,8 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
         v8::Local<v8::Object> prototypeTemplate = constructorForType(type->parentClass);
         if (prototypeTemplate.IsEmpty())
             return v8::Local<v8::Function>();
-        function->SetPrototype(prototypeTemplate);
+        if (!v8CallBoolean(function->SetPrototype(currentContext, prototypeTemplate)))
+            return v8::Local<v8::Function>();
     }
 
     v8::Local<v8::Value> prototypeValue = function->Get(v8AtomicString(m_isolate, "prototype"));
@@ -113,8 +115,10 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
             && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
             prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
         type->installConditionallyEnabledMethods(prototypeObject, m_isolate);
-        if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype)
-            prototypeObject->SetPrototype(m_errorPrototype.newLocal(m_isolate));
+        if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype) {
+            if (!v8CallBoolean(prototypeObject->SetPrototype(currentContext, m_errorPrototype.newLocal(m_isolate))))
+                return v8::Local<v8::Function>();
+        }
     }
 
     m_constructorMap.Set(type, function);

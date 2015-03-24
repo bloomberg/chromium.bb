@@ -326,11 +326,13 @@ bool WindowProxy::installDOMWindow()
     // Note: Much of this prototype structure is hidden from web content. The
     //       outer, inner, and DOMWindow instance all appear to be the same
     //       JavaScript object.
-    v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
+    v8::Local<v8::Context> context = m_scriptState->context();
+    v8::Local<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
     V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window);
-    innerGlobalObject->SetPrototype(windowWrapper);
+    if (!v8CallBoolean(innerGlobalObject->SetPrototype(context, windowWrapper)))
+        return false;
     V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
-    V8PagePopupControllerBinding::installPagePopupController(m_scriptState->context(), windowWrapper);
+    V8PagePopupControllerBinding::installPagePopupController(context, windowWrapper);
     return true;
 }
 

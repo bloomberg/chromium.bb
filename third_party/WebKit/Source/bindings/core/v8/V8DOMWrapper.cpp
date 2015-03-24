@@ -46,7 +46,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
 {
     static int shadowTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Handle<v8::FunctionTemplate> shadowTemplate = data->existingDOMTemplate(&shadowTemplateKey);
+    v8::Local<v8::FunctionTemplate> shadowTemplate = data->existingDOMTemplate(&shadowTemplateKey);
     if (shadowTemplate.IsEmpty()) {
         shadowTemplate = v8::FunctionTemplate::New(isolate);
         if (shadowTemplate.IsEmpty())
@@ -64,7 +64,8 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     v8::Local<v8::Object> shadow = V8ScriptRunner::instantiateObject(isolate, shadowConstructor);
     if (shadow.IsEmpty())
         return v8::Local<v8::Object>();
-    shadow->SetPrototype(wrapper);
+    if (!v8CallBoolean(shadow->SetPrototype(isolate->GetCurrentContext(), wrapper)))
+        return v8::Local<v8::Object>();
     V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::wrapperTypeInfo, scriptWrappable);
     return shadow;
 }

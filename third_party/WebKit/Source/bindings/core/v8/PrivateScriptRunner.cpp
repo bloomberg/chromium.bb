@@ -196,9 +196,18 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Ob
         // This is necessary to let the holder object use properties defined on the prototype object
         // of the private script. (e.g., if the prototype object has |foo|, the holder object should be able
         // to use it with |this.foo|.)
-        if (classObject->GetPrototype() != holderObject->GetPrototype())
-            classObject->SetPrototype(holderObject->GetPrototype());
-        holderObject->SetPrototype(classObject);
+        if (classObject->GetPrototype() != holderObject->GetPrototype()) {
+            if (!v8CallBoolean(classObject->SetPrototype(isolate->GetCurrentContext(), holderObject->GetPrototype()))) {
+                fprintf(stderr, "Private script error: SetPrototype failed.\n");
+                dumpV8Message(block.Message());
+                RELEASE_ASSERT_NOT_REACHED();
+            }
+        }
+        if (!v8CallBoolean(holderObject->SetPrototype(isolate->GetCurrentContext(), classObject))) {
+            fprintf(stderr, "Private script error: SetPrototype failed.\n");
+            dumpV8Message(block.Message());
+            RELEASE_ASSERT_NOT_REACHED();
+        }
 
         isInitialized = v8Boolean(true, isolate);
         V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);

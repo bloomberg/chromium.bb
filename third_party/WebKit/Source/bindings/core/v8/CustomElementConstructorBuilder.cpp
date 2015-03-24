@@ -85,8 +85,10 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     } else {
         m_prototype = v8::Object::New(m_scriptState->isolate());
         v8::Local<v8::Object> basePrototype = m_scriptState->perContextData()->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
-        if (!basePrototype.IsEmpty())
-            m_prototype->SetPrototype(basePrototype);
+        if (!basePrototype.IsEmpty()) {
+            if (!v8CallBoolean(m_prototype->SetPrototype(m_scriptState->context(), basePrototype)))
+                return false;
+        }
     }
 
     AtomicString namespaceURI = HTMLNames::xhtmlNamespaceURI;

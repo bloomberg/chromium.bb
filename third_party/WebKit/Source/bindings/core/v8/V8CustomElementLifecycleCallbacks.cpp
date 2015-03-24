@@ -152,18 +152,19 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Handle<v8::Object> receiver = m_scriptState->world().domDataStore().get(element, isolate);
+    v8::Local<v8::Context> context = m_scriptState->context();
+    v8::Local<v8::Object> receiver = m_scriptState->world().domDataStore().get(element, isolate);
     if (receiver.IsEmpty())
         receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
 
     // Swizzle the prototype of the wrapper.
-    v8::Handle<v8::Object> prototype = m_prototype.newLocal(isolate);
+    v8::Local<v8::Object> prototype = m_prototype.newLocal(isolate);
     if (prototype.IsEmpty())
         return;
-    receiver->SetPrototype(prototype);
+    if (!v8CallBoolean(receiver->SetPrototype(context, prototype)))
+        return;
 
-    v8::Handle<v8::Function> callback = m_created.newLocal(isolate);
+    v8::Local<v8::Function> callback = m_created.newLocal(isolate);
     if (callback.IsEmpty())
         return;
 
