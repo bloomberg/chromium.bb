@@ -262,6 +262,7 @@ class CreateSessionDescriptionRequest
 
     tracker_.TrackOnSuccess(desc);
     webkit_request_.requestSucceeded(CreateWebKitSessionDescription(desc));
+    webkit_request_.reset();
     delete desc;
   }
   void OnFailure(const std::string& error) override {
@@ -273,10 +274,13 @@ class CreateSessionDescriptionRequest
 
     tracker_.TrackOnFailure(error);
     webkit_request_.requestFailed(base::UTF8ToUTF16(error));
+    webkit_request_.reset();
   }
 
  protected:
-  ~CreateSessionDescriptionRequest() override {}
+  ~CreateSessionDescriptionRequest() override {
+    DCHECK(webkit_request_.isNull());
+  }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   blink::WebRTCSessionDescriptionRequest webkit_request_;
@@ -307,6 +311,7 @@ class SetSessionDescriptionRequest
     }
     tracker_.TrackOnSuccess(NULL);
     webkit_request_.requestSucceeded();
+    webkit_request_.reset();
   }
   void OnFailure(const std::string& error) override {
     if (!main_thread_->BelongsToCurrentThread()) {
@@ -316,10 +321,13 @@ class SetSessionDescriptionRequest
     }
     tracker_.TrackOnFailure(error);
     webkit_request_.requestFailed(base::UTF8ToUTF16(error));
+    webkit_request_.reset();
   }
 
  protected:
-  ~SetSessionDescriptionRequest() override {}
+  ~SetSessionDescriptionRequest() override {
+    DCHECK(webkit_request_.isNull());
+  }
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
