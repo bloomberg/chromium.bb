@@ -19,13 +19,13 @@ Object {result: "PASS"}
 restoreError()
 Object {result: "PASS"}
 testOverriddenToString(function func() {}, true)
-#<Function>
+func()
 testOverriddenToString(function func() {}, false)
-#<Function>
+func()
 testOverriddenToString(new Function, true)
-#<Function>
+function()
 testOverriddenToString(new Function, false)
-#<Function>
+function()
 testOverriddenToString(/^regex$/, true)
 #<RegExp>
 testOverriddenToString(/^regex$/, false)

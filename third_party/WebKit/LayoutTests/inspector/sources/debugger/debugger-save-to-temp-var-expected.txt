@@ -23,7 +23,7 @@ Object {foo: "bar"}
 temp14
 [1, 2, 3, 4]
 temp15
-function func() {}
+func()
 temp16
 Error: errr
 

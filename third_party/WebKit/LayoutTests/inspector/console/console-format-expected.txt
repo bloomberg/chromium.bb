@@ -164,24 +164,20 @@ console-format.html:13 [p#p]
     __proto__: Array[0]
 globals[6]
     <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:12 function () { return 1; }
+console-format.html:12 func()
 console-format.html:13 [function]
     0: function () { return 1; }
     length: 1
     __proto__: Array[0]
 globals[7]
-console-format.html:45 function () { return 1; }
-console-format.html:12 function () {
-        return 2;
-    }
+func()
+console-format.html:12 multilinefunc()
 console-format.html:13 [function]
     0: function () {
     length: 1
     __proto__: Array[0]
 globals[8]
-console-format.html:46 function () {
-        return 2;
-    }
+multilinefunc()
 console-format.html:12 0.12
 console-format.html:13 [0.12]
 globals[9]
@@ -280,7 +276,7 @@ console-format.html:13 [Array[1]]
     length: 1
     __proto__: Array[0]
 globals[22]
-[function () {}]
+[function()]
 console-format.html:12 Object {bar: "bar", foo: "foo"}
 console-format.html:13 [Object]
     0: Object
@@ -324,13 +320,13 @@ console-format.html:13 [Object]
     __proto__: Array[0]
 globals[27]
 Object {}
-console-format.html:12 function Object() { [native code] }
+console-format.html:12 Object()
 console-format.html:13 [function]
     0: function Object() { [native code] }
     length: 1
     __proto__: Array[0]
 globals[28]
-function Object() { [native code] }
+Object()
 console-format.html:12 Object {}
 console-format.html:13 [Object]
     0: Object
@@ -338,13 +334,13 @@ console-format.html:13 [Object]
     __proto__: Array[0]
 globals[29]
 Object {}
-console-format.html:12 function () {}
+console-format.html:12 arrayLikeFunction()
 console-format.html:13 [function]
     0: function () {}
     length: 1
     __proto__: Array[0]
 globals[30]
-console-format.html:62 function () {}
+arrayLikeFunction()
 console-format.html:12 Number {[[PrimitiveValue]]: 42}
 console-format.html:13 [Number]
     0: Number
