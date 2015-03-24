@@ -413,6 +413,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses non-secure transport.">
         Your connection to this site is not private.
       </message>
+      <message name="IDS_WEBSITE_DEPRECATED_SIGNATURE_ALGORITHM" desc="Text that is displayed in the header of the Website Settings popup if the website uses SHA-1 for certificate signatures, which are no longer considered secure.">
+        This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_UNKNOWN_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if Chrome cannot determine what kind of transport the website used. This string must be the same as IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT.">
         Your connection to this site is not private.
       </message>
