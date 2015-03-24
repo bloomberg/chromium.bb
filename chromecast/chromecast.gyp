@@ -26,6 +26,14 @@
     ],
   },
   'targets': [
+    # Public API target for OEM partners to replace shlibs.
+    {
+      'target_name': 'cast_public_api',
+      'type': '<(component)',
+      'sources': [
+        'public/chromecast_export.h',
+      ],
+    },
     # TODO(gunsch): Remove this fake target once it's either added or no
     # longer referenced from internal code.
     {'target_name': 'cast_media_audio', 'type': 'none'},
