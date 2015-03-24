@@ -59,5 +59,7 @@ google.patch contains the following modifications. Apply with
    - https://bugzilla.mozilla.org/show_bug.cgi?id=1132468
  - lut_inverse_interp16: remove odd whitespace formatting
    - https://code.google.com/p/chromium/issues/detail?id=458024
+ - lut_inverse_interp16: better handle degenerate TRC curves
+   - https://code.google.com/p/chromium/issues/detail?id=458024
 To regenerate google.patch:
   git diff b8456f38 src > google.patch

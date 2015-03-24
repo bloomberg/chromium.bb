@@ -328,11 +328,16 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
         // Does the curve belong to this case?
         if (NumZeroes > 1 || NumPoles > 1)
         {
-                int a, b;
+                int a, b, sample;
 
                 // Identify if value fall downto 0 or FFFF zone
                 if (Value == 0) return 0;
-               // if (Value == 0xFFFF) return 0xFFFF;
+                // if (Value == 0xFFFF) return 0xFFFF;
+                sample = (length-1) * ((double) Value * (1./65535.));
+                if (LutTable[sample] == 0)
+                    return 0;
+                if (LutTable[sample] == 0xffff)
+                    return 0xffff;
 
                 // else restrict to valid zone
 
@@ -341,8 +346,14 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
                 l = a - 1;
                 r = b + 1;
-        }
 
+                // Ensure a valid binary search range
+
+                if (l < 1)
+                    l = 1;
+                if (r > 0x10000)
+                    r = 0x10000;
+        }
 
         // Seems not a degenerated case... apply binary search
 
