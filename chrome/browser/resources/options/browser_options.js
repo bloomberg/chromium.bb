@@ -462,20 +462,21 @@ cr.define('options', function() {
         restartElements[1].onclick = function(event) {
           chrome.send('restartBrowser');
         };
-        // Attach the listener for updating the checkbox and restart button.
-        var updateMetricsRestartButton = function() {
+        $('metrics-reporting-enabled').onclick = function(event) {
+          chrome.send('metricsReportingCheckboxChanged',
+              [Boolean(event.currentTarget.checked)]);
+          if (cr.isMac) {
+            // A browser restart is never needed to toggle metrics reporting,
+            // and is only needed to toggle crash reporting when using Breakpad.
+            // Crashpad, used on Mac, does not require a browser restart.
+            return;
+          }
           $('metrics-reporting-reset-restart').hidden =
               loadTimeData.getBoolean('metricsReportingEnabledAtStart') ==
                   $('metrics-reporting-enabled').checked;
         };
-        $('metrics-reporting-enabled').onclick = function(event) {
-          chrome.send('metricsReportingCheckboxChanged',
-              [Boolean(event.currentTarget.checked)]);
-          updateMetricsRestartButton();
-        };
         $('metrics-reporting-enabled').checked =
             loadTimeData.getBoolean('metricsReportingEnabledAtStart');
-        updateMetricsRestartButton();
       }
       // 'rappor-setting' element is only present on Chrome branded builds.
       if ($('rappor-setting')) {
