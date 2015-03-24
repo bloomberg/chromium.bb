@@ -34,7 +34,8 @@ namespace content {
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
-#define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
+// Test is flaky on all platforms. http://crbug.com/470013.
+#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #endif
 
 class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
