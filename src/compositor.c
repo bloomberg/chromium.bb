@@ -5212,6 +5212,23 @@ weston_transform_to_string(uint32_t output_transform)
 	return "<illegal value>";
 }
 
+static int
+load_configuration(struct weston_config **config, int32_t noconfig)
+{
+	*config = NULL;
+
+	if (noconfig == 0)
+		*config = weston_config_parse("weston.ini");
+
+	if (*config) {
+		weston_log("Using config file '%s'\n",
+			   weston_config_get_full_path(*config));
+	} else {
+		weston_log("Starting with no config file.\n");
+	}
+
+	return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -5237,7 +5254,7 @@ int main(int argc, char *argv[])
 	int32_t version = 0;
 	int32_t noconfig = 0;
 	int32_t numlock_on;
-	struct weston_config *config = NULL;
+	struct weston_config *config;
 	struct weston_config_section *section;
 	struct wl_client *primary_client;
 	struct wl_listener primary_client_destroyed;
@@ -5294,14 +5311,9 @@ int main(int argc, char *argv[])
 	if (!signals[0] || !signals[1] || !signals[2] || !signals[3])
 		goto out_signals;
 
-	if (noconfig == 0)
-		config = weston_config_parse("weston.ini");
-	if (config != NULL) {
-		weston_log("Using config file '%s'\n",
-			   weston_config_get_full_path(config));
-	} else {
-		weston_log("Starting with no config file.\n");
-	}
+	if (load_configuration(&config, noconfig) < 0)
+		goto out_signals;
+
 	section = weston_config_get_section(config, "core", NULL, NULL);
 
 	if (!backend) {
