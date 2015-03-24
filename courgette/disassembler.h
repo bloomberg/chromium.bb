@@ -54,6 +54,11 @@ class Disassembler {
   bool Good();
   bool Bad(const char *reason);
 
+  // Returns true if the array lies within our memory region.
+  bool IsArrayInBounds(size_t offset, size_t elements, size_t element_size) {
+    return offset <= length() && elements <= (length() - offset) / element_size;
+  }
+
   // These helper functions avoid the need for casts in the main code.
   uint16 ReadU16(const uint8* address, size_t offset) {
     return *reinterpret_cast<const uint16*>(address + offset);

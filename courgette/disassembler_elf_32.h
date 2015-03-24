@@ -96,7 +96,7 @@ class DisassemblerElf32 : public Disassembler {
 
  protected:
 
-  uint32 DiscoverLength();
+  bool UpdateLength();
 
   // Misc Section Helpers
 

@@ -125,8 +125,9 @@ bool Disassembler::Bad(const char* reason) {
 }
 
 void Disassembler::ReduceLength(size_t reduced_length) {
-  if (reduced_length < length_)
-    length_ = reduced_length;
+  CHECK_LE(reduced_length, length_);
+  length_ = reduced_length;
+  end_ = start_ + length_;
 }
 
 }  // namespace courgette

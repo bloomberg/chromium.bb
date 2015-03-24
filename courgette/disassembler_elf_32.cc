@@ -54,27 +54,26 @@ bool DisassemblerElf32::ParseHeader() {
   if (header_->e_shentsize != sizeof(Elf32_Shdr))
     return Bad("Unexpected section header size");
 
-  if (header_->e_shoff >= length())
-    return Bad("Out of bounds section header table offset");
+  if (!IsArrayInBounds(header_->e_shoff, header_->e_shnum, sizeof(Elf32_Shdr)))
+    return Bad("Out of bounds section header table");
 
   section_header_table_ = (Elf32_Shdr *)OffsetToPointer(header_->e_shoff);
   section_header_table_size_ = header_->e_shnum;
 
-  if ((header_->e_shoff + header_->e_shnum ) >= length())
-    return Bad("Out of bounds section header table");
-
-  if (header_->e_phoff >= length())
-    return Bad("Out of bounds program header table offset");
+  if (!IsArrayInBounds(header_->e_phoff, header_->e_phnum, sizeof(Elf32_Phdr)))
+    return Bad("Out of bounds program header table");
 
   program_header_table_ = (Elf32_Phdr *)OffsetToPointer(header_->e_phoff);
   program_header_table_size_ = header_->e_phnum;
 
-  if ((header_->e_phoff + header_->e_phnum) >= length())
-    return Bad("Out of bounds program header table");
+  if (header_->e_shstrndx >= header_->e_shnum)
+    return Bad("Out of bounds string section index");
 
   default_string_section_ = (const char *)SectionBody((int)header_->e_shstrndx);
 
-  ReduceLength(DiscoverLength());
+  if (!UpdateLength()) {
+    return Bad("Out of bounds section or segment");
+  }
 
   return Good();
 }
@@ -100,8 +99,8 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
   return true;
 }
 
-uint32 DisassemblerElf32::DiscoverLength() {
-  uint32 result = 0;
+bool DisassemblerElf32::UpdateLength() {
+  Elf32_Off result = 0;
 
   // Find the end of the last section
   for (int section_id = 0; section_id < SectionHeaderCount(); section_id++) {
@@ -110,33 +109,34 @@ uint32 DisassemblerElf32::DiscoverLength() {
     if (section_header->sh_type == SHT_NOBITS)
       continue;
 
-    uint32 section_end = section_header->sh_offset + section_header->sh_size;
+    if (!IsArrayInBounds(section_header->sh_offset, section_header->sh_size, 1))
+      return false;
 
-    if (section_end > result)
-      result = section_end;
+    Elf32_Off section_end = section_header->sh_offset + section_header->sh_size;
+    result = std::max(result, section_end);
   }
 
   // Find the end of the last segment
   for (int i = 0; i < ProgramSegmentHeaderCount(); i++) {
     const Elf32_Phdr *segment_header = ProgramSegmentHeader(i);
 
-    uint32 segment_end = segment_header->p_offset + segment_header->p_filesz;
+    if (!IsArrayInBounds(segment_header->p_offset, segment_header->p_filesz, 1))
+      return false;
 
-    if (segment_end > result)
-      result = segment_end;
+    Elf32_Off segment_end = segment_header->p_offset + segment_header->p_filesz;
+    result = std::max(result, segment_end);
   }
 
-  uint32 section_table_end = header_->e_shoff +
-                             (header_->e_shnum * sizeof(Elf32_Shdr));
-  if (section_table_end > result)
-    result = section_table_end;
+  Elf32_Off section_table_end = header_->e_shoff +
+                                (header_->e_shnum * sizeof(Elf32_Shdr));
+  result = std::max(result, section_table_end);
 
-  uint32 segment_table_end = header_->e_phoff +
-                             (header_->e_phnum * sizeof(Elf32_Phdr));
-  if (segment_table_end > result)
-    result = segment_table_end;
+  Elf32_Off segment_table_end = header_->e_phoff +
+                                (header_->e_phnum * sizeof(Elf32_Phdr));
+  result = std::max(result, segment_table_end);
 
-  return result;
+  ReduceLength(result);
+  return true;
 }
 
 CheckBool DisassemblerElf32::IsValidRVA(RVA rva) const {
