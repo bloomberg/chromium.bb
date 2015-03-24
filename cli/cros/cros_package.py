@@ -18,7 +18,6 @@ from chromite.cli import command
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
@@ -145,10 +144,9 @@ To enable building a package from latest or stable ebuilds:
     if (result.returncode and
         not ((latest and self._CrosWorkonAlreadyStarted(result.output)) or
              (not latest and self._CrosWorkonAlreadyStopped(result.output)))):
-      msg = ('Failed to %s latest build for package %s' %
-             ('enable' if latest else 'disable', self.options.package_name))
-      logging.error(msg)
-      raise RuntimeError(msg)
+      cros_build_lib.Die('Failed to %s latest build for package %s:\n%s' %
+                         ('enable' if latest else 'disable',
+                          self.options.package_name, result.output))
 
   def _ReadOptions(self):
     """Process arguments and set variables, then freeze options."""
