@@ -15,6 +15,9 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
 #include "content/renderer/devtools/lock_free_circular_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "v8/include/v8.h"
@@ -27,6 +30,12 @@ using v8::Isolate;
 namespace content {
 
 namespace {
+
+#if defined(OS_WIN)
+typedef base::win::ScopedHandle UniversalThreadHandle;
+#else
+typedef base::PlatformThreadHandle UniversalThreadHandle;
+#endif
 
 std::string PtrToString(const void* value) {
   return base::StringPrintf(
@@ -136,7 +145,7 @@ class Sampler {
   static void HandleJitCodeEvent(const v8::JitCodeEvent* event);
   static scoped_refptr<ConvertableToTraceFormat> JitCodeEventToTraceFormat(
       const v8::JitCodeEvent* event);
-  static base::PlatformThreadHandle GetCurrentThreadHandle();
+  static UniversalThreadHandle GetCurrentThreadHandle();
 
   void InjectPendingEvents();
 
@@ -144,7 +153,7 @@ class Sampler {
   typedef LockFreeCircularQueue<SampleRecord, kNumberOfSamples> SamplingQueue;
 
   base::PlatformThreadId thread_id_;
-  base::PlatformThreadHandle thread_handle_;
+  UniversalThreadHandle thread_handle_;
   Isolate* isolate_;
   scoped_ptr<SamplingQueue> samples_data_;
   base::subtle::Atomic32 code_added_events_count_;
@@ -183,10 +192,11 @@ scoped_ptr<Sampler> Sampler::CreateForCurrentThread() {
 }
 
 // static
-base::PlatformThreadHandle Sampler::GetCurrentThreadHandle() {
+UniversalThreadHandle Sampler::GetCurrentThreadHandle() {
 #ifdef OS_WIN
-  // TODO(alph): Add Windows support.
-  return base::PlatformThreadHandle();
+  return base::win::ScopedHandle(::OpenThread(
+      THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
+      false, base::PlatformThread::CurrentId()));
 #else
   return base::PlatformThread::CurrentHandle();
 #endif
@@ -204,15 +214,38 @@ void Sampler::Stop() {
   samples_data_.reset();
 }
 
+#if ARCH_CPU_64_BITS
+#define REG_64_32(reg64, reg32) reg64
+#else
+#define REG_64_32(reg64, reg32) reg32
+#endif  // ARCH_CPU_64_BITS
+
 void Sampler::Sample() {
-#if defined(USE_SIGNALS)
+#if defined(OS_WIN)
+  const DWORD kSuspendFailed = static_cast<DWORD>(-1);
+  if (::SuspendThread(thread_handle_.Get()) == kSuspendFailed)
+    return;
+  CONTEXT context;
+  memset(&context, 0, sizeof(context));
+  context.ContextFlags = CONTEXT_FULL;
+  if (::GetThreadContext(thread_handle_.Get(), &context) != 0) {
+    v8::RegisterState state;
+    state.pc = reinterpret_cast<void*>(context.REG_64_32(Rip, Eip));
+    state.sp = reinterpret_cast<void*>(context.REG_64_32(Rsp, Esp));
+    state.fp = reinterpret_cast<void*>(context.REG_64_32(Rbp, Ebp));
+    // TODO(alph): It is not needed to buffer the events on Windows.
+    // We can just collect and fire trace event right away.
+    DoSample(state);
+  }
+  ::ResumeThread(thread_handle_.Get());
+#elif defined(USE_SIGNALS)
   int error = pthread_kill(thread_handle_.platform_handle(), SIGPROF);
   if (error) {
     LOG(ERROR) << "pthread_kill failed with error " << error << " "
                << strerror(error);
   }
-  InjectPendingEvents();
 #endif
+  InjectPendingEvents();
 }
 
 void Sampler::DoSample(const v8::RegisterState& state) {
@@ -457,40 +490,22 @@ void V8SamplingThread::HandleProfilerSignal(int signal,
   v8::RegisterState state;
 
 #if defined(ARCH_CPU_ARM_FAMILY)
-
-#if ARCH_CPU_64_BITS
-  state.pc = reinterpret_cast<void*>(mcontext.pc);
-  state.sp = reinterpret_cast<void*>(mcontext.sp);
-  state.fp = reinterpret_cast<void*>(mcontext.regs[29]);
-#elif ARCH_CPU_32_BITS
-  state.pc = reinterpret_cast<void*>(mcontext.arm_pc);
-  state.sp = reinterpret_cast<void*>(mcontext.arm_sp);
-  state.fp = reinterpret_cast<void*>(mcontext.arm_fp);
-#endif  // ARCH_CPU_32_BITS
+  state.pc = reinterpret_cast<void*>(mcontext.REG_64_32(pc, arm_pc));
+  state.sp = reinterpret_cast<void*>(mcontext.REG_64_32(sp, arm_sp));
+  state.fp = reinterpret_cast<void*>(mcontext.REG_64_32(regs[29], arm_fp));
 
 #elif defined(ARCH_CPU_X86_FAMILY)
-
 #if defined(OS_MACOSX)
-#if ARCH_CPU_64_BITS
-  state.pc = reinterpret_cast<void*>(mcontext->__ss.__rip);
-  state.sp = reinterpret_cast<void*>(mcontext->__ss.__rsp);
-  state.fp = reinterpret_cast<void*>(mcontext->__ss.__rbp);
-#elif ARCH_CPU_32_BITS
-  state.pc = reinterpret_cast<void*>(mcontext->__ss.__eip);
-  state.sp = reinterpret_cast<void*>(mcontext->__ss.__esp);
-  state.fp = reinterpret_cast<void*>(mcontext->__ss.__ebp);
-#endif  // ARCH_CPU_32_BITS
-
+  state.pc = reinterpret_cast<void*>(mcontext->__ss.REG_64_32(__rip, __eip));
+  state.sp = reinterpret_cast<void*>(mcontext->__ss.REG_64_32(__rsp, __esp));
+  state.fp = reinterpret_cast<void*>(mcontext->__ss.REG_64_32(__rbp, __ebp));
 #else
-#if ARCH_CPU_64_BITS
-  state.pc = reinterpret_cast<void*>(mcontext.gregs[REG_RIP]);
-  state.sp = reinterpret_cast<void*>(mcontext.gregs[REG_RSP]);
-  state.fp = reinterpret_cast<void*>(mcontext.gregs[REG_RBP]);
-#elif ARCH_CPU_32_BITS
-  state.pc = reinterpret_cast<void*>(mcontext.gregs[REG_EIP]);
-  state.sp = reinterpret_cast<void*>(mcontext.gregs[REG_ESP]);
-  state.fp = reinterpret_cast<void*>(mcontext.gregs[REG_EBP]);
-#endif  // ARCH_CPU_32_BITS
+  state.pc =
+      reinterpret_cast<void*>(mcontext.gregs[REG_64_32(REG_RIP, REG_EIP)]);
+  state.sp =
+      reinterpret_cast<void*>(mcontext.gregs[REG_64_32(REG_RSP, REG_ESP)]);
+  state.fp =
+      reinterpret_cast<void*>(mcontext.gregs[REG_64_32(REG_RBP, REG_EBP)]);
 #endif  // OS_MACOS
 #endif  // ARCH_CPU_X86_FAMILY
 

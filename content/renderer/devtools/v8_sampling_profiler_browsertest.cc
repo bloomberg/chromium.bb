@@ -119,17 +119,7 @@ class V8SamplingProfilerTest : public RenderViewTest {
   TraceResultBuffer::SimpleOutput json_output_;
 };
 
-// TODO(alph): Implement on Windows, Android and non-x86.
-// The SamplingEventForTesting is fired when the framework collected at
-// least one JitCodeAdded event and one sample event.
-
-#if defined(OS_WIN)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
-TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingEventFired)) {
+TEST_F(V8SamplingProfilerTest, V8SamplingEventFired) {
   sampling_profiler_->EnableSamplingEventForTesting(0, 0);
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
@@ -139,14 +129,14 @@ TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingEventFired)) {
   TraceLog::GetInstance()->SetDisabled();
 }
 
-TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingJitCodeEventsCollected)) {
+TEST_F(V8SamplingProfilerTest, V8SamplingJitCodeEventsCollected) {
   CollectTrace(1, 0);
   int jit_code_added_events_count = CountEvents("JitCodeAdded");
   CHECK_LT(0, jit_code_added_events_count);
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingSamplesCollected)) {
+TEST_F(V8SamplingProfilerTest, V8SamplingSamplesCollected) {
   CollectTrace(0, 1);
   int sample_events_count = CountEvents("V8Sample");
   CHECK_LT(0, sample_events_count);
