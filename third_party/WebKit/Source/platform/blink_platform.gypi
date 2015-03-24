@@ -335,6 +335,7 @@
       'exported/WebTransformKeyframe.cpp',
       'exported/WebURL.cpp',
       'exported/WebURLError.cpp',
+      'exported/WebURLLoaderClient.cpp',
       'exported/WebURLLoadTiming.cpp',
       'exported/WebURLRequest.cpp',
       'exported/WebURLRequestPrivate.h',

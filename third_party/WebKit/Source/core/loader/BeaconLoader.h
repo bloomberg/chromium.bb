@@ -5,6 +5,7 @@
 #ifndef BeaconLoader_h
 #define BeaconLoader_h
 
+#include "core/CoreExport.h"
 #include "core/loader/PingLoader.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebURLLoaderClient.h"
@@ -22,7 +23,7 @@ class SecurityOrigin;
 
 // Issue asynchronous beacon transmission loads independent of LocalFrame
 // staying alive. PingLoader providing the service.
-class BeaconLoader final : public PingLoader {
+class CORE_EXPORT BeaconLoader final : public PingLoader {
     WTF_MAKE_NONCOPYABLE(BeaconLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

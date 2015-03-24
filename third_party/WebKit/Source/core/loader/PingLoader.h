@@ -32,6 +32,7 @@
 #ifndef PingLoader_h
 #define PingLoader_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/Timer.h"
@@ -56,7 +57,7 @@ class ResourceRequest;
 // The ping loader is used by audit pings, beacon transmissions and image loads
 // during page unloading.
 //
-class PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private blink::WebURLLoaderClient {
+class CORE_EXPORT PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private blink::WebURLLoaderClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PingLoader);
     WTF_MAKE_NONCOPYABLE(PingLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
