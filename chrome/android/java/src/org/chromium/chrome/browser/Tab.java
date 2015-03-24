@@ -27,6 +27,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.TabState.WebContentsState;
+import org.chromium.chrome.browser.TabUma.TabCreationState;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
@@ -46,6 +47,7 @@ import org.chromium.chrome.browser.tab.SadTabViewFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -295,6 +297,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private float mPreviousFullscreenContentOffsetY = Float.NaN;
     private float mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
     private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+
+    /**
+     * The UMA object used to report stats for this tab. Note that this may be null under certain
+     * conditions, such as incognito mode.
+     */
+    private TabUma mTabUma;
 
     /**
      * Reference to the current sadTabView if one is defined.
@@ -724,6 +732,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert type == TabLaunchType.FROM_RESTORE;
             restoreFieldsFromState(frozenState);
         }
+    }
+
+    /**
+     * Sets the mTabUma object for stats reporting.
+     * @param tabUma TabUma object to use to report UMA stats.
+     */
+    protected void setTabUma(TabUma tabUma) {
+        mTabUma = tabUma;
     }
 
     /**
@@ -1199,6 +1215,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             if (mContentViewCore != null) mContentViewCore.onShow();
 
+            if (mTabUma != null) mTabUma.onShow(type, getTimestampMillis());
+
             showInternal(type);
 
             // If the page is still loading, update the progress bar (otherwise it would not show
@@ -1452,6 +1470,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     "Navigation.IsMobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
         }
 
+        if (mTabUma != null) mTabUma.onLoadFinished();
+
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
     }
 
@@ -1462,6 +1482,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     protected void didFailPageLoad(int errorCode) {
         mIsLoading = false;
         mIsBeingRestored = false;
+        if (mTabUma != null) mTabUma.onLoadFailed(errorCode);
         for (TabObserver observer : mObservers) observer.onPageLoadFailed(this, errorCode);
     }
 
@@ -1831,6 +1852,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void restoreIfNeededInternal() {
         mIsBeingRestored = true;
+        if (mTabUma != null) mTabUma.onRestoreStarted();
     }
 
     /**
@@ -2388,6 +2410,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Performs any subclass-specific tasks when the Tab crashes.
      */
     protected void handleTabCrash() {
+        if (mTabUma != null) mTabUma.onRendererCrashed();
     }
 
     /**
@@ -2625,6 +2648,50 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // It's possible idCounter has been incremented between the get above and the add below
         // but that's OK, because in the worst case we'll overly increment idCounter.
         sIdCounter.addAndGet(diff);
+    }
+
+    /**
+     * @return the UMA object for the tab. Note that this may be null in some
+     * cases.
+     */
+    public TabUma getTabUma() {
+        return mTabUma;
+    }
+
+    /**
+     * Creates a new tab to be loaded lazily. This can be used for tabs opened in the background
+     * that should be loaded when switched to. initialize() needs to be called afterwards to
+     * complete the second level initialization.
+     */
+    @VisibleForTesting
+    static Tab createTabForLazyLoad(Context context, boolean incognito, WindowAndroid nativeWindow,
+            TabLaunchType type, int parentId, LoadUrlParams loadUrlParams,
+            TabModelSelector tabModelSelector) {
+        Tab tab = new Tab(INVALID_TAB_ID, parentId, incognito, context, nativeWindow, type, null);
+        if (context != null) {
+            tab.setTabUma(new TabUma(tab, TabCreationState.FROZEN_FOR_LAZY_LOAD,
+                    tabModelSelector.getModel(incognito)));
+        }
+        tab.setPendingLoadParams(loadUrlParams);
+        return tab;
+    }
+
+    /**
+     * Creates a fresh tab. initialize() needs to be called afterwards to complete the second level
+     * initialization.
+     * @param initiallyHidden true iff the tab being created is initially in background
+     */
+    @VisibleForTesting
+    static Tab createLiveTab(int id, Context context, boolean incognito, WindowAndroid nativeWindow,
+            TabLaunchType type, int parentId, boolean initiallyHidden,
+            TabModelSelector tabModelSelector) {
+        Tab tab = new Tab(id, parentId, incognito, context, nativeWindow, type, null);
+        if (context != null) {
+            tab.setTabUma(new TabUma(tab, initiallyHidden ? TabCreationState.LIVE_IN_BACKGROUND
+                                                          : TabCreationState.LIVE_IN_FOREGROUND,
+                    tabModelSelector.getModel(incognito)));
+        }
+        return tab;
     }
 
     private native void nativeInit();
