@@ -2540,4 +2540,36 @@ TEST_F(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
 
   root_window()->RemovePreTargetHandler(&recorder);
 }
+
+// OnCursorMovedToRootLocation() is sometimes called instead of
+// WindowTreeHost::MoveCursorTo() when the cursor did not move but the
+// cursor's position in root coordinates has changed (e.g. when the displays's
+// scale factor changed). Test that hover effects are properly updated.
+TEST_F(WindowEventDispatcherTest, OnCursorMovedToRootLocationUpdatesHover) {
+  WindowEventDispatcher* dispatcher = host()->dispatcher();
+
+  scoped_ptr<Window> w(CreateNormalWindow(1, root_window(), nullptr));
+  w->SetBounds(gfx::Rect(20, 20, 20, 20));
+  w->Show();
+
+  // Move the cursor off of |w|.
+  dispatcher->OnCursorMovedToRootLocation(gfx::Point(100, 100));
+
+  EventFilterRecorder recorder;
+  w->AddPreTargetHandler(&recorder);
+  dispatcher->OnCursorMovedToRootLocation(gfx::Point(22, 22));
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_MOUSE_ENTERED));
+  recorder.Reset();
+
+  // The cursor should not be over |w| after changing the device scale factor to
+  // 2x. A ET_MOUSE_EXITED event should have been sent to |w|.
+  test_screen()->SetDeviceScaleFactor(2.f);
+  dispatcher->OnCursorMovedToRootLocation(gfx::Point(11, 11));
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_MOUSE_EXITED));
+
+  w->RemovePreTargetHandler(&recorder);
+}
+
 }  // namespace aura

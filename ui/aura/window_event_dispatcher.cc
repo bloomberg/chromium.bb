@@ -208,7 +208,10 @@ void WindowEventDispatcher::OnHostLostMouseGrab() {
 void WindowEventDispatcher::OnCursorMovedToRootLocation(
     const gfx::Point& root_location) {
   SetLastMouseLocation(window(), root_location);
-  synthesize_mouse_move_ = false;
+
+  // Synthesize a mouse move in case the cursor's location in root coordinates
+  // changed but its position in WindowTreeHost coordinates did not.
+  PostSynthesizeMouseMove();
 }
 
 void WindowEventDispatcher::OnPostNotifiedWindowDestroying(Window* window) {

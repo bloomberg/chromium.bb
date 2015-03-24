@@ -586,25 +586,34 @@ void DisplayController::UpdateMouseLocationAfterDisplayChange() {
 #if defined(USE_OZONE)
   gfx::Point target_location_in_screen = target_location_in_root;
   ::wm::ConvertPointToScreen(dst_root_window, &target_location_in_screen);
-  int64 target_display_id =
-      display_manager->FindDisplayContainingPoint(target_location_in_screen)
-          .id();
+  const gfx::Display& target_display =
+      display_manager->FindDisplayContainingPoint(target_location_in_screen);
+  int64 target_display_id = target_display.id();
 
   // Do not move the cursor if the cursor's location did not change. This avoids
-  // moving (and showing) the cursor on startup.
-  // - |cursor_location_in_screen_coords_for_restore_| is checked to ensure that
-  //   the cursor is moved when the cursor's native position does not change but
-  //   the scale factor or rotation of the display it is on have changed.
-  // - |cursor_display_id_for_restore_| is checked to ensure that the cursor is
-  //   moved when the cursor's native position and screen position do not change
-  //   but the display that it is on has changed. This occurs when swapping the
-  //   primary display.
+  // moving (and showing) the cursor:
+  // - At startup.
+  // - When the device is rotated in maximized mode.
+  // |cursor_display_id_for_restore_| is checked to ensure that the cursor is
+  // moved when the cursor's native position does not change but the display
+  // that it is on has changed. This occurs when swapping the primary display.
   if (target_location_in_native !=
           cursor_location_in_native_coords_for_restore_ ||
-      target_location_in_screen !=
-          cursor_location_in_screen_coords_for_restore_ ||
       target_display_id != cursor_display_id_for_restore_) {
     dst_root_window->MoveCursorTo(target_location_in_root);
+  } else if (target_location_in_screen !=
+             cursor_location_in_screen_coords_for_restore_) {
+    // The cursor's native position did not change but its screen position did
+    // change. This occurs when the scale factor or the rotation of the display
+    // that the cursor is on changes.
+    Shell::GetInstance()->cursor_manager()->SetDisplay(target_display);
+
+    // Update the cursor's root location. This ends up dispatching a synthetic
+    // mouse move. The synthetic mouse move updates the composited cursor's
+    // location and hover effects. Synthetic mouse moves do not affect the
+    // cursor's visibility.
+    dst_root_window->GetHost()->dispatcher()->OnCursorMovedToRootLocation(
+        target_location_in_root);
   }
 #else
   dst_root_window->MoveCursorTo(target_location_in_root);
