@@ -57,7 +57,7 @@
        * Object containing all preferences.
        *
        * @attribute settings
-       * @type CrSettingsPrefs.Settings
+       * @type {Object}
        * @default null
        */
       settings: null,
@@ -65,6 +65,7 @@
 
     /** @override */
     created: function() {
+      CrSettingsPrefs.isInitialized = false;
       this.settings = {};
       this.fetchSettings_();
     },
@@ -94,6 +95,8 @@
      */
     onPrefsFetched_: function(dict) {
       this.parsePrefDict_('', dict);
+      CrSettingsPrefs.isInitialized = true;
+      document.dispatchEvent(new Event(CrSettingsPrefs.INITIALIZED));
     },
 
     /**

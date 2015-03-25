@@ -3,46 +3,21 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Typedefs for CrSettingsPrefsElement.
+ * @fileoverview Types for CrSettingsPrefsElement.
  */
 
-var CrSettingsPrefs = {};
+if (CrSettingsPrefs === undefined) {
+  var CrSettingsPrefs = {};
 
-/**
- * @typedef {{
- *   a11y: CrSettingsPrefs.A11y,
- *   touchpad: CrSettingsPrefs.Touchpad,
- *   downloads: CrSettingsPrefs.Downloads,
- *   accessibility: boolean
- * }}
- */
-CrSettingsPrefs.Settings;
+  /**
+   * The type of the event fired when prefs have been fetched and initialized.
+   * @const {string}
+   */
+  CrSettingsPrefs.INITIALIZED = 'cr-settings-prefs-initialized';
 
-/**
- * @typedef {{
- *   enableMenu: boolean,
- *   largeCursorEnabled: boolean,
- *   highContrastEnabled: boolean,
- *   stickyKeysEnabled: boolean,
- *   screenMagnifier: boolean,
- *   autoclick: boolean,
- *   autoclickDelayMs: number,
- *   virtualKeyboard: boolean
- * }}
- */
-CrSettingsPrefs.A11y;
-
-/**
- * @typedef {{
- *   downloadLocation: string,
- *   promptForDownload: boolean
- * }}
- */
-CrSettingsPrefs.Downloads;
-
-/**
- * @typedef {{
- *   enableTapDragging: boolean
- * }}
- */
-CrSettingsPrefs.Touchpad;
+  /**
+   * Global boolean set to true when all settings have been initialized.
+   * @type {boolean}
+   */
+  CrSettingsPrefs.isInitialized = false;
+}

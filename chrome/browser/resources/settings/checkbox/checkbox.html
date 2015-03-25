@@ -1,11 +1,14 @@
 <link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_events/cr_events.html">
+<link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
 
 <polymer-element name="cr-settings-checkbox">
   <template>
     <link rel="stylesheet" href="checkbox.css">
     <cr-events id="events"></cr-events>
+    <cr-settings-pref-tracker pref="{{pref}}"></cr-settings-pref-tracker>
+
     <core-label horizontal layout>
       <cr-checkbox id="checkbox" checked="{{pref.value}}"
           disabled="{{pref.disabled}}" for></cr-checkbox>

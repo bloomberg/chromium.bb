@@ -17,7 +17,9 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_A11Y_PAGE_HTML"
                  file="a11y_page/a11y_page.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_A11Y_PAGE_CSS"
                  file="a11y_page/a11y_page.css"
                  type="chrome_html" />
@@ -98,6 +100,15 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PREFS_HTML"
                  file="prefs/prefs.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PREFS_TYPES_JS"
+                 file="prefs/prefs_types.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PREF_TRACKER_HTML"
+                 file="pref_tracker/pref_tracker.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PREF_TRACKER_JS"
+                 file="pref_tracker/pref_tracker.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SETTINGS_HTML"
                  file="settings.html"

@@ -13,6 +13,14 @@
     <paper-shadow layout vertical cross-fade>
       <cr-settings-page-header page="{{}}"></cr-settings-page-header>
 
+      <div class="more-a11y-link">
+        <a href="https://chrome.google.com/webstore/category/collection/accessibility"
+            target="_blank">
+          Add additional accessibility features
+        </a>
+      </div>
+
+<if expr="chromeos">
       <cr-settings-checkbox pref="{{prefs.settings.a11y.enable_menu}}"
           label="Show accessibility options in the system menu">
       </cr-settings-checkbox>
@@ -53,6 +61,8 @@
 
       <cr-settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
           label="Enable on-screen keyboard"></cr-settings-checkbox>
+</if>
+
     </paper-shadow>
   </template>
   <script src="a11y_page.js"></script>
