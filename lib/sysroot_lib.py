@@ -6,10 +6,13 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 
 from chromite.cbuildbot import constants
 from chromite.lib import osutils
+from chromite.lib import portage_util
+from chromite.lib import toolchain
 
 
 _PORTAGE_WRAPPER_TEMPLATE = """#!/bin/sh
@@ -23,7 +26,7 @@ else
 fi
 
 export CHROMEOS_ROOT="{source_root}"
-export CHOST="{toolchain}"
+export CHOST="{chost}"
 export PORTAGE_CONFIGROOT="{sysroot}"
 export SYSROOT="{sysroot}"
 if [ -z "$PORTAGE_USERNAME" ]; then
@@ -65,7 +68,7 @@ def CreateWrapper(command_name, template, **kwargs):
   os.chmod(wrapper_path, 0o755)
 
 
-def CreateAllWrappers(sysroot, toolchain, friendly_name=None):
+def CreateAllWrappers(sysroot, chost, friendly_name=None):
   """Creates all the wrappers for a given sysroot.
 
   Creates all portage tools wrappers, plus wrappers for gdb, cros_workon and
@@ -73,7 +76,7 @@ def CreateAllWrappers(sysroot, toolchain, friendly_name=None):
 
   Args:
     sysroot: path to the sysroot.
-    toolchain: toolchain to use.
+    chost: toolchain to use.
     friendly_name: suffix to add to the commands. Defaults to the last component
       of |sysroot|.
   """
@@ -81,11 +84,11 @@ def CreateAllWrappers(sysroot, toolchain, friendly_name=None):
   for cmd in ('ebuild', 'eclean', 'emaint', 'equery', 'portageq', 'qcheck',
               'qdepends', 'qfile', 'qlist', 'qmerge', 'qsize'):
     CreateWrapper('%s-%s' % (cmd, board), _PORTAGE_WRAPPER_TEMPLATE,
-                  sysroot=sysroot, toolchain=toolchain, command=cmd,
+                  sysroot=sysroot, chost=chost, command=cmd,
                   source_root=constants.SOURCE_ROOT)
 
   CreateWrapper('emerge-%s' % board, _PORTAGE_WRAPPER_TEMPLATE,
-                sysroot=sysroot, toolchain=toolchain,
+                sysroot=sysroot, chost=chost,
                 command='emerge --root-deps',
                 source_root=constants.SOURCE_ROOT)
 
@@ -109,3 +112,69 @@ def CreateAllWrappers(sysroot, toolchain, friendly_name=None):
     os.unlink(debug_symlink)
 
   os.symlink(sysroot_debug, debug_symlink)
+
+
+def _DictToKeyValue(dictionary):
+  """Formats dictionary in to a key=value string.
+
+  Args:
+    dictionary: a python dictionary.
+  """
+  output = []
+  for key in sorted(dictionary.keys()):
+    output.append('%s="%s"' % (key, dictionary[key]))
+
+  return '\n'.join(output)
+
+
+def GenerateBoardConfig(sysroot, board):
+  """Generate the sysroot configuration for a given board.
+
+  Args:
+    sysroot: path to the sysroot.
+    board: board name to use to generate the configuration.
+  """
+  config = {}
+  toolchains = toolchain.GetToolchainsForBoard(board)
+  config['CHOST'] = toolchain.FilterToolchains(toolchains, 'default',
+                                               True).keys()[0]
+  config['ARCH'] = toolchain.GetArchForTarget(config['CHOST'])
+
+  # Compute the overlay list.
+  overlay_list = portage_util.FindOverlays(constants.BOTH_OVERLAYS, board)
+  prefix = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party')
+  config['BOARD_OVERLAY'] = '\n'.join([o for o in overlay_list
+                                       if not o.startswith(prefix)])
+
+  config['MAKEOPTS'] = '-j%s' % str(multiprocessing.cpu_count())
+  config['BOARD_USE'] = board
+  config['ROOT'] = sysroot + '/'
+  config['PKG_CONFIG'] = 'pkg-config-%s' % board
+
+  header = "# Created by cros_sysroot_utils from --board=%s." % board
+  return '\n'.join((header, _DictToKeyValue(config)))
+
+
+def GenerateBrickConfig(sysroot, brick):
+  """Generate the sysroot configuration for a given brick.
+
+  Args:
+    sysroot: path to the sysroot.
+    brick: brick to generate the configuration for.
+  """
+  config = {}
+  # TODO(bsimonnet): get toolchain from config.json.
+  toolchains = toolchain.GetToolchainsForBrick(brick.brick_locator)
+  config['CHOST'] = toolchain.FilterToolchains(toolchains, 'default',
+                                               True).keys()[0]
+  config['ARCH'] = toolchain.GetArchForTarget(config['CHOST'])
+
+  config['BOARD_OVERLAY'] = '\n'.join([b.OverlayDir()
+                                       for b in brick.BrickStack()])
+  config['MAKEOPTS'] = '-j%s' % str(multiprocessing.cpu_count())
+  config['ROOT'] = sysroot + '/'
+  config['PKG_CONFIG'] = 'pkg-config-%s' % brick.FriendlyName()
+
+  header = ("# Created by cros_sysroot_utils from --brick=%s."
+            % brick.brick_locator)
+  return '\n'.join((header, _DictToKeyValue(config)))

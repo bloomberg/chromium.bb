@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import copy
+import cStringIO
 import json
 import os
 
@@ -142,3 +143,14 @@ def GetSdkURL(for_gsutil=False, suburl=''):
   """
   return gs.GetGsURL(constants.SDK_GS_BUCKET, for_gsutil=for_gsutil,
                      suburl=suburl)
+
+
+def GetArchForTarget(target):
+  """Returns the arch used by the given toolchain.
+
+  Args:
+    target: a toolchain.
+  """
+  info = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg', target],
+                                   capture_output=True, quiet=True).output
+  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(info)).get('arch')
