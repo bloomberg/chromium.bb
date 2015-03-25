@@ -448,6 +448,7 @@
       <include name="IDR_MD_SETTINGS_UI_HTML" file="resources\md_settings\md_settings.html" type="BINDATA" />
       <include name="IDR_MD_SETTINGS_UI_CSS" file="resources\md_settings\md_settings.css" type="BINDATA" />
       <if expr="enable_media_router">
+        <include name="IDR_MEDIA_ROUTER_DATA_JS" file="resources\media_router\media_router_data.js" type="BINDATA" />
         <include name="IDR_MEDIA_ROUTER_CHROMECAST_ICON" file="resources\media_router\elements\icon\chromecast-icon.png" type="BINDATA" />
         <include name="IDR_MEDIA_ROUTER_CHROMECAST_2X_ICON" file="resources\media_router\elements\icon\chromecast-icon2x.png" type="BINDATA" />
         <include name="IDR_CLOSE_GRAY_ICON" file="resources\media_router\elements\icon\close-gray.png" type="BINDATA" />
