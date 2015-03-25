@@ -61,6 +61,9 @@ class CONTENT_EXPORT PresentationServiceImpl
           presentation::PresentationErrorPtr)>;
   using DefaultSessionMojoCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr)>;
+  using SessionStateCallback =
+      mojo::Callback<void(presentation::PresentationSessionInfoPtr,
+          presentation::PresentationSessionState)>;
 
   // A helper data class used by PresentationServiceImpl to do bookkeeping
   // of currently registered screen availability listeners.
@@ -166,6 +169,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   void CloseSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id) override;
+  void ListenForSessionStateChange(
+      const SessionStateCallback& callback) override;
 
   // mojo::InterfaceImpl override.
   // Note that this is called when the RenderFrameHost is deleted.

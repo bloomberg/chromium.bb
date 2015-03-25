@@ -280,6 +280,11 @@ void PresentationServiceImpl::CloseSession(
   NOTIMPLEMENTED();
 }
 
+void PresentationServiceImpl::ListenForSessionStateChange(
+    const SessionStateCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void PresentationServiceImpl::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,

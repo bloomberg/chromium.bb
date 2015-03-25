@@ -7,18 +7,18 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
+#include "content/common/presentation/presentation_service.mojom.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationSessionClient.h"
 
 namespace content {
-
-class PresentationSessionDispatcher;
 
 // PresentationSessionClient is passed to the Blink layer if presentation
 // session has been created successfully. Owned by the callback.
 class CONTENT_EXPORT PresentationSessionClient
     : public NON_EXPORTED_BASE(blink::WebPresentationSessionClient) {
  public:
-  explicit PresentationSessionClient(PresentationSessionDispatcher* dispatcher);
+  explicit PresentationSessionClient(
+        presentation::PresentationSessionInfoPtr session_info);
   ~PresentationSessionClient() override;
 
   // WebPresentationSessionClient implementation.

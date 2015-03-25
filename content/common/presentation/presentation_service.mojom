@@ -9,6 +9,11 @@ struct PresentationSessionInfo {
     string id;
 };
 
+enum PresentationSessionState {
+    CONNECTED,
+    DISCONNECTED
+};
+
 enum PresentationErrorType {
     NO_AVAILABLE_SCREENS,
     SESSION_REQUEST_CANCELLED,
@@ -72,4 +77,11 @@ interface PresentationService {
 
     // Called when closeSession() is called by the frame.
     CloseSession(string presentation_url, string presentation_id);
+
+    // Called when the frame is ready to process the next state change. Returns
+    // the last session state if it’s changed since the last time the callback
+    // was called. Might cause the event fired with the initial state change.
+    ListenForSessionStateChange()
+        => (PresentationSessionInfo sessionInfo,
+            PresentationSessionState newState);
 };

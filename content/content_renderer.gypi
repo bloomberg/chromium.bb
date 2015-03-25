@@ -320,8 +320,6 @@
       'renderer/presentation/presentation_dispatcher.h',
       'renderer/presentation/presentation_session_client.cc',
       'renderer/presentation/presentation_session_client.h',
-      'renderer/presentation/presentation_session_dispatcher.cc',
-      'renderer/presentation/presentation_session_dispatcher.h',
       'renderer/push_messaging/push_messaging_dispatcher.cc',
       'renderer/push_messaging/push_messaging_dispatcher.h',
       'renderer/render_font_warmup_win.cc',

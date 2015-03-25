@@ -6,11 +6,9 @@
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/presentation/presentation_session_dispatcher.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
 
 namespace blink {
@@ -57,6 +55,9 @@ class CONTENT_EXPORT PresentationDispatcher
       presentation::PresentationErrorPtr error);
   void OnDefaultSessionStarted(
       presentation::PresentationSessionInfoPtr session_info);
+  void OnSessionStateChange(
+      presentation::PresentationSessionInfoPtr session_info,
+      presentation::PresentationSessionState session_state);
 
   void ConnectToPresentationServiceIfNeeded();
 
@@ -67,14 +68,6 @@ class CONTENT_EXPORT PresentationDispatcher
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
   presentation::PresentationServicePtr presentation_service_;
-
-  // Wrappers around the PresentationSessionPtr corresponding to each Javascript
-  // PresentationSession object passed back to the frame.
-  // TODO(avayvod): Switch to base::IDMap when the lookup by presentation id is
-  // needed.
-  using PresentationSessionDispatchers =
-      ScopedVector<PresentationSessionDispatcher>;
-  PresentationSessionDispatchers presentation_session_dispatchers_;
 };
 
 }  // namespace content

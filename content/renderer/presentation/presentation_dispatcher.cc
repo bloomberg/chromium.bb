@@ -33,6 +33,19 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
   }
 }
 
+blink::WebPresentationSessionState GetWebPresentationSessionStateFromMojo(
+        presentation::PresentationSessionState mojoSessionState) {
+  switch (mojoSessionState) {
+    case presentation::PRESENTATION_SESSION_STATE_CONNECTED:
+      return blink::WebPresentationSessionState::Connected;
+    case presentation::PRESENTATION_SESSION_STATE_DISCONNECTED:
+      return blink::WebPresentationSessionState::Disconnected;
+  }
+
+  NOTREACHED();
+  return blink::WebPresentationSessionState::Disconnected;
+}
+
 GURL GetPresentationURLFromFrame(content::RenderFrame* frame) {
   DCHECK(frame);
 
@@ -161,11 +174,8 @@ void PresentationDispatcher::OnDefaultSessionStarted(
       base::Unretained(this)));
 
   DCHECK(!session_info.is_null());
-  PresentationSessionDispatcher* session_dispatcher =
-      new PresentationSessionDispatcher(session_info.Pass());
-  presentation_session_dispatchers_.push_back(session_dispatcher);
   controller_->didStartDefaultSession(
-      new PresentationSessionClient(session_dispatcher));
+      new PresentationSessionClient(session_info.Pass()));
 }
 
 void PresentationDispatcher::OnSessionCreated(
@@ -182,10 +192,23 @@ void PresentationDispatcher::OnSessionCreated(
   }
 
   DCHECK(!session_info.is_null());
-  PresentationSessionDispatcher* session_dispatcher =
-      new PresentationSessionDispatcher(session_info.Pass());
-  presentation_session_dispatchers_.push_back(session_dispatcher);
-  callback->onSuccess(new PresentationSessionClient(session_dispatcher));
+  callback->onSuccess(new PresentationSessionClient(session_info.Pass()));
+}
+
+void PresentationDispatcher::OnSessionStateChange(
+    presentation::PresentationSessionInfoPtr session_info,
+    presentation::PresentationSessionState session_state) {
+  if (!controller_)
+    return;
+
+  presentation_service_->ListenForSessionStateChange(base::Bind(
+      &PresentationDispatcher::OnSessionStateChange,
+      base::Unretained(this)));
+
+  DCHECK(!session_info.is_null());
+  controller_->didChangeSessionState(
+      new PresentationSessionClient(session_info.Pass()),
+      GetWebPresentationSessionStateFromMojo(session_state));
 }
 
 void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
@@ -196,6 +219,9 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
       &presentation_service_);
   presentation_service_->ListenForDefaultSessionStart(base::Bind(
       &PresentationDispatcher::OnDefaultSessionStarted,
+      base::Unretained(this)));
+  presentation_service_->ListenForSessionStateChange(base::Bind(
+      &PresentationDispatcher::OnSessionStateChange,
       base::Unretained(this)));
 }
 

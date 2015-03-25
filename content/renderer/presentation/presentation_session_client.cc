@@ -5,15 +5,14 @@
 #include "content/renderer/presentation/presentation_session_client.h"
 
 #include "base/logging.h"
-#include "content/renderer/presentation/presentation_session_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
 
 PresentationSessionClient::PresentationSessionClient(
-    PresentationSessionDispatcher* dispatcher)
-    : url_(blink::WebString::fromUTF8(dispatcher->GetUrl())),
-      id_(blink::WebString::fromUTF8(dispatcher->GetId())) {
+    presentation::PresentationSessionInfoPtr session_info)
+    : url_(blink::WebString::fromUTF8(session_info->url)),
+      id_(blink::WebString::fromUTF8(session_info->id)) {
 }
 
 PresentationSessionClient::~PresentationSessionClient() {
