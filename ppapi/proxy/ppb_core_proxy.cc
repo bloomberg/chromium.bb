@@ -63,6 +63,13 @@ void CallOnMainThread(int delay_in_ms,
   if (!callback.func)
     return;
   ProxyAutoLock lock;
+
+  // If the plugin attempts to call CallOnMainThread from a background thread
+  // at shutdown, it's possible that the PpapiGlobals object or the main loop
+  // has been destroyed.
+  if (!PpapiGlobals::Get() || !PpapiGlobals::Get()->GetMainThreadMessageLoop())
+    return;
+
   PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),
