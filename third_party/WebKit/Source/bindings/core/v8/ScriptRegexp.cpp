@@ -49,10 +49,8 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
     if (multilineMode == MultilineEnabled)
         flags |= v8::RegExp::kMultiline;
 
-    v8::Local<v8::RegExp> regex = v8::RegExp::New(v8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags));
-
-    // If the regex failed to compile we'll get an empty handle.
-    if (!regex.IsEmpty())
+    v8::Local<v8::RegExp> regex;
+    if (v8::RegExp::New(isolate->GetCurrentContext(), v8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags)).ToLocal(&regex))
         m_regex.set(isolate, regex);
 }
 

@@ -1510,7 +1510,8 @@ bool SerializedScriptValueReader::readRegExp(v8::Local<v8::Value>* value)
     uint32_t flags;
     if (!doReadUint32(&flags))
         return false;
-    *value = v8::RegExp::New(pattern.As<v8::String>(), static_cast<v8::RegExp::Flags>(flags));
+    if (!v8::RegExp::New(scriptState()->context(), pattern.As<v8::String>(), static_cast<v8::RegExp::Flags>(flags)).ToLocal(value))
+        return false;
     return true;
 }
 
