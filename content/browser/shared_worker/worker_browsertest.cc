@@ -111,17 +111,26 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, MultipleWorkers) {
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, SingleSharedWorker) {
+  if (!SupportsSharedWorker())
+    return;
+
   RunTest("single_worker.html", "shared=true");
 }
 
 // http://crbug.com/96435
 IN_PROC_BROWSER_TEST_F(WorkerTest, MultipleSharedWorkers) {
+  if (!SupportsSharedWorker())
+    return;
+
   RunTest("multi_worker.html", "shared=true");
 }
 
 // Incognito windows should not share workers with non-incognito windows
 // http://crbug.com/30021
 IN_PROC_BROWSER_TEST_F(WorkerTest, IncognitoSharedWorkers) {
+  if (!SupportsSharedWorker())
+    return;
+
   // Load a non-incognito tab and have it create a shared worker
   RunTest("incognito_worker.html", std::string());
 
@@ -146,6 +155,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
 // WebContentsless case from chrome/ to content/ and adjust the test
 // accordingly.
 IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
+  if (!SupportsSharedWorker())
+    return;
+
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/workers/shared_worker_auth.html");
   NavigateAndWaitForAuth(url);
@@ -188,6 +200,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerTlsClientAuth) {
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
+  if (!SupportsSharedWorker())
+    return;
+
   // Launch WebSocket server.
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
                                    net::SpawnedTestServer::kLocalhost,
@@ -210,11 +225,17 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, PassMessagePortToSharedWorker) {
+  if (!SupportsSharedWorker())
+    return;
+
   RunTest("pass_messageport_to_sharedworker.html", "");
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest,
                        PassMessagePortToSharedWorkerDontWaitForConnect) {
+  if (!SupportsSharedWorker())
+    return;
+
   RunTest("pass_messageport_to_sharedworker_dont_wait_for_connect.html", "");
 }
 

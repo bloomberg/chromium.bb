@@ -2,13 +2,6 @@
 # Timeouts
 Http/MediaTest.*
 File/MediaTest.*
-WorkerTest.IncognitoSharedWorkers
-WorkerTest.MultipleSharedWorkers
-WorkerTest.PassMessagePortToSharedWorker
-WorkerTest.PassMessagePortToSharedWorkerDontWaitForConnect
-WorkerTest.SharedWorkerHttpAuth
-WorkerTest.SingleSharedWorker
-WorkerTest.WebSocketSharedWorker
 MediaTest.*
 DatabaseTest.*
 
