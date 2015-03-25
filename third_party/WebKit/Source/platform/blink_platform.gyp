@@ -317,10 +317,6 @@
           ['exclude', 'scroll/ScrollAnimatorNone\\.cpp$'],
           ['exclude', 'scroll/ScrollAnimatorNone\\.h$'],
 
-          # The Mac currently uses FontCustomPlatformDataMac.cpp,
-          # included by regex above, instead.
-          ['exclude', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-
           ['exclude', 'fonts/skia/FontCacheSkia\\.cpp$'],
 
           ['include', 'geometry/mac/FloatPointMac\\.mm$'],
@@ -358,8 +354,6 @@
           ['include', 'clipboard/ClipboardUtilitiesWin\\.(cpp|h)$'],
 
           ['include', 'fonts/opentype/'],
-          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontPlatformDataWin\\.cpp$'],

@@ -28,14 +28,79 @@
 #import <AvailabilityMacros.h>
 #import <wtf/text/WTFString.h>
 
-#include "platform/LayoutTestSupport.h"
-#include "platform/fonts/Font.h"
+#import "platform/LayoutTestSupport.h"
+#import "platform/fonts/Font.h"
 #import "platform/fonts/shaping/HarfBuzzFace.h"
-#include "third_party/skia/include/ports/SkTypeface_mac.h"
-
-
+#import "public/platform/Platform.h"
+#import "public/platform/mac/WebSandboxSupport.h"
+#import "third_party/skia/include/ports/SkTypeface_mac.h"
 
 namespace blink {
+
+static bool canLoadInProcess(NSFont* nsFont) {
+    RetainPtr<CGFontRef> cgFont(AdoptCF, CTFontCopyGraphicsFont(toCTFontRef(nsFont), 0));
+    // Toll-free bridged types CFStringRef and NSString*.
+    RetainPtr<NSString> fontName(AdoptNS, const_cast<NSString*>(reinterpret_cast<const NSString*>(CGFontCopyPostScriptName(cgFont.get()))));
+    return ![fontName.get() isEqualToString:@"LastResort"];
+}
+
+static CTFontDescriptorRef cascadeToLastResortFontDescriptor()
+{
+    static CTFontDescriptorRef descriptor;
+    if (descriptor)
+        return descriptor;
+
+    RetainPtr<CTFontDescriptorRef> lastResort(AdoptCF,
+                                              CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0) );
+    const void* descriptors[] = { lastResort.get() };
+    RetainPtr<CFArrayRef> valuesArray(AdoptCF, CFArrayCreate(kCFAllocatorDefault,
+                                                             descriptors,
+                                                             WTF_ARRAY_LENGTH(descriptors),
+                                                             &kCFTypeArrayCallBacks));
+
+    const void* keys[] = { kCTFontCascadeListAttribute };
+    const void* values[] = { valuesArray.get() };
+    RetainPtr<CFDictionaryRef> attributes(AdoptCF,
+                                          CFDictionaryCreate(kCFAllocatorDefault,
+                                                             keys,
+                                                             values,
+                                                             WTF_ARRAY_LENGTH(keys),
+                                                             &kCFTypeDictionaryKeyCallBacks,
+                                                             &kCFTypeDictionaryValueCallBacks));
+
+    descriptor = CTFontDescriptorCreateWithAttributes(attributes.get());
+
+    return descriptor;
+}
+
+static PassRefPtr<SkTypeface> loadFromBrowserProcess(NSFont* nsFont, float textSize)
+{
+    // Send cross-process request to load font.
+    WebSandboxSupport* sandboxSupport = Platform::current()->sandboxSupport();
+    if (!sandboxSupport) {
+        // This function should only be called in response to an error loading a
+        // font due to being blocked by the sandbox.
+        // This by definition shouldn't happen if there is no sandbox support.
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
+    CGFontRef loadedCgFont;
+    uint32_t fontID;
+    if (!sandboxSupport->loadFont(nsFont, &loadedCgFont, &fontID)) {
+        // TODO crbug.com/461279: Make this appear in the inspector console?
+        WTF_LOG_ERROR("Loading user font \"%s\" from non system location failed. Corrupt or missing font file?", [[nsFont familyName] UTF8String]);
+        return nullptr;
+    }
+    RetainPtr<CGFontRef> cgFont(AdoptCF, loadedCgFont);
+    RetainPtr<CTFontRef> ctFont(AdoptCF, CTFontCreateWithGraphicsFont(cgFont.get(), textSize, 0, cascadeToLastResortFontDescriptor()));
+    PassRefPtr<SkTypeface> returnFont = adoptRef(SkCreateTypefaceFromCTFont(ctFont.get()));
+
+    if (!returnFont.get())
+        // TODO crbug.com/461279: Make this appear in the inspector console?
+        WTF_LOG_ERROR("Instantiating SkTypeface from user font failed for font family \"%s\".", [[nsFont familyName] UTF8String]);
+    return returnFont;
+}
 
 void FontPlatformData::setupPaint(SkPaint* paint, float, const Font* font) const
 {
@@ -86,186 +151,23 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBol
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
-    , m_isColorBitmapFont(false)
-    , m_isCompositeFontReference(false)
-    , m_font(nsFont)
     , m_isHashTableDeletedValue(false)
 {
     ASSERT_ARG(nsFont, nsFont);
-
-    CGFontRef cgFont = 0;
-    loadFont(nsFont, size, m_font, cgFont);
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    // FIXME: Chromium: The following code isn't correct for the Chromium port since the sandbox might
-    // have blocked font loading, in which case we'll only have the real loaded font file after the call to loadFont().
-    {
-        CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(toCTFontRef(m_font));
-        m_isColorBitmapFont = traits & kCTFontColorGlyphsTrait;
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-        m_isCompositeFontReference = traits & kCTFontCompositeTrait;
-#endif
+    if (canLoadInProcess(nsFont)) {
+        m_typeface = adoptRef(SkCreateTypefaceFromCTFont(toCTFontRef(nsFont)));
+    } else {
+        // In process loading fails for cases where third party font manager software
+        // registers fonts in non system locations such as /Library/Fonts
+        // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
+        m_typeface = loadFromBrowserProcess(nsFont, size);
     }
-#endif
-
-    if (m_font)
-        CFRetain(m_font);
-
-    m_cgFont.adoptCF(cgFont);
 }
 
-void FontPlatformData::platformDataInit(const FontPlatformData& f)
+bool FontPlatformData::defaultUseSubpixelPositioning()
 {
-    m_font = f.m_font ? [f.m_font retain] : f.m_font;
-
-    m_cgFont = f.m_cgFont;
-    m_CTFont = f.m_CTFont;
-
-    m_inMemoryFont = f.m_inMemoryFont;
-    m_harfBuzzFace = f.m_harfBuzzFace;
-    m_typeface = f.m_typeface;
+    return FontDescription::subpixelPositioning();
 }
 
-const FontPlatformData& FontPlatformData::platformDataAssign(const FontPlatformData& f)
-{
-    m_cgFont = f.m_cgFont;
-    if (m_font == f.m_font)
-        return *this;
-    if (f.m_font)
-        CFRetain(f.m_font);
-    if (m_font)
-        CFRelease(m_font);
-    m_font = f.m_font;
-    m_CTFont = f.m_CTFont;
-
-    m_inMemoryFont = f.m_inMemoryFont;
-    m_harfBuzzFace = f.m_harfBuzzFace;
-    m_typeface = f.m_typeface;
-
-    return *this;
-}
-
-
-void FontPlatformData::setFont(NSFont *font)
-{
-    ASSERT_ARG(font, font);
-
-    if (m_font == font)
-        return;
-
-    CFRetain(font);
-    if (m_font)
-        CFRelease(m_font);
-    m_font = font;
-    m_textSize = [font pointSize];
-
-    CGFontRef cgFont = 0;
-    NSFont* loadedFont = 0;
-    loadFont(m_font, m_textSize, loadedFont, cgFont);
-
-    // If loadFont replaced m_font with a fallback font, then release the
-    // previous font to counter the retain above. Then retain the new font.
-    if (loadedFont != m_font) {
-        CFRelease(m_font);
-        CFRetain(loadedFont);
-        m_font = loadedFont;
-    }
-
-    m_cgFont.adoptCF(cgFont);
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    {
-        CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(toCTFontRef(m_font));
-        m_isColorBitmapFont = traits & kCTFontColorGlyphsTrait;
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-        m_isCompositeFontReference = traits & kCTFontCompositeTrait;
-#endif
-    }
-#endif
-    m_CTFont = nullptr;
-}
-
-bool FontPlatformData::roundsGlyphAdvances() const
-{
-    return [m_font renderingMode] == NSFontAntialiasedIntegerAdvancementsRenderingMode;
-}
-
-bool FontPlatformData::allowsLigatures() const
-{
-    return ![[m_font coveredCharacterSet] characterIsMember:'a'];
-}
-
-static CFDictionaryRef createFeatureSettingDictionary(int featureTypeIdentifier, int featureSelectorIdentifier)
-{
-    RetainPtr<CFNumberRef> featureTypeIdentifierNumber(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureTypeIdentifier));
-    RetainPtr<CFNumberRef> featureSelectorIdentifierNumber(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureSelectorIdentifier));
-
-    const void* settingKeys[] = { kCTFontFeatureTypeIdentifierKey, kCTFontFeatureSelectorIdentifierKey };
-    const void* settingValues[] = { featureTypeIdentifierNumber.get(), featureSelectorIdentifierNumber.get() };
-
-    return CFDictionaryCreate(kCFAllocatorDefault, settingKeys, settingValues, WTF_ARRAY_LENGTH(settingKeys), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-}
-
-static CTFontDescriptorRef cascadeToLastResortFontDescriptor()
-{
-    static CTFontDescriptorRef descriptor;
-    if (descriptor)
-        return descriptor;
-
-    const void* keys[] = { kCTFontCascadeListAttribute };
-    const void* descriptors[] = { CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0) };
-    const void* values[] = { CFArrayCreate(kCFAllocatorDefault, descriptors, WTF_ARRAY_LENGTH(descriptors), &kCFTypeArrayCallBacks) };
-    RetainPtr<CFDictionaryRef> attributes(AdoptCF, CFDictionaryCreate(kCFAllocatorDefault, keys, values, WTF_ARRAY_LENGTH(keys), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
-
-    descriptor = CTFontDescriptorCreateWithAttributes(attributes.get());
-
-    return descriptor;
-}
-
-static CTFontDescriptorRef cascadeToLastResortAndDisableSwashesFontDescriptor()
-{
-    static CTFontDescriptorRef descriptor;
-    if (descriptor)
-        return descriptor;
-
-    RetainPtr<CFDictionaryRef> lineInitialSwashesOffSetting(AdoptCF, createFeatureSettingDictionary(kSmartSwashType, kLineInitialSwashesOffSelector));
-    RetainPtr<CFDictionaryRef> lineFinalSwashesOffSetting(AdoptCF, createFeatureSettingDictionary(kSmartSwashType, kLineFinalSwashesOffSelector));
-
-    const void* settingDictionaries[] = { lineInitialSwashesOffSetting.get(), lineFinalSwashesOffSetting.get() };
-    RetainPtr<CFArrayRef> featureSettings(AdoptCF, CFArrayCreate(kCFAllocatorDefault, settingDictionaries, WTF_ARRAY_LENGTH(settingDictionaries), &kCFTypeArrayCallBacks));
-
-    const void* keys[] = { kCTFontFeatureSettingsAttribute };
-    const void* values[] = { featureSettings.get() };
-    RetainPtr<CFDictionaryRef> attributes(AdoptCF, CFDictionaryCreate(kCFAllocatorDefault, keys, values, WTF_ARRAY_LENGTH(keys), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
-
-    descriptor = CTFontDescriptorCreateCopyWithAttributes(cascadeToLastResortFontDescriptor(), attributes.get());
-
-    return descriptor;
-}
-
-CTFontRef FontPlatformData::ctFont() const
-{
-    if (m_CTFont)
-        return m_CTFont.get();
-
-    if (m_inMemoryFont) {
-        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_inMemoryFont->cgFont(), m_textSize, 0, cascadeToLastResortFontDescriptor()));
-        return m_CTFont.get();
-    }
-
-    m_CTFont = toCTFontRef(m_font);
-    if (m_CTFont) {
-        CTFontDescriptorRef fontDescriptor;
-        RetainPtr<CFStringRef> postScriptName(AdoptCF, CTFontCopyPostScriptName(m_CTFont.get()));
-        // Hoefler Text Italic has line-initial and -final swashes enabled by default, so disable them.
-        if (CFEqual(postScriptName.get(), CFSTR("HoeflerText-Italic")) || CFEqual(postScriptName.get(), CFSTR("HoeflerText-BlackItalic")))
-            fontDescriptor = cascadeToLastResortAndDisableSwashesFontDescriptor();
-        else
-            fontDescriptor = cascadeToLastResortFontDescriptor();
-        m_CTFont.adoptCF(CTFontCreateCopyWithAttributes(m_CTFont.get(), m_textSize, 0, fontDescriptor));
-    } else
-        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_cgFont.get(), m_textSize, 0, cascadeToLastResortFontDescriptor()));
-
-    return m_CTFont.get();
-}
 
 } // namespace blink

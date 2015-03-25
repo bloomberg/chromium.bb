@@ -334,6 +334,17 @@ crbug.com/463023 inspector/sources/debugger/debugger-reload-breakpoints-with-sou
 crbug.com/463758 inspector/sources/debugger/debugger-step-into-async1.html [ Slow ]
 crbug.com/463758 inspector/sources/debugger/debugger-eval-on-call-frame-inside-iframe.html [ Slow ]
 
+crbug.com/414234 [ Mac ] fast/css/font-face-opentype.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] fast/text/fallback-for-custom-font.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/antialiasedtext/fast/text/atsui-multiple-renderers.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/antialiasedtext/fast/text/atsui-small-caps-punctuation-size.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/antialiasedtext/fast/text/fallback-for-custom-font.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/antialiasedtext/fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/slimmingpaint/fast/css/font-face-opentype.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/slimmingpaint/fast/text/fallback-for-custom-font.html [ NeedsRebaseline ]
+crbug.com/414234 [ Mac ] virtual/slimmingpaint/fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+
 crbug.com/451577 [ Win ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Slow ]
 crbug.com/451577 [ Win ] inspector/profiler/webgl/webgl-get-resource-state.html [ Slow ]
 

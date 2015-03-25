@@ -78,7 +78,8 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
             continue;
 
         LayoutStyle* style = renderer->style();
-        NSFont* font = style->font().primaryFont()->getNSFont();
+        const FontPlatformData& fontPlatformData = style->font().primaryFont()->platformData();
+        NSFont* font = toNSFont(fontPlatformData.ctFont());
         // If the platform font can't be loaded, it's likely that the site is
         // using a web font. For now, just use the default font instead.
         // TODO(rsesek): Change the font activation flags to allow other processes
