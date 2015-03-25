@@ -53,7 +53,7 @@ struct WithScriptState {
 } // namespace
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
-    : m_resolver(scriptState, v8::Promise::Resolver::New(scriptState->isolate())) { }
+    : m_resolver(scriptState, v8::Promise::Resolver::New(scriptState->context())) { }
 
 v8::Local<v8::Promise> ScriptPromise::InternalResolver::v8Promise() const
 {
@@ -73,7 +73,7 @@ void ScriptPromise::InternalResolver::resolve(v8::Local<v8::Value> value)
 {
     if (m_resolver.isEmpty())
         return;
-    m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
+    m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(m_resolver.context(), value);
     clear();
 }
 
@@ -81,7 +81,7 @@ void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
 {
     if (m_resolver.isEmpty())
         return;
-    m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
+    m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(m_resolver.context(), value);
     clear();
 }
 
@@ -112,15 +112,13 @@ ScriptPromise ScriptPromise::then(v8::Handle<v8::Function> onFulfilled, v8::Hand
     // but that is not a problem in this case.
     v8::Local<v8::Promise> resultPromise = promise.As<v8::Promise>();
     if (!onFulfilled.IsEmpty()) {
-        resultPromise = resultPromise->Then(onFulfilled);
-        if (resultPromise.IsEmpty()) {
-            // v8::Promise::Then may return an empty value, for example when
-            // the stack is exhausted.
+        if (!resultPromise->Then(m_scriptState->context(), onFulfilled).ToLocal(&resultPromise))
             return ScriptPromise();
-        }
     }
-    if (!onRejected.IsEmpty())
-        resultPromise = resultPromise->Catch(onRejected);
+    if (!onRejected.IsEmpty()) {
+        if (!resultPromise->Catch(m_scriptState->context(), onRejected).ToLocal(&resultPromise))
+            return ScriptPromise();
+    }
 
     return ScriptPromise(m_scriptState.get(), resultPromise);
 }
@@ -164,13 +162,15 @@ ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, Pa
     return reject(scriptState, toV8(exception, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-v8::Local<v8::Promise> ScriptPromise::rejectRaw(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState, v8::Handle<v8::Value> value)
 {
     if (value.IsEmpty())
         return v8::Local<v8::Promise>();
-    v8::Local<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(isolate);
+    v8::Local<v8::Promise::Resolver> resolver;
+    if (!v8::Promise::Resolver::New(scriptState->context()).ToLocal(&resolver))
+        return v8::Local<v8::Promise>();
     v8::Local<v8::Promise> promise = resolver->GetPromise();
-    resolver->Reject(value);
+    resolver->Reject(scriptState->context(), value);
     return promise;
 }
 

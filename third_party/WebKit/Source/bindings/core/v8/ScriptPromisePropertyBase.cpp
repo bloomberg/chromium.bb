@@ -37,22 +37,24 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
         return ScriptPromise();
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), world);
+    v8::Local<v8::Context> context = toV8Context(executionContext(), world);
     if (context.IsEmpty())
         return ScriptPromise();
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
 
-    v8::Handle<v8::Object> wrapper = ensureHolderWrapper(scriptState);
+    v8::Local<v8::Object> wrapper = ensureHolderWrapper(scriptState);
     ASSERT(wrapper->CreationContext() == context);
 
-    v8::Handle<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName());
+    v8::Local<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName());
     if (!cachedPromise.IsEmpty())
         return ScriptPromise(scriptState, cachedPromise);
 
     // Create and cache the Promise
-    v8::Handle<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(m_isolate);
-    v8::Handle<v8::Promise> promise = resolver->GetPromise();
+    v8::Local<v8::Promise::Resolver> resolver;
+    if (!v8::Promise::Resolver::New(context).ToLocal(&resolver))
+        return ScriptPromise();
+    v8::Local<v8::Promise> promise = resolver->GetPromise();
     V8HiddenValue::setHiddenValue(m_isolate, wrapper, promiseName(), promise);
 
     switch (m_state) {
@@ -107,15 +109,16 @@ void ScriptPromisePropertyBase::resetBase()
 
 void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver> resolver)
 {
+    v8::Local<v8::Context> context = resolver->CreationContext();
     switch (m_state) {
     case Pending:
         ASSERT_NOT_REACHED();
         break;
     case Resolved:
-        resolver->Resolve(resolvedValue(m_isolate, resolver->CreationContext()->Global()));
+        resolver->Resolve(context, resolvedValue(m_isolate, context->Global()));
         break;
     case Rejected:
-        resolver->Reject(rejectedValue(m_isolate, resolver->CreationContext()->Global()));
+        resolver->Reject(context, rejectedValue(m_isolate, context->Global()));
         break;
     }
 }

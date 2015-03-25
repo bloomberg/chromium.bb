@@ -115,7 +115,7 @@ public:
 
     static ScriptPromise rejectWithDOMException(ScriptState*, PassRefPtrWillBeRawPtr<DOMException>);
 
-    static v8::Local<v8::Promise> rejectRaw(v8::Isolate*, v8::Handle<v8::Value>);
+    static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Handle<v8::Value>);
 
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.

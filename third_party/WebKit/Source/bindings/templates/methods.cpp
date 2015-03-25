@@ -282,7 +282,7 @@ else
 exceptionState.throwTypeError({{error_message}});
 {{propagate_error_with_exception_state(method)}}
 {% elif method.idl_type == 'Promise' %}
-v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}})));
+v8SetReturnValue(info, ScriptPromise::rejectRaw(ScriptState::current(info.GetIsolate()), V8ThrowException::createTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}})));
 return;
 {% else %}
 V8ThrowException::throwTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}});
@@ -318,7 +318,7 @@ return;
 setMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length());
 {{propagate_error_with_exception_state(method)}}
 {%- elif method.idl_type == 'Promise' %}
-v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}));
+v8SetReturnValue(info, ScriptPromise::rejectRaw(ScriptState::current(info.GetIsolate()), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}));
 return;
 {%- else %}
 V8ThrowException::throwException({{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}, info.GetIsolate());

@@ -73,6 +73,14 @@ public:
         ASSERT(isEmpty() || m_scriptState);
     }
 
+    template <typename T>
+    ScriptValue(ScriptState* scriptState, v8::MaybeLocal<T> value)
+        : m_scriptState(scriptState)
+        , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value.ToLocalChecked(), scriptState->isolate()))
+    {
+        ASSERT(isEmpty() || m_scriptState);
+    }
+
     ScriptValue(const ScriptValue& value)
         : m_scriptState(value.m_scriptState)
         , m_value(value.m_value)
@@ -88,6 +96,12 @@ public:
     v8::Isolate* isolate() const
     {
         return m_scriptState ? m_scriptState->isolate() : v8::Isolate::GetCurrent();
+    }
+
+    v8::Local<v8::Context> context() const
+    {
+        ASSERT(m_scriptState.get());
+        return m_scriptState->context();
     }
 
     ScriptValue& operator=(const ScriptValue& value)
