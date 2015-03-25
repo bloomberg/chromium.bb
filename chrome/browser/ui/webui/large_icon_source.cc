@@ -51,8 +51,7 @@ LargeIconSource::LargeIconSource(Profile* profile) : profile_(profile) {
 #else
   font_list.push_back(l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY));
 #endif
-  fallback_icon_service_.reset(
-      new favicon_base::FallbackIconService(font_list));
+  fallback_icon_service_.reset(new FallbackIconService(font_list));
 }
 
 LargeIconSource::~LargeIconSource() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/favicon_base/fallback_icon_service.h"
+#include "components/favicon/core/fallback_icon_service.h"
 
 #include <algorithm>
 
@@ -17,8 +17,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
-
-namespace favicon_base {
 
 namespace {
 
@@ -48,7 +46,7 @@ FallbackIconService::~FallbackIconService() {
 std::vector<unsigned char> FallbackIconService::RenderFallbackIconBitmap(
     const GURL& icon_url,
     int size,
-    const FallbackIconStyle& style) {
+    const favicon_base::FallbackIconStyle& style) {
   int size_to_use = std::min(kMaxFallbackFaviconSize, size);
   gfx::Canvas canvas(gfx::Size(size_to_use, size_to_use), 1.0f, false);
   DrawFallbackIcon(icon_url, size_to_use, style, &canvas);
@@ -61,10 +59,11 @@ std::vector<unsigned char> FallbackIconService::RenderFallbackIconBitmap(
   return bitmap_data;
 }
 
-void FallbackIconService::DrawFallbackIcon(const GURL& icon_url,
-                                           int size,
-                                           const FallbackIconStyle& style,
-                                           gfx::Canvas* canvas) {
+void FallbackIconService::DrawFallbackIcon(
+    const GURL& icon_url,
+    int size,
+    const favicon_base::FallbackIconStyle& style,
+    gfx::Canvas* canvas) {
   const int kOffsetX = 0;
   const int kOffsetY = 0;
   SkPaint paint;
@@ -93,5 +92,3 @@ void FallbackIconService::DrawFallbackIcon(const GURL& icon_url,
       gfx::Rect(kOffsetX, kOffsetY, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
-
-}  // namespace favicon_base

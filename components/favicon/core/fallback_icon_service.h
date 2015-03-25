@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FAVICON_BASE_FALLBACK_ICON_SERVICE_H_
-#define COMPONENTS_FAVICON_BASE_FALLBACK_ICON_SERVICE_H_
+#ifndef COMPONENTS_FAVICON_CORE_FALLBACK_ICON_SERVICE_H_
+#define COMPONENTS_FAVICON_CORE_FALLBACK_ICON_SERVICE_H_
 
 #include <string>
 #include <vector>
@@ -17,8 +17,8 @@ class Canvas;
 }
 
 namespace favicon_base {
-
 struct FallbackIconStyle;
+}
 
 // A service to provide methods to render fallback favicons.
 class FallbackIconService {
@@ -31,14 +31,14 @@ class FallbackIconService {
   std::vector<unsigned char> RenderFallbackIconBitmap(
       const GURL& icon_url,
       int size,
-      const FallbackIconStyle& style);
+      const favicon_base::FallbackIconStyle& style);
 
  private:
   // Renders a fallback icon on |canvas| at position (|x|, |y|). |size| is icon
   // width and height in pixels.
   void DrawFallbackIcon(const GURL& icon_url,
                         int size,
-                        const FallbackIconStyle& style,
+                        const favicon_base::FallbackIconStyle& style,
                         gfx::Canvas* canvas);
 
   std::vector<std::string> font_list_;
@@ -46,6 +46,4 @@ class FallbackIconService {
   DISALLOW_COPY_AND_ASSIGN(FallbackIconService);
 };
 
-}  // namespace favicon_base
-
-#endif  // COMPONENTS_FAVICON_BASE_FALLBACK_ICON_SERVICE_H_
+#endif  // COMPONENTS_FAVICON_CORE_FALLBACK_ICON_SERVICE_H_

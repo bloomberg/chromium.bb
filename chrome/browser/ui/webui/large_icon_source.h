@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/favicon_base/fallback_icon_service.h"
+#include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -73,7 +73,7 @@ class LargeIconSource : public content::URLDataSource {
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  scoped_ptr<favicon_base::FallbackIconService> fallback_icon_service_;
+  scoped_ptr<FallbackIconService> fallback_icon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconSource);
 };

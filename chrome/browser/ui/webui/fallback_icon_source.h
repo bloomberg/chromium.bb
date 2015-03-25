@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_FALLBACK_ICON_SOURCE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/favicon_base/fallback_icon_service.h"
+#include "components/favicon/core/fallback_icon_service.h"
 #include "content/public/browser/url_data_source.h"
 
 // FallbackIconSource services explicit chrome:// requests for fallback icons.
@@ -61,7 +61,7 @@ class FallbackIconSource : public content::URLDataSource {
   void SendDefaultResponse(
       const content::URLDataSource::GotDataCallback& callback);
 
-  scoped_ptr<favicon_base::FallbackIconService> fallback_icon_service_;
+  scoped_ptr<FallbackIconService> fallback_icon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackIconSource);
 };

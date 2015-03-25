@@ -19,6 +19,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'favicon/core/fallback_icon_service.cc',
+        'favicon/core/fallback_icon_service.h',
         'favicon/core/favicon_client.h',
         'favicon/core/favicon_driver.h',
         'favicon/core/favicon_handler.cc',

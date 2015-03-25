@@ -4,8 +4,6 @@
 
 source_set("favicon_base") {
   sources = [
-    "fallback_icon_service.cc",
-    "fallback_icon_service.h",
     "fallback_icon_style.cc",
     "fallback_icon_style.h",
     "favicon_callback.h",

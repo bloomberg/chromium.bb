@@ -20,8 +20,6 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
-        'favicon_base/fallback_icon_service.cc',
-        'favicon_base/fallback_icon_service.h',
         'favicon_base/fallback_icon_style.cc',
         'favicon_base/fallback_icon_style.h',
         'favicon_base/favicon_callback.h',
