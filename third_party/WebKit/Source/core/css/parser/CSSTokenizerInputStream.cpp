@@ -12,16 +12,17 @@ namespace blink {
 
 CSSTokenizerInputStream::CSSTokenizerInputStream(String input)
     : m_offset(0)
-    , m_string(input)
+    , m_stringLength(input.length())
+    , m_string(input.impl())
 {
 }
 
 UChar CSSTokenizerInputStream::peek(unsigned lookaheadOffset)
 {
     ASSERT((m_offset + lookaheadOffset) <= maxLength());
-    if ((m_offset + lookaheadOffset) >= m_string.length())
+    if ((m_offset + lookaheadOffset) >= m_stringLength)
         return kEndOfFileMarker;
-    return m_string[m_offset + lookaheadOffset];
+    return (*m_string)[m_offset + lookaheadOffset];
 }
 
 void CSSTokenizerInputStream::advance(unsigned offset)
@@ -38,14 +39,14 @@ void CSSTokenizerInputStream::pushBack(UChar cc)
 
 double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
 {
-    ASSERT(start <= end && ((m_offset + end) <= m_string.length()));
+    ASSERT(start <= end && ((m_offset + end) <= m_stringLength));
     bool isResultOK = false;
     double result = 0.0;
     if (start < end) {
-        if (m_string.is8Bit())
-            result = charactersToDouble(m_string.characters8() + m_offset + start, end - start, &isResultOK);
+        if (m_string->is8Bit())
+            result = charactersToDouble(m_string->characters8() + m_offset + start, end - start, &isResultOK);
         else
-            result = charactersToDouble(m_string.characters16() + m_offset + start, end - start, &isResultOK);
+            result = charactersToDouble(m_string->characters16() + m_offset + start, end - start, &isResultOK);
     }
     // FIXME: It looks like callers ensure we have a valid number
     return isResultOK ? result : 0.0;
@@ -53,12 +54,12 @@ double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
 
 CSSParserString CSSTokenizerInputStream::rangeAsCSSParserString(unsigned start, unsigned length) const
 {
-    ASSERT(start + length <= m_string.length());
+    ASSERT(start + length <= m_stringLength);
     CSSParserString result;
-    if (m_string.is8Bit())
-        result.init(m_string.characters8() + start, length);
+    if (m_string->is8Bit())
+        result.init(m_string->characters8() + start, length);
     else
-        result.init(m_string.characters16() + start, length);
+        result.init(m_string->characters16() + start, length);
     return result;
 }
 

@@ -28,12 +28,12 @@ public:
 
     inline size_t maxLength()
     {
-        return m_string.length() + 1;
+        return m_stringLength + 1;
     }
 
     inline size_t leftChars()
     {
-        return m_string.length() - m_offset;
+        return m_stringLength - m_offset;
 
     }
 
@@ -42,7 +42,7 @@ public:
     template<bool characterPredicate(UChar)>
     unsigned skipWhilePredicate(unsigned offset)
     {
-        while ((m_offset + offset) < m_string.length() && characterPredicate(m_string[m_offset + offset]))
+        while ((m_offset + offset) < m_stringLength && characterPredicate((*m_string)[m_offset + offset]))
             ++offset;
         return offset;
     }
@@ -52,7 +52,8 @@ public:
 
 private:
     size_t m_offset;
-    String m_string;
+    const size_t m_stringLength;
+    const RefPtr<StringImpl> m_string;
 };
 
 } // namespace blink
