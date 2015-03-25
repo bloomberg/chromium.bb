@@ -788,6 +788,7 @@ void RenderThreadImpl::Shutdown() {
 
   if (gpu_channel_.get())
     gpu_channel_->DestroyChannel();
+  gpu_va_context_provider_ = nullptr;
 
   // TODO(port)
 #if defined(OS_WIN)
