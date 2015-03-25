@@ -108,14 +108,15 @@ config("windowed") {
 
 incremental_linking_on_switch = [ "/INCREMENTAL" ]
 incremental_linking_off_switch = [ "/INCREMENTAL:NO" ]
+if (is_debug) {
+  default_incremental_linking_switch = incremental_linking_on_switch
+} else {
+  default_incremental_linking_switch = incremental_linking_off_switch
+}
 
 # Applies incremental linking or not depending on the current configuration.
 config("default_incremental_linking") {
-  if (is_debug) {
-    ldflags = incremental_linking_on_switch
-  } else {
-    ldflags = incremental_linking_off_switch
-  }
+  ldflags = default_incremental_linking_switch
 }
 
 # Explicitly on or off incremental linking
@@ -130,17 +131,13 @@ config("no_incremental_linking") {
 # config should be applied to large modules to turn off incremental linking
 # when it won't work.
 config("default_large_module_incremental_linking") {
-  if (!is_debug) {
-    # Default is always off in release build.
-    ldflags = incremental_linking_off_switch
-  } else if ((symbol_level == 0 || symbol_level == 1) &&
-             (current_cpu == "x86" || !is_component_build)) {
-    # When full symbols are on, don't do incremental linking for large modules
-    # on 32-bit or in non-component mode as the toolchain fails due to the size
-    # of the .ilk files.
+  if (symbol_level > 0 && (current_cpu == "x86" || !is_component_build)) {
+    # When symbols are on, things get so large that the tools fail due to the
+    # size of the .ilk files.
     ldflags = incremental_linking_off_switch
   } else {
-    ldflags = incremental_linking_on_switch
+    # Otherwise just do the default incremental linking for this build type.
+    ldflags = default_incremental_linking_switch
   }
 }
 
