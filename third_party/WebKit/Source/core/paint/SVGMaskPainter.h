@@ -18,8 +18,8 @@ class SVGMaskPainter {
 public:
     SVGMaskPainter(LayoutSVGResourceMasker& mask) : m_mask(mask) { }
 
-    bool prepareEffect(LayoutObject*, GraphicsContext*);
-    void finishEffect(LayoutObject*, GraphicsContext*);
+    bool prepareEffect(const LayoutObject&, GraphicsContext*);
+    void finishEffect(const LayoutObject&, GraphicsContext*);
 
 private:
     void drawMaskForRenderer(GraphicsContext*, DisplayItemClient, const FloatRect& targetBoundingBox);

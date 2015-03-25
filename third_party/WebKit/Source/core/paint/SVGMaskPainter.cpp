@@ -15,50 +15,48 @@
 
 namespace blink {
 
-bool SVGMaskPainter::prepareEffect(LayoutObject* object, GraphicsContext* context)
+bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* context)
 {
-    ASSERT(object);
     ASSERT(context);
     ASSERT(m_mask.style());
     ASSERT_WITH_SECURITY_IMPLICATION(!m_mask.needsLayout());
 
     m_mask.clearInvalidationMask();
 
-    FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
+    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
     if (paintInvalidationRect.isEmpty() || !m_mask.element()->hasChildren())
         return false;
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(BeginCompositingDisplayItem::create(object->displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
+        context->displayItemList()->add(BeginCompositingDisplayItem::create(object.displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
     } else {
-        BeginCompositingDisplayItem beginCompositingContent(object->displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
+        BeginCompositingDisplayItem beginCompositingContent(object.displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
         beginCompositingContent.replay(context);
     }
 
     return true;
 }
 
-void SVGMaskPainter::finishEffect(LayoutObject* object, GraphicsContext* context)
+void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* context)
 {
-    ASSERT(object);
     ASSERT(context);
     ASSERT(m_mask.style());
     ASSERT_WITH_SECURITY_IMPLICATION(!m_mask.needsLayout());
 
-    FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
+    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
     {
         ColorFilter maskLayerFilter = m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
             ? ColorFilterLuminanceToAlpha : ColorFilterNone;
-        CompositingRecorder maskCompositing(context, object->displayItemClient(), SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
-        drawMaskForRenderer(context, object->displayItemClient(), object->objectBoundingBox());
+        CompositingRecorder maskCompositing(context, object.displayItemClient(), SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
+        drawMaskForRenderer(context, object.displayItemClient(), object.objectBoundingBox());
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(EndCompositingDisplayItem::create(object->displayItemClient()));
+        context->displayItemList()->add(EndCompositingDisplayItem::create(object.displayItemClient()));
     } else {
-        EndCompositingDisplayItem endCompositingContent(object->displayItemClient());
+        EndCompositingDisplayItem endCompositingContent(object.displayItemClient());
         endCompositingContent.replay(context);
     }
 }
