@@ -1041,6 +1041,7 @@
       'browser/notifications/message_center_notifications_browsertest.cc',
     ],
     'chrome_interactive_ui_test_chromeos_sources': [
+      '../ash/accelerators/accelerator_interactive_uitest_chromeos.cc',
       'browser/chromeos/accessibility/magnification_controller_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
       'browser/chromeos/accessibility/speech_monitor.h',
