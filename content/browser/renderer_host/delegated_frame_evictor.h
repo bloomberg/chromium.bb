@@ -35,6 +35,7 @@ class CONTENT_EXPORT DelegatedFrameEvictor : public RendererFrameManagerClient {
 
   DelegatedFrameEvictorClient* client_;
   bool has_frame_;
+  bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameEvictor);
 };
