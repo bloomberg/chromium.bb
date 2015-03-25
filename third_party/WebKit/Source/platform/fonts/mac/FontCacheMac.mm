@@ -31,18 +31,18 @@
 #import "platform/fonts/FontCache.h"
 
 #import <AppKit/AppKit.h>
-#include "platform/LayoutTestSupport.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include  "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/mac/FontFamilyMatcherMac.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebTraceLocation.h"
-#include <wtf/Functional.h>
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
+#import "platform/LayoutTestSupport.h"
+#import "platform/RuntimeEnabledFeatures.h"
+#import "platform/fonts/FontDescription.h"
+#import "platform/fonts/FontFaceCreationParams.h"
+#import "platform/fonts/FontPlatformData.h"
+#import "platform/fonts/SimpleFontData.h"
+#import "platform/fonts/mac/FontFamilyMatcherMac.h"
+#import "public/platform/Platform.h"
+#import "public/platform/WebTraceLocation.h"
+#import <wtf/Functional.h>
+#import <wtf/MainThread.h>
+#import <wtf/StdLibExtras.h>
 
 // Forward declare Mac SPIs.
 // Request for public API: rdar://13803570
@@ -119,7 +119,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     }
 
     const FontPlatformData& platformData = fontDataToSubstitute->platformData();
-    NSFont* nsFont = toNSFont(platformData.ctFont());
+    NSFont *nsFont = platformData.font();
 
     NSString *string = [[NSString alloc] initWithCharactersNoCopy:codeUnits length:codeUnitsLength freeWhenDone:NO];
     NSFont *substituteFont = [NSFont findFontLike:nsFont forString:string withRange:NSMakeRange(0, codeUnitsLength) inLanguage:nil];
@@ -220,14 +220,11 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     bool syntheticBold = (isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(actualWeight)) || fontDescription.isSyntheticBold();
     bool syntheticItalic = ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) || fontDescription.isSyntheticItalic();
 
-    // FontPlatformData::typeface() is null in the case of Chromium out-of-process font loading failing.
-    // Out-of-process loading occurs for registered fonts stored in non-system locations.
-    // When loading fails, we do not want to use the returned FontPlatformData since it will not have
-    // a valid SkTypeface.
+    // FontPlatformData::font() can be null for the case of Chromium out-of-process font loading.
+    // In that case, we don't want to use the platformData.
     OwnPtr<FontPlatformData> platformData = adoptPtr(new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic, fontDescription.orientation()));
-    if (!platformData->typeface()) {
-        return nullptr;
-    }
+    if (!platformData->font())
+        return 0;
     return platformData.leakPtr();
 }
 

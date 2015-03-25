@@ -132,6 +132,10 @@ public:
     const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
     void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }
 
+#if OS(MACOSX)
+    NSFont* getNSFont() const { return m_platformData.font(); }
+#endif
+
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 
     PassRefPtr<CustomFontData> customFontData() const { return m_customFontData; }

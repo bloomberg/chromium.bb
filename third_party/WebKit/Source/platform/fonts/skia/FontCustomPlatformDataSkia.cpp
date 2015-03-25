@@ -45,7 +45,9 @@
 namespace blink {
 
 FontCustomPlatformData::FontCustomPlatformData(PassRefPtr<SkTypeface> typeface)
-    : m_typeface(typeface) { };
+    : m_typeface(typeface)
+{
+}
 
 FontCustomPlatformData::~FontCustomPlatformData()
 {

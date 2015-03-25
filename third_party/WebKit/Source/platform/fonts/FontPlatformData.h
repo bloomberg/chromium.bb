@@ -50,10 +50,11 @@ OBJC_CLASS NSFont;
 typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
 
+#include "platform/fonts/mac/MemoryActivatedFont.h"
+#include <CoreFoundation/CFBase.h>
 #include <objc/objc-auto.h>
 
 inline CTFontRef toCTFontRef(NSFont *nsFont) { return reinterpret_cast<CTFontRef>(nsFont); }
-inline NSFont* toNSFont(CTFontRef ctFontRef) { return const_cast<NSFont*>(reinterpret_cast<const NSFont*>(ctFontRef)); }
 #endif // OS(MACOSX)
 
 class SkTypeface;
@@ -79,13 +80,24 @@ public:
     FontPlatformData(const FontPlatformData& src, float textSize);
 #if OS(MACOSX)
     FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false, FontOrientation = Horizontal);
-#endif
+    FontPlatformData(CGFontRef, PassRefPtr<SkTypeface>, float size, bool syntheticBold, bool syntheticOblique, FontOrientation);
+#else
     FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
+#endif
     ~FontPlatformData();
 
 #if OS(MACOSX)
+    NSFont* font() const { return m_font; }
+    void setFont(NSFont*);
+
+    CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
-    CGFontRef cgFont() const;
+
+    bool roundsGlyphAdvances() const;
+    bool allowsLigatures() const;
+
+    bool isColorBitmapFont() const { return m_isColorBitmapFont; }
+    bool isCompositeFontReference() const { return m_isCompositeFontReference; }
 #endif
 
     String fontFamilyName() const;
@@ -140,9 +152,20 @@ public:
 #endif
 
 private:
-    bool static defaultUseSubpixelPositioning();
 #if !OS(MACOSX)
+    bool static defaultUseSubpixelPositioning();
     void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
+#else
+    // Load various data about the font specified by |nsFont| with the size fontSize into the following output paramters:
+    // Note: Callers should always take into account that for the Chromium port, |outNSFont| isn't necessarily the same
+    // font as |nsFont|. This because the sandbox may block loading of the original font.
+    // * outNSFont - The font that was actually loaded, for the Chromium port this may be different than nsFont.
+    // The caller is responsible for calling CFRelease() on this parameter when done with it.
+    // * cgFont - CGFontRef representing the input font at the specified point size.
+    void loadFont(NSFont*, float fontSize, NSFont*& outNSFont, CGFontRef&);
+    void platformDataInit(const FontPlatformData&);
+    const FontPlatformData& platformDataAssign(const FontPlatformData&);
+    bool isAATFont(CTFontRef) const;
 #endif
 
     mutable RefPtr<SkTypeface> m_typeface;
@@ -155,8 +178,17 @@ public:
     bool m_syntheticBold;
     bool m_syntheticItalic;
     FontOrientation m_orientation;
+#if OS(MACOSX)
+    bool m_isColorBitmapFont;
+    bool m_isCompositeFontReference;
+#endif
 private:
-#if !OS(MACOSX)
+#if OS(MACOSX)
+    NSFont* m_font;
+    RetainPtr<CGFontRef> m_cgFont;
+    mutable RetainPtr<CTFontRef> m_CTFont;
+    RefPtr<MemoryActivatedFont> m_inMemoryFont;
+#else
     FontRenderStyle m_style;
 #endif
 
