@@ -68,10 +68,6 @@ public:
 
     BodyStreamBuffer* bufferForTest() const { return buffer(); }
 
-protected:
-    // Copy constructor for clone() implementations
-    explicit Body(const Body&);
-
 private:
     class ReadableStreamSource;
     class BlobHandleReceiver;

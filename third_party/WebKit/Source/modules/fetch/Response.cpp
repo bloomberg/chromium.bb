@@ -232,13 +232,6 @@ Response* Response::create(ExecutionContext* context, const WebServiceWorkerResp
     return r;
 }
 
-Response* Response::createClone(const Response& cloneFrom)
-{
-    Response* r = new Response(cloneFrom);
-    r->suspendIfNeeded();
-    return r;
-}
-
 String Response::type() const
 {
     // "The type attribute's getter must return response's type."
@@ -305,7 +298,12 @@ Response* Response::clone(ExceptionState& exceptionState)
         BodyStreamBuffer* drainingStream = createDrainingStream();
         m_response->replaceBodyStreamBuffer(drainingStream);
     }
-    return Response::createClone(*this);
+    FetchResponseData* response = m_response->clone();
+    Headers* headers = Headers::create(response->headerList());
+    headers->setGuard(m_headers->guard());
+    Response* r = new Response(executionContext(), response, headers);
+    r->suspendIfNeeded();
+    return r;
 }
 
 void Response::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
@@ -321,14 +319,6 @@ Response::Response(ExecutionContext* context)
     m_headers->setGuard(Headers::ResponseGuard);
 }
 
-Response::Response(const Response& clone_from)
-    : Body(clone_from)
-    , m_response(clone_from.m_response->clone())
-    , m_headers(Headers::create(m_response->headerList()))
-{
-    m_headers->setGuard(clone_from.headers()->guard());
-}
-
 Response::Response(ExecutionContext* context, FetchResponseData* response)
     : Body(context)
     , m_response(response)
@@ -336,6 +326,9 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
 {
     m_headers->setGuard(Headers::ResponseGuard);
 }
+
+Response::Response(ExecutionContext* context, FetchResponseData* response, Headers* headers)
+    : Body(context) , m_response(response) , m_headers(headers) { }
 
 bool Response::hasBody() const
 {

@@ -46,7 +46,7 @@ public:
         Request* r = Request::create(m_stopDetector->executionContext(), input, init, exceptionState);
         if (exceptionState.hadException())
             return ScriptPromise();
-        return m_fetchManager->fetch(scriptState, r->request());
+        return m_fetchManager->fetch(scriptState, r->passRequestData());
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()

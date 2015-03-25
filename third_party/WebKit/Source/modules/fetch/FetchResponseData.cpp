@@ -222,7 +222,7 @@ FetchResponseData* FetchResponseData::clone()
     newResponse->m_url = m_url;
     newResponse->m_status = m_status;
     newResponse->m_statusMessage = m_statusMessage;
-    newResponse->m_headerList = m_headerList->createCopy();
+    newResponse->m_headerList = m_headerList->clone();
     newResponse->m_blobDataHandle = m_blobDataHandle;
     newResponse->m_contentTypeForBuffer = m_contentTypeForBuffer;
 

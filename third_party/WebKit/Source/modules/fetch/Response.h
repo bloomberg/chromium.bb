@@ -68,9 +68,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit Response(const Response&);
     explicit Response(ExecutionContext*);
     Response(ExecutionContext*, FetchResponseData*);
+    Response(ExecutionContext*, FetchResponseData*, Headers*);
 
     const Member<FetchResponseData> m_response;
     const Member<Headers> m_headers;

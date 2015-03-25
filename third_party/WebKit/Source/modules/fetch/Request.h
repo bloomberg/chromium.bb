@@ -53,6 +53,8 @@ public:
     // From Request.idl:
     Request* clone(ExceptionState&) const;
 
+    FetchRequestData* passRequestData();
+
     void populateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
@@ -61,12 +63,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    // The 'FetchRequestData' object is shared between requests, as it is
-    // immutable to the user after Request creation. Headers are copied.
-    explicit Request(const Request&);
-
     Request(ExecutionContext*, FetchRequestData*);
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
+    Request(ExecutionContext*, FetchRequestData*, Headers*);
 
     static Request* createRequestWithRequestOrString(ExecutionContext*, Request*, const String&, const RequestInit&, ExceptionState&);
     void clearHeaderList();

@@ -33,7 +33,7 @@ public:
     // Shares the FetchHeaderList. Called when creating a Request or Response.
     static Headers* create(FetchHeaderList*);
 
-    Headers* createCopy() const;
+    Headers* clone() const;
 
     // Headers.idl implementation.
     void append(const String& name, const String& value, ExceptionState&);

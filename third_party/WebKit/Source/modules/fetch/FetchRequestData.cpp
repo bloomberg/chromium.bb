@@ -34,12 +34,13 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
     return request;
 }
 
-FetchRequestData* FetchRequestData::createCopy() const
+FetchRequestData* FetchRequestData::clone() const
 {
+    // TODO(yhirano): This method will be destructive.
     FetchRequestData* request = FetchRequestData::create();
     request->m_url = m_url;
     request->m_method = m_method;
-    request->m_headerList = m_headerList->createCopy();
+    request->m_headerList = m_headerList->clone();
     request->m_unsafeRequestFlag = m_unsafeRequestFlag;
     request->m_blobDataHandle = m_blobDataHandle;
     request->m_origin = m_origin;
@@ -50,6 +51,12 @@ FetchRequestData* FetchRequestData::createCopy() const
     request->m_credentials = m_credentials;
     request->m_responseTainting = m_responseTainting;
     return request;
+}
+
+FetchRequestData* FetchRequestData::pass() const
+{
+    // TODO(yhirano): This method will be destructive.
+    return clone();
 }
 
 FetchRequestData::~FetchRequestData()

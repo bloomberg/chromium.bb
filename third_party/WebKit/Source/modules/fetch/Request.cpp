@@ -26,7 +26,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ExecutionContext* context
     FetchRequestData* request = FetchRequestData::create();
     request->setURL(original->url());
     request->setMethod(original->method());
-    request->setHeaderList(original->headerList()->createCopy());
+    request->setHeaderList(original->headerList()->clone());
     request->setUnsafeRequestFlag(true);
     request->setBlobDataHandle(original->blobDataHandle());
     // FIXME: Set client.
@@ -149,7 +149,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     // is present.
     Headers* headers = 0;
     if (!init.headers && init.headersDictionary.isUndefinedOrNull()) {
-        headers = r->headers()->createCopy();
+        headers = r->headers()->clone();
     }
     // "18. Empty |r|'s request's header list."
     r->clearHeaderList();
@@ -249,6 +249,9 @@ Request::Request(ExecutionContext* context, FetchRequestData* request)
     m_headers->setGuard(Headers::RequestGuard);
 }
 
+Request::Request(ExecutionContext* context, FetchRequestData* request, Headers* headers)
+    : Body(context) , m_request(request) , m_headers(headers) { }
+
 Request* Request::create(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
 {
     Request* r = new Request(context, webRequest);
@@ -262,14 +265,6 @@ Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRe
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
-}
-
-Request::Request(const Request& cloneFrom)
-    : Body(cloneFrom)
-    , m_request(cloneFrom.m_request->createCopy())
-    , m_headers(Headers::create(m_request->headerList()))
-{
-    m_headers->setGuard(cloneFrom.headers()->guard());
 }
 
 String Request::method() const
@@ -340,13 +335,20 @@ Request* Request::clone(ExceptionState& exceptionState) const
         exceptionState.throwTypeError("Request body is already used");
         return nullptr;
     }
-    // FIXME: We throw an error while cloning the Response which body was
-    // partially read. But in Request case, we don't. When the behavior of the
-    // partially read streams will be well defined in the spec, we have to
-    // implement the behavior correctly.
-    Request* r = new Request(*this);
+
+    FetchRequestData* request = m_request->clone();
+    Headers* headers = Headers::create(request->headerList());
+    headers->setGuard(m_headers->guard());
+    Request* r = new Request(executionContext(), request, headers);
     r->suspendIfNeeded();
     return r;
+}
+
+FetchRequestData* Request::passRequestData()
+{
+    ASSERT(!bodyUsed());
+    setBodyUsed();
+    return m_request->pass();
 }
 
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const

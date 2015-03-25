@@ -94,9 +94,9 @@ Headers* Headers::create(FetchHeaderList* headerList)
     return new Headers(headerList);
 }
 
-Headers* Headers::createCopy() const
+Headers* Headers::clone() const
 {
-    FetchHeaderList* headerList = m_headerList->createCopy();
+    FetchHeaderList* headerList = m_headerList->clone();
     Headers* headers = create(headerList);
     headers->m_guard = m_guard;
     return headers;

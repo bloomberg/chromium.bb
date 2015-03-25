@@ -33,7 +33,7 @@ namespace blink {
 class FetchManager::Loader final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager::Loader);
 public:
-    static PassOwnPtrWillBeRawPtr<Loader> create(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
+    static PassOwnPtrWillBeRawPtr<Loader> create(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, FetchRequestData* request)
     {
         return adoptPtrWillBeNoop(new Loader(executionContext, fetchManager, resolver, request));
     }
@@ -80,7 +80,7 @@ private:
     };
 
 
-    Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, const FetchRequestData*);
+    Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, FetchRequestData*);
 
     void performBasicFetch();
     void performNetworkError(const String& message);
@@ -100,11 +100,11 @@ private:
     bool m_finished;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, FetchRequestData* request)
     : ContextLifecycleObserver(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
-    , m_request(request->createCopy())
+    , m_request(request)
     , m_canceller(new Canceller(this))
     , m_failed(false)
     , m_finished(false)
@@ -467,7 +467,7 @@ FetchManager::~FetchManager()
 #endif
 }
 
-ScriptPromise FetchManager::fetch(ScriptState* scriptState, const FetchRequestData* request)
+ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* request)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();

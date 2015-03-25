@@ -21,7 +21,7 @@ class FetchHeaderList final : public GarbageCollectedFinalized<FetchHeaderList> 
 public:
     typedef std::pair<String, String> Header;
     static FetchHeaderList* create();
-    FetchHeaderList* createCopy();
+    FetchHeaderList* clone();
 
     ~FetchHeaderList();
     void append(const String&, const String&);

@@ -16,7 +16,7 @@ FetchHeaderList* FetchHeaderList::create()
     return new FetchHeaderList();
 }
 
-FetchHeaderList* FetchHeaderList::createCopy()
+FetchHeaderList* FetchHeaderList::clone()
 {
     FetchHeaderList* list = create();
     for (size_t i = 0; i < m_headerList.size(); ++i)

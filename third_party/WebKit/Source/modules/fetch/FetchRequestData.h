@@ -56,7 +56,8 @@ public:
 
     static FetchRequestData* create();
     static FetchRequestData* create(const blink::WebServiceWorkerRequest&);
-    FetchRequestData* createCopy() const;
+    FetchRequestData* clone() const;
+    FetchRequestData* pass() const;
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }
