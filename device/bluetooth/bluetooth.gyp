@@ -106,6 +106,8 @@
         'bluetooth_task_manager_win.h',
         'bluetooth_uuid.cc',
         'bluetooth_uuid.h',
+        'uribeacon/uri_encoder.cc',
+        'uribeacon/uri_encoder.h',
       ],
       'conditions': [
         ['chromeos==1', {
