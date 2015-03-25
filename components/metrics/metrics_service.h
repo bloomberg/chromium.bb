@@ -329,12 +329,13 @@ class MetricsService : public base::HistogramFlattener {
   // Starts the process of uploading metrics data.
   void StartScheduledUpload();
 
-  // Called by the client when final log info collection is complete.
+  // Called by the client via a callback when final log info collection is
+  // complete.
   void OnFinalLogInfoCollectionDone();
 
-  // Either closes the current log or creates and closes the initial log
-  // (depending on |state_|), and stages it for upload.
-  void StageNewLog();
+  // If recording is enabled, begins uploading the next completed log from
+  // the log manager, staging it if necessary.
+  void SendNextLog();
 
   // Returns true if any of the registered metrics providers have stability
   // metrics to report.

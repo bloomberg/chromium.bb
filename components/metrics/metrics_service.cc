@@ -764,6 +764,7 @@ void MetricsService::StartSchedulerIfNecessary() {
 }
 
 void MetricsService::StartScheduledUpload() {
+  DCHECK(state_ >= INIT_TASK_DONE);
   // If we're getting no notifications, then the log won't have much in it, and
   // it's possible the computer is about to go to sleep, so don't upload and
   // stop the scheduler.
@@ -783,9 +784,9 @@ void MetricsService::StartScheduledUpload() {
   // If there are unsent logs, send the next one. If not, start the asynchronous
   // process of finalizing the current log for upload.
   if (state_ == SENDING_LOGS && log_manager_.has_unsent_logs()) {
-    log_manager_.StageNextLogForUpload();
-    SendStagedLog();
+    SendNextLog();
   } else {
+    // There are no logs left to send, so start creating a new one.
     client_->CollectFinalMetrics(
         base::Bind(&MetricsService::OnFinalLogInfoCollectionDone,
                    self_ptr_factory_.GetWeakPtr()));
@@ -807,54 +808,33 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
     return;
   }
 
-  StageNewLog();
+  if (state_ == INIT_TASK_DONE) {
+    PrepareInitialMetricsLog();
+  } else {
+    DCHECK_EQ(SENDING_LOGS, state_);
+    CloseCurrentLog();
+    OpenNewLog();
+  }
+  SendNextLog();
+}
 
-  // If logs shouldn't be uploaded, stop here. It's important that this check
-  // be after StageNewLog(), otherwise the previous logs will never be loaded,
-  // and thus the open log won't be persisted.
-  // TODO(stuartmorgan): This is unnecessarily complicated; restructure loading
-  // of previous logs to not require running part of the upload logic.
-  // http://crbug.com/157337
+void MetricsService::SendNextLog() {
+  DCHECK_EQ(SENDING_LOGS, state_);
   if (!reporting_active()) {
     scheduler_->Stop();
     scheduler_->UploadCancelled();
     return;
   }
-
-  SendStagedLog();
-}
-
-void MetricsService::StageNewLog() {
-  if (log_manager_.has_staged_log())
+  if (!log_manager_.has_unsent_logs()) {
+    // Should only get here if serializing the log failed somehow.
+    // Just tell the scheduler it was uploaded and wait for the next log
+    // interval.
+    scheduler_->UploadFinished(true, log_manager_.has_unsent_logs());
     return;
-
-  switch (state_) {
-    case INITIALIZED:
-    case INIT_TASK_SCHEDULED:  // We should be further along by now.
-      NOTREACHED();
-      return;
-
-    case INIT_TASK_DONE:
-      PrepareInitialMetricsLog();
-      // Stage the first log, which could be a stability log (either one
-      // for created in this session or from a previous session) or the
-      // initial metrics log that was just created.
-      log_manager_.StageNextLogForUpload();
-      state_ = SENDING_LOGS;
-      break;
-
-    case SENDING_LOGS:
-      CloseCurrentLog();
-      OpenNewLog();
-      log_manager_.StageNextLogForUpload();
-      break;
-
-    default:
-      NOTREACHED();
-      return;
   }
-
-  DCHECK(log_manager_.has_staged_log());
+  if (!log_manager_.has_staged_log())
+    log_manager_.StageNextLogForUpload();
+  SendStagedLog();
 }
 
 bool MetricsService::ProvidersHaveStabilityMetrics() {
@@ -928,6 +908,8 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Store unsent logs, including the initial log that was just saved, so
   // that they're not lost in case of a crash before upload time.
   log_manager_.PersistUnsentLogs();
+
+  state_ = SENDING_LOGS;
 }
 
 void MetricsService::SendStagedLog() {
