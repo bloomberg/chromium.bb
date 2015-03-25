@@ -165,6 +165,13 @@
                   '|loader/LinkLoader' \
                   '|html/HTMLLinkElement'
     },
+    "client_hints": {
+      'filepath': 'Source/core/loader/AcceptClientHints*' \
+                  '|Source/core/loader/FrameFetchContext*' \
+                  '|Source/core/fetch/FetchContext*' \
+                  '|Source/core/fetch/ImageResource*' \
+                  '|Source/core/fetch/ResourceFetcher*' 
+    },
     'track': {
       'filepath': 'Source/core/html/track/' \
                   '|Source/core/loader/TextTrack' \
@@ -401,6 +408,7 @@
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
+    'client_hints': [ 'yoav@yoav.ws' ],
     'scheduler': [ 'scheduler-bugs@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
     'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com' ],
