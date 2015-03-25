@@ -182,7 +182,7 @@ TEST_F(ComposedTreeTraversalTest, commonAncestor)
     RefPtrWillBeRawPtr<Element> m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> m12 = body->querySelector("#m12", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> m20 = body->querySelector("#m20", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> m21 = body->querySelector("#m20", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> m21 = body->querySelector("#m21", ASSERT_NO_EXCEPTION);
 
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = m1->shadowRoot();
     RefPtrWillBeRawPtr<Element> s10 = shadowRoot->querySelector("#s10", ASSERT_NO_EXCEPTION);
@@ -197,6 +197,7 @@ TEST_F(ComposedTreeTraversalTest, commonAncestor)
     testCommonAncestor(body.get(), *s14, *m21);
 
     testCommonAncestor(m0.get(), *m0, *m0);
+    testCommonAncestor(m0.get(), *m00, *m01);
 
     testCommonAncestor(m1.get(), *m1.get(), *m1);
     testCommonAncestor(m1.get(), *s10, *s14);
