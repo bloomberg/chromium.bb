@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,29 +24,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using chrome_browser_interstitials::IsInterstitialDisplayingText;
+using chrome_browser_interstitials::SecurityInterstitialIDNTest;
+
 namespace {
 // Partial text in the captive portal interstitial's main paragraph when the
 // login domain isn't displayed.
 const char kGenericLoginURLText[] = "its login page";
 const char kBrokenSSL[] = "https://broken.ssl";
 const char kWiFiSSID[] = "WiFiSSID";
-
-// Returns true if the interstitial contains |text| in its body.
-bool IsInterstitialDisplayingText(content::InterstitialPage* interstitial,
-                                  const std::string& text) {
-  // It's valid for |text| to contain "\'", but simply look for "'" instead
-  // since this function is used for searching host names and a predefined
-  // string.
-  DCHECK(text.find("\'") == std::string::npos);
-  std::string command = base::StringPrintf(
-      "var hasText = document.body.textContent.indexOf('%s') >= 0;"
-      "window.domAutomationController.send(hasText ? 1 : 0);",
-      text.c_str());
-  int result = 0;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      interstitial->GetMainFrame(), command, &result));
-  return result == 1;
-}
 
 enum ExpectWiFi {
   EXPECT_WIFI_NO,
@@ -220,29 +207,25 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                    EXPECT_WIFI_YES, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
 }
 
-class CaptivePortalBlockingPageIDNTest : public CaptivePortalBlockingPageTest {
-public:
-  // InProcessBrowserTest:
-  void SetUpOnMainThread() override {
-    // Clear AcceptLanguages to force punycode decoding.
-    browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
-                                                std::string());
+class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
+ protected:
+  // SecurityInterstitialIDNTest implementation
+  SecurityInterstitialPage* CreateInterstitial(
+      content::WebContents* contents,
+      const GURL& request_url) const override {
+    // Delegate is owned by the blocking page.
+    FakeConnectionInfoDelegate* delegate =
+        new FakeConnectionInfoDelegate(false, "");
+    // Blocking page is owned by the interstitial.
+    CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+        contents, GURL(kBrokenSSL), request_url, base::Callback<void(bool)>());
+    blocking_page->SetDelegateForTesting(delegate);
+    return blocking_page;
   }
 };
 
-// Same as CaptivePortalBlockingPageTest.WiredNetwork_LoginURL, except the login
-// domain is an IDN.
+// Test that an IDN login domain is decoded properly.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageIDNTest,
                        ShowLoginIDNIfPortalRedirectsDetectionURL) {
-  const char kHostname[] =
-      "xn--d1abbgf6aiiy.xn--p1ai";
-  const char kHostnameJSUnicode[] =
-      "\\u043f\\u0440\\u0435\\u0437\\u0438\\u0434\\u0435\\u043d\\u0442."
-      "\\u0440\\u0444";
-  std::string landing_url_spec =
-      base::StringPrintf("http://%s/landing_url", kHostname);
-  GURL landing_url(landing_url_spec);
-
-  TestInterstitial(false, "", landing_url, EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO,
-                   EXPECT_LOGIN_URL_YES, kHostnameJSUnicode);
+  EXPECT_TRUE(VerifyIDNDecoded());
 }

@@ -299,6 +299,8 @@
       'browser/importer/importer_unittest_utils.cc',
       'browser/importer/importer_unittest_utils.h',
       'browser/infobars/infobars_browsertest.cc',
+      'browser/interstitials/security_interstitial_page_test_utils.cc',
+      'browser/interstitials/security_interstitial_page_test_utils.h',
       'browser/invalidation/profile_invalidation_provider_factory_browsertest.cc',
       'browser/lifetime/browser_close_manager_browsertest.cc',
       'browser/loadtimes_extension_bindings_browsertest.cc',

@@ -5,12 +5,16 @@
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 
 #include "base/i18n/rtl.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -55,7 +59,12 @@ void SecurityInterstitialPage::Show() {
 }
 
 base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
-  base::string16 host(base::UTF8ToUTF16(request_url_.host()));
+  std::string languages;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (profile)
+    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  base::string16 host = net::IDNToUnicode(request_url_.host(), languages);
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&host);
   return host;

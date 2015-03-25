@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -12,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,6 +46,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_info.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 #if defined(USE_NSS)
@@ -53,6 +57,7 @@
 #endif  // defined(USE_NSS)
 
 using base::ASCIIToUTF16;
+using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -1926,6 +1931,25 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
 
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+}
+
+class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
+ protected:
+  // SecurityInterstitialIDNTest implementation
+  SecurityInterstitialPage* CreateInterstitial(
+      content::WebContents* contents,
+      const GURL& request_url) const override {
+    net::SSLInfo ssl_info;
+    ssl_info.cert = new net::X509Certificate(
+        request_url.host(), "CA", base::Time::Max(), base::Time::Max());
+    return new SSLBlockingPage(
+        contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
+        base::Time::NowFromSystemTime(), base::Callback<void(bool)>());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SSLBlockingPageIDNTest, SSLBlockingPageDecodesIDN) {
+  EXPECT_TRUE(VerifyIDNDecoded());
 }
 
 // TODO(jcampan): more tests to do below.

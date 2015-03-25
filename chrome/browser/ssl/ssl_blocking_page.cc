@@ -456,6 +456,12 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
 // This handles the commands sent from the interstitial JavaScript.
 // DO NOT reorder or change this logic without also changing the JavaScript!
 void SSLBlockingPage::CommandReceived(const std::string& command) {
+  if (command == "\"pageLoadComplete\"") {
+    // content::WaitForRenderFrameReady sends this message when the page
+    // load completes. Ignore it.
+    return;
+  }
+
   int cmd = 0;
   bool retval = base::StringToInt(command, &cmd);
   DCHECK(retval);
