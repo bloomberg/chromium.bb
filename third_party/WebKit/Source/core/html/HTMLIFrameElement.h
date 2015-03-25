@@ -31,6 +31,7 @@ namespace blink {
 
 class HTMLIFrameElement final : public HTMLFrameElementBase, public DOMSettableTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(HTMLIFrameElement, HTMLFrameElementBase);
 public:
     DECLARE_NODE_FACTORY(HTMLIFrameElement);
     DECLARE_VIRTUAL_TRACE();

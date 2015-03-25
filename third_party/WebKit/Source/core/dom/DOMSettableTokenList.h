@@ -35,9 +35,11 @@ namespace blink {
 
 class ExceptionState;
 
-class DOMSettableTokenListObserver {
+class DOMSettableTokenListObserver : public WillBeGarbageCollectedMixin {
 public:
     virtual void valueChanged() = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 class DOMSettableTokenList final
@@ -72,8 +74,10 @@ public:
     const SpaceSplitString& tokens() const { return m_tokens; }
     void setObserver(DOMSettableTokenListObserver* observer) { m_observer = observer; };
 
+    DECLARE_VIRTUAL_TRACE();
+
 protected:
-    DOMSettableTokenList(DOMSettableTokenListObserver*);
+    explicit DOMSettableTokenList(DOMSettableTokenListObserver*);
 
 private:
     virtual void addInternal(const AtomicString&) override;
@@ -82,7 +86,7 @@ private:
 
     AtomicString m_value;
     SpaceSplitString m_tokens;
-    DOMSettableTokenListObserver* m_observer;
+    RawPtrWillBeWeakMember<DOMSettableTokenListObserver> m_observer;
 };
 
 } // namespace blink

@@ -40,6 +40,12 @@ DOMSettableTokenList::~DOMSettableTokenList()
 {
 }
 
+DEFINE_TRACE(DOMSettableTokenList)
+{
+    visitor->trace(m_observer);
+    DOMTokenList::trace(visitor);
+}
+
 const AtomicString DOMSettableTokenList::item(unsigned index) const
 {
     if (index >= length())
