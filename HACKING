@@ -24,6 +24,10 @@ have these tools installed to (re)build. Optionally (if you want to
 generate man pages) you'll also need help2man. All of these programs
 are available from ftp://ftp.gnu.org/gnu.
 
+TODO what about pkg-config?
+
+TODO how to use homebrew on mac os to install build requirements
+
 ** Gnulib
 This distribution also uses Gnulib (http://www.gnu.org/software/gnulib). If
 you want to update from the current gnulib, install gnulib, and then run
@@ -58,6 +62,25 @@ Unicode run configure with --enable-ucs4 .
 
 After running configure run "make" and then "make install". You must
 have root privileges for the installation step.
+
+** Docker
+TODO get docker: http://docs.docker.com/introduction/get-docker
+
+TODO explain automatic builds: https://registry.hub.docker.com/repos/liblouis
+
+TODO how to run lou_translate in docker container
+
+  docker pull liblouis/libouis
+  docker run -it liblouis/libouis lou_translate en-us-g1.ctb
+
+TODO how to build image yourself
+
+  docker build -t liblouis/liblouis
+
+** How to run tests
+TODO make check
+
+TODO harness tests: requires python, nose
 
 ** How to debug
 First you have to build liblouis with debugging info enabled.
@@ -124,6 +147,13 @@ Finally look at the call profile:
 
 ** How to build for win32
 See the README.windows file and the windows subdirectory.
+
+TODO how to use cygwin to build on windows (possibly use a
+Vagrantfile as demonstration) + explain that cygwin binaries can not
+be used outside the cygwin environment
+
+TODO how to use mingw to build on windows (possibly use a Vagrantfile
+as demonstration)
 
 *** How to cross-compile for win32
 Use the mingw win32 cross compiler as shown below. Use the prefix
