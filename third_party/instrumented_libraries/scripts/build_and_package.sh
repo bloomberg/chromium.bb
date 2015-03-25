@@ -30,33 +30,37 @@ function build_libraries {
   esac
   
   local archive_name=${build_type}-${ubuntu_release}
-  local out_dir=out_${archive_name}
+  local out_dir=out-${archive_name}
 
   echo "Building instrumented libraries in ${out_dir}..."
 
   rm -rf $out_dir
   mkdir $out_dir
 
-  GYP_DEFINES="${gyp_defines} use_instrumented_libraries=1 instrumented_libraries_jobs=8" \
+  GYP_DEFINES="${gyp_defines} \
+               use_instrumented_libraries=1 instrumented_libraries_jobs=8" \
   GYP_GENERATOR_FLAGS="output_dir=${out_dir}" \
   gclient runhooks
 
-  ninja -C ${out_dir}/Release instrumented_libraries
+  ninja -j4 -C ${out_dir}/Release instrumented_libraries
 
   echo "Creating archive ${archive_name}.tgz..."
 
   files=$(ls -1 ${out_dir}/Release/instrumented_libraries)
 
-  tar zcf ${archive_name}.tgz -C ${out_dir}/Release/instrumented_libraries --exclude="?san/*.txt" ${files}
+  tar zcf ${archive_name}.tgz -C ${out_dir}/Release/instrumented_libraries \
+      --exclude="?san/*.txt" ${files}
 
   echo To upload, run:
-  echo upload_to_google_storage.py -b chromium-instrumented-libraries ${archive_name}.tgz
+  echo upload_to_google_storage.py -b \
+       chromium-instrumented-libraries ${archive_name}.tgz
   echo You should then commit the resulting .sha1 file.
 }
 
 if ! [[ "${supported_releases}" =~ ${ubuntu_release} ]]
 then
   echo "Unsupported Ubuntu release: ${ubuntu_release}"
+  echo "Supported releases: ${supported_releases}"
   exit 1
 fi
 
