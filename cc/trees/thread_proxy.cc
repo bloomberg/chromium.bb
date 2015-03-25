@@ -1139,6 +1139,11 @@ void ThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {
   NOTREACHED() << "Only used by SingleThreadProxy";
 }
 
+void ThreadProxy::SetAuthoritativeVSyncInterval(
+    const base::TimeDelta& interval) {
+  NOTREACHED() << "Only used by SingleThreadProxy";
+}
+
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {
   DCHECK(IsImplThread());
   impl().scheduler->NotifyReadyToCommit();

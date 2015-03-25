@@ -186,6 +186,7 @@ class TestScheduler : public Scheduler {
 
   BeginFrameSource& frame_source() { return *frame_source_; }
   bool FrameProductionThrottled() { return throttle_frame_production_; }
+  BeginFrameArgs begin_impl_frame_args() { return begin_impl_frame_args_; }
 
   ~TestScheduler() override;
 

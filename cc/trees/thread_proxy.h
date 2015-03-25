@@ -178,6 +178,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetDebugState(const LayerTreeDebugState& debug_state) override;
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;

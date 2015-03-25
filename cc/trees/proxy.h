@@ -106,6 +106,9 @@ class CC_EXPORT Proxy {
 
   virtual void SetChildrenNeedBeginFrames(bool children_need_begin_frames) = 0;
 
+  virtual void SetAuthoritativeVSyncInterval(
+      const base::TimeDelta& interval) = 0;
+
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 

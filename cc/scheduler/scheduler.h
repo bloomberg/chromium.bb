@@ -166,6 +166,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
 
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
+
  protected:
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings,
@@ -189,6 +191,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   scoped_ptr<BeginFrameSource> unthrottled_frame_source_internal_;
 
   VSyncParameterObserver* vsync_observer_;
+  base::TimeDelta authoritative_vsync_interval_;
+  base::TimeTicks last_vsync_timebase_;
+
   bool throttle_frame_production_;
 
   const SchedulerSettings settings_;

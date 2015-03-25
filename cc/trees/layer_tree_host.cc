@@ -1273,4 +1273,9 @@ void LayerTreeHost::SendBeginFramesToChildren(
   client_->SendBeginFramesToChildren(args);
 }
 
+void LayerTreeHost::SetAuthoritativeVSyncInterval(
+    const base::TimeDelta& interval) {
+  proxy_->SetAuthoritativeVSyncInterval(interval);
+}
+
 }  // namespace cc

@@ -87,6 +87,8 @@ Scheduler::Scheduler(
       primary_frame_source_internal_(external_begin_frame_source.Pass()),
       background_frame_source_internal_(),
       vsync_observer_(NULL),
+      authoritative_vsync_interval_(base::TimeDelta()),
+      last_vsync_timebase_(base::TimeTicks()),
       throttle_frame_production_(scheduler_settings.throttle_frame_production),
       settings_(scheduler_settings),
       client_(client),
@@ -148,9 +150,14 @@ base::TimeTicks Scheduler::Now() const {
 
 void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
                                       base::TimeDelta interval) {
-  // TODO(brianderson): We should not be receiving 0 intervals.
-  if (interval == base::TimeDelta())
+  if (authoritative_vsync_interval_ != base::TimeDelta()) {
+    interval = authoritative_vsync_interval_;
+  } else if (interval == base::TimeDelta()) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
     interval = BeginFrameArgs::DefaultInterval();
+  }
+
+  last_vsync_timebase_ = timebase;
 
   if (vsync_observer_)
     vsync_observer_->OnUpdateVSyncParameters(timebase, interval);
@@ -429,6 +436,12 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
 void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
   state_machine_.SetChildrenNeedBeginFrames(children_need_begin_frames);
   ProcessScheduledActions();
+}
+
+void Scheduler::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
+  authoritative_vsync_interval_ = interval;
+  if (vsync_observer_)
+    vsync_observer_->OnUpdateVSyncParameters(last_vsync_timebase_, interval);
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because

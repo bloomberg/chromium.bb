@@ -47,6 +47,8 @@ class FakeProxy : public Proxy {
   void SetDebugState(const LayerTreeDebugState& debug_state) override {}
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override {}
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override {
+  }
 
   virtual RendererCapabilities& GetRendererCapabilities();
   void SetMaxPartialTextureUpdates(size_t max);

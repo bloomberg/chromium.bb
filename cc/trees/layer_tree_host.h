@@ -306,6 +306,8 @@ class CC_EXPORT LayerTreeHost {
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) const;
   void SendBeginFramesToChildren(const BeginFrameArgs& args) const;
 
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* shared_bitmap_manager,

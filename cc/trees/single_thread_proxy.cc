@@ -753,6 +753,11 @@ void SingleThreadProxy::SetChildrenNeedBeginFrames(
       children_need_begin_frames);
 }
 
+void SingleThreadProxy::SetAuthoritativeVSyncInterval(
+    const base::TimeDelta& interval) {
+  scheduler_on_impl_thread_->SetAuthoritativeVSyncInterval(interval);
+}
+
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
   layer_tree_host_impl_->WillBeginImplFrame(args);
 }
