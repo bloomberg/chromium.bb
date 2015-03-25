@@ -343,8 +343,8 @@ gfx::Size AppListView::GetPreferredSize() const {
   return app_list_main_view_->GetPreferredSize();
 }
 
-void AppListView::Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) {
-  views::BubbleDelegateView::Paint(canvas, cull_set);
+void AppListView::OnPaint(gfx::Canvas* canvas) {
+  views::BubbleDelegateView::OnPaint(canvas);
   if (!next_paint_callback_.is_null()) {
     next_paint_callback_.Run();
     next_paint_callback_.Reset();

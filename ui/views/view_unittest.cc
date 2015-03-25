@@ -240,7 +240,7 @@ class TestView : public View {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
-  void Paint(gfx::Canvas* canvas, const CullSet& cull_set) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
@@ -423,7 +423,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
 // Painting
 ////////////////////////////////////////////////////////////////////////////////
 
-void TestView::Paint(gfx::Canvas* canvas, const CullSet& cull_set) {
+void TestView::OnPaint(gfx::Canvas* canvas) {
   canvas->sk_canvas()->getClipBounds(&last_clip_);
 }
 

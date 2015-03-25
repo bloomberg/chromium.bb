@@ -497,7 +497,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for View coordinates and language direction as required, allows the View
   // to paint itself via the various OnPaint*() event handlers and then paints
   // the hierarchy beneath it.
-  virtual void Paint(gfx::Canvas* canvas, const CullSet& cull_set);
+  void Paint(gfx::Canvas* canvas, const CullSet& cull_set);
 
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b);
