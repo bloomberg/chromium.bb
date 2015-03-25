@@ -3741,6 +3741,7 @@
             'dom/RangeTest.cpp',
             'dom/ScriptRunnerTest.cpp',
             'dom/TreeScopeTest.cpp',
+            'dom/shadow/ComposedTreeTraversalTest.cpp',
             'editing/CompositionUnderlineRangeFilterTest.cpp',
             'editing/FrameSelectionTest.cpp',
             'editing/InputMethodControllerTest.cpp',

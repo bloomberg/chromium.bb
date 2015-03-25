@@ -37,6 +37,14 @@ namespace blink {
 class ContainerNode;
 class Node;
 
+// Composed tree version of |NodeTraversal|.
+//
+// None of member functions takes a |ShadowRoot| or an active insertion point,
+// e.g. roughly speaking <content> and <shadow> in the shadow tree, see
+// |InsertionPoint::isActive()| for details of active insertion points, since
+// they aren't appeared in the composed tree. |assertPrecondition()| and
+// |assertPostCondition()| check this condition.
+//
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
 class ComposedTreeTraversal {
@@ -48,11 +56,44 @@ public:
 
     static Node* firstChild(const Node&);
     static Node* lastChild(const Node&);
+    static bool hasChildren(const Node&);
 
     static ContainerNode* parent(const Node&,  ParentTraversalDetails* = 0);
 
     static Node* nextSibling(const Node&);
     static Node* previousSibling(const Node&);
+
+    // Returns a child node at |index|. If |index| is greater than or equal to
+    // the children, this function returns |nullptr|.
+    static Node* childAt(const Node&, unsigned index);
+
+    // Composed tree version of |NodeTraversal::nextSkippingChildren()|. This
+    // function is similar to |next()| but skips child nodes of a specified
+    // node.
+    static Node* nextSkippingChildren(const Node&);
+
+    // Composed tree version of |NodeTraversal::previousSkippingChildren()|
+    // similar to |previous()| but skipping child nodes of the specified node.
+    static Node* previousSkippingChildren(const Node&);
+
+    // Composed tree version of |Node::isDescendantOf(other)|. This function
+    // returns true if |other| contains |node|, otherwise returns
+    // false. If |other| is |node|, this function returns false.
+    static bool isDescendantOf(const Node& /*node*/, const Node& other);
+
+    // Returns a common ancestor of |nodeA| and |nodeB| if exists, otherwise
+    // returns |nullptr|.
+    static Node* commonAncestor(const Node& nodeA, const Node& nodeB);
+
+    // Composed tree version of |Node::nodeIndex()|. This function returns a
+    // zero base position number of the specified node in child nodes list, or
+    // zero if the specified node has no parent.
+    static unsigned index(const Node&);
+
+    // Composed tree version of |ContainerNode::countChildren()|. This function
+    // returns the number of the child nodes of the specified node in the
+    // composed tree.
+    static unsigned countChildren(const Node&);
 
 private:
     enum TraversalDirection {
@@ -100,6 +141,8 @@ private:
     static Node* traverseBackToYoungerShadowRoot(const Node&, TraversalDirection);
 
     static ContainerNode* traverseParentOrHost(const Node&);
+    static Node* traverseNextAncestorSibling(const Node&);
+    static Node* traversePreviousAncestorSibling(const Node&);
 };
 
 inline ContainerNode* ComposedTreeTraversal::parent(const Node& node, ParentTraversalDetails* details)
@@ -177,6 +220,11 @@ inline Node* ComposedTreeTraversal::lastChild(const Node& node)
     Node* result = traverseLastChild(node);
     assertPostcondition(result);
     return result;
+}
+
+inline bool ComposedTreeTraversal::hasChildren(const Node& node)
+{
+    return firstChild(node);
 }
 
 inline Node* ComposedTreeTraversal::traverseNextSibling(const Node& node)

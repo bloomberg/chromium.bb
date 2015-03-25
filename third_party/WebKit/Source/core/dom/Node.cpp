@@ -870,25 +870,25 @@ bool Node::containsIncludingHostElements(const Node& node) const
     return false;
 }
 
-Node* Node::commonAncestor(const Node& other, ContainerNode* (*parent)(const Node&))
+Node* Node::commonAncestor(const Node& other, ContainerNode* (*parent)(const Node&)) const
 {
     if (this == other)
-        return this;
+        return const_cast<Node*>(this);
     if (document() != other.document())
         return nullptr;
     int thisDepth = 0;
-    for (Node* node = this; node; node = parent(*node)) {
+    for (const Node* node = this; node; node = parent(*node)) {
         if (node == &other)
-            return node;
+            return const_cast<Node*>(node);
         thisDepth++;
     }
     int otherDepth = 0;
     for (const Node* node = &other; node; node = parent(*node)) {
         if (node == this)
-            return this;
+            return const_cast<Node*>(this);
         otherDepth++;
     }
-    Node* thisIterator = this;
+    const Node* thisIterator = this;
     const Node* otherIterator = &other;
     if (thisDepth > otherDepth) {
         for (int i = thisDepth; i > otherDepth; --i)
@@ -899,7 +899,7 @@ Node* Node::commonAncestor(const Node& other, ContainerNode* (*parent)(const Nod
     }
     while (thisIterator) {
         if (thisIterator == otherIterator)
-            return thisIterator;
+            return const_cast<Node*>(thisIterator);
         thisIterator = parent(*thisIterator);
         otherIterator = parent(*otherIterator);
     }

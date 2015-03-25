@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -129,10 +128,10 @@ ContainerNode* ComposedTreeTraversal::traverseParent(const Node& node, ParentTra
                 details->didTraverseInsertionPoint(insertionPoint);
             // The node is distributed. But the distribution was stopped at this insertion point.
             if (shadowWhereNodeCanBeDistributed(*insertionPoint))
-                return 0;
+                return nullptr;
             return traverseParentOrHost(*insertionPoint);
         }
-        return 0;
+        return nullptr;
     }
     return traverseParentOrHost(node);
 }
@@ -141,17 +140,105 @@ inline ContainerNode* ComposedTreeTraversal::traverseParentOrHost(const Node& no
 {
     ContainerNode* parent = node.parentNode();
     if (!parent)
-        return 0;
+        return nullptr;
     if (!parent->isShadowRoot())
         return parent;
     ShadowRoot* shadowRoot = toShadowRoot(parent);
     ASSERT(!shadowRoot->shadowInsertionPointOfYoungerShadowRoot());
     if (!shadowRoot->isYoungest())
-        return 0;
+        return nullptr;
     Element* host = shadowRoot->host();
     if (isActiveInsertionPoint(*host))
-        return 0;
+        return nullptr;
     return host;
+}
+
+Node* ComposedTreeTraversal::childAt(const Node& node, unsigned index)
+{
+    assertPrecondition(node);
+    Node* child = traverseFirstChild(node);
+    while (child && index--)
+        child = nextSibling(*child);
+    assertPostcondition(child);
+    return child;
+}
+
+Node* ComposedTreeTraversal::nextSkippingChildren(const Node& node)
+{
+    if (Node* nextSibling = traverseNextSibling(node))
+        return nextSibling;
+    return traverseNextAncestorSibling(node);
+}
+
+Node* ComposedTreeTraversal::previousSkippingChildren(const Node& node)
+{
+    if (Node* previousSibling = traversePreviousSibling(node))
+        return previousSibling;
+    return traversePreviousAncestorSibling(node);
+}
+
+bool ComposedTreeTraversal::isDescendantOf(const Node& node, const Node& other)
+{
+    assertPrecondition(node);
+    assertPrecondition(other);
+    if (!hasChildren(other) || node.inDocument() != other.inDocument())
+        return false;
+    for (const ContainerNode* n = traverseParent(node); n; n = traverseParent(*n)) {
+        if (n == other)
+            return true;
+    }
+    return false;
+}
+
+Node* ComposedTreeTraversal::commonAncestor(const Node& nodeA, const Node& nodeB)
+{
+    assertPrecondition(nodeA);
+    assertPrecondition(nodeB);
+    Node* result = nodeA.commonAncestor(nodeB,
+        [](const Node& node)
+        {
+            return ComposedTreeTraversal::parent(node);
+        });
+    assertPostcondition(result);
+    return result;
+}
+
+Node* ComposedTreeTraversal::traverseNextAncestorSibling(const Node& node)
+{
+    ASSERT(!traverseNextSibling(node));
+    for (Node* parent = traverseParent(node); parent; parent = traverseParent(*parent)) {
+        if (Node* nextSibling = traverseNextSibling(*parent))
+            return nextSibling;
+    }
+    return nullptr;
+}
+
+Node* ComposedTreeTraversal::traversePreviousAncestorSibling(const Node& node)
+{
+    ASSERT(!traversePreviousSibling(node));
+    for (Node* parent = traverseParent(node); parent; parent = traverseParent(*parent)) {
+        if (Node* previousSibling = traversePreviousSibling(*parent))
+            return previousSibling;
+    }
+    return nullptr;
+}
+
+unsigned ComposedTreeTraversal::index(const Node& node)
+{
+    assertPrecondition(node);
+    unsigned count = 0;
+    for (Node* runner = traversePreviousSibling(node); runner; runner = previousSibling(*runner))
+        ++count;
+    return count;
+}
+
+unsigned ComposedTreeTraversal::countChildren(const Node& node)
+{
+    assertPrecondition(node);
+    unsigned count = 0;
+    for (Node* runner = traverseFirstChild(node); runner; runner = traverseNextSibling(*runner))
+        ++count;
+    return count;
 }
 
 } // namespace
