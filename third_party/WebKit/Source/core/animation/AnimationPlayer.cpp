@@ -803,12 +803,6 @@ void AnimationPlayer::cancel()
     m_startTime = nullValue();
     m_currentTimePending = false;
 
-    // after cancelation, transitions must be downgraded or they'll fail
-    // to be considered when retriggering themselves. This can happen if
-    // the transition is captured through getAnimationPlayers then played.
-    if (m_content && m_content->isAnimation())
-        toAnimation(m_content.get())->downgradeToNormalAnimation();
-
     InspectorInstrumentation::didCancelAnimationPlayer(timeline()->document(), this);
 }
 

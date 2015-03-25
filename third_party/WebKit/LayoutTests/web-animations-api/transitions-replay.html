@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id='element'></div>
+<style>
+    #element {
+        transition: background 100ms;
+        background: black;
+    }
+</style>
+<script>
+var t = async_test('Replaying a transition after it has finished should not trigger a new transition');
+
+t.step(function() {
+    element.offsetTop; // Force recalc
+    element.style.background = "green";
+    element.offsetTop; // Force recalc
+
+    assert_equals(document.timeline.getAnimationPlayers().length, 1);
+    var player = document.timeline.getAnimationPlayers()[0];
+    player.onfinish = function() {
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                player.startTime = document.timeline.currentTime - 10;
+                player.onfinish = t.done.bind(t);
+            });
+        });
+    }
+});
+</script>

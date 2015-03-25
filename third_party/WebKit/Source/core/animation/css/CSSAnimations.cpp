@@ -398,13 +398,22 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         if (animation->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end() && !player->limited())
             retargetedCompositorTransitions.add(id, std::pair<RefPtrWillBeMember<Animation>, double>(animation, player->startTimeInternal()));
         player->cancel();
+        // after cancelation, transitions must be downgraded or they'll fail
+        // to be considered when retriggering themselves. This can happen if
+        // the transition is captured through getAnimationPlayers then played.
+        if (player->source() && player->source()->isAnimation())
+            toAnimation(player->source())->downgradeToNormalAnimation();
         player->update(TimingUpdateOnDemand);
     }
 
     for (CSSPropertyID id : update->finishedTransitions()) {
         // This transition can also be cancelled and finished at the same time
-        if (m_transitions.contains(id))
-            m_transitions.take(id);
+        if (m_transitions.contains(id)) {
+            RefPtrWillBeRawPtr<AnimationPlayer> player = m_transitions.take(id).player;
+            // Transition must be downgraded
+            if (player->source() && player->source()->isAnimation())
+                toAnimation(player->source())->downgradeToNormalAnimation();
+        }
     }
 
     for (const auto& entry : update->newTransitions()) {
