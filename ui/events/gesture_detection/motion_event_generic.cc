@@ -197,9 +197,15 @@ scoped_ptr<MotionEventGeneric> MotionEventGeneric::CancelEvent(
   return cancel_event.Pass();
 }
 
-void MotionEventGeneric::PushPointer(const PointerProperties& pointer) {
+size_t MotionEventGeneric::PushPointer(const PointerProperties& pointer) {
   DCHECK_EQ(0U, GetHistorySize());
   pointers_->push_back(pointer);
+  return pointers_->size() - 1;
+}
+
+void MotionEventGeneric::RemovePointerAt(size_t index) {
+  DCHECK_LT(index, pointers_->size());
+  pointers_->erase(pointers_->begin() + index);
 }
 
 void MotionEventGeneric::PushHistoricalEvent(scoped_ptr<MotionEvent> event) {

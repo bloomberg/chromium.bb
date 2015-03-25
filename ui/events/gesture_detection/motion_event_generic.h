@@ -70,7 +70,16 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   float GetHistoricalY(size_t pointer_index,
                        size_t historical_index) const override;
 
-  void PushPointer(const PointerProperties& pointer);
+  // Adds |pointer| to the set of pointers returning the index it was added at.
+  size_t PushPointer(const PointerProperties& pointer);
+
+  // Removes the PointerProperties at |index|.
+  void RemovePointerAt(size_t index);
+
+  PointerProperties& pointer(size_t index) { return pointers_[index]; }
+  const PointerProperties& pointer(size_t index) const {
+    return pointers_[index];
+  }
 
   // Add an event to the history. |this| and |event| must have the same pointer
   // count and must both have an action of ACTION_MOVE.
@@ -92,11 +101,6 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   MotionEventGeneric& operator=(const MotionEventGeneric& other);
 
   void PopPointer();
-
-  PointerProperties& pointer(size_t index) { return pointers_[index]; }
-  const PointerProperties& pointer(size_t index) const {
-    return pointers_[index];
-  }
 
  private:
   enum { kTypicalMaxPointerCount = 5 };

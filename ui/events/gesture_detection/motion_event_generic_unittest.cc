@@ -130,7 +130,7 @@ TEST(MotionEventGenericTest, FindPointerIndexOfId) {
 
   MotionEventGeneric event1(event0);
   pointer.id = 7;
-  event1.PushPointer(pointer);
+  EXPECT_EQ(1u, event1.PushPointer(pointer));
   EXPECT_EQ(0, event1.FindPointerIndexOfId(0));
   EXPECT_EQ(1, event1.FindPointerIndexOfId(7));
   EXPECT_EQ(-1, event1.FindPointerIndexOfId(6));
@@ -138,12 +138,38 @@ TEST(MotionEventGenericTest, FindPointerIndexOfId) {
 
   MotionEventGeneric event2(event1);
   pointer.id = 3;
-  event2.PushPointer(pointer);
+  EXPECT_EQ(2u, event2.PushPointer(pointer));
   EXPECT_EQ(0, event2.FindPointerIndexOfId(0));
   EXPECT_EQ(1, event2.FindPointerIndexOfId(7));
   EXPECT_EQ(2, event2.FindPointerIndexOfId(3));
   EXPECT_EQ(-1, event2.FindPointerIndexOfId(1));
   EXPECT_EQ(-1, event2.FindPointerIndexOfId(2));
+}
+
+TEST(MotionEventGenericTest, RemovePointerAt) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  PointerProperties pointer;
+  pointer.id = 0;
+  MotionEventGeneric event(MotionEvent::ACTION_DOWN, event_time, pointer);
+
+  pointer.id = 7;
+  EXPECT_EQ(1u, event.PushPointer(pointer));
+  EXPECT_EQ(2u, event.GetPointerCount());
+
+  // Remove from the end.
+  event.RemovePointerAt(1);
+  EXPECT_EQ(1u, event.GetPointerCount());
+  EXPECT_EQ(-1, event.FindPointerIndexOfId(7));
+  EXPECT_EQ(0, event.FindPointerIndexOfId(0));
+
+  EXPECT_EQ(1u, event.PushPointer(pointer));
+  EXPECT_EQ(2u, event.GetPointerCount());
+
+  // Remove from the beginning.
+  event.RemovePointerAt(0);
+  EXPECT_EQ(1u, event.GetPointerCount());
+  EXPECT_EQ(0, event.FindPointerIndexOfId(7));
+  EXPECT_EQ(-1, event.FindPointerIndexOfId(0));
 }
 
 TEST(MotionEventGenericTest, ToString) {
