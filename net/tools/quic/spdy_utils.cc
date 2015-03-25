@@ -326,5 +326,12 @@ bool SpdyUtils::FillBalsaResponseHeaders(
   return true;
 }
 
+// static
+void SpdyUtils::SpdyHeadersToResponseHeaders(
+    const SpdyHeaderBlock& block,
+    BalsaHeaders* headers) {
+  FillBalsaResponseHeaders(block, headers);
+}
+
 }  // namespace tools
 }  // namespace net

@@ -19,6 +19,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/spdy_utils.h"
 #include "net/tools/quic/test_tools/http_message.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "url/gurl.h"
@@ -255,7 +256,8 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
                                           secure_));
   ssize_t ret = GetOrCreateStream()->SendRequest(
-      munged_headers.get() ? *munged_headers : *message.headers(),
+      SpdyUtils::RequestHeadersToSpdyHeaders(
+          munged_headers.get() ? *munged_headers : *message.headers()),
       message.body(), message.has_complete_message());
   WaitForWriteToFlush();
   return ret;
@@ -456,14 +458,14 @@ ssize_t QuicTestClient::Send(const void *buffer, size_t size) {
 bool QuicTestClient::response_headers_complete() const {
   if (stream_ != nullptr) {
     return stream_->headers_decompressed();
-  } else {
-    return response_headers_complete_;
   }
+  return response_headers_complete_;
 }
 
 const BalsaHeaders* QuicTestClient::response_headers() const {
   if (stream_ != nullptr) {
-    return &stream_->headers();
+    SpdyUtils::SpdyHeadersToResponseHeaders(stream_->headers(), &headers_);
+    return &headers_;
   } else {
     return &headers_;
   }
@@ -491,7 +493,8 @@ void QuicTestClient::OnClose(QuicDataStream* stream) {
   }
   response_complete_ = true;
   response_headers_complete_ = stream_->headers_decompressed();
-  headers_.CopyFrom(stream_->headers());
+  SpdyUtils::SpdyHeadersToResponseHeaders(stream_->headers(),
+                                          &headers_);
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read() + stream_->header_bytes_read();
   bytes_written_ =

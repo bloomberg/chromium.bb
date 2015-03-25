@@ -21,6 +21,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/spdy_utils.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -249,7 +250,8 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     LOG(DFATAL) << "stream creation failed!";
     return;
   }
-  stream->SendRequest(headers, body, fin);
+  stream->SendRequest(
+      SpdyUtils::RequestHeadersToSpdyHeaders(headers), body, fin);
   stream->set_visitor(this);
 }
 
@@ -321,15 +323,18 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
 void QuicClient::OnClose(QuicDataStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
+  BalsaHeaders headers;
+  SpdyUtils::FillBalsaResponseHeaders(client_stream->headers(), &headers);
+
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(
-        stream->id(), client_stream->headers(), client_stream->data());
+        stream->id(), headers, client_stream->data());
   }
 
   // Store response headers and body.
   if (store_response_) {
-    latest_response_code_ = client_stream->headers().parsed_response_code();
-    client_stream->headers().DumpHeadersToString(&latest_response_headers_);
+    latest_response_code_ = headers.parsed_response_code();
+    headers.DumpHeadersToString(&latest_response_headers_);
     latest_response_body_ = client_stream->data();
   }
 }

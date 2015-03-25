@@ -185,7 +185,7 @@ class QuicTestClient : public SimpleClient,
 
   bool response_complete_;
   bool response_headers_complete_;
-  BalsaHeaders headers_;
+  mutable BalsaHeaders headers_;
   QuicPriority priority_;
   std::string response_;
   uint64 bytes_read_;

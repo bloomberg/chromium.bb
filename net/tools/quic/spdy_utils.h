@@ -41,6 +41,9 @@ class SpdyUtils {
   static std::string SerializeUncompressedHeaders(
       const SpdyHeaderBlock& headers);
 
+  static void SpdyHeadersToResponseHeaders(const SpdyHeaderBlock& block,
+                                           BalsaHeaders* headers);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyUtils);
 };

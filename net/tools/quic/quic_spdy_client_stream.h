@@ -10,14 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
-#include "net/base/io_buffer.h"
 #include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/balsa/balsa_frame.h"
-#include "net/tools/balsa/balsa_headers.h"
+#include "net/spdy/spdy_framer.h"
 
 namespace net {
-
 namespace tools {
 
 class QuicClientSession;
@@ -41,11 +38,9 @@ class QuicSpdyClientStream : public QuicDataStream {
   // data for us.
   uint32 ProcessData(const char* data, uint32 data_len) override;
 
-  void OnFinRead() override;
-
   // Serializes the headers and body, sends it to the server, and
   // returns the number of bytes sent.
-  ssize_t SendRequest(const BalsaHeaders& headers,
+  ssize_t SendRequest(const SpdyHeaderBlock& headers,
                       base::StringPiece body,
                       bool fin);
 
@@ -60,24 +55,27 @@ class QuicSpdyClientStream : public QuicDataStream {
   const std::string& data() { return data_; }
 
   // Returns whatever headers have been received for this stream.
-  const BalsaHeaders& headers() { return headers_; }
+  const SpdyHeaderBlock& headers() { return response_headers_; }
 
   size_t header_bytes_read() const { return header_bytes_read_; }
 
   size_t header_bytes_written() const { return header_bytes_written_; }
+
+  int response_code() const { return response_code_; }
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
   using QuicDataStream::set_priority;
 
  private:
-  int ParseResponseHeaders();
+  bool ParseResponseHeaders(const char* data, uint32 data_len);
 
-  BalsaHeaders headers_;
+  // The parsed headers received from the server.
+  SpdyHeaderBlock response_headers_;
+  // The parsed content-length, or -1 if none is specified.
+  int content_length_;
+  int response_code_;
   std::string data_;
-
-  scoped_refptr<GrowableIOBuffer> read_buf_;
-  bool response_headers_received_;
   size_t header_bytes_read_;
   size_t header_bytes_written_;
 

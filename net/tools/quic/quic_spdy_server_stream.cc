@@ -42,7 +42,8 @@ uint32 QuicSpdyServerStream::ProcessData(const char* data, uint32 data_len) {
     body_.append(data, data_len);
   }
   DCHECK(!request_headers_.empty());
-  if (content_length_ > 0 && static_cast<int>(body_.size()) > content_length_) {
+  if (content_length_ >= 0 &&
+      static_cast<int>(body_.size()) > content_length_) {
     SendErrorResponse();
     return 0;
   }
