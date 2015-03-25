@@ -717,6 +717,8 @@
       'browser/ui/cocoa/tabs/tab_view.mm',
       'browser/ui/cocoa/tabs/tab_window_controller.h',
       'browser/ui/cocoa/tabs/tab_window_controller.mm',
+      'browser/ui/cocoa/task_manager_mac.h',
+      'browser/ui/cocoa/task_manager_mac.mm',
       'browser/ui/cocoa/themed_window.h',
       'browser/ui/cocoa/themed_window.mm',
       'browser/ui/cocoa/toolbar/back_forward_menu_controller.h',
@@ -2291,6 +2293,7 @@
       'browser/ui/views/tabs/window_finder_chromeos.cc',
       'browser/ui/views/tabs/window_finder_mac.mm',
       'browser/ui/views/tabs/window_finder_win.cc',
+      'browser/ui/views/task_manager_view.cc',
       'browser/ui/views/theme_image_mapper.cc',
       'browser/ui/views/theme_image_mapper.h',
       'browser/ui/views/toolbar/back_button.cc',
@@ -2662,11 +2665,6 @@
       'browser/ui/webui/local_discovery/local_discovery_ui_handler.cc',
       'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
     ],
-    'chrome_browser_ui_task_manager_sources': [
-      'browser/ui/cocoa/task_manager_mac.h',
-      'browser/ui/cocoa/task_manager_mac.mm',
-      'browser/ui/views/task_manager_view.cc',
-    ],
     'chrome_browser_ui_toolbar_model_sources': [
       'browser/ui/android/toolbar/toolbar_model_android.cc',
       'browser/ui/android/toolbar/toolbar_model_android.h',
@@ -2806,9 +2804,6 @@
         }],
         ['enable_one_click_signin==1', {
           'sources': [ '<@(chrome_browser_ui_one_click_signin_sources)' ]
-        }],
-        ['enable_task_manager==1', {
-          'sources': [ '<@(chrome_browser_ui_task_manager_sources)' ],
         }],
         ['disable_nacl==0', {
           'sources': [ '<@(chrome_browser_ui_nacl_sources)' ],

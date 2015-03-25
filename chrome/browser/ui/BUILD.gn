@@ -149,11 +149,6 @@ static_library("ui") {
                     ".",
                     "//chrome")
   }
-  if (enable_task_manager) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_task_manager_sources,
-                           ".",
-                           "//chrome")
-  }
   if (enable_nacl) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_nacl_sources, ".", "//chrome")
