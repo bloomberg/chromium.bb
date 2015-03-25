@@ -155,7 +155,7 @@ public:
     {
         if (genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace)
             return FixedPitchFont;
-        return NonFixedPitchFont;
+        return VariablePitchFont;
     }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
     VariantLigatures variantLigatures() const;

@@ -347,20 +347,20 @@ PassRefPtrWillBeRawPtr<CSSValue> HTMLFontSizeEquivalent::attributeValueAsCSSValu
 float EditingStyle::NoFontDelta = 0.0f;
 
 EditingStyle::EditingStyle()
-    : m_fixedPitchFontType(NonFixedPitchFont)
+    : m_fixedPitchFontType(VariablePitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
 }
 
 EditingStyle::EditingStyle(ContainerNode* node, PropertiesToInclude propertiesToInclude)
-    : m_fixedPitchFontType(NonFixedPitchFont)
+    : m_fixedPitchFontType(VariablePitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     init(node, propertiesToInclude);
 }
 
 EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propertiesToInclude)
-    : m_fixedPitchFontType(NonFixedPitchFont)
+    : m_fixedPitchFontType(VariablePitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     init(position.deprecatedNode(), propertiesToInclude);
@@ -368,7 +368,7 @@ EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propert
 
 EditingStyle::EditingStyle(const StylePropertySet* style)
     : m_mutableStyle(style ? style->mutableCopy() : nullptr)
-    , m_fixedPitchFontType(NonFixedPitchFont)
+    , m_fixedPitchFontType(VariablePitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     extractFontSizeDelta();
@@ -376,7 +376,7 @@ EditingStyle::EditingStyle(const StylePropertySet* style)
 
 EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
     : m_mutableStyle(nullptr)
-    , m_fixedPitchFontType(NonFixedPitchFont)
+    , m_fixedPitchFontType(VariablePitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
     setProperty(propertyID, value);
@@ -580,7 +580,7 @@ void EditingStyle::overrideWithStyle(const StylePropertySet* style)
 void EditingStyle::clear()
 {
     m_mutableStyle.clear();
-    m_fixedPitchFontType = NonFixedPitchFont;
+    m_fixedPitchFontType = VariablePitchFont;
     m_fontSizeDelta = NoFontDelta;
 }
 

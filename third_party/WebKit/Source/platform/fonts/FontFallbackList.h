@@ -21,6 +21,7 @@
 #ifndef FontFallbackList_h
 #define FontFallbackList_h
 
+#include "platform/fonts/FixedPitchFontType.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/WidthCache.h"
@@ -67,9 +68,9 @@ public:
 
     bool isFixedPitch(const FontDescription& fontDescription) const
     {
-        if (m_pitch == UnknownPitch)
+        if (m_pitch == UnknownPitchFont)
             determinePitch(fontDescription);
-        return m_pitch == FixedPitch;
+        return m_pitch == FixedPitchFont;
     }
     void determinePitch(const FontDescription&) const;
 
@@ -123,7 +124,7 @@ private:
     unsigned m_fontSelectorVersion;
     mutable int m_familyIndex;
     unsigned short m_generation;
-    mutable unsigned m_pitch : 3; // Pitch
+    mutable FixedPitchFontType m_pitch : 3; // Pitch
     mutable bool m_hasLoadingFallback : 1;
 };
 

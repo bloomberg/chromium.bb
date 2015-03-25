@@ -445,11 +445,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValu
 FixedPitchFontType CSSComputedStyleDeclaration::fixedPitchFontType() const
 {
     if (!m_node)
-        return NonFixedPitchFont;
+        return VariablePitchFont;
 
     const LayoutStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
-        return NonFixedPitchFont;
+        return VariablePitchFont;
 
     return style->fontDescription().fixedPitchFontType();
 }

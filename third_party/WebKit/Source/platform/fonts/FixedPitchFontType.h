@@ -9,7 +9,8 @@ namespace blink {
 
 enum FixedPitchFontType {
     FixedPitchFont,
-    NonFixedPitchFont
+    VariablePitchFont,
+    UnknownPitchFont
 };
 
 } // namespace blink

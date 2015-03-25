@@ -57,7 +57,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
     : m_maxCharWidth(-1)
     , m_avgCharWidth(-1)
     , m_platformData(platformData)
-    , m_treatAsFixedPitch(false)
+    , m_pitch(UnknownPitchFont)
     , m_isTextOrientationFallback(isTextOrientationFallback)
     , m_isBrokenIdeographFallback(false)
     , m_verticalData(nullptr)
@@ -74,7 +74,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
 
 SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
     : m_platformData(FontPlatformData(fontSize, syntheticBold, syntheticItalic))
-    , m_treatAsFixedPitch(false)
+    , m_pitch(UnknownPitchFont)
     , m_isTextOrientationFallback(false)
     , m_isBrokenIdeographFallback(false)
     , m_verticalData(nullptr)
@@ -399,7 +399,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
 
 void SimpleFontData::determinePitch()
 {
-    m_treatAsFixedPitch = platformData().isFixedPitch();
+    m_pitch = platformData().isFixedPitch() ? FixedPitchFont : VariablePitchFont;
 }
 
 static inline void getSkiaBoundsForGlyph(SkPaint& paint, Glyph glyph, SkRect& bounds)
