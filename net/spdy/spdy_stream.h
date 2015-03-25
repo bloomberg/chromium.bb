@@ -262,8 +262,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // If stream flow control is turned off, this must not be called.
   void IncreaseRecvWindowSize(int32 delta_window_size);
 
-  // Called by OnDataReceived (which is in turn called by the session)
-  // to decrease this stream's receive window size by
+  // Called by OnDataReceived or OnPaddingConsumed (which are in turn called by
+  // the session) to decrease this stream's receive window size by
   // |delta_window_size|, which must be at least 1 and must not cause
   // this stream's receive window size to go negative.
   //
@@ -314,6 +314,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // |length| is the number of bytes received (at most 2^24 - 1) or 0 if
   //          the stream is being closed.
   void OnDataReceived(scoped_ptr<SpdyBuffer> buffer);
+
+  // Called by the SpdySession when padding is consumed to allow for the stream
+  // receiving window to be updated.
+  void OnPaddingConsumed(size_t len);
 
   // Called by the SpdySession when a frame has been successfully and
   // completely written. |frame_size| is the total size of the frame

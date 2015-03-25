@@ -540,6 +540,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustRecvWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustSendWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlInactiveStream);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlPadding);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoReceiveLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
@@ -833,6 +834,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                          const char* data,
                          size_t len,
                          bool fin) override;
+  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
   void OnSettings(bool clear_persisted) override;
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
   void OnWindowUpdate(SpdyStreamId stream_id,

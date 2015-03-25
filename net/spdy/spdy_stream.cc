@@ -526,6 +526,17 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   delegate_->OnDataReceived(buffer.Pass());
 }
 
+void SpdyStream::OnPaddingConsumed(size_t len) {
+  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
+    // Decrease window size because padding bytes are received.
+    // Increase window size because padding bytes are consumed (by discarding).
+    // Net result: |session_unacked_recv_window_bytes_| increases by |len|,
+    // |session_recv_window_size_| does not change.
+    DecreaseRecvWindowSize(static_cast<int32>(len));
+    IncreaseRecvWindowSize(static_cast<int32>(len));
+  }
+}
+
 void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
                                       size_t frame_size) {
   DCHECK_NE(type_, SPDY_PUSH_STREAM);

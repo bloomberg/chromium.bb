@@ -243,6 +243,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                          const char* data,
                          size_t len,
                          bool fin) override {}
+  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {}
   void OnSettings(bool clear_persisted) override {}
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {}
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
@@ -1221,6 +1222,18 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id,
   SpdyFramer framer(spdy_version_);
   SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
   data_ir.set_fin(fin);
+  return framer.SerializeData(data_ir);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id,
+                                                const char* data,
+                                                uint32 len,
+                                                bool fin,
+                                                int padding_length) {
+  SpdyFramer framer(spdy_version_);
+  SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
+  data_ir.set_fin(fin);
+  data_ir.set_padding_len(padding_length);
   return framer.SerializeData(data_ir);
 }
 

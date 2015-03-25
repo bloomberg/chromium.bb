@@ -537,6 +537,13 @@ class SpdyTestUtil {
   SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
                                     uint32 len, bool fin);
 
+  // Constructs a single SPDY data frame with the given content and padding.
+  SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
+                                    const char* data,
+                                    uint32 len,
+                                    bool fin,
+                                    int padding_length);
+
   // Wraps |frame| in the payload of a data frame in stream |stream_id|.
   SpdyFrame* ConstructWrappedSpdyFrame(const scoped_ptr<SpdyFrame>& frame,
                                        int stream_id);

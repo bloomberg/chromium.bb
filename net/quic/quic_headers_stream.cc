@@ -92,6 +92,10 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY DATA frame received.");
   }
 
+  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
+    CloseConnection("SPDY frame padding received.");
+  }
+
   void OnError(SpdyFramer* framer) override {
     CloseConnection(base::StringPrintf(
         "SPDY framing error: %s",

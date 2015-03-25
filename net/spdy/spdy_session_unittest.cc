@@ -3630,6 +3630,46 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
   data.RunFor(1);
 }
 
+// The frame header is not included in flow control, but frame payload
+// (including optional pad length and padding) is.
+TEST_P(SpdySessionTest, SessionFlowControlPadding) {
+  // Padding only exists in HTTP/2.
+  if (GetParam() < kProtoSPDY4MinimumVersion)
+    return;
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  const int padding_length = 42;
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyBodyFrame(
+      1, kUploadData, kUploadDataSize, false, padding_length));
+  MockRead reads[] = {
+      CreateMockRead(*resp, 0), MockRead(ASYNC, 0, 1)  // EOF
+  };
+  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
+            session->flow_control_state());
+
+  EXPECT_EQ(SpdySession::GetInitialWindowSize(GetParam()),
+            session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+
+  data.RunFor(1);
+
+  EXPECT_EQ(SpdySession::GetInitialWindowSize(GetParam()),
+            session->session_recv_window_size_);
+  EXPECT_EQ(kUploadDataSize + padding_length,
+            session->session_unacked_recv_window_bytes_);
+
+  data.RunFor(1);
+}
+
 // A delegate that drops any received data.
 class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
  public:

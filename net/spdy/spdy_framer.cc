@@ -2160,10 +2160,13 @@ size_t SpdyFramer::ProcessDataFramePaddingLength(const char* data, size_t len) {
         return 0;
       }
 
+      static_assert(kPadLengthFieldSize == 1,
+                    "Unexpected pad length field size.");
       remaining_padding_payload_length_ = *reinterpret_cast<const uint8*>(data);
       ++data;
       --len;
       --remaining_data_length_;
+      visitor_->OnStreamPadding(current_frame_stream_id_, kPadLengthFieldSize);
     } else {
       // We don't have the data available for parsing the pad length field. Keep
       // waiting.
@@ -2187,11 +2190,8 @@ size_t SpdyFramer::ProcessFramePadding(const char* data, size_t len) {
     DCHECK_EQ(remaining_padding_payload_length_, remaining_data_length_);
     size_t amount_to_discard = std::min(remaining_padding_payload_length_, len);
     if (current_frame_type_ == DATA && amount_to_discard > 0) {
-      // The visitor needs to know about padding so it can send window updates.
-      // Communicate the padding to the visitor through a NULL data pointer,
-      // with a nonzero size.
-      visitor_->OnStreamFrameData(
-          current_frame_stream_id_, NULL, amount_to_discard, false);
+      DCHECK_LE(SPDY4, protocol_version());
+      visitor_->OnStreamPadding(current_frame_stream_id_, amount_to_discard);
     }
     data += amount_to_discard;
     len -= amount_to_discard;

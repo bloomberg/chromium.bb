@@ -2045,14 +2045,6 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
                                     size_t len,
                                     bool fin) {
   CHECK(in_io_loop_);
-
-  if (data == NULL && len != 0) {
-    // This is notification of consumed data padding.
-    // TODO(jgraettinger): Properly flow padding into WINDOW_UPDATE frames.
-    // See crbug.com/353012.
-    return;
-  }
-
   DCHECK_LT(len, 1u << 24);
   if (net_log().IsLogging()) {
     net_log().AddEvent(
@@ -2100,6 +2092,25 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
   }
 
   stream->OnDataReceived(buffer.Pass());
+}
+
+void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
+  CHECK(in_io_loop_);
+
+  if (flow_control_state_ != FLOW_CONTROL_STREAM_AND_SESSION)
+    return;
+
+  // Decrease window size because padding bytes are received.
+  // Increase window size because padding bytes are consumed (by discarding).
+  // Net result: |session_unacked_recv_window_bytes_| increases by |len|,
+  // |session_recv_window_size_| does not change.
+  DecreaseRecvWindowSize(static_cast<int32>(len));
+  IncreaseRecvWindowSize(static_cast<int32>(len));
+
+  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  if (it == active_streams_.end())
+    return;
+  it->second.stream->OnPaddingConsumed(len);
 }
 
 void SpdySession::OnSettings(bool clear_persisted) {

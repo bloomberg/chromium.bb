@@ -89,6 +89,10 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
 
+    void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
+      LOG(FATAL);
+    }
+
     bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                   const char* header_data,
                                   size_t len) override {
@@ -291,14 +295,20 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       ++zero_length_data_frame_count_;
 
     data_bytes_ += len;
-    std::cerr << "OnStreamFrameData(" << stream_id << ", \"";
+    LOG(INFO) << "OnStreamFrameData(" << stream_id << ", \"";
     if (len > 0) {
       for (size_t i = 0 ; i < len; ++i) {
-        std::cerr << std::hex << (0xFF & static_cast<unsigned int>(data[i]))
+        LOG(INFO) << std::hex << (0xFF & static_cast<unsigned int>(data[i]))
                   << std::dec;
       }
     }
-    std::cerr << "\", " << len << ")\n";
+    LOG(INFO) << "\", " << len << ")\n";
+  }
+
+  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
+    EXPECT_EQ(header_stream_id_, stream_id);
+    data_bytes_ += len;
+    LOG(INFO) << "OnStreamPadding(" << stream_id << ", " << len << ")\n";
   }
 
   bool OnControlFrameHeaderData(SpdyStreamId stream_id,
@@ -4129,6 +4139,7 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   bytes_consumed += framer.GetDataFrameMinimumSize();
 
   // Send the padding length field.
+  EXPECT_CALL(visitor, OnStreamPadding(1, 1));
   CHECK_EQ(1u, framer.ProcessInput(frame->data() + bytes_consumed, 1));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_FORWARD_STREAM_FRAME);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
@@ -4149,14 +4160,14 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   bytes_consumed += 3;
 
   // Send the first 100 bytes of the padding payload.
-  EXPECT_CALL(visitor, OnStreamFrameData(1, NULL, 100, false));
+  EXPECT_CALL(visitor, OnStreamPadding(1, 100));
   CHECK_EQ(100u, framer.ProcessInput(frame->data() + bytes_consumed, 100));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_CONSUME_PADDING);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
   bytes_consumed += 100;
 
   // Send rest of the padding payload.
-  EXPECT_CALL(visitor, OnStreamFrameData(1, NULL, 18, false));
+  EXPECT_CALL(visitor, OnStreamPadding(1, 18));
   CHECK_EQ(18u, framer.ProcessInput(frame->data() + bytes_consumed, 18));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_RESET);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
@@ -4934,7 +4945,9 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
     } else {
       EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
       if (flags & DATA_FLAG_PADDED) {
-        // Expect Error since we don't set padded in payload.
+        // The first byte of payload is parsed as padding length.
+        EXPECT_CALL(visitor, OnStreamPadding(_, 1));
+        // Expect Error since the frame ends prematurely.
         EXPECT_CALL(visitor, OnError(_));
       } else {
         EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, false));
@@ -4946,10 +4959,9 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
 
     framer.ProcessInput(frame->data(), frame->size());
     if ((flags & ~valid_data_flags) || (flags & DATA_FLAG_PADDED)) {
-        EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-        EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS,
-                  framer.error_code())
-            << SpdyFramer::ErrorCodeToString(framer.error_code());
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS, framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
     } else {
       EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())

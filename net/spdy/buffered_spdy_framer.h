@@ -71,6 +71,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                                  size_t len,
                                  bool fin) = 0;
 
+  // Called when padding is received (padding length field or padding octets).
+  // |stream_id| The stream receiving data.
+  // |len| The number of padding octets.
+  virtual void OnStreamPadding(SpdyStreamId stream_id, size_t len) = 0;
+
   // Called when a SETTINGS frame is received.
   // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
   virtual void OnSettings(bool clear_persisted) = 0;
@@ -156,6 +161,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                          const char* data,
                          size_t len,
                          bool fin) override;
+  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
   void OnSettings(bool clear_persisted) override;
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
   void OnSettingsAck() override;

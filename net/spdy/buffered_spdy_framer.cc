@@ -190,6 +190,10 @@ void BufferedSpdyFramer::OnStreamFrameData(SpdyStreamId stream_id,
   visitor_->OnStreamFrameData(stream_id, data, len, fin);
 }
 
+void BufferedSpdyFramer::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
+  visitor_->OnStreamPadding(stream_id, len);
+}
+
 void BufferedSpdyFramer::OnSettings(bool clear_persisted) {
   visitor_->OnSettings(clear_persisted);
 }
