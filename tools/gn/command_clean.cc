@@ -30,10 +30,10 @@ std::string ExtractGNBuildCommands(const base::FilePath& build_ninja_file) {
 
   std::string result;
   int num_blank_lines = 0;
-  for (size_t i = 0; i < lines.size(); ++i) {
-    result += lines[i];
+  for (const auto& line : lines) {
+    result += line;
     result += "\n";
-    if (lines[i].empty()) {
+    if (line.empty()) {
       ++num_blank_lines;
     }
     if (num_blank_lines == 2)

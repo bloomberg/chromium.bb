@@ -330,10 +330,10 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
   Err last_error;
 
   bool found_dependency = false;
-  for (size_t i = 0; i < targets.size(); i++) {
+  for (const auto& target : targets) {
     // We always allow source files in a target to include headers also in that
     // target.
-    const Target* to_target = targets[i].target;
+    const Target* to_target = target.target;
     if (to_target == from_target)
       return true;
 
@@ -357,20 +357,19 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
 
       found_dependency = true;
 
-      if (targets[i].is_public && is_permitted_chain) {
+      if (target.is_public && is_permitted_chain) {
         // This one is OK, we're done.
         last_error = Err();
         break;
       }
 
       // Diagnose the error.
-      if (!targets[i].is_public) {
+      if (!target.is_public) {
         // Danger: must call CreatePersistentRange to put in Err.
-        last_error = Err(
-            CreatePersistentRange(source_file, range),
-            "Including a private header.",
-            "This file is private to the target " +
-                targets[i].target->label().GetUserVisibleName(false));
+        last_error = Err(CreatePersistentRange(source_file, range),
+                         "Including a private header.",
+                         "This file is private to the target " +
+                             target.target->label().GetUserVisibleName(false));
       } else if (!is_permitted_chain) {
         last_error = Err(
             CreatePersistentRange(source_file, range),

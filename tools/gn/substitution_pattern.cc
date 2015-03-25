@@ -101,19 +101,19 @@ SubstitutionPattern SubstitutionPattern::MakeForTest(const char* str) {
 
 std::string SubstitutionPattern::AsString() const {
   std::string result;
-  for (size_t i = 0; i < ranges_.size(); i++) {
-    if (ranges_[i].type == SUBSTITUTION_LITERAL)
-      result.append(ranges_[i].literal);
+  for (const auto& elem : ranges_) {
+    if (elem.type == SUBSTITUTION_LITERAL)
+      result.append(elem.literal);
     else
-      result.append(kSubstitutionNames[ranges_[i].type]);
+      result.append(kSubstitutionNames[elem.type]);
   }
   return result;
 }
 
 void SubstitutionPattern::FillRequiredTypes(SubstitutionBits* bits) const {
-  for (size_t i = 0; i < ranges_.size(); i++) {
-    if (ranges_[i].type != SUBSTITUTION_LITERAL)
-      bits->used[static_cast<size_t>(ranges_[i].type)] = true;
+  for (const auto& elem : ranges_) {
+    if (elem.type != SUBSTITUTION_LITERAL)
+      bits->used[static_cast<size_t>(elem.type)] = true;
   }
 }
 

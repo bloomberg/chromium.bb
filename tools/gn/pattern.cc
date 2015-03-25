@@ -167,16 +167,16 @@ void PatternList::SetFromValue(const Value& v, Err* err) {
   }
 
   const std::vector<Value>& list = v.list_value();
-  for (size_t i = 0; i < list.size(); i++) {
-    if (!list[i].VerifyTypeIs(Value::STRING, err))
+  for (const auto& elem : list) {
+    if (!elem.VerifyTypeIs(Value::STRING, err))
       return;
-    patterns_.push_back(Pattern(list[i].string_value()));
+    patterns_.push_back(Pattern(elem.string_value()));
   }
 }
 
 bool PatternList::MatchesString(const std::string& s) const {
-  for (size_t i = 0; i < patterns_.size(); i++) {
-    if (patterns_[i].MatchesString(s))
+  for (const auto& pattern : patterns_) {
+    if (pattern.MatchesString(s))
       return true;
   }
   return false;

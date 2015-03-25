@@ -195,16 +195,14 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   }
 
   // Input files are order-only deps.
-  const Target::FileList& prereqs = target_->inputs();
-  for (size_t i = 0; i < prereqs.size(); i++) {
+  for (const auto& input : target_->inputs()) {
     out_ << " ";
-    path_output_.WriteFile(out_, prereqs[i]);
+    path_output_.WriteFile(out_, input);
   }
   if (list_sources_as_input_deps) {
-    const Target::FileList& sources = target_->sources();
-    for (size_t i = 0; i < sources.size(); i++) {
+    for (const auto& source : target_->sources()) {
       out_ << " ";
-      path_output_.WriteFile(out_, sources[i]);
+      path_output_.WriteFile(out_, source);
     }
   }
 
@@ -225,8 +223,8 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   // toolchains often have more than one dependency, we could consider writing
   // a toolchain-specific stamp file and only include the stamp here.
   const LabelTargetVector& toolchain_deps = target_->toolchain()->deps();
-  for (size_t i = 0; i < toolchain_deps.size(); i++)
-    unique_deps.insert(toolchain_deps[i].ptr);
+  for (const auto& toolchain_dep : toolchain_deps)
+    unique_deps.insert(toolchain_dep.ptr);
 
   for (const auto& dep : unique_deps) {
     DCHECK(!dep->dependency_output_file().value().empty());

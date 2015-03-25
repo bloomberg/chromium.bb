@@ -89,9 +89,9 @@ void Toolchain::SetTool(ToolType type, scoped_ptr<Tool> t) {
 
 void Toolchain::ToolchainSetupComplete() {
   // Collect required bits from all tools.
-  for (size_t i = 0; i < TYPE_NUMTYPES; i++) {
-    if (tools_[i])
-      substitution_bits_.MergeFrom(tools_[i]->substitution_bits());
+  for (const auto& tool : tools_) {
+    if (tool)
+      substitution_bits_.MergeFrom(tool->substitution_bits());
   }
 
   setup_complete_ = true;

@@ -194,8 +194,8 @@ bool ExecProcess(const base::CommandLine& cmdline,
         // Adding another element here? Remeber to increase the argument to
         // reserve(), above.
 
-        for (size_t i = 0; i < fd_shuffle1.size(); ++i)
-          fd_shuffle2.push_back(fd_shuffle1[i]);
+        for (const auto& elem : fd_shuffle1)
+          fd_shuffle2.push_back(elem);
 
         if (!ShuffleFileDescriptors(&fd_shuffle1))
           _exit(127);

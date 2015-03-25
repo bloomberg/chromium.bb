@@ -257,9 +257,9 @@ void PrintConfigsVector(const Target* target,
     OutputString("\n" + heading + " (in order applying):\n");
 
   Label toolchain_label = target->label().GetToolchainLabel();
-  for (size_t i = 0; i < configs.size(); i++) {
-    OutputString("  " +
-        configs[i].label.GetUserVisibleName(toolchain_label) + "\n");
+  for (const auto& config : configs) {
+    OutputString("  " + config.label.GetUserVisibleName(toolchain_label) +
+                 "\n");
   }
 }
 
@@ -275,9 +275,9 @@ void PrintConfigsVector(const Target* target,
     OutputString("\n" + heading + " (in order applying):\n");
 
   Label toolchain_label = target->label().GetToolchainLabel();
-  for (size_t i = 0; i < configs.size(); i++) {
-    OutputString("  " +
-        configs[i].label.GetUserVisibleName(toolchain_label) + "\n");
+  for (const auto& config : configs) {
+    OutputString("  " + config.label.GetUserVisibleName(toolchain_label) +
+                 "\n");
   }
 }
 
@@ -310,8 +310,8 @@ void PrintFileList(const Target::FileList& files,
 
   Target::FileList sorted = files;
   std::sort(sorted.begin(), sorted.end());
-  for (size_t i = 0; i < sorted.size(); i++)
-    OutputString(indent + sorted[i].value() + "\n");
+  for (const auto& elem : sorted)
+    OutputString(indent + elem.value() + "\n");
 }
 
 void PrintSources(const Target* target, bool display_header) {
@@ -328,11 +328,8 @@ void PrintOutputs(const Target* target, bool display_header) {
 
   if (target->output_type() == Target::ACTION) {
     // Action, print out outputs, don't apply sources to it.
-    for (size_t i = 0; i < target->action_values().outputs().list().size();
-         i++) {
-      OutputString("  " +
-                   target->action_values().outputs().list()[i].AsString() +
-                   "\n");
+    for (const auto& elem : target->action_values().outputs().list()) {
+      OutputString("  " + elem.AsString() + "\n");
     }
   } else {
     const SubstitutionList& outputs = target->action_values().outputs();
@@ -340,8 +337,8 @@ void PrintOutputs(const Target* target, bool display_header) {
       // Display the pattern and resolved pattern separately, since there are
       // subtitutions used.
       OutputString("  Output pattern:\n");
-      for (size_t i = 0; i < outputs.list().size(); i++)
-        OutputString("    " + outputs.list()[i].AsString() + "\n");
+      for (const auto& elem : outputs.list())
+        OutputString("    " + elem.AsString() + "\n");
 
       // Now display what that resolves to given the sources.
       OutputString("\n  Resolved output file list:\n");
@@ -364,9 +361,8 @@ void PrintScript(const Target* target, bool display_header) {
 void PrintArgs(const Target* target, bool display_header) {
   if (display_header)
     OutputString("\nargs:\n");
-  for (size_t i = 0; i < target->action_values().args().list().size(); i++) {
-    OutputString("  " +
-                 target->action_values().args().list()[i].AsString() + "\n");
+  for (const auto& elem : target->action_values().args().list()) {
+    OutputString("  " + elem.AsString() + "\n");
   }
 }
 

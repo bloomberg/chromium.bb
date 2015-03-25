@@ -100,9 +100,7 @@ void NinjaCopyTargetWriter::WriteCopyRules(
   // where a command might need to make sure something else runs before it runs
   // to avoid conflicts. Such cases should be avoided where possible, but
   // sometimes that's not possible.
-  for (size_t i = 0; i < target_->sources().size(); i++) {
-    const SourceFile& input_file = target_->sources()[i];
-
+  for (const auto& input_file : target_->sources()) {
     OutputFile output_file =
         SubstitutionWriter::ApplyPatternToSourceAsOutputFile(
             target_->settings(), output_subst, input_file);

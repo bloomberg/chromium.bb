@@ -44,18 +44,18 @@ void EscapeStringToString_Ninja(const base::StringPiece& str,
                                 const EscapeOptions& options,
                                 DestString* dest,
                                 bool* needed_quoting) {
-  for (size_t i = 0; i < str.size(); i++)
-    NinjaEscapeChar(str[i], dest);
+  for (const auto& elem : str)
+    NinjaEscapeChar(elem, dest);
 }
 
 template<typename DestString>
 void EscapeStringToString_NinjaPreformatted(const base::StringPiece& str,
                                             DestString* dest) {
   // Only Ninja-escape $.
-  for (size_t i = 0; i < str.size(); i++) {
-    if (str[i] == '$')
+  for (const auto& elem : str) {
+    if (elem == '$')
       dest->push_back('$');
-    dest->push_back(str[i]);
+    dest->push_back(elem);
   }
 }
 
@@ -118,26 +118,26 @@ void EscapeStringToString_PosixNinjaFork(const base::StringPiece& str,
                                          const EscapeOptions& options,
                                          DestString* dest,
                                          bool* needed_quoting) {
-  for (size_t i = 0; i < str.size(); i++) {
-    if (str[i] == '$' || str[i] == ' ') {
+  for (const auto& elem : str) {
+    if (elem == '$' || elem == ' ') {
       // Space and $ are special to both Ninja and the shell. '$' escape for
       // Ninja, then backslash-escape for the shell.
       dest->push_back('\\');
       dest->push_back('$');
-      dest->push_back(str[i]);
-    } else if (str[i] == ':') {
+      dest->push_back(elem);
+    } else if (elem == ':') {
       // Colon is the only other Ninja special char, which is not special to
       // the shell.
       dest->push_back('$');
       dest->push_back(':');
-    } else if (static_cast<unsigned>(str[i]) >= 0x80 ||
-               !kShellValid[static_cast<int>(str[i])]) {
+    } else if (static_cast<unsigned>(elem) >= 0x80 ||
+               !kShellValid[static_cast<int>(elem)]) {
       // All other invalid shell chars get backslash-escaped.
       dest->push_back('\\');
-      dest->push_back(str[i]);
+      dest->push_back(elem);
     } else {
       // Everything else is a literal.
-      dest->push_back(str[i]);
+      dest->push_back(elem);
     }
   }
 }

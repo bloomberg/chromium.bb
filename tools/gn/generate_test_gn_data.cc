@@ -30,8 +30,8 @@ std::string FilePathToUTF8(const base::FilePath& path) {
 
 base::FilePath RepoPathToPathName(const std::vector<int>& repo_path) {
   base::FilePath ret;
-  for (size_t i = 0; i < repo_path.size(); i++) {
-    ret = ret.Append(UTF8ToFilePath(base::IntToString(repo_path[i])));
+  for (const auto& elem : repo_path) {
+    ret = ret.Append(UTF8ToFilePath(base::IntToString(elem)));
   }
   return ret;
 }
@@ -58,9 +58,9 @@ std::string RepoPathToTargetName(const std::vector<int>& repo_path,
 std::string RepoPathToFullTargetName(const std::vector<int>& repo_path,
                                  int target_index) {
   std::string ret;
-  for (size_t i = 0; i < repo_path.size(); i++) {
+  for (const auto& elem : repo_path) {
     ret.push_back('/');
-    ret.append(base::IntToString(repo_path[i]));
+    ret.append(base::IntToString(elem));
   }
 
   ret += ":" + RepoPathToTargetName(repo_path, target_index);

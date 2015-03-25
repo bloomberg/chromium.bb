@@ -157,13 +157,13 @@ void NinjaBuildWriter::WriteNinjaRules() {
   dep_out_ << "build.ninja:";
   std::vector<base::FilePath> input_files;
   g_scheduler->input_file_manager()->GetAllPhysicalInputFileNames(&input_files);
-  for (size_t i = 0; i < input_files.size(); i++)
-    dep_out_ << " " << FilePathToUTF8(input_files[i]);
+  for (const auto& input_file : input_files)
+    dep_out_ << " " << FilePathToUTF8(input_file);
 
   // Other files read by the build.
   std::vector<base::FilePath> other_files = g_scheduler->GetGenDependencies();
-  for (size_t i = 0; i < other_files.size(); i++)
-    dep_out_ << " " << FilePathToUTF8(other_files[i]);
+  for (const auto& other_file : other_files)
+    dep_out_ << " " << FilePathToUTF8(other_file);
 
   out_ << std::endl;
 }
@@ -175,9 +175,9 @@ void NinjaBuildWriter::WriteLinkPool() {
 }
 
 void NinjaBuildWriter::WriteSubninjas() {
-  for (size_t i = 0; i < all_settings_.size(); i++) {
+  for (const auto& elem : all_settings_) {
     out_ << "subninja ";
-    path_output_.WriteFile(out_, GetNinjaFileForToolchain(all_settings_[i]));
+    path_output_.WriteFile(out_, GetNinjaFileForToolchain(elem));
     out_ << std::endl;
   }
   out_ << std::endl;
@@ -193,8 +193,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
   std::map<std::string, int> small_name_count;
   std::vector<const Target*> toplevel_targets;
   base::hash_set<std::string> target_files;
-  for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
-    const Target* target = default_toolchain_targets_[i];
+  for (const auto& target : default_toolchain_targets_) {
     const Label& label = target->label();
     small_name_count[label.name()]++;
 
@@ -211,8 +210,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
       toplevel_targets.push_back(target);
   }
 
-  for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
-    const Target* target = default_toolchain_targets_[i];
+  for (const auto& target : default_toolchain_targets_) {
     const Label& label = target->label();
     OutputFile target_file(target->dependency_output_file());
     // The output files may have leading "./" so normalize those away.
@@ -249,11 +247,10 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
 
   // Pick up phony rules for the toplevel targets with non-unique names (which
   // would have been skipped in the above loop).
-  for (size_t i = 0; i < toplevel_targets.size(); i++) {
-    if (small_name_count[toplevel_targets[i]->label().name()] > 1) {
-      const Target* target = toplevel_targets[i];
-      WritePhonyRule(target, target->dependency_output_file(),
-                     target->label().name());
+  for (const auto& toplevel_target : toplevel_targets) {
+    if (small_name_count[toplevel_target->label().name()] > 1) {
+      WritePhonyRule(toplevel_target, toplevel_target->dependency_output_file(),
+                     toplevel_target->label().name());
     }
   }
 
@@ -261,8 +258,8 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
   // target (rather than building 'all' by default). By convention
   // we use group("default") but it doesn't have to be a group.
   bool default_target_exists = false;
-  for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
-    const Label& label = default_toolchain_targets_[i]->label();
+  for (const auto& target : default_toolchain_targets_) {
+    const Label& label = target->label();
     if (label.dir().value() == "//" && label.name() == "default")
       default_target_exists = true;
   }

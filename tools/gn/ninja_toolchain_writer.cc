@@ -128,9 +128,9 @@ void NinjaToolchainWriter::WriteRulePattern(const char* name,
 
 void NinjaToolchainWriter::WriteSubninjas() {
   // Write subninja commands for each generated target.
-  for (size_t i = 0; i < targets_.size(); i++) {
-    OutputFile ninja_file(targets_[i]->settings()->build_settings(),
-                          GetNinjaFileForTarget(targets_[i]));
+  for (const auto& target : targets_) {
+    OutputFile ninja_file(target->settings()->build_settings(),
+                          GetNinjaFileForTarget(target));
     out_ << "subninja ";
     path_output_.WriteFile(out_, ninja_file);
     out_ << std::endl;

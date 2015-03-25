@@ -441,10 +441,9 @@ void NinjaBinaryTargetWriter::WriteOrderOnlyDependencies(
     out_ << " ||";
 
     // Non-linkable targets.
-    for (size_t i = 0; i < non_linkable_deps.size(); i++) {
+    for (const auto& non_linkable_dep : non_linkable_deps) {
       out_ << " ";
-      path_output_.WriteFile(
-          out_, non_linkable_deps[i]->dependency_output_file());
+      path_output_.WriteFile(out_, non_linkable_dep->dependency_output_file());
     }
   }
 }

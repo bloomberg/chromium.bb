@@ -179,12 +179,12 @@ void PrintLongHelp(const std::string& text) {
 
     // Check for a comment.
     TextDecoration dec = DECORATION_NONE;
-    for (size_t char_i = 0; char_i < line.size(); char_i++) {
-      if (line[char_i] == '#') {
+    for (const auto& elem : line) {
+      if (elem == '#') {
         // Got a comment, draw dimmed.
         dec = DECORATION_DIM;
         break;
-      } else if (line[char_i] != ' ') {
+      } else if (elem != ' ') {
         break;
       }
     }

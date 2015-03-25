@@ -64,8 +64,8 @@ void OutputHighlighedPosition(const Location& location,
     highlight[i] = ' ';
 
   // Highlight all the ranges on the line.
-  for (size_t i = 0; i < ranges.size(); i++)
-    FillRangeOnLine(ranges[i], location.line_number(), &highlight);
+  for (const auto& range : ranges)
+    FillRangeOnLine(range, location.line_number(), &highlight);
 
   // Allow the marker to be one past the end of the line for marking the end.
   highlight.push_back(' ');
