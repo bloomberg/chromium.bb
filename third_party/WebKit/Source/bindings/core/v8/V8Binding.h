@@ -354,6 +354,9 @@ inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* s
     v8::Local<v8::String> value;
     if (LIKELY(v8::String::NewFromUtf8(isolate, str, v8::NewStringType::kInternalized, length).ToLocal(&value)))
         return value;
+    // Immediately crashes when NewFromUtf8() fails because it only fails the
+    // given str is too long.
+    RELEASE_ASSERT_NOT_REACHED();
     return v8::String::Empty(isolate);
 }
 
