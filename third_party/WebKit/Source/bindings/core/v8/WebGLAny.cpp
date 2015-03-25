@@ -33,6 +33,11 @@ ScriptValue WebGLAny(ScriptState* scriptState, unsigned value)
     return ScriptValue(scriptState, v8::Integer::NewFromUnsigned(scriptState->isolate(), static_cast<unsigned>(value)));
 }
 
+ScriptValue WebGLAny(ScriptState* scriptState, int64_t value)
+{
+    return ScriptValue(scriptState, v8::Number::New(scriptState->isolate(), static_cast<double>(value)));
+}
+
 ScriptValue WebGLAny(ScriptState* scriptState, float value)
 {
     return ScriptValue(scriptState, v8::Number::New(scriptState->isolate(), value));

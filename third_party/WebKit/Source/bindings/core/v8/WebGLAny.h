@@ -17,6 +17,7 @@ ScriptValue WebGLAny(ScriptState*, bool value);
 ScriptValue WebGLAny(ScriptState*, const bool* value, size_t);
 ScriptValue WebGLAny(ScriptState*, int value);
 ScriptValue WebGLAny(ScriptState*, unsigned value);
+ScriptValue WebGLAny(ScriptState*, int64_t value);
 ScriptValue WebGLAny(ScriptState*, float value);
 ScriptValue WebGLAny(ScriptState*, String value);
 ScriptValue WebGLAny(ScriptState*, PassRefPtrWillBeRawPtr<WebGLObject> value);

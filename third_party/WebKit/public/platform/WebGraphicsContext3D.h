@@ -56,6 +56,7 @@ typedef float WGC3Dfloat;
 typedef float WGC3Dclampf;
 typedef signed long int WGC3Dintptr;
 typedef signed long int WGC3Dsizeiptr;
+typedef int64_t WGC3Dint64;
 typedef uint64_t WGC3Duint64;
 typedef struct __WGC3Dsync *WGC3Dsync;
 
@@ -497,6 +498,7 @@ public:
     virtual void deleteSampler(WebGLId sampler) { }
     virtual void deleteSync(WGC3Dsync sync) { }
     virtual void deleteTransformFeedback(WebGLId transformfeedback) { }
+    virtual void drawRangeElements(WGC3Denum mode, WGC3Duint start, WGC3Duint end, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) { }
     virtual void endTransformFeedback(void) { }
     virtual WGC3Dsync fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return 0; }
     virtual void framebufferTextureLayer(WGC3Denum target, WGC3Denum attachment, WGC3Duint texture, WGC3Dint level, WGC3Dint layer) { }
@@ -504,9 +506,12 @@ public:
     virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
     virtual void getActiveUniformsiv(WebGLId program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }
     virtual WGC3Dint getFragDataLocation(WebGLId program, const WGC3Dchar *name) { return -1; }
+    virtual void getIntegeri_v(WGC3Denum target, WGC3Duint index, WGC3Dint *data) { }
+    virtual void getInteger64i_v(WGC3Denum target, WGC3Duint index, WGC3Dint64 *data) { }
     virtual void getInternalformativ(WGC3Denum target, WGC3Denum internalformat, WGC3Denum pname, WGC3Dsizei bufSize, WGC3Dint *params) { }
     virtual void getSamplerParameterfv(WebGLId sampler, WGC3Denum pname, WGC3Dfloat *params) { }
     virtual void getSamplerParameteriv(WebGLId sampler, WGC3Denum pname, WGC3Dint *params) { }
+    virtual void getSynciv(WGC3Dsync sync, WGC3Denum pname, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dint *params) { }
     virtual void getTransformFeedbackVarying(WebGLId program, WGC3Duint index, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dsizei *size, WGC3Denum *type, WGC3Dchar *name) { }
     virtual WGC3Duint getUniformBlockIndex(WebGLId program, const WGC3Dchar *uniformBlockName) { return 0xFFFFFFFFu; /* GL_INVALID_INDEX */ }
     virtual void getUniformIndices(WebGLId program, WGC3Dsizei uniformCount, const WGC3Dchar *const*uniformNames, WGC3Duint *uniformIndices) { }
