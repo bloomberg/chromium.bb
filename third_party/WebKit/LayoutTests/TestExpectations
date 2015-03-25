@@ -2027,9 +2027,6 @@ crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFail
 crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
 crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
 
-# This needs to be removed after chromium patch lands (crbug.com/455241)
-crbug.com/469613 http/tests/serviceworker/chromium/clients-openwindow.html [ Failure ]
-
 crbug.com/469636 [ Debug ] inspector/elements/edit-dom-actions.html [ Pass Failure ]
 
 crbug.com/469641 [ XP Release ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]

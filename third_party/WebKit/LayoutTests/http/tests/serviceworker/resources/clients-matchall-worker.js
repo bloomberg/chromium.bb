@@ -1,7 +1,8 @@
 self.onmessage = function(e) {
   var port = e.data.port;
+  var options = e.data.options;
 
-  self.clients.getAll().then(function(clients) {
+  self.clients.matchAll(options).then(function(clients) {
       var message = [];
       clients.forEach(function(client) {
           message.push([client.visibilityState,

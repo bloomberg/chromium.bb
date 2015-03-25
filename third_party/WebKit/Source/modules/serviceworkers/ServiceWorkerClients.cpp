@@ -81,12 +81,6 @@ ScriptPromise ServiceWorkerClients::matchAll(ScriptState* scriptState, const Cli
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    if (options.includeUncontrolled()) {
-        // FIXME: Remove this when query options are supported in the embedder.
-        resolver->reject(DOMException::create(NotSupportedError, "includeUncontrolled parameter of getAll is not supported."));
-        return promise;
-    }
-
     if (options.type() != "window") {
         // FIXME: Remove this when query options are supported in the embedder.
         resolver->reject(DOMException::create(NotSupportedError, "type parameter of getAll is not supported."));
