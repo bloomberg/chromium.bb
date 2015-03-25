@@ -36,18 +36,17 @@ class CompilerCustomizationTest(unittest.TestCase):
     return self._checker.check(file_path)
 
   def _runCheckerTestExpectError(self, source_code, expected_error):
-    _, output = self._runChecker(source_code)
+    _, stderr = self._runChecker(source_code)
 
-    self.assertTrue(expected_error in output,
+    self.assertTrue(expected_error in stderr,
         msg="Expected chunk: \n%s\n\nOutput:\n%s\n" % (
-            expected_error, output))
+            expected_error, stderr))
 
   def _runCheckerTestExpectSuccess(self, source_code):
-    return_code, output = self._runChecker(source_code)
+    found_errors, stderr = self._runChecker(source_code)
 
-    self.assertTrue(return_code == 0,
-        msg="Expected success, got return code %d\n\nOutput:\n%s\n" % (
-            return_code, output))
+    self.assertFalse(found_errors,
+        msg="Expected success, but got failure\n\nOutput:\n%s\n" % stderr)
 
   def testGetInstance(self):
     self._runCheckerTestExpectError("""

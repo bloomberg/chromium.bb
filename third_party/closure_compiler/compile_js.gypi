@@ -38,6 +38,7 @@
         '--depends', '<@(depends)',
         '--externs', '<@(externs)',
         '--out_file', '<(out_file)',
+        # Add '--verbose', for glorious log spam.
       ],
       'message': 'Compiling <(source_file)',
     }
