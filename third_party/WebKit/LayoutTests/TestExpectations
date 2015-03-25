@@ -791,7 +791,8 @@ crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 
-crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
+# Commented this out to get a rebaseline; AFAIK, the test is still flaky.
+#crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
@@ -1638,6 +1639,8 @@ crbug.com/446740 [ Release ] virtual/display_list_2d_canvas/fast/canvas/canvas-m
 crbug.com/446740 virtual/slimmingpaint/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout ]
 
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
+
+crbug.com/321237 svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsRebaseline ]
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 
