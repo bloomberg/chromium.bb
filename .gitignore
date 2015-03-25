@@ -426,9 +426,10 @@ v8.log
 /tools/swarming_client
 /tools/tryserver
 /tools/win/link_limiter/build
+/ui/file_manager/internal
+/ui/keyboard/keyboard_mojom_bindings.xml
 /ui/surface/surface.xml
 /ui/surface/surface_gpu_tests.xml
-/ui/keyboard/keyboard_mojom_bindings.xml
 /v8
 /webkit/data/bmp_decoder
 /webkit/data/ico_decoder
