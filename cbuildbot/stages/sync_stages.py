@@ -1133,7 +1133,8 @@ class PreCQLauncherStage(SyncStage):
       change: Change to examine.
 
     Returns:
-      A list of stages to ignore for the given |change|.
+      Boolean indicating if this change is configured to be submitted
+      in the pre-CQ.
     """
     result = None
     try:
@@ -1142,7 +1143,7 @@ class PreCQLauncherStage(SyncStage):
     except ConfigParser.Error:
       cros_build_lib.Error('%s has malformed config file', change,
                            exc_info=True)
-    return result and result.lower() == 'yes'
+    return bool(result and result.lower() == 'yes')
 
 
   def LaunchTrybot(self, plan, config):
