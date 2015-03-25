@@ -94,13 +94,9 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
     options_mask |= SSLBlockingPage::OVERRIDABLE;
   if (strict_enforcement)
     options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
-  return new SSLBlockingPage(web_contents,
-                              cert_error,
-                              ssl_info,
-                              request_url,
-                              options_mask,
-                              time_triggered_,
-                              base::Callback<void(bool)>());
+  return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
+                             options_mask, time_triggered_, nullptr,
+                             base::Callback<void(bool)>());
 }
 
 SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(

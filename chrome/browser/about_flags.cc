@@ -2269,7 +2269,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_MEDIA_ROUTER_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaRouter)
-  }
+  },
+  {
+    "enable-cert-collection",
+    IDS_ENABLE_INVALID_CERT_COLLECTION,
+    IDS_ENABLE_INVALID_CERT_COLLECTION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableInvalidCertCollection)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

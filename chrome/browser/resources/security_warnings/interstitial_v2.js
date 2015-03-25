@@ -173,7 +173,7 @@ function setupEvents() {
   }
 
   preventDefaultOnPoundLinkClicks();
-  setupCheckbox();
+  setupExtendedReportingCheckbox();
   setupSSLDebuggingInfo();
   document.addEventListener('keypress', handleKeypress);
 }

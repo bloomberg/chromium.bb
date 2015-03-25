@@ -29,12 +29,12 @@ class TestSSLErrorHandler : public SSLErrorHandler {
                         ssl_info,
                         GURL(),
                         0,
+                        nullptr,
                         base::Callback<void(bool)>()),
         profile_(profile),
         captive_portal_checked_(false),
         ssl_interstitial_shown_(false),
-        captive_portal_interstitial_shown_(false) {
-  }
+        captive_portal_interstitial_shown_(false) {}
 
   ~TestSSLErrorHandler() override {
   }

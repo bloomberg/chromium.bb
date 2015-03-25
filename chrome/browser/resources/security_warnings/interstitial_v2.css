@@ -146,7 +146,7 @@ input[type=checkbox] {
   display: inline;
 }
 
-#malware-opt-in {
+#extended-reporting-opt-in {
   font-size: .875em;
   margin-top: 39px;
 }
@@ -224,7 +224,6 @@ input[type=checkbox] {
 
 .styled-checkbox label {
   background: transparent;
-  border: white solid 1px;
   border-radius: 2px;
   height: 14px;
   left: 0;
@@ -236,9 +235,6 @@ input[type=checkbox] {
 
 .styled-checkbox .checkbox-tick {
   background: transparent;
-  border: 2px solid white;
-  border-right-width: 0;
-  border-top-width: 0;
   content: '';
   height: 4px;
   left: 2px;
@@ -247,6 +243,26 @@ input[type=checkbox] {
   top: 3px;
   transform: rotate(-45deg);
   width: 9px;
+}
+
+.safe-browsing-opt-in .styled-checkbox label {
+  border: white solid 1px;
+}
+
+.safe-browsing-opt-in .styled-checkbox .checkbox-tick {
+  border: white solid 1px;
+  border-right-width: 0;
+  border-top-width: 0;
+}
+
+.ssl-opt-in .styled-checkbox label {
+  border: #696969 solid 1px;
+}
+
+.ssl-opt-in .styled-checkbox .checkbox-tick {
+  border: #696969 solid 1px;
+  border-right-width: 0;
+  border-top-width: 0;
 }
 
 .styled-checkbox input[type=checkbox]:checked ~ .checkbox-tick {
@@ -304,7 +320,7 @@ input[type=checkbox] {
     padding: 0 5%;
   }
 
-  #malware-opt-in {
+  #extended-reporting-opt-in {
     margin-top: 24px;
   }
 
@@ -442,7 +458,7 @@ input[type=checkbox] {
 }
 
 @media (min-height: 400px) and (orientation:portrait) {
-  body:not(.safe-browsing-has-checkbox) .interstitial-wrapper {
+  body:not(.extended-reporting-has-checkbox) .interstitial-wrapper {
     margin-bottom: 145px;
   }
 }
@@ -476,7 +492,7 @@ input[type=checkbox] {
 }
 
 @media (min-height: 500px) and (max-width: 414px) and (orientation: portrait) {
-  :not(.safe-browsing-has-checkbox) .interstitial-wrapper {
+  :not(.extended-reporting-has-checkbox) .interstitial-wrapper {
     margin-top: 96px;
   }
 }
@@ -558,7 +574,7 @@ input[type=checkbox] {
     margin-top: 0;
   }
 
-  #malware-opt-in {
+  #extended-reporting-opt-in {
     margin-top: 0;
   }
 }
@@ -618,30 +634,30 @@ input[type=checkbox] {
   }
 }
 
-/* Malware opt-in. No fixed nav. */
+/* Extended reporting opt-in. No fixed nav. */
 @media (max-height: 600px) and (orientation: portrait),
        (max-height: 360px) and (max-width: 680px) and (orientation: landscape) {
-  .safe-browsing-has-checkbox .interstitial-wrapper {
+  .extended-reporting-has-checkbox .interstitial-wrapper {
     display: flex;
     flex-direction: column;
     margin-bottom: 0;
   }
 
-  .safe-browsing-has-checkbox #details {
+  .extended-reporting-has-checkbox #details {
     flex: 1 1 auto;
     order: 0;
   }
 
-  .safe-browsing-has-checkbox #main-content {
+  .extended-reporting-has-checkbox #main-content {
     flex: 1 1 auto;
     order: 0;
   }
 
-  .safe-browsing-has-checkbox #malware-opt-in {
+  .extended-reporting-has-checkbox #extended-reporting-opt-in {
     margin-bottom: 8px;
   }
 
-  body.safe-browsing-has-checkbox .nav-wrapper {
+  body.extended-reporting-has-checkbox .nav-wrapper {
     flex: 0 1 auto;
     margin-top: 0;
     order: 1;

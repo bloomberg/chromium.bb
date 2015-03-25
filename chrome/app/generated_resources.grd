@@ -15826,6 +15826,12 @@ Do you accept?
         <ph name="EVENT_NAME">$3<ex>Event Description</ex></ph>
       </message>
 
+      <message name="IDS_ENABLE_INVALID_CERT_COLLECTION" desc="Name of the 'Enable invalid certificate collection' flag.">
+        Enable opt-in for reporting invalid TLS/SSL certificate chains
+      </message>
+      <message name="IDS_ENABLE_INVALID_CERT_COLLECTION_DESCRIPTION" desc="Description of the 'Enable invalid certificate collection' flag.">
+        Allows users to opt in to the collection of invalid TLS/SSL certificate chains.
+      </message>
     </messages>
   </release>
 </grit>

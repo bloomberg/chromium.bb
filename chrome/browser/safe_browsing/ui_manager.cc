@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -213,6 +214,19 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHit(
                  threat_type, post_data));
 }
 
+void SafeBrowsingUIManager::ReportInvalidCertificateChain(
+    const std::string& hostname,
+    const net::SSLInfo& ssl_info,
+    const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread, this,
+          hostname, ssl_info),
+      callback);
+}
+
 void SafeBrowsingUIManager::AddObserver(Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_list_.AddObserver(observer);
@@ -244,6 +258,20 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
       malicious_url, page_url,
       referrer_url, is_subresource,
       threat_type, post_data);
+}
+
+void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
+    const std::string& hostname,
+    const net::SSLInfo& ssl_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // The service may delete the ping manager (i.e. when user disabling service,
+  // etc). This happens on the IO thread.
+  if (!sb_service_ || !sb_service_->ping_manager())
+    return;
+
+  sb_service_->ping_manager()->ReportInvalidCertificateChain(hostname,
+                                                             ssl_info);
 }
 
 // If the user had opted-in to send MalwareDetails, this gets called
@@ -305,4 +333,3 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   }
   return false;
 }
-

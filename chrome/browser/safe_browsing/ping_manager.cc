@@ -8,16 +8,26 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/net/certificate_error_reporter.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/ssl/ssl_info.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
+using chrome_browser_net::CertificateErrorReporter;
 using content::BrowserThread;
+
+namespace {
+// URL to upload invalid certificate chain reports
+// TODO(estark): Fill this in with the real URL when live.
+const char kExtendedReportingUploadUrl[] = "";
+}  // namespace
 
 // SafeBrowsingPingManager implementation ----------------------------------
 
@@ -34,7 +44,14 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     const SafeBrowsingProtocolConfig& config)
     : client_name_(config.client_name),
       request_context_getter_(request_context_getter),
-      url_prefix_(config.url_prefix) {
+      url_prefix_(config.url_prefix),
+      certificate_error_reporter_(
+          request_context_getter
+              ? new CertificateErrorReporter(
+                    request_context_getter->GetURLRequestContext(),
+                    GURL(kExtendedReportingUploadUrl),
+                    CertificateErrorReporter::SEND_COOKIES)
+              : nullptr) {
   DCHECK(!url_prefix_.empty());
 
   version_ = SafeBrowsingProtocolManagerHelper::Version();
@@ -93,6 +110,20 @@ void SafeBrowsingPingManager::ReportMalwareDetails(
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->Start();
   safebrowsing_reports_.insert(fetcher);
+}
+
+void SafeBrowsingPingManager::ReportInvalidCertificateChain(
+    const std::string& hostname,
+    const net::SSLInfo& ssl_info) {
+  DCHECK(certificate_error_reporter_);
+  certificate_error_reporter_->SendReport(
+      CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, hostname,
+      ssl_info);
+}
+
+void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
+    scoped_ptr<CertificateErrorReporter> certificate_error_reporter) {
+  certificate_error_reporter_ = certificate_error_reporter.Pass();
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(

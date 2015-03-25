@@ -134,6 +134,7 @@ extern const char kEnableExperimentalHotwordHardware[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
+extern const char kEnableInvalidCertCollection[];
 extern const char kEnableIPv6[];
 extern const char kEnableLinkableEphemeralApps[];
 extern const char kEnableMaterialDesignSettings[];

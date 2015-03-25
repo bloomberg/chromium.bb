@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -23,6 +22,7 @@ class ExperienceSamplingEvent;
 }
 #endif
 
+class SafeBrowsingUIManager;
 class SSLErrorClassification;
 
 // This class is responsible for showing/hiding the interstitial page that is
@@ -59,6 +59,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
                   const GURL& request_url,
                   int options_mask,
                   const base::Time& time_triggered,
+                  SafeBrowsingUIManager* safe_browsing_ui_manager,
                   const base::Callback<void(bool)>& callback);
 
   // InterstitialPageDelegate method:
@@ -66,6 +67,10 @@ class SSLBlockingPage : public SecurityInterstitialPage {
 
   // Returns true if |options_mask| refers to an overridable SSL error.
   static bool IsOptionsOverridable(int options_mask);
+
+  // Allows tests to be notified when an invalid cert chain report has
+  // been sent (or not sent).
+  void SetCertificateReportCallbackForTesting(const base::Closure& callback);
 
  protected:
   // InterstitialPageDelegate implementation.
@@ -80,12 +85,18 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
 
+  void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);
+
  private:
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
   std::string GetUmaHistogramPrefix() const;
   std::string GetSamplingEventName() const;
+
+  // Send a report about an invalid certificate to the server. Takes
+  // care of calling certificate_report_callback_for_testing_.
+  void FinishCertCollection();
 
   base::Callback<void(bool)> callback_;
 
@@ -106,10 +117,19 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // expired?
   const bool expired_but_previously_allowed_;
   scoped_ptr<SSLErrorClassification> ssl_error_classification_;
-  scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
+
   // The time at which the interstitial was triggered. The interstitial
   // calculates all times relative to this.
   const base::Time time_triggered_;
+
+  // For reporting invalid SSL certificates as part of Safe Browsing
+  // Extended Reporting.
+  SafeBrowsingUIManager* safe_browsing_ui_manager_;
+
+  // This callback is run when an extended reporting certificate chain
+  // report has been sent, or when it is decided that it should not be
+  // sent (for example, when in incognito mode).
+  base::Closure certificate_report_callback_for_testing_;
 
   // Which type of interstitial this is.
   enum SSLInterstitialReason {

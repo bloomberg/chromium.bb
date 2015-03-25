@@ -22,9 +22,11 @@ namespace chrome_browser_net {
 
 CertificateErrorReporter::CertificateErrorReporter(
     net::URLRequestContext* request_context,
-    const GURL& upload_url)
-    : request_context_(request_context), upload_url_(upload_url) {
-  DCHECK(!upload_url.is_empty());
+    const GURL& upload_url,
+    CookiesPreference cookies_preference)
+    : request_context_(request_context),
+      upload_url_(upload_url),
+      cookies_preference_(cookies_preference) {
 }
 
 CertificateErrorReporter::~CertificateErrorReporter() {
@@ -34,6 +36,7 @@ CertificateErrorReporter::~CertificateErrorReporter() {
 void CertificateErrorReporter::SendReport(ReportType type,
                                           const std::string& hostname,
                                           const net::SSLInfo& ssl_info) {
+  DCHECK(!upload_url_.is_empty());
   CertLoggerRequest request;
   std::string out;
 
@@ -47,8 +50,7 @@ void CertificateErrorReporter::SendReport(ReportType type,
       // TODO(estark): Double-check that the user is opted in.
       // TODO(estark): Temporarily, since this is no upload endpoint, just
       // log the information.
-      request.SerializeToString(&out);
-      DVLOG(3) << "SSL report for " << hostname << ":\n" << out << "\n\n";
+      DVLOG(1) << "Would send certificate report for " << hostname;
       break;
     default:
       NOTREACHED();
@@ -76,8 +78,10 @@ scoped_ptr<net::URLRequest> CertificateErrorReporter::CreateURLRequest(
     net::URLRequestContext* context) {
   scoped_ptr<net::URLRequest> request =
       context->CreateRequest(upload_url_, net::DEFAULT_PRIORITY, this);
-  request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
+  if (cookies_preference_ != SEND_COOKIES) {
+    request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                          net::LOAD_DO_NOT_SAVE_COOKIES);
+  }
   return request.Pass();
 }
 

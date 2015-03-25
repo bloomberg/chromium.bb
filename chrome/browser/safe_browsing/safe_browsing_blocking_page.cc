@@ -68,19 +68,11 @@ const char kLearnMoreMalwareUrlV2[] =
 const char kLearnMorePhishingUrlV2[] =
     "https://www.google.com/transparencyreport/safebrowsing/";
 
-const char kPrivacyLinkHtml[] =
-    "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand(%d); "
-    "return false;\" onmousedown=\"return false;\">%s</a>";
-
 // After a malware interstitial where the user opted-in to the report
 // but clicked "proceed anyway", we delay the call to
 // MalwareDetails::FinishCollection() by this much time (in
 // milliseconds).
 const int64 kMalwareDetailsProceedDelayMilliSeconds = 3000;
-
-// Other constants used to communicate with the JavaScript.
-const char kBoxChecked[] = "boxchecked";
-const char kDisplayCheckBox[] = "displaycheckbox";
 
 // Constants for the Experience Sampling instrumentation.
 const char kEventNameMalware[] = "safebrowsing_interstitial_";
@@ -167,15 +159,15 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
 
   // This must be done after calculating |interstitial_reason_| above.
   // Use same prefix for UMA as for Rappor.
-  metrics_helper_.reset(new SecurityInterstitialMetricsHelper(
+  set_metrics_helper(new SecurityInterstitialMetricsHelper(
       web_contents, request_url(), GetMetricPrefix(), GetMetricPrefix(),
       SecurityInterstitialMetricsHelper::REPORT_RAPPOR,
       GetSamplingEventName()));
-  metrics_helper_->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
-  metrics_helper_->RecordUserInteraction(
+  metrics_helper()->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
+  metrics_helper()->RecordUserInteraction(
       SecurityInterstitialMetricsHelper::TOTAL_VISITS);
   if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-    metrics_helper_->RecordUserDecision(
+    metrics_helper()->RecordUserDecision(
         SecurityInterstitialMetricsHelper::PROCEEDING_DISABLED);
   }
 
@@ -231,7 +223,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     }
     case CMD_OPEN_HELP_CENTER: {
       // User pressed "Learn more".
-      metrics_helper_->RecordUserInteraction(
+      metrics_helper()->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
       GURL learn_more_url(
           interstitial_reason_ == SB_REASON_PHISHING ?
@@ -248,24 +240,13 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     }
     case CMD_OPEN_REPORTING_PRIVACY: {
       // User pressed on the SB Extended Reporting "privacy policy" link.
-      metrics_helper_->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_PRIVACY_POLICY);
-      GURL privacy_url(
-          l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
-      privacy_url = google_util::AppendGoogleLocaleParam(
-          privacy_url, g_browser_process->GetApplicationLocale());
-      OpenURLParams params(privacy_url,
-                           Referrer(),
-                           CURRENT_TAB,
-                           ui::PAGE_TRANSITION_LINK,
-                           false);
-      web_contents()->OpenURL(params);
+      OpenExtendedReportingPrivacyPolicy();
       break;
     }
     case CMD_PROCEED: {
       // User pressed on the button to proceed.
       if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-        metrics_helper_->RecordUserDecision(
+        metrics_helper()->RecordUserDecision(
             SecurityInterstitialMetricsHelper::PROCEED);
         interstitial_page()->Proceed();
         // |this| has been deleted after Proceed() returns.
@@ -304,7 +285,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       size_t element_index = 0;
       const UnsafeResource& unsafe_resource = unsafe_resources_[element_index];
       std::string bad_url_spec = unsafe_resource.url.spec();
-      metrics_helper_->RecordUserInteraction(
+      metrics_helper()->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::SHOW_DIAGNOSTIC);
       std::string diagnostic =
           base::StringPrintf(kSbDiagnosticUrl,
@@ -324,7 +305,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     }
     case CMD_SHOW_MORE_SECTION: {
       // User has opened up the hidden text.
-      metrics_helper_->RecordUserInteraction(
+      metrics_helper()->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
       break;
     }
@@ -337,14 +318,6 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
       web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, profile, web_contents());
-}
-
-void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-  PrefService* pref = profile->GetPrefs();
-  pref->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, report);
-  UMA_HISTOGRAM_BOOLEAN("SB2.SetExtendedReportingEnabled", report);
 }
 
 void SafeBrowsingBlockingPage::OnProceed() {
@@ -390,7 +363,7 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
     return;
 
   if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-    metrics_helper_->RecordUserDecision(
+    metrics_helper()->RecordUserDecision(
         SecurityInterstitialMetricsHelper::DONT_PROCEED);
   }
 
@@ -431,20 +404,16 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
 
   const bool enabled =
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
-  UMA_HISTOGRAM_BOOLEAN("SB2.ExtendedReportingIsEnabled", enabled);
-  if (enabled) {
-    // Finish the malware details collection, send it over.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&MalwareDetails::FinishCollection, malware_details_.get()),
-        base::TimeDelta::FromMilliseconds(delay_ms));
-  }
-}
+  if (!enabled)
+    return;
 
-bool SafeBrowsingBlockingPage::IsPrefEnabled(const char* pref) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return profile->GetPrefs()->GetBoolean(pref);
+  metrics_helper()->RecordUserInteraction(
+      SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
+  // Finish the malware details collection, send it over.
+  BrowserThread::PostDelayedTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MalwareDetails::FinishCollection, malware_details_.get()),
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 // static
@@ -588,21 +557,19 @@ void SafeBrowsingBlockingPage::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
   // Only show checkbox if !(HTTPS || incognito-mode).
   const bool show = CanShowMalwareDetailsOption();
-  load_time_data->SetBoolean(kDisplayCheckBox, show);
+  load_time_data->SetBoolean(interstitials::kDisplayCheckBox, show);
   if (!show)
     return;
 
   const std::string privacy_link = base::StringPrintf(
-      kPrivacyLinkHtml,
-      CMD_OPEN_REPORTING_PRIVACY,
-      l10n_util::GetStringUTF8(
-          IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
+      interstitials::kPrivacyLinkHtml, CMD_OPEN_REPORTING_PRIVACY,
+      l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
   load_time_data->SetString(
-      "optInLink",
+      interstitials::kOptInLink,
       l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                                  base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(
-      kBoxChecked,
+      interstitials::kBoxChecked,
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
 }
 

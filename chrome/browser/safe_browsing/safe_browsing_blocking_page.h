@@ -90,7 +90,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   friend class SafeBrowsingBlockingPageTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
-  void SetReportingPreference(bool report);
+
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
   // Don't instantiate this class directly, use ShowBlockingPage instead.
@@ -123,10 +123,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // preferences, and if the option to send malware details is
   // enabled, the report is scheduled to be sent on the |ui_manager_|.
   void FinishMalwareDetails(int64 delay_ms);
-
-  // Returns the boolean value of the given |pref| from the PrefService of the
-  // Profile associated with |web_contents_|.
-  bool IsPrefEnabled(const char* pref);
 
   // A list of SafeBrowsingUIManager::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
@@ -192,8 +188,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
 
   std::string GetMetricPrefix() const;
   std::string GetSamplingEventName() const;
-
-  scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };

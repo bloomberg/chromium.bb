@@ -25,7 +25,8 @@ ChromeFraudulentCertificateReporter::ChromeFraudulentCertificateReporter(
     net::URLRequestContext* request_context)
     : certificate_reporter_(new CertificateErrorReporter(
           request_context,
-          GURL(kFraudulentCertificateUploadEndpoint))) {
+          GURL(kFraudulentCertificateUploadEndpoint),
+          CertificateErrorReporter::DO_NOT_SEND_COOKIES)) {
 }
 
 ChromeFraudulentCertificateReporter::ChromeFraudulentCertificateReporter(

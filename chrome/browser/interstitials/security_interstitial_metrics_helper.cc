@@ -151,6 +151,9 @@ void SecurityInterstitialMetricsHelper::RecordUserInteraction(
     case RELOAD:
     case OPEN_TIME_SETTINGS:
     case TOTAL_VISITS:
+    case SET_EXTENDED_REPORTING_ENABLED:
+    case SET_EXTENDED_REPORTING_DISABLED:
+    case EXTENDED_REPORTING_IS_ENABLED:
     case MAX_INTERACTION:
       break;
   }

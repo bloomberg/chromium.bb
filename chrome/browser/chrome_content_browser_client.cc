@@ -60,6 +60,7 @@
 #include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -1803,8 +1804,13 @@ void ChromeContentBrowserClient::AllowCertificateError(
   if (expired_previous_decision)
     options_mask |= SSLBlockingPage::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
 
+  SafeBrowsingService* safe_browsing_service =
+      g_browser_process->safe_browsing_service();
   SSLErrorHandler::HandleSSLError(
-      tab, cert_error, ssl_info, request_url, options_mask, callback);
+      tab, cert_error, ssl_info, request_url, options_mask,
+      safe_browsing_service ? safe_browsing_service->ui_manager().get()
+                            : nullptr,
+      callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

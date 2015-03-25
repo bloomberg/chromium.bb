@@ -18,6 +18,16 @@ class InterstitialPage;
 class WebContents;
 }
 
+namespace interstitials {
+// Constants used to communicate with the JavaScript.
+extern const char kBoxChecked[];
+extern const char kDisplayCheckBox[];
+extern const char kOptInLink[];
+extern const char kPrivacyLinkHtml[];
+}
+
+class SecurityInterstitialMetricsHelper;
+
 class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
   // These represent the commands sent from the interstitial JavaScript.
@@ -72,7 +82,21 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::WebContents* web_contents() const;
   GURL request_url() const;
 
+  // Record the user's preference for reporting information about
+  // malware and SSL errors.
+  void SetReportingPreference(bool report);
+
+  // Returns the boolean value of the given |pref| from the PrefService of the
+  // Profile associated with |web_contents_|.
+  bool IsPrefEnabled(const char* pref);
+
+  void OpenExtendedReportingPrivacyPolicy();
+
+  SecurityInterstitialMetricsHelper* metrics_helper();
+  void set_metrics_helper(SecurityInterstitialMetricsHelper* metrics_helper);
+
  private:
+  scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
   content::WebContents* web_contents_;
   const GURL request_url_;
   // Once shown, |interstitial_page| takes ownership of this

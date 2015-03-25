@@ -118,7 +118,10 @@ class NotSendingTestReporter : public TestReporter {
 class MockReporter : public CertificateErrorReporter {
  public:
   explicit MockReporter(net::URLRequestContext* request_context)
-      : CertificateErrorReporter(request_context, GURL("http://example.com")) {}
+      : CertificateErrorReporter(
+            request_context,
+            GURL("http://example.com"),
+            CertificateErrorReporter::DO_NOT_SEND_COOKIES) {}
 
   void SendReport(ReportType type,
                   const std::string& hostname,

@@ -23,6 +23,8 @@ class RenderViewHost;
 class WebContents;
 }
 
+class SafeBrowsingUIManager;
+
 // This class is responsible for deciding whether to show an SSL warning or a
 // captive portal error page. It makes this decision by delaying the display of
 // SSL interstitial for a few seconds (2 by default), and waiting for a captive
@@ -51,6 +53,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                              const net::SSLInfo& ssl_info,
                              const GURL& request_url,
                              int options_mask,
+                             SafeBrowsingUIManager* safe_browsing_ui_manager,
                              const base::Callback<void(bool)>& callback);
 
   static void SetInterstitialDelayTypeForTest(InterstitialDelayType delay);
@@ -65,6 +68,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                   const net::SSLInfo& ssl_info,
                   const GURL& request_url,
                   int options_mask,
+                  SafeBrowsingUIManager* safe_browsing_ui_manager,
                   const base::Callback<void(bool)>& callback);
 
   ~SSLErrorHandler() override;
@@ -107,6 +111,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer<SSLErrorHandler> timer_;
+
+  SafeBrowsingUIManager* safe_browsing_ui_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };

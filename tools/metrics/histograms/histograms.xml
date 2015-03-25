@@ -32007,6 +32007,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.ExtendedReportingIsEnabled" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated 03/2015. Replaced by
+    SecurityInterstitialInteraction::EXTENDED_REPORTING_IS_ENABLED.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     Whether the user has Safe Browsing extended reporting enabled at the time a
@@ -32471,6 +32475,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.SetExtendedReportingEnabled" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated 03/2015. Replaced by
+    SecurityInterstitialInteraction::SET_EXTENDED_REPORTING_ENABLED.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     Tracks changes to the Safe Browsing extended reporting opt-in which is shown
@@ -53605,6 +53613,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1930901873" label="disable-sync-app-list"/>
+  <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1944156526" label="sync-url"/>
   <int value="1961425320" label="force-qtkit"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
@@ -59281,6 +59290,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="SHOW_LEARN_MORE"/>
   <int value="5" label="RELOAD"/>
   <int value="6" label="OPEN_TIME_SETTINGS"/>
+  <int value="7" label="SET_EXTENDED_REPORTING_ENABLED"/>
+  <int value="8" label="SET_EXTENDED_REPORTING_DISABLED"/>
+  <int value="9" label="EXTENDED_REPORTING_IS_ENABLED"/>
 </enum>
 
 <enum name="ServiceProcessEventType" type="int">

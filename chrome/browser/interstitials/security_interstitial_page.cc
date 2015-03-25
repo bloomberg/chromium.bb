@@ -5,19 +5,39 @@
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 
 #include "base/i18n/rtl.h"
+
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
+#include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
+
+namespace interstitials {
+const char kBoxChecked[] = "boxchecked";
+const char kDisplayCheckBox[] = "displaycheckbox";
+const char kOptInLink[] = "optInLink";
+const char kPrivacyLinkHtml[] =
+    "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand(%d); "
+    "return false;\" onmousedown=\"return false;\">%s</a>";
+}
+
+using content::OpenURLParams;
+using content::Referrer;
 
 SecurityInterstitialPage::SecurityInterstitialPage(
     content::WebContents* web_contents,
@@ -56,6 +76,44 @@ void SecurityInterstitialPage::Show() {
   if (!create_view_)
     interstitial_page_->DontCreateViewForTesting();
   interstitial_page_->Show();
+}
+
+void SecurityInterstitialPage::SetReportingPreference(bool report) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  PrefService* pref = profile->GetPrefs();
+  pref->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, report);
+  metrics_helper()->RecordUserInteraction(
+      report
+          ? SecurityInterstitialMetricsHelper::SET_EXTENDED_REPORTING_ENABLED
+          : SecurityInterstitialMetricsHelper::SET_EXTENDED_REPORTING_DISABLED);
+}
+
+bool SecurityInterstitialPage::IsPrefEnabled(const char* pref) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return profile->GetPrefs()->GetBoolean(pref);
+}
+
+void SecurityInterstitialPage::OpenExtendedReportingPrivacyPolicy() {
+  metrics_helper()->RecordUserInteraction(
+      SecurityInterstitialMetricsHelper::SHOW_PRIVACY_POLICY);
+  GURL privacy_url(
+      l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
+  privacy_url = google_util::AppendGoogleLocaleParam(
+      privacy_url, g_browser_process->GetApplicationLocale());
+  OpenURLParams params(privacy_url, Referrer(), CURRENT_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
+  web_contents()->OpenURL(params);
+}
+
+SecurityInterstitialMetricsHelper* SecurityInterstitialPage::metrics_helper() {
+  return metrics_helper_.get();
+}
+
+void SecurityInterstitialPage::set_metrics_helper(
+    SecurityInterstitialMetricsHelper* metrics_helper) {
+  metrics_helper_.reset(metrics_helper);
 }
 
 base::string16 SecurityInterstitialPage::GetFormattedHostName() const {

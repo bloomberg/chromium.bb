@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -89,6 +90,7 @@ void SSLErrorHandler::HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     int options_mask,
+    SafeBrowsingUIManager* safe_browsing_ui_manager,
     const base::Callback<void(bool)>& callback) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper* captive_portal_tab_helper =
@@ -98,10 +100,10 @@ void SSLErrorHandler::HandleSSLError(
   }
 #endif
   DCHECK(!FromWebContents(web_contents));
-  web_contents->SetUserData(UserDataKey(),
-                            new SSLErrorHandler(web_contents, cert_error,
-                                                ssl_info, request_url,
-                                                options_mask, callback));
+  web_contents->SetUserData(
+      UserDataKey(),
+      new SSLErrorHandler(web_contents, cert_error, ssl_info, request_url,
+                          options_mask, safe_browsing_ui_manager, callback));
 
   SSLErrorHandler* error_handler =
       SSLErrorHandler::FromWebContents(web_contents);
@@ -121,19 +123,22 @@ void SSLErrorHandler::SetInterstitialTimerStartedCallbackForTest(
   g_timer_started_callback = callback;
 }
 
-SSLErrorHandler::SSLErrorHandler(content::WebContents* web_contents,
-                                 int cert_error,
-                                 const net::SSLInfo& ssl_info,
-                                 const GURL& request_url,
-                                 int options_mask,
-                                 const base::Callback<void(bool)>& callback)
+SSLErrorHandler::SSLErrorHandler(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    int options_mask,
+    SafeBrowsingUIManager* safe_browsing_ui_manager,
+    const base::Callback<void(bool)>& callback)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
       options_mask_(options_mask),
-      callback_(callback) {
+      callback_(callback),
+      safe_browsing_ui_manager_(safe_browsing_ui_manager) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
@@ -203,7 +208,7 @@ void SSLErrorHandler::ShowSSLInterstitial() {
             SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
   (new SSLBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
                        options_mask_, base::Time::NowFromSystemTime(),
-                       callback_))->Show();
+                       safe_browsing_ui_manager_, callback_))->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
   web_contents_->RemoveUserData(UserDataKey());

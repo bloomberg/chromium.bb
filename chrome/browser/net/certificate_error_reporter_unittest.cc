@@ -201,7 +201,8 @@ void SendReport(TestCertificateErrorReporterNetworkDelegate* network_delegate,
   network_delegate->set_expected_url(url);
   network_delegate->ExpectHostname(report_hostname);
 
-  CertificateErrorReporter reporter(context, url);
+  CertificateErrorReporter reporter(
+      context, url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
 
   EXPECT_EQ(request_sequence_number, network_delegate->num_requests());
 
@@ -235,7 +236,8 @@ TEST_F(CertificateErrorReporterTest, SendMultipleReportsSimultaneously) {
   network_delegate()->ExpectHostname(kHostname);
   network_delegate()->ExpectHostname(kSecondRequestHostname);
 
-  CertificateErrorReporter reporter(context(), url);
+  CertificateErrorReporter reporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
 
   EXPECT_EQ(0, network_delegate()->num_requests());
 
@@ -264,8 +266,8 @@ TEST_F(CertificateErrorReporterTest, PendingRequestGetsDeleted) {
 
   EXPECT_EQ(0, network_delegate()->num_requests());
 
-  scoped_ptr<CertificateErrorReporter> reporter(
-      new CertificateErrorReporter(context(), url));
+  scoped_ptr<CertificateErrorReporter> reporter(new CertificateErrorReporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES));
   reporter->SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
                        kHostname, GetTestSSLInfo());
   reporter.reset();

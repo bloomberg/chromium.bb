@@ -24,7 +24,11 @@ class SafeBrowsingService;
 
 namespace base {
 class Thread;
-}
+}  // namespace base
+
+namespace net {
+class SSLInfo;
+}  // namespace net
 
 // Construction needs to happen on the main thread.
 class SafeBrowsingUIManager
@@ -124,6 +128,12 @@ class SafeBrowsingUIManager
                                      SBThreatType threat_type,
                                      const std::string& post_data);
 
+  // Report an invalid TLS/SSL certificate chain to the server. Can only
+  // be called on UI thread.
+  void ReportInvalidCertificateChain(const std::string& hostname,
+                                     const net::SSLInfo& ssl_info,
+                                     const base::Closure& callback);
+
   // Add and remove observers.  These methods must be invoked on the UI thread.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* remove);
@@ -144,6 +154,10 @@ class SafeBrowsingUIManager
                                        bool is_subresource,
                                        SBThreatType threat_type,
                                        const std::string& post_data);
+
+  // Sends an invalid certificate chain report over the network.
+  void ReportInvalidCertificateChainOnIOThread(const std::string& hostname,
+                                               const net::SSLInfo& ssl_info);
 
   // Adds the given entry to the whitelist.  Called on the UI thread.
   void UpdateWhitelist(const UnsafeResource& resource);

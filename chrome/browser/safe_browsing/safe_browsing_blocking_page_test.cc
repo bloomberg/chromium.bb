@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   if (expect_malware_details)
     fake_malware_details->WaitForDOM();
 
-  EXPECT_EQ(VISIBLE, GetVisibility("malware-opt-in"));
+  EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
   EXPECT_TRUE(Click("opt-in-checkbox"));
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
   AssertNoInterstitial(true);  // Assert the interstitial is gone
@@ -765,7 +765,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForReady());
 
-  EXPECT_EQ(HIDDEN, GetVisibility("malware-opt-in"));
+  EXPECT_EQ(HIDDEN, GetVisibility("extended-reporting-opt-in"));
   EXPECT_EQ(HIDDEN, GetVisibility("opt-in-checkbox"));
   EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
   EXPECT_TRUE(Click("details-button"));

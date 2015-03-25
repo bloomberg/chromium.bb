@@ -36,15 +36,21 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
     REPORT_TYPE_EXTENDED_REPORTING
   };
 
+  // Represents whether or not to send cookies along with reports sent
+  // to the server.
+  enum CookiesPreference { SEND_COOKIES, DO_NOT_SEND_COOKIES };
+
   // Create a certificate error reporter that will send certificate
   // error reports to |upload_url|, using |request_context| as the
-  // context for the reports.
+  // context for the reports. |cookies_preference| controls whether
+  // cookies will be sent along with the reports.
   CertificateErrorReporter(net::URLRequestContext* request_context,
-                           const GURL& upload_url);
+                           const GURL& upload_url,
+                           CookiesPreference cookies_preference);
 
   ~CertificateErrorReporter() override;
 
-  // Construct, serialize, and send a certificate reporter to the report
+  // Construct, serialize, and send a certificate report to the report
   // collection server containing the |ssl_info| associated with a
   // connection to |hostname|.
   virtual void SendReport(ReportType type,
@@ -78,6 +84,8 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
 
   // Owns the contained requests.
   std::set<net::URLRequest*> inflight_requests_;
+
+  CookiesPreference cookies_preference_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateErrorReporter);
 };
