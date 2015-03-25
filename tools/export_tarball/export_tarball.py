@@ -134,6 +134,7 @@ def main(argv):
   # TODO(phajdan.jr): Remove --xz option when it's not needed for compatibility.
   parser.add_option("--xz", action="store_true")
   parser.add_option("--verbose", action="store_true", default=False)
+  parser.add_option("--progress", action="store_true", default=False)
 
   options, args = parser.parse_args(argv)
 
@@ -174,7 +175,19 @@ def main(argv):
   finally:
     archive.close()
 
-  if subprocess.call(['xz', '-9', output_fullname]) != 0:
+  if options.progress:
+    sys.stdout.flush()
+    pv = subprocess.Popen(
+        ['pv', '--force', output_fullname],
+        stdout=subprocess.PIPE,
+        stderr=sys.stdout)
+    with open(output_fullname + '.xz', 'w') as f:
+      rc = subprocess.call(['xz', '-9', '-'], stdin=pv.stdout, stdout=f)
+    pv.wait()
+  else:
+    rc = subprocess.call(['xz', '-9', output_fullname])
+
+  if rc != 0:
     print 'xz -9 failed!'
     return 1
 
