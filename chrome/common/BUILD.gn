@@ -135,6 +135,7 @@ static_library("common") {
   if (is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_common_mac_sources, ".", "//chrome")
+    deps += [ ":app_mode_app_support" ]
   }
 
   if (enable_nacl) {
@@ -318,4 +319,19 @@ source_set("test_support") {
       "extensions/extension_test_util.h",
     ]
   }
+}
+
+# GN version: chrome/chrome.gyp:app_mode_app_support
+static_library("app_mode_app_support") {
+  sources = [
+    "mac/app_mode_chrome_locator.h",
+    "mac/app_mode_chrome_locator.mm",
+    "mac/app_mode_common.h",
+    "mac/app_mode_common.mm",
+  ]
+
+  deps = [
+    ":constants",
+    "//base",
+  ]
 }

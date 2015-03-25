@@ -277,6 +277,7 @@
         {
           # A library containing the actual code for the app mode app, shared
           # by unit tests.
+          # GN: //chrome/common:app_mode_app_support
           'target_name': 'app_mode_app_support',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },

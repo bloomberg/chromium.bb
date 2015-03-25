@@ -67,8 +67,6 @@
       'common/localized_error.h',
       'common/logging_chrome.cc',
       'common/logging_chrome.h',
-      'common/mac/app_mode_common.h',
-      'common/mac/app_mode_common.mm',
       'common/mac/app_shim_launch.h',
       'common/mac/app_shim_messages.h',
       'common/mac/cfbundle_blocker.h',
@@ -380,6 +378,7 @@
         }],
         ['OS=="mac"', {
           'sources': [ '<@(chrome_common_mac_sources)' ],
+          'dependencies': [ 'app_mode_app_support' ],
         }],
         ['OS != "ios"', {
           'dependencies': [
