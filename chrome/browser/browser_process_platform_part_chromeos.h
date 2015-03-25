@@ -60,6 +60,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
                                 bool is_running_test);
   void ShutdownSessionManager();
 
+  // Disable the offline interstitial easter egg if the device is enterprise
+  // enrolled.
+  void DisableDinoEasterEggIfEnrolled();
+
   // Returns the SessionManager instance that is used to initialize and
   // start user sessions as well as responsible on launching pre-session UI like
   // out-of-box or login.

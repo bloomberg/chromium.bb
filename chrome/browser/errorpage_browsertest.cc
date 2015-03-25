@@ -53,6 +53,18 @@
 #include "net/url_request/url_request_test_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_types.h"
+#include "content/public/test/browser_test_utils.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif
+
 using content::BrowserThread;
 using content::NavigationController;
 using net::URLRequestFailedJob;
@@ -881,6 +893,32 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
 
+// Check that the easter egg is present and initialised and is not disabled.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, CheckEasterEggIsNotDisabled) {
+  ui_test_utils::NavigateToURL(browser(),
+      URLRequestFailedJob::GetMockHttpUrl(net::ERR_INTERNET_DISCONNECTED));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Check for no disabled message container.
+  std::string command = base::StringPrintf(
+      "var hasDisableContainer = document.querySelectorAll('.snackbar').length;"
+      "domAutomationController.send(hasDisableContainer);");
+  int result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+               web_contents, command, &result));
+  EXPECT_EQ(0, result);
+
+  // Presence of the canvas container.
+  command = base::StringPrintf(
+    "var runnerCanvas = document.querySelectorAll('.runner-canvas').length;"
+    "domAutomationController.send(runnerCanvas);");
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+               web_contents, command, &result));
+  EXPECT_EQ(1, result);
+}
+
 class ErrorPageAutoReloadTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1078,6 +1116,56 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   EXPECT_TRUE(ProbeStaleCopyValue(false));
   EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
 }
+
+#if defined(OS_CHROMEOS)
+class ErrorPageOfflineTest : public ErrorPageTest {
+ protected:
+  // Mock policy provider for both user and device policies.
+  policy::MockConfigurationPolicyProvider policy_provider_;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // Set up fake install attributes.
+    scoped_ptr<policy::StubEnterpriseInstallAttributes> attributes(
+        new policy::StubEnterpriseInstallAttributes());
+    attributes->SetDomain("example.com");
+    attributes->SetRegistrationUser("user@example.com");
+    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+        attributes.release());
+
+    // Sets up a mock policy provider for user and device policies.
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    ErrorPageTest::SetUpInProcessBrowserTestFixture();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ErrorPageOfflineTest, CheckEasterEggIsDisabled) {
+  // Check for enterprise enrollment.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  EXPECT_TRUE(connector->IsEnterpriseManaged());
+
+  ui_test_utils::NavigateToURL(browser(),
+      URLRequestFailedJob::GetMockHttpUrl(net::ERR_INTERNET_DISCONNECTED));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::string command = base::StringPrintf(
+      "var hasText = document.querySelector('.snackbar').innerText;"
+      "domAutomationController.send(hasText);");
+  std::string result = "";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+               web_contents, command, &result));
+
+  std::string disabled_text =
+      l10n_util::GetStringUTF8(IDS_ERRORPAGE_FUN_DISABLED);
+  EXPECT_EQ(disabled_text, result);
+}
+#endif
 
 // A test fixture that simulates failing requests for an IDN domain name.
 class ErrorPageForIDNTest : public InProcessBrowserTest {

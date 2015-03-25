@@ -28,6 +28,11 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
@@ -568,6 +573,18 @@ void LocalizedError::GetStrings(int error_code,
       error_code == chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET) {
     error_strings->SetString("primaryParagraph",
         l10n_util::GetStringUTF16(options.summary_resource_id));
+
+#if defined(OS_CHROMEOS)
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+    // Check if easter egg should be disabled.
+    if (command_line->HasSwitch(switches::kDisableDinosaurEasterEgg)) {
+      // The prescence of this string disables the easter egg. Acts as a flag.
+      error_strings->SetString("disabledEasterEgg",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
+    }
+#endif
+
   } else {
     // Set summary message in the details.
     summary->SetString("msg",

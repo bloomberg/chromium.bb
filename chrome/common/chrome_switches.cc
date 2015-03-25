@@ -246,6 +246,9 @@ const char kDisableDefaultApps[]            = "disable-default-apps";
 const char kDisableDeviceDiscoveryNotifications[] =
     "disable-device-discovery-notifications";
 
+// Disables the dinosaur easter egg on the offline interstitial.
+const char kDisableDinosaurEasterEgg[] = "disable-dinosaur-easter-egg";
+
 // Disables Domain Reliability Monitoring.
 const char kDisableDomainReliability[]      = "disable-domain-reliability";
 

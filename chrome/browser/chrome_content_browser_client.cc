@@ -153,6 +153,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
@@ -1284,6 +1285,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 
 #if defined(OS_CHROMEOS)
+  static const char* const kChromeOSSwitches[] = {
+    switches::kDisableDinosaurEasterEgg,
+  };
+  command_line->CopySwitchesFrom(browser_command_line, kChromeOSSwitches,
+                                 arraysize(kChromeOSSwitches));
+
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
   base::FilePath homedir;
   PathService::Get(base::DIR_HOME, &homedir);

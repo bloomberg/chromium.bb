@@ -58,6 +58,13 @@ a {
   position: relative;
 }
 
+.icon-disabled {
+  content: -webkit-image-set(
+      url(default_100_percent/offline/100-disabled.png) 1x,
+      url(default_200_percent/offline/200-disabled.png) 2x);
+  width: 112px;
+}
+
 .error-code {
   display: block;
 }
@@ -72,6 +79,10 @@ a {
   color: #444;
   padding: 20px;
   text-align: start;
+}
+
+.hidden {
+  display: none;
 }
 
 #suggestion {
@@ -140,8 +151,46 @@ a {
   color: #696969;
 }
 
-.hidden {
-  display: none;
+.snackbar {
+  background: #323232;
+  border-radius: 2px;
+  bottom: 24px;
+  box-sizing: border-box;
+  color: #fff;
+  font-size: .87em;
+  left: 24px;
+  max-width: 568px;
+  min-width: 288px;
+  opacity: 0;
+  padding: 16px 24px 12px;
+  position: fixed;
+  transform: translateY(90px);
+  will-change: opacity, transform;
+  z-index: 999;
+}
+
+.snackbar-show {
+  -webkit-animation:
+    show-snackbar .25s cubic-bezier(0.0, 0.0, 0.2, 1) forwards,
+    hide-snackbar .25s cubic-bezier(0.4, 0.0, 1, 1) forwards 5s;
+}
+
+@-webkit-keyframes show-snackbar {
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@-webkit-keyframes hide-snackbar {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(90px);
+  }
 }
 
 .suggestions {
@@ -325,6 +374,13 @@ html[subframe] body {
   .suggested-left > #control-buttons,
   .suggested-right > #control-buttons {
     float: none;
+  }
+
+  .snackbar {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-radius: 0;
   }
 }
 
