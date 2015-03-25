@@ -3707,6 +3707,10 @@ interface RangeError
     getter stack
     method constructor
     setter stack
+interface ReadableByteStream
+    method cancel
+    method constructor
+    method getReader
 interface ReadableStream
     method cancel
     method constructor

@@ -16,7 +16,8 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/UseCounter.h"
-#include "core/streams/ReadableStreamReader.h"
+#include "core/streams/ReadableByteStream.h"
+#include "core/streams/ReadableByteStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 
@@ -71,7 +72,7 @@ public:
         }
     }
     ~ReadableStreamSource() override { }
-    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>* stream)
+    void startStream(ReadableByteStream* stream)
     {
         ASSERT(m_state == Initial);
         ASSERT(!m_stream);
@@ -248,7 +249,7 @@ private:
     OwnPtr<FileReaderLoader> m_loader;
     // Created when createDrainingStream is called to drain the data.
     Member<BodyStreamBuffer> m_drainingStreamBuffer;
-    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_stream;
+    Member<ReadableByteStream> m_stream;
     State m_state;
 };
 
@@ -352,13 +353,13 @@ ScriptPromise Body::text(ScriptState* scriptState)
     return readAsync(scriptState, ResponseAsText);
 }
 
-ReadableStream* Body::body()
+ReadableByteStream* Body::body()
 {
     UseCounter::count(executionContext(), UseCounter::FetchBodyStream);
     if (!m_stream) {
         ASSERT(!m_streamSource);
         m_streamSource = new ReadableStreamSource(this);
-        m_stream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(m_streamSource);
+        m_stream = new ReadableByteStream(m_streamSource);
         m_streamSource->startStream(m_stream);
     }
     return m_stream;
@@ -377,7 +378,7 @@ void Body::setBodyUsed()
     // closed or errored, but getReader doesn't work then.
     if (m_stream && m_stream->stateInternal() != ReadableStream::Closed && m_stream->stateInternal() != ReadableStream::Errored) {
         TrackExceptionState exceptionState;
-        m_streamReader = m_stream->getReader(executionContext(), exceptionState);
+        m_streamReader = m_stream->getBytesReader(executionContext(), exceptionState);
         ASSERT(!exceptionState.hadException());
     }
     m_bodyUsed = true;

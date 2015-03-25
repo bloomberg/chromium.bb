@@ -9,9 +9,9 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/streams/ReadableStreamImpl.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -19,9 +19,8 @@
 namespace blink {
 
 class BodyStreamBuffer;
-class DOMArrayBuffer;
-class DOMArrayBufferView;
-class ReadableStreamReader;
+class ReadableByteStream;
+class ReadableByteStreamReader;
 class ScriptState;
 
 class Body
@@ -48,7 +47,7 @@ public:
     ScriptPromise formData(ScriptState*);
     ScriptPromise json(ScriptState*);
     ScriptPromise text(ScriptState*);
-    ReadableStream* body();
+    ReadableByteStream* body();
 
     // Sets the bodyUsed flag to true. This signifies that the contents of the
     // body have been consumed and cannot be accessed again.
@@ -101,8 +100,8 @@ private:
     ResponseType m_responseType;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Member<ReadableStreamSource> m_streamSource;
-    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_stream;
-    Member<ReadableStreamReader> m_streamReader;
+    Member<ReadableByteStream> m_stream;
+    Member<ReadableByteStreamReader> m_streamReader;
 };
 
 } // namespace blink

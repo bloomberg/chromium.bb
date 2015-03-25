@@ -20,7 +20,7 @@ typedef object JSON;
 
     // body attribute is defined in sub-interfaces, because the IDL processor
     // cannot deal with attribute inheritance with runtime enabled flag.
-    // [RuntimeEnabled=ExperimentalStream] readonly attribute ReadableStream body;
+    // [RuntimeEnabled=ExperimentalStream] readonly attribute ReadableByteStream body;
 
     // Still to be implemented.
     // [CallWith=ScriptState] Promise<FormData> formData();
