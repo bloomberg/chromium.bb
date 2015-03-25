@@ -609,18 +609,18 @@ ContentSettingToPermissionStatus(ContentSetting setting) {
 PermissionContextBase* GetPermissionContext(Profile* profile,
     content::PermissionType permission) {
   switch (permission) {
-    case content::PERMISSION_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       return MidiPermissionContextFactory::GetForProfile(profile);
-    case content::PERMISSION_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
 #if defined(ENABLE_NOTIFICATIONS)
       return DesktopNotificationServiceFactory::GetForProfile(profile);
 #else
       NOTIMPLEMENTED();
       break;
 #endif
-    case content::PERMISSION_GEOLOCATION:
+    case content::PermissionType::GEOLOCATION:
       return GeolocationPermissionContextFactory::GetForProfile(profile);
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       return ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
           profile);
@@ -628,10 +628,11 @@ PermissionContextBase* GetPermissionContext(Profile* profile,
       NOTIMPLEMENTED();
       break;
 #endif
-    case content::PERMISSION_PUSH_MESSAGING:
+    case content::PermissionType::PUSH_MESSAGING:
       return PushMessagingPermissionContextFactory::GetForProfile(profile);
-    case content::PERMISSION_NUM:
-      NOTREACHED() << "Invalid RequestPermission for " << permission;
+    case content::PermissionType::NUM:
+      NOTREACHED() << "Invalid RequestPermission for "
+                   << static_cast<int>(permission);
       break;
   }
   return nullptr;
@@ -641,20 +642,21 @@ PermissionContextBase* GetPermissionContext(Profile* profile,
 ContentSettingsType PermissionToContentSetting(
     content::PermissionType permission) {
   switch (permission) {
-    case content::PERMISSION_MIDI_SYSEX:
+    case content::PermissionType::MIDI_SYSEX:
       return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
-    case content::PERMISSION_PUSH_MESSAGING:
+    case content::PermissionType::PUSH_MESSAGING:
       return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
-    case content::PERMISSION_NOTIFICATIONS:
+    case content::PermissionType::NOTIFICATIONS:
       return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-    case content::PERMISSION_GEOLOCATION:
+    case content::PermissionType::GEOLOCATION:
       return CONTENT_SETTINGS_TYPE_GEOLOCATION;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
 #endif
     default:
-      NOTREACHED() << "Unknown content setting for permission " << permission;
+      NOTREACHED() << "Unknown content setting for permission "
+                   << static_cast<int>(permission);
       return CONTENT_SETTINGS_TYPE_DEFAULT;
   }
 }

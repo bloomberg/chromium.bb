@@ -5,6 +5,7 @@
 #include "content/browser/permissions/permission_service_impl.h"
 
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/permission_type.h"
 
 namespace content {
 
@@ -13,19 +14,19 @@ namespace {
 PermissionType PermissionNameToPermissionType(PermissionName name) {
   switch(name) {
     case PERMISSION_NAME_GEOLOCATION:
-      return PERMISSION_GEOLOCATION;
+      return PermissionType::GEOLOCATION;
     case PERMISSION_NAME_NOTIFICATIONS:
-      return PERMISSION_NOTIFICATIONS;
+      return PermissionType::NOTIFICATIONS;
     case PERMISSION_NAME_PUSH_NOTIFICATIONS:
-      return PERMISSION_PUSH_MESSAGING;
+      return PermissionType::PUSH_MESSAGING;
     case PERMISSION_NAME_MIDI_SYSEX:
-      return PERMISSION_MIDI_SYSEX;
+      return PermissionType::MIDI_SYSEX;
     case PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER:
-      return PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
+      return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
   }
 
   NOTREACHED();
-  return PERMISSION_NUM;
+  return PermissionType::NUM;
 }
 
 } // anonymous namespace

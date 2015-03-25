@@ -53,6 +53,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/stream_handle.h"
@@ -1948,7 +1949,7 @@ void RenderFrameHostImpl::CancelSuspendedNavigations() {
 void RenderFrameHostImpl::DidUseGeolocationPermission() {
   RenderFrameHost* top_frame = frame_tree_node()->frame_tree()->GetMainFrame();
   GetContentClient()->browser()->RegisterPermissionUsage(
-      PERMISSION_GEOLOCATION,
+      PermissionType::GEOLOCATION,
       delegate_->GetAsWebContents(),
       GetLastCommittedURL().GetOrigin(),
       top_frame->GetLastCommittedURL().GetOrigin());

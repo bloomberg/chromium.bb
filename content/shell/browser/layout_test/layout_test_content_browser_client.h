@@ -5,11 +5,11 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_BROWSER_CLIENT_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_BROWSER_CLIENT_H_
 
-#include "content/public/browser/permission_type.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 
 namespace content {
 
+enum class PermissionType;
 class LayoutTestBrowserContext;
 class LayoutTestNotificationManager;
 

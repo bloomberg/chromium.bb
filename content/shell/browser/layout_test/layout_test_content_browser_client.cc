@@ -7,6 +7,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigator_connect_context.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
@@ -88,7 +89,7 @@ void LayoutTestContentBrowserClient::RequestPermission(
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (permission == content::PERMISSION_NOTIFICATIONS) {
+  if (permission == PermissionType::NOTIFICATIONS) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,

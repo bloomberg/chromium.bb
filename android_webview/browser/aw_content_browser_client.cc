@@ -392,7 +392,7 @@ void AwContentBrowserClient::RequestPermission(
       AwBrowserPermissionRequestDelegate::FromID(render_process_id,
                                                  render_view_id);
   switch (permission) {
-    case content::PERMISSION_GEOLOCATION:
+    case content::PermissionType::GEOLOCATION:
       if (!delegate) {
         DVLOG(0) << "Dropping GeolocationPermission request";
         callback.Run(content::PERMISSION_STATUS_DENIED);
@@ -401,7 +401,7 @@ void AwContentBrowserClient::RequestPermission(
       delegate->RequestGeolocationPermission(
           origin, base::Bind(&CallbackPermisisonStatusWrapper, callback));
       break;
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       if (!delegate) {
         DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
         callback.Run(content::PERMISSION_STATUS_DENIED);
@@ -410,14 +410,15 @@ void AwContentBrowserClient::RequestPermission(
       delegate->RequestProtectedMediaIdentifierPermission(
           origin, base::Bind(&CallbackPermisisonStatusWrapper, callback));
       break;
-    case content::PERMISSION_MIDI_SYSEX:
-    case content::PERMISSION_NOTIFICATIONS:
-    case content::PERMISSION_PUSH_MESSAGING:
+    case content::PermissionType::MIDI_SYSEX:
+    case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
       NOTIMPLEMENTED() << "RequestPermission not implemented for "
-                       << permission;
+                       << static_cast<int>(permission);
       break;
-    case content::PERMISSION_NUM:
-      NOTREACHED() << "Invalid RequestPermission for " << permission;
+    case content::PermissionType::NUM:
+      NOTREACHED() << "Invalid RequestPermission for "
+                   << static_cast<int>(permission);
       break;
   }
 }
@@ -435,19 +436,21 @@ void AwContentBrowserClient::CancelPermissionRequest(
   if (!delegate)
     return;
   switch (permission) {
-    case content::PERMISSION_GEOLOCATION:
+    case content::PermissionType::GEOLOCATION:
       delegate->CancelGeolocationPermissionRequests(origin);
       break;
-    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
       break;
-    case content::PERMISSION_MIDI_SYSEX:
-    case content::PERMISSION_NOTIFICATIONS:
-    case content::PERMISSION_PUSH_MESSAGING:
-      NOTIMPLEMENTED() << "CancelPermission not implemented for " << permission;
+    case content::PermissionType::MIDI_SYSEX:
+    case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
+      NOTIMPLEMENTED() << "CancelPermission not implemented for "
+                       << static_cast<int>(permission);
       break;
-    case content::PERMISSION_NUM:
-      NOTREACHED() << "Invalid CancelPermission for " << permission;
+    case content::PermissionType::NUM:
+      NOTREACHED() << "Invalid CancelPermission for "
+                   << static_cast<int>(permission);
       break;
   }
 }

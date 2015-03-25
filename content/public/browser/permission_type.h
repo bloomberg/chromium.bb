@@ -11,16 +11,16 @@ namespace content {
 // the UMA guidelines.
 // Make sure you update histograms.xml if you add new permission types.
 // Never delete or reorder an entry; only add new entries
-// immediately before PERMISSION_NUM
-enum PermissionType {
-  PERMISSION_MIDI_SYSEX = 1,
-  PERMISSION_PUSH_MESSAGING = 2,
-  PERMISSION_NOTIFICATIONS = 3,
-  PERMISSION_GEOLOCATION = 4,
-  PERMISSION_PROTECTED_MEDIA_IDENTIFIER = 5,
+// immediately before PermissionType::NUM
+enum class PermissionType {
+  MIDI_SYSEX = 1,
+  PUSH_MESSAGING = 2,
+  NOTIFICATIONS = 3,
+  GEOLOCATION = 4,
+  PROTECTED_MEDIA_IDENTIFIER = 5,
 
   // Always keep this at the end.
-  PERMISSION_NUM,
+  NUM,
 };
 
 }  // namespace content

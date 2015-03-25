@@ -10,9 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/common/permission_service.mojom.h"
-#include "content/public/browser/permission_type.h"
 
 namespace content {
+
+enum class PermissionType;
 
 // Implements the PermissionService Mojo interface.
 // This service can be created from a RenderFrameHost or a RenderProcessHost.

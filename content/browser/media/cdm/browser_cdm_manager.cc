@@ -13,6 +13,7 @@
 #include "content/common/media/cdm_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -522,7 +523,7 @@ void BrowserCdmManager::CheckPermissionStatusOnUIThread(
 
   PermissionStatus permission_status =
       GetContentClient()->browser()->GetPermissionStatus(
-          content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER,
+          content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
           web_contents->GetBrowserContext(), security_origin, embedding_origin);
 
   bool allowed = (permission_status == PERMISSION_STATUS_GRANTED);

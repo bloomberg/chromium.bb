@@ -16,7 +16,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/permission_status.mojom.h"
@@ -81,6 +80,7 @@ class FileSystemBackend;
 
 namespace content {
 
+enum class PermissionType;
 class AccessTokenStore;
 class BrowserChildProcessHost;
 class BrowserContext;

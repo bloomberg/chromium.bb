@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -305,7 +306,7 @@ void ShellContentBrowserClient::RequestPermission(
     const base::Callback<void(PermissionStatus)>& callback) {
   // Some Geolocation tests on Android are still expecting to have the
   // permission granted. See https://crbug.com/463514.
-  if (permission == PERMISSION_GEOLOCATION) {
+  if (permission == PermissionType::GEOLOCATION) {
     callback.Run(PERMISSION_STATUS_GRANTED);
     return;
   }
