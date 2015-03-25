@@ -183,7 +183,7 @@ BluetoothSocketCreateFunction::BluetoothSocketCreateFunction() {}
 BluetoothSocketCreateFunction::~BluetoothSocketCreateFunction() {}
 
 bool BluetoothSocketCreateFunction::Prepare() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   params_ = bluetooth_socket::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
@@ -264,7 +264,7 @@ BluetoothSocketListenFunction::BluetoothSocketListenFunction() {}
 BluetoothSocketListenFunction::~BluetoothSocketListenFunction() {}
 
 bool BluetoothSocketListenFunction::Prepare() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!CreateParams())
     return false;
   socket_event_dispatcher_ = GetSocketEventDispatcher(browser_context());
@@ -443,7 +443,7 @@ BluetoothSocketAbstractConnectFunction::
     ~BluetoothSocketAbstractConnectFunction() {}
 
 bool BluetoothSocketAbstractConnectFunction::Prepare() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = bluetooth_socket::Connect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
@@ -540,7 +540,7 @@ BluetoothSocketDisconnectFunction::BluetoothSocketDisconnectFunction() {}
 BluetoothSocketDisconnectFunction::~BluetoothSocketDisconnectFunction() {}
 
 bool BluetoothSocketDisconnectFunction::Prepare() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = bluetooth_socket::Disconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
@@ -592,7 +592,7 @@ BluetoothSocketSendFunction::BluetoothSocketSendFunction()
 BluetoothSocketSendFunction::~BluetoothSocketSendFunction() {}
 
 bool BluetoothSocketSendFunction::Prepare() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = bluetooth_socket::Send::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 

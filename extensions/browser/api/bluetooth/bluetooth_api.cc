@@ -35,7 +35,7 @@ const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 
 extensions::BluetoothEventRouter* GetEventRouter(BrowserContext* context) {
   // Note: |context| is valid on UI thread only.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return extensions::BluetoothAPI::Get(context)->event_router();
 }
 
@@ -54,13 +54,13 @@ BluetoothAPI::GetFactoryInstance() {
 
 // static
 BluetoothAPI* BluetoothAPI::Get(BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GetFactoryInstance()->Get(context);
 }
 
 BluetoothAPI::BluetoothAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this,
                                  bluetooth::OnAdapterStateChanged::kEventName);
@@ -72,7 +72,7 @@ BluetoothAPI::BluetoothAPI(content::BrowserContext* context)
 BluetoothAPI::~BluetoothAPI() {}
 
 BluetoothEventRouter* BluetoothAPI::event_router() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!event_router_) {
     event_router_.reset(new BluetoothEventRouter(browser_context_));
   }
@@ -80,18 +80,18 @@ BluetoothEventRouter* BluetoothAPI::event_router() {
 }
 
 void BluetoothAPI::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (event_router()->IsBluetoothSupported())
     event_router()->OnListenerAdded();
 }
 
 void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (event_router()->IsBluetoothSupported())
     event_router()->OnListenerRemoved();
 }
@@ -113,7 +113,7 @@ BluetoothGetDevicesFunction::~BluetoothGetDevicesFunction() {}
 
 bool BluetoothGetDevicesFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::ListValue* device_list = new base::ListValue;
   SetResult(device_list);
@@ -140,7 +140,7 @@ BluetoothGetDeviceFunction::~BluetoothGetDeviceFunction() {}
 
 bool BluetoothGetDeviceFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<GetDevice::Params> params(GetDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);

@@ -91,7 +91,7 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
 
 extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
     BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return extensions::BluetoothLowEnergyAPI::Get(context)->event_router();
 }
 
@@ -114,20 +114,20 @@ BluetoothLowEnergyAPI::GetFactoryInstance() {
 
 // static
 BluetoothLowEnergyAPI* BluetoothLowEnergyAPI::Get(BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GetFactoryInstance()->Get(context);
 }
 
 BluetoothLowEnergyAPI::BluetoothLowEnergyAPI(BrowserContext* context)
     : event_router_(new BluetoothLowEnergyEventRouter(context)) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 BluetoothLowEnergyAPI::~BluetoothLowEnergyAPI() {
 }
 
 void BluetoothLowEnergyAPI::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 namespace core_api {
@@ -139,7 +139,7 @@ BluetoothLowEnergyExtensionFunction::~BluetoothLowEnergyExtensionFunction() {
 }
 
 bool BluetoothLowEnergyExtensionFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!BluetoothManifestData::CheckLowEnergyPermitted(extension())) {
     error_ = kErrorPermissionDenied;
@@ -165,7 +165,7 @@ bool BluetoothLowEnergyExtensionFunction::RunAsync() {
 }
 
 bool BluetoothLowEnergyConnectFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -208,7 +208,7 @@ void BluetoothLowEnergyConnectFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyDisconnectFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -245,7 +245,7 @@ void BluetoothLowEnergyDisconnectFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyGetServiceFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -278,7 +278,7 @@ bool BluetoothLowEnergyGetServiceFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetServicesFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -309,7 +309,7 @@ bool BluetoothLowEnergyGetServicesFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -346,7 +346,7 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -390,7 +390,7 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -423,7 +423,7 @@ bool BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -459,7 +459,7 @@ bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -502,7 +502,7 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -560,7 +560,7 @@ void BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyWriteCharacteristicValueFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -604,7 +604,7 @@ void BluetoothLowEnergyWriteCharacteristicValueFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyStartCharacteristicNotificationsFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -652,7 +652,7 @@ void BluetoothLowEnergyStartCharacteristicNotificationsFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyStopCharacteristicNotificationsFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -694,7 +694,7 @@ void BluetoothLowEnergyStopCharacteristicNotificationsFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyReadDescriptorValueFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -751,7 +751,7 @@ void BluetoothLowEnergyReadDescriptorValueFunction::ErrorCallback(
 }
 
 bool BluetoothLowEnergyWriteDescriptorValueFunction::DoWork() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());

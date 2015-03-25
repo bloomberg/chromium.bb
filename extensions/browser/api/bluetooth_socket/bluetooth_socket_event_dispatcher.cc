@@ -355,7 +355,7 @@ void BluetoothSocketEventDispatcher::DispatchEvent(
     void* browser_context_id,
     const std::string& extension_id,
     scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =
       reinterpret_cast<content::BrowserContext*>(browser_context_id);

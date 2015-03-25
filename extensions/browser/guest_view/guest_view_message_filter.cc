@@ -70,7 +70,7 @@ void GuestViewMessageFilter::OnAttachGuest(
     int element_instance_id,
     int guest_instance_id,
     const base::DictionaryValue& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   if (!manager)
     return;
@@ -86,7 +86,7 @@ void GuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
     const std::string& view_id,
     int element_instance_id,
     const gfx::Size& element_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   if (!manager)
     return;

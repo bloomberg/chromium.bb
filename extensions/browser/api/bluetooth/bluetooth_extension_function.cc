@@ -20,18 +20,18 @@ const char kPlatformNotSupported[] =
 
 extensions::BluetoothEventRouter* GetEventRouter(
     content::BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return extensions::BluetoothAPI::Get(context)->event_router();
 }
 
 bool IsBluetoothSupported(content::BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GetEventRouter(context)->IsBluetoothSupported();
 }
 
 void GetAdapter(const device::BluetoothAdapterFactory::AdapterCallback callback,
                 content::BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetEventRouter(context)->GetAdapter(callback);
 }
 
@@ -47,7 +47,7 @@ BluetoothExtensionFunction::~BluetoothExtensionFunction() {
 }
 
 bool BluetoothExtensionFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!IsBluetoothSupported(browser_context())) {
     SetError(kPlatformNotSupported);
@@ -61,7 +61,7 @@ bool BluetoothExtensionFunction::RunAsync() {
 
 void BluetoothExtensionFunction::RunOnAdapterReady(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DoWork(adapter);
 }
 
