@@ -134,6 +134,14 @@ void Animation::applyEffects()
     if (!m_target || !m_effect)
         return;
 
+    // Cancel composited animation of transform if a motion path has been introduced on the element.
+    if (m_target->layoutStyle()
+        && m_target->layoutStyle()->hasMotionPath()
+        && player()->hasActiveAnimationsOnCompositor()
+        && player()->affects(*m_target, CSSPropertyTransform)) {
+        player()->cancelAnimationOnCompositor();
+    }
+
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
