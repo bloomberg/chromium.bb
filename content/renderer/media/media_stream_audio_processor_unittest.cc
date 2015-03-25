@@ -492,7 +492,14 @@ TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
   audio_processor = NULL;
 }
 
-TEST_F(MediaStreamAudioProcessorTest, TestWithKeyboardMicChannel) {
+// Disabled on android clang builds due to crbug.com/470499
+#if defined(__clang__) && defined(OS_ANDROID)
+#define MAYBE_TestWithKeyboardMicChannel DISABLED_TestWithKeyboardMicChannel
+#else
+#define MAYBE_TestWithKeyboardMicChannel TestWithKeyboardMicChannel
+#endif
+
+TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestWithKeyboardMicChannel) {
   MockMediaConstraintFactory constraint_factory;
   constraint_factory.AddMandatory(
       MediaAudioConstraints::kGoogExperimentalNoiseSuppression, true);
