@@ -63,6 +63,7 @@ char kTSanDefaultSuppressions[] =
 
 // http://crbug.com/158922
 "race:third_party/libvpx/source/libvpx/vp8/encoder/*\n"
+"race:third_party/libvpx/source/libvpx/vp9/encoder/*\n"
 
 // http://crbug.com/189177
 "race:thread_manager\n"
