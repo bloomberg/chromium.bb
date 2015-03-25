@@ -141,7 +141,6 @@ class WallpaperManager :
   void RemovePendingWallpaperFromList(PendingWallpaper* pending);
 
   // WallpaperManagerBase overrides:
-  void ClearObsoleteWallpaperPrefs() override;
   void InitializeRegisteredDeviceWallpaper() override;
   bool GetUserWallpaperInfo(const std::string& user_id,
                             wallpaper::WallpaperInfo* info) const override;

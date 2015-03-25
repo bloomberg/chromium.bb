@@ -443,9 +443,6 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // world, logged in users' wallpaper cache is not disposable.
   virtual void ClearDisposableWallpaperCache();
 
-  // Clears all obsolete wallpaper prefs from old version wallpaper pickers.
-  virtual void ClearObsoleteWallpaperPrefs() = 0;
-
   // Deletes all |user_id| related custom wallpapers and directories.
   virtual void DeleteUserWallpapers(const std::string& user_id,
                                     const std::string& path_to_file);

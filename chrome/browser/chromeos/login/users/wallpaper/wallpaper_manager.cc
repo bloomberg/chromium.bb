@@ -278,7 +278,6 @@ class WallpaperManager::PendingWallpaper :
 WallpaperManager::~WallpaperManager() {
   show_user_name_on_signin_subscription_.reset();
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
-  ClearObsoleteWallpaperPrefs();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -773,18 +772,6 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 
   if (loading_.empty())
     FOR_EACH_OBSERVER(Observer, observers_, OnPendingListEmptyForTesting());
-}
-
-void WallpaperManager::ClearObsoleteWallpaperPrefs() {
-  PrefService* prefs = g_browser_process->local_state();
-  // LocalState can be NULL in tests. Skip for tests.
-  if (prefs) {
-    DictionaryPrefUpdate wallpaper_properties_pref(prefs,
-        wallpaper::kUserWallpapersProperties);
-    wallpaper_properties_pref->Clear();
-    DictionaryPrefUpdate wallpapers_pref(prefs, wallpaper::kUserWallpapers);
-    wallpapers_pref->Clear();
-  }
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
