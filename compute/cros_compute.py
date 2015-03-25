@@ -236,6 +236,9 @@ def main(argv):
       '--config', type=str, default=None,
       help='Config to create the instance from')
   parser.add_argument(
+      '--quiet', '-q', action='store_true',
+      help='Do not prompt user for verification.')
+  parser.add_argument(
       '--chromeos', default=False, action='store_true',
       help='Turn on the offical Chrome OS flag (e.g. to create '
            'a new Chrome OS bot image)')
@@ -297,7 +300,7 @@ def main(argv):
     elif opts.operation == 'delete':
       if not opts.instance:
         cros_build_lib.Die('Please specify the instance name (--instance)')
-      gcctx.DeleteInstance(opts.instance)
+      gcctx.DeleteInstance(opts.instance, quiet=opts.quiet)
     elif opts.operation == 'list':
       gcctx.ListInstances()
     elif opts.operation == 'ssh':

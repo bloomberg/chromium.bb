@@ -209,16 +209,19 @@ class GCContext(object):
 
     return ret
 
-  def DeleteInstance(self, instance, keep_disks=None, **kwargs):
-    """Deletes |instance|. User will be prompted to confirm.
+  def DeleteInstance(self, instance, quiet=False, keep_disks=None, **kwargs):
+    """Deletes |instance|.
 
     Args:
       instance: Name of the instance.
+      quiet: Silent delete instance without prompting the user.
       keep_disks: Keep the type of the disk; valid types are
         'boot', 'data', and 'all'.
       kwargs: See DoCommand.
     """
     cmd = ['instances', 'delete', instance]
+    if quiet:
+      cmd += ['-q']
     if keep_disks:
       cmd += ['--keep-disks', keep_disks]
 
