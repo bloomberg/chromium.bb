@@ -37,6 +37,7 @@ SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),
       succeeded_(false),
+      misspelling_hash_(0),
       client_(new SpellingServiceClient) {
   if (proxy_ && proxy_->GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
@@ -67,6 +68,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
   suggestions_ = params.dictionary_suggestions;
   misspelled_word_ = params.misspelled_word;
+  misspelling_hash_ = params.misspelling_hash;
 
   bool use_suggestions = SpellingServiceClient::IsAvailable(
       browser_context, SpellingServiceClient::SUGGEST);
@@ -256,6 +258,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       if (spellcheck) {
         if (spellcheck->GetMetrics())
           spellcheck->GetMetrics()->RecordReplacedWordStats(1);
+        spellcheck->GetFeedbackSender()->SelectedSuggestion(
+            misspelling_hash_, suggestion_index);
       }
     }
     return;
@@ -280,6 +284,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       if (spellcheck) {
         spellcheck->GetCustomDictionary()->AddWord(base::UTF16ToUTF8(
             misspelled_word_));
+        spellcheck->GetFeedbackSender()->AddedToDictionary(misspelling_hash_);
       }
     }
 #if defined(OS_MACOSX)
@@ -340,6 +345,17 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       }
     }
   }
+}
+
+void SpellingMenuObserver::OnMenuCancel() {
+  content::BrowserContext* browser_context = proxy_->GetBrowserContext();
+  if (!browser_context)
+    return;
+  SpellcheckService* spellcheck =
+      SpellcheckServiceFactory::GetForContext(browser_context);
+  if (!spellcheck)
+    return;
+  spellcheck->GetFeedbackSender()->IgnoredSuggestions(misspelling_hash_);
 }
 
 void SpellingMenuObserver::OnTextCheckComplete(

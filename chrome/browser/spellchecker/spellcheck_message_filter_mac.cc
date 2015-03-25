@@ -166,6 +166,17 @@ void SpellingRequest::OnRemoteCheckCompleted(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   remote_success_ = success;
   remote_results_ = results;
+
+  SpellcheckService* spellcheck_service =
+      SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  if (spellcheck_service) {
+    spellcheck_service->GetFeedbackSender()->OnSpellcheckResults(
+        render_process_id_,
+        text,
+        markers_,
+        &remote_results_);
+  }
+
   completion_barrier_.Run();
 }
 

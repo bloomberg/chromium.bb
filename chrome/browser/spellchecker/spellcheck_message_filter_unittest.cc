@@ -56,6 +56,7 @@ TEST(SpellCheckMessageFilterTest, TestOverrideThread) {
   static const uint32 kSpellcheckMessages[] = {
     SpellCheckHostMsg_RequestDictionary::ID,
     SpellCheckHostMsg_NotifyChecked::ID,
+    SpellCheckHostMsg_RespondDocumentMarkers::ID,
 #if !defined(OS_MACOSX)
     SpellCheckHostMsg_CallSpellingService::ID,
 #endif

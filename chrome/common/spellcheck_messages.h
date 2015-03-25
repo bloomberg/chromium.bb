@@ -55,6 +55,15 @@ IPC_MESSAGE_CONTROL2(SpellCheckMsg_CustomDictionaryChanged,
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
                      bool /* enable */)
 
+// Request a list of all document markers in the renderer for spelling service
+// feedback.
+IPC_MESSAGE_CONTROL0(SpellCheckMsg_RequestDocumentMarkers)
+
+// Send a list of document markers in the renderer to the spelling service
+// feedback sender.
+IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
+                     std::vector<uint32> /* document marker identifiers */)
+
 #if !defined(OS_MACOSX)
 // Sends text-check results from the Spelling service when the service finishes
 // checking text received by a SpellCheckHostMsg_CallSpellingService message.

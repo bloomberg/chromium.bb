@@ -302,6 +302,9 @@ extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 #if defined(ENABLE_SPELLCHECK)
 extern const char kEnableSpellingAutoCorrect[];
+extern const char kEnableSpellingFeedbackFieldTrial[];
+extern const char kSpellingServiceFeedbackUrl[];
+extern const char kSpellingServiceFeedbackIntervalSeconds[];
 #endif
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];

@@ -14587,6 +14587,14 @@ Do you accept?
         The Simple Cache for HTTP is a new cache. It relies on the filesystem for disk space allocation.
       </message>
 
+      <!-- Spelling feedback field trial. -->
+      <message name="IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_NAME" desc="Name of about:flags option to enable the field trial for sending feedback to spelling service.">
+        Spelling Feedback Field Trial.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_DESCRIPTION" desc="Description of about:flags option to enable the field trial for sending feedback to spelling service.">
+        Enable the field trial for sending user feedback to spelling service.
+      </message>
+
       <!-- Web MIDI API. -->
       <message name="IDS_FLAGS_ENABLE_WEB_MIDI_NAME"
                desc="Name of about:flag option to turn on Web MIDI API">

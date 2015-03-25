@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "chrome/common/spellcheck_common.h"
@@ -95,6 +96,9 @@ class SpellcheckService : public KeyedService,
   // Returns the instance of the Hunspell dictionary.
   SpellcheckHunspellDictionary* GetHunspellDictionary();
 
+  // Returns the instance of the spelling service feedback sender.
+  spellcheck::FeedbackSender* GetFeedbackSender();
+
   // Load a dictionary from a given path. Format specifies how the dictionary
   // is stored. Return value is true if successful.
   bool LoadExternalDictionary(std::string language,
@@ -145,6 +149,10 @@ class SpellcheckService : public KeyedService,
   // Notification handler for changes to prefs::kSpellCheckUseSpellingService.
   void OnUseSpellingServiceChanged();
 
+  // Enables the feedback sender if spelling server is available and enabled.
+  // Otherwise disables the feedback sender.
+  void UpdateFeedbackSenderState();
+
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;
 
@@ -156,6 +164,8 @@ class SpellcheckService : public KeyedService,
   scoped_ptr<SpellcheckCustomDictionary> custom_dictionary_;
 
   scoped_ptr<SpellcheckHunspellDictionary> hunspell_dictionary_;
+
+  scoped_ptr<spellcheck::FeedbackSender> feedback_sender_;
 
   base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_;
 

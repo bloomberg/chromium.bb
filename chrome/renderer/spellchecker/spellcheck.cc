@@ -45,6 +45,29 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderView* render_view) {
   return true;
 }
 
+class DocumentMarkersCollector : public content::RenderViewVisitor {
+ public:
+  DocumentMarkersCollector() {}
+  ~DocumentMarkersCollector() override {}
+  const std::vector<uint32>& markers() const { return markers_; }
+  bool Visit(content::RenderView* render_view) override;
+
+ private:
+  std::vector<uint32> markers_;
+  DISALLOW_COPY_AND_ASSIGN(DocumentMarkersCollector);
+};
+
+bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
+  if (!render_view || !render_view->GetWebView())
+    return true;
+  WebVector<uint32> markers;
+  render_view->GetWebView()->spellingMarkers(&markers);
+  for (size_t i = 0; i < markers.size(); ++i)
+    markers_.push_back(markers[i]);
+  // Visit all render views.
+  return true;
+}
+
 class DocumentMarkersRemover : public content::RenderViewVisitor {
  public:
   explicit DocumentMarkersRemover(const std::vector<std::string>& words);
@@ -124,6 +147,8 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
                         OnEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableSpellCheck, OnEnableSpellCheck)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_RequestDocumentMarkers,
+                        OnRequestDocumentMarkers)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -160,6 +185,13 @@ void SpellCheck::OnEnableSpellCheck(bool enable) {
   spellcheck_enabled_ = enable;
   UpdateSpellcheckEnabled updater(enable);
   content::RenderView::ForEach(&updater);
+}
+
+void SpellCheck::OnRequestDocumentMarkers() {
+  DocumentMarkersCollector collector;
+  content::RenderView::ForEach(&collector);
+  content::RenderThread::Get()->Send(
+      new SpellCheckHostMsg_RespondDocumentMarkers(collector.markers()));
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before Init()

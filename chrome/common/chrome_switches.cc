@@ -1079,6 +1079,25 @@ const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 #if defined(ENABLE_SPELLCHECK)
 // Enables auto correction for misspelled words.
 const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
+
+// Enables participation in the field trial for user feedback to spelling
+// service.
+const char kEnableSpellingFeedbackFieldTrial[] =
+    "enable-spelling-feedback-field-trial";
+
+// Specifies the URL where spelling service feedback data will be sent instead
+// of the default URL. This switch is for temporary testing only.
+// TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
+// August 2013.
+const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
+
+// Specifies the number of seconds between sending batches of feedback to
+// spelling service. The default is 30 minutes. The minimum is 5 seconds. This
+// switch is for temporary testing only.
+// TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
+// August 2013.
+const char kSpellingServiceFeedbackIntervalSeconds[] =
+    "spelling-service-feedback-interval-seconds";
 #endif
 
 // Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
