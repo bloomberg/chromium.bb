@@ -59,7 +59,7 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
     // This will take care of all AudioNodes because they all process within this scope.
     DenormalDisabler denormalDisabler;
 
-    context()->setAudioThread(currentThread());
+    context()->handler().setAudioThread(currentThread());
 
     if (!context()->isInitialized()) {
         destinationBus->zero();
@@ -90,7 +90,7 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
     }
 
     // Process nodes which need a little extra help because they are not connected to anything, but still need to process.
-    context()->processAutomaticPullNodes(numberOfFrames);
+    context()->handler().processAutomaticPullNodes(numberOfFrames);
 
     // Let the context take care of any business at the end of each render quantum.
     context()->handlePostRenderTasks();

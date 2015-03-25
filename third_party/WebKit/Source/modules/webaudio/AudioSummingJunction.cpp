@@ -44,7 +44,7 @@ AudioSummingJunction::AudioSummingJunction(AudioContext* context)
 void AudioSummingJunction::dispose()
 {
     m_didCallDispose = true;
-    m_context->removeMarkedSummingJunction(this);
+    m_context->handler().removeMarkedSummingJunction(this);
 }
 
 AudioSummingJunction::~AudioSummingJunction()
@@ -65,7 +65,7 @@ void AudioSummingJunction::changedOutputs()
 {
     ASSERT(context()->isGraphOwner());
     if (!m_renderingStateNeedUpdating && !m_didCallDispose) {
-        context()->markSummingJunctionDirty(this);
+        context()->handler().markSummingJunctionDirty(this);
         m_renderingStateNeedUpdating = true;
     }
 }

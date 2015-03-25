@@ -578,7 +578,7 @@ void PannerNode::setChannelCountMode(const String& mode, ExceptionState& excepti
     }
 
     if (m_newChannelCountMode != oldMode)
-        context()->addChangedChannelCountMode(this);
+        context()->handler().addChangedChannelCountMode(this);
 }
 
 } // namespace blink

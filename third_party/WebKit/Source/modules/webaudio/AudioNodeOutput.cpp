@@ -66,7 +66,7 @@ void AudioNodeOutput::dispose()
 #if ENABLE_ASSERT
     m_didCallDispose = true;
 #endif
-    context()->removeMarkedAudioNodeOutput(this);
+    context()->handler().removeMarkedAudioNodeOutput(this);
 }
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
@@ -82,7 +82,7 @@ void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
     } else {
         ASSERT(!m_didCallDispose);
         // Let the context take care of it in the audio thread in the pre and post render tasks.
-        context()->markAudioNodeOutputDirty(this);
+        context()->handler().markAudioNodeOutputDirty(this);
     }
 }
 

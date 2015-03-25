@@ -147,7 +147,7 @@ void StereoPannerNode::setChannelCountMode(const String& mode, ExceptionState& e
     }
 
     if (m_newChannelCountMode != oldMode)
-        context()->addChangedChannelCountMode(this);
+        context()->handler().addChangedChannelCountMode(this);
 }
 
 DEFINE_TRACE(StereoPannerNode)

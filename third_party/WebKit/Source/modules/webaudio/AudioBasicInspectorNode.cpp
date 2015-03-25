@@ -98,7 +98,7 @@ void AudioBasicInspectorNode::updatePullStatus()
         // When an AudioBasicInspectorNode is connected to a downstream node, it will get pulled by the
         // downstream node, thus remove it from the context's automatic pull list.
         if (m_needAutomaticPull) {
-            context()->removeAutomaticPullNode(this);
+            context()->handler().removeAutomaticPullNode(this);
             m_needAutomaticPull = false;
         }
     } else {
@@ -106,11 +106,11 @@ void AudioBasicInspectorNode::updatePullStatus()
         if (numberOfInputConnections && !m_needAutomaticPull) {
             // When an AudioBasicInspectorNode is not connected to any downstream node while still connected from
             // upstream node(s), add it to the context's automatic pull list.
-            context()->addAutomaticPullNode(this);
+            context()->handler().addAutomaticPullNode(this);
             m_needAutomaticPull = true;
         } else if (!numberOfInputConnections && m_needAutomaticPull) {
             // The AudioBasicInspectorNode is connected to nothing, remove it from the context's automatic pull list.
-            context()->removeAutomaticPullNode(this);
+            context()->handler().removeAutomaticPullNode(this);
             m_needAutomaticPull = false;
         }
     }

@@ -98,9 +98,9 @@ void AudioNode::dispose()
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
 
-    context()->removeChangedChannelCountMode(this);
-    context()->removeAutomaticPullNode(this);
-    context()->disposeOutputs(*this);
+    context()->handler().removeChangedChannelCountMode(this);
+    context()->handler().removeAutomaticPullNode(this);
+    context()->handler().disposeOutputs(*this);
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
 }
@@ -562,7 +562,7 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionState& exceptio
     }
 
     if (m_newChannelCountMode != oldMode)
-        context()->addChangedChannelCountMode(this);
+        context()->handler().addChangedChannelCountMode(this);
 }
 
 String AudioNode::channelInterpretation()
@@ -768,7 +768,7 @@ void AudioNode::breakConnection()
         // We were unable to get the lock, so put this in a list to finish up
         // later.
         ASSERT(context()->isAudioThread());
-        context()->addDeferredBreakConnection(*this);
+        context()->handler().addDeferredBreakConnection(*this);
     }
 }
 

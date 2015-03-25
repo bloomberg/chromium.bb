@@ -109,10 +109,9 @@ AudioContext::AudioContext(Document* document)
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
     , m_isResolvingResumePromises(false)
-    , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_didInitializeContextGraphMutex(false)
-    , m_audioThread(0)
+    , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_isOfflineContext(false)
     , m_contextState(Suspended)
     , m_cachedSampleFrame(0)
@@ -131,10 +130,9 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
     , m_isResolvingResumePromises(false)
-    , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_didInitializeContextGraphMutex(false)
-    , m_audioThread(0)
+    , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_isOfflineContext(true)
     , m_contextState(Suspended)
     , m_cachedSampleFrame(0)
@@ -157,10 +155,6 @@ AudioContext::~AudioContext()
     ASSERT(!m_isInitialized);
     ASSERT(!m_referencedNodes.size());
     ASSERT(!m_finishedNodes.size());
-    ASSERT(!m_automaticPullNodes.size());
-    if (m_automaticPullNodesNeedUpdating)
-        m_renderingAutomaticPullNodes.resize(m_automaticPullNodes.size());
-    ASSERT(!m_renderingAutomaticPullNodes.size());
     ASSERT(!m_suspendResolvers.size());
     ASSERT(!m_isResolvingResumePromises);
     ASSERT(!m_resumeResolvers.size());
@@ -894,14 +888,14 @@ void AudioContext::derefUnfinishedSourceNodes()
     m_referencedNodes.clear();
 }
 
-void AudioContext::lock()
+void DeferredTaskHandler::lock()
 {
     // Don't allow regular lock in real-time audio thread.
     ASSERT(isMainThread());
     m_contextGraphMutex.lock();
 }
 
-bool AudioContext::tryLock()
+bool DeferredTaskHandler::tryLock()
 {
     // Try to catch cases of using try lock on main thread
     // - it should use regular lock.
@@ -915,24 +909,24 @@ bool AudioContext::tryLock()
     return m_contextGraphMutex.tryLock();
 }
 
-void AudioContext::unlock()
+void DeferredTaskHandler::unlock()
 {
     m_contextGraphMutex.unlock();
 }
 
-bool AudioContext::isAudioThread() const
+bool DeferredTaskHandler::isAudioThread() const
 {
     return currentThread() == m_audioThread;
 }
 
 #if ENABLE(ASSERT)
-bool AudioContext::isGraphOwner()
+bool DeferredTaskHandler::isGraphOwner()
 {
     return m_contextGraphMutex.locked();
 }
 #endif
 
-void AudioContext::addDeferredBreakConnection(AudioNode& node)
+void DeferredTaskHandler::addDeferredBreakConnection(AudioNode& node)
 {
     ASSERT(isAudioThread());
     m_deferredBreakConnectionList.append(&node);
@@ -959,14 +953,8 @@ void AudioContext::handlePreRenderTasks()
     // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
     // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
     if (tryLock()) {
-        // Update the channel count mode.
-        updateChangedChannelCountMode();
+        handler().handleDeferredTasks();
 
-        // Fixup the state of any dirty AudioSummingJunctions and AudioNodeOutputs.
-        handleDirtyAudioSummingJunctions();
-        handleDirtyAudioNodeOutputs();
-
-        updateAutomaticPullNodes();
         resolvePromisesForResume();
 
         // Check to see if source nodes can be stopped because the end time has passed.
@@ -987,27 +975,21 @@ void AudioContext::handlePostRenderTasks()
     // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
     // from the render graph (in which case they'll render silence).
     if (tryLock()) {
-        // Update the channel count mode.
-        updateChangedChannelCountMode();
-
         // Take care of AudioNode tasks where the tryLock() failed previously.
-        handleDeferredAudioNodeTasks();
+        handler().breakConnections();
 
         // Dynamically clean up nodes which are no longer needed.
         derefFinishedSourceNodes();
 
-        // Fixup the state of any dirty AudioSummingJunctions and AudioNodeOutputs.
-        handleDirtyAudioSummingJunctions();
-        handleDirtyAudioNodeOutputs();
+        handler().handleDeferredTasks();
 
-        updateAutomaticPullNodes();
         resolvePromisesForSuspend();
 
         unlock();
     }
 }
 
-void AudioContext::handleDeferredAudioNodeTasks()
+void DeferredTaskHandler::breakConnections()
 {
     ASSERT(isAudioThread());
     ASSERT(isGraphOwner());
@@ -1042,7 +1024,7 @@ AudioContext::AudioSummingJunctionDisposer::~AudioSummingJunctionDisposer()
     m_junction.dispose();
 }
 
-void AudioContext::disposeOutputs(AudioNode& node)
+void DeferredTaskHandler::disposeOutputs(AudioNode& node)
 {
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
@@ -1050,34 +1032,34 @@ void AudioContext::disposeOutputs(AudioNode& node)
         node.output(i)->dispose();
 }
 
-void AudioContext::markSummingJunctionDirty(AudioSummingJunction* summingJunction)
+void DeferredTaskHandler::markSummingJunctionDirty(AudioSummingJunction* summingJunction)
 {
     ASSERT(isGraphOwner());
     m_dirtySummingJunctions.add(summingJunction);
 }
 
-void AudioContext::removeMarkedSummingJunction(AudioSummingJunction* summingJunction)
+void DeferredTaskHandler::removeMarkedSummingJunction(AudioSummingJunction* summingJunction)
 {
     ASSERT(isMainThread());
-    AutoLocker locker(this);
+    AutoLocker locker(*this);
     m_dirtySummingJunctions.remove(summingJunction);
 }
 
-void AudioContext::markAudioNodeOutputDirty(AudioNodeOutput* output)
+void DeferredTaskHandler::markAudioNodeOutputDirty(AudioNodeOutput* output)
 {
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
     m_dirtyAudioNodeOutputs.add(output);
 }
 
-void AudioContext::removeMarkedAudioNodeOutput(AudioNodeOutput* output)
+void DeferredTaskHandler::removeMarkedAudioNodeOutput(AudioNodeOutput* output)
 {
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
     m_dirtyAudioNodeOutputs.remove(output);
 }
 
-void AudioContext::handleDirtyAudioSummingJunctions()
+void DeferredTaskHandler::handleDirtyAudioSummingJunctions()
 {
     ASSERT(isGraphOwner());
 
@@ -1086,7 +1068,7 @@ void AudioContext::handleDirtyAudioSummingJunctions()
     m_dirtySummingJunctions.clear();
 }
 
-void AudioContext::handleDirtyAudioNodeOutputs()
+void DeferredTaskHandler::handleDirtyAudioNodeOutputs()
 {
     ASSERT(isGraphOwner());
 
@@ -1095,7 +1077,7 @@ void AudioContext::handleDirtyAudioNodeOutputs()
     m_dirtyAudioNodeOutputs.clear();
 }
 
-void AudioContext::addAutomaticPullNode(AudioNode* node)
+void DeferredTaskHandler::addAutomaticPullNode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
 
@@ -1105,7 +1087,7 @@ void AudioContext::addAutomaticPullNode(AudioNode* node)
     }
 }
 
-void AudioContext::removeAutomaticPullNode(AudioNode* node)
+void DeferredTaskHandler::removeAutomaticPullNode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
 
@@ -1115,7 +1097,7 @@ void AudioContext::removeAutomaticPullNode(AudioNode* node)
     }
 }
 
-void AudioContext::updateAutomaticPullNodes()
+void DeferredTaskHandler::updateAutomaticPullNodes()
 {
     ASSERT(isGraphOwner());
 
@@ -1125,7 +1107,7 @@ void AudioContext::updateAutomaticPullNodes()
     }
 }
 
-void AudioContext::processAutomaticPullNodes(size_t framesToProcess)
+void DeferredTaskHandler::processAutomaticPullNodes(size_t framesToProcess)
 {
     ASSERT(isAudioThread());
 
@@ -1298,21 +1280,21 @@ DEFINE_TRACE(AudioContext)
     ActiveDOMObject::trace(visitor);
 }
 
-void AudioContext::addChangedChannelCountMode(AudioNode* node)
+void DeferredTaskHandler::addChangedChannelCountMode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
     m_deferredCountModeChange.add(node);
 }
 
-void AudioContext::removeChangedChannelCountMode(AudioNode* node)
+void DeferredTaskHandler::removeChangedChannelCountMode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
 
     m_deferredCountModeChange.remove(node);
 }
 
-void AudioContext::updateChangedChannelCountMode()
+void DeferredTaskHandler::updateChangedChannelCountMode()
 {
     ASSERT(isGraphOwner());
 
@@ -1367,6 +1349,40 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
 
     return promise;
 }
+
+DeferredTaskHandler::DeferredTaskHandler()
+    : m_automaticPullNodesNeedUpdating(false)
+    , m_audioThread(0)
+{
+}
+
+PassRefPtr<DeferredTaskHandler> DeferredTaskHandler::create()
+{
+    return adoptRef(new DeferredTaskHandler());
+}
+
+DeferredTaskHandler::~DeferredTaskHandler()
+{
+    ASSERT(!m_automaticPullNodes.size());
+    if (m_automaticPullNodesNeedUpdating)
+        m_renderingAutomaticPullNodes.resize(m_automaticPullNodes.size());
+    ASSERT(!m_renderingAutomaticPullNodes.size());
+}
+
+void DeferredTaskHandler::handleDeferredTasks()
+{
+    updateChangedChannelCountMode();
+    handleDirtyAudioSummingJunctions();
+    handleDirtyAudioNodeOutputs();
+    updateAutomaticPullNodes();
+}
+
+DeferredTaskHandler::AutoLocker::AutoLocker(AudioContext* context)
+    : m_handler(context->handler())
+{
+    m_handler.lock();
+}
+
 
 } // namespace blink
 
