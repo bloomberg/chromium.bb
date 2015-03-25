@@ -772,7 +772,7 @@ def SenderProcess(files, num_processes, input_queue):
     input_queue.put(None)
 
 
-def CheckObjectSize(filename):
+def CheckObjectSize(path):
   # Here, object file should exist. However, we're seeing the case that
   # we cannot read the object file on Windows.
   # When some error happens, we raise an error. However, we'd like to know
@@ -781,15 +781,19 @@ def CheckObjectSize(filename):
   retry = 0
   error_messages = []
 
+  path = FixPath(path)
+
   while retry < 5:
     try:
-      st = os.stat(filename)
+      st = os.stat(path)
       if st.st_size != 0:
         break
       error_messages.append(
-          'file size of object %s is 0 (try=%d)' % (filename, retry))
-    except:
-      error_messages.append('failed to stat() for %s' % filename)
+          'file size of object %s is 0 (try=%d)' % (path, retry))
+    except Exception as e:
+      error_messages.append(
+          'failed to stat() for %s (try=%d): %s' % (path, retry, e))
+
     time.sleep(1)
     retry += 1
 
