@@ -1013,8 +1013,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   establishing_tunnel_ = false;
 
   if (connection_->socket()) {
-    LogHttpConnectedMetrics(*connection_);
-
     // We officially have a new connection.  Record the type.
     if (!connection_->is_reused()) {
       ConnectionType type = using_spdy_ ? CONNECTION_SPDY : CONNECTION_HTTP;
@@ -1418,40 +1416,6 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
 void HttpStreamFactoryImpl::Job::SwitchToSpdyMode() {
   if (HttpStreamFactory::spdy_enabled())
     using_spdy_ = true;
-}
-
-// static
-void HttpStreamFactoryImpl::Job::LogHttpConnectedMetrics(
-    const ClientSocketHandle& handle) {
-  UMA_HISTOGRAM_ENUMERATION("Net.HttpSocketType", handle.reuse_type(),
-                            ClientSocketHandle::NUM_TYPES);
-
-  switch (handle.reuse_type()) {
-    case ClientSocketHandle::UNUSED:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.HttpConnectionLatency",
-                                 handle.setup_time(),
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(10),
-                                 100);
-      break;
-    case ClientSocketHandle::UNUSED_IDLE:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SocketIdleTimeBeforeNextUse_UnusedSocket",
-                                 handle.idle_time(),
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(6),
-                                 100);
-      break;
-    case ClientSocketHandle::REUSED_IDLE:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SocketIdleTimeBeforeNextUse_ReusedSocket",
-                                 handle.idle_time(),
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(6),
-                                 100);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 bool HttpStreamFactoryImpl::Job::IsPreconnecting() const {
