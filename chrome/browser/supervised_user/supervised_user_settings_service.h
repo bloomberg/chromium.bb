@@ -152,6 +152,8 @@ class SupervisedUserSettingsService : public KeyedService,
 
   bool active_;
 
+  bool initialization_failed_;
+
   // A set of local settings that are fixed and not configured remotely.
   scoped_ptr<base::DictionaryValue> local_settings_;
 
