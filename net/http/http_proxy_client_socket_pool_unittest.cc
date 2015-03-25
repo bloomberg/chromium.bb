@@ -15,7 +15,6 @@
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_protocol.h"
@@ -156,16 +155,12 @@ class HttpProxyClientSocketPoolTest
  protected:
   HttpProxyClientSocketPoolTest()
       : session_deps_(GetParam().protocol),
-        tcp_histograms_("MockTCP"),
         transport_socket_pool_(
             kMaxSockets,
             kMaxSocketsPerGroup,
-            &tcp_histograms_,
             session_deps_.deterministic_socket_factory.get()),
-        ssl_histograms_("MockSSL"),
         ssl_socket_pool_(kMaxSockets,
                          kMaxSocketsPerGroup,
-                         &ssl_histograms_,
                          session_deps_.cert_verifier.get(),
                          NULL /* channel_id_store */,
                          NULL /* transport_security_state */,
@@ -179,11 +174,9 @@ class HttpProxyClientSocketPoolTest
                          session_deps_.ssl_config_service.get(),
                          BoundNetLog().net_log()),
         session_(CreateNetworkSession()),
-        http_proxy_histograms_("HttpProxyUnitTest"),
         spdy_util_(GetParam().protocol),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
-              &http_proxy_histograms_,
               &transport_socket_pool_,
               &ssl_socket_pool_,
               NULL) {}
@@ -310,15 +303,12 @@ class HttpProxyClientSocketPoolTest
  private:
   SpdySessionDependencies session_deps_;
 
-  ClientSocketPoolHistograms tcp_histograms_;
   MockTransportClientSocketPool transport_socket_pool_;
-  ClientSocketPoolHistograms ssl_histograms_;
   MockHostResolver host_resolver_;
   scoped_ptr<CertVerifier> cert_verifier_;
   SSLClientSocketPool ssl_socket_pool_;
 
   const scoped_refptr<HttpNetworkSession> session_;
-  ClientSocketPoolHistograms http_proxy_histograms_;
 
  protected:
   SpdyTestUtil spdy_util_;

@@ -25,7 +25,6 @@
 namespace net {
 
 class ClientSocketFactory;
-class ClientSocketPoolHistograms;
 class HostResolver;
 class NetLog;
 class WebSocketEndpointLockManager;
@@ -118,7 +117,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
  public:
   WebSocketTransportClientSocketPool(int max_sockets,
                                      int max_sockets_per_group,
-                                     ClientSocketPoolHistograms* histograms,
                                      HostResolver* host_resolver,
                                      ClientSocketFactory* client_socket_factory,
                                      NetLog* net_log);
@@ -159,7 +157,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       const std::string& type,
       bool include_nested_pools) const override;
   base::TimeDelta ConnectionTimeout() const override;
-  ClientSocketPoolHistograms* histograms() const override;
 
   // HigherLayeredPool implementation.
   bool IsStalled() const override;
@@ -228,7 +225,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   PendingConnectsMap pending_connects_;
   StalledRequestQueue stalled_request_queue_;
   StalledRequestMap stalled_request_map_;
-  ClientSocketPoolHistograms* const histograms_;
   NetLog* const pool_net_log_;
   ClientSocketFactory* const client_socket_factory_;
   HostResolver* const host_resolver_;

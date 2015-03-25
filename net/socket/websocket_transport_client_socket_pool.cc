@@ -229,18 +229,15 @@ int WebSocketTransportConnectJob::ConnectInternal() {
 WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketPoolHistograms* histograms,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     NetLog* net_log)
     : TransportClientSocketPool(max_sockets,
                                 max_sockets_per_group,
-                                histograms,
                                 host_resolver,
                                 client_socket_factory,
                                 net_log),
       connect_job_delegate_(this),
-      histograms_(histograms),
       pool_net_log_(net_log),
       client_socket_factory_(client_socket_factory),
       host_resolver_(host_resolver),
@@ -454,11 +451,6 @@ base::DictionaryValue* WebSocketTransportClientSocketPool::GetInfoAsValue(
 
 TimeDelta WebSocketTransportClientSocketPool::ConnectionTimeout() const {
   return TimeDelta::FromSeconds(kTransportConnectJobTimeoutInSeconds);
-}
-
-ClientSocketPoolHistograms* WebSocketTransportClientSocketPool::histograms()
-    const {
-  return histograms_;
 }
 
 bool WebSocketTransportClientSocketPool::IsStalled() const {

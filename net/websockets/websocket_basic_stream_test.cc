@@ -105,8 +105,7 @@ class StrictStaticSocketDataProvider : public StaticSocketDataProvider {
 class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
  protected:
   WebSocketBasicStreamSocketTest()
-      : histograms_("a"),
-        pool_(1, 1, &histograms_, &factory_),
+      : pool_(1, 1, &factory_),
         generator_(&GenerateNulMaskingKey),
         expect_all_io_to_complete_(true) {}
 
@@ -164,7 +163,6 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
 
   scoped_ptr<SocketDataProvider> socket_data_;
   MockClientSocketFactory factory_;
-  ClientSocketPoolHistograms histograms_;
   MockTransportClientSocketPool pool_;
   CapturingBoundNetLog(bound_net_log_);
   ScopedVector<WebSocketFrame> frames_;

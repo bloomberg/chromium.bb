@@ -19,7 +19,6 @@
 #include "net/http/proxy_client_socket.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session.h"
 
@@ -188,7 +187,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
 
   HttpProxyClientSocketPool(int max_sockets,
                             int max_sockets_per_group,
-                            ClientSocketPoolHistograms* histograms,
                             TransportClientSocketPool* transport_pool,
                             SSLClientSocketPool* ssl_pool,
                             NetLog* net_log);
@@ -232,8 +230,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
       bool include_nested_pools) const override;
 
   base::TimeDelta ConnectionTimeout() const override;
-
-  ClientSocketPoolHistograms* histograms() const override;
 
   // LowerLayeredPool implementation.
   bool IsStalled() const override;

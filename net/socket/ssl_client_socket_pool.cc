@@ -505,7 +505,6 @@ SSLClientSocketPool::SSLConnectJobFactory::~SSLConnectJobFactory() {
 SSLClientSocketPool::SSLClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketPoolHistograms* histograms,
     CertVerifier* cert_verifier,
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
@@ -524,7 +523,6 @@ SSLClientSocketPool::SSLClientSocketPool(
       base_(this,
             max_sockets,
             max_sockets_per_group,
-            histograms,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
             new SSLConnectJobFactory(
@@ -663,10 +661,6 @@ base::DictionaryValue* SSLClientSocketPool::GetInfoAsValue(
 
 base::TimeDelta SSLClientSocketPool::ConnectionTimeout() const {
   return base_.ConnectionTimeout();
-}
-
-ClientSocketPoolHistograms* SSLClientSocketPool::histograms() const {
-  return base_.histograms();
 }
 
 bool SSLClientSocketPool::IsStalled() const {

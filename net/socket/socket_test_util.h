@@ -1158,7 +1158,6 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
 
   MockTransportClientSocketPool(int max_sockets,
                                 int max_sockets_per_group,
-                                ClientSocketPoolHistograms* histograms,
                                 ClientSocketFactory* socket_factory);
 
   ~MockTransportClientSocketPool() override;
@@ -1249,7 +1248,6 @@ class MockSOCKSClientSocketPool : public SOCKSClientSocketPool {
  public:
   MockSOCKSClientSocketPool(int max_sockets,
                             int max_sockets_per_group,
-                            ClientSocketPoolHistograms* histograms,
                             TransportClientSocketPool* transport_pool);
 
   ~MockSOCKSClientSocketPool() override;

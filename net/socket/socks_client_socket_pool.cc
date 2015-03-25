@@ -192,17 +192,17 @@ SOCKSClientSocketPool::SOCKSConnectJobFactory::ConnectionTimeout() const {
 SOCKSClientSocketPool::SOCKSClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketPoolHistograms* histograms,
     HostResolver* host_resolver,
     TransportClientSocketPool* transport_pool,
     NetLog* net_log)
     : transport_pool_(transport_pool),
-      base_(this, max_sockets, max_sockets_per_group, histograms,
-            ClientSocketPool::unused_idle_socket_timeout(),
-            ClientSocketPool::used_idle_socket_timeout(),
-            new SOCKSConnectJobFactory(transport_pool,
-                                       host_resolver,
-                                       net_log)) {
+      base_(
+          this,
+          max_sockets,
+          max_sockets_per_group,
+          ClientSocketPool::unused_idle_socket_timeout(),
+          ClientSocketPool::used_idle_socket_timeout(),
+          new SOCKSConnectJobFactory(transport_pool, host_resolver, net_log)) {
   // We should always have a |transport_pool_| except in unit tests.
   if (transport_pool_)
     base_.AddLowerLayeredPool(transport_pool_);
@@ -284,10 +284,6 @@ base::DictionaryValue* SOCKSClientSocketPool::GetInfoAsValue(
 base::TimeDelta SOCKSClientSocketPool::ConnectionTimeout() const {
   return base_.ConnectionTimeout();
 }
-
-ClientSocketPoolHistograms* SOCKSClientSocketPool::histograms() const {
-  return base_.histograms();
-};
 
 bool SOCKSClientSocketPool::IsStalled() const {
   return base_.IsStalled();

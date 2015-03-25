@@ -19920,11 +19920,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket">
+  <obsolete>
+    Deprecated as of 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time an already used socket sat idle before being used.</summary>
 </histogram>
 
 <histogram name="Net.SocketIdleTimeBeforeNextUse_UnusedSocket">
+  <obsolete>
+    Deprecated as of 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time an unused socket (all HTTP sockets, regardless of any proxy used)
@@ -19949,6 +19955,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketInitErrorCodes" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated as of 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Net error codes that socket initializations end with, including net::OK and
@@ -19968,6 +19977,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketRequestTime">
+  <obsolete>
+    Deprecated as of 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time in milliseconds from initial RequestSocket() call until successfully
@@ -20072,6 +20084,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketType" enum="HttpSocketType">
+  <obsolete>
+    Deprecated as of 03/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The counts of the type of sockets returned by the socket pools.
@@ -66069,6 +66084,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="SocketType">
+  <obsolete>
+    Deprecated as of 03/2015.
+  </obsolete>
   <suffix name="HTTPProxy" label="HTTP proxy socket"/>
   <suffix name="SOCK" label="SOCKS socket"/>
   <suffix name="SSL" label="(Obsolete, SSL socket)"/>

@@ -16,7 +16,6 @@
 #include "net/dns/host_resolver.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/client_socket_pool_histograms.h"
 
 namespace net {
 
@@ -112,7 +111,6 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
   SOCKSClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      ClientSocketPoolHistograms* histograms,
       HostResolver* host_resolver,
       TransportClientSocketPool* transport_pool,
       NetLog* net_log);
@@ -156,8 +154,6 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
       bool include_nested_pools) const override;
 
   base::TimeDelta ConnectionTimeout() const override;
-
-  ClientSocketPoolHistograms* histograms() const override;
 
   // LowerLayeredPool implementation.
   bool IsStalled() const override;

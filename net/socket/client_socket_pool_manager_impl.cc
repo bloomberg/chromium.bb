@@ -57,26 +57,21 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       ssl_session_cache_shard_(ssl_session_cache_shard),
       ssl_config_service_(ssl_config_service),
       pool_type_(pool_type),
-      transport_pool_histograms_("TCP"),
       transport_socket_pool_(
           pool_type == HttpNetworkSession::WEBSOCKET_SOCKET_POOL
               ? new WebSocketTransportClientSocketPool(
                     max_sockets_per_pool(pool_type),
                     max_sockets_per_group(pool_type),
-                    &transport_pool_histograms_,
                     host_resolver,
                     socket_factory_,
                     net_log)
               : new TransportClientSocketPool(max_sockets_per_pool(pool_type),
                                               max_sockets_per_group(pool_type),
-                                              &transport_pool_histograms_,
                                               host_resolver,
                                               socket_factory_,
                                               net_log)),
-      ssl_pool_histograms_("SSL2"),
       ssl_socket_pool_(new SSLClientSocketPool(max_sockets_per_pool(pool_type),
                                                max_sockets_per_group(pool_type),
-                                               &ssl_pool_histograms_,
                                                cert_verifier,
                                                channel_id_service,
                                                transport_security_state,
@@ -88,14 +83,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                                                NULL /* no socks proxy */,
                                                NULL /* no http proxy */,
                                                ssl_config_service,
-                                               net_log)),
-      transport_for_socks_pool_histograms_("TCPforSOCKS"),
-      socks_pool_histograms_("SOCK"),
-      transport_for_http_proxy_pool_histograms_("TCPforHTTPProxy"),
-      transport_for_https_proxy_pool_histograms_("TCPforHTTPSProxy"),
-      ssl_for_https_proxy_pool_histograms_("SSLforHTTPSProxy"),
-      http_proxy_pool_histograms_("HTTPProxy"),
-      ssl_socket_pool_for_proxies_histograms_("SSLForProxies") {
+                                               net_log)) {
   CertDatabase::GetInstance()->AddObserver(this);
 }
 
@@ -228,7 +216,6 @@ SOCKSClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
               new TransportClientSocketPool(
                   max_sockets_per_proxy_server(pool_type_),
                   max_sockets_per_group(pool_type_),
-                  &transport_for_socks_pool_histograms_,
                   host_resolver_,
                   socket_factory_,
                   net_log_)));
@@ -239,7 +226,6 @@ SOCKSClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
           std::make_pair(socks_proxy, new SOCKSClientSocketPool(
               max_sockets_per_proxy_server(pool_type_),
               max_sockets_per_group(pool_type_),
-              &socks_pool_histograms_,
               host_resolver_,
               tcp_ret.first->second,
               net_log_)));
@@ -270,7 +256,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
               new TransportClientSocketPool(
                   max_sockets_per_proxy_server(pool_type_),
                   max_sockets_per_group(pool_type_),
-                  &transport_for_http_proxy_pool_histograms_,
                   host_resolver_,
                   socket_factory_,
                   net_log_)));
@@ -283,7 +268,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
               new TransportClientSocketPool(
                   max_sockets_per_proxy_server(pool_type_),
                   max_sockets_per_group(pool_type_),
-                  &transport_for_https_proxy_pool_histograms_,
                   host_resolver_,
                   socket_factory_,
                   net_log_)));
@@ -293,8 +277,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
       ssl_socket_pools_for_https_proxies_.insert(std::make_pair(
           http_proxy, new SSLClientSocketPool(
                           max_sockets_per_proxy_server(pool_type_),
-                          max_sockets_per_group(pool_type_),
-                          &ssl_for_https_proxy_pool_histograms_, cert_verifier_,
+                          max_sockets_per_group(pool_type_), cert_verifier_,
                           channel_id_service_, transport_security_state_,
                           cert_transparency_verifier_, cert_policy_enforcer_,
                           ssl_session_cache_shard_, socket_factory_,
@@ -310,7 +293,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
               new HttpProxyClientSocketPool(
                   max_sockets_per_proxy_server(pool_type_),
                   max_sockets_per_group(pool_type_),
-                  &http_proxy_pool_histograms_,
                   tcp_http_ret.first->second,
                   ssl_https_ret.first->second,
                   net_log_)));
@@ -327,10 +309,9 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
 
   SSLClientSocketPool* new_pool = new SSLClientSocketPool(
       max_sockets_per_proxy_server(pool_type_),
-      max_sockets_per_group(pool_type_), &ssl_pool_histograms_, cert_verifier_,
-      channel_id_service_, transport_security_state_,
-      cert_transparency_verifier_, cert_policy_enforcer_,
-      ssl_session_cache_shard_, socket_factory_,
+      max_sockets_per_group(pool_type_), cert_verifier_, channel_id_service_,
+      transport_security_state_, cert_transparency_verifier_,
+      cert_policy_enforcer_, ssl_session_cache_shard_, socket_factory_,
       NULL, /* no tcp pool, we always go through a proxy */
       GetSocketPoolForSOCKSProxy(proxy_server),
       GetSocketPoolForHTTPProxy(proxy_server), ssl_config_service_.get(),

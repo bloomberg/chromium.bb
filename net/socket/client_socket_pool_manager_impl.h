@@ -15,7 +15,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/cert/cert_database.h"
 #include "net/http/http_network_session.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/client_socket_pool_manager.h"
 
 namespace net {
@@ -23,7 +22,6 @@ namespace net {
 class CertVerifier;
 class ChannelIDService;
 class ClientSocketFactory;
-class ClientSocketPoolHistograms;
 class CTVerifier;
 class HttpProxyClientSocketPool;
 class HostResolver;
@@ -116,31 +114,14 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
 
   // Note: this ordering is important.
 
-  ClientSocketPoolHistograms transport_pool_histograms_;
   scoped_ptr<TransportClientSocketPool> transport_socket_pool_;
-
-  ClientSocketPoolHistograms ssl_pool_histograms_;
   scoped_ptr<SSLClientSocketPool> ssl_socket_pool_;
-
-  ClientSocketPoolHistograms transport_for_socks_pool_histograms_;
   TransportSocketPoolMap transport_socket_pools_for_socks_proxies_;
-
-  ClientSocketPoolHistograms socks_pool_histograms_;
   SOCKSSocketPoolMap socks_socket_pools_;
-
-  ClientSocketPoolHistograms transport_for_http_proxy_pool_histograms_;
   TransportSocketPoolMap transport_socket_pools_for_http_proxies_;
-
-  ClientSocketPoolHistograms transport_for_https_proxy_pool_histograms_;
   TransportSocketPoolMap transport_socket_pools_for_https_proxies_;
-
-  ClientSocketPoolHistograms ssl_for_https_proxy_pool_histograms_;
   SSLSocketPoolMap ssl_socket_pools_for_https_proxies_;
-
-  ClientSocketPoolHistograms http_proxy_pool_histograms_;
   HTTPProxySocketPoolMap http_proxy_socket_pools_;
-
-  ClientSocketPoolHistograms ssl_socket_pool_for_proxies_histograms_;
   SSLSocketPoolMap ssl_socket_pools_for_proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPoolManagerImpl);

@@ -58,7 +58,6 @@ class DeterministicSocketDataTest : public PlatformTest {
 
   HostPortPair endpoint_;
   scoped_refptr<TransportSocketParams> tcp_params_;
-  ClientSocketPoolHistograms histograms_;
   DeterministicMockClientSocketFactory socket_factory_;
   MockTransportClientSocketPool socket_pool_;
   ClientSocketHandle connection_;
@@ -72,13 +71,13 @@ DeterministicSocketDataTest::DeterministicSocketDataTest()
       connect_data_(SYNCHRONOUS, OK),
       endpoint_("www.google.com", 443),
       tcp_params_(new TransportSocketParams(
-              endpoint_,
-              false,
-              false,
-              OnHostResolutionCallback(),
-              TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
-      histograms_(std::string()),
-      socket_pool_(10, 10, &histograms_, &socket_factory_) {}
+          endpoint_,
+          false,
+          false,
+          OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
+      socket_pool_(10, 10, &socket_factory_) {
+}
 
 void DeterministicSocketDataTest::TearDown() {
   // Empty the current queue.

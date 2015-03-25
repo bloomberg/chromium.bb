@@ -28,8 +28,7 @@ namespace {
 class MockClientSocketHandleFactory {
  public:
   MockClientSocketHandleFactory()
-      : histograms_("a"),
-        pool_(1, 1, &histograms_, socket_factory_maker_.factory()) {}
+      : pool_(1, 1, socket_factory_maker_.factory()) {}
 
   // The created socket expects |expect_written| to be written to the socket,
   // and will respond with |return_to_read|. The test will fail if the expected
@@ -51,7 +50,6 @@ class MockClientSocketHandleFactory {
 
  private:
   WebSocketDeterministicMockClientSocketFactoryMaker socket_factory_maker_;
-  ClientSocketPoolHistograms histograms_;
   MockTransportClientSocketPool pool_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketHandleFactory);

@@ -24,7 +24,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
@@ -57,12 +56,10 @@ class WebSocketTransportClientSocketPoolTest : public ::testing::Test {
             false,
             OnHostResolutionCallback(),
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
-        histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
-              histograms_.get(),
               host_resolver_.get(),
               &client_socket_factory_,
               NULL) {}
@@ -108,7 +105,6 @@ class WebSocketTransportClientSocketPoolTest : public ::testing::Test {
 
   CapturingNetLog net_log_;
   scoped_refptr<TransportSocketParams> params_;
-  scoped_ptr<ClientSocketPoolHistograms> histograms_;
   scoped_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   WebSocketTransportClientSocketPool pool_;
@@ -565,7 +561,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6FallbackSocketIPv4FinishesFirst) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -606,7 +601,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6FallbackSocketIPv6FinishesFirst) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -646,7 +640,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6NoIPv4AddressesToFallbackTo) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -678,7 +671,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -711,7 +703,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -748,7 +739,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -793,7 +783,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
 TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -832,7 +821,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
 TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);
@@ -875,7 +863,6 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
 TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
   WebSocketTransportClientSocketPool pool(kMaxSockets,
                                           kMaxSocketsPerGroup,
-                                          histograms_.get(),
                                           host_resolver_.get(),
                                           &client_socket_factory_,
                                           NULL);

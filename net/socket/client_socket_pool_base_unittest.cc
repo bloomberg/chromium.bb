@@ -28,7 +28,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
@@ -482,12 +481,14 @@ class TestClientSocketPool : public ClientSocketPool {
   TestClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      ClientSocketPoolHistograms* histograms,
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
       TestClientSocketPoolBase::ConnectJobFactory* connect_job_factory)
-      : base_(NULL, max_sockets, max_sockets_per_group, histograms,
-              unused_idle_socket_timeout, used_idle_socket_timeout,
+      : base_(NULL,
+              max_sockets,
+              max_sockets_per_group,
+              unused_idle_socket_timeout,
+              used_idle_socket_timeout,
               connect_job_factory) {}
 
   ~TestClientSocketPool() override {}
@@ -559,10 +560,6 @@ class TestClientSocketPool : public ClientSocketPool {
 
   base::TimeDelta ConnectionTimeout() const override {
     return base_.ConnectionTimeout();
-  }
-
-  ClientSocketPoolHistograms* histograms() const override {
-    return base_.histograms();
   }
 
   const TestClientSocketPoolBase* base() const { return &base_; }
@@ -658,8 +655,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
 class ClientSocketPoolBaseTest : public testing::Test {
  protected:
   ClientSocketPoolBaseTest()
-      : params_(new TestSocketParams(false /* ignore_limits */)),
-        histograms_("ClientSocketPoolTest") {
+      : params_(new TestSocketParams(false /* ignore_limits */)) {
     connect_backup_jobs_enabled_ =
         internal::ClientSocketPoolBaseHelper::connect_backup_jobs_enabled();
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true);
@@ -691,7 +687,6 @@ class ClientSocketPoolBaseTest : public testing::Test {
                                                      &net_log_);
     pool_.reset(new TestClientSocketPool(max_sockets,
                                          max_sockets_per_group,
-                                         &histograms_,
                                          unused_idle_socket_timeout,
                                          used_idle_socket_timeout,
                                          connect_job_factory_));
@@ -732,7 +727,6 @@ class ClientSocketPoolBaseTest : public testing::Test {
   MockClientSocketFactory client_socket_factory_;
   TestConnectJobFactory* connect_job_factory_;
   scoped_refptr<TestSocketParams> params_;
-  ClientSocketPoolHistograms histograms_;
   scoped_ptr<TestClientSocketPool> pool_;
   ClientSocketPoolTest test_base_;
 };

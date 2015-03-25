@@ -21,7 +21,6 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -1756,10 +1755,12 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
 MockTransportClientSocketPool::MockTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketPoolHistograms* histograms,
     ClientSocketFactory* socket_factory)
-    : TransportClientSocketPool(max_sockets, max_sockets_per_group, histograms,
-                                NULL, NULL, NULL),
+    : TransportClientSocketPool(max_sockets,
+                                max_sockets_per_group,
+                                NULL,
+                                NULL,
+                                NULL),
       client_socket_factory_(socket_factory),
       last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),
@@ -1875,10 +1876,12 @@ void DeterministicMockClientSocketFactory::ClearSSLSessionCache() {
 MockSOCKSClientSocketPool::MockSOCKSClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketPoolHistograms* histograms,
     TransportClientSocketPool* transport_pool)
-    : SOCKSClientSocketPool(max_sockets, max_sockets_per_group, histograms,
-                            NULL, transport_pool, NULL),
+    : SOCKSClientSocketPool(max_sockets,
+                            max_sockets_per_group,
+                            NULL,
+                            transport_pool,
+                            NULL),
       transport_pool_(transport_pool) {
 }
 

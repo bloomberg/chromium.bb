@@ -120,8 +120,6 @@
       'http/transport_security_state.h',
       'socket/client_socket_handle.cc',
       'socket/client_socket_handle.h',
-      'socket/client_socket_pool_histograms.cc',
-      'socket/client_socket_pool_histograms.h',
       'socket/next_proto.cc',
       'socket/next_proto.h',
       'socket/socket.h',

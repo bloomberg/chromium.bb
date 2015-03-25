@@ -570,17 +570,18 @@ CaptureGroupNameSOCKSSocketPool;
 typedef CaptureGroupNameSocketPool<SSLClientSocketPool>
 CaptureGroupNameSSLSocketPool;
 
-template<typename ParentPool>
+template <typename ParentPool>
 CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
     HostResolver* host_resolver,
     CertVerifier* /* cert_verifier */)
-    : ParentPool(0, 0, NULL, host_resolver, NULL, NULL) {}
+    : ParentPool(0, 0, host_resolver, NULL, NULL) {
+}
 
 template <>
 CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
     HostResolver* /* host_resolver */,
     CertVerifier* /* cert_verifier */)
-    : HttpProxyClientSocketPool(0, 0, NULL, NULL, NULL, NULL) {
+    : HttpProxyClientSocketPool(0, 0, NULL, NULL, NULL) {
 }
 
 template <>
@@ -589,7 +590,6 @@ CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
     CertVerifier* cert_verifier)
     : SSLClientSocketPool(0,
                           0,
-                          NULL,
                           cert_verifier,
                           NULL,
                           NULL,
@@ -10165,11 +10165,9 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   // to validate that the TCP socket is not released to the pool between
   // each round of multi-round authentication.
   HttpNetworkSessionPeer session_peer(session);
-  ClientSocketPoolHistograms transport_pool_histograms("SmallTCP");
   TransportClientSocketPool* transport_pool = new TransportClientSocketPool(
       50,  // Max sockets for pool
       1,   // Max sockets per group
-      &transport_pool_histograms,
       session_deps_.host_resolver.get(),
       session_deps_.socket_factory.get(),
       session_deps_.net_log);

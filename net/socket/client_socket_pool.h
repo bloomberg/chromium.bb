@@ -26,7 +26,6 @@ class DictionaryValue;
 namespace net {
 
 class ClientSocketHandle;
-class ClientSocketPoolHistograms;
 class StreamSocket;
 
 // ClientSocketPools are layered. This defines an interface for lower level
@@ -169,10 +168,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
   // Returns the maximum amount of time to wait before retrying a connect.
   static const int kMaxConnectRetryIntervalMs = 250;
-
-  // The set of histograms specific to this pool.  We can't use the standard
-  // UMA_HISTOGRAM_* macros because they are callsite static.
-  virtual ClientSocketPoolHistograms* histograms() const = 0;
 
   static base::TimeDelta unused_idle_socket_timeout();
   static void set_unused_idle_socket_timeout(base::TimeDelta timeout);

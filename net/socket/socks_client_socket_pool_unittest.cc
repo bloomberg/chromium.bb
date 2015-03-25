@@ -14,7 +14,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,18 +89,14 @@ class SOCKSClientSocketPoolTest : public testing::Test {
   };
 
   SOCKSClientSocketPoolTest()
-      : transport_histograms_("MockTCP"),
-        transport_socket_pool_(
-            kMaxSockets, kMaxSocketsPerGroup,
-            &transport_histograms_,
-            &transport_client_socket_factory_),
-        socks_histograms_("SOCKSUnitTest"),
-        pool_(kMaxSockets, kMaxSocketsPerGroup,
-              &socks_histograms_,
+      : transport_socket_pool_(kMaxSockets,
+                               kMaxSocketsPerGroup,
+                               &transport_client_socket_factory_),
+        pool_(kMaxSockets,
+              kMaxSocketsPerGroup,
               &host_resolver_,
               &transport_socket_pool_,
-              NULL) {
-  }
+              NULL) {}
 
   ~SOCKSClientSocketPoolTest() override {}
 
@@ -116,11 +111,9 @@ class SOCKSClientSocketPoolTest : public testing::Test {
 
   ScopedVector<TestSocketRequest>* requests() { return test_base_.requests(); }
 
-  ClientSocketPoolHistograms transport_histograms_;
   MockClientSocketFactory transport_client_socket_factory_;
   MockTransportClientSocketPool transport_socket_pool_;
 
-  ClientSocketPoolHistograms socks_histograms_;
   MockHostResolver host_resolver_;
   SOCKSClientSocketPool pool_;
   ClientSocketPoolTest test_base_;

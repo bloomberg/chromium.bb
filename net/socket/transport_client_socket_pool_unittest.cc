@@ -18,7 +18,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
@@ -46,12 +45,10 @@ class TransportClientSocketPoolTest : public testing::Test {
                 false,
                 OnHostResolutionCallback(),
                 TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
-        histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
-              histograms_.get(),
               host_resolver_.get(),
               &client_socket_factory_,
               NULL) {
@@ -95,7 +92,6 @@ class TransportClientSocketPoolTest : public testing::Test {
   bool connect_backup_jobs_enabled_;
   CapturingNetLog net_log_;
   scoped_refptr<TransportSocketParams> params_;
-  scoped_ptr<ClientSocketPoolHistograms> histograms_;
   scoped_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   TransportClientSocketPool pool_;
@@ -829,7 +825,6 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv4FinishesFirst) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -872,7 +867,6 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv6FinishesFirst) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -914,7 +908,6 @@ TEST_F(TransportClientSocketPoolTest, IPv6NoIPv4AddressesToFallbackTo) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -948,7 +941,6 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -983,7 +975,6 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -1008,7 +999,6 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -1036,7 +1026,6 @@ TEST_F(TransportClientSocketPoolTest,
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);
@@ -1076,7 +1065,6 @@ TEST_F(TransportClientSocketPoolTest,
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
-                                 histograms_.get(),
                                  host_resolver_.get(),
                                  &client_socket_factory_,
                                  NULL);

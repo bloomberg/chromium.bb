@@ -24,7 +24,6 @@
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
@@ -91,10 +90,8 @@ class SSLClientSocketPoolTest
             false,
             OnHostResolutionCallback(),
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
-        transport_histograms_("MockTCP"),
         transport_socket_pool_(kMaxSockets,
                                kMaxSocketsPerGroup,
-                               &transport_histograms_,
                                &socket_factory_),
         proxy_transport_socket_params_(new TransportSocketParams(
             HostPortPair("proxy", 443),
@@ -106,10 +103,8 @@ class SSLClientSocketPoolTest
             new SOCKSSocketParams(proxy_transport_socket_params_,
                                   true,
                                   HostPortPair("sockshost", 443))),
-        socks_histograms_("MockSOCKS"),
         socks_socket_pool_(kMaxSockets,
                            kMaxSocketsPerGroup,
-                           &socks_histograms_,
                            &transport_socket_pool_),
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,
@@ -122,10 +117,8 @@ class SSLClientSocketPoolTest
                                       session_->spdy_session_pool(),
                                       true,
                                       NULL)),
-        http_proxy_histograms_("MockHttpProxy"),
         http_proxy_socket_pool_(kMaxSockets,
                                 kMaxSocketsPerGroup,
-                                &http_proxy_histograms_,
                                 &transport_socket_pool_,
                                 NULL,
                                 NULL) {
@@ -135,11 +128,9 @@ class SSLClientSocketPoolTest
   }
 
   void CreatePool(bool transport_pool, bool http_proxy_pool, bool socks_pool) {
-    ssl_histograms_.reset(new ClientSocketPoolHistograms("SSLUnitTest"));
     pool_.reset(new SSLClientSocketPool(
-        kMaxSockets, kMaxSocketsPerGroup, ssl_histograms_.get(),
-        NULL /* cert_verifier */, NULL /* channel_id_service */,
-        NULL /* transport_security_state */,
+        kMaxSockets, kMaxSocketsPerGroup, NULL /* cert_verifier */,
+        NULL /* channel_id_service */, NULL /* transport_security_state */,
         NULL /* cert_transparency_verifier */, NULL /* cert_policy_enforcer */,
         std::string() /* ssl_session_cache_shard */, &socket_factory_,
         transport_pool ? &transport_socket_pool_ : NULL,
@@ -202,21 +193,17 @@ class SSLClientSocketPoolTest
   const scoped_refptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;
-  ClientSocketPoolHistograms transport_histograms_;
   MockTransportClientSocketPool transport_socket_pool_;
 
   scoped_refptr<TransportSocketParams> proxy_transport_socket_params_;
 
   scoped_refptr<SOCKSSocketParams> socks_socket_params_;
-  ClientSocketPoolHistograms socks_histograms_;
   MockSOCKSClientSocketPool socks_socket_pool_;
 
   scoped_refptr<HttpProxySocketParams> http_proxy_socket_params_;
-  ClientSocketPoolHistograms http_proxy_histograms_;
   HttpProxyClientSocketPool http_proxy_socket_pool_;
 
   SSLConfig ssl_config_;
-  scoped_ptr<ClientSocketPoolHistograms> ssl_histograms_;
   scoped_ptr<SSLClientSocketPool> pool_;
 };
 

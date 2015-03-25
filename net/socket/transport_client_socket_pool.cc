@@ -476,15 +476,17 @@ base::TimeDelta
 TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketPoolHistograms* histograms,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     NetLog* net_log)
-    : base_(NULL, max_sockets, max_sockets_per_group, histograms,
+    : base_(NULL,
+            max_sockets,
+            max_sockets_per_group,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
             new TransportConnectJobFactory(client_socket_factory,
-                                           host_resolver, net_log)) {
+                                           host_resolver,
+                                           net_log)) {
   base_.EnableConnectBackupJobs();
 }
 
@@ -581,10 +583,6 @@ base::DictionaryValue* TransportClientSocketPool::GetInfoAsValue(
 
 base::TimeDelta TransportClientSocketPool::ConnectionTimeout() const {
   return base_.ConnectionTimeout();
-}
-
-ClientSocketPoolHistograms* TransportClientSocketPool::histograms() const {
-  return base_.histograms();
 }
 
 bool TransportClientSocketPool::IsStalled() const {

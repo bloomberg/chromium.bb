@@ -14,7 +14,6 @@
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -183,7 +182,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   // try to create an SSL over SOCKS socket, |socks_pool| may be NULL.
   SSLClientSocketPool(int max_sockets,
                       int max_sockets_per_group,
-                      ClientSocketPoolHistograms* histograms,
                       CertVerifier* cert_verifier,
                       ChannelIDService* channel_id_service,
                       TransportSecurityState* transport_security_state,
@@ -236,8 +234,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
       bool include_nested_pools) const override;
 
   base::TimeDelta ConnectionTimeout() const override;
-
-  ClientSocketPoolHistograms* histograms() const override;
 
   // LowerLayeredPool implementation.
   bool IsStalled() const override;
