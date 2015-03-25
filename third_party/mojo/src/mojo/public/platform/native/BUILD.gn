@@ -26,10 +26,16 @@ mojo_sdk_source_set("system") {
 
 mojo_sdk_source_set("gles2") {
   sources = [
+    "gles2_impl_chromium_miscellaneous_thunks.cc",
+    "gles2_impl_chromium_miscellaneous_thunks.h",
+    "gles2_impl_chromium_sub_image_thunks.cc",
+    "gles2_impl_chromium_sub_image_thunks.h",
     "gles2_impl_chromium_sync_point_thunks.cc",
     "gles2_impl_chromium_sync_point_thunks.h",
     "gles2_impl_chromium_texture_mailbox_thunks.cc",
     "gles2_impl_chromium_texture_mailbox_thunks.h",
+    "gles2_impl_occlusion_query_ext_thunks.cc",
+    "gles2_impl_occlusion_query_ext_thunks.h",
     "gles2_impl_thunks.cc",
     "gles2_impl_thunks.h",
     "gles2_thunks.cc",
