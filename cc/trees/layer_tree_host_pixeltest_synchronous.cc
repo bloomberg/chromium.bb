@@ -44,6 +44,36 @@ TEST_F(LayerTreeHostSynchronousPixelTest, OneContentLayer) {
       PIXEL_TEST_GL, root, base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
+class LayerTreeHostSynchronousGPUPixelTest : public LayerTreePixelTest {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreePixelTest::InitializeSettings(settings);
+    settings->single_thread_proxy_scheduler = false;
+    settings->gpu_rasterization_enabled = true;
+    settings->gpu_rasterization_forced = true;
+  }
+
+  void BeginTest() override {
+    LayerTreePixelTest::BeginTest();
+    PostCompositeImmediatelyToMainThread();
+  }
+};
+
+TEST_F(LayerTreeHostSynchronousGPUPixelTest, OneContentLayer) {
+  gfx::Size bounds(200, 200);
+
+  FakeContentLayerClient client;
+  SkPaint green_paint;
+  green_paint.setColor(SkColorSetARGB(255, 0, 255, 0));
+  client.add_draw_rect(gfx::RectF(bounds), green_paint);
+  scoped_refptr<PictureLayer> root = PictureLayer::Create(&client);
+  root->SetBounds(bounds);
+  root->SetIsDrawable(true);
+
+  RunSingleThreadedPixelTest(PIXEL_TEST_GL, root,
+                             base::FilePath(FILE_PATH_LITERAL("green.png")));
+}
+
 }  // namespace
 }  // namespace cc
 

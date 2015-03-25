@@ -2035,12 +2035,21 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     return;
   }
 
+  // Pass the single-threaded synchronous task graph runner to the worker pool
+  // if we're in synchronous single-threaded mode.
+  TaskGraphRunner* task_graph_runner = task_graph_runner_;
+  if (IsSynchronousSingleThreaded()) {
+    DCHECK(!single_thread_synchronous_task_graph_runner_);
+    single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
+    task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
+  }
+
   if (use_gpu_rasterization_) {
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-        task_runner, task_graph_runner_,
+        task_runner, task_graph_runner,
         static_cast<GpuRasterizer*>(rasterizer_.get()));
     return;
   }
@@ -2058,15 +2067,6 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       *resource_pool =
           ResourcePool::Create(resource_provider_.get(), image_target);
 
-      TaskGraphRunner* task_graph_runner;
-      if (IsSynchronousSingleThreaded()) {
-        DCHECK(!single_thread_synchronous_task_graph_runner_);
-        single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
-        task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
-      } else {
-        task_graph_runner = task_graph_runner_;
-      }
-
       *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner, resource_provider_.get());
       return;
@@ -2080,7 +2080,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
           ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner_, context_provider,
+          task_runner, task_graph_runner, context_provider,
           resource_provider_.get(), staging_resource_pool_.get());
       return;
     }
