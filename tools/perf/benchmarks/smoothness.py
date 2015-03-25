@@ -175,6 +175,22 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.simple_mobile_sites'
 
+@benchmark.Enabled('android')
+class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):
+  """Measures rendering statistics for flinging a simple mobile sites page set.
+  """
+  test = smoothness.Smoothness
+  page_set = page_sets.SimpleMobileSitesFlingPageSet
+
+  def CustomizeBrowserOptions(self, options):
+    # As the fling parameters cannot be analytically determined to not
+    # overscroll, disable overscrolling explicitly. Overscroll behavior is
+    # orthogonal to fling performance, and its activation is only more noise.
+    options.AppendExtraBrowserArgs('--disable-overscroll-edge-effect')
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.fling.simple_mobile_sites'
 
 @benchmark.Enabled('android', 'chromeos')
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
