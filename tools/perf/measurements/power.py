@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from metrics import power
 from telemetry.page import page_test
+
+from metrics import power
+
 
 class Power(page_test.PageTest):
   def __init__(self):

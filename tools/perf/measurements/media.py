@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry.page import page_test
+
 from metrics import cpu
 from metrics import media
-from metrics import system_memory
 from metrics import power
-from telemetry.page import page_test
+from metrics import system_memory
 
 
 class Media(page_test.PageTest):

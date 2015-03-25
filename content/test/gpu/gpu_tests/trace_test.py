@@ -1,13 +1,13 @@
 # Copyright (c) 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import trace_test_expectations
 import page_sets
+import trace_test_expectations
 
 from telemetry import benchmark
-from telemetry.page import page_test
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
+from telemetry.page import page_test
 from telemetry.timeline import model as model_module
 
 TOPLEVEL_GL_CATEGORY = 'gpu_toplevel'

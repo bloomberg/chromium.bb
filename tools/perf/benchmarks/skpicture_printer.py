@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import skpicture_printer
 from telemetry import benchmark
 from telemetry.core import discover
 from telemetry.page import page_set
+
+from measurements import skpicture_printer
 
 
 def _MatchPageSetName(page_set_name, page_set_base_dir):

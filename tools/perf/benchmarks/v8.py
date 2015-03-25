@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import page_sets
+from telemetry import benchmark
+
 from measurements import v8_detached_context_age_in_gc
 from measurements import v8_gc_times
-from telemetry import benchmark
+import page_sets
 
 
 @benchmark.Disabled('win')  # crbug.com/416502

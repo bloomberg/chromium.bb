@@ -5,10 +5,11 @@
 import shutil
 import tempfile
 
-from measurements import skpicture_printer
 from telemetry import decorators
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+
+from measurements import skpicture_printer
 
 
 class SkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):

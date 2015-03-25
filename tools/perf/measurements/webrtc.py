@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry.page import page_test
+
 from metrics import cpu
 from metrics import media
 from metrics import memory
 from metrics import power
 from metrics import webrtc_stats
-from telemetry.page import page_test
 
 
 class WebRTC(page_test.PageTest):

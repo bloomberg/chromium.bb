@@ -4,9 +4,10 @@
 
 import time
 
-from metrics import Metric
 from telemetry.core.platform import process_statistic_timeline_data
 from telemetry.value import scalar
+
+from metrics import Metric
 
 
 class PowerMetric(Metric):

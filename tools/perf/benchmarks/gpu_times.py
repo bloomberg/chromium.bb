@@ -1,12 +1,13 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from benchmarks import silk_flags
-import page_sets
 from telemetry import benchmark
 from telemetry.core.platform import tracing_category_filter
-from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import gpu_timeline
+from telemetry.web_perf import timeline_based_measurement
+
+from benchmarks import silk_flags
+import page_sets
 
 TOPLEVEL_GL_CATEGORY = 'gpu_toplevel'
 TOPLEVEL_CATEGORIES = ['disabled-by-default-gpu.device',

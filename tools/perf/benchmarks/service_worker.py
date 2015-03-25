@@ -6,14 +6,15 @@ import collections
 import page_sets
 import re
 
-from measurements import timeline_controller
-from metrics import speedindex
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.timeline import async_slice as async_slice_module
 from telemetry.timeline import slice as slice_module
 from telemetry.value import scalar
+
+from measurements import timeline_controller
+from metrics import speedindex
 
 
 class _ServiceWorkerTimelineMetric(object):

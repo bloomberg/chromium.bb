@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import smoothness_controller
 from telemetry.page import page_test
+
+from measurements import smoothness_controller
 
 
 class Repaint(page_test.PageTest):

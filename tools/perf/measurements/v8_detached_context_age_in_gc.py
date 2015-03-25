@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+
 from telemetry.page import page_test
 from telemetry.value import histogram
 from telemetry.value import histogram_util

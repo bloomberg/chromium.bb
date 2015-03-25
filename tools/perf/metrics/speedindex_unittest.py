@@ -9,9 +9,10 @@ import json
 import os
 import unittest
 
-from metrics import speedindex
 from telemetry.image_processing import histogram
 from telemetry.image_processing import rgba_color
+
+from metrics import speedindex
 
 
 class FakeImageUtil(object):

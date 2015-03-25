@@ -6,8 +6,8 @@
 from __future__ import print_function
 
 import argparse
-import StringIO
 import random
+import StringIO
 import sys
 import zlib
 

@@ -1,11 +1,14 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from measurements import timeline_controller
-from metrics import timeline
+
 from telemetry.core.platform import tracing_category_filter
 from telemetry.page import page_test
 from telemetry.web_perf.metrics import layout
+
+from measurements import timeline_controller
+from metrics import timeline
+
 
 class ThreadTimes(page_test.PageTest):
   def __init__(self, report_silk_details=False):

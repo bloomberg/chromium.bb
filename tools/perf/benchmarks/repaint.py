@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry import benchmark
+
 from benchmarks import silk_flags
 from measurements import repaint as repaint_measurement
 import page_sets
-from telemetry import benchmark
 
 
 class _Repaint(benchmark.Benchmark):

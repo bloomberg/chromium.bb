@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import media
-import page_sets
 from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
+
+from measurements import media
+import page_sets
 
 
 class _MSEMeasurement(page_test.PageTest):

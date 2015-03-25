@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry.page import page_test
+
 from metrics import keychain_metric
 from metrics import startup_metric
-from telemetry.page import page_test
 
 
 class Startup(page_test.PageTest):

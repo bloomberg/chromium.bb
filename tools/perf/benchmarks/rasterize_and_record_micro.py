@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry import benchmark
+
 from measurements import rasterize_and_record_micro
 import page_sets
-from telemetry import benchmark
 
 
 class _RasterizeAndRecordMicro(benchmark.Benchmark):

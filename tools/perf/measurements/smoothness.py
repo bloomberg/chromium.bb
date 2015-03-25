@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from metrics import power
-from measurements import smoothness_controller
 from telemetry.page import page_test
+
+from measurements import smoothness_controller
+from metrics import power
 
 
 class Smoothness(page_test.PageTest):

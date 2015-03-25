@@ -6,13 +6,15 @@
 
 import os
 
-from metrics import power
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
+
+from metrics import power
+
 
 DESCRIPTIONS = {
     'ai-astar':

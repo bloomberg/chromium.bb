@@ -1,11 +1,12 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from page_sets import webgl_supported_shared_state
 
-from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
+
+from page_sets import webgl_supported_shared_state
 
 
 class ToughWebglCasesPage(page_module.Page):

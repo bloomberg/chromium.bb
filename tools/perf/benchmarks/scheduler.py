@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry import benchmark
+
 from measurements import smoothness
 import page_sets
 

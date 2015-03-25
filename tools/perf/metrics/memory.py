@@ -4,10 +4,11 @@
 
 import sys
 
-from metrics import Metric
 from telemetry.value import histogram
 from telemetry.value import histogram_util
 from telemetry.value import scalar
+
+from metrics import Metric
 
 
 _HISTOGRAMS = [

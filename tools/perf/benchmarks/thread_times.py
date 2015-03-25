@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry import benchmark
+
 from benchmarks import silk_flags
 from measurements import thread_times
 import page_sets
-from telemetry import benchmark
 
 class _ThreadTimes(benchmark.Benchmark):
   @classmethod

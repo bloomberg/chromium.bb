@@ -5,10 +5,11 @@
 import logging
 import sys
 
-from metrics import Metric
 from telemetry.util.mac import keychain_helper
 from telemetry.value import histogram_util
 from telemetry.value import scalar
+
+from metrics import Metric
 
 
 class KeychainMetric(Metric):

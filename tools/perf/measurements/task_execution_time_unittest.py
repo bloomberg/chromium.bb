@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import task_execution_time
-from telemetry import decorators
 from telemetry.core import wpr_modes
+from telemetry import decorators
 from telemetry.page import page as page_module
 from telemetry.results import page_test_results
 from telemetry.timeline import model as model_module
 from telemetry.timeline import slice as slice_data
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+
+from measurements import task_execution_time
 
 
 class TestTaskExecutionTimePage(page_module.Page):

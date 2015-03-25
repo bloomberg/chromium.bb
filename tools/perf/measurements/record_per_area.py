@@ -4,9 +4,10 @@
 
 import time
 
-from measurements import smoothness
 from telemetry.page import page_test
 from telemetry.value import scalar
+
+from measurements import smoothness
 
 
 class RecordPerArea(page_test.PageTest):

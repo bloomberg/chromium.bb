@@ -4,9 +4,9 @@
 """Measurement smoke test to make sure that no new action_name_to_run is
 defined."""
 
-import os
-import optparse
 import logging
+import optparse
+import os
 import unittest
 
 from telemetry import benchmark as benchmark_module

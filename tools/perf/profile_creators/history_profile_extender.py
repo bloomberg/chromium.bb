@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import multiprocessing
-import tempfile
 import os
+import tempfile
 
 from profile_creators import fast_navigation_profile_extender
 

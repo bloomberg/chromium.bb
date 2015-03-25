@@ -5,9 +5,9 @@ import memory_test_expectations
 import page_sets
 
 from telemetry import benchmark
-from telemetry.page import page_test
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
+from telemetry.page import page_test
 from telemetry.timeline import counter
 from telemetry.timeline import model
 

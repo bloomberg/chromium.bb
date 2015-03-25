@@ -4,10 +4,10 @@
 
 """For all the benchmarks that set options, test that the options are valid."""
 
+from collections import defaultdict
 import logging
 import os
 import unittest
-from collections import defaultdict
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import browser_options

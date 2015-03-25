@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import thread_times
-from measurements import smoothness_unittest
-from metrics import timeline
-from telemetry import decorators
 from telemetry.core import wpr_modes
-from telemetry.web_perf.metrics.layout import LayoutMetric
+from telemetry import decorators
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+from telemetry.web_perf.metrics.layout import LayoutMetric
+
+from measurements import smoothness_unittest
+from measurements import thread_times
+from metrics import timeline
 
 
 class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):

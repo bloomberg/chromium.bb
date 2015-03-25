@@ -4,8 +4,8 @@
 import json
 import os
 
-from telemetry.page.page_set import PageSet
 from telemetry.page.page import Page
+from telemetry.page.page_set import PageSet
 
 
 __location__ = os.path.realpath(

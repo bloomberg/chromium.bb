@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import collections
-from telemetry.util.statistics import DivideIfPossibleOrZero
 
-from telemetry.web_perf.metrics import timeline_based_metric
+from telemetry.util.statistics import DivideIfPossibleOrZero
 from telemetry.value import scalar
+from telemetry.web_perf.metrics import timeline_based_metric
 
 
 class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):

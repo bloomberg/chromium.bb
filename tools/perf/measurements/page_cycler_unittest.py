@@ -5,13 +5,13 @@
 import sys
 import unittest
 
-from metrics import keychain_metric
 from telemetry.core import browser_options
 from telemetry.results import page_test_results
 from telemetry.unittest_util import simple_mock
 from telemetry.user_story import user_story_runner
 
 from measurements import page_cycler
+from metrics import keychain_metric
 
 
 # Allow testing protected members in the unit test.

@@ -4,16 +4,17 @@
 import time
 import unittest
 
-from measurements import smooth_gesture_util as sg_util
-from telemetry import decorators
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
+from telemetry import decorators
 from telemetry.page import page as page_module
 from telemetry.page import page_test
 from telemetry.timeline import async_slice
 from telemetry.timeline import model as model_module
 from telemetry.unittest_util import page_test_test_case
 from telemetry.web_perf import timeline_interaction_record as tir_module
+
+from measurements import smooth_gesture_util as sg_util
 
 
 class SmoothGestureUtilTest(unittest.TestCase):

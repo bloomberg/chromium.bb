@@ -18,14 +18,15 @@ cycling all pages.
 import collections
 import os
 
+from telemetry.core import util
+from telemetry.page import page_test
+from telemetry.value import scalar
+
 from metrics import cpu
 from metrics import keychain_metric
 from metrics import memory
 from metrics import power
 from metrics import speedindex
-from telemetry.core import util
-from telemetry.page import page_test
-from telemetry.value import scalar
 
 
 class PageCycler(page_test.PageTest):

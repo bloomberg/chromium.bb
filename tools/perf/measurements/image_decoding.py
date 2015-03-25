@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from metrics import power
-
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.page import page_test
 from telemetry.timeline import model
 from telemetry.value import scalar
+
+from metrics import power
 
 
 class ImageDecoding(page_test.PageTest):

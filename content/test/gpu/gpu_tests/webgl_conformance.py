@@ -10,8 +10,8 @@ import webgl_conformance_expectations
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import util
-from telemetry.page import page_set
 from telemetry.page import page as page_module
+from telemetry.page import page_set
 from telemetry.page import page_test
 
 

@@ -7,8 +7,8 @@ import math
 import os
 
 from telemetry import benchmark
-from telemetry import page as page_module
 from telemetry.core import util
+from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.value import merge_values

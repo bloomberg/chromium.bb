@@ -4,13 +4,14 @@
 
 import os
 
-import page_sets
-from benchmarks import blink_perf
-from benchmarks import silk_flags
-from measurements import oilpan_gc_times
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry import page
+
+from benchmarks import blink_perf
+from benchmarks import silk_flags
+from measurements import oilpan_gc_times
+import page_sets
 
 
 class OilpanGCTimesBlinkPerfAnimation(benchmark.Benchmark):

@@ -18,12 +18,13 @@ engine, CSS style resolution, layout, and other technologies.
 
 import os
 
-from metrics import keychain_metric
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
+
+from metrics import keychain_metric
 
 
 class SpeedometerMeasurement(page_test.PageTest):

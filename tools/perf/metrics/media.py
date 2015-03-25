@@ -4,9 +4,10 @@
 import logging
 import os
 
-from metrics import Metric
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
+
+from metrics import Metric
 
 
 class MediaMetric(Metric):

@@ -6,9 +6,9 @@ from telemetry.page import page
 from telemetry.page import page_set
 from telemetry.page import page_test
 
-from webgl_conformance import WebglConformanceValidator
 from webgl_conformance import conformance_harness_script
 from webgl_conformance import conformance_path
+from webgl_conformance import WebglConformanceValidator
 
 
 robustness_harness_script = conformance_harness_script + r"""

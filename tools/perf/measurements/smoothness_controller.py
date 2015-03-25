@@ -3,18 +3,19 @@
 # found in the LICENSE file.
 import sys
 
-from measurements import smooth_gesture_util
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
-from telemetry.timeline import trace_data as trace_data_module
-from telemetry.timeline.model import TimelineModel
-from telemetry.page import page_test
 from telemetry.page.actions import action_runner
+from telemetry.page import page_test
+from telemetry.timeline.model import TimelineModel
+from telemetry.timeline import trace_data as trace_data_module
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 from telemetry.value import trace
-from telemetry.web_perf import timeline_interaction_record as tir_module
 from telemetry.web_perf.metrics import smoothness
+from telemetry.web_perf import timeline_interaction_record as tir_module
+
+from measurements import smooth_gesture_util
 
 
 RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'

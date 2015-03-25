@@ -5,10 +5,11 @@
 import collections
 import logging
 
-from metrics import Metric
 from telemetry.image_processing import image_util
 from telemetry.image_processing import rgba_color
 from telemetry.value import scalar
+
+from metrics import Metric
 
 
 class SpeedIndexMetric(Metric):

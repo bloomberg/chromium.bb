@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import oilpan_gc_times
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+
+from measurements import oilpan_gc_times
+
 
 class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   """Smoke test for Oilpan GC pause time measurements.

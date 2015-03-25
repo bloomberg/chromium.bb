@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry import benchmark
+
 from benchmarks import silk_flags
 from benchmarks import webgl_expectations
 from measurements import smoothness
 import page_sets
-from telemetry import benchmark
 
 
 class SmoothnessTop25(benchmark.Benchmark):

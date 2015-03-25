@@ -4,12 +4,13 @@
 
 import logging
 
-from measurements import rasterize_and_record_micro
-from telemetry import decorators
 from telemetry.core import wpr_modes
+from telemetry import decorators
 from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+
+from measurements import rasterize_and_record_micro
 
 
 class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):

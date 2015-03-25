@@ -5,11 +5,11 @@ import collections
 import json
 import logging
 
-from metrics import Metric
-
 from telemetry.core import exceptions
 from telemetry.value import histogram_util
 from telemetry.value import scalar
+
+from metrics import Metric
 
 
 class StartupMetric(Metric):

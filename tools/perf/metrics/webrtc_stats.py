@@ -6,9 +6,11 @@ import json
 import logging
 import re
 
-from metrics import Metric
 from telemetry.core import camel_case
 from telemetry.value import list_of_scalar_values
+
+from metrics import Metric
+
 
 INTERESTING_METRICS = {
     'packetsReceived': {
