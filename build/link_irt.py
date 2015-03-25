@@ -15,6 +15,7 @@ TLS access is done.  Thus, it's more complicated than the usual linking.
 
 import argparse
 import os
+import re
 import sys
 
 from build_nexe_tools import (CommandRunner, Error, FixPath, MakeDir)
@@ -43,6 +44,7 @@ class IRTLinker(CommandRunner):
     self.output = options.output
     self.link_cmd = options.link_cmd
     self.readelf_cmd = options.readelf_cmd
+    self.objdump_cmd = options.objdump_cmd
     self.tls_edit = options.tls_edit
     self.SetCommandsAreScripts(options.commands_are_scripts)
 
@@ -162,6 +164,45 @@ class IRTLinker(CommandRunner):
     if tls_edit_err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
 
+  def SandboxBaseCheck(self):
+    """
+    Check that sandbox base address is not revealed.
+
+    This is a kind of lint check to ensure that the LLVM assembler's option for
+    hiding the sandbox base address on x86-64 is being used in all code compiled
+    into the IRT. It is only a heuristic intended to prevent accidental changes
+    in the IRT or toolchain build, and is not exhaustive. It is a stopgap until
+    we can fix https://code.google.com/p/nativeclient/issues/detail?id=3596
+    """
+    cmd = [self.objdump_cmd, '-d', self.output]
+    output = self.Run(cmd, get_output=True)
+    # Disallow callq, all movs variants, all stos variants
+    # (objdump always disassembles 'call' as 'callq' in x86-64)
+    test_regex = r'\scallq\s|\smovs[bwlq]\s|\sstos[bwlq]\s'
+    # Disallow reads/pushes from rsp (other than %rsp,%rpb), and from rbp
+    test_regex += r'|[^(]%rsp,(?!%rbp)|[^(]%rbp,|push\s+%r[sb]p'
+    # Disallow reads from %r11 or uses as a base register
+    test_regex += r'|%r11,'
+    # All indirect jumps must be through r11
+    test_regex += r'|jmpq\s+\*%r(?!11)'
+    matched = re.search(test_regex, output)
+    if matched:
+      print 'The following instructions may reveal the sandbox base address:'
+      lines_printed = 0
+      lines_printed_limit = 50
+      for line in output.splitlines():
+        match = re.search(test_regex, line)
+        if match and lines_printed < lines_printed_limit:
+          lines_printed += 1
+          print line
+      if lines_printed == lines_printed_limit:
+        print '(additional lines not printed)'
+      print 'ran', cmd
+      raise Error('IRT sandbox base address hiding lint check failed')
+
+    else:
+      self.Log('Sandbox base address hiding lint check passed')
+
 
 def Main():
   parser = argparse.ArgumentParser()
@@ -173,14 +214,21 @@ def Main():
                       help='Path of linker utility')
   parser.add_argument('--readelf-cmd', dest='readelf_cmd', required=True,
                       help='Path of readelf utility')
+  parser.add_argument('--objdump-cmd', dest='objdump_cmd', required=False,
+                      help='Path of objdump utility')
   parser.add_argument('-v', '--verbose', dest='verbose', default=False,
                       help='Enable verbosity', action='store_true')
   parser.add_argument('--commands-are-scripts', dest='commands_are_scripts',
                       action='store_true', default=False,
                       help='Indicate that toolchain commands are scripts')
+  parser.add_argument('--sandbox-base-hiding-check',
+                      dest='sandbox_base_hiding_check', action='store_true',
+                      default=False)
   args, remaining_args = parser.parse_known_args()
   linker = IRTLinker(args)
   linker.Link(remaining_args)
+  if args.sandbox_base_hiding_check:
+    linker.SandboxBaseCheck()
   return 0
 
 
