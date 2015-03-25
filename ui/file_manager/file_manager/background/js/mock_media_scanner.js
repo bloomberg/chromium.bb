@@ -46,7 +46,16 @@ TestMediaScanner.prototype.removeObserver = function(observer) {
 };
 
 /** @override */
-TestMediaScanner.prototype.scan = function(entries) {
+TestMediaScanner.prototype.scanDirectory = function(directory) {
+  var scan = new TestScanResult(this.fileEntries);
+  scan.totalBytes = this.totalBytes;
+  scan.scanDuration = this.scanDuration;
+  this.scans_.push(scan);
+  return scan;
+};
+
+/** @override */
+TestMediaScanner.prototype.scanFiles = function(entries) {
   var scan = new TestScanResult(this.fileEntries);
   scan.totalBytes = this.totalBytes;
   scan.scanDuration = this.scanDuration;

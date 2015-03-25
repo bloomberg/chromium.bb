@@ -879,7 +879,7 @@ importer.ScanManager.prototype.isActiveScan = function(scan) {
 importer.ScanManager.prototype.getSelectionScan = function(entries) {
   console.assert(!this.selectionScan_,
       'Cannot create new selection scan with another in the cache.');
-  this.selectionScan_ = this.scanner_.scan(entries);
+  this.selectionScan_ = this.scanner_.scanFiles(entries);
   return this.selectionScan_;
 };
 
@@ -897,7 +897,8 @@ importer.ScanManager.prototype.getCurrentDirectoryScan = function() {
   var url = directory.toURL();
   var scan = this.directoryScans_[url];
   if (!scan) {
-    scan = this.scanner_.scan([directory]);
+    scan = this.scanner_.scanDirectory(
+        /** @type {!DirectoryEntry} */ (directory));
     this.directoryScans_[url] = scan;
   }
 

@@ -12,11 +12,22 @@ importer.MediaScanner = function() {};
 /**
  * Initiates scanning.
  *
- * @param {!Array.<!Entry>} entries Must be non-empty.
+ * @param {!DirectoryEntry} directory
  * @return {!importer.ScanResult} ScanResult object representing the scan
  *     job both while in-progress and when completed.
  */
-importer.MediaScanner.prototype.scan;
+importer.MediaScanner.prototype.scanDirectory;
+
+/**
+ * Initiates scanning.
+ *
+ * @param {!Array<!FileEntry>} entries Must be non-empty, and all entires
+ *     must be of a supported media type. Individually supplied files
+ *     are not subject to deduplication.
+ * @return {!importer.ScanResult} ScanResult object representing the scan
+ *     job for the explicitly supplied entries.
+ */
+importer.MediaScanner.prototype.scanFiles;
 
 /**
  * Adds an observer, which will be notified on scan events.
@@ -57,7 +68,7 @@ importer.DefaultMediaScanner =
     return new importer.DefaultScanResult(hashGenerator);
   };
 
-  /** @private {!Array.<!importer.ScanObserver>} */
+  /** @private {!Array<!importer.ScanObserver>} */
   this.observers_ = [];
 
   /**
@@ -90,11 +101,7 @@ importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
 };
 
 /** @override */
-importer.DefaultMediaScanner.prototype.scan = function(entries) {
-  if (entries.length == 0) {
-    throw new Error('Cannot scan empty list of entries.');
-  }
-
+importer.DefaultMediaScanner.prototype.scanDirectory = function(directory) {
   var scan = this.createScanResult_();
   var watcher = this.watcherFactory_(
       /** @this {importer.DefaultMediaScanner} */
@@ -103,8 +110,35 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
       }.bind(this));
 
-  var scanPromises = entries.map(
-      this.scanEntry_.bind(this, scan, watcher));
+  this.crawlDirectory_(directory, watcher)
+      .then(this.scanMediaFiles_.bind(this, scan))
+      .then(scan.resolve)
+      .catch(scan.reject);
+
+  scan.whenFinal()
+      .then(
+          /** @this {importer.DefaultMediaScanner} */
+          function() {
+            this.notify_(importer.ScanEvent.FINALIZED, scan);
+          }.bind(this));
+
+  return scan;
+};
+
+/** @override */
+importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
+  if (entries.length === 0) {
+    throw new Error('Cannot scan empty list.');
+  }
+  var scan = this.createScanResult_();
+  var watcher = this.watcherFactory_(
+      /** @this {importer.DefaultMediaScanner} */
+      function() {
+        scan.invalidateScan();
+        this.notify_(importer.ScanEvent.INVALIDATED, scan);
+      }.bind(this));
+
+  var scanPromises = entries.map(this.onUniqueFileFound_.bind(this, scan));
 
   Promise.all(scanPromises)
       .then(scan.resolve)
@@ -118,6 +152,40 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
           }.bind(this));
 
   return scan;
+};
+
+/** @const {number} */
+importer.DefaultMediaScanner.SCAN_BATCH_SIZE = 1;
+
+/**
+ * @param {!importer.DefaultScanResult} scan
+ * @param  {!Array<!FileEntry>} entries
+ * @return {!Promise} Resolves when scanning is finished.
+ * @private
+ */
+importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
+    function(scan, entries) {
+  var handleFileEntry = this.onFileEntryFound_.bind(this, scan);
+
+  /**
+   * @param {number} begin The beginning offset in the list of entries
+   *     to process.
+   * @return {!Promise}
+   */
+  var scanChunk = function(begin) {
+    // the second arg to slice is an exclusive end index, so we +1 batch size.
+    var end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE + 1;
+    return Promise.all(
+        entries.slice(begin, end).map(handleFileEntry))
+        .then(
+            function() {
+              if (end < entries.length) {
+                return scanChunk(end);
+              }
+            });
+  };
+
+  return scanChunk(0);
 };
 
 /**
@@ -136,55 +204,21 @@ importer.DefaultMediaScanner.prototype.notify_ = function(event, result) {
 };
 
 /**
- * Resolves the entry by either:
- * a) recursing on it (when a directory)
- * b) adding it to the results (when a media type file)
- * c) ignoring it, if neither a or b
+ * Finds all files media files beneath directory AND adds directory
+ * watchers for each encountered directory.
  *
- * @param {!importer.DefaultScanResult} scan
+ * @param {!DirectoryEntry} directory
  * @param {!importer.DirectoryWatcher} watcher
- * @param {!Entry} entry
- *
- * @return {!Promise}
+ * @return {!Promise<!Array<!FileEntry>>}
  * @private
  */
-importer.DefaultMediaScanner.prototype.scanEntry_ =
-    function(scan, watcher, entry) {
-
-  if (entry.isDirectory) {
-    return this.scanDirectory_(
-      scan,
-      watcher,
-      /** @type {!DirectoryEntry} */ (entry));
-  }
-
-  // Since this entry is by client code (and presumably the user)
-  // we add it directly (skipping over the history dupe check).
-  return this.onUniqueFileFound_(scan, /** @type {!FileEntry} */ (entry));
-};
-
-/**
- * Finds all files beneath directory.
- *
- * @param {!importer.DefaultScanResult} scan
- * @param {!importer.DirectoryWatcher} watcher
- * @param {!DirectoryEntry} entry
- * @return {!Promise}
- * @private
- */
-importer.DefaultMediaScanner.prototype.scanDirectory_ =
-    function(scan, watcher, entry) {
-  // Collect promises for all files being added to results.
-  // The directory scan promise can't resolve until all
-  // file entries are completely promised.
-  var promises = [];
+importer.DefaultMediaScanner.prototype.crawlDirectory_ =
+    function(directory, watcher) {
+  var mediaFiles = [];
 
   return fileOperationUtil.findEntriesRecursively(
-      entry,
-      /**
-       * @param  {!Entry} entry
-       * @this {importer.DefaultMediaScanner}
-       */
+      directory,
+      /** @param  {!Entry} entry */
       function(entry) {
         if (watcher.triggered) {
           return;
@@ -195,14 +229,14 @@ importer.DefaultMediaScanner.prototype.scanDirectory_ =
           // function findEntriesRecursively does that. So we
           // just watch the directory for modifications, and that's it.
           watcher.addDirectory(/** @type {!DirectoryEntry} */(entry));
-          return;
+        } else if (importer.isEligibleType(entry)) {
+          mediaFiles.push(/** @type {!FileEntry} */ (entry));
         }
-
-        promises.push(
-            this.onFileEntryFound_(scan, /** @type {!FileEntry} */(entry)));
-
-      }.bind(this))
-      .then(Promise.all.bind(Promise, promises));
+      })
+      .then(
+          function() {
+            return mediaFiles;
+          });
 };
 
 /**
@@ -343,7 +377,7 @@ importer.DefaultScanResult = function(hashGenerator) {
 
   /**
    * List of file entries found while scanning.
-   * @private {!Array.<!FileEntry>}
+   * @private {!Array<!FileEntry>}
    */
   this.fileEntries_ = [];
 
