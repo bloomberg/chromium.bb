@@ -625,7 +625,7 @@ String FrameFetchContext::charset() const
 
 void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
 {
-    if (!m_document || !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
+    if (!m_document)
         return;
 
     KURL url = fetchRequest.resourceRequest().url();

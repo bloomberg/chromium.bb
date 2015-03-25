@@ -38,20 +38,8 @@ protected:
     RefPtrWillBePersistent<Document> document;
 };
 
-TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsDisabled)
-{
-    RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(false);
-    csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->insecureRequestsPolicy());
-
-    csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
-    EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
-}
-
 TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsEnabled)
 {
-    RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(true);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(SecurityContext::InsecureRequestsUpgrade, csp->insecureRequestsPolicy());
 
@@ -60,20 +48,8 @@ TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsEnabled)
     EXPECT_TRUE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
 }
 
-TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsDisabled)
-{
-    RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(false);
-    csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->insecureRequestsPolicy());
-
-    csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
-    EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
-}
-
 TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
 {
-    RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(true);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->insecureRequestsPolicy());
 
