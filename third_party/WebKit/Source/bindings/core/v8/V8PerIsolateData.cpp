@@ -64,7 +64,8 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         UseCounter::count(callingExecutionContext(isolate), UseCounter::BreakIterator);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        // This can happen if V8 has added counters that this version of Blink
+        // does not know about. It's harmless.
         break;
     }
 }
