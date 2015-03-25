@@ -301,6 +301,10 @@ namespace WTF {
             ASSERT_UNUSED(container, container);
         }
 
+        ValueType* storedValue;
+        bool isNewEntry;
+
+#if ENABLE(SECURITY_ASSERT)
         ~HashTableAddResult()
         {
             // If rehash happened before accessing storedValue, it's
@@ -312,10 +316,6 @@ namespace WTF {
             ASSERT_WITH_SECURITY_IMPLICATION(m_containerModifications == m_container->modifications());
         }
 
-        ValueType* storedValue;
-        bool isNewEntry;
-
-#if ENABLE(SECURITY_ASSERT)
     private:
         const HashTableType* m_container;
         const int64_t m_containerModifications;
