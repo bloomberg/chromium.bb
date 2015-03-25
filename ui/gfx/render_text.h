@@ -618,6 +618,7 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, DefaultStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SetStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyles);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, AppendTextKeepsStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, RevealObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ElidedText);

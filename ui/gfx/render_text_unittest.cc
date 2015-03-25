@@ -352,6 +352,39 @@ TEST_F(RenderTextTest, ApplyStyles) {
 #endif  // OS_MACOSX
 }
 
+TEST_F(RenderTextTest, AppendTextKeepsStyles) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  // Setup basic functionality.
+  render_text->SetText(ASCIIToUTF16("abc"));
+  render_text->ApplyColor(SK_ColorRED, Range(0, 1));
+  render_text->ApplyBaselineStyle(SUPERSCRIPT, Range(1, 2));
+  render_text->ApplyStyle(UNDERLINE, true, Range(2, 3));
+  // Verify basic functionality.
+  std::vector<std::pair<size_t, SkColor>> expected_color;
+  expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
+  expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorBLACK));
+  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color));
+  std::vector<std::pair<size_t, BaselineStyle>> expected_baseline;
+  expected_baseline.push_back(
+      std::pair<size_t, BaselineStyle>(0, NORMAL_BASELINE));
+  expected_baseline.push_back(std::pair<size_t, BaselineStyle>(1, SUPERSCRIPT));
+  expected_baseline.push_back(
+      std::pair<size_t, BaselineStyle>(2, NORMAL_BASELINE));
+  EXPECT_TRUE(render_text->baselines().EqualsForTesting(expected_baseline));
+  std::vector<std::pair<size_t, bool>> expected_style;
+  expected_style.push_back(std::pair<size_t, bool>(0, false));
+  expected_style.push_back(std::pair<size_t, bool>(2, true));
+  EXPECT_TRUE(
+      render_text->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  // Ensure AppendText maintains current text styles.
+  render_text->AppendText(ASCIIToUTF16("def"));
+  EXPECT_EQ(render_text->GetDisplayText(), ASCIIToUTF16("abcdef"));
+  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color));
+  EXPECT_TRUE(render_text->baselines().EqualsForTesting(expected_baseline));
+  EXPECT_TRUE(
+      render_text->styles()[UNDERLINE].EqualsForTesting(expected_style));
+}
+
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
 //                  does not implement this yet. http://crbug.com/131618
 #if !defined(OS_MACOSX)
