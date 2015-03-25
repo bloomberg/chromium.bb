@@ -74,10 +74,6 @@ class DeviceNotPingableError(RemoteAccessException):
   """Raised when device is not pingable."""
 
 
-class CannotResolveHostnameError(RemoteAccessException):
-  """Raised when hostname is not resolvable."""
-
-
 def NormalizePort(port, str_ok=True):
   """Checks if |port| is a valid port number and returns the number.
 
@@ -875,13 +871,14 @@ class ChromiumOSDevice(RemoteDevice):
     try:
       socket.getaddrinfo(hostname, 0)
       return hostname
-    except socket.gaierror as e:
+    except socket.gaierror:
       ip = GetUSBDeviceIP(hostname)
       if ip:
         self._alias = hostname
         return ip
-      raise CannotResolveHostnameError(
-          'Cannot resolve hostname %s: %s' % (hostname, str(e)))
+      # |hostname| is not resolvable but may still be valid (eg. ssh hostname).
+      # Leave the hostname be.
+      return hostname
 
   def SetAlias(self, alias_name):
     """Assign to the device a user-friendly alias name."""
@@ -987,7 +984,14 @@ def GetUSBDeviceIP(alias):
   # bootstrapping should not depend on third_party packages. mdns pulls in
   # dpkt which is a third_party package.
   from chromite.lib import mdns
-  source_ip = debug_link.InitializeDebugLink()
+
+  # For now, swallow missing debug link error until we have a better way of
+  # differentiating between ChromeOS and Brillo.
+  try:
+    source_ip = debug_link.InitializeDebugLink()
+  except debug_link.DebugLinkMissingError:
+    return None
+
   should_add = lambda x: x.text.get(BRILLO_DEVICE_PROPERTY_ALIAS) == alias
   should_continue = lambda x: x.text.get(BRILLO_DEVICE_PROPERTY_ALIAS) != alias
   services = mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME,

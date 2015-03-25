@@ -329,5 +329,6 @@ class TestChromiumOSDeviceHostnameResolution(USBDeviceTestCase):
     hostname = 'bad'
     self.PatchObject(socket, 'getaddrinfo', side_effect=socket.gaierror)
     self.PatchObject(remote_access, 'GetUSBDeviceIP', return_value=None)
-    self.assertRaises(remote_access.CannotResolveHostnameError,
-                      remote_access.ChromiumOSDevice, hostname, connect=False)
+    device = remote_access.ChromiumOSDevice(hostname, connect=False)
+    # Hostname should be left alone if it's not resolvable.
+    self.assertEqual(device.hostname, hostname)
