@@ -45118,6 +45118,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Submitted with masked server card suggestion filled (once)"/>
   <int value="13" label="Masked server card suggestion selected"/>
   <int value="14" label="Masked server card suggestion selected (once)"/>
+  <int value="15"
+      label="About to be submitted with no suggestion filled (once)"/>
+  <int value="16"
+      label="About to be submitted with local suggestion filled (once)"/>
+  <int value="17"
+      label="About to be submitted with server suggestion filled (once)"/>
+  <int value="18"
+      label="About to be submitted with masked server card suggestion filled
+             (once)"/>
 </enum>
 
 <enum name="AutofillGetRealPanResult" type="int">

@@ -328,8 +328,8 @@ bool AutofillManager::OnWillSubmitForm(const FormData& form,
   if (!submitted_form)
     return false;
 
-  address_form_event_logger_->OnDidSubmitForm();
-  credit_card_form_event_logger_->OnDidSubmitForm();
+  address_form_event_logger_->OnWillSubmitForm();
+  credit_card_form_event_logger_->OnWillSubmitForm();
 
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
@@ -388,6 +388,9 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
   scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form)
     return false;
+
+  address_form_event_logger_->OnFormSubmitted();
+  credit_card_form_event_logger_->OnFormSubmitted();
 
   // Update Personal Data with the form's submitted data.
   if (submitted_form->IsAutofillable())

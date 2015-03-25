@@ -281,6 +281,16 @@ class AutofillMetrics {
     FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED,
     // Same as above but only triggered once per page load.
     FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE,
+    // An autofillable form is about to be submitted. If the submission is not
+    // interrupted by JavaScript, the "form submitted" events above will also be
+    // logged. Depending on the user filling a local, server, masked server card
+    // or no suggestion one of the following will be triggered, at most once per
+    // page load.
+    FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE,
+    FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE,
+    FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE,
+    FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE,
+
     NUM_FORM_EVENTS,
   };
 
@@ -546,7 +556,9 @@ class AutofillMetrics {
 
     void OnDidFillSuggestion(const AutofillProfile& profile);
 
-    void OnDidSubmitForm();
+    void OnWillSubmitForm();
+
+    void OnFormSubmitted();
 
    private:
     void Log(FormEvent event) const;
@@ -558,6 +570,7 @@ class AutofillMetrics {
     bool has_logged_suggestions_shown_;
     bool has_logged_masked_server_card_suggestion_selected_;
     bool has_logged_suggestion_filled_;
+    bool has_logged_will_submit_;
     bool has_logged_submitted_;
     bool logged_suggestion_filled_was_server_data_;
     bool logged_suggestion_filled_was_masked_server_card_;

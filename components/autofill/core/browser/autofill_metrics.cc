@@ -522,9 +522,11 @@ AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
       has_logged_suggestions_shown_(false),
       has_logged_masked_server_card_suggestion_selected_(false),
       has_logged_suggestion_filled_(false),
+      has_logged_will_submit_(false),
       has_logged_submitted_(false),
       logged_suggestion_filled_was_server_data_(false),
-      logged_suggestion_filled_was_masked_server_card_(false) {};
+      logged_suggestion_filled_was_masked_server_card_(false) {
+}
 
 void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm() {
   if (!has_logged_interacted_) {
@@ -597,7 +599,29 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
   }
 }
 
-void AutofillMetrics::FormEventLogger::OnDidSubmitForm() {
+void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
+  // Not logging this kind of form if we haven't logged a user interaction.
+  if (!has_logged_interacted_)
+    return;
+
+  // Not logging twice.
+  if (has_logged_will_submit_)
+    return;
+  has_logged_will_submit_ = true;
+
+  if (!has_logged_suggestion_filled_) {
+    Log(AutofillMetrics::FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE);
+  } else if (logged_suggestion_filled_was_masked_server_card_) {
+    Log(AutofillMetrics::
+            FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE);
+  } else if (logged_suggestion_filled_was_server_data_) {
+    Log(AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE);
+  } else {
+    Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE);
+  }
+}
+
+void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
   // Not logging this kind of form if we haven't logged a user interaction.
   if (!has_logged_interacted_)
     return;
