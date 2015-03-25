@@ -50,7 +50,12 @@ metrics.getTracker = function() {
  * @private
  */
 metrics.createTracker_ = function() {
-  metrics.analytics_ = analytics.getService('Files app');
+  var chromeVersion = /Chrome\/([0-9]*)\.[0-9.]*/.exec(navigator.userAgent);
+  if (chromeVersion && chromeVersion[1]) {
+    metrics.analytics_ = analytics.getService('Files app', chromeVersion[1]);
+  } else {
+    metrics.analytics_ = analytics.getService('Files app', '0.0');
+  }
 
   // Create a tracker, add a filter that only enables analytics when UMA is
   // enabled.
