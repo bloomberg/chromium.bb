@@ -18,6 +18,7 @@ class ConsoleMemory final : public NoBaseWillBeGarbageCollectedFinalized<Console
 public:
     static ConsoleMemory& from(Console&);
     static MemoryInfo* memory(Console&);
+    static void setMemory(Console&, MemoryInfo*) { }
 
     DECLARE_VIRTUAL_TRACE();
 
