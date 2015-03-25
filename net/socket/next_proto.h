@@ -47,18 +47,15 @@ typedef std::vector<NextProto> NextProtoVector;
 
 // Convenience functions to create NextProtoVector.
 
-NET_EXPORT NextProtoVector NextProtosHttpOnly();
-
-// Default values, which are subject to change over time.  Currently just
-// SPDY 3 and 3.1.
+// Default values, which are subject to change over time.
 NET_EXPORT NextProtoVector NextProtosDefaults();
 
+// Enable SPDY/3.1 and QUIC, but not HTTP/2.
+NET_EXPORT NextProtoVector NextProtosSpdy31();
+
+// Control SPDY/3.1 and HTTP/2 separately.
 NET_EXPORT NextProtoVector NextProtosWithSpdyAndQuic(bool spdy_enabled,
                                                      bool quic_enabled);
-
-// All of these also enable QUIC.
-NET_EXPORT NextProtoVector NextProtosSpdy31();
-NET_EXPORT NextProtoVector NextProtosSpdy4Http2();
 
 }  // namespace net
 

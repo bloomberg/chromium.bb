@@ -136,6 +136,7 @@ const char kSpdyFieldTrialName[] = "SPDY";
 const char kSpdyFieldTrialHoldbackGroupNamePrefix[] = "SpdyDisabled";
 const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
+const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
 // Field trial for Cache-Control: stale-while-revalidate directive.
 const char kStaleWhileRevalidateFieldTrialName[] = "StaleWhileRevalidate";
@@ -317,6 +318,100 @@ bool IsCertificateTransparencyRequiredForEV(
     return false;
 
   return group_name == "RequirementEnforced";
+}
+
+// Parse kUseSpdy command line flag options, which may contain the following:
+//
+//   "off"                      : Disables SPDY support entirely.
+//   "ssl"                      : Forces SPDY for all HTTPS requests.
+//   "no-ssl"                   : Forces SPDY for all HTTP requests.
+//   "no-ping"                  : Disables SPDY ping connection testing.
+//   "exclude=<host>"           : Disables SPDY support for the host <host>.
+//   "no-compress"              : Disables SPDY header compression.
+//   "no-alt-protocols          : Disables alternate protocol support.
+//   "force-alt-protocols       : Forces an alternate protocol of SPDY/3
+//                                on port 443.
+//   "single-domain"            : Forces all spdy traffic to a single domain.
+//   "init-max-streams=<limit>" : Specifies the maximum number of concurrent
+//                                streams for a SPDY session, unless the
+//                                specifies a different value via SETTINGS.
+void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
+                                             IOThread::Globals* globals) {
+  static const char kOff[] = "off";
+  static const char kSSL[] = "ssl";
+  static const char kDisableSSL[] = "no-ssl";
+  static const char kDisablePing[] = "no-ping";
+  static const char kExclude[] = "exclude";  // Hosts to exclude
+  static const char kDisableCompression[] = "no-compress";
+  static const char kDisableAltProtocols[] = "no-alt-protocols";
+  static const char kForceAltProtocols[] = "force-alt-protocols";
+  static const char kSingleDomain[] = "single-domain";
+
+  static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
+
+  std::vector<std::string> spdy_options;
+  base::SplitString(mode, ',', &spdy_options);
+
+  for (const std::string& element : spdy_options) {
+    std::vector<std::string> name_value;
+    base::SplitString(element, '=', &name_value);
+    const std::string& option =
+        name_value.size() > 0 ? name_value[0] : std::string();
+    const std::string value =
+        name_value.size() > 1 ? name_value[1] : std::string();
+
+    if (option == kOff) {
+      net::HttpStreamFactory::set_spdy_enabled(false);
+      continue;
+    }
+    if (option == kDisableSSL) {
+      globals->spdy_default_protocol.set(net::kProtoSPDY31);
+      globals->force_spdy_over_ssl.set(false);
+      globals->force_spdy_always.set(true);
+      continue;
+    }
+    if (option == kSSL) {
+      globals->spdy_default_protocol.set(net::kProtoSPDY31);
+      globals->force_spdy_over_ssl.set(true);
+      globals->force_spdy_always.set(true);
+      continue;
+    }
+    if (option == kDisablePing) {
+      globals->enable_spdy_ping_based_connection_checking.set(false);
+      continue;
+    }
+    if (option == kExclude) {
+      globals->forced_spdy_exclusions.insert(
+          net::HostPortPair::FromURL(GURL(value)));
+      continue;
+    }
+    if (option == kDisableCompression) {
+      globals->enable_spdy_compression.set(false);
+      continue;
+    }
+    if (option == kDisableAltProtocols) {
+      globals->use_alternate_protocols.set(false);
+      continue;
+    }
+    if (option == kForceAltProtocols) {
+      net::AlternateProtocolInfo pair(443, net::NPN_SPDY_3, 1);
+      net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
+      continue;
+    }
+    if (option == kSingleDomain) {
+      DVLOG(1) << "FORCING SINGLE DOMAIN";
+      globals->force_spdy_single_domain.set(true);
+      continue;
+    }
+    if (option == kInitialMaxConcurrentStreams) {
+      int streams;
+      if (base::StringToInt(value, &streams)) {
+        globals->initial_max_spdy_concurrent_streams.set(streams);
+        continue;
+      }
+    }
+    LOG(DFATAL) << "Unrecognized spdy option: " << option;
+  }
 }
 
 }  // namespace
@@ -865,28 +960,12 @@ void IOThread::InitializeNetworkOptions(const base::CommandLine& command_line) {
     if (trial)
       trial->Disable();
   } else {
-    if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
-      globals_->trusted_spdy_proxy.set(
-          command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
+    std::string group = base::FieldTrialList::FindFullName(kSpdyFieldTrialName);
+    VariationParameters params;
+    if (!variations::GetVariationParams(kSpdyFieldTrialName, &params)) {
+      params.clear();
     }
-    if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
-      net::URLFetcher::SetIgnoreCertificateRequests(true);
-
-    if (command_line.HasSwitch(switches::kUseSpdy)) {
-      std::string spdy_mode =
-          command_line.GetSwitchValueASCII(switches::kUseSpdy);
-      EnableSpdy(spdy_mode);
-    } else if (command_line.HasSwitch(switches::kEnableSpdy4)) {
-      globals_->next_protos = net::NextProtosSpdy4Http2();
-      globals_->use_alternate_protocols.set(true);
-    } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
-      globals_->next_protos = net::NextProtosHttpOnly();
-      globals_->use_alternate_protocols.set(false);
-    } else {
-      // No SPDY command-line flags have been specified. Examine trial groups.
-      ConfigureSpdyFromTrial(
-          base::FieldTrialList::FindFullName(kSpdyFieldTrialName), globals_);
-    }
+    ConfigureSpdyGlobals(command_line, group, params, globals_);
   }
 
   ConfigureTCPFastOpen(command_line);
@@ -930,87 +1009,92 @@ void IOThread::ConfigureSdch() {
   }
 }
 
-void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
-                                      Globals* globals) {
+// static
+void IOThread::ConfigureSpdyGlobals(
+    const base::CommandLine& command_line,
+    base::StringPiece spdy_trial_group,
+    const VariationParameters& spdy_trial_params,
+    IOThread::Globals* globals) {
+  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
+    globals->trusted_spdy_proxy.set(
+        command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
+  }
+  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
+
+  if (command_line.HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+        command_line.GetSwitchValueASCII(switches::kUseSpdy);
+    ConfigureSpdyGlobalsFromUseSpdyArgument(spdy_mode, globals);
+    return;
+  }
+
+  globals->next_protos.clear();
+  globals->next_protos.push_back(net::kProtoHTTP11);
+  bool enable_quic = false;
+  globals->enable_quic.CopyToIfSet(&enable_quic);
+  if (enable_quic) {
+    globals->next_protos.push_back(net::kProtoQUIC1SPDY3);
+  }
+
+  if (command_line.HasSwitch(switches::kEnableSpdy4)) {
+    globals->next_protos.push_back(net::kProtoSPDY31);
+    globals->next_protos.push_back(net::kProtoSPDY4_14);
+    globals->next_protos.push_back(net::kProtoSPDY4);
+    globals->use_alternate_protocols.set(true);
+    return;
+  }
+  if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
+    globals->use_alternate_protocols.set(false);
+    return;
+  }
+
+  // No SPDY command-line flags have been specified. Examine trial groups.
   if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
-    // TODO(jgraettinger): Use net::NextProtosHttpOnly() instead?
     net::HttpStreamFactory::set_spdy_enabled(false);
-  } else if (spdy_trial_group.starts_with(
-                 kSpdyFieldTrialSpdy31GroupNamePrefix)) {
-    globals->next_protos = net::NextProtosSpdy31();
-    globals->use_alternate_protocols.set(true);
-  } else if (spdy_trial_group.starts_with(
-                 kSpdyFieldTrialSpdy4GroupNamePrefix)) {
-    globals->next_protos = net::NextProtosSpdy4Http2();
-    globals->use_alternate_protocols.set(true);
-  } else {
-    // By default, enable HTTP/2.
-    globals->next_protos = net::NextProtosSpdy4Http2();
-    globals->use_alternate_protocols.set(true);
+    return;
   }
-}
-
-void IOThread::EnableSpdy(const std::string& mode) {
-  static const char kOff[] = "off";
-  static const char kSSL[] = "ssl";
-  static const char kDisableSSL[] = "no-ssl";
-  static const char kDisablePing[] = "no-ping";
-  static const char kExclude[] = "exclude";  // Hosts to exclude
-  static const char kDisableCompression[] = "no-compress";
-  static const char kDisableAltProtocols[] = "no-alt-protocols";
-  static const char kForceAltProtocols[] = "force-alt-protocols";
-  static const char kSingleDomain[] = "single-domain";
-
-  static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
-
-  std::vector<std::string> spdy_options;
-  base::SplitString(mode, ',', &spdy_options);
-
-  for (std::vector<std::string>::iterator it = spdy_options.begin();
-       it != spdy_options.end(); ++it) {
-    const std::string& element = *it;
-    std::vector<std::string> name_value;
-    base::SplitString(element, '=', &name_value);
-    const std::string& option =
-        name_value.size() > 0 ? name_value[0] : std::string();
-    const std::string value =
-        name_value.size() > 1 ? name_value[1] : std::string();
-
-    if (option == kOff) {
-      net::HttpStreamFactory::set_spdy_enabled(false);
-    } else if (option == kDisableSSL) {
-      globals_->spdy_default_protocol.set(net::kProtoSPDY31);
-      globals_->force_spdy_over_ssl.set(false);
-      globals_->force_spdy_always.set(true);
-    } else if (option == kSSL) {
-      globals_->spdy_default_protocol.set(net::kProtoSPDY31);
-      globals_->force_spdy_over_ssl.set(true);
-      globals_->force_spdy_always.set(true);
-    } else if (option == kDisablePing) {
-      globals_->enable_spdy_ping_based_connection_checking.set(false);
-    } else if (option == kExclude) {
-      globals_->forced_spdy_exclusions.insert(
-          net::HostPortPair::FromURL(GURL(value)));
-    } else if (option == kDisableCompression) {
-      globals_->enable_spdy_compression.set(false);
-    } else if (option == kDisableAltProtocols) {
-      globals_->use_alternate_protocols.set(false);
-    } else if (option == kForceAltProtocols) {
-      net::AlternateProtocolInfo pair(443, net::NPN_SPDY_3, 1);
-      net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
-    } else if (option == kSingleDomain) {
-      DVLOG(1) << "FORCING SINGLE DOMAIN";
-      globals_->force_spdy_single_domain.set(true);
-    } else if (option == kInitialMaxConcurrentStreams) {
-      int streams;
-      if (base::StringToInt(value, &streams))
-        globals_->initial_max_spdy_concurrent_streams.set(streams);
-    } else if (option.empty() && it == spdy_options.begin()) {
-      continue;
-    } else {
-      LOG(DFATAL) << "Unrecognized spdy option: " << option;
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy31GroupNamePrefix)) {
+    globals->next_protos.push_back(net::kProtoSPDY31);
+    globals->use_alternate_protocols.set(true);
+    return;
+  }
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
+    globals->next_protos.push_back(net::kProtoSPDY31);
+    globals->next_protos.push_back(net::kProtoSPDY4_14);
+    globals->next_protos.push_back(net::kProtoSPDY4);
+    globals->use_alternate_protocols.set(true);
+    return;
+  }
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
+    bool spdy_enabled = false;
+    if (LowerCaseEqualsASCII(
+            GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
+      globals->next_protos.push_back(net::kProtoSPDY31);
+      spdy_enabled = true;
     }
+    if (LowerCaseEqualsASCII(
+            GetVariationParam(spdy_trial_params, "enable_http2_14"), "true")) {
+      globals->next_protos.push_back(net::kProtoSPDY4_14);
+      spdy_enabled = true;
+    }
+    if (LowerCaseEqualsASCII(
+            GetVariationParam(spdy_trial_params, "enable_http2"), "true")) {
+      globals->next_protos.push_back(net::kProtoSPDY4);
+      spdy_enabled = true;
+    }
+    // TODO(bnc): HttpStreamFactory::spdy_enabled_ is redundant with
+    // globals->next_protos, can it be eliminated?
+    net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
+    globals->use_alternate_protocols.set(true);
+    return;
   }
+
+  // By default, enable HTTP/2.
+  globals->next_protos.push_back(net::kProtoSPDY31);
+  globals->next_protos.push_back(net::kProtoSPDY4_14);
+  globals->next_protos.push_back(net::kProtoSPDY4);
+  globals->use_alternate_protocols.set(true);
 }
 
 // static

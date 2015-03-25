@@ -37,15 +37,19 @@ class IOThreadPeer {
                                    quic_trial_params, globals);
   }
 
+  static void ConfigureSpdyGlobals(
+      const base::CommandLine& command_line,
+      base::StringPiece spdy_trial_group,
+      const std::map<std::string, std::string>& spdy_trial_params,
+      IOThread::Globals* globals) {
+    IOThread::ConfigureSpdyGlobals(command_line, spdy_trial_group,
+                                   spdy_trial_params, globals);
+  }
+
   static void InitializeNetworkSessionParamsFromGlobals(
       const IOThread::Globals& globals,
       net::HttpNetworkSession::Params* params) {
     IOThread::InitializeNetworkSessionParamsFromGlobals(globals, params);
-  }
-
-  static void ConfigureSpdyFromTrial(const std::string& trial_group,
-                                     IOThread::Globals* globals) {
-    IOThread::ConfigureSpdyFromTrial(trial_group, globals);
   }
 };
 
@@ -57,6 +61,11 @@ class IOThreadTest : public testing::Test {
 
   void ConfigureQuicGlobals() {
     IOThreadPeer::ConfigureQuicGlobals(command_line_, field_trial_group_,
+                                       field_trial_params_, &globals_);
+  }
+
+  void ConfigureSpdyGlobals() {
+    IOThreadPeer::ConfigureSpdyGlobals(command_line_, field_trial_group_,
                                        field_trial_params_, &globals_);
   }
 
@@ -83,16 +92,17 @@ TEST_F(IOThreadTest, InitializeNetworkSessionParamsFromGlobals) {
 
 TEST_F(IOThreadTest, SpdyFieldTrialHoldbackEnabled) {
   net::HttpStreamFactory::set_spdy_enabled(true);
-  IOThreadPeer::ConfigureSpdyFromTrial("SpdyDisabled", &globals_);
+  field_trial_group_ = "SpdyDisabled";
+  ConfigureSpdyGlobals();
   EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
 }
 
 TEST_F(IOThreadTest, SpdyFieldTrialSpdy31Enabled) {
   bool use_alternate_protocols = false;
-  IOThreadPeer::ConfigureSpdyFromTrial("Spdy31Enabled", &globals_);
+  field_trial_group_ = "Spdy31Enabled";
+  ConfigureSpdyGlobals();
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11,
-                          net::kProtoQUIC1SPDY3,
                           net::kProtoSPDY31));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
@@ -100,13 +110,90 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy31Enabled) {
 
 TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
   bool use_alternate_protocols = false;
-  IOThreadPeer::ConfigureSpdyFromTrial("Spdy4Enabled", &globals_);
-  EXPECT_THAT(
-      globals_.next_protos,
-      ElementsAre(net::kProtoHTTP11, net::kProtoQUIC1SPDY3, net::kProtoSPDY31,
-                  net::kProtoSPDY4_14, net::kProtoSPDY4));
+  field_trial_group_ = "Spdy4Enabled";
+  ConfigureSpdyGlobals();
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
+                          net::kProtoSPDY4_14, net::kProtoSPDY4));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyFieldTrialDefault) {
+  field_trial_group_ = "";
+  ConfigureSpdyGlobals();
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
+                          net::kProtoSPDY4_14, net::kProtoSPDY4));
+  bool use_alternate_protocols = false;
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_TRUE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
+  field_trial_params_["enable_spdy31"] = "false";
+  // Undefined parameter "enable_http2_14" should default to false.
+  field_trial_params_["enable_http2"] = "true";
+  field_trial_group_ = "ParametrizedHTTP2Only";
+  ConfigureSpdyGlobals();
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY4));
+  bool use_alternate_protocols = false;
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_TRUE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyCommandLineEnable) {
+  command_line_.AppendSwitch("enable-spdy4");
+  // Command line should overwrite field trial group.
+  field_trial_group_ = "SpdyDisabled";
+  ConfigureSpdyGlobals();
+  EXPECT_THAT(globals_.next_protos,
+              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
+                          net::kProtoSPDY4_14, net::kProtoSPDY4));
+  bool use_alternate_protocols = false;
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_TRUE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyCommandLineDisable) {
+  command_line_.AppendSwitch("enable-npn-http");
+  // Command line should overwrite field trial group.
+  field_trial_group_ = "Spdy4Enabled";
+  ConfigureSpdyGlobals();
+  EXPECT_THAT(globals_.next_protos, ElementsAre(net::kProtoHTTP11));
+  bool use_alternate_protocols = true;
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_FALSE(use_alternate_protocols);
+}
+
+TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
+  command_line_.AppendSwitchASCII("use-spdy", "off");
+  // Command line should overwrite field trial group.
+  field_trial_group_ = "Spdy4Enabled";
+  ConfigureSpdyGlobals();
+  EXPECT_EQ(0u, globals_.next_protos.size());
+}
+
+TEST_F(IOThreadTest, SpdyCommandLineUseSpdySSL) {
+  command_line_.AppendSwitchASCII("use-spdy", "ssl");
+  // Command line should overwrite field trial group.
+  field_trial_group_ = "SpdyDisabled";
+  ConfigureSpdyGlobals();
+  bool force_spdy_over_ssl = false;
+  globals_.force_spdy_over_ssl.CopyToIfSet(&force_spdy_over_ssl);
+  EXPECT_TRUE(force_spdy_over_ssl);
+  bool force_spdy_always = false;
+  globals_.force_spdy_always.CopyToIfSet(&force_spdy_always);
+  EXPECT_TRUE(force_spdy_always);
+}
+
+TEST_F(IOThreadTest, SpdyCommandLineUseSpdyDisableAltProtocols) {
+  command_line_.AppendSwitchASCII("use-spdy", "no-alt-protocols");
+  ConfigureSpdyGlobals();
+  bool use_alternate_protocols = true;
+  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
+  EXPECT_FALSE(use_alternate_protocols);
 }
 
 TEST_F(IOThreadTest, DisableQuicByDefault) {

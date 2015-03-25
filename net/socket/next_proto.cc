@@ -6,12 +6,6 @@
 
 namespace net {
 
-NextProtoVector NextProtosHttpOnly() {
-  NextProtoVector next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  return next_protos;
-}
-
 NextProtoVector NextProtosDefaults() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
@@ -40,16 +34,6 @@ NextProtoVector NextProtosSpdy31() {
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
   next_protos.push_back(kProtoSPDY31);
-  return next_protos;
-}
-
-NextProtoVector NextProtosSpdy4Http2() {
-  NextProtoVector next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY31);
-  next_protos.push_back(kProtoSPDY4_14);
-  next_protos.push_back(kProtoSPDY4);
   return next_protos;
 }
 

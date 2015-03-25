@@ -271,27 +271,13 @@ class IOThread : public content::BrowserThreadDelegate {
   // Sets up SDCH based on field trials.
   void ConfigureSdch();
 
-  // Enable SPDY with the given mode, which may contain the following:
-  //
-  //   "off"                      : Disables SPDY support entirely.
-  //   "ssl"                      : Forces SPDY for all HTTPS requests.
-  //   "no-ssl"                   : Forces SPDY for all HTTP requests.
-  //   "no-ping"                  : Disables SPDY ping connection testing.
-  //   "exclude=<host>"           : Disables SPDY support for the host <host>.
-  //   "no-compress"              : Disables SPDY header compression.
-  //   "no-alt-protocols          : Disables alternate protocol support.
-  //   "force-alt-protocols       : Forces an alternate protocol of SPDY/3
-  //                                on port 443.
-  //   "single-domain"            : Forces all spdy traffic to a single domain.
-  //   "init-max-streams=<limit>" : Specifies the maximum number of concurrent
-  //                                streams for a SPDY session, unless the
-  //                                specifies a different value via SETTINGS.
-  void EnableSpdy(const std::string& mode);
-
-  // Configures available SPDY protocol versions from the given trial.
-  // Used only if no command-line configuration was present.
-  static void ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
-                                     Globals* globals);
+  // Configures available SPDY protocol versions in |globals| based on the flags
+  // in |command_lin| as well as SPDY field trial group and parameters.  Must be
+  // called after ConfigureQuicGlobals.
+  static void ConfigureSpdyGlobals(const base::CommandLine& command_line,
+                                   base::StringPiece quic_trial_group,
+                                   const VariationParameters& quic_trial_params,
+                                   Globals* globals);
 
   // Global state must be initialized on the IO thread, then this
   // method must be invoked on the UI thread.
@@ -325,7 +311,8 @@ class IOThread : public content::BrowserThreadDelegate {
 #endif
   }
   // Configures QUIC options in |globals| based on the flags in |command_line|
-  // as well as the QUIC field trial group and parameters.
+  // as well as the QUIC field trial group and parameters.  Must be called
+  // before ConfigureSpdyGlobals.
   static void ConfigureQuicGlobals(
       const base::CommandLine& command_line,
       base::StringPiece quic_trial_group,
