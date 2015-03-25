@@ -16,10 +16,16 @@
 
 namespace syncer {
 
+namespace {
+
+void NoOpDropCallback(const AttachmentStore::Result& result) {
+}
+}
+
 AttachmentStore::AttachmentStore(
     const scoped_refptr<AttachmentStoreFrontend>& frontend,
-    AttachmentReferrer referrer)
-    : frontend_(frontend), referrer_(referrer) {
+    Component component)
+    : frontend_(frontend), component_(component) {
 }
 
 AttachmentStore::~AttachmentStore() {
@@ -32,12 +38,12 @@ void AttachmentStore::Read(const AttachmentIdList& ids,
 
 void AttachmentStore::Write(const AttachmentList& attachments,
                             const WriteCallback& callback) {
-  frontend_->Write(referrer_, attachments, callback);
+  frontend_->Write(component_, attachments, callback);
 }
 
 void AttachmentStore::Drop(const AttachmentIdList& ids,
                            const DropCallback& callback) {
-  frontend_->Drop(referrer_, ids, callback);
+  frontend_->DropReference(component_, ids, callback);
 }
 
 void AttachmentStore::ReadMetadata(const AttachmentIdList& ids,
@@ -46,14 +52,14 @@ void AttachmentStore::ReadMetadata(const AttachmentIdList& ids,
 }
 
 void AttachmentStore::ReadAllMetadata(const ReadMetadataCallback& callback) {
-  frontend_->ReadAllMetadata(referrer_, callback);
+  frontend_->ReadAllMetadata(component_, callback);
 }
 
-scoped_ptr<AttachmentStore> AttachmentStore::CreateAttachmentStoreForSync()
-    const {
-  scoped_ptr<AttachmentStore> attachment_store(
-      new AttachmentStore(frontend_, SYNC));
-  return attachment_store.Pass();
+scoped_ptr<AttachmentStoreForSync>
+AttachmentStore::CreateAttachmentStoreForSync() const {
+  scoped_ptr<AttachmentStoreForSync> attachment_store_for_sync(
+      new AttachmentStoreForSync(frontend_, component_, SYNC));
+  return attachment_store_for_sync.Pass();
 }
 
 scoped_ptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
@@ -101,6 +107,23 @@ scoped_ptr<AttachmentStore> AttachmentStore::CreateMockStoreForTest(
   scoped_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(attachment_store_frontend, MODEL_TYPE));
   return attachment_store.Pass();
+}
+
+AttachmentStoreForSync::AttachmentStoreForSync(
+    const scoped_refptr<AttachmentStoreFrontend>& frontend,
+    Component consumer_component,
+    Component sync_component)
+    : AttachmentStore(frontend, consumer_component),
+      sync_component_(sync_component) {
+}
+
+void AttachmentStoreForSync::SetSyncReference(const AttachmentIdList& ids) {
+  frontend()->SetReference(sync_component_, ids);
+}
+
+void AttachmentStoreForSync::DropSyncReference(const AttachmentIdList& ids) {
+  frontend()->DropReference(sync_component_, ids,
+                            base::Bind(&NoOpDropCallback));
 }
 
 }  // namespace syncer

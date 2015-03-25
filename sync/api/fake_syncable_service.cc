@@ -70,9 +70,10 @@ SyncError FakeSyncableService::ProcessSyncChanges(
   return process_sync_changes_error_;
 }
 
-scoped_ptr<AttachmentStore> FakeSyncableService::GetAttachmentStoreForSync() {
+scoped_ptr<AttachmentStoreForSync>
+FakeSyncableService::GetAttachmentStoreForSync() {
   return attachment_store_ ? attachment_store_->CreateAttachmentStoreForSync()
-                           : scoped_ptr<AttachmentStore>();
+                           : scoped_ptr<AttachmentStoreForSync>();
 }
 
 void FakeSyncableService::SetAttachmentService(

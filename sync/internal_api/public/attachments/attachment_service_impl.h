@@ -50,7 +50,7 @@ class SYNC_EXPORT AttachmentServiceImpl
   //
   // |max_backoff_delay| the maxmium delay between upload attempts when backed
   // off.
-  AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
+  AttachmentServiceImpl(scoped_ptr<AttachmentStoreForSync> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader,
                         scoped_ptr<AttachmentDownloader> attachment_downloader,
                         Delegate* delegate,
@@ -97,7 +97,7 @@ class SYNC_EXPORT AttachmentServiceImpl
       scoped_ptr<AttachmentMap> attachments,
       scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
 
-  scoped_ptr<AttachmentStore> attachment_store_;
+  scoped_ptr<AttachmentStoreForSync> attachment_store_;
 
   // May be null.
   const scoped_ptr<AttachmentUploader> attachment_uploader_;

@@ -56,25 +56,33 @@ void AttachmentStoreFrontend::Read(
 }
 
 void AttachmentStoreFrontend::Write(
-    AttachmentStore::AttachmentReferrer referrer,
+    AttachmentStore::Component component,
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AttachmentStoreBackend::Write,
-                            base::Unretained(backend_.get()), referrer,
+                            base::Unretained(backend_.get()), component,
                             attachments, callback));
 }
 
-void AttachmentStoreFrontend::Drop(
-    AttachmentStore::AttachmentReferrer referrer,
+void AttachmentStoreFrontend::SetReference(AttachmentStore::Component component,
+                                           const AttachmentIdList& ids) {
+  DCHECK(CalledOnValidThread());
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AttachmentStoreBackend::SetReference,
+                            base::Unretained(backend_.get()), component, ids));
+}
+
+void AttachmentStoreFrontend::DropReference(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AttachmentStoreBackend::Drop,
-                 base::Unretained(backend_.get()), referrer, ids, callback));
+      base::Bind(&AttachmentStoreBackend::DropReference,
+                 base::Unretained(backend_.get()), component, ids, callback));
 }
 
 void AttachmentStoreFrontend::ReadMetadata(
@@ -87,13 +95,13 @@ void AttachmentStoreFrontend::ReadMetadata(
 }
 
 void AttachmentStoreFrontend::ReadAllMetadata(
-    AttachmentStore::AttachmentReferrer referrer,
+    AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AttachmentStoreBackend::ReadAllMetadata,
-                 base::Unretained(backend_.get()), referrer, callback));
+                 base::Unretained(backend_.get()), component, callback));
 }
 
 }  // namespace syncer

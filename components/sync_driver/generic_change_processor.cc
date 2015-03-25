@@ -94,7 +94,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
     SyncApiComponentFactory* sync_factory,
-    scoped_ptr<syncer::AttachmentStore> attachment_store)
+    scoped_ptr<syncer::AttachmentStoreForSync> attachment_store)
     : ChangeProcessor(error_handler),
       type_(type),
       local_service_(local_service),

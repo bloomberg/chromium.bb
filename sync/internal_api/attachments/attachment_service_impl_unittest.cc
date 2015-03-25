@@ -39,17 +39,23 @@ class MockAttachmentStoreBackend
     read_callbacks.push_back(callback);
   }
 
-  void Write(AttachmentStore::AttachmentReferrer referrer,
+  void Write(AttachmentStore::Component component,
              const AttachmentList& attachments,
              const AttachmentStore::WriteCallback& callback) override {
     write_attachments.push_back(attachments);
     write_callbacks.push_back(callback);
   }
 
-  void Drop(AttachmentStore::AttachmentReferrer referrer,
-            const AttachmentIdList& ids,
-            const AttachmentStore::DropCallback& callback) override {
-    NOTREACHED();
+  void SetReference(AttachmentStore::Component component,
+                    const AttachmentIdList& ids) override {
+    set_reference_ids.push_back(ids);
+  }
+
+  void DropReference(AttachmentStore::Component component,
+                     const AttachmentIdList& ids,
+                     const AttachmentStore::DropCallback& callback) override {
+    ASSERT_EQ(AttachmentStore::SYNC, component);
+    drop_ids.push_back(ids);
   }
 
   void ReadMetadata(
@@ -59,7 +65,7 @@ class MockAttachmentStoreBackend
   }
 
   void ReadAllMetadata(
-      AttachmentStore::AttachmentReferrer referrer,
+      AttachmentStore::Component component,
       const AttachmentStore::ReadMetadataCallback& callback) override {
     NOTREACHED();
   }
@@ -100,7 +106,6 @@ class MockAttachmentStoreBackend
   // Respond to Write request with |result|.
   void RespondToWrite(const AttachmentStore::Result& result) {
     AttachmentStore::WriteCallback callback = write_callbacks.back();
-    AttachmentList attachments = write_attachments.back();
     write_callbacks.pop_back();
     write_attachments.pop_back();
     base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -111,6 +116,8 @@ class MockAttachmentStoreBackend
   std::vector<AttachmentStore::ReadCallback> read_callbacks;
   std::vector<AttachmentList> write_attachments;
   std::vector<AttachmentStore::WriteCallback> write_callbacks;
+  std::vector<AttachmentIdList> set_reference_ids;
+  std::vector<AttachmentIdList> drop_ids;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAttachmentStoreBackend);
@@ -223,8 +230,9 @@ class AttachmentServiceImplTest : public testing::Test,
       attachment_downloader_ = downloader->AsWeakPtr();
     }
     attachment_service_.reset(new AttachmentServiceImpl(
-        attachment_store.Pass(), uploader.Pass(), downloader.Pass(), delegate,
-        base::TimeDelta::FromMinutes(1), base::TimeDelta::FromMinutes(8)));
+        attachment_store->CreateAttachmentStoreForSync(), uploader.Pass(),
+        downloader.Pass(), delegate, base::TimeDelta::FromMinutes(1),
+        base::TimeDelta::FromMinutes(8)));
 
     scoped_ptr<base::MockTimer> timer_to_pass(
         new base::MockTimer(false, false));
@@ -434,7 +442,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
     attachment_ids.push_back(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
-
+  RunLoop();
+  EXPECT_FALSE(store()->set_reference_ids.empty());
   for (unsigned i = 0; i < num_attachments; ++i) {
     RunLoopAndFireTimer();
     // See that the service has issued a read for at least one of the
@@ -456,6 +465,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
        ++iter) {
     EXPECT_THAT(on_attachment_uploaded_list(), testing::Contains(*iter));
   }
+  EXPECT_EQ(num_attachments, store()->drop_ids.size());
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
@@ -502,6 +512,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_SomeMissingFromStore) {
   RunLoop();
   // No upload requests since the read failed.
   ASSERT_EQ(0U, uploader()->upload_requests.size());
+  EXPECT_EQ(attachment_ids.size(), store()->drop_ids.size());
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
@@ -524,6 +535,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
   EXPECT_EQ(0U, uploader()->upload_requests.size());
   // See that the delegate was never called.
   ASSERT_EQ(0U, on_attachment_uploaded_list().size());
+  EXPECT_EQ(num_attachments, store()->drop_ids.size());
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
@@ -537,6 +549,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
   RunLoop();
   EXPECT_EQ(0U, store()->read_ids.size());
   ASSERT_EQ(0U, on_attachment_uploaded_list().size());
+  EXPECT_EQ(0U, store()->drop_ids.size());
 }
 
 // Upload three attachments.  For one of them, server responds with error.
@@ -567,6 +580,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_OneUploadFails) {
     RunLoop();
   }
   ASSERT_EQ(2U, on_attachment_uploaded_list().size());
+  EXPECT_EQ(num_attachments, store()->drop_ids.size());
 }
 
 // Attempt an upload, respond with transient error to trigger backoff, issue

@@ -68,14 +68,15 @@ class SYNC_EXPORT SyncableService
 
   // Returns AttachmentStore for use by sync when uploading or downloading
   // attachments.
-  // GetAttachmentStore is called right before MergeDataAndStartSyncing. If at
-  // that time GetAttachmentStore returns NULL then datatype is considered not
-  // using attachments and all attempts to upload/download attachments will
-  // fail. Default implementation returns NULL. Datatype that uses sync
-  // attachments should create attachment store, implement GetAttachmentStore
-  // to return result of AttachmentStore::CreateAttachmentStoreForSync() from
-  // attachment store object.
-  virtual scoped_ptr<AttachmentStore> GetAttachmentStoreForSync();
+  // GetAttachmentStoreForSync is called right before MergeDataAndStartSyncing.
+  // If at that time GetAttachmentStoreForSync returns NULL then datatype is
+  // considered not using attachments and all attempts to upload/download
+  // attachments will fail. Default implementation returns NULL. Datatype that
+  // uses sync attachments should create attachment store, implement
+  // GetAttachmentStoreForSync to return result of
+  // AttachmentStore::CreateAttachmentStoreForSync() from attachment store
+  // object.
+  virtual scoped_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync();
 
   // Called by sync to provide AttachmentService to be used to download
   // attachments.

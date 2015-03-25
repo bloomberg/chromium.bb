@@ -36,17 +36,19 @@ class SYNC_EXPORT AttachmentStoreBackend {
   virtual void Init(const AttachmentStore::InitCallback& callback) = 0;
   virtual void Read(const AttachmentIdList& ids,
                     const AttachmentStore::ReadCallback& callback) = 0;
-  virtual void Write(AttachmentStore::AttachmentReferrer referrer,
+  virtual void Write(AttachmentStore::Component component,
                      const AttachmentList& attachments,
                      const AttachmentStore::WriteCallback& callback) = 0;
-  virtual void Drop(AttachmentStore::AttachmentReferrer referrer,
-                    const AttachmentIdList& ids,
-                    const AttachmentStore::DropCallback& callback) = 0;
+  virtual void SetReference(AttachmentStore::Component component,
+                            const AttachmentIdList& ids) = 0;
+  virtual void DropReference(AttachmentStore::Component component,
+                             const AttachmentIdList& ids,
+                             const AttachmentStore::DropCallback& callback) = 0;
   virtual void ReadMetadata(
       const AttachmentIdList& ids,
       const AttachmentStore::ReadMetadataCallback& callback) = 0;
   virtual void ReadAllMetadata(
-      AttachmentStore::AttachmentReferrer referrer,
+      AttachmentStore::Component component,
       const AttachmentStore::ReadMetadataCallback& callback) = 0;
 
  protected:

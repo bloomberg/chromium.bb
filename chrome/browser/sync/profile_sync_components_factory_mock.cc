@@ -37,7 +37,7 @@ ProfileSyncComponentsFactoryMock::~ProfileSyncComponentsFactoryMock() {}
 
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryMock::CreateAttachmentService(
-    scoped_ptr<syncer::AttachmentStore> attachment_store,
+    scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
     const syncer::UserShare& user_share,
     const std::string& store_birthday,
     syncer::ModelType model_type,

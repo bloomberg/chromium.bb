@@ -43,7 +43,7 @@ class FakeSyncableService : public SyncableService {
   SyncDataList GetAllSyncData(ModelType type) const override;
   SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
                                const SyncChangeList& change_list) override;
-  scoped_ptr<AttachmentStore> GetAttachmentStoreForSync() override;
+  scoped_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync() override;
   void SetAttachmentService(
       scoped_ptr<AttachmentService> attachment_service) override;
 

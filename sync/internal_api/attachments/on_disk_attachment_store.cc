@@ -134,7 +134,7 @@ void OnDiskAttachmentStore::Read(
 }
 
 void OnDiskAttachmentStore::Write(
-    AttachmentStore::AttachmentReferrer referrer,
+    AttachmentStore::Component component,
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -153,11 +153,24 @@ void OnDiskAttachmentStore::Write(
   PostCallback(base::Bind(callback, result_code));
 }
 
-void OnDiskAttachmentStore::Drop(
-    AttachmentStore::AttachmentReferrer referrer,
+void OnDiskAttachmentStore::SetReference(AttachmentStore::Component component,
+                                         const AttachmentIdList& ids) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(AttachmentStore::SYNC, component);
+}
+
+void OnDiskAttachmentStore::DropReference(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (component == AttachmentStore::SYNC) {
+    // TODO(pavely): There is no reference handling implementation yet. All
+    // calls to AddReferrer are ignored. Calls to Drop coming from sync should
+    // be ignored too.
+    PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
+    return;
+  }
   AttachmentStore::Result result_code =
       AttachmentStore::STORE_INITIALIZATION_FAILED;
   if (db_) {
@@ -208,7 +221,7 @@ void OnDiskAttachmentStore::ReadMetadata(
 }
 
 void OnDiskAttachmentStore::ReadAllMetadata(
-    AttachmentStore::AttachmentReferrer referrer,
+    AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code =

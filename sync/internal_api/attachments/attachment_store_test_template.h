@@ -128,6 +128,13 @@ class AttachmentStoreTest : public testing::Test {
 
 TYPED_TEST_CASE_P(AttachmentStoreTest);
 
+// Verify that CreateAttachmentStoreForSync() creates valid object.
+TYPED_TEST_P(AttachmentStoreTest, CreateAttachmentStoreForSync) {
+  scoped_ptr<AttachmentStoreForSync> attachment_store_for_sync =
+      this->store->CreateAttachmentStoreForSync();
+  EXPECT_NE(nullptr, attachment_store_for_sync);
+}
+
 // Verify that we do not overwrite existing attachments and that we do not treat
 // it as an error.
 TYPED_TEST_P(AttachmentStoreTest, Write_NoOverwriteNoError) {
@@ -386,6 +393,7 @@ TYPED_TEST_P(AttachmentStoreTest, ReadAllMetadata) {
 }
 
 REGISTER_TYPED_TEST_CASE_P(AttachmentStoreTest,
+                           CreateAttachmentStoreForSync,
                            Write_NoOverwriteNoError,
                            Write_RoundTrip,
                            Read_OneNotFound,

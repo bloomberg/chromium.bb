@@ -43,17 +43,19 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
   void Init(const AttachmentStore::InitCallback& callback) override;
   void Read(const AttachmentIdList& ids,
             const AttachmentStore::ReadCallback& callback) override;
-  void Write(AttachmentStore::AttachmentReferrer referrer,
+  void Write(AttachmentStore::Component component,
              const AttachmentList& attachments,
              const AttachmentStore::WriteCallback& callback) override;
-  void Drop(AttachmentStore::AttachmentReferrer referrer,
-            const AttachmentIdList& ids,
-            const AttachmentStore::DropCallback& callback) override;
+  void SetReference(AttachmentStore::Component component,
+                    const AttachmentIdList& ids) override;
+  void DropReference(AttachmentStore::Component component,
+                     const AttachmentIdList& ids,
+                     const AttachmentStore::DropCallback& callback) override;
   void ReadMetadata(
       const AttachmentIdList& ids,
       const AttachmentStore::ReadMetadataCallback& callback) override;
   void ReadAllMetadata(
-      AttachmentStore::AttachmentReferrer referrer,
+      AttachmentStore::Component component,
       const AttachmentStore::ReadMetadataCallback& callback) override;
 
  private:

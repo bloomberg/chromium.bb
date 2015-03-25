@@ -66,7 +66,7 @@ void InMemoryAttachmentStore::Read(
 }
 
 void InMemoryAttachmentStore::Write(
-    AttachmentStore::AttachmentReferrer referrer,
+    AttachmentStore::Component component,
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -78,12 +78,25 @@ void InMemoryAttachmentStore::Write(
   PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
 }
 
-void InMemoryAttachmentStore::Drop(
-    AttachmentStore::AttachmentReferrer referrer,
+void InMemoryAttachmentStore::SetReference(AttachmentStore::Component component,
+                                           const AttachmentIdList& ids) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(AttachmentStore::SYNC, component);
+}
+
+void InMemoryAttachmentStore::DropReference(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result = AttachmentStore::SUCCESS;
+  if (component == AttachmentStore::SYNC) {
+    // TODO(pavely): There is no reference handling implementation yet. All
+    // calls to AddReferrer are ignored. Calls to Drop coming from sync should
+    // be ignored too.
+    PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
+    return;
+  }
   AttachmentIdList::const_iterator ids_iter = ids.begin();
   AttachmentIdList::const_iterator ids_end = ids.end();
   for (; ids_iter != ids_end; ++ids_iter) {
@@ -117,7 +130,7 @@ void InMemoryAttachmentStore::ReadMetadata(
 }
 
 void InMemoryAttachmentStore::ReadAllMetadata(
-    AttachmentStore::AttachmentReferrer referrer,
+    AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;

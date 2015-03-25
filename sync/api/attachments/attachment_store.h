@@ -20,8 +20,9 @@ class SequencedTaskRunner;
 
 namespace syncer {
 
-class AttachmentStoreFrontend;
 class AttachmentStoreBackend;
+class AttachmentStoreForSync;
+class AttachmentStoreFrontend;
 
 // AttachmentStore is a place to locally store and access Attachments.
 //
@@ -50,7 +51,7 @@ class SYNC_EXPORT AttachmentStore {
   // Each attachment can have references from sync or model type. Tracking these
   // references is needed for lifetime management of attachment, it can only be
   // deleted from the store when it doesn't have references.
-  enum AttachmentReferrer {
+  enum Component {
     MODEL_TYPE,
     SYNC,
   };
@@ -121,7 +122,7 @@ class SYNC_EXPORT AttachmentStore {
   // Given current AttachmentStore (this) creates separate AttachmentStore that
   // will be used by sync components (AttachmentService). Resulting
   // AttachmentStore is backed by the same frontend/backend.
-  scoped_ptr<AttachmentStore> CreateAttachmentStoreForSync() const;
+  scoped_ptr<AttachmentStoreForSync> CreateAttachmentStoreForSync() const;
 
   // Creates an AttachmentStore backed by in-memory implementation of attachment
   // store. For now frontend lives on the same thread as backend.
@@ -145,16 +146,45 @@ class SYNC_EXPORT AttachmentStore {
   static scoped_ptr<AttachmentStore> CreateMockStoreForTest(
       scoped_ptr<AttachmentStoreBackend> backend);
 
- private:
+ protected:
   AttachmentStore(const scoped_refptr<AttachmentStoreFrontend>& frontend,
-                  AttachmentReferrer referrer);
+                  Component component);
 
+  const scoped_refptr<AttachmentStoreFrontend>& frontend() { return frontend_; }
+
+ private:
   scoped_refptr<AttachmentStoreFrontend> frontend_;
   // Modification operations with attachment store will be performed on behalf
-  // of |referrer_|.
-  const AttachmentReferrer referrer_;
+  // of |component_|.
+  const Component component_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentStore);
+};
+
+// AttachmentStoreForSync extends AttachmentStore and provides additional
+// functions necessary for AttachmentService. These are needed when
+// AttachmentService writes attachment on behalf of model type after download
+// and takes reference on attachment for the duration of upload.
+// Model type implementation shouldn't use this interface.
+class AttachmentStoreForSync : public AttachmentStore {
+ public:
+  // Asynchronously adds reference from sync to attachments.
+  void SetSyncReference(const AttachmentIdList& ids);
+
+  // Asynchronously drops sync reference from attachments.
+  void DropSyncReference(const AttachmentIdList& ids);
+
+ private:
+  friend class AttachmentStore;
+  AttachmentStoreForSync(const scoped_refptr<AttachmentStoreFrontend>& frontend,
+                         Component consumer_component,
+                         Component sync_component);
+
+  // |sync_component_| is passed to frontend when sync related operations are
+  // perfromed.
+  const Component sync_component_;
+
+  DISALLOW_COPY_AND_ASSIGN(AttachmentStoreForSync);
 };
 
 }  // namespace syncer

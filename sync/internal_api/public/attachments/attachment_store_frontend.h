@@ -40,18 +40,19 @@ class SYNC_EXPORT AttachmentStoreFrontend
   void Read(const AttachmentIdList& ids,
             const AttachmentStore::ReadCallback& callback);
 
-  void Write(AttachmentStore::AttachmentReferrer referrer,
+  void Write(AttachmentStore::Component component,
              const AttachmentList& attachments,
              const AttachmentStore::WriteCallback& callback);
-
-  void Drop(AttachmentStore::AttachmentReferrer referrer,
-            const AttachmentIdList& ids,
-            const AttachmentStore::DropCallback& callback);
+  void SetReference(AttachmentStore::Component component,
+                    const AttachmentIdList& ids);
+  void DropReference(AttachmentStore::Component component,
+                     const AttachmentIdList& ids,
+                     const AttachmentStore::DropCallback& callback);
 
   void ReadMetadata(const AttachmentIdList& ids,
                     const AttachmentStore::ReadMetadataCallback& callback);
 
-  void ReadAllMetadata(AttachmentStore::AttachmentReferrer referrer,
+  void ReadAllMetadata(AttachmentStore::Component component,
                        const AttachmentStore::ReadMetadataCallback& callback);
 
  private:

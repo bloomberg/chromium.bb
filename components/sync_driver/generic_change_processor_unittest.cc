@@ -37,7 +37,8 @@ namespace {
 // A mock that keeps track of attachments passed to UploadAttachments.
 class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
-  MockAttachmentService(scoped_ptr<syncer::AttachmentStore> attachment_store);
+  MockAttachmentService(
+      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store);
   ~MockAttachmentService() override;
   void UploadAttachments(
       const syncer::AttachmentIdList& attachment_ids) override;
@@ -48,7 +49,7 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
 };
 
 MockAttachmentService::MockAttachmentService(
-    scoped_ptr<syncer::AttachmentStore> attachment_store)
+    scoped_ptr<syncer::AttachmentStoreForSync> attachment_store)
     : AttachmentServiceImpl(attachment_store.Pass(),
                             scoped_ptr<syncer::AttachmentUploader>(
                                 new syncer::FakeAttachmentUploader),
@@ -87,7 +88,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   }
 
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      scoped_ptr<syncer::AttachmentStore> attachment_store,
+      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,
@@ -163,7 +164,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
         type, &data_type_error_handler_,
         syncable_service_ptr_factory_.GetWeakPtr(),
         merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
-        &sync_factory, attachment_store.Pass()));
+        &sync_factory, attachment_store->CreateAttachmentStoreForSync()));
     mock_attachment_service_ = sync_factory.GetMockAttachmentService();
   }
 
