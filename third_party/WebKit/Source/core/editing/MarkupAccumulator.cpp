@@ -218,6 +218,9 @@ void MarkupAccumulator::appendQuotedURLAttributeValue(StringBuilder& result, con
     String strippedURLString = resolvedURLString.stripWhiteSpace();
     if (protocolIsJavaScript(strippedURLString)) {
         // minimal escaping for javascript urls
+        if (strippedURLString.contains('&'))
+            strippedURLString.replaceWithLiteral('&', "&amp;");
+
         if (strippedURLString.contains('"')) {
             if (strippedURLString.contains('\''))
                 strippedURLString.replaceWithLiteral('"', "&quot;");
