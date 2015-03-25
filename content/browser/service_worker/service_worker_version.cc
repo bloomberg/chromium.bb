@@ -1396,24 +1396,25 @@ void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
 }
 
 void ServiceWorkerVersion::OnClaimClients(int request_id) {
-  StatusCallback callback = base::Bind(&ServiceWorkerVersion::DidClaimClients,
-                                       weak_factory_.GetWeakPtr(), request_id);
   if (status_ != ACTIVATING && status_ != ACTIVATED) {
-    callback.Run(SERVICE_WORKER_ERROR_STATE);
+    embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
+        request_id, blink::WebServiceWorkerError::ErrorTypeState,
+        base::ASCIIToUTF16(kClaimClientsStateErrorMesage)));
     return;
   }
-  if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
+  if (context_) {
+    if (ServiceWorkerRegistration* registration =
+            context_->GetLiveRegistration(registration_id_)) {
+      registration->ClaimClients();
+      embedded_worker_->SendMessage(
+          ServiceWorkerMsg_DidClaimClients(request_id));
+      return;
+    }
   }
 
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id_);
-  if (!registration) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-  registration->ClaimClients(callback);
+  embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
+      request_id, blink::WebServiceWorkerError::ErrorTypeAbort,
+      base::ASCIIToUTF16(kClaimClientsShutdownErrorMesage)));
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {
@@ -1460,24 +1461,6 @@ void ServiceWorkerVersion::StartWorkerInternal(bool pause_after_download) {
         base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                    weak_factory_.GetWeakPtr()));
   }
-}
-
-void ServiceWorkerVersion::DidClaimClients(
-    int request_id, ServiceWorkerStatusCode status) {
-  if (status == SERVICE_WORKER_ERROR_STATE) {
-    embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
-        request_id, blink::WebServiceWorkerError::ErrorTypeState,
-        base::ASCIIToUTF16(kClaimClientsStateErrorMesage)));
-    return;
-  }
-  if (status == SERVICE_WORKER_ERROR_ABORT) {
-    embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
-        request_id, blink::WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kClaimClientsShutdownErrorMesage)));
-    return;
-  }
-  DCHECK(status == SERVICE_WORKER_OK);
-  embedded_worker_->SendMessage(ServiceWorkerMsg_DidClaimClients(request_id));
 }
 
 void ServiceWorkerVersion::DidGetClients(

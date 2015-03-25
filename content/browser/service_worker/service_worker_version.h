@@ -398,7 +398,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartWorkerInternal(bool pause_after_download);
 
   void DidSkipWaiting(int request_id);
-  void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
   void DidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
 

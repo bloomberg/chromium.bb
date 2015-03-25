@@ -162,14 +162,21 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
     ActivateWaitingVersion();
 }
 
-void ServiceWorkerRegistration::ClaimClients(const StatusCallback& callback) {
+void ServiceWorkerRegistration::ClaimClients() {
   DCHECK(context_);
   DCHECK(active_version());
-  // TODO(xiang): Should better not hit the database http://crbug.com/454250.
-  context_->storage()->GetRegistrationsForOrigin(
-      pattern_.GetOrigin(),
-      base::Bind(&ServiceWorkerRegistration::DidGetRegistrationsForClaimClients,
-                 this, callback, active_version_));
+
+  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context_->GetProviderHostIterator();
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (host->IsHostToRunningServiceWorker())
+      continue;
+    if (host->controlling_version() == active_version())
+      continue;
+    if (host->MatchRegistration() == this)
+      host->ClaimedByRegistration(this);
+  }
 }
 
 void ServiceWorkerRegistration::ClearWhenReady() {
@@ -373,52 +380,6 @@ void ServiceWorkerRegistration::OnRestoreFinished(
   context_->storage()->NotifyDoneInstallingRegistration(
       this, version.get(), status);
   callback.Run(status);
-}
-
-void ServiceWorkerRegistration::DidGetRegistrationsForClaimClients(
-    const StatusCallback& callback,
-    scoped_refptr<ServiceWorkerVersion> version,
-    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
-  if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-  if (!active_version() || version != active_version()) {
-    callback.Run(SERVICE_WORKER_ERROR_STATE);
-    return;
-  }
-
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetProviderHostIterator();
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (ShouldClaim(host, registrations))
-      host->ClaimedByRegistration(this);
-  }
-  callback.Run(SERVICE_WORKER_OK);
-}
-
-bool ServiceWorkerRegistration::ShouldClaim(
-    ServiceWorkerProviderHost* provider_host,
-    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
-  if (provider_host->IsHostToRunningServiceWorker())
-    return false;
-  if (provider_host->controlling_version() == active_version())
-    return false;
-
-  LongestScopeMatcher matcher(provider_host->document_url());
-  if (!matcher.MatchLongest(pattern_))
-    return false;
-  for (const ServiceWorkerRegistrationInfo& info : registrations) {
-    ServiceWorkerRegistration* registration =
-        context_->GetLiveRegistration(info.registration_id);
-    if (registration &&
-        (registration->is_uninstalling() || registration->is_uninstalled()))
-      continue;
-    if (matcher.MatchLongest(info.pattern))
-      return false;
-  }
-  return true;
 }
 
 }  // namespace content
