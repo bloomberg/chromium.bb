@@ -1,6 +1,7 @@
 {
   "Linux Tests": {
     "gtest_tests": [
+      "gn_unittests",
       {
         "test": "accessibility_unittests",
         "swarming": {
@@ -195,6 +196,7 @@
   },
   "Linux Tests (dbg)(1)(32)": {
     "gtest_tests": [
+      "gn_unittests",
       {
         "test": "accessibility_unittests",
         "swarming": {
@@ -363,6 +365,7 @@
   },
   "Linux Tests (dbg)(1)": {
     "gtest_tests": [
+      "gn_unittests",
       {
         "test": "accessibility_unittests",
         "swarming": {
@@ -543,6 +546,7 @@
   },
   "Linux Clang (dbg)": {
     "gtest_tests": [
+      "gn_unittests",
       "accessibility_unittests",
       "app_shell_unittests",
       "base_unittests",
