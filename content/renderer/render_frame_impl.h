@@ -74,6 +74,7 @@ namespace content {
 
 class ChildFrameCompositingHelper;
 class CompositorDependencies;
+class DocumentState;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class ManifestManager;
@@ -81,6 +82,7 @@ class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
 class MediaPermissionDispatcher;
 class MidiDispatcher;
+class NavigationState;
 class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
@@ -101,6 +103,7 @@ enum class SandboxFlags;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FrameReplicationState;
+struct NavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponseHead;
 struct StartNavigationParams;
@@ -541,6 +544,11 @@ class CONTENT_EXPORT RenderFrameImpl
 
   ManifestManager* manifest_manager();
 
+  // TODO(creis): Remove when the only caller, the HistoryController, is no
+  // more.
+  void SetPendingNavigationParams(
+      scoped_ptr<NavigationParams> navigation_params);
+
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 
@@ -719,6 +727,14 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;
 
+  // If we initiated a navigation, this function will populate |document_state|
+  // with the navigation information saved in OnNavigate().
+  void PopulateDocumentStateFromPending(DocumentState* document_state);
+
+  // Returns a new NavigationState populated with the navigation information
+  // saved in OnNavigate().
+  NavigationState* CreateNavigationStateFromPending();
+
 #if defined(OS_ANDROID)
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       const blink::WebURL& url,
@@ -760,6 +776,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(kenrb): Correct the above statement when top-level frames have their
   // own RenderWidgets.
   scoped_refptr<RenderWidget> render_widget_;
+
+  // Temporarily holds state pertaining to a navigation that has been initiated
+  // until the NavigationState corresponding to the new navigation is created in
+  // didCreateDataSource().
+  scoped_ptr<NavigationParams> pending_navigation_params_;
 
 #if defined(ENABLE_PLUGINS)
   // Current text input composition text. Empty if no composition is in

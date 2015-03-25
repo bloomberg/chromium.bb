@@ -29,7 +29,6 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/navigation_params.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
@@ -121,11 +120,9 @@ class WebHitTestResult;
 namespace content {
 
 class DevToolsAgent;
-class DocumentState;
 class HistoryController;
 class HistoryEntry;
 class MouseLockDispatcher;
-class NavigationState;
 class PageState;
 class PepperPluginInstanceImpl;
 class RenderViewImplTest;
@@ -576,13 +573,9 @@ class CONTENT_EXPORT RenderViewImpl
   // still live here and are called from RenderFrameImpl. These implementations
   // are to be moved to RenderFrameImpl <http://crbug.com/361761>.
 
-  void didCreateDataSource(blink::WebLocalFrame* frame,
-                           blink::WebDataSource* datasource);
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
-
-  static bool IsReload(FrameMsg_Navigate_Type::Value navigation_type);
 
   static Referrer GetReferrerFromRequest(
       blink::WebFrame* frame,
@@ -709,14 +702,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Returns NULL if there is no such WebPlugin.
   blink::WebPlugin* GetWebPluginForFind();
 
-  // If we initiated a navigation, this function will populate |document_state|
-  // with the navigation information saved in OnNavigate().
-  void PopulateDocumentStateFromPending(DocumentState* document_state);
-
-  // Returns a new NavigationState populated with the navigation information
-  // saved in OnNavigate().
-  NavigationState* CreateNavigationStateFromPending();
-
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.
   void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
@@ -829,13 +814,6 @@ class CONTENT_EXPORT RenderViewImpl
   // OnSwapOut is called.  This is necessary because modal dialogs have a
   // PageGroupLoadDeferrer on the stack that interferes with swapping out.
   bool suppress_dialogs_until_swap_out_;
-
-  // Holds state pertaining to a navigation that we initiated.  This is held by
-  // the WebDataSource::ExtraData attribute.  We use pending_navigation_params_
-  // as a temporary holder for the state until the WebDataSource corresponding
-  // to the new navigation is created.  See DidCreateDataSource.
-  // TODO(nasko): Move to RenderFrame, as this is per-frame state.
-  scoped_ptr<NavigationParams> pending_navigation_params_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;

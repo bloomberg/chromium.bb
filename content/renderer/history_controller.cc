@@ -35,6 +35,7 @@
 
 #include "content/renderer/history_controller.h"
 
+#include "content/common/navigation_params.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -53,12 +54,15 @@ HistoryController::HistoryController(RenderViewImpl* render_view)
 HistoryController::~HistoryController() {
 }
 
-void HistoryController::GoToEntry(scoped_ptr<HistoryEntry> target_entry,
-                                  WebURLRequest::CachePolicy cache_policy) {
+void HistoryController::GoToEntry(
+    scoped_ptr<HistoryEntry> target_entry,
+    scoped_ptr<NavigationParams> navigation_params,
+    WebURLRequest::CachePolicy cache_policy) {
   HistoryFrameLoadVector same_document_loads;
   HistoryFrameLoadVector different_document_loads;
 
   provisional_entry_ = target_entry.Pass();
+  navigation_params_ = navigation_params.Pass();
 
   WebFrame* main_frame = render_view_->GetMainRenderFrame()->GetWebFrame();
   if (current_entry_) {
@@ -78,19 +82,25 @@ void HistoryController::GoToEntry(scoped_ptr<HistoryEntry> target_entry,
         std::make_pair(main_frame, provisional_entry_->root()));
   }
 
-  for (size_t i = 0; i < same_document_loads.size(); ++i) {
-    WebFrame* frame = same_document_loads[i].first;
-    if (!RenderFrameImpl::FromWebFrame(frame))
+  for (const auto& item : same_document_loads) {
+    WebFrame* frame = item.first;
+    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+    if (!render_frame)
       continue;
-    frame->loadHistoryItem(same_document_loads[i].second,
+    render_frame->SetPendingNavigationParams(make_scoped_ptr(
+        new NavigationParams(*navigation_params_.get())));
+    frame->loadHistoryItem(item.second,
                            blink::WebHistorySameDocumentLoad,
                            cache_policy);
   }
-  for (size_t i = 0; i < different_document_loads.size(); ++i) {
-    WebFrame* frame = different_document_loads[i].first;
-    if (!RenderFrameImpl::FromWebFrame(frame))
+  for (const auto& item : different_document_loads) {
+    WebFrame* frame = item.first;
+    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+    if (!render_frame)
       continue;
-    frame->loadHistoryItem(different_document_loads[i].second,
+    render_frame->SetPendingNavigationParams(make_scoped_ptr(
+        new NavigationParams(*navigation_params_.get())));
+    frame->loadHistoryItem(item.second,
                            blink::WebHistoryDifferentDocumentLoad,
                            cache_policy);
   }
@@ -166,6 +176,11 @@ HistoryEntry* HistoryController::GetCurrentEntry() {
 
 WebHistoryItem HistoryController::GetItemForNewChildFrame(
     RenderFrameImpl* frame) const {
+  if (navigation_params_.get()) {
+    frame->SetPendingNavigationParams(make_scoped_ptr(
+        new NavigationParams(*navigation_params_.get())));
+  }
+
   if (!current_entry_)
     return WebHistoryItem();
   return current_entry_->GetItemForFrame(frame);

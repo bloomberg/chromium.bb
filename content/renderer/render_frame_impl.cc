@@ -38,6 +38,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
+#include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -487,6 +488,12 @@ media::Context3D GetSharedMainThreadContext3D() {
   return media::Context3D(provider->ContextGL(), provider->GrContext());
 }
 #endif
+
+bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
+  return navigation_type == FrameMsg_Navigate_Type::RELOAD ||
+         navigation_type == FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
+         navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+}
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
@@ -1046,7 +1053,7 @@ void RenderFrameImpl::OnNavigate(
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
                "url", common_params.url.possibly_invalid_spec());
 
-  bool is_reload = RenderViewImpl::IsReload(common_params.navigation_type);
+  bool is_reload = IsReload(common_params.navigation_type);
   bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
@@ -1075,7 +1082,7 @@ void RenderFrameImpl::OnNavigate(
     cache_policy = WebURLRequest::ReloadIgnoringCacheData;
   }
 
-  render_view_->pending_navigation_params_.reset(
+  pending_navigation_params_.reset(
       new NavigationParams(common_params, start_params, request_params));
 
   // If we are reloading, then WebKit will use the history state of the current
@@ -1102,7 +1109,10 @@ void RenderFrameImpl::OnNavigate(
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
       CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
-      render_view_->history_controller()->GoToEntry(entry.Pass(), cache_policy);
+      scoped_ptr<NavigationParams> navigation_params(
+          new NavigationParams(*pending_navigation_params_.get()));
+      render_view_->history_controller()->GoToEntry(
+          entry.Pass(), navigation_params.Pass(), cache_policy);
     }
   } else if (!common_params.base_url_for_data_url.is_empty()) {
     LoadDataURL(common_params, frame);
@@ -1150,8 +1160,8 @@ void RenderFrameImpl::OnNavigate(
                                 renderer_navigation_start);
   }
 
-  // In case LoadRequest failed before DidCreateDataSource was called.
-  render_view_->pending_navigation_params_.reset();
+  // In case LoadRequest failed before didCreateDataSource was called.
+  pending_navigation_params_.reset();
 }
 
 void RenderFrameImpl::NavigateToSwappedOutURL() {
@@ -1176,6 +1186,11 @@ void RenderFrameImpl::BindServiceRegistry(
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
   return manifest_manager_;
+}
+
+void RenderFrameImpl::SetPendingNavigationParams(
+    scoped_ptr<NavigationParams> navigation_params) {
+  pending_navigation_params_ = navigation_params.Pass();
 }
 
 void RenderFrameImpl::OnBeforeUnload() {
@@ -2289,13 +2304,98 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
                                           blink::WebDataSource* datasource) {
   DCHECK(!frame_ || frame_ == frame);
 
-  // TODO(nasko): Move implementation here. Needed state:
-  // * pending_navigation_params_
-  // * webview
-  // Needed methods:
-  // * PopulateDocumentStateFromPending
-  // * CreateNavigationStateFromPending
-  render_view_->didCreateDataSource(frame, datasource);
+  bool content_initiated = !pending_navigation_params_.get();
+
+  // Make sure any previous redirect URLs end up in our new data source.
+  if (pending_navigation_params_.get()) {
+    for (const auto& i :
+         pending_navigation_params_->request_params.redirects) {
+      datasource->appendRedirect(i);
+    }
+  }
+
+  DocumentState* document_state = DocumentState::FromDataSource(datasource);
+  if (!document_state) {
+    document_state = new DocumentState;
+    datasource->setExtraData(document_state);
+    if (!content_initiated)
+      PopulateDocumentStateFromPending(document_state);
+  }
+
+  // Carry over the user agent override flag, if it exists.
+  blink::WebView* webview = render_view_->webview();
+  if (content_initiated && webview && webview->mainFrame() &&
+      webview->mainFrame()->isWebLocalFrame() &&
+      webview->mainFrame()->dataSource()) {
+    DocumentState* old_document_state =
+        DocumentState::FromDataSource(webview->mainFrame()->dataSource());
+    if (old_document_state) {
+      InternalDocumentStateData* internal_data =
+          InternalDocumentStateData::FromDocumentState(document_state);
+      InternalDocumentStateData* old_internal_data =
+          InternalDocumentStateData::FromDocumentState(old_document_state);
+      internal_data->set_is_overriding_user_agent(
+          old_internal_data->is_overriding_user_agent());
+    }
+  }
+
+  // The rest of RenderView assumes that a WebDataSource will always have a
+  // non-null NavigationState.
+  if (content_initiated) {
+    document_state->set_navigation_state(
+        NavigationStateImpl::CreateContentInitiated());
+  } else {
+    document_state->set_navigation_state(CreateNavigationStateFromPending());
+    pending_navigation_params_.reset();
+  }
+
+  // DocumentState::referred_by_prefetcher_ is true if we are
+  // navigating from a page that used prefetching using a link on that
+  // page.  We are early enough in the request process here that we
+  // can still see the DocumentState of the previous page and set
+  // this value appropriately.
+  // TODO(gavinp): catch the important case of navigation in a new
+  // renderer process.
+  if (webview) {
+    if (WebFrame* old_frame = webview->mainFrame()) {
+      const WebURLRequest& original_request = datasource->originalRequest();
+      const GURL referrer(
+          original_request.httpHeaderField(WebString::fromUTF8("Referer")));
+      if (!referrer.is_empty() && old_frame->isWebLocalFrame() &&
+          DocumentState::FromDataSource(old_frame->dataSource())
+              ->was_prefetcher()) {
+        for (; old_frame; old_frame = old_frame->traverseNext(false)) {
+          WebDataSource* old_frame_datasource = old_frame->dataSource();
+          if (old_frame_datasource &&
+              referrer == GURL(old_frame_datasource->request().url())) {
+            document_state->set_was_referred_by_prefetcher(true);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (content_initiated) {
+    const WebURLRequest& request = datasource->request();
+    switch (request.cachePolicy()) {
+      case WebURLRequest::UseProtocolCachePolicy:  // normal load.
+        document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
+        break;
+      case WebURLRequest::ReloadIgnoringCacheData:  // reload.
+      case WebURLRequest::ReloadBypassingCache:     // end-to-end reload.
+        document_state->set_load_type(DocumentState::LINK_LOAD_RELOAD);
+        break;
+      case WebURLRequest::ReturnCacheDataElseLoad:  // allow stale data.
+        document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_STALE_OK);
+        break;
+      case WebURLRequest::ReturnCacheDataDontLoad:  // Don't re-post.
+        document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_ONLY);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
 
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
@@ -2453,10 +2553,10 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
   if (!navigation_state->IsContentInitiated()) {
-    render_view_->pending_navigation_params_.reset(new NavigationParams(
+    pending_navigation_params_.reset(new NavigationParams(
         navigation_state->common_params(), navigation_state->start_params(),
         navigation_state->request_params()));
-    render_view_->pending_navigation_params_->request_params.request_time =
+    pending_navigation_params_->request_params.request_time =
         document_state->request_time();
   }
 
@@ -2541,8 +2641,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // reload, the page ID doesn't change, and UpdateSessionHistory gets the
     // previous URL and the current page ID, which would be wrong.
     if (navigation_state->request_params().page_id != -1 &&
-        navigation_state->request_params().page_id != render_view_->page_id_ &&
-        !navigation_state->request_committed()) {
+        navigation_state->request_params().page_id != render_view_->page_id_) {
       // This is a successful session history navigation!
       render_view_->page_id_ = navigation_state->request_params().page_id;
 
@@ -2769,7 +2868,7 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
   // ExtraData will get the new NavigationState.  Similarly, if we did not
   // initiate this navigation, then we need to take care to reset any pre-
   // existing navigation state to a content-initiated navigation state.
-  // DidCreateDataSource conveniently takes care of this for us.
+  // didCreateDataSource conveniently takes care of this for us.
   didCreateDataSource(frame, frame->dataSource());
 
   DocumentState* document_state =
@@ -3924,7 +4023,7 @@ void RenderFrameImpl::OnCommitNavigation(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  render_view_->pending_navigation_params_.reset(new NavigationParams(
+  pending_navigation_params_.reset(new NavigationParams(
       common_params, StartNavigationParams(), request_params));
 
   if (!common_params.base_url_for_data_url.is_empty() ||
@@ -4465,6 +4564,61 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
   return request.url();
 }
 
+void RenderFrameImpl::PopulateDocumentStateFromPending(
+    DocumentState* document_state) {
+  document_state->set_request_time(
+      pending_navigation_params_->request_params.request_time);
+
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
+
+  if (!pending_navigation_params_->common_params.url.SchemeIs(
+          url::kJavaScriptScheme) &&
+      pending_navigation_params_->common_params.navigation_type ==
+          FrameMsg_Navigate_Type::RESTORE) {
+    // We're doing a load of a page that was restored from the last session. By
+    // default this prefers the cache over loading (LOAD_PREFERRING_CACHE) which
+    // can result in stale data for pages that are set to expire. We explicitly
+    // override that by setting the policy here so that as necessary we load
+    // from the network.
+    //
+    // TODO(davidben): Remove this in favor of passing a cache policy to the
+    // loadHistoryItem call in OnNavigate. That requires not overloading
+    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
+    // policy based on load type, etc".
+    internal_data->set_cache_policy_override(
+        WebURLRequest::UseProtocolCachePolicy);
+  }
+
+  if (IsReload(pending_navigation_params_->common_params.navigation_type))
+    document_state->set_load_type(DocumentState::RELOAD);
+  else if (pending_navigation_params_->request_params.page_state.IsValid())
+    document_state->set_load_type(DocumentState::HISTORY_LOAD);
+  else
+    document_state->set_load_type(DocumentState::NORMAL_LOAD);
+
+  internal_data->set_is_overriding_user_agent(
+      pending_navigation_params_->request_params.is_overriding_user_agent);
+  internal_data->set_must_reset_scroll_and_scale_state(
+      pending_navigation_params_->common_params.navigation_type ==
+      FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+  document_state->set_can_load_local_resources(
+      pending_navigation_params_->request_params.can_load_local_resources);
+}
+
+NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
+  // A navigation resulting from loading a javascript URL should not be treated
+  // as a browser initiated event.  Instead, we want it to look as if the page
+  // initiated any load resulting from JS execution.
+  if (!pending_navigation_params_->common_params.url.SchemeIs(
+          url::kJavaScriptScheme)) {
+    return NavigationStateImpl::CreateBrowserInitiated(
+        pending_navigation_params_->common_params,
+        pending_navigation_params_->start_params,
+        pending_navigation_params_->request_params);
+  }
+  return NavigationStateImpl::CreateContentInitiated();
+}
 #if defined(OS_ANDROID)
 
 WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(

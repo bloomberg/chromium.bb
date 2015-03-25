@@ -73,8 +73,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
-  virtual void DidCreateDataSource(blink::WebLocalFrame* frame,
-                                   blink::WebDataSource* ds) {}
   virtual void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) {}
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}
