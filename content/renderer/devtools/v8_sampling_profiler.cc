@@ -9,15 +9,16 @@
 #define USE_SIGNALS
 #endif
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#endif
 #include "content/renderer/devtools/lock_free_circular_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "v8/include/v8.h"
@@ -31,10 +32,55 @@ namespace content {
 
 namespace {
 
-#if defined(OS_WIN)
-typedef base::win::ScopedHandle UniversalThreadHandle;
-#else
-typedef base::PlatformThreadHandle UniversalThreadHandle;
+class PlatformDataCommon {
+ public:
+  base::PlatformThreadId thread_id() { return thread_id_; }
+
+ protected:
+  PlatformDataCommon() : thread_id_(base::PlatformThread::CurrentId()) {}
+
+ private:
+  base::PlatformThreadId thread_id_;
+};
+
+#if defined(USE_SIGNALS)
+
+class PlatformData : public PlatformDataCommon {
+ public:
+  PlatformData() : vm_tid_(pthread_self()) {}
+  pthread_t vm_tid() const { return vm_tid_; }
+
+ private:
+  pthread_t vm_tid_;
+};
+
+#elif defined(OS_WIN)
+
+class PlatformData : public PlatformDataCommon {
+ public:
+  // Get a handle to the calling thread. This is the thread that we are
+  // going to profile. We need to make a copy of the handle because we are
+  // going to use it in the sampler thread. Using GetThreadHandle() will
+  // not work in this case. We're using OpenThread because DuplicateHandle
+  // doesn't work in Chrome's sandbox.
+  PlatformData()
+      : thread_handle_(::OpenThread(THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME |
+                                        THREAD_QUERY_INFORMATION,
+                                    false,
+                                    ::GetCurrentThreadId())) {}
+
+  ~PlatformData() {
+    if (thread_handle_ == NULL)
+      return;
+    ::CloseHandle(thread_handle_);
+    thread_handle_ = NULL;
+  }
+
+  HANDLE thread_handle() { return thread_handle_; }
+
+ private:
+  HANDLE thread_handle_;
+};
 #endif
 
 std::string PtrToString(const void* value) {
@@ -145,15 +191,13 @@ class Sampler {
   static void HandleJitCodeEvent(const v8::JitCodeEvent* event);
   static scoped_refptr<ConvertableToTraceFormat> JitCodeEventToTraceFormat(
       const v8::JitCodeEvent* event);
-  static UniversalThreadHandle GetCurrentThreadHandle();
 
   void InjectPendingEvents();
 
   static const unsigned kNumberOfSamples = 10;
   typedef LockFreeCircularQueue<SampleRecord, kNumberOfSamples> SamplingQueue;
 
-  base::PlatformThreadId thread_id_;
-  UniversalThreadHandle thread_handle_;
+  PlatformData platform_data_;
   Isolate* isolate_;
   scoped_ptr<SamplingQueue> samples_data_;
   base::subtle::Atomic32 code_added_events_count_;
@@ -169,9 +213,7 @@ base::LazyInstance<base::ThreadLocalPointer<Sampler>>::Leaky
     Sampler::tls_instance_ = LAZY_INSTANCE_INITIALIZER;
 
 Sampler::Sampler()
-    : thread_id_(base::PlatformThread::CurrentId()),
-      thread_handle_(Sampler::GetCurrentThreadHandle()),
-      isolate_(Isolate::GetCurrent()),
+    : isolate_(Isolate::GetCurrent()),
       code_added_events_count_(0),
       samples_count_(0),
       code_added_events_to_collect_for_test_(0),
@@ -189,17 +231,6 @@ Sampler::~Sampler() {
 // static
 scoped_ptr<Sampler> Sampler::CreateForCurrentThread() {
   return scoped_ptr<Sampler>(new Sampler());
-}
-
-// static
-UniversalThreadHandle Sampler::GetCurrentThreadHandle() {
-#ifdef OS_WIN
-  return base::win::ScopedHandle(::OpenThread(
-      THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
-      false, base::PlatformThread::CurrentId()));
-#else
-  return base::PlatformThread::CurrentHandle();
-#endif
 }
 
 void Sampler::Start() {
@@ -223,12 +254,12 @@ void Sampler::Stop() {
 void Sampler::Sample() {
 #if defined(OS_WIN)
   const DWORD kSuspendFailed = static_cast<DWORD>(-1);
-  if (::SuspendThread(thread_handle_.Get()) == kSuspendFailed)
+  if (::SuspendThread(platform_data_.thread_handle()) == kSuspendFailed)
     return;
   CONTEXT context;
   memset(&context, 0, sizeof(context));
   context.ContextFlags = CONTEXT_FULL;
-  if (::GetThreadContext(thread_handle_.Get(), &context) != 0) {
+  if (::GetThreadContext(platform_data_.thread_handle(), &context) != 0) {
     v8::RegisterState state;
     state.pc = reinterpret_cast<void*>(context.REG_64_32(Rip, Eip));
     state.sp = reinterpret_cast<void*>(context.REG_64_32(Rsp, Esp));
@@ -237,9 +268,9 @@ void Sampler::Sample() {
     // We can just collect and fire trace event right away.
     DoSample(state);
   }
-  ::ResumeThread(thread_handle_.Get());
+  ::ResumeThread(platform_data_.thread_handle());
 #elif defined(USE_SIGNALS)
-  int error = pthread_kill(thread_handle_.platform_handle(), SIGPROF);
+  int error = pthread_kill(platform_data_.vm_tid(), SIGPROF);
   if (error) {
     LOG(ERROR) << "pthread_kill failed with error " << error << " "
                << strerror(error);
@@ -263,7 +294,8 @@ void Sampler::InjectPendingEvents() {
   SampleRecord* record = samples_data_->Peek();
   while (record) {
     TRACE_EVENT_SAMPLE_WITH_TID_AND_TIMESTAMP1(
-        TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"), "V8Sample", thread_id_,
+        TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"), "V8Sample",
+        platform_data_.thread_id(),
         (record->timestamp() - base::TimeTicks()).InMicroseconds(), "data",
         record->ToTraceFormat());
     samples_data_->Remove();
