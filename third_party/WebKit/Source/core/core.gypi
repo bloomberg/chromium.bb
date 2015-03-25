@@ -845,7 +845,6 @@
             'layout/svg/line/SVGInlineTextBox.h',
             'layout/svg/line/SVGRootInlineBox.cpp',
             'layout/svg/line/SVGRootInlineBox.h',
-            'rendering/RenderSelectionInfo.h',
         ],
         'webcore_non_rendering_files': [
             'Init.cpp',
@@ -2993,7 +2992,6 @@
             'html/parser/TextDocumentParser.h',
             'html/parser/TextResourceDecoder.cpp',
             'html/parser/TextResourceDecoder.h',
-            'html/parser/ThreadedDataReceiver.h',
             'html/parser/XSSAuditor.cpp',
             'html/parser/XSSAuditor.h',
             'html/parser/XSSAuditorDelegate.cpp',

@@ -125,6 +125,7 @@
       'Theme.cpp',
       'Theme.h',
       'ThemeTypes.h',
+      'ThreadedDataReceiver.h',
       'ThreadTimers.cpp',
       'ThreadTimers.h',
       'Timer.cpp',
