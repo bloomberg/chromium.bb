@@ -145,6 +145,7 @@ class SingleThreadTaskGraphRunner
  public:
   SingleThreadTaskGraphRunner() : worker_thread_(this, "CompositorWorker") {
     worker_thread_.Start();
+    worker_thread_.SetThreadPriority(base::kThreadPriority_Background);
   }
 
   ~SingleThreadTaskGraphRunner() override {
