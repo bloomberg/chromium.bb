@@ -349,8 +349,11 @@ class TextureUploadPerfTest : public testing::Test {
     UploadTexture(texture_id, size, pixels, format, subimage);
     tex_timers.Record();
 
-    MeasurementTimers draw_timers(gpu_timing_client_.get());
+    MeasurementTimers first_draw_timers(gpu_timing_client_.get());
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    first_draw_timers.Record();
 
+    MeasurementTimers draw_timers(gpu_timing_client_.get());
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     draw_timers.Record();
 
@@ -374,6 +377,8 @@ class TextureUploadPerfTest : public testing::Test {
     if (!gpu_timer_errors) {
       measurements.push_back(tex_timers.GetAsMeasurement(
           subimage ? "texsubimage2d" : "teximage2d"));
+      measurements.push_back(
+          first_draw_timers.GetAsMeasurement("firstdrawarrays"));
       measurements.push_back(draw_timers.GetAsMeasurement("drawarrays"));
       measurements.push_back(finish_timers.GetAsMeasurement("finish"));
     }
