@@ -47,7 +47,7 @@ SVGPaintContext::~SVGPaintContext()
 
         LayoutObjectDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
         if (!recorder.canUseCachedDrawing())
-            SVGFilterPainter(*m_filter).finishEffect(m_object, m_originalPaintInfo->context);
+            SVGFilterPainter(*m_filter).finishEffect(*m_object, m_originalPaintInfo->context);
 
         // Reset the paint info after the filter effect has been completed.
         // This isn't strictly required (e.g., m_paintInfo.rect is not used
@@ -160,7 +160,7 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
             return false;
     } else if (LayoutSVGResourceFilter* filter = resources->filter()) {
         m_filter = filter;
-        GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(m_object, m_paintInfo.context);
+        GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(*m_object, m_paintInfo.context);
         if (!filterContext)
             return false;
 

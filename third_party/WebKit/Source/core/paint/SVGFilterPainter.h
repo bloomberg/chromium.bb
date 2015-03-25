@@ -17,8 +17,8 @@ public:
 
     // Returns the context that should be used to paint the filter contents, or
     // null if the content should not be recorded.
-    GraphicsContext* prepareEffect(LayoutObject*, GraphicsContext*);
-    void finishEffect(LayoutObject*, GraphicsContext*);
+    GraphicsContext* prepareEffect(LayoutObject&, GraphicsContext*);
+    void finishEffect(LayoutObject&, GraphicsContext*);
 
 private:
     LayoutSVGResourceFilter& m_filter;

@@ -120,14 +120,13 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject* object, GraphicsContext* context)
+GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, GraphicsContext* context)
 {
-    ASSERT(object);
     ASSERT(context);
 
     m_filter.clearInvalidationMask();
 
-    if (FilterData* filterData = m_filter.getFilterDataForLayoutObject(object)) {
+    if (FilterData* filterData = m_filter.getFilterDataForLayoutObject(&object)) {
         // If the filterData already exists we do not need to record the content
         // to be filtered. This can occur if the content was previously recorded
         // or we are in a cycle.
@@ -138,7 +137,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject* object, GraphicsC
     }
 
     OwnPtrWillBeRawPtr<FilterData> filterData = FilterData::create();
-    FloatRect targetBoundingBox = object->objectBoundingBox();
+    FloatRect targetBoundingBox = object.objectBoundingBox();
 
     SVGFilterElement* filterElement = toSVGFilterElement(m_filter.element());
     filterData->boundaries = SVGLengthContext::resolveRectangle<SVGFilterElement>(filterElement, filterElement->filterUnits()->currentValue()->enumValue(), targetBoundingBox);
@@ -146,7 +145,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject* object, GraphicsC
         return nullptr;
 
     // Create the SVGFilter object.
-    FloatRect drawingRegion = object->strokeBoundingBox();
+    FloatRect drawingRegion = object.strokeBoundingBox();
     drawingRegion.intersect(filterData->boundaries);
     bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
     filterData->filter = SVGFilter::create(enclosingIntRect(drawingRegion), targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
@@ -163,16 +162,15 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject* object, GraphicsC
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
     FilterData* data = filterData.get();
-    m_filter.setFilterDataForLayoutObject(object, filterData.release());
+    m_filter.setFilterDataForLayoutObject(&object, filterData.release());
     return beginRecordingContent(context, data);
 }
 
-void SVGFilterPainter::finishEffect(LayoutObject* object, GraphicsContext* context)
+void SVGFilterPainter::finishEffect(LayoutObject& object, GraphicsContext* context)
 {
-    ASSERT(object);
     ASSERT(context);
 
-    FilterData* filterData = m_filter.getFilterDataForLayoutObject(object);
+    FilterData* filterData = m_filter.getFilterDataForLayoutObject(&object);
     if (!filterData)
         return;
 
