@@ -316,12 +316,7 @@ void EventHandler::clear()
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
 {
-    if (!nodeToBeRemoved.containsIncludingShadowDOM(m_clickNode.get()))
-        return;
-    if (nodeToBeRemoved.isInShadowTree()) {
-        // FIXME: m_clickNode shouldn't be a ShadowRoot nor an active insertion point.
-        m_clickNode = nodeToBeRemoved.parentOrShadowHostNode();
-    } else {
+    if (nodeToBeRemoved.containsIncludingShadowDOM(m_clickNode.get())) {
         // We don't dispatch click events if the mousedown node is removed
         // before a mouseup event. It is compatible with IE and Firefox.
         m_clickNode = nullptr;
