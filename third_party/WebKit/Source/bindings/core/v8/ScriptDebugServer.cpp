@@ -675,7 +675,7 @@ v8::Local<v8::Object> ScriptDebugServer::debuggerScriptLocal() const
 
 v8::Local<v8::String> ScriptDebugServer::v8InternalizedString(const char* str) const
 {
-    return v8::String::NewFromUtf8(m_isolate, str, v8::String::kInternalizedString);
+    return v8::String::NewFromUtf8(m_isolate, str, v8::NewStringType::kInternalized).ToLocalChecked();
 }
 
 v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Local<v8::Function> function)
@@ -714,7 +714,7 @@ v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Local<v8::Obje
 v8::Local<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue)
 {
     if (m_debuggerScript.IsEmpty())
-        return m_isolate->ThrowException(v8::String::NewFromUtf8(m_isolate, "Debugging is not enabled."));
+        return m_isolate->ThrowException(v8::String::NewFromUtf8(m_isolate, "Debugging is not enabled.", v8::NewStringType::kNormal).ToLocalChecked());
 
     v8::Local<v8::Value> argv[] = {
         functionValue,
