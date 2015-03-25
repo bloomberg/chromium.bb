@@ -55,6 +55,7 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 - (id)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge;
 
 - (void)setProgressOverlayText:(const base::string16&)text;
+- (void)setRetriableErrorMessage:(const base::string16&)text;
 
 @end
 
