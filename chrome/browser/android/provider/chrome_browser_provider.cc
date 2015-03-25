@@ -216,7 +216,7 @@ class AddBookmarkTask : public BookmarkModelTask {
                             const bool is_folder,
                             const int64 parent_id,
                             int64* result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
     GURL gurl = ParseAndMaybeAppendScheme(url, kDefaultUrlScheme);
 
@@ -259,7 +259,7 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model, const int64 id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node && node->parent()) {
       const BookmarkNode* parent_node = node->parent();
@@ -298,7 +298,7 @@ class RemoveAllUserBookmarksTask : public BookmarkModelObserverTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     LOG(ERROR) << "begin model->RemoveAllUserBookmarks";
     model->RemoveAllUserBookmarks();
     LOG(ERROR) << "after model->RemoveAllUserBookmarks";
@@ -333,7 +333,7 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
                             const base::string16& title,
                             const base::string16& url,
                             const int64 parent_id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node) {
       if (node->GetTitle() != title)
@@ -388,7 +388,7 @@ class BookmarkNodeExistsTask : public BookmarkModelTask {
   static void RunOnUIThread(BookmarkModel* model,
                             const int64 id,
                             bool* result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
     *result = bookmarks::GetBookmarkNodeByID(model, id) != NULL;
   }
@@ -414,7 +414,7 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
   static void RunOnUIThread(BookmarkModel* model,
                             const int64 id,
                             bool *result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     const BookmarkNode* mobile_node = model->mobile_node();
@@ -448,7 +448,7 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
                             const base::string16& title,
                             const int64 parent_id,
                             int64* result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
 
     // Invalid ids are assumed to refer to the Mobile Bookmarks folder.
@@ -496,7 +496,7 @@ class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
   static void RunOnUIThread(ChromeBookmarkClient* client,
                             BookmarkModel* model,
                             ScopedJavaGlobalRef<jobject>* jroot) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* root = model->root_node();
     if (!root || !root->is_folder())
       return;
@@ -562,7 +562,7 @@ class GetBookmarkNodeTask : public BookmarkModelTask {
                             bool get_parent,
                             bool get_children,
                             ScopedJavaGlobalRef<jobject>* jnode) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (!node || !jnode)
       return;
@@ -617,7 +617,7 @@ class GetMobileBookmarksNodeTask : public BookmarkModelTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model, const BookmarkNode** result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
     *result = model->mobile_node();
   }
@@ -896,7 +896,7 @@ class SearchTermTask : public HistoryProviderTask {
   // Fill SearchRow's keyword_id and url fields according the given
   // search_term. Return true if succeeded.
   void BuildSearchRow(history::SearchRow* row) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     TemplateURLService* template_service =
         TemplateURLServiceFactory::GetForProfile(profile_);
@@ -940,7 +940,7 @@ class AddSearchTermFromAPITask : public SearchTermTask {
 
  private:
   void MakeRequestOnUIThread(const history::SearchRow& row) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     history::SearchRow internal_row = row;
     BuildSearchRow(&internal_row);
     service()->InsertSearchTerm(
@@ -1022,7 +1022,7 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
       const history::SearchRow& row,
       const std::string& selection,
       const std::vector<base::string16>& selection_args) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     history::SearchRow internal_row = row;
     BuildSearchRow(&internal_row);
     service()->UpdateSearchTerms(
@@ -1165,7 +1165,7 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
     : weak_java_provider_(env, obj),
       history_service_observer_(this),
       handling_extensive_changes_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   top_sites_ = TopSitesFactory::GetForProfile(profile_);

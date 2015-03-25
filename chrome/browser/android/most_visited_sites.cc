@@ -102,7 +102,7 @@ SkBitmap ExtractThumbnail(const base::RefCountedMemory& image_data) {
 
 void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
                             const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   top_sites->AddForcedURL(url, base::Time::Now());
 }
 
@@ -244,7 +244,7 @@ void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
                                        jobject obj,
                                        jstring url,
                                        jobject j_callback_obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ScopedJavaGlobalRef<jobject>* j_callback =
       new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, j_callback_obj);
@@ -448,7 +448,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 void MostVisitedSites::OnObtainedThumbnail(
     ScopedJavaGlobalRef<jobject>* bitmap,
     ScopedJavaGlobalRef<jobject>* j_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   if (bitmap->obj()) {
     num_local_thumbs_++;
@@ -474,7 +474,7 @@ void MostVisitedSites::OnSuggestionsThumbnailAvailable(
     ScopedJavaGlobalRef<jobject>* j_callback,
     const GURL& url,
     const SkBitmap* bitmap) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaGlobalRef<jobject>* j_bitmap_ref =

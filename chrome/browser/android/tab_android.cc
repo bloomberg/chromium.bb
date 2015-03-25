@@ -802,7 +802,7 @@ class ChromeInterceptNavigationDelegate : public InterceptNavigationDelegate {
 
 void TabAndroid::SetInterceptNavigationDelegate(JNIEnv* env, jobject obj,
                                                jobject delegate) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InterceptNavigationDelegate::Associate(
       web_contents(),
       make_scoped_ptr(new ChromeInterceptNavigationDelegate(env, delegate)));

@@ -97,7 +97,7 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env,
       bookmark_model_(NULL),
       client_(NULL),
       partner_bookmarks_shim_(NULL) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   client_ = ChromeBookmarkClientFactory::GetForProfile(profile_);
@@ -603,7 +603,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::AddFolder(JNIEnv* env,
 void BookmarksBridge::DeleteBookmark(JNIEnv* env,
                                      jobject obj,
                                      jobject j_bookmark_id_obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);
@@ -627,7 +627,7 @@ void BookmarksBridge::MoveBookmark(JNIEnv* env,
                                    jobject j_bookmark_id_obj,
                                    jobject j_parent_id_obj,
                                    jint index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);
@@ -710,7 +710,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::AddBookmark(
 }
 
 void BookmarksBridge::Undo(JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   BookmarkUndoService* undo_service =
       BookmarkUndoServiceFactory::GetForProfile(profile_);
@@ -719,7 +719,7 @@ void BookmarksBridge::Undo(JNIEnv* env, jobject obj) {
 }
 
 void BookmarksBridge::StartGroupingUndos(JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   DCHECK(!grouped_bookmark_actions_.get()); // shouldn't have started already
   grouped_bookmark_actions_.reset(
@@ -727,7 +727,7 @@ void BookmarksBridge::StartGroupingUndos(JNIEnv* env, jobject obj) {
 }
 
 void BookmarksBridge::EndGroupingUndos(JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   DCHECK(grouped_bookmark_actions_.get()); // should only call after start
   grouped_bookmark_actions_.reset();

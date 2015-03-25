@@ -34,7 +34,7 @@ void SetFaviconTask(Profile* profile,
                     const GURL& page_url, const GURL& icon_url,
                     const std::vector<unsigned char>& image_data,
                     favicon_base::IconType icon_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<base::RefCountedMemory> bitmap_data(
       new base::RefCountedBytes(image_data));
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
@@ -115,7 +115,7 @@ PartnerBookmarksReader::~PartnerBookmarksReader() {}
 
 void PartnerBookmarksReader::PartnerBookmarksCreationComplete(JNIEnv*,
                                                               jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
       wip_partner_bookmarks_root_.release());
   wip_next_available_id_ = 0;
@@ -126,7 +126,7 @@ void PartnerBookmarksReader::Destroy(JNIEnv* env, jobject obj) {
 }
 
 void PartnerBookmarksReader::Reset(JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   wip_partner_bookmarks_root_.reset();
   wip_next_available_id_ = 0;
 }

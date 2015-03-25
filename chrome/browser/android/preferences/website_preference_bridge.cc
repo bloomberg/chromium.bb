@@ -567,7 +567,7 @@ class StorageDataDeleter :
   friend class base::RefCountedThreadSafe<StorageDataDeleter>;
 
   void OnHostDataDeleted(storage::QuotaStatusCode) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     quota_manager_->ResetUsageTracker(type_);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
