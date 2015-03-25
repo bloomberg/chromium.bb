@@ -71,6 +71,9 @@ public:
 
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;
 
+private:
+    static PassRefPtr<DOMFloat32Array> createFloat32ArrayOrNull(size_t length);
+
 protected:
     AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
     explicit AudioBuffer(AudioBus*);

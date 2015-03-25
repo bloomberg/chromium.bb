@@ -6,13 +6,14 @@
 #define DOMArrayBufferView_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class DOMArrayBufferView : public RefCounted<DOMArrayBufferView>, public ScriptWrappable {
+class CORE_EXPORT DOMArrayBufferView : public RefCounted<DOMArrayBufferView>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WTF::ArrayBufferView::ViewType ViewType;

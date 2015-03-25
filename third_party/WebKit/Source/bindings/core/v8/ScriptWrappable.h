@@ -216,6 +216,23 @@ public: \
 private: \
     typedef void end_of_define_wrappertypeinfo_not_reached_t
 
+
+// Declares 'wrapperTypeInfo' method without definition.
+//
+// This macro is used for template classes. e.g. DOMTypedArray<>.
+// To export such a template class X, we need to instantiate X with EXPORT_API,
+// i.e. "extern template class EXPORT_API X;"
+// However, once we instantiate X, we cannot specialize X after
+// the instantiation. i.e. we will see "error: explicit specialization of ...
+// after instantiation". So we cannot define X's s_wrapperTypeInfo in generated
+// code by using specialization. Instead, we need to implement wrapperTypeInfo
+// in X's cpp code, and instantiate X, i.e. "template class X;".
+#define DECLARE_WRAPPERTYPEINFO() \
+public: \
+    virtual const WrapperTypeInfo* wrapperTypeInfo() const override; \
+private: \
+    typedef void end_of_define_wrappertypeinfo_not_reached_t
+
 } // namespace blink
 
 #endif // ScriptWrappable_h

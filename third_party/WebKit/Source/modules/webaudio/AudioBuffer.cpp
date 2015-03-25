@@ -38,6 +38,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/AudioUtilities.h"
+#include "wtf/Float32Array.h"
 
 namespace blink {
 
@@ -133,6 +134,14 @@ bool AudioBuffer::createdSuccessfully(unsigned desiredNumberOfChannels) const
     return numberOfChannels() == desiredNumberOfChannels;
 }
 
+PassRefPtr<DOMFloat32Array> AudioBuffer::createFloat32ArrayOrNull(size_t length)
+{
+    RefPtr<WTF::Float32Array> bufferView = WTF::Float32Array::createOrNull(length);
+    if (!bufferView)
+        return nullptr;
+    return DOMFloat32Array::create(bufferView.release());
+}
+
 AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
     : m_sampleRate(sampleRate)
     , m_length(numberOfFrames)
@@ -140,7 +149,7 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float
     m_channels.reserveCapacity(numberOfChannels);
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
-        RefPtr<DOMFloat32Array> channelDataArray = DOMFloat32Array::createOrNull(m_length);
+        RefPtr<DOMFloat32Array> channelDataArray = createFloat32ArrayOrNull(m_length);
         // If the channel data array could not be created, just return. The caller will need to
         // check that the desired number of channels were created.
         if (!channelDataArray) {
@@ -160,7 +169,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     unsigned numberOfChannels = bus->numberOfChannels();
     m_channels.reserveCapacity(numberOfChannels);
     for (unsigned i = 0; i < numberOfChannels; ++i) {
-        RefPtr<DOMFloat32Array> channelDataArray = DOMFloat32Array::createOrNull(m_length);
+        RefPtr<DOMFloat32Array> channelDataArray = createFloat32ArrayOrNull(m_length);
         // If the channel data array could not be created, just return. The caller will need to
         // check that the desired number of channels were created.
         if (!channelDataArray)

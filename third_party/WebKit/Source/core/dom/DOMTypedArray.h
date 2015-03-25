@@ -6,6 +6,7 @@
 #define DOMTypedArray_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "wtf/Float32Array.h"
 #include "wtf/Float64Array.h"
@@ -22,8 +23,8 @@ namespace blink {
 
 template<typename WTFTypedArray, typename V8TypedArray>
 class DOMTypedArray final : public DOMArrayBufferView {
-    DEFINE_WRAPPERTYPEINFO();
     typedef DOMTypedArray<WTFTypedArray, V8TypedArray> ThisType;
+    DECLARE_WRAPPERTYPEINFO();
 public:
     typedef typename WTFTypedArray::ValueType ValueType;
 
@@ -48,14 +49,6 @@ public:
         RefPtr<DOMArrayBuffer> buffer = prpBuffer;
         RefPtr<WTFTypedArray> bufferView = WTFTypedArray::create(buffer->buffer(), byteOffset, length);
         return adoptRef(new ThisType(bufferView.release(), buffer.release()));
-    }
-
-    static PassRefPtr<ThisType> createOrNull(unsigned length)
-    {
-        RefPtr<WTFTypedArray> bufferView = WTFTypedArray::createOrNull(length);
-        if (!bufferView)
-            return nullptr;
-        return create(bufferView.release());
     }
 
     const WTFTypedArray* view() const { return static_cast<const WTFTypedArray*>(DOMArrayBufferView::view()); }
@@ -84,6 +77,26 @@ private:
     DOMTypedArray(PassRefPtr<WTFTypedArray> bufferView, PassRefPtr<DOMArrayBuffer> domArrayBuffer)
         : DOMArrayBufferView(bufferView, domArrayBuffer) { }
 };
+
+// Should not use CORE_EXPORT when compiling core with msvc, because
+// '__declspec(dllexport)' doesn't work with 'extern' (warning C4910).
+// c.f. https://msdn.microsoft.com/en-us/library/bb531392(v=vs.90).aspx
+#if COMPILER(MSVC) && defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
+#define DOMTYPEDARRAY_EXPORT
+#else
+#define DOMTYPEDARRAY_EXPORT CORE_EXPORT
+#endif
+
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
+extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
+#undef DOMTYPEDARRAY_EXPORT
 
 typedef DOMTypedArray<WTF::Int8Array, v8::Int8Array> DOMInt8Array;
 typedef DOMTypedArray<WTF::Int16Array, v8::Int16Array> DOMInt16Array;

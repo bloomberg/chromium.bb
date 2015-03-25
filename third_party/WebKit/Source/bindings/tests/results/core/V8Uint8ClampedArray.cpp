@@ -26,8 +26,6 @@ const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = { gin::kEmbedderBli
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestUint8ClampedArray.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-template<>
-const WrapperTypeInfo& TestUint8ClampedArray::s_wrapperTypeInfo = V8Uint8ClampedArray::wrapperTypeInfo;
 
 bool V8Uint8ClampedArray::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
