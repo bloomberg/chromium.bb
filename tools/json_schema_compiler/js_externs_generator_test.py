@@ -34,9 +34,14 @@ namespace fakeApi {
     long num;
     boolean b;
     Greek letter;
+    Greek? optionalLetter;
     long[] arr;
+    Bar[]? optionalObjArr;
+    Greek[] enumArr;
+    any[] anythingGoes;
     Bar obj;
     long? maybe;
+    (DOMString or Greek or long[]) choice;
   };
 
   callback VoidCallback = void();
@@ -83,10 +88,15 @@ var Bar;
  *   str: string,
  *   num: number,
  *   b: boolean,
- *   letter: chrome.fakeApi.Greek,
- *   arr: Array,
+ *   letter: !chrome.fakeApi.Greek,
+ *   optionalLetter: (!chrome.fakeApi.Greek|undefined),
+ *   arr: !Array<number>,
+ *   optionalObjArr: (!Array<Bar>|undefined),
+ *   enumArr: !Array<!chrome.fakeApi.Greek>,
+ *   anythingGoes: !Array<*>,
  *   obj: Bar,
- *   maybe: (number|undefined)
+ *   maybe: (number|undefined),
+ *   choice: (string|!chrome.fakeApi.Greek|!Array<number>)
  * }}
  */
 var Baz;
@@ -102,12 +112,13 @@ chrome.fakeApi.doSomething = function(baz, callback) {};
 
 class JsExternGeneratorTest(unittest.TestCase):
   def testBasic(self):
+    self.maxDiff = None # Lets us see the full diff when inequal.
     filename = 'fake_api.idl'
     api_def = idl_schema.Process(fake_idl, filename)
     m = model.Model()
     namespace = m.AddNamespace(api_def[0], filename)
-    self.assertEquals(expected_output,
-                      JsExternsGenerator().Generate(namespace).Render())
+    self.assertMultiLineEqual(expected_output,
+                              JsExternsGenerator().Generate(namespace).Render())
 
 
 if __name__ == '__main__':

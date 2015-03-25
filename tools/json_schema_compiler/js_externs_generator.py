@@ -180,14 +180,19 @@ class _Generator(object):
     elif js_type.property_type is PropertyType.OBJECT:
       return 'Object'
     elif js_type.property_type is PropertyType.ARRAY:
-      return 'Array'
+      return '!Array<%s>' % self._TypeToJsType(js_type.item_type)
     elif js_type.property_type is PropertyType.REF:
       ref_type = js_type.ref_type
       # Enums are defined as chrome.fooAPI.MyEnum, but types are defined simply
       # as MyType.
       if self._namespace.types[ref_type].property_type is PropertyType.ENUM:
-        ref_type = 'chrome.%s.%s' % (self._namespace.name, ref_type)
+        ref_type = '!chrome.%s.%s' % (self._namespace.name, ref_type)
       return ref_type
+    elif js_type.property_type is PropertyType.CHOICES:
+      return '(%s)' % '|'.join(
+          [self._TypeToJsType(choice) for choice in js_type.choices])
+    elif js_type.property_type is PropertyType.ANY:
+      return '*'
     elif js_type.property_type.is_fundamental:
       return js_type.property_type.name
     else:
