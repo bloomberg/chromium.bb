@@ -3486,28 +3486,19 @@ nacl_env.AddMethod(RawSyscallObjects)
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
 nacl_irt_env.ClearBits('nacl_clang')
-nacl_irt_env.ClearBits('pnacl_generate_pexe')
-nacl_irt_env.ClearBits('use_sandboxed_translator')
-
 # The choice of toolchain used to build the IRT does not depend on the toolchain
-# used to build user/test code. PNaCl is used on mips because that's currently
-# the only compiler for mips. nacl-clang is used on x86.
-if nacl_irt_env.Bit('build_mips32'):
+# used to build user/test code. The PNaCl toolchain is used on x86, except on
+# Windows (because pnacl-clang doesn't run on Windows XP. If we stop supporting
+# building on XP, we can remove this exception).  See
+# https://code.google.com/p/nativeclient/issues/detail?id=3936
+if (nacl_irt_env.Bit('build_mips32') or nacl_irt_env.Bit('build_x86_64') or
+    (nacl_irt_env.Bit('build_x86_32') and
+     not nacl_irt_env.Bit('host_windows'))):
   nacl_irt_env.SetBits('bitcode')
 else:
   nacl_irt_env.ClearBits('bitcode')
-if nacl_irt_env.Bit('build_x86_64') or nacl_irt_env.Bit('build_x86_32'):
-  nacl_irt_env.SetBits('nacl_clang')
-  # The IRT must be built using LLVM's assembler on x86-64 to preserve sandbox
-  # base address hiding (a security hardening mechanism).
-  # It's also used on x86-32 for consistency.
-  # See https://code.google.com/p/nativeclient/issues/detail?id=1235
-  nacl_irt_env.Append(CCFLAGS=['-integrated-as'])
-  if nacl_irt_env.Bit('build_x86_32'):
-    # The x86-32 IRT needs to be callable with an under-aligned stack.
-    # See https://code.google.com/p/nativeclient/issues/detail?id=3935
-    nacl_irt_env.Append(CCFLAGS=['-mstackrealign', '-mno-sse'])
-
+nacl_irt_env.ClearBits('pnacl_generate_pexe')
+nacl_irt_env.ClearBits('use_sandboxed_translator')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
 # we needed to do to get the destination directory reset.
@@ -3522,8 +3513,21 @@ FixWindowsAssembler(nacl_irt_env)
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 
 if nacl_irt_env.Bit('bitcode'):
-  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native'])
-  if nacl_irt_env.Bit('build_mips32'):
+  if nacl_irt_env.Bit('build_x86_64'):
+    nacl_irt_env.Append(CCFLAGS=['--target=x86_64-unknown-nacl'])
+    nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-unknown-nacl',
+                                   '--pnacl-allow-translate',
+                                   '-arch', 'x86-64'])
+  elif nacl_irt_env.Bit('build_x86_32'):
+    nacl_irt_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
+    # X86-32 IRT needs to be callable with an under-aligned stack, so we disable
+    # SSE instructions, which can fault on misaligned addresses: see
+    # https://code.google.com/p/nativeclient/issues/detail?id=3935
+    nacl_irt_env.Append(LINKFLAGS=['--target=i686-unknown-nacl',
+                                   '--pnacl-allow-translate',
+                                   '-arch', 'x86-32',
+                                   '-Wt,-mattr=-sse'])
+  elif nacl_irt_env.Bit('build_mips32'):
     # Disable the PNaCl IRT verifier since it will complain about
     # __executable_start symbol not being a valid external symbol.
     nacl_irt_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
@@ -3533,9 +3537,9 @@ if nacl_irt_env.Bit('bitcode'):
 # libc++) pthread.
 nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
                            replace('pnacl-clang++', 'pnacl-clang')))
-nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
-                           replace('nacl-clang++', 'nacl-clang')))
 
+if nacl_irt_env.Bit('bitcode'):
+  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native'])
 
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
