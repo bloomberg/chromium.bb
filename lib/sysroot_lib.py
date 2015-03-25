@@ -52,6 +52,8 @@ exec pkg-config "$@"
 
 _wrapper_dir = '/usr/local/bin'
 
+_CONFIGURATION_PATH = 'etc/make.conf.board_setup'
+
 
 def CreateWrapper(command_name, template, **kwargs):
   """Creates a wrapper from a given template.
@@ -178,3 +180,14 @@ def GenerateBrickConfig(sysroot, brick):
   header = ("# Created by cros_sysroot_utils from --brick=%s."
             % brick.brick_locator)
   return '\n'.join((header, _DictToKeyValue(config)))
+
+
+def WriteSysrootConfig(sysroot, config):
+  """Writes the configuration in |sysroot|.
+
+  Args:
+    sysroot: path to the sysroot.
+    config: configuration to use.
+  """
+  path = os.path.join(sysroot, _CONFIGURATION_PATH)
+  osutils.WriteFile(path, config, makedirs=True)

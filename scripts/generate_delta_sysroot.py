@@ -17,6 +17,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import sysroot_lib
 
 _CREATE_BATCH_CMD = ('rsync',)
 _CREATE_BATCH_EXCLUDE = ('--exclude=/tmp/', '--exclude=/var/cache/',
@@ -100,6 +101,10 @@ def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
   """
   osutils.SafeMakedirs(sysroot)
   if not unpack_only:
+    # Generate the sysroot configuration.
+    config = sysroot_lib.GenerateBoardConfiguration(sysroot, board)
+    sysroot_lib.SetSysrootConfig(sysroot, config)
+
     cros_build_lib.RunCommand(
         [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
          '--noconfigure', '--board_root', sysroot, '--board', board])
