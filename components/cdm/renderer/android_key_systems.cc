@@ -7,14 +7,17 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "components/cdm/common/cdm_messages_android.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
+#include "media/base/media_switches.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+using media::EmeRobustness;
 using media::KeySystemInfo;
 using media::SupportedCodecs;
 
@@ -39,24 +42,48 @@ static SupportedKeySystemResponse QueryKeySystemSupport(
 void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
   SupportedKeySystemResponse response = QueryKeySystemSupport(
       kWidevineKeySystem);
-  if (response.compositing_codecs != media::EME_CODEC_NONE) {
+
+  // When creating the WIDEVINE key system, BrowserCdmFactoryAndroid configures
+  // the CDM's security level based on the --mediadrm-enable-non-compositing
+  // flag (L1 if the flag is enabled, L3 otherwise). Therefore the supported
+  // codec/robustenss combinations depend on that flag.
+  // TODO(sandersd): For unprefixed, set the security level based on the
+  // requested robustness instead of the flag. http://crbug.com/467779
+  SupportedCodecs codecs = response.compositing_codecs;
+  EmeRobustness max_audio_robustness = EmeRobustness::SW_SECURE_CRYPTO;
+  EmeRobustness max_video_robustness = EmeRobustness::SW_SECURE_CRYPTO;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMediaDrmEnableNonCompositing)) {
+    codecs = response.non_compositing_codecs;
+    max_audio_robustness = EmeRobustness::HW_SECURE_CRYPTO;
+    max_video_robustness = EmeRobustness::HW_SECURE_ALL;
+  }
+  if (codecs != media::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
         WIDEVINE,
-        static_cast<SupportedCodecs>(response.compositing_codecs),
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
+        codecs,
+        max_audio_robustness,
+        max_video_robustness,
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
         media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
         media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
         concrete_key_systems);
   }
 
+  // For compatibility with the prefixed API, register a separate L1 key system.
+  // When creating the WIDEVINE_HR_NON_COMPOSITING key system,
+  // BrowserCdmFactoryAndroid does not configure the CDM's security level (that
+  // is, leaves it as L1); therefore only secure codecs are supported.
+  // TODO(ddorwin): Remove with unprefixed. http://crbug.com/249976
   if (response.non_compositing_codecs != media::EME_CODEC_NONE) {
-    // TODO(ddorwin): Remove with unprefixed. http://crbug.com/249976
     AddWidevineWithCodecs(
         WIDEVINE_HR_NON_COMPOSITING,
-        static_cast<SupportedCodecs>(response.non_compositing_codecs),
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
+        response.non_compositing_codecs,
+        EmeRobustness::HW_SECURE_CRYPTO,        // Max audio robustness.
+        EmeRobustness::HW_SECURE_ALL,           // Max video robustness.
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
         media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
         media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
         concrete_key_systems);
@@ -85,6 +112,8 @@ void AddAndroidPlatformKeySystems(
       if (response.compositing_codecs & media::EME_CODEC_MP4_ALL)
         info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
 #endif  // defined(USE_PROPRIETARY_CODECS)
+      info.max_audio_robustness = EmeRobustness::EMPTY;
+      info.max_video_robustness = EmeRobustness::EMPTY;
       // Assume the worst case (from a user point of view).
       info.persistent_license_support = media::EME_SESSION_TYPE_NOT_SUPPORTED;
       info.persistent_release_message_support =

@@ -35,13 +35,10 @@ struct MEDIA_EXPORT KeySystemInfo {
 
   std::string key_system;
 
-  // Specifies registered initialization data types supported by |key_system|.
   SupportedInitDataTypes supported_init_data_types;
-
-  // Specifies codecs supported by |key_system|.
   SupportedCodecs supported_codecs;
-
-  // Specifies session types and features supported by |key_system|.
+  EmeRobustness max_audio_robustness;
+  EmeRobustness max_video_robustness;
   EmeSessionTypeSupport persistent_license_support;
   EmeSessionTypeSupport persistent_release_message_support;
   EmeFeatureSupport persistent_state_support;

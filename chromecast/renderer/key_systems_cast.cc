@@ -22,9 +22,11 @@ void AddKeySystemWithCodecs(
     std::vector<::media::KeySystemInfo>* key_systems_info) {
   ::media::KeySystemInfo info;
   info.key_system = key_system_name;
+  info.supported_init_data_types = ::media::EME_INIT_DATA_TYPE_CENC;
   info.supported_codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
-  info.supported_init_data_types = ::media::EME_INIT_DATA_TYPE_CENC;
+  info.max_audio_robustness = ::media::EmeRobustness::EMPTY;
+  info.max_video_robustness = ::media::EmeRobustness::EMPTY;
   info.persistent_license_support = ::media::EME_SESSION_TYPE_NOT_SUPPORTED;
   info.persistent_release_message_support =
       ::media::EME_SESSION_TYPE_NOT_SUPPORTED;
@@ -39,8 +41,10 @@ void AddChromecastKeySystems(
   AddWidevineWithCodecs(
       cdm::WIDEVINE,
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1,
-      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
-      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
+      ::media::EmeRobustness::HW_SECURE_ALL,    // Max audio robustness.
+      ::media::EmeRobustness::HW_SECURE_ALL,    // Max video robustness.
+      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
+      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
       ::media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
       ::media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
       key_systems_info);

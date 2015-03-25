@@ -166,6 +166,8 @@ void TestMediaClient::AddUsesAesKeySystem(
   system.supported_codecs = EME_CODEC_WEBM_ALL;
   system.supported_codecs |= TEST_CODEC_FOO_ALL;
   system.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  system.max_audio_robustness = EmeRobustness::EMPTY;
+  system.max_video_robustness = EmeRobustness::EMPTY;
   system.persistent_license_support = EME_SESSION_TYPE_NOT_SUPPORTED;
   system.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
   system.persistent_state_support = EME_FEATURE_NOT_SUPPORTED;
@@ -181,6 +183,8 @@ void TestMediaClient::AddExternalKeySystem(
   ext.supported_codecs = EME_CODEC_WEBM_ALL;
   ext.supported_codecs |= TEST_CODEC_FOO_ALL;
   ext.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  ext.max_audio_robustness = EmeRobustness::EMPTY;
+  ext.max_video_robustness = EmeRobustness::EMPTY;
   ext.persistent_license_support = EME_SESSION_TYPE_SUPPORTED;
   ext.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
   ext.persistent_state_support = EME_FEATURE_ALWAYS_ENABLED;

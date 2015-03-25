@@ -55,30 +55,73 @@ enum EmeSessionTypeSupport {
   EME_SESSION_TYPE_INVALID,
   // The session type is not supported.
   EME_SESSION_TYPE_NOT_SUPPORTED,
-  // The session type is supported if the encrypted media permission is granted.
-  EME_SESSION_TYPE_SUPPORTED_WITH_PERMISSION,
+  // The session type is supported if a distinctive identifier is available.
+  EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER,
   // The session type is always supported.
   EME_SESSION_TYPE_SUPPORTED,
 };
 
+// Used to declare support for distinctive identifier and persistent state.
 enum EmeFeatureSupport {
   // Invalid default value.
   EME_FEATURE_INVALID,
   // Access to the feature is not supported at all.
   EME_FEATURE_NOT_SUPPORTED,
-  // Access to the feature may be requested if the encrypted media permission is
-  // granted.
-  EME_FEATURE_REQUESTABLE_WITH_PERMISSION,
+  // Access to the feature may be requested if a distinctive identifier is
+  // available. (This is the correct choice for declaring support for a
+  // requestable distinctive identifier.)
+  EME_FEATURE_REQUESTABLE_WITH_IDENTIFIER,
   // Access to the feature may be requested.
   EME_FEATURE_REQUESTABLE,
   // Access to the feature cannot be blocked.
   EME_FEATURE_ALWAYS_ENABLED,
 };
 
+// Used to query support for distinctive identifier and persistent state.
 enum EmeFeatureRequirement {
   EME_FEATURE_NOT_ALLOWED,
   EME_FEATURE_OPTIONAL,
   EME_FEATURE_REQUIRED,
+};
+
+enum class EmeMediaType {
+  AUDIO,
+  VIDEO,
+};
+
+// Robustness values understood by KeySystems.
+// Note: KeySystems expects this ordering (in GetRobustnessConfigRule()),
+// changes may be required there if this list changes.
+enum class EmeRobustness {
+  INVALID,
+  EMPTY,
+  SW_SECURE_CRYPTO,
+  SW_SECURE_DECODE,
+  HW_SECURE_CRYPTO,
+  HW_SECURE_DECODE,
+  HW_SECURE_ALL,
+};
+
+// Configuration rules indicate the configuration state required to support a
+// configuration option (note: a configuration option may be disallowing a
+// feature). Configuration rules are used to answer queries about distinctive
+// identifier, persistent state, and robustness requirements, as well as to
+// describe support for different session types.
+//
+// If in the future there are reasons to request user permission other than
+// access to a distinctive identifier, then additional rules should be added.
+// Rules are implemented in ConfigState and are otherwise opaque.
+enum class EmeConfigRule {
+  // The configuration option is not supported.
+  NOT_SUPPORTED,
+  // The configuration option is supported if a distinctive identifier is
+  // available.
+  IDENTIFIER_REQUIRED,
+  // The configuration option is supported, but the user experience may be
+  // improved if a distinctive identifier is available.
+  IDENTIFIER_RECOMMENDED,
+  // The configuration option is supported without conditions.
+  SUPPORTED,
 };
 
 }  // namespace media

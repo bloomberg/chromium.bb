@@ -34,7 +34,7 @@ scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
   }
 
   // TODO(xhwang/ddorwin): Pass the security level from key system.
-  // http://crbug.com/459400
+  // http://crbug.com/467779
   if (key_system == kWidevineKeySystem) {
     MediaDrmBridge::SecurityLevel security_level =
         MediaDrmBridge::SECURITY_LEVEL_3;

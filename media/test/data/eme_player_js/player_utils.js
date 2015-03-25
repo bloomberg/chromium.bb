@@ -85,8 +85,10 @@ PlayerUtils.registerEMEEventListeners = function(player) {
 
   this.registerDefaultEventListeners(player);
   Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
+  var persistentState = player.testConfig.sessionToLoad ? "required"
+                                                        : "optional";
   return navigator.requestMediaKeySystemAccess(
-      player.testConfig.keySystem, [{}])
+      player.testConfig.keySystem, [{persistentState: persistentState}])
       .then(function(access) { return access.createMediaKeys(); })
       .then(function(mediaKeys) {
         return player.video.setMediaKeys(mediaKeys);

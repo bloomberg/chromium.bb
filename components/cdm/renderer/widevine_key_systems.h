@@ -22,6 +22,8 @@ enum WidevineCdmType {
 void AddWidevineWithCodecs(
     WidevineCdmType widevine_cdm_type,
     media::SupportedCodecs supported_codecs,
+    media::EmeRobustness max_audio_robustness,
+    media::EmeRobustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
     media::EmeSessionTypeSupport persistent_release_message_support,
     media::EmeFeatureSupport persistent_state_support,

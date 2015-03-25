@@ -85,27 +85,32 @@ MEDIA_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
 
-// Returns whether |key_system| supports persistent-license sessions.
-MEDIA_EXPORT bool IsPersistentLicenseSessionSupported(
+// Returns the configuration rule for supporting a robustness requirement.
+// TODO(sandersd): Also take a list of codecs, as they may affect the result.
+MEDIA_EXPORT EmeConfigRule GetRobustnessConfigRule(
     const std::string& key_system,
-    bool is_permission_granted);
+    EmeMediaType media_type,
+    const std::string& requested_robustness);
 
-// Returns whether |key_system| supports persistent-release-message sessions.
-MEDIA_EXPORT bool IsPersistentReleaseMessageSessionSupported(
-    const std::string& key_system,
-    bool is_permission_granted);
+// Returns the configuration rule for supporting persistent-license sessions.
+MEDIA_EXPORT EmeConfigRule GetPersistentLicenseSessionConfigRule(
+    const std::string& key_system);
 
-// Returns whether |key_system| supports persistent state as requested.
-MEDIA_EXPORT bool IsPersistentStateRequirementSupported(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement,
-    bool is_permission_granted);
+// Returns the configuration rule for supporting persistent-release-message
+// sessions.
+MEDIA_EXPORT EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
+    const std::string& key_system);
 
-// Returns whether |key_system| supports distinctive identifiers as requested.
-MEDIA_EXPORT bool IsDistinctiveIdentifierRequirementSupported(
+// Returns the configuration rule for supporting a persistent state requirement.
+MEDIA_EXPORT EmeConfigRule GetPersistentStateConfigRule(
     const std::string& key_system,
-    EmeFeatureRequirement requirement,
-    bool is_permission_granted);
+    EmeFeatureRequirement requirement);
+
+// Returns the configuration rule for supporting a distinctive identifier
+// requirement.
+MEDIA_EXPORT EmeConfigRule GetDistinctiveIdentifierConfigRule(
+    const std::string& key_system,
+    EmeFeatureRequirement requirement);
 
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.

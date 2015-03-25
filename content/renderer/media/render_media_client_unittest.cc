@@ -27,6 +27,8 @@ class TestContentRendererClient : public ContentRendererClient {
     // TODO(sandersd): Was this supposed to be added to the list?
     media::KeySystemInfo key_system_info;
     key_system_info.key_system = "test.keysystem";
+    key_system_info.max_audio_robustness = media::EmeRobustness::EMPTY;
+    key_system_info.max_video_robustness = media::EmeRobustness::EMPTY;
     key_system_info.persistent_license_support =
         media::EME_SESSION_TYPE_NOT_SUPPORTED;
     key_system_info.persistent_release_message_support =
@@ -40,6 +42,8 @@ class TestContentRendererClient : public ContentRendererClient {
     if (is_extra_key_system_enabled_) {
       media::KeySystemInfo wv_key_system_info;
       wv_key_system_info.key_system = kWidevineKeySystem;
+      wv_key_system_info.max_audio_robustness = media::EmeRobustness::EMPTY;
+      wv_key_system_info.max_video_robustness = media::EmeRobustness::EMPTY;
       wv_key_system_info.persistent_license_support =
           media::EME_SESSION_TYPE_NOT_SUPPORTED;
       wv_key_system_info.persistent_release_message_support =

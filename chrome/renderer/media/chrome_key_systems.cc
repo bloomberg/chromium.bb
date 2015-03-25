@@ -75,22 +75,22 @@ static void AddExternalClearKey(
   KeySystemInfo info;
   info.key_system = kExternalClearKeyKeySystem;
 
-  info.supported_codecs = media::EME_CODEC_WEBM_ALL;
   info.supported_init_data_types =
       media::EME_INIT_DATA_TYPE_WEBM | media::EME_INIT_DATA_TYPE_KEYIDS;
+  info.supported_codecs = media::EME_CODEC_WEBM_ALL;
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_codecs |= media::EME_CODEC_MP4_ALL;
   info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
+  info.supported_codecs |= media::EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.max_audio_robustness = media::EmeRobustness::EMPTY;
+  info.max_video_robustness = media::EmeRobustness::EMPTY;
 
   // Persistent sessions are faked.
   info.persistent_license_support = media::EME_SESSION_TYPE_SUPPORTED;
   info.persistent_release_message_support =
       media::EME_SESSION_TYPE_NOT_SUPPORTED;
-  // TODO(sandersd): Using ALWAYS_ENABLED prevents "not-allowed" from
-  // succeeding. Change this to REQUESTABLE once the state can be blocked.
-  // http://crbug.com/457482
-  info.persistent_state_support = media::EME_FEATURE_ALWAYS_ENABLED;
+  info.persistent_state_support = media::EME_FEATURE_REQUESTABLE;
   info.distinctive_identifier_support = media::EME_FEATURE_NOT_SUPPORTED;
 
   info.pepper_type = kExternalClearKeyPepperType;
@@ -193,24 +193,21 @@ static void AddPepperBasedWidevine(
   cdm::AddWidevineWithCodecs(
       cdm::WIDEVINE, supported_codecs,
 #if defined(OS_CHROMEOS)
-      // Persistent licenses are supported if remote attestation succeeds.
-      media::EME_SESSION_TYPE_SUPPORTED_WITH_PERMISSION,
-      media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
-      // TODO(sandersd): Using ALWAYS_ENABLED prevents "not-allowed" from
-      // succeeding. Change this to REQUESTABLE once the state can be blocked.
-      // http://crbug.com/457482
-      media::EME_FEATURE_ALWAYS_ENABLED,  // Persistent state.
-      // A distinctive identifier will be available if remote attestation
-      // succeeds.
-      media::EME_FEATURE_REQUESTABLE_WITH_PERMISSION,
+      media::EmeRobustness::HW_SECURE_ALL,     // Maximum audio robustness.
+      media::EmeRobustness::HW_SECURE_ALL,     // Maximim video robustness.
+      // persistent-license.
+      media::EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER,
+      media::EME_SESSION_TYPE_NOT_SUPPORTED,   // persistent-release-message.
+      media::EME_FEATURE_REQUESTABLE,          // Persistent state.
+      // Distinctive identifier.
+      media::EME_FEATURE_REQUESTABLE_WITH_IDENTIFIER,
 #else   // (Desktop)
-      media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
-      media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
-      // TODO(sandersd): Using ALWAYS_ENABLED prevents "not-allowed" from
-      // succeeding. Change this to REQUESTABLE once the state can be blocked.
-      // http://crbug.com/457482
-      media::EME_FEATURE_ALWAYS_ENABLED,  // Persistent state.
-      media::EME_FEATURE_NOT_SUPPORTED,   // Distinctive identifier.
+      media::EmeRobustness::SW_SECURE_CRYPTO,  // Maximum audio robustness.
+      media::EmeRobustness::SW_SECURE_DECODE,  // Maximum video robustness.
+      media::EME_SESSION_TYPE_NOT_SUPPORTED,   // persistent-license.
+      media::EME_SESSION_TYPE_NOT_SUPPORTED,   // persistent-release-message.
+      media::EME_FEATURE_REQUESTABLE,          // Persistent state.
+      media::EME_FEATURE_NOT_SUPPORTED,        // Distinctive identifier.
 #endif  // defined(OS_CHROMEOS)
       concrete_key_systems);
 }
