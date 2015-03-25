@@ -79,6 +79,12 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
        SEARCH_ENGINE_GOOGLE);
 }
 
+// Returns whether icon NTP is enabled.
+bool IsIconNTPEnabled() {
+  return StartsWithASCII(base::FieldTrialList::FindFullName("IconNTP"),
+                         "Enabled", true);
+}
+
 // Returns whether we are in the Fast NTP experiment or not.
 bool IsLocalNTPFastEnabled() {
   return StartsWithASCII(base::FieldTrialList::FindFullName("LocalNTPFast"),
@@ -140,6 +146,7 @@ std::string GetConfigData(Profile* profile) {
   config_data.Set("translatedStrings",
                   GetTranslatedStrings(is_google).release());
   config_data.SetBoolean("isGooglePage", is_google);
+  config_data.SetBoolean("useIcons", IsIconNTPEnabled());
 
   // Serialize the dictionary.
   std::string js_text;
