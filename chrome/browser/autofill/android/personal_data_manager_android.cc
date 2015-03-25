@@ -11,12 +11,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autofill/options_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -339,13 +338,7 @@ static jboolean IsAutofillManaged(JNIEnv* env, jclass clazz) {
 
 // Returns whether the Wallet import feature is available.
 static jboolean IsWalletImportFeatureAvailable(JNIEnv* env, jclass clazz) {
-  // TODO(estade): what to do in the IsManaged case?
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
-  PersonalDataManager* pdm = PersonalDataManagerFactory::GetForProfile(
-      GetProfile());
-  return service && service->IsSyncEnabledAndLoggedIn() &&
-      pdm->IsExperimentalWalletIntegrationEnabled();
+  return WalletIntegrationAvailableForProfile(GetProfile());
 }
 
 // Returns whether the Wallet import feature is enabled.

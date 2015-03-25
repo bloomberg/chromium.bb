@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/options_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -375,10 +376,10 @@ void AutofillOptionsHandler::GetLocalizedValues(
           Profile::FromWebUI(web_ui()));
   if (service)
     observer_.Add(service);
-  localized_strings->SetBoolean(
-      "autofillWalletIntegrationAvailable",
-      service && service->IsSyncEnabledAndLoggedIn() &&
-          personal_data_->IsExperimentalWalletIntegrationEnabled());
+
+  localized_strings->SetBoolean("autofillWalletIntegrationAvailable",
+                                autofill::WalletIntegrationAvailableForProfile(
+                                    Profile::FromWebUI(web_ui())));
 }
 
 void AutofillOptionsHandler::InitializeHandler() {
@@ -443,12 +444,10 @@ void AutofillOptionsHandler::OnPersonalDataChanged() {
 }
 
 void AutofillOptionsHandler::OnStateChanged() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          Profile::FromWebUI(web_ui()));
   web_ui()->CallJavascriptFunction(
       "AutofillOptions.walletIntegrationAvailableStateChanged",
-      base::FundamentalValue(service && service->IsSyncEnabledAndLoggedIn()));
+      base::FundamentalValue(autofill::WalletIntegrationAvailableForProfile(
+          Profile::FromWebUI(web_ui()))));
 }
 
 void AutofillOptionsHandler::SetAddressOverlayStrings(

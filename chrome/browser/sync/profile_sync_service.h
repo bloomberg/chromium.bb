@@ -384,7 +384,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
   void GetDataTypeControllerStates(
-    sync_driver::DataTypeController::StateMap* state_map) const;
+      sync_driver::DataTypeController::StateMap* state_map) const;
 
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser();

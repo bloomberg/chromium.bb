@@ -192,6 +192,8 @@
       'browser/app_mode/app_mode_utils.h',
       'browser/autofill/android/personal_data_manager_android.cc',
       'browser/autofill/android/personal_data_manager_android.h',
+      'browser/autofill/options_util.cc',
+      'browser/autofill/options_util.h',
       'browser/autofill/personal_data_manager_factory.cc',
       'browser/autofill/personal_data_manager_factory.h',
       'browser/autofill/risk_util.cc',
