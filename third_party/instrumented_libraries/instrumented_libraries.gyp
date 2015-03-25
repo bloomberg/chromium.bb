@@ -6,10 +6,14 @@
   'variables': {
     'verbose_libraries_build%': 0,
     'instrumented_libraries_jobs%': 1,
+    'instrumented_libraries_cc%': '',
+    'instrumented_libraries_cxx%': '',
   },
 
   'libdir': 'lib',
   'ubuntu_release': '<!(lsb_release -cs)',
+  'clang_absolute_path': '<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang',
+  'clang++_absolute_path': '<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang++',
 
   'conditions': [
     ['asan==1', {
@@ -22,11 +26,19 @@
       'sanitizer_type': 'tsan',
     }],
     ['use_goma==1', {
-      'cc': '<(gomadir)/gomacc <!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang',
-      'cxx': '<(gomadir)/gomacc <!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang++',
+      'cc': '<(gomadir)/gomacc <(_clang_absolute_path)',
+      'cxx': '<(gomadir)/gomacc <(_clang++_absolute_path)',
     }, {
-      'cc': '<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang',
-      'cxx': '<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang++',
+      'cc': '<(clang_absolute_path)',
+      'cxx': '<(clang++_absolute_path)',
+    }],
+    # When building with a custom clang, CC/CXX must be overridden via GYP
+    # variables.
+    ['instrumented_libraries_cc!=""', {
+      'cc': '<(instrumented_libraries_cc)',
+    }],
+    ['instrumented_libraries_cxx!=""', {
+      'cxx': '<(instrumented_libraries_cxx)',
     }],
   ],
 
