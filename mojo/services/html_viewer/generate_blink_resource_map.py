@@ -17,9 +17,6 @@ except ImportError, e:
   print 'ImportError: ', e
   sys.exit(-1)
 
-def is_ascii(s):
-  return all(ord(c) < 128 for c in s)
-
 header_template = \
 """// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -117,8 +114,6 @@ def main():
   definitions = []
 
   for (resId, data) in pak_contents.resources.iteritems():
-    if not is_ascii(data):
-      continue
     resourceIds.append(resId)
     hex_values = ['0x{0:02x}'.format(ord(char)) for char in data]
     f = lambda A, n=12: [A[i:i+n] for i in range(0, len(A), n)]
