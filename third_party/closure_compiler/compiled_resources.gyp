@@ -35,7 +35,10 @@
         '../../ui/webui/resources/js/chromeos/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/cr/ui/compiled_resources.gyp:*',
-      ]
+      ],
+      'includes': [
+        '../../remoting/remoting_webapp_compile.gypi',
+      ],
     },
   ]
 }

@@ -7,7 +7,7 @@
     'chromium_code': 1,
 
     # Set this to run the jscompile checks after building the webapp.
-    'run_jscompile%': 1,
+    'run_jscompile%': 0,
 
     # Set this to enable cast mode on the android client.
     'enable_cast%': 0,
@@ -27,14 +27,5 @@
     'remoting_rdp_session%': 1,
 
     'branding_path': '../remoting/branding_<(branding)',
-
-    'conditions': [
-      ['OS=="win"', {
-        # Java is not available on Windows bots, so we need to disable
-        # JScompile checks.
-        'run_jscompile': 0,
-      }],
-    ],
   },
-
 }

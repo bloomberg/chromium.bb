@@ -19,6 +19,7 @@
         'depends%': [],
       },
       'inputs': [
+        'compile_js.gypi',
         '<(CLOSURE_DIR)/checker.py',
         '<(CLOSURE_DIR)/processor.py',
         '<(CLOSURE_DIR)/build/inputs.py',
