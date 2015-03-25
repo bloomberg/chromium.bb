@@ -142,6 +142,7 @@ protected:
 
 private:
     static void v8DebugEventCallback(const v8::Debug::EventDetails&);
+    v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object>, const char* functionName);
     void handleV8DebugEvent(const v8::Debug::EventDetails&);
 
     v8::Local<v8::String> v8InternalizedString(const char*) const;

@@ -116,7 +116,7 @@ void ScriptDebugServer::reportCompiledScripts(const String& contextDebugDataSubs
 
     v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
     ASSERT(!debuggerScript->IsUndefined());
-    v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
+    v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString("getScripts")));
     v8::Local<v8::Value> argv[] = { v8String(m_isolate, contextDebugDataSubstring) };
     v8::Local<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
     if (value.IsEmpty())
@@ -541,11 +541,11 @@ void ScriptDebugServer::v8DebugEventCallback(const v8::Debug::EventDetails& even
     thisPtr->handleV8DebugEvent(eventDetails);
 }
 
-static v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object> object, const char* functionName, v8::Isolate* isolate)
+v8::Local<v8::Value> ScriptDebugServer::callInternalGetterFunction(v8::Local<v8::Object> object, const char* functionName)
 {
-    v8::Local<v8::Value> getterValue = object->Get(v8AtomicString(isolate, functionName));
+    v8::Local<v8::Value> getterValue = object->Get(v8InternalizedString(functionName));
     ASSERT(!getterValue.IsEmpty() && getterValue->IsFunction());
-    return V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0, isolate);
+    return V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0, m_isolate);
 }
 
 void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
@@ -576,8 +576,8 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             dispatchDidParseSource(listener, object, event != v8::AfterCompile ? CompileError : CompileSuccess);
         } else if (event == v8::Exception) {
             v8::Local<v8::Object> eventData = eventDetails.GetEventData();
-            v8::Local<v8::Value> exception = callInternalGetterFunction(eventData, "exception", m_isolate);
-            v8::Local<v8::Value> promise = callInternalGetterFunction(eventData, "promise", m_isolate);
+            v8::Local<v8::Value> exception = callInternalGetterFunction(eventData, "exception");
+            v8::Local<v8::Value> promise = callInternalGetterFunction(eventData, "promise");
             bool isPromiseRejection = !promise.IsEmpty() && promise->IsObject();
             handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Local<v8::Array>(), isPromiseRejection);
         } else if (event == v8::Break) {
@@ -597,9 +597,9 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
 
 void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
-    String type = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "type", m_isolate));
-    String name = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "name", m_isolate));
-    int id = callInternalGetterFunction(eventData, "id", m_isolate)->ToInteger(m_isolate)->Value();
+    String type = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "type"));
+    String name = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "name"));
+    int id = callInternalGetterFunction(eventData, "id")->ToInteger(m_isolate)->Value();
 
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
