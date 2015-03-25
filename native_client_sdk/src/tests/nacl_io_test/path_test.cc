@@ -188,7 +188,7 @@ TEST(PathTest, Range_Relative) {
 
   EXPECT_EQ("path", p.Range(2, 3));
 
-  EXPECT_EQ("", p.Range(2, 100));
+  EXPECT_EQ("path", p.Range(2, 100));
   EXPECT_EQ("", p.Range(42, 67));
 }
 
@@ -209,7 +209,7 @@ TEST(PathTest, Range_Absolute) {
 
   EXPECT_EQ("path", p.Range(3, 4));
 
-  EXPECT_EQ("", p.Range(2, 100));
+  EXPECT_EQ("absolute/path", p.Range(2, 100));
   EXPECT_EQ("", p.Range(42, 67));
 }
 
