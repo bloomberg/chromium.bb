@@ -10,9 +10,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-
 import java.lang.ref.WeakReference;
 
 /**
@@ -20,8 +17,7 @@ import java.lang.ref.WeakReference;
  * Activity Instance.
  * Only instantiate this class when you need the implemented features.
  */
-public class ActivityWindowAndroid
-        extends WindowAndroid implements ApplicationStatus.ActivityStateListener {
+public class ActivityWindowAndroid extends WindowAndroid {
     // Constants used for intent request code bounding.
     private static final int REQUEST_CODE_PREFIX = 1000;
     private static final int REQUEST_CODE_RANGE_SIZE = 100;
@@ -33,7 +29,6 @@ public class ActivityWindowAndroid
     public ActivityWindowAndroid(Activity activity) {
         super(activity.getApplicationContext());
         mActivityRef = new WeakReference<Activity>(activity);
-        ApplicationStatus.registerStateListenerForActivity(this, activity);
     }
 
     @Override
@@ -102,15 +97,6 @@ public class ActivityWindowAndroid
     public WeakReference<Activity> getActivity() {
         // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
         return new WeakReference<Activity>(mActivityRef.get());
-    }
-
-    @Override
-    public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.PAUSED) {
-            onActivityPaused();
-        } else if (newState == ActivityState.RESUMED) {
-            onActivityResumed();
-        }
     }
 
     private int generateNextRequestCode() {

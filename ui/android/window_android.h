@@ -43,7 +43,6 @@ class UI_ANDROID_EXPORT WindowAndroid {
 
   // Compositor callback relay.
   void OnCompositingDidCommit();
-  void OnVisibilityChanged(bool visible);
 
   void AttachCompositor(WindowAndroidCompositor* compositor);
   void DetachCompositor();
@@ -60,8 +59,6 @@ class UI_ANDROID_EXPORT WindowAndroid {
                jlong time_micros,
                jlong period_micros);
   void Animate(base::TimeTicks begin_frame_time);
-  void OnActivityPaused(JNIEnv* env, jobject obj);
-  void OnActivityResumed(JNIEnv* env, jobject obj);
 
  private:
   ~WindowAndroid();
