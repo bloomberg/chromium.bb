@@ -96,7 +96,7 @@ private:
     Member<AudioNode> m_node;
 
     friend class AudioNodeInput;
-    friend class AudioParam;
+    friend class AudioParamHandler;
 
     // These are called from AudioNodeInput.
     // They must be called with the context's graph lock.

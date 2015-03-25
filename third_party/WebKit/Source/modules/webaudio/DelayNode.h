@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class AudioParam;
+class AudioParamHandler;
 class ExceptionState;
 
 class DelayNode final : public AudioBasicProcessorNode {

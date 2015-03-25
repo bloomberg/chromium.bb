@@ -42,15 +42,15 @@ namespace blink {
 
 class AudioNodeOutput;
 
-class AudioParam final : public AudioSummingJunction, public ScriptWrappable {
+class AudioParamHandler final : public AudioSummingJunction, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
 
-    static AudioParam* create(AudioContext* context, double defaultValue)
+    static AudioParamHandler* create(AudioContext* context, double defaultValue)
     {
-        return new AudioParam(context, defaultValue);
+        return new AudioParamHandler(context, defaultValue);
     }
 
     // AudioSummingJunction
@@ -115,7 +115,7 @@ public:
     void disconnect(AudioNodeOutput&);
 
 private:
-    AudioParam(AudioContext* context, double defaultValue)
+    AudioParamHandler(AudioContext* context, double defaultValue)
         : AudioSummingJunction(context)
         , m_value(defaultValue)
         , m_defaultValue(defaultValue)
@@ -133,6 +133,10 @@ private:
 
     AudioParamTimeline m_timeline;
 };
+
+// TODO(tkent): remove the type alias, and introduce a real AudioParam class to
+// wrap AudioParamHandler.
+using AudioParam = AudioParamHandler;
 
 } // namespace blink
 

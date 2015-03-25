@@ -40,7 +40,7 @@ namespace blink {
 class AudioContext;
 class AudioNodeInput;
 class AudioNodeOutput;
-class AudioParam;
+class AudioParamHandler;
 class ExceptionState;
 
 // An AudioNode is the basic building block for handling audio within an AudioContext.
@@ -137,15 +137,15 @@ public:
 
     // Called from main thread by corresponding JavaScript methods.
     virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
+    void connect(AudioParamHandler*, unsigned outputIndex, ExceptionState&);
 
     virtual void disconnect();
     virtual void disconnect(unsigned outputIndex, ExceptionState&);
     virtual void disconnect(AudioNode*, ExceptionState&);
     virtual void disconnect(AudioNode*, unsigned outputIndex, ExceptionState&);
     virtual void disconnect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    virtual void disconnect(AudioParam*, ExceptionState&);
-    virtual void disconnect(AudioParam*, unsigned outputIndex, ExceptionState&);
+    virtual void disconnect(AudioParamHandler*, ExceptionState&);
+    virtual void disconnect(AudioParamHandler*, unsigned outputIndex, ExceptionState&);
 
     // Like disconnect, but no exception is thrown if the outputIndex is invalid.  Just do nothing
     // in that case.

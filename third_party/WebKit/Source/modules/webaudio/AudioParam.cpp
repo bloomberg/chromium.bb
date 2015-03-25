@@ -35,10 +35,10 @@
 
 namespace blink {
 
-const double AudioParam::DefaultSmoothingConstant = 0.05;
-const double AudioParam::SnapThreshold = 0.001;
+const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
+const double AudioParamHandler::SnapThreshold = 0.001;
 
-float AudioParam::value()
+float AudioParamHandler::value()
 {
     // Update value for timeline.
     if (context() && context()->isAudioThread()) {
@@ -52,17 +52,17 @@ float AudioParam::value()
     return narrowPrecisionToFloat(m_value);
 }
 
-void AudioParam::setValue(float value)
+void AudioParamHandler::setValue(float value)
 {
     m_value = value;
 }
 
-float AudioParam::smoothedValue()
+float AudioParamHandler::smoothedValue()
 {
     return narrowPrecisionToFloat(m_smoothedValue);
 }
 
-bool AudioParam::smooth()
+bool AudioParamHandler::smooth()
 {
     // If values have been explicitly scheduled on the timeline, then use the exact value.
     // Smoothing effectively is performed by the timeline.
@@ -91,14 +91,14 @@ bool AudioParam::smooth()
     return false;
 }
 
-float AudioParam::finalValue()
+float AudioParamHandler::finalValue()
 {
     float value = m_value;
     calculateFinalValues(&value, 1, false);
     return value;
 }
 
-void AudioParam::calculateSampleAccurateValues(float* values, unsigned numberOfValues)
+void AudioParamHandler::calculateSampleAccurateValues(float* values, unsigned numberOfValues)
 {
     bool isSafe = context() && context()->isAudioThread() && values && numberOfValues;
     ASSERT(isSafe);
@@ -108,7 +108,7 @@ void AudioParam::calculateSampleAccurateValues(float* values, unsigned numberOfV
     calculateFinalValues(values, numberOfValues, true);
 }
 
-void AudioParam::calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate)
+void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate)
 {
     bool isGood = context() && context()->isAudioThread() && values && numberOfValues;
     ASSERT(isGood);
@@ -148,7 +148,7 @@ void AudioParam::calculateFinalValues(float* values, unsigned numberOfValues, bo
     }
 }
 
-void AudioParam::calculateTimelineValues(float* values, unsigned numberOfValues)
+void AudioParamHandler::calculateTimelineValues(float* values, unsigned numberOfValues)
 {
     // Calculate values for this render quantum.
     // Normally numberOfValues will equal AudioNode::ProcessingSizeInFrames (the render quantum size).
@@ -161,7 +161,7 @@ void AudioParam::calculateTimelineValues(float* values, unsigned numberOfValues)
     m_value = m_timeline.valuesForTimeRange(startTime, endTime, narrowPrecisionToFloat(m_value), values, numberOfValues, sampleRate, sampleRate);
 }
 
-void AudioParam::connect(AudioNodeOutput& output)
+void AudioParamHandler::connect(AudioNodeOutput& output)
 {
     ASSERT(context()->isGraphOwner());
 
@@ -173,7 +173,7 @@ void AudioParam::connect(AudioNodeOutput& output)
     changedOutputs();
 }
 
-void AudioParam::disconnect(AudioNodeOutput& output)
+void AudioParamHandler::disconnect(AudioNodeOutput& output)
 {
     ASSERT(context()->isGraphOwner());
 
