@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/cursor_shape_stub.h"
@@ -17,13 +18,17 @@
 #include "remoting/test/remote_host_info.h"
 
 namespace remoting {
-class ChromotingClient;
+
 class ClientContext;
 class XmppSignalStrategy;
 class VideoRenderer;
+
+namespace protocol {
+class ClipboardStub;
+class HostStub;
+class InputStub;
 }
 
-namespace remoting {
 namespace test {
 
 // Manages a chromoting connection to a remote host.  Destroying a
@@ -45,6 +50,13 @@ class TestChromotingClient : public ClientUserInterface,
 
   // Ends the current remote connection and updates the connection state.
   void EndConnection();
+
+  // Stubs used to send messages to the remote host.
+  protocol::ClipboardStub* clipboard_forwarder() {
+    return chromoting_client_->clipboard_forwarder();
+  }
+  protocol::HostStub* host_stub() { return chromoting_client_->host_stub(); }
+  protocol::InputStub* input_stub() { return chromoting_client_->input_stub(); }
 
   // Registers an observer which will be notfied when remote connection events
   // occur.  Registered Observers must not tear-down this object on receipt of

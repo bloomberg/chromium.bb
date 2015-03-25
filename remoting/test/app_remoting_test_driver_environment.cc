@@ -4,11 +4,16 @@
 
 #include "remoting/test/app_remoting_test_driver_environment.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "remoting/test/access_token_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
 #include "remoting/test/remote_host_info.h"
@@ -28,6 +33,9 @@ AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
       test_remote_host_info_fetcher_(nullptr) {
   DCHECK(!user_name_.empty());
   DCHECK(service_environment < kUnknownEnvironment);
+
+  PopulateApplicationNames();
+  PopulateApplicationDetailsMap();
 }
 
 AppRemotingTestDriverEnvironment::~AppRemotingTestDriverEnvironment() {
@@ -99,11 +107,9 @@ bool AppRemotingTestDriverEnvironment::GetRemoteHostInfoForApplicationId(
 
   base::RunLoop run_loop;
 
-  RemoteHostInfoCallback remote_host_info_fetch_callback =
-      base::Bind(&AppRemotingTestDriverEnvironment::OnRemoteHostInfoRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure(),
-                 remote_host_info);
+  RemoteHostInfoCallback remote_host_info_fetch_callback = base::Bind(
+      &AppRemotingTestDriverEnvironment::OnRemoteHostInfoRetrieved,
+      base::Unretained(this), run_loop.QuitClosure(), remote_host_info);
 
   // If a unit test has set |test_remote_host_info_fetcher_| then we should use
   // it below.  Note that we do not want to destroy the test object at the end
@@ -117,14 +123,56 @@ bool AppRemotingTestDriverEnvironment::GetRemoteHostInfoForApplicationId(
   }
 
   remote_host_info_fetcher->RetrieveRemoteHostInfo(
-      application_id,
-      access_token_,
-      service_environment_,
+      application_id, access_token_, service_environment_,
       remote_host_info_fetch_callback);
 
   run_loop.Run();
 
   return remote_host_info->IsReadyForConnection();
+}
+
+void AppRemotingTestDriverEnvironment::ShowHostAvailability() {
+  const char kHostAvailabilityFormatString[] = "%-25s%-35s%-10s";
+  std::vector<std::string>::const_iterator it = application_names_.begin();
+
+  LOG(INFO) << base::StringPrintf(kHostAvailabilityFormatString,
+                                  "Application Name", "Application ID",
+                                  "Status");
+
+  while (it != application_names_.end()) {
+    std::string application_name = *it;
+
+    const RemoteApplicationDetails& application_details = GetDetailsFromAppName(
+        application_name);
+
+    RemoteHostInfo remote_host_info;
+    GetRemoteHostInfoForApplicationId(application_details.application_id,
+                                      &remote_host_info);
+
+    std::string status;
+    RemoteHostStatus remote_host_status = remote_host_info.remote_host_status;
+    if (remote_host_status == kRemoteHostStatusReady) {
+      status = "Ready :)";
+    } else if (remote_host_status == kRemoteHostStatusPending) {
+      status = "Pending :|";
+    } else {
+      status = "Unknown :(";
+    }
+
+    LOG(INFO) << base::StringPrintf(
+        kHostAvailabilityFormatString, application_name.c_str(),
+        application_details.application_id.c_str(), status.c_str());
+
+    ++it;
+  }
+}
+
+const RemoteApplicationDetails&
+AppRemotingTestDriverEnvironment::GetDetailsFromAppName(
+    const std::string& application_name) {
+  DCHECK_GT(application_details_map_.count(application_name), 0UL);
+
+  return application_details_map_.at(application_name);
 }
 
 void AppRemotingTestDriverEnvironment::SetAccessTokenFetcherForTest(
@@ -164,8 +212,7 @@ bool AppRemotingTestDriverEnvironment::RetrieveAccessToken(
 
   AccessTokenCallback access_token_callback =
       base::Bind(&AppRemotingTestDriverEnvironment::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   // If a unit test has set |test_access_token_fetcher_| then we should use it
   // below.  Note that we do not want to destroy the test object at the end of
@@ -180,15 +227,13 @@ bool AppRemotingTestDriverEnvironment::RetrieveAccessToken(
   if (!auth_code.empty()) {
     // If the user passed in an authcode, then use it to retrieve an
     // updated access/refresh token.
-    access_token_fetcher->GetAccessTokenFromAuthCode(
-        auth_code,
-        access_token_callback);
+    access_token_fetcher->GetAccessTokenFromAuthCode(auth_code,
+                                                     access_token_callback);
   } else {
     DCHECK(!refresh_token_.empty());
 
-    access_token_fetcher->GetAccessTokenFromRefreshToken(
-        refresh_token_,
-        access_token_callback);
+    access_token_fetcher->GetAccessTokenFromRefreshToken(refresh_token_,
+                                                         access_token_callback);
   }
 
   run_loop.Run();
@@ -243,9 +288,7 @@ void AppRemotingTestDriverEnvironment::OnRemoteHostInfoRetrieved(
     const RemoteHostInfo& retrieved_remote_host_info) {
   DCHECK(remote_host_info);
 
-  if (retrieved_remote_host_info.IsReadyForConnection()) {
-    *remote_host_info = retrieved_remote_host_info;
-  }
+  *remote_host_info = retrieved_remote_host_info;
 
   done_closure.Run();
 }

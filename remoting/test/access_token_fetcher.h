@@ -5,6 +5,8 @@
 #ifndef REMOTING_TEST_ACCESS_TOKEN_FETCHER_H_
 #define REMOTING_TEST_ACCESS_TOKEN_FETCHER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

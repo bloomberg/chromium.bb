@@ -25,9 +25,11 @@ const char kRequestTestOrigin[] =
 namespace remoting {
 namespace test {
 
-RemoteHostInfoFetcher::RemoteHostInfoFetcher() {}
+RemoteHostInfoFetcher::RemoteHostInfoFetcher() {
+}
 
-RemoteHostInfoFetcher::~RemoteHostInfoFetcher() {}
+RemoteHostInfoFetcher::~RemoteHostInfoFetcher() {
+}
 
 bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
     const std::string& application_id,
@@ -62,14 +64,13 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
 
   remote_host_info_callback_ = callback;
 
-  scoped_refptr<remoting::URLRequestContextGetter> request_context_getter;
-  request_context_getter = new remoting::URLRequestContextGetter(
+  request_context_getter_ = new remoting::URLRequestContextGetter(
       base::ThreadTaskRunnerHandle::Get(),   // network_runner
       base::ThreadTaskRunnerHandle::Get());  // file_runner
 
   request_.reset(
       net::URLFetcher::Create(GURL(service_url), net::URLFetcher::POST, this));
-  request_->SetRequestContext(request_context_getter.get());
+  request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + access_token);
   request_->AddExtraRequestHeader(kRequestTestOrigin);
   request_->SetUploadData("application/json; charset=UTF-8", "{}");

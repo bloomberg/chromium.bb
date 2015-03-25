@@ -31,10 +31,23 @@
       ],
       'sources': [
         'test/access_token_fetcher.cc',
+        'test/access_token_fetcher.h',
+        'test/app_remoting_connected_client_fixture.cc',
+        'test/app_remoting_connected_client_fixture.h',
         'test/app_remoting_test_driver_environment.cc',
+        'test/app_remoting_test_driver_environment.h',
         'test/refresh_token_store.cc',
+        'test/refresh_token_store.h',
+        'test/remote_application_details.h',
+        'test/remote_connection_observer.h',
         'test/remote_host_info.cc',
+        'test/remote_host_info.h',
         'test/remote_host_info_fetcher.cc',
+        'test/remote_host_info_fetcher.h',
+        'test/test_chromoting_client.cc',
+        'test/test_chromoting_client.h',
+        'test/test_video_renderer.cc',
+        'test/test_video_renderer.h',
       ],
     },  # end of target 'ar_test_driver_common'
     {
@@ -49,6 +62,7 @@
       ],
       'sources': [
         'test/app_remoting_test_driver.cc',
+        'test/app_remoting_test_driver_environment_app_details.cc',
       ],
       'include_dirs': [
         '../testing/gtest/include',

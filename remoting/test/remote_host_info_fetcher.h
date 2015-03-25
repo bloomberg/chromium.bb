@@ -36,9 +36,9 @@ const char kTestServiceEnvironmentUrlFormat[] =
 // Note: When adding new environments, add them before kUnknownEnvironment as
 //       the last entry is used for bounds checking.
 enum ServiceEnvironment {
-    kDeveloperEnvironment,
-    kTestingEnvironment,
-    kUnknownEnvironment
+  kDeveloperEnvironment,
+  kTestingEnvironment,
+  kUnknownEnvironment
 };
 
 // Supplied by the client for each remote host info request and returns a valid,
@@ -58,11 +58,10 @@ class RemoteHostInfoFetcher : public net::URLFetcherDelegate {
 
   // Makes a service call to retrieve the details for a remote host.  The
   // callback will be called once the HTTP request has completed.
-  virtual bool RetrieveRemoteHostInfo(
-      const std::string& application_id,
-      const std::string& access_token,
-      ServiceEnvironment service_environment,
-      const RemoteHostInfoCallback& callback);
+  virtual bool RetrieveRemoteHostInfo(const std::string& application_id,
+                                      const std::string& access_token,
+                                      ServiceEnvironment service_environment,
+                                      const RemoteHostInfoCallback& callback);
 
  private:
   // net::URLFetcherDelegate interface.
@@ -70,6 +69,9 @@ class RemoteHostInfoFetcher : public net::URLFetcherDelegate {
 
   // Holds the URLFetcher for the RemoteHostInfo request.
   scoped_ptr<net::URLFetcher> request_;
+
+  // Provides application-specific context for the network request.
+  scoped_refptr<remoting::URLRequestContextGetter> request_context_getter_;
 
   // Caller-supplied callback used to return remote host info on success.
   RemoteHostInfoCallback remote_host_info_callback_;

@@ -19,6 +19,7 @@ const char kAuthCodeSwitchName[] = "authcode";
 const char kHelpSwitchName[] = "help";
 const char kLoggingLevelSwitchName[] = "verbosity";
 const char kServiceEnvironmentSwitchName[] = "environment";
+const char kShowHostAvailabilitySwitchName[] = "show-host-availability";
 const char kSingleProcessTestsSwitchName[] = "single-process-tests";
 const char kUserNameSwitchName[] = "username";
 }
@@ -68,10 +69,12 @@ void PrintUsage() {
          switches::kHelpSwitchName);
   printf("  %s: Specifies the service api to use (dev|test) [default: dev]\n",
          switches::kServiceEnvironmentSwitchName);
-  printf(
-      "  %s: Specifies the optional logging level of the tool (0-3)."
-      " [default: off]\n",
-      switches::kLoggingLevelSwitchName);
+  printf("  %s: Retrieves and displays the connection status for all known "
+         "hosts, no tests will be run\n",
+         switches::kShowHostAvailabilitySwitchName);
+  printf("  %s: Specifies the optional logging level of the tool (0-3)."
+         " [default: off]\n",
+         switches::kLoggingLevelSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -105,8 +108,7 @@ void PrintAuthCodeInfo() {
 
   printf("\nTool usage example with the newly created auth code:\n");
   printf("ar_test_driver --%s=example@gmail.com --%s=4/AKtf...\n\n",
-         switches::kUserNameSwitchName,
-         switches::kAuthCodeSwitchName);
+         switches::kUserNameSwitchName, switches::kAuthCodeSwitchName);
 }
 
 }  // namespace
@@ -139,8 +141,7 @@ int main(int argc, char** argv) {
     PrintUsage();
     PrintAuthCodeInfo();
     return base::LaunchUnitTestsSerially(
-        argc,
-        argv,
+        argc, argv,
         base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
   }
 
@@ -182,7 +183,7 @@ int main(int argc, char** argv) {
   // Update the logging verbosity level is user specified one.
   std::string verbosity_level;
   verbosity_level =
-        command_line->GetSwitchValueASCII(switches::kLoggingLevelSwitchName);
+      command_line->GetSwitchValueASCII(switches::kLoggingLevelSwitchName);
   if (!verbosity_level.empty()) {
     // Turn on logging for the test_driver and remoting components.
     // This switch is parsed during logging::InitLogging.
@@ -206,6 +207,13 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  if (command_line->HasSwitch(switches::kShowHostAvailabilitySwitchName)) {
+    // When this flag is specified, we will retrieve connection information
+    // for all known applications and report the status.  No tests will be run.
+    shared_data->ShowHostAvailability();
+    return 0;
+  }
+
   // Since we've successfully set up our shared_data object, we'll assign the
   // value to our global* and transfer ownership to the framework.
   remoting::test::AppRemotingSharedData = shared_data.release();
@@ -214,7 +222,6 @@ int main(int argc, char** argv) {
   // Because many tests may access the same remoting host(s), we need to run
   // the tests sequentially so they do not interfere with each other.
   return base::LaunchUnitTestsSerially(
-      argc,
-      argv,
+      argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

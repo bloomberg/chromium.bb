@@ -21,26 +21,6 @@ const int kMaxGetTokensRetries = 3;
 const char kOauthRedirectUrl[] =
     "https://chromoting-oauth.talkgadget."
     "google.com/talkgadget/oauth/chrome-remote-desktop/dev";
-
-// Factory function used to initialize our scope vector below, this is needed
-// because initializer lists are only supported on C++11 compilers.
-const std::vector<std::string> MakeAppRemotingScopeVector() {
-  std::vector<std::string> app_remoting_scopes;
-
-  // Populate the vector with the required permissions for app remoting.
-  app_remoting_scopes.push_back(
-      "https://www.googleapis.com/auth/appremoting.runapplication");
-  app_remoting_scopes.push_back("https://www.googleapis.com/auth/googletalk");
-  app_remoting_scopes.push_back(
-      "https://www.googleapis.com/auth/userinfo.email");
-  app_remoting_scopes.push_back("https://docs.google.com/feeds");
-  app_remoting_scopes.push_back("https://www.googleapis.com/auth/drive");
-
-  return app_remoting_scopes;
-}
-
-const std::vector<std::string> kAppRemotingScopeVector =
-    MakeAppRemotingScopeVector();
 }  // namespace
 
 namespace remoting {
@@ -93,7 +73,7 @@ void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
   auth_client_->RefreshToken(
       oauth_client_info_,
       refresh_token_,
-      kAppRemotingScopeVector,
+      std::vector<std::string>(),  // scopes
       kMaxGetTokensRetries,
       this);  // GaiaOAuthClient::Delegate* delegate
 }
@@ -162,7 +142,6 @@ void AccessTokenFetcher::OnGetTokenInfoResponse(
     token_info->GetString("error_description", &error_description);
 
     LOG(ERROR) << "OnGetTokenInfoResponse returned an error. "
-               << ", "
                << "error: " << error_string << ", "
                << "description: " << error_description;
     access_token_.clear();

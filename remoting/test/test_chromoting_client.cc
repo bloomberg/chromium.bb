@@ -31,6 +31,9 @@
 
 namespace {
 
+const char kAppRemotingCapabilities[] =
+    "rateLimitResizeRequests desktopShape sendInitialResolution googleDrive";
+
 const char kXmppHostName[] = "talk.google.com";
 const int kXmppPortNumber = 5222;
 
@@ -160,8 +163,7 @@ void TestChromotingClient::StartConnection(
   chromoting_client_.reset(new ChromotingClient(client_context_.get(),
                                                 this,  // client_user_interface.
                                                 video_renderer_.get(),
-                                                nullptr  // audio_player
-                                                ));
+                                                nullptr));  // audio_player
 
   if (test_connection_to_host_) {
     chromoting_client_->SetConnectionToHostForTests(
@@ -212,8 +214,7 @@ void TestChromotingClient::StartConnection(
 
   chromoting_client_->Start(signal_strategy_.get(), authenticator.Pass(),
                             transport_factory.Pass(), remote_host_info.host_jid,
-                            std::string()  // capabilities
-                            );
+                            kAppRemotingCapabilities);
 }
 
 void TestChromotingClient::EndConnection() {
