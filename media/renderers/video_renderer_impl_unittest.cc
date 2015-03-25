@@ -472,20 +472,31 @@ TEST_F(VideoRendererImplTest, VideoDecoder_InitFailure) {
 TEST_F(VideoRendererImplTest, Underflow) {
   Initialize();
   QueueFrames("0 10 20 30");
-  EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
-  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlayingFrom(0);
+
+  {
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)))
+        .Times(1)
+        .WillOnce(RunClosure(event.GetClosure()));
+    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
+    StartPlayingFrom(0);
+    event.RunAndWait();
+  }
 
   // Advance time slightly. Frames should be dropped and we should NOT signal
   // having nothing.
   AdvanceTimeInMs(100);
 
-  // Advance time more. Now we should signal having nothing.
+  // Advance time more. Now we should signal having nothing. And put
+  // the last frame up for display.
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(10))).Times(0);
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(20))).Times(0);
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(30))).Times(1);
     AdvanceTimeInMs(3000);  // Must match kTimeToDeclareHaveNothing.
     event.RunAndWait();
   }

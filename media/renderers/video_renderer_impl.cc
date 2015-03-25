@@ -246,11 +246,13 @@ void VideoRendererImpl::ThreadMain() {
 
     // Remain idle until we've reached our target paint window.
     if (now < target_paint_timestamp) {
-      UpdateStatsAndWait_Locked(kIdleTimeDelta);
+      UpdateStatsAndWait_Locked(
+          std::min(target_paint_timestamp - now, kIdleTimeDelta));
       continue;
     }
 
-    if (now > latest_paint_timestamp && drop_frames_) {
+    if (ready_frames_.size() > 1 && now > latest_paint_timestamp &&
+        drop_frames_) {
       DropNextReadyFrame_Locked();
       continue;
     }
