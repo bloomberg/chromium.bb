@@ -132,17 +132,23 @@ bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
   static const char kExperimentName[] = "ExtensionUninstall.ReportAbuse";
   static const char kDefaultGroupName[] = "Default";
   static const char kShowCheckboxGroup[] = "ShowCheckbox";
-  // TODO(devlin): Turn on this field trial. See crbug.com/441377.
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          kExperimentName,
-          100,  // Total probability.
-          kDefaultGroupName,
-          2015, 7, 31,  // End date.
-          base::FieldTrial::ONE_TIME_RANDOMIZED,
-          nullptr));
-  int experiment_group = trial->AppendGroup(kShowCheckboxGroup, 0);
-  return base::FieldTrialList::FindValue(kExperimentName) == experiment_group;
+
+  // Important: Only initialize the trial once.
+  if (!base::FieldTrialList::Find(kExperimentName)) {
+    // TODO(devlin): Turn on this field trial. See crbug.com/441377.
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial(
+            kExperimentName,
+            100,  // Total probability.
+            kDefaultGroupName,
+            2015, 7, 31,  // End date.
+            base::FieldTrial::ONE_TIME_RANDOMIZED,
+            nullptr));
+    trial->AppendGroup(kShowCheckboxGroup, 0);
+  }
+
+  return base::FieldTrialList::FindFullName(kExperimentName) ==
+      kShowCheckboxGroup;
 }
 
 void ExtensionUninstallDialog::HandleReportAbuse() {
