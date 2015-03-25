@@ -976,11 +976,11 @@ html[dir='rtl'] .breadcrumbs .separator {
   /* On the right side, we have less margin to pack items as long as they are
      fully visible. */
   -webkit-padding-end: 2px;
-  -webkit-padding-start: 7px;
+  -webkit-padding-start: 4px;
   box-sizing: border-box;
   overflow-y: auto;
-  padding-bottom: 7px;
-  padding-top: 7px;
+  padding-bottom: 16px;
+  padding-top: 4px;
   width: 100%;
 }
 
@@ -1024,10 +1024,11 @@ body[type='full-page'] .detail-name .detail-icon {
   border-radius: 2px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
   height: 180px;
-  margin-top: 8px;
+  margin-top: 12px;
   overflow: hidden;
   position: relative;
   transition: box-shadow 220ms ease;
+  vertical-align: top;  /* Prevent vertical spacing for wrapped inline box. */
   width: 180px;
 }
 

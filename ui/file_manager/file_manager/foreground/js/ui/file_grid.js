@@ -72,6 +72,12 @@ FileGrid.decorate = function(
 
   self.relayoutRateLimiter_ =
       new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
+
+  var style = window.getComputedStyle(self);
+  /** @private {number} */
+  self.paddingLeft_ = parseFloat(style.paddingLeft);
+  /** @private {number} */
+  self.paddingTop_ = parseFloat(style.paddingTop);
 };
 
 /**
@@ -434,17 +440,22 @@ FileGrid.prototype.getHitIndex_ = function(coordinate, step, threshold) {
  */
 FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
   var currentSelection = [];
-  var right = x + (opt_width || 0);
-  var bottom = y + (opt_height || 0);
+  var xInAvailableSpace = Math.max(0, x - this.paddingLeft_);
+  var yInAvailableSpace = Math.max(0, y - this.paddingTop_);
+  var right = xInAvailableSpace + (opt_width || 0);
+  var bottom = yInAvailableSpace + (opt_height || 0);
   var itemMetrics = this.measureItem();
   var horizontalStartIndex = this.getHitIndex_(
-      x, itemMetrics.width, itemMetrics.width - itemMetrics.marginRight);
+      xInAvailableSpace, itemMetrics.width,
+      itemMetrics.width - itemMetrics.marginRight);
   var horizontalEndIndex = Math.min(this.columns, this.getHitIndex_(
       right, itemMetrics.width, itemMetrics.marginLeft));
   var verticalStartIndex = this.getHitIndex_(
-      y, itemMetrics.height, itemMetrics.height - itemMetrics.marginBottom);
+      yInAvailableSpace, itemMetrics.height,
+      itemMetrics.height - itemMetrics.marginBottom);
   var verticalEndIndex = this.getHitIndex_(
       bottom, itemMetrics.height, itemMetrics.marginTop);
+
   for (var verticalIndex = verticalStartIndex;
        verticalIndex < verticalEndIndex;
        verticalIndex++) {
