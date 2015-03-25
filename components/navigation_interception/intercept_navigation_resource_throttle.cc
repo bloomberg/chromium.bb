@@ -73,7 +73,7 @@ InterceptNavigationResourceThrottle::InterceptNavigationResourceThrottle(
 }
 
 InterceptNavigationResourceThrottle::~InterceptNavigationResourceThrottle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void InterceptNavigationResourceThrottle::WillStartRequest(bool* defer) {
@@ -134,7 +134,7 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
 
 void InterceptNavigationResourceThrottle::OnResultObtained(
     bool should_ignore_navigation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (should_ignore_navigation) {
     controller()->CancelAndIgnore();

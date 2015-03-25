@@ -55,7 +55,7 @@ base::FilePath::StringType FindRemovableStorageLocationById(
 }
 
 void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   MediaStorageUtil::DeviceIdSet missing_devices;
 
   for (MediaStorageUtil::DeviceIdSet::const_iterator it = devices->begin();

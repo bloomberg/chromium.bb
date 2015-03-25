@@ -49,7 +49,7 @@ void DoRegisterOpenedNaClExecutableFile(
     IPC::Message* reply_msg,
     WriteFileInfoReply write_reply_message) {
   // IO thread owns the NaClBrowser singleton.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   uint64 file_token_lo = 0;

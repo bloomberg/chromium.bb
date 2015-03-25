@@ -44,7 +44,7 @@ void FeedbackData::OnFeedbackPageDataComplete() {
 
 void FeedbackData::SetAndCompressSystemInfo(
     scoped_ptr<FeedbackData::SystemLogsMap> sys_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (trace_id_ != 0) {
     TracingManager* manager = TracingManager::Get();
@@ -70,7 +70,7 @@ void FeedbackData::SetAndCompressSystemInfo(
 
 void FeedbackData::SetAndCompressHistograms(
     scoped_ptr<std::string> histograms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!histograms.get())
     return;
@@ -87,7 +87,7 @@ void FeedbackData::SetAndCompressHistograms(
 
 void FeedbackData::AttachAndCompressFileData(
     scoped_ptr<std::string> attached_filedata) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!attached_filedata.get() || attached_filedata->empty())
     return;
@@ -107,7 +107,7 @@ void FeedbackData::AttachAndCompressFileData(
 void FeedbackData::OnGetTraceData(
     int trace_id,
     scoped_refptr<base::RefCountedString> trace_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TracingManager* manager = TracingManager::Get();
   if (manager)
     manager->DiscardTraceData(trace_id);
@@ -124,7 +124,7 @@ void FeedbackData::OnGetTraceData(
 }
 
 void FeedbackData::OnCompressComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   --pending_op_count_;
   SendReport();
 }
@@ -134,7 +134,7 @@ bool FeedbackData::IsDataComplete() {
 }
 
 void FeedbackData::SendReport() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (IsDataComplete() && !report_sent_) {
     report_sent_ = true;
     send_report_.Run(this);

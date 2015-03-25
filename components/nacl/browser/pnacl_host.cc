@@ -147,7 +147,7 @@ void PnaclHost::OnCacheInitialized(int net_error) {
 void PnaclHost::Init() {
   // Extra check that we're on the real IO thread since this version of
   // Init isn't used in unit tests.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(thread_checker_.CalledOnValidThread());
   base::FilePath cache_path(GetCachePath());
   if (cache_path.empty() || cache_state_ != CacheUninitialized)

@@ -115,7 +115,7 @@ void StorageMonitorCros::Init() {
 }
 
 void StorageMonitorCros::CheckExistingMountPoints() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const DiskMountManager::MountPointMap& mount_point_map =
       DiskMountManager::GetInstance()->mount_points();
   for (DiskMountManager::MountPointMap::const_iterator it =
@@ -148,7 +148,7 @@ void StorageMonitorCros::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Ignore mount points that are not devices.
   if (mount_info.mount_type != chromeos::MOUNT_TYPE_DEVICE)
@@ -277,7 +277,7 @@ StorageMonitorCros::media_transfer_protocol_manager() {
 void StorageMonitorCros::AddMountedPath(
     const DiskMountManager::MountPointInfo& mount_info,
     bool has_dcim) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (ContainsKey(mount_map_, mount_info.mount_path)) {
     // CheckExistingMountPointsOnUIThread() added the mount point information

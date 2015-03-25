@@ -54,23 +54,23 @@ class TrackingSynchronizer::RequestContext {
   ~RequestContext() {}
 
   void SetReceivedProcessGroupCount(bool done) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     received_process_group_count_ = done;
   }
 
   // Methods for book keeping of processes_pending_.
   void IncrementProcessesPending() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ++processes_pending_;
   }
 
   void AddProcessesPending(int processes_pending) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     processes_pending_ += processes_pending;
   }
 
   void DecrementProcessesPending() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     --processes_pending_;
   }
 
@@ -79,7 +79,7 @@ class TrackingSynchronizer::RequestContext {
   // |processes_pending_| are zero, then delete the current object by calling
   // Unregister.
   void DeleteIfAllDone() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (processes_pending_ <= 0 && received_process_group_count_)
       RequestContext::Unregister(sequence_number_);
@@ -90,7 +90,7 @@ class TrackingSynchronizer::RequestContext {
   static RequestContext* Register(
       int sequence_number,
       const base::WeakPtr<TrackingSynchronizerObserver>& callback_object) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestContext* request = new RequestContext(
         callback_object, sequence_number);
@@ -102,7 +102,7 @@ class TrackingSynchronizer::RequestContext {
   // Find the |RequestContext| in |outstanding_requests_| map for the given
   // |sequence_number|.
   static RequestContext* GetRequestContext(int sequence_number) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
@@ -118,7 +118,7 @@ class TrackingSynchronizer::RequestContext {
   // |outstanding_requests_| map. This method is called when all changes have
   // been acquired, or when the wait time expires (whichever is sooner).
   static void Unregister(int sequence_number) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
@@ -198,7 +198,7 @@ TrackingSynchronizer::~TrackingSynchronizer() {
 // static
 void TrackingSynchronizer::FetchProfilerDataAsynchronously(
     const base::WeakPtr<TrackingSynchronizerObserver>& callback_object) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!g_tracking_synchronizer) {
     // System teardown is happening.
@@ -219,7 +219,7 @@ void TrackingSynchronizer::FetchProfilerDataAsynchronously(
 void TrackingSynchronizer::OnPendingProcesses(int sequence_number,
                                               int pending_processes,
                                               bool end) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
   if (!request)
@@ -233,14 +233,14 @@ void TrackingSynchronizer::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
     int process_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DecrementPendingProcessesAndSendData(sequence_number, profiler_data,
                                        process_type);
 }
 
 int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
     const base::WeakPtr<TrackingSynchronizerObserver>& callback_object) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int sequence_number = GetNextAvailableSequenceNumber();
 
@@ -266,7 +266,7 @@ void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
     int process_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
   if (!request)
@@ -283,7 +283,7 @@ void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
 }
 
 int TrackingSynchronizer::GetNextAvailableSequenceNumber() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ++last_used_sequence_number_;
 

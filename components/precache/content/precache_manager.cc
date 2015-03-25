@@ -55,7 +55,7 @@ bool PrecacheManager::IsPrecachingEnabled() {
 }
 
 bool PrecacheManager::IsPrecachingAllowed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
       data_reduction_proxy::prefs::kDataReductionProxyEnabled);
 }
@@ -63,7 +63,7 @@ bool PrecacheManager::IsPrecachingAllowed() {
 void PrecacheManager::StartPrecaching(
     const PrecacheCompletionCallback& precache_completion_callback,
     URLListProvider* url_list_provider) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (is_precaching_) {
     DLOG(WARNING) << "Cannot start precaching because precaching is already "
@@ -84,7 +84,7 @@ void PrecacheManager::StartPrecaching(
 }
 
 void PrecacheManager::CancelPrecaching() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!is_precaching_) {
     // Do nothing if precaching is not in progress.
@@ -100,7 +100,7 @@ void PrecacheManager::CancelPrecaching() {
 }
 
 bool PrecacheManager::IsPrecaching() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return is_precaching_;
 }
 
@@ -108,7 +108,7 @@ void PrecacheManager::RecordStatsForFetch(const GURL& url,
                                           const base::Time& fetch_time,
                                           int64 size,
                                           bool was_cached) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (size == 0 || url.is_empty() || !url.SchemeIsHTTPOrHTTPS()) {
     // Ignore empty responses, empty URLs, or URLs that aren't HTTP or HTTPS.
@@ -142,7 +142,7 @@ void PrecacheManager::Shutdown() {
 }
 
 void PrecacheManager::OnDone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If OnDone has been called, then we should just be finishing precaching.
   DCHECK(is_precaching_);
@@ -156,7 +156,7 @@ void PrecacheManager::OnDone() {
 }
 
 void PrecacheManager::OnURLsReceived(const std::list<GURL>& urls) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!is_precaching_) {
     // Don't start precaching if it was canceled while waiting for the list of

@@ -344,7 +344,7 @@ void WallpaperManagerBase::ClearDisposableWallpaperCache() {
 }
 
 bool WallpaperManagerBase::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (user_manager::UserManager::Get()->IsLoggedInAsStub()) {
     info->location = current_user_wallpaper_info_.location = "";
@@ -683,7 +683,7 @@ void WallpaperManagerBase::NotifyAnimationFinished() {
 
 bool WallpaperManagerBase::GetWallpaperFromCache(const std::string& user_id,
                                                  gfx::ImageSkia* image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(user_id);
   if (it != wallpaper_cache_.end() && !(*it).second.second.isNull()) {
     *image = (*it).second.second;
@@ -694,7 +694,7 @@ bool WallpaperManagerBase::GetWallpaperFromCache(const std::string& user_id,
 
 bool WallpaperManagerBase::GetPathFromCache(const std::string& user_id,
                                             base::FilePath* path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(user_id);
   if (it != wallpaper_cache_.end()) {
     *path = (*it).second.first;
@@ -709,7 +709,7 @@ int WallpaperManagerBase::loaded_wallpapers_for_test() const {
 
 void WallpaperManagerBase::CacheUsersWallpapers() {
   // TODO(dpolukhin): crbug.com/408734.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   user_manager::UserList users = user_manager::UserManager::Get()->GetUsers();
 
   if (!users.empty()) {
@@ -943,7 +943,7 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
     const GURL& wallpaper_url,
     scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
     const user_manager::UserImage& wallpaper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
   if (wallpaper.image().isNull()) {

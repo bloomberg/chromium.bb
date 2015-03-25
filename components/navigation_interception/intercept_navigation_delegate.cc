@@ -32,7 +32,7 @@ const void* kInterceptNavigationDelegateUserDataKey =
 
 bool CheckIfShouldIgnoreNavigationOnUIThread(WebContents* source,
                                              const NavigationParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(source);
 
   InterceptNavigationDelegate* intercept_navigation_delegate =

@@ -119,7 +119,7 @@ uint64 GetDeviceStorageSize(const base::FilePath& device_path,
 // Gets the device information using udev library.
 scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
                                       const base::FilePath& mount_point) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!device_path.empty());
 
   scoped_ptr<StorageInfo> storage_info;
@@ -198,7 +198,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 MtabWatcherLinux* CreateMtabWatcherLinuxOnFileThread(
     const base::FilePath& mtab_path,
     base::WeakPtr<MtabWatcherLinux::Delegate> delegate) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Owned by caller.
   return new MtabWatcherLinux(mtab_path, delegate);
 }
@@ -206,7 +206,7 @@ MtabWatcherLinux* CreateMtabWatcherLinuxOnFileThread(
 StorageMonitor::EjectStatus EjectPathOnFileThread(
     const base::FilePath& path,
     const base::FilePath& device) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Note: Linux LSB says umount should exist in /bin.
   static const char kUmountBinary[] = "/bin/umount";
@@ -244,11 +244,11 @@ StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
     : mtab_path_(path),
       get_device_info_callback_(base::Bind(&GetDeviceInfo)),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 StorageMonitorLinux::~StorageMonitorLinux() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void StorageMonitorLinux::Init() {
@@ -278,7 +278,7 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   DCHECK(device_info);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(thestig) |media_transfer_protocol_device_observer_| should always be
   // valid.
@@ -359,12 +359,12 @@ void StorageMonitorLinux::EjectDevice(
 }
 
 void StorageMonitorLinux::OnMtabWatcherCreated(MtabWatcherLinux* watcher) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mtab_watcher_.reset(watcher);
 }
 
 void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check existing mtab entries for unaccounted mount points.
   // These mount points must have been removed in the new mtab.
@@ -465,14 +465,14 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
 
 bool StorageMonitorLinux::IsDeviceAlreadyMounted(
     const base::FilePath& mount_device) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ContainsKey(mount_priority_map_, mount_device);
 }
 
 void StorageMonitorLinux::HandleDeviceMountedMultipleTimes(
     const base::FilePath& mount_device,
     const base::FilePath& mount_point) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   MountPriorityMap::iterator priority = mount_priority_map_.find(mount_device);
   DCHECK(priority != mount_priority_map_.end());
@@ -484,7 +484,7 @@ void StorageMonitorLinux::HandleDeviceMountedMultipleTimes(
 
 void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
                                       scoped_ptr<StorageInfo> storage_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!storage_info)
     return;

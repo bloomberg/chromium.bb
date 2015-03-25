@@ -351,7 +351,7 @@ base::FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {
 // c) Retrieve metadata on the volumes and then
 // d) Notify that metadata to listeners.
 void VolumeMountWatcherWin::Init() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // When VolumeMountWatcherWin is created, the message pumps are not running
   // so a posted task from the constructor would never run. Therefore, do all
@@ -364,7 +364,7 @@ void VolumeMountWatcherWin::Init() {
 
 void VolumeMountWatcherWin::AddDevicesOnUIThread(
     std::vector<base::FilePath> removable_devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < removable_devices.size(); i++) {
     if (ContainsKey(pending_device_checks_, removable_devices[i]))
@@ -400,7 +400,7 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
 
 void VolumeMountWatcherWin::DeviceCheckComplete(
     const base::FilePath& device_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pending_device_checks_.erase(device_path);
 
   if (pending_device_checks_.size() == 0) {
@@ -421,7 +421,7 @@ VolumeMountWatcherWin::GetDeviceDetailsCallbackType
 
 bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
                                           StorageInfo* info) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
   base::FilePath path(device_path);
   MountPointDeviceMetadataMap::const_iterator iter =
@@ -439,7 +439,7 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
 }
 
 void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (event_type) {
     case DBT_DEVICEARRIVAL: {
       if (IsLogicalVolumeStructure(data)) {
@@ -504,7 +504,7 @@ VolumeMountWatcherWin::~VolumeMountWatcherWin() {
 void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     const base::FilePath& device_path,
     const StorageInfo& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   device_metadata_[device_path] = info;
 
@@ -516,7 +516,7 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
 
 void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
     const base::string16& device_location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   MountPointDeviceMetadataMap::const_iterator device_info =
       device_metadata_.find(base::FilePath(device_location));
@@ -532,7 +532,7 @@ void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
 void VolumeMountWatcherWin::EjectDevice(
     const std::string& device_id,
     base::Callback<void(StorageMonitor::EjectStatus)> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::FilePath device = MediaStorageUtil::FindDevicePathById(device_id);
   if (device.empty()) {
     callback.Run(StorageMonitor::EJECT_FAILURE);

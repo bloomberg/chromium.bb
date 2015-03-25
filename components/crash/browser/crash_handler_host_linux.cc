@@ -402,7 +402,7 @@ void CrashHandlerHostLinux::WriteDumpFile(scoped_ptr<BreakpadInfo> info,
 
 void CrashHandlerHostLinux::QueueCrashDumpTask(scoped_ptr<BreakpadInfo> info,
                                                int signal_fd) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Send the done signal to the process: it can exit now.
   struct msghdr msg = {0};
