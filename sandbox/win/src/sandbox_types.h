@@ -45,6 +45,8 @@ enum ResultCode {
   SBOX_ERROR_CANNOT_INIT_APPCONTAINER = 16,
   // Initializing or updating ProcThreadAttributes failed.
   SBOX_ERROR_PROC_THREAD_ATTRIBUTES = 17,
+  // Error in creating process.
+  SBOX_ERROR_CREATE_PROCESS = 18,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };

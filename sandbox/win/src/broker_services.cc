@@ -487,8 +487,10 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
                                     policy_base->GetLowBoxSid() ? true : false,
                                     startup_info, &process_info);
-  if (ERROR_SUCCESS != win_result)
-    return SpawnCleanup(target, win_result);
+  if (ERROR_SUCCESS != win_result) {
+    SpawnCleanup(target, win_result);
+    return SBOX_ERROR_CREATE_PROCESS;
+  }
 
   // Now the policy is the owner of the target.
   if (!policy_base->AddTarget(target)) {
