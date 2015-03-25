@@ -144,7 +144,10 @@ void SessionWatcher::ActivateCurtain() {
   // this, or how common it is, a crash report is useful in this case (note
   // that the connection would have to be refused in any case, so this is no
   // loss of functionality).
-  CHECK(session != nullptr);
+  CHECK(session != nullptr)
+      << "Error activating curtain-mode: "
+      << "CGSessionCopyCurrentDictionary() returned NULL. "
+      << "Logging out and back in should resolve this error.";
 
   const void* on_console = CFDictionaryGetValue(session,
                                                 kCGSessionOnConsoleKey);
