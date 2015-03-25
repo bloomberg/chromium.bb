@@ -176,7 +176,7 @@ cr.define('options.passwordManager', function() {
      * @private
      */
     getOriginalIndex_: function() {
-      var index = this.dataItem[INDEX_DATA_INDEX];
+      var index = this.dataItem[ORIGINAL_DATA_INDEX];
       return index ? index : this.dataModel.indexOf(this.dataItem);
     },
 
@@ -235,7 +235,7 @@ cr.define('options.passwordManager', function() {
       return this.dataItem[FEDERATION_DATA_INDEX];
     },
     set federation(federation) {
-      this.dataItem[FEDERATION_DATA_INDEX] = password;
+      this.dataItem[FEDERATION_DATA_INDEX] = federation;
     },
   };
 
