@@ -38,10 +38,6 @@ function setUp() {
   new MockChromeStorageAPI();
   importer.setupTestLogger();
 
-  var cameraFileSystem = new MockFileSystem(
-      'camera-fs', 'filesystem:camera-123');
-  var sdFileSystem = new MockFileSystem(
-      'sd-fs', 'filesystem:sd-123');
   cameraVolume = MockVolumeManager.createMockVolumeInfo(
           VolumeManagerCommon.VolumeType.MTP,
           'camera-fs',
@@ -265,6 +261,14 @@ function testCreateMetadataHashcode(callback) {
   reportPromise(promise, callback);
 }
 
+function testHasMediaDirectory(callback) {
+  var dir = createDirectoryEntry(sdVolume, '/DCIM');
+  var promise = importer.hasMediaDirectory(sdVolume.fileSystem.root)
+      .then(assertTrue.bind(null));
+
+  reportPromise(promise, callback);
+}
+
 /** @param {string} path */
 function assertIsMediaDir(path) {
   var dir = createDirectoryEntry(sdVolume, path);
@@ -297,4 +301,3 @@ function createDirectoryEntry(volume, path) {
   entry.volumeId = volume.volumeId;
   return entry;
 }
-

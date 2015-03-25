@@ -11,6 +11,9 @@ var SHORT_RESCAN_INTERVAL = 100;
 /**
  * Data model of the file manager.
  *
+ * @constructor
+ * @extends {cr.EventTarget}
+ *
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
  * @param {FileFilter} fileFilter Instance of FileFilter.
@@ -18,12 +21,15 @@ var SHORT_RESCAN_INTERVAL = 100;
  *     service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
- * @constructor
- * @extends {cr.EventTarget}
+ * @param {!analytics.Tracker} tracker
  */
-function DirectoryModel(singleSelection, fileFilter,
-                        metadataModel,
-                        volumeManager, fileOperationManager) {
+function DirectoryModel(
+    singleSelection,
+    fileFilter,
+    metadataModel,
+    volumeManager,
+    fileOperationManager,
+    tracker) {
   this.fileListSelection_ = singleSelection ?
       new FileListSingleSelectionModel() : new FileListSelectionModel();
 
@@ -65,6 +71,9 @@ function DirectoryModel(singleSelection, fileFilter,
       fileOperationManager,
       'entries-changed',
       this.onEntriesChanged_.bind(this));
+
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
 }
 
 /**
@@ -921,17 +930,23 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
 
           var previousDirEntry =
               this.currentDirContents_.getDirectoryEntry();
-          this.clearAndScan_(
-              newDirectoryContents,
-              function(result) {
-                // Calls the callback of the method when successful.
-                if (result && opt_callback)
-                  opt_callback();
 
-                // Notify that the current task of this.directoryChangeQueue_
-                // is completed.
-                setTimeout(queueTaskCallback, 0);
-              });
+          var promises = [];
+
+          promises.push(
+              new Promise(
+                  /** @this {DirectoryModel} */
+                  function(resolve) {
+                    this.clearAndScan_(
+                        newDirectoryContents,
+                        function(result) {
+                          // Calls the callback of the method when successful.
+                          if (result && opt_callback)
+                            opt_callback();
+
+                          resolve(undefined);
+                        });
+                  }.bind(this)));
 
           // For tests that open the dialog to empty directories, everything
           // is loaded at this point.
@@ -945,9 +960,65 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.previousDirEntry = previousDirEntry;
           event.newDirEntry = dirEntry;
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
+
+          if (event.volumeChanged) {
+            promises.push(this.onVolumeChanged_(currentVolumeInfo));
+          }
+
           this.dispatchEvent(event);
+          Promise.all(promises).then(queueTaskCallback);
         }.bind(this));
   }.bind(this, this.changeDirectorySequence_));
+};
+
+/**
+ * Handles volume changed by sending an analytics appView event.
+ *
+ * @param {!VolumeInfo} volumeInfo The new volume info.
+ * @return {!Promise} resolves once handling is done.
+ * @private
+ */
+DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
+  // NOTE: That dynamic values, like volume name MUST NOT
+  // be sent to GA as that value can contain PII.
+  // VolumeType is an enum.
+  // ...
+  // But we can do stuff like figure out if this is a media device or vanilla
+  // removable device.
+  return Promise.resolve(undefined)
+      .then(
+          function() {
+            switch (volumeInfo.volumeType) {
+              case VolumeManagerCommon.VolumeType.REMOVABLE:
+                return importer.hasMediaDirectory(volumeInfo.fileSystem.root)
+                    .then(
+                        /**
+                         * @param {boolean} hasMedia
+                         * @return {string}
+                         */
+                        function(hasMedia) {
+                          return hasMedia ?
+                              volumeInfo.volumeType + ':with-media-dir' :
+                              volumeInfo.volumeType;
+                        });
+              case VolumeManagerCommon.VolumeType.PROVIDED:
+                var extensionId = volumeInfo.extensionId;
+                var extensionName =
+                    metrics.getFileSystemProviderName(extensionId, 'unknown');
+                // Make note of an unrecognized extension id. When we see
+                // high counts for a particular id, we should add it to the
+                // whitelist in metrics_events.js.
+                if (extensionId && extensionName == 'unknown') {
+                  this.tracker_.sendEvent(
+                      metrics.Internals.UNRECOGNIZED_FILE_SYSTEM_PROVIDER
+                          .label(extensionId));
+                }
+                return volumeInfo.volumeType + ':' + extensionName;
+              default:
+                return volumeInfo.volumeType;
+            }
+          })
+      .then(this.tracker_.sendAppView.bind(this.tracker_));
 };
 
 /**

@@ -850,7 +850,8 @@ FileManager.prototype = /** @struct */ {
         this.fileFilter_,
         this.metadataModel_,
         this.volumeManager_,
-        this.fileOperationManager_);
+        this.fileOperationManager_,
+        assert(this.tracker_));
 
     this.folderShortcutsModel_ = new FolderShortcutsDataModel(
         this.volumeManager_);
@@ -860,19 +861,6 @@ FileManager.prototype = /** @struct */ {
     this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onFileSelectionChanged.bind(
             this.selectionHandler_));
-
-    this.directoryModel_.addEventListener(
-        'directory-changed',
-        function(event) {
-          if (event.volumeChanged) {
-            var volumeInfo =
-                this.volumeManager_.getVolumeInfo(event.newDirEntry);
-            // NOTE: That dynamic values, like volume name MUST NOT
-            // be sent to GA as that value can contain PII.
-            // VolumeType is an enum.
-            this.tracker_.sendAppView(volumeInfo.volumeType);
-          }
-        }.bind(this));
 
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.

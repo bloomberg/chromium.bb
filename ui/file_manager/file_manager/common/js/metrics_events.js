@@ -18,7 +18,8 @@ var metrics = metrics || metricsBase;
 
 /** @enum {string} */
 metrics.Categories = {
-  ACQUISITION: 'Acquisition'
+  ACQUISITION: 'Acquisition',
+  INTERNALS: 'Internals'
 };
 
 /**
@@ -29,6 +30,32 @@ metrics.Dimension_ = {
   CONSUMER_TYPE: 1,
   SESSION_TYPE: 2,
   MACHINE_USE: 3
+};
+
+/**
+ * Enumeration of known FSPs used to qualify "provided" extensions
+ * "screens" on analytics. All FSPs NOT present in this list
+ * will be reported to analytics as 'provided-unknown'.
+ *
+ * NOTE: When an unknown provider is encountered, a separate event will be
+ * sent to analytics with the id. Consulation of that event will provided
+ * an indication when an extension is popular enough to be added to the
+ * whitelist.
+ *
+ * @enum {string}
+ */
+metrics.FileSystemProviders = {
+  oedeeodfidgoollimchfdnbmhcpnklnd: 'ZipUnpacker'
+};
+
+/**
+ * Returns a new "screen" name for a provided file system type.
+ * @param {string|undefined} extensionId The FSP provider extension ID.
+ * @param {string} defaultName
+ * @return {string} Name or undefined if extension is unrecognized.
+ */
+metrics.getFileSystemProviderName = function(extensionId, defaultName) {
+  return metrics.FileSystemProviders[extensionId] || defaultName;
 };
 
 /**
@@ -70,12 +97,12 @@ metrics.event = metrics.event || {};
  */
 metrics.event.Builders_ = {
   IMPORT: analytics.EventBuilder.builder()
-      .category(metrics.Categories.ACQUISITION)
+      .category(metrics.Categories.ACQUISITION),
+  INTERNALS: analytics.EventBuilder.builder()
+      .category(metrics.Categories.INTERNALS)
 };
 
-/**
- * @enum {!analytics.EventBuilder}
- */
+/** @enum {!analytics.EventBuilder} */
 metrics.ImportEvents = {
   DEVICE_YANKED: metrics.event.Builders_.IMPORT
       .action('Device Yanked'),
@@ -102,6 +129,12 @@ metrics.ImportEvents = {
       .action('Import Started')
       .dimension(metrics.Dimensions.SESSION_TYPE_IMPORT)
       .dimension(metrics.Dimensions.CONSUMER_TYPE_IMPORTER)
+};
+
+/** @enum {!analytics.EventBuilder} */
+metrics.Internals = {
+  UNRECOGNIZED_FILE_SYSTEM_PROVIDER: metrics.event.Builders_.INTERNALS
+      .action('Unrecognized File System Provider')
 };
 
 // namespace

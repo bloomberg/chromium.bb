@@ -197,6 +197,75 @@ importer.isMediaDirectory = function(entry, volumeInfoProvider) {
 };
 
 /**
+ * @param {!DirectoryEntry} directory Presumably the root of a filesystem.
+ * @return {!Promise<boolean>} True if the directory contains a
+ *     child media directory (like 'DCIM').
+ */
+importer.hasMediaDirectory = function(directory) {
+  /**
+   * @param {boolean} answer
+   * @return {boolean}
+   */
+  var isTrue = function(answer) {
+    return answer;
+  };
+  var dirNames = Object.keys(importer.ValidImportRoots_);
+  return Promise.all(dirNames.map(importer.hasDirectory_.bind(null, directory)))
+      .then(
+          /**
+           * @param {!Array<boolean>} results
+           * @return {!Promise<boolean>}
+           */
+          function(results) {
+            if (results.some(isTrue)) {
+              return Promise.resolve(true);
+            } else {
+              // If standard (upper case) forms are not present,
+              // check for a lower-case "DCIM".
+              return importer.hasDirectory_(directory, 'dcim');
+            }
+          });
+};
+
+/**
+ * @param {!DirectoryEntry} parent
+ * @param {string} name
+ * @return {!Promise<boolean>} True if parent contains a directory
+ *     with the specified name.
+ * @private
+ */
+importer.hasDirectory_ = function(parent, name) {
+  return importer.getDirectory_(parent, name)
+      .then(
+          function() {
+            return true;
+          },
+          function() {
+            return false;
+          });
+};
+
+/**
+ * @param {!DirectoryEntry} parent
+ * @param {string} name
+ * @return {!Promise<!DirectoryEntry>}
+ * @private
+ */
+importer.getDirectory_ = function(parent, name) {
+  return new Promise(
+    function(resolve, reject) {
+      parent.getDirectory(
+          name,
+          {
+            create: false,
+            exclusive: false
+          },
+          resolve,
+          reject);
+    });
+};
+
+/**
  * @return {!Promise<boolean>} Resolves with true when Cloud Import feature
  *     is enabled.
  */
@@ -329,7 +398,7 @@ importer.getUnownedHistoryFiles_ = function(machineId) {
       .then(
           /** @param {!DirectoryEntry} root */
           function(root) {
-            return fileOperationUtil.listEntries(
+            return importer.listEntries_(
                 root,
                 /** @param {Entry} entry */
                 function(entry) {
@@ -372,6 +441,37 @@ importer.getHistoryFiles = function() {
           historyFiles.unshift(entries[0]);
           return historyFiles;
         });
+};
+
+/**
+ * Calls {@code callback} for each child entry of {@code directory}.
+ *
+ * @param {!DirectoryEntry} directory
+ * @param {function(!Entry)} callback
+ * @return {!Promise} Resolves when listing is complete.
+ * @private
+ */
+importer.listEntries_ = function(directory, callback) {
+  return new Promise(
+      function(resolve, reject) {
+        var reader = directory.createReader();
+
+        var readEntries = function() {
+          reader.readEntries (
+              /** @param {!Array<!Entry>} entries */
+              function(entries) {
+                if (entries.length === 0) {
+                  resolve(undefined);
+                  return;
+                }
+                entries.forEach(callback);
+                readEntries();
+              },
+              reject);
+        };
+
+        readEntries();
+      });
 };
 
 /**
@@ -665,7 +765,6 @@ importer.ChromeSyncFilesystem.getOrCreateFileEntry = function(fileNamePromise) {
                             resolve,
                             reject);
                       });
-
                 });
           });
 
