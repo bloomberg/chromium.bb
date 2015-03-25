@@ -1607,6 +1607,27 @@ private:
     bool m_didFocusCalled;
 };
 
+TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame)
+{
+    ViewCreatingWebViewClient client;
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
+    WebViewImpl* webViewImpl = m_webViewHelper.initialize(true, 0, &client);
+    webViewImpl->page()->settings().setJavaScriptCanOpenWindowsAutomatically(true);
+
+    WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+    FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(), "<html><body><iframe src=\"about:blank\"></iframe></body></html>", baseURL);
+
+    // Make a request from a local frame.
+    WebURLRequest webURLRequestWithTargetStart;
+    webURLRequestWithTargetStart.initialize();
+    LocalFrame* localFrame = toWebLocalFrameImpl(webViewImpl->mainFrame()->firstChild())->frame();
+    FrameLoadRequest requestWithTargetStart(localFrame->document(), webURLRequestWithTargetStart.toResourceRequest(), "_top");
+    localFrame->loader().load(requestWithTargetStart);
+    EXPECT_FALSE(client.didFocusCalled());
+
+    m_webViewHelper.reset(); // Remove dependency on locally scoped client.
+}
+
 TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
 {
     ViewCreatingWebViewClient client;
