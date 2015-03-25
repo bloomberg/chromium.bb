@@ -84,10 +84,10 @@ PresentationServiceImpl::GetOrCreateAvailabilityContext(
   return it->second.get();
 }
 
-void PresentationServiceImpl::GetScreenAvailability(
+void PresentationServiceImpl::ListenForScreenAvailability(
     const mojo::String& presentation_url,
     const ScreenAvailabilityMojoCallback& callback) {
-  DVLOG(2) << "GetScreenAvailability";
+  DVLOG(2) << "ListenForScreenAvailability";
   if (!delegate_) {
     callback.Run(presentation_url, false);
     return;
@@ -102,9 +102,9 @@ void PresentationServiceImpl::GetScreenAvailability(
   context->CallbackReceived(callback);
 }
 
-void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved(
+void PresentationServiceImpl::RemoveScreenAvailabilityListener(
     const mojo::String& presentation_url) {
-  DVLOG(2) << "OnScreenAvailabilityListenerRemoved";
+  DVLOG(2) << "RemoveScreenAvailabilityListener";
   if (!delegate_)
     return;
 

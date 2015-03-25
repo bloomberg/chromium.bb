@@ -87,13 +87,12 @@ void PresentationDispatcher::DoUpdateAvailableChangeWatched(
     const std::string& presentation_url, bool watched) {
   ConnectToPresentationServiceIfNeeded();
   if (watched) {
-    presentation_service_->GetScreenAvailability(
+    presentation_service_->ListenForScreenAvailability(
         presentation_url,
         base::Bind(&PresentationDispatcher::OnScreenAvailabilityChanged,
                  base::Unretained(this)));
   } else {
-    presentation_service_->OnScreenAvailabilityListenerRemoved(
-        presentation_url);
+    presentation_service_->RemoveScreenAvailabilityListener(presentation_url);
   }
 }
 

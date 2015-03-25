@@ -73,7 +73,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // bit, and the state machine will reset.
   // The available bit is obtained from the embedder's media router.
   // The callback is obtained from the renderer via PresentationServiceImpl's
-  // GetScreenAvailability().
+  // ListenForScreenAvailability().
   class CONTENT_EXPORT ScreenAvailabilityContext
       : public PresentationScreenAvailabilityListener {
    public:
@@ -151,10 +151,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   void SetDefaultPresentationURL(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id) override;
-  void GetScreenAvailability(
+  void ListenForScreenAvailability(
       const mojo::String& presentation_url,
       const ScreenAvailabilityMojoCallback& callback) override;
-  void OnScreenAvailabilityListenerRemoved(
+  void RemoveScreenAvailabilityListener(
       const mojo::String& presentation_url) override;
   void ListenForDefaultSessionStart(
       const DefaultSessionMojoCallback& callback) override;

@@ -91,7 +91,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::TearDown();
   }
 
-  void GetScreenAvailabilityAndWait(
+  void ListenForScreenAvailabilityAndWait(
       const std::string& presentation_url,
       const base::Callback<void(const std::string&, bool)>& callback,
       bool delegate_success) {
@@ -104,7 +104,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
         .WillOnce(DoAll(
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
             Return(delegate_success)));
-    service_ptr_->GetScreenAvailability(presentation_url, callback);
+    service_ptr_->ListenForScreenAvailability(presentation_url, callback);
     run_loop.Run();
 
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
@@ -190,9 +190,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   int callback_count_;
 };
 
-TEST_F(PresentationServiceImplTest, GetScreenAvailability) {
+TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
@@ -200,7 +200,7 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailability) {
       true);
 
   // Different presentation URL.
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       "http://barUrl",
       base::Bind(&PresentationServiceImplTest::ShouldNotBeCalled,
           base::Unretained(this)),
@@ -217,7 +217,7 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailability) {
 
   // Register another callback which should immediately invoke callback
   // since updated result is available.
-  service_ptr_->GetScreenAvailability(
+  service_ptr_->ListenForScreenAvailability(
       presentation_url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
@@ -229,7 +229,7 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailability) {
 
 TEST_F(PresentationServiceImplTest, Reset) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(&PresentationServiceImplTest::ShouldNotBeCalled,
           base::Unretained(this)),
@@ -244,7 +244,7 @@ TEST_F(PresentationServiceImplTest, Reset) {
 
 TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(&PresentationServiceImplTest::ShouldNotBeCalled,
           base::Unretained(this)),
@@ -260,7 +260,7 @@ TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
 
 TEST_F(PresentationServiceImplTest, DidNavigateNotThisFrame) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
@@ -283,7 +283,7 @@ TEST_F(PresentationServiceImplTest, DidNavigateNotThisFrame) {
 
 TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(&PresentationServiceImplTest::ShouldNotBeCalled,
           base::Unretained(this)),
@@ -296,7 +296,7 @@ TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
 
 TEST_F(PresentationServiceImplTest, NotThisRenderFrameDeleted) {
     std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
@@ -314,9 +314,9 @@ TEST_F(PresentationServiceImplTest, NotThisRenderFrameDeleted) {
   EXPECT_EQ(1, callback_count_);
 }
 
-TEST_F(PresentationServiceImplTest, GetScreenAvailabilityTwice) {
+TEST_F(PresentationServiceImplTest, ListenForScreenAvailabilityTwice) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
@@ -326,14 +326,14 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailabilityTwice) {
 
   // Second call should overwrite the callback from first call.
   // It shouldn't result in an extra call to delegate.
-  service_ptr_->GetScreenAvailability(
+  service_ptr_->ListenForScreenAvailability(
       presentation_url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
           base::Unretained(this),
           false));
 
-  // Cannot use GetScreenAvailabilityAndWait here since the mock delegate
+  // Cannot use ListenForScreenAvailabilityAndWait here since the mock delegate
   // won't be triggered again to quit the RunLoop.
   RunLoopFor(base::TimeDelta::FromMilliseconds(50));
 
@@ -346,7 +346,7 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailabilityTwice) {
 
 TEST_F(PresentationServiceImplTest, DelegateFails) {
   std::string presentation_url("http://fooUrl");
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       presentation_url,
       base::Bind(&PresentationServiceImplTest::ShouldNotBeCalled,
           base::Unretained(this)),
@@ -365,7 +365,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
   EXPECT_EQ(url1, service_impl_->default_presentation_url_);
 
   // Now there should be a callback registered with the DPU.
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       url1,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
@@ -425,7 +425,7 @@ TEST_F(PresentationServiceImplTest, ClearDefaultPresentationUrl) {
   EXPECT_EQ(url, service_impl_->default_presentation_url_);
 
   // Now there should be a callback registered with the DPU.
-  GetScreenAvailabilityAndWait(
+  ListenForScreenAvailabilityAndWait(
       url,
       base::Bind(
           &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
