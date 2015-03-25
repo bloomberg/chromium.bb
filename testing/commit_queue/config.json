@@ -39,12 +39,6 @@
                             "android_amp_rel_tests_recipe": [
                                 "defaulttests"
                             ],
-                            "cast_shell": [
-                                "defaulttests"
-                            ],
-                            "cast_shell_apk": [
-                                "defaulttests"
-                            ],
                             "linux_arm_compile": [
                                 "defaulttests"
                             ],
