@@ -49,15 +49,15 @@ public:
     ~WorkerScriptDebugServer() override { }
     DECLARE_VIRTUAL_TRACE();
 
-    static void setContextDebugData(v8::Handle<v8::Context>);
+    static void setContextDebugData(v8::Local<v8::Context>);
     void addListener(ScriptDebugListener*);
     void removeListener(ScriptDebugListener*);
 
 private:
     explicit WorkerScriptDebugServer(WorkerGlobalScope*);
 
-    ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
-    void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
+    ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
+    void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;
 
     ScriptDebugListener* m_listener;

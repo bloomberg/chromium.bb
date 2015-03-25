@@ -62,11 +62,11 @@ void InjectedScriptManager::removeCallbackData(InjectedScriptManager::CallbackDa
     m_callbackDataSet.remove(callbackData);
 }
 
-static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(host);
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, &V8InjectedScriptHost::wrapperTypeInfo, host.get());
+    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, &V8InjectedScriptHost::wrapperTypeInfo, host.get());
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -108,7 +108,7 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Object> windowGlobal = inspectedScriptState->context()->Global();
-    v8::Handle<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedScriptState->isolate(), id) };
+    v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedScriptState->isolate(), id) };
     v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedScriptState->isolate());
     return ScriptValue(inspectedScriptState, injectedScriptValue);
 }
@@ -119,7 +119,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     v8::Local<v8::Object> global = scriptState->context()->Global();
     if (global.IsEmpty())
         return false;
-    v8::Handle<v8::Object> holder = V8Window::findInstanceInPrototypeChain(global, scriptState->isolate());
+    v8::Local<v8::Object> holder = V8Window::findInstanceInPrototypeChain(global, scriptState->isolate());
     if (holder.IsEmpty())
         return false;
     LocalFrame* frame = toLocalDOMWindow(V8Window::toImpl(holder))->frame();

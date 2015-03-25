@@ -538,7 +538,7 @@ int WebFrame::instanceCount()
 
 WebLocalFrame* WebLocalFrame::frameForCurrentContext()
 {
-    v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
+    v8::Local<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
     if (context.IsEmpty())
         return 0;
     return frameForContext(context);
@@ -892,7 +892,9 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(int worldID, const W
 v8::Handle<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[])
 {
     ASSERT(frame());
-    return frame()->script().callFunction(function, receiver, argc, argv);
+    // TODO(bashi): Change the signature of callFunctionEvenIfScriptDisabled()
+    // so that it takes v8::Local instead of v8::Handle.
+    return frame()->script().callFunction(v8::Local<v8::Function>(function), v8::Local<v8::Value>(receiver), argc, static_cast<v8::Local<v8::Value>*>(argv));
 }
 
 v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
@@ -1889,7 +1891,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
     v8::Local<v8::Value> result = frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
     if (result.IsEmpty() || !result->IsString())
         return;
-    String scriptResult = toCoreString(v8::Handle<v8::String>::Cast(result));
+    String scriptResult = toCoreString(v8::Local<v8::String>::Cast(result));
     if (!frame()->navigationScheduler().locationChangePending())
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
 }

@@ -20,7 +20,7 @@
 
 namespace blink {
 
-static void dumpV8Message(v8::Handle<v8::Message> message)
+static void dumpV8Message(v8::Local<v8::Message> message)
 {
     if (message.IsEmpty())
         return;
@@ -32,29 +32,29 @@ static void dumpV8Message(v8::Handle<v8::Message> message)
     message->GetScriptOrigin();
     message->GetLineNumber();
 
-    v8::Handle<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
+    v8::Local<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
     String fileName = "Unknown JavaScript file";
     if (!resourceName.IsEmpty() && resourceName->IsString())
-        fileName = toCoreString(v8::Handle<v8::String>::Cast(resourceName));
+        fileName = toCoreString(v8::Local<v8::String>::Cast(resourceName));
     int lineNumber = message->GetLineNumber();
-    v8::Handle<v8::String> errorMessage = message->Get();
+    v8::Local<v8::String> errorMessage = message->Get();
     fprintf(stderr, "%s (line %d): %s\n", fileName.utf8().data(), lineNumber, toCoreString(errorMessage).utf8().data());
 }
 
 static void importFunction(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const char* source, size_t size)
+static v8::Local<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const char* source, size_t size)
 {
     v8::TryCatch block;
     String sourceString(source, size);
     String fileName = scriptClassName + ".js";
 
-    v8::Handle<v8::Object> global = isolate->GetCurrentContext()->Global();
-    v8::Handle<v8::Value> privateScriptController = global->Get(v8String(isolate, "privateScriptController"));
+    v8::Local<v8::Object> global = isolate->GetCurrentContext()->Global();
+    v8::Local<v8::Value> privateScriptController = global->Get(v8String(isolate, "privateScriptController"));
     RELEASE_ASSERT(privateScriptController->IsUndefined() || privateScriptController->IsObject());
     if (privateScriptController->IsObject()) {
-        v8::Handle<v8::Object> privateScriptControllerObject = privateScriptController->ToObject(isolate);
-        v8::Handle<v8::Value> importFunctionValue = privateScriptControllerObject->Get(v8String(isolate, "import"));
+        v8::Local<v8::Object> privateScriptControllerObject = privateScriptController->ToObject(isolate);
+        v8::Local<v8::Value> importFunctionValue = privateScriptControllerObject->Get(v8String(isolate, "import"));
         if (importFunctionValue->IsUndefined())
             privateScriptControllerObject->Set(v8String(isolate, "import"), v8::FunctionTemplate::New(isolate, importFunction)->GetFunction());
     }
@@ -130,7 +130,7 @@ static void installPrivateScript(v8::Isolate* isolate, String className)
     }
 }
 
-static v8::Handle<v8::Value> installPrivateScriptRunner(v8::Isolate* isolate)
+static v8::Local<v8::Value> installPrivateScriptRunner(v8::Isolate* isolate)
 {
     const String className = "PrivateScriptRunner";
     size_t index;
@@ -148,14 +148,14 @@ static v8::Handle<v8::Value> installPrivateScriptRunner(v8::Isolate* isolate)
     return compileAndRunPrivateScript(isolate, className, resourceData.utf8().data(), resourceData.length());
 }
 
-static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptState, String className)
+static v8::Local<v8::Object> classObjectOfPrivateScript(ScriptState* scriptState, String className)
 {
     ASSERT(scriptState->perContextData());
     ASSERT(scriptState->executionContext());
     v8::Isolate* isolate = scriptState->isolate();
-    v8::Handle<v8::Value> compiledClass = scriptState->perContextData()->compiledPrivateScript(className);
+    v8::Local<v8::Value> compiledClass = scriptState->perContextData()->compiledPrivateScript(className);
     if (compiledClass.IsEmpty()) {
-        v8::Handle<v8::Value> installedClasses = scriptState->perContextData()->compiledPrivateScript("PrivateScriptRunner");
+        v8::Local<v8::Value> installedClasses = scriptState->perContextData()->compiledPrivateScript("PrivateScriptRunner");
         if (installedClasses.IsEmpty()) {
             installedClasses = installPrivateScriptRunner(isolate);
             scriptState->perContextData()->setCompiledPrivateScript("PrivateScriptRunner", installedClasses);
@@ -164,27 +164,27 @@ static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptStat
         RELEASE_ASSERT(installedClasses->IsObject());
 
         installPrivateScript(isolate, className);
-        compiledClass = v8::Handle<v8::Object>::Cast(installedClasses)->Get(v8String(isolate, className));
+        compiledClass = v8::Local<v8::Object>::Cast(installedClasses)->Get(v8String(isolate, className));
         RELEASE_ASSERT(!compiledClass.IsEmpty());
         RELEASE_ASSERT(compiledClass->IsObject());
         scriptState->perContextData()->setCompiledPrivateScript(className, compiledClass);
     }
-    return v8::Handle<v8::Object>::Cast(compiledClass);
+    return v8::Local<v8::Object>::Cast(compiledClass);
 }
 
-static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Object> classObject, v8::Handle<v8::Value> holder)
+static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Object> classObject, v8::Local<v8::Value> holder)
 {
     RELEASE_ASSERT(!holder.IsEmpty());
     RELEASE_ASSERT(holder->IsObject());
-    v8::Handle<v8::Object> holderObject = v8::Handle<v8::Object>::Cast(holder);
+    v8::Local<v8::Object> holderObject = v8::Local<v8::Object>::Cast(holder);
     v8::Isolate* isolate = scriptState->isolate();
-    v8::Handle<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
+    v8::Local<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
     if (isInitialized.IsEmpty()) {
         v8::TryCatch block;
-        v8::Handle<v8::Value> initializeFunction = classObject->Get(v8String(isolate, "initialize"));
+        v8::Local<v8::Value> initializeFunction = classObject->Get(v8String(isolate, "initialize"));
         if (!initializeFunction.IsEmpty() && initializeFunction->IsFunction()) {
             v8::TryCatch block;
-            V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(initializeFunction), scriptState->executionContext(), holder, 0, 0, isolate);
+            V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(initializeFunction), scriptState->executionContext(), holder, 0, 0, isolate);
             if (block.HasCaught()) {
                 fprintf(stderr, "Private script error: Object constructor threw an exception.\n");
                 dumpV8Message(block.Message());
@@ -214,15 +214,15 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Ob
     }
 }
 
-v8::Handle<v8::Value> PrivateScriptRunner::installClassIfNeeded(Document* document, String className)
+v8::Local<v8::Value> PrivateScriptRunner::installClassIfNeeded(Document* document, String className)
 {
     v8::HandleScope handleScope(toIsolate(document));
-    v8::Handle<v8::Context> context = toV8Context(document->contextDocument().get(), DOMWrapperWorld::privateScriptIsolatedWorld());
+    v8::Local<v8::Context> context = toV8Context(document->contextDocument().get(), DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     ScriptState* scriptState = ScriptState::from(context);
     if (!scriptState->executionContext())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
 
     ScriptState::Scope scope(scriptState);
     return classObjectOfPrivateScript(scriptState, className);
@@ -232,22 +232,22 @@ namespace {
 
 void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, ScriptState* scriptStateInUserScript, ExceptionState::Context errorContext, const char* propertyName, const char* interfaceName)
 {
-    v8::Handle<v8::Value> exception = block.Exception();
+    v8::Local<v8::Value> exception = block.Exception();
     RELEASE_ASSERT(!exception.IsEmpty() && exception->IsObject());
 
-    v8::Handle<v8::Object> exceptionObject = v8::Handle<v8::Object>::Cast(exception);
-    v8::Handle<v8::Value> name = exceptionObject->Get(v8String(isolate, "name"));
+    v8::Local<v8::Object> exceptionObject = v8::Local<v8::Object>::Cast(exception);
+    v8::Local<v8::Value> name = exceptionObject->Get(v8String(isolate, "name"));
     RELEASE_ASSERT(!name.IsEmpty() && name->IsString());
 
-    v8::Handle<v8::Message> tryCatchMessage = block.Message();
-    v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+    v8::Local<v8::Message> tryCatchMessage = block.Message();
+    v8::Local<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
     String messageString;
     if (!message.IsEmpty() && message->IsString())
-        messageString = toCoreString(v8::Handle<v8::String>::Cast(message));
+        messageString = toCoreString(v8::Local<v8::String>::Cast(message));
 
-    String exceptionName = toCoreString(v8::Handle<v8::String>::Cast(name));
+    String exceptionName = toCoreString(v8::Local<v8::String>::Cast(name));
     if (exceptionName == "PrivateScriptException") {
-        v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
+        v8::Local<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
         RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
         NonThrowableExceptionState nonThrowableExceptionState;
         int exceptionCode = toInt32(isolate, code, NormalConversion, nonThrowableExceptionState);
@@ -277,49 +277,49 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, 
 
 } // namespace
 
-v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder)
+v8::Local<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Local<v8::Value> holder)
 {
     v8::Isolate* isolate = scriptState->isolate();
-    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Local<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
     v8::Local<v8::Value> descriptor;
     if (!classObject->GetOwnPropertyDescriptor(isolate->GetCurrentContext(), v8String(isolate, attributeName)).ToLocal(&descriptor) || !descriptor->IsObject()) {
         fprintf(stderr, "Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
         RELEASE_ASSERT_NOT_REACHED();
     }
-    v8::Handle<v8::Value> getter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(isolate, "get"));
+    v8::Local<v8::Value> getter = v8::Local<v8::Object>::Cast(descriptor)->Get(v8String(isolate, "get"));
     if (getter.IsEmpty() || !getter->IsFunction()) {
         fprintf(stderr, "Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
         RELEASE_ASSERT_NOT_REACHED();
     }
     initializeHolderIfNeeded(scriptState, classObject, holder);
     v8::TryCatch block;
-    v8::Handle<v8::Value> result = V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(getter), scriptState->executionContext(), holder, 0, 0, isolate);
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(getter), scriptState->executionContext(), holder, 0, 0, isolate);
     if (block.HasCaught()) {
         rethrowExceptionInPrivateScript(isolate, block, scriptStateInUserScript, ExceptionState::GetterContext, attributeName, className);
         block.ReThrow();
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     }
     return result;
 }
 
-bool PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value)
+bool PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Local<v8::Value> holder, v8::Local<v8::Value> v8Value)
 {
     v8::Isolate* isolate = scriptState->isolate();
-    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Local<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
     v8::Local<v8::Value> descriptor;
     if (!classObject->GetOwnPropertyDescriptor(isolate->GetCurrentContext(), v8String(isolate, attributeName)).ToLocal(&descriptor) || !descriptor->IsObject()) {
         fprintf(stderr, "Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
         RELEASE_ASSERT_NOT_REACHED();
     }
-    v8::Handle<v8::Value> setter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(isolate, "set"));
+    v8::Local<v8::Value> setter = v8::Local<v8::Object>::Cast(descriptor)->Get(v8String(isolate, "set"));
     if (setter.IsEmpty() || !setter->IsFunction()) {
         fprintf(stderr, "Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
         RELEASE_ASSERT_NOT_REACHED();
     }
     initializeHolderIfNeeded(scriptState, classObject, holder);
-    v8::Handle<v8::Value> argv[] = { v8Value };
+    v8::Local<v8::Value> argv[] = { v8Value };
     v8::TryCatch block;
-    V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(setter), scriptState->executionContext(), holder, WTF_ARRAY_LENGTH(argv), argv, isolate);
+    V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(setter), scriptState->executionContext(), holder, WTF_ARRAY_LENGTH(argv), argv, isolate);
     if (block.HasCaught()) {
         rethrowExceptionInPrivateScript(isolate, block, scriptStateInUserScript, ExceptionState::SetterContext, attributeName, className);
         block.ReThrow();
@@ -328,21 +328,21 @@ bool PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, Script
     return true;
 }
 
-v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[])
+v8::Local<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* methodName, v8::Local<v8::Value> holder, int argc, v8::Local<v8::Value> argv[])
 {
-    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
-    v8::Handle<v8::Value> method = classObject->Get(v8String(scriptState->isolate(), methodName));
+    v8::Local<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Local<v8::Value> method = classObject->Get(v8String(scriptState->isolate(), methodName));
     if (method.IsEmpty() || !method->IsFunction()) {
         fprintf(stderr, "Private script error: Target DOM method was not found. (Class name = %s, Method name = %s)\n", className, methodName);
         RELEASE_ASSERT_NOT_REACHED();
     }
     initializeHolderIfNeeded(scriptState, classObject, holder);
     v8::TryCatch block;
-    v8::Handle<v8::Value> result = V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
     if (block.HasCaught()) {
         rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, methodName, className);
         block.ReThrow();
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     }
     return result;
 }

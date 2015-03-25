@@ -54,7 +54,7 @@
 
 namespace blink {
 
-static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context)
+static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> context)
 {
     return toLocalFrame(toFrameIfNotDetached(context));
 }
@@ -93,7 +93,7 @@ DEFINE_TRACE(PageScriptDebugServer)
     ScriptDebugServer::trace(visitor);
 }
 
-void PageScriptDebugServer::setContextDebugData(v8::Handle<v8::Context> context, const String& type, int contextDebugId)
+void PageScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)
 {
     String debugData = "[" + type + "," + String::number(contextDebugId) + "]";
     ScriptDebugServer::setContextDebugData(context, debugData);
@@ -175,7 +175,7 @@ void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& sc
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 }
 
-ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context> context)
+ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(m_isolate);
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
@@ -184,7 +184,7 @@ ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handl
     return m_listenersMap.get(frame->localFrameRoot());
 }
 
-void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> context)
+void PageScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(m_isolate);
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);

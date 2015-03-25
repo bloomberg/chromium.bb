@@ -57,7 +57,7 @@ DEFINE_TRACE(WorkerScriptDebugServer)
     ScriptDebugServer::trace(visitor);
 }
 
-void WorkerScriptDebugServer::setContextDebugData(v8::Handle<v8::Context> context)
+void WorkerScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context)
 {
     ScriptDebugServer::setContextDebugData(context, workerContextDebugId);
 }
@@ -78,13 +78,13 @@ void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
     disable();
 }
 
-ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context>)
+ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context>)
 {
     // There is only one worker context in isolate.
     return m_listener;
 }
 
-void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context>)
+void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context>)
 {
     MessageQueueWaitResult result;
     m_workerGlobalScope->thread()->willEnterNestedLoop();

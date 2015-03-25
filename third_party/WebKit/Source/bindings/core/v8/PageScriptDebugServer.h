@@ -56,7 +56,7 @@ public:
     ~PageScriptDebugServer() override;
     DECLARE_VIRTUAL_TRACE();
 
-    static void setContextDebugData(v8::Handle<v8::Context>, const String& type, int contextDebugId);
+    static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextDebugId);
     void addListener(ScriptDebugListener*, LocalFrame*, int contextDebugId);
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
@@ -71,8 +71,8 @@ public:
     void unmuteWarningsAndDeprecations() override;
 
 private:
-    ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
-    void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
+    ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
+    void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;
     static WTF::Mutex& creationMutex();
 

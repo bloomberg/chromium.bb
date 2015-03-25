@@ -62,7 +62,7 @@ private:
 
     void execute(LocalFrame*);
     void execute(WorkerGlobalScope*);
-    void createLocalHandlesForArgs(Vector<v8::Handle<v8::Value>>* handles);
+    void createLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);
 
     ScriptStateProtectingContext m_scriptState;
     ScopedPersistent<v8::Function> m_function;

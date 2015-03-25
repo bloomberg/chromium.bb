@@ -33,7 +33,7 @@
 
 namespace blink {
 
-v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Handle<v8::Function> function)
+v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Local<v8::Function> function)
 {
     if (function.IsEmpty())
         return v8::Local<v8::Object>();
@@ -41,7 +41,7 @@ v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8:
     return V8ScriptRunner::instantiateObject(isolate, function);
 }
 
-v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[])
+v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Local<v8::Function> function, int argc, v8::Local<v8::Value> argv[])
 {
     if (function.IsEmpty())
         return v8::Local<v8::Object>();
@@ -49,7 +49,7 @@ v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8:
     return V8ScriptRunner::instantiateObject(isolate, function, argc, argv);
 }
 
-v8::Local<v8::Object> V8ObjectConstructor::newInstanceInDocument(v8::Isolate* isolate, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], Document* document)
+v8::Local<v8::Object> V8ObjectConstructor::newInstanceInDocument(v8::Isolate* isolate, v8::Local<v8::Function> function, int argc, v8::Local<v8::Value> argv[], Document* document)
 {
     if (function.IsEmpty())
         return v8::Local<v8::Object>();

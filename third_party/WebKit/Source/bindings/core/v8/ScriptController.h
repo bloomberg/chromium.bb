@@ -90,7 +90,7 @@ public:
     void executeScriptInMainWorld(const String&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
     void executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin, double* compilationFinishTime = 0);
     v8::Local<v8::Value> executeScriptInMainWorldAndReturnValue(const ScriptSourceCode&);
-    v8::Local<v8::Value> executeScriptAndReturnValue(v8::Handle<v8::Context>, const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin, double* compilationFinishTime = 0);
+    v8::Local<v8::Value> executeScriptAndReturnValue(v8::Local<v8::Context>, const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin, double* compilationFinishTime = 0);
 
     // Executes JavaScript in an isolated world. The script gets its own global scope,
     // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
@@ -106,8 +106,8 @@ public:
     // Returns true if argument is a JavaScript URL.
     bool executeScriptIfJavaScriptURL(const KURL&);
 
-    v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, v8::Handle<v8::Value>, int argc, v8::Handle<v8::Value> argv[]);
-    static v8::Local<v8::Value> callFunction(ExecutionContext*, v8::Handle<v8::Function>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
+    v8::Local<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Value>, int argc, v8::Local<v8::Value> argv[]);
+    static v8::Local<v8::Value> callFunction(ExecutionContext*, v8::Local<v8::Function>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[], v8::Isolate*);
 
     // Returns true if the current world is isolated, and has its own Content
     // Security Policy. In this case, the policy of the main world should be

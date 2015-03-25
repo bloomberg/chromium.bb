@@ -116,7 +116,7 @@ protected:
 
     virtual void prepareListenerObject(ExecutionContext*) { }
 
-    void setListenerObject(v8::Handle<v8::Object>);
+    void setListenerObject(v8::Local<v8::Object>);
 
     void invokeEventHandler(ScriptState*, Event*, v8::Local<v8::Value>);
 
@@ -127,7 +127,7 @@ private:
     // Implementation of EventListener function.
     virtual bool virtualisAttribute() const override { return m_isAttribute; }
 
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Handle<v8::Value> jsevent, Event*) = 0;
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value> jsevent, Event*) = 0;
 
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 

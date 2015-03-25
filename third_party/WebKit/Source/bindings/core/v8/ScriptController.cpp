@@ -141,14 +141,14 @@ void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
     m_windowProxyManager->mainWorldProxy()->updateSecurityOrigin(origin);
 }
 
-v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[])
+v8::Local<v8::Value> ScriptController::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
 {
     // Keep LocalFrame (and therefore ScriptController) alive.
     RefPtrWillBeRawPtr<LocalFrame> protect(frame());
     return ScriptController::callFunction(frame()->document(), function, receiver, argc, info, isolate());
 }
 
-v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate* isolate)
+v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[], v8::Isolate* isolate)
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(isolate, context, function));
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(context, DevToolsFunctionInfo(function));
@@ -157,7 +157,7 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
     return result;
 }
 
-v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus, double* compilationFinishTime)
+v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus, double* compilationFinishTime)
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame(), source.url().string(), source.startLine()));
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willEvaluateScript(frame(), source.url().string(), source.startLine());
@@ -219,7 +219,7 @@ WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world)
 bool ScriptController::shouldBypassMainWorldCSP()
 {
     v8::HandleScope handleScope(isolate());
-    v8::Handle<v8::Context> context = isolate()->GetCurrentContext();
+    v8::Local<v8::Context> context = isolate()->GetCurrentContext();
     if (context.IsEmpty() || !toDOMWindow(context))
         return false;
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate());
@@ -242,7 +242,7 @@ void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, 
         return;
 
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Object> value = createV8ObjectForNPObject(isolate(), object, 0);
+    v8::Local<v8::Object> value = createV8ObjectForNPObject(isolate(), object, 0);
 
     // Attach to the global object.
     scriptState->context()->Global()->Set(v8String(isolate(), key), value);
@@ -352,9 +352,9 @@ static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
 
     ScriptState::Scope scope(scriptState);
     LocalDOMWindow* window = frame->localDOMWindow();
-    v8::Handle<v8::Value> global = toV8(window, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> global = toV8(window, scriptState->context()->Global(), scriptState->isolate());
     ASSERT(global->IsObject());
-    return npCreateV8ScriptObject(isolate, 0, v8::Handle<v8::Object>::Cast(global), window);
+    return npCreateV8ScriptObject(isolate, 0, v8::Local<v8::Object>::Cast(global), window);
 }
 
 NPObject* ScriptController::windowScriptNPObject()
@@ -388,11 +388,11 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
 
     ScriptState::Scope scope(scriptState);
     LocalDOMWindow* window = frame()->localDOMWindow();
-    v8::Handle<v8::Value> v8plugin = toV8(plugin, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> v8plugin = toV8(plugin, scriptState->context()->Global(), scriptState->isolate());
     if (!v8plugin->IsObject())
         return createNoScriptObject();
 
-    return npCreateV8ScriptObject(scriptState->isolate(), 0, v8::Handle<v8::Object>::Cast(v8plugin), window);
+    return npCreateV8ScriptObject(scriptState->isolate(), 0, v8::Local<v8::Object>::Cast(v8plugin), window);
 }
 
 void ScriptController::clearWindowProxy()
@@ -441,7 +441,7 @@ void ScriptController::namedItemRemoved(HTMLDocument* doc, const AtomicString& n
 
 static bool isInPrivateScriptIsolateWorld(v8::Isolate* isolate)
 {
-    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     return !context.IsEmpty() && toDOMWindow(context) && DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld();
 }
 
@@ -508,7 +508,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     if (result.IsEmpty() || !result->IsString())
         return true;
-    String scriptResult = toCoreString(v8::Handle<v8::String>::Cast(result));
+    String scriptResult = toCoreString(v8::Local<v8::String>::Cast(result));
 
     // We're still in a frame, so there should be a DocumentLoader.
     ASSERT(frame()->document()->loader());
@@ -546,7 +546,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     m_sourceURL = &sourceURL;
 
     v8::EscapableHandleScope handleScope(isolate());
-    v8::Handle<v8::Context> context = toV8Context(frame(), DOMWrapperWorld::mainWorld());
+    v8::Local<v8::Context> context = toV8Context(frame(), DOMWrapperWorld::mainWorld());
     if (context.IsEmpty())
         return v8::Local<v8::Value>();
 

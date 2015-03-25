@@ -91,7 +91,7 @@ ScheduledAction::ScheduledAction(ScriptState* scriptState, const ScriptValue& fu
     , m_code(String(), KURL(), TextPosition::belowRangePosition())
 {
     ASSERT(function.isFunction());
-    m_function.set(scriptState->isolate(), v8::Handle<v8::Function>::Cast(function.v8Value()));
+    m_function.set(scriptState->isolate(), v8::Local<v8::Function>::Cast(function.v8Value()));
     m_info.ReserveCapacity(arguments.size());
     for (const ScriptValue& argument : arguments)
         m_info.Append(argument.v8Value());
@@ -115,7 +115,7 @@ void ScheduledAction::execute(LocalFrame* frame)
     ScriptState::Scope scope(m_scriptState.get());
     if (!m_function.isEmpty()) {
         WTF_LOG(Timers, "ScheduledAction::execute %p: have function", this);
-        Vector<v8::Handle<v8::Value>> info;
+        Vector<v8::Local<v8::Value>> info;
         createLocalHandlesForArgs(&info);
         frame->script().callFunction(m_function.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), info.size(), info.data());
     } else {
@@ -132,7 +132,7 @@ void ScheduledAction::execute(WorkerGlobalScope* worker)
     ASSERT(m_scriptState->contextIsValid());
     if (!m_function.isEmpty()) {
         ScriptState::Scope scope(m_scriptState.get());
-        Vector<v8::Handle<v8::Value>> info;
+        Vector<v8::Local<v8::Value>> info;
         createLocalHandlesForArgs(&info);
         V8ScriptRunner::callFunction(m_function.newLocal(m_scriptState->isolate()), worker, m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
     } else {
@@ -140,7 +140,7 @@ void ScheduledAction::execute(WorkerGlobalScope* worker)
     }
 }
 
-void ScheduledAction::createLocalHandlesForArgs(Vector<v8::Handle<v8::Value>>* handles)
+void ScheduledAction::createLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles)
 {
     handles->reserveCapacity(m_info.Size());
     for (size_t i = 0; i < m_info.Size(); ++i)

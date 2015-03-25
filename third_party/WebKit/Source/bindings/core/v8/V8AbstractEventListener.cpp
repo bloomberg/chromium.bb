@@ -94,13 +94,13 @@ void V8AbstractEventListener::handleEvent(ScriptState* scriptState, Event* event
     ScriptState::Scope scope(scriptState);
 
     // Get the V8 wrapper for the event object.
-    v8::Handle<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
+    v8::Local<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
     if (jsEvent.IsEmpty())
         return;
     invokeEventHandler(scriptState, event, v8::Local<v8::Value>::New(isolate(), jsEvent));
 }
 
-void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
+void V8AbstractEventListener::setListenerObject(v8::Local<v8::Object> listener)
 {
     m_listener.set(isolate(), listener);
     m_listener.setWeak(this, &setWeakCallback);
@@ -167,10 +167,10 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptState* sc
         return listener;
 
     EventTarget* target = event->currentTarget();
-    v8::Handle<v8::Value> value = toV8(target, scriptState->context()->Global(), isolate());
+    v8::Local<v8::Value> value = toV8(target, scriptState->context()->Global(), isolate());
     if (value.IsEmpty())
         return v8::Local<v8::Object>();
-    return v8::Local<v8::Object>::New(isolate(), v8::Handle<v8::Object>::Cast(value));
+    return v8::Local<v8::Object>::New(isolate(), v8::Local<v8::Object>::Cast(value));
 }
 
 bool V8AbstractEventListener::belongsToTheCurrentWorld() const

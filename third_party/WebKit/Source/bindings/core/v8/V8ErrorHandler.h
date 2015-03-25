@@ -45,11 +45,11 @@ public:
     {
         return adoptRef(new V8ErrorHandler(listener, isInline, scriptState));
     }
-    static void storeExceptionOnErrorEventWrapper(v8::Isolate*, ErrorEvent*, v8::Handle<v8::Value>, v8::Handle<v8::Object> creationContext);
+    static void storeExceptionOnErrorEventWrapper(v8::Isolate*, ErrorEvent*, v8::Local<v8::Value>, v8::Local<v8::Object> creationContext);
 
 private:
     V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, ScriptState*);
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Handle<v8::Value>, Event*) override;
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue) override;
 };
 

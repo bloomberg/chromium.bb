@@ -67,7 +67,7 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* script
     return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptState, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
     v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
     v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
@@ -84,7 +84,7 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptSt
     if (!frame->script().canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
 
-    v8::Handle<v8::Value> parameters[1] = { jsEvent };
+    v8::Local<v8::Value> parameters[1] = { jsEvent };
     return frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 }
 

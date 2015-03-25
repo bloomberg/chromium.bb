@@ -47,7 +47,7 @@ V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, Sc
 {
 }
 
-v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptState, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
     if (!event->hasInterface(EventNames::ErrorEvent))
         return V8EventListener::callListenerFunction(scriptState, jsEvent, event);
@@ -66,7 +66,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
         if (error.IsEmpty())
             error = v8::Null(isolate());
 
-        v8::Handle<v8::Value> parameters[5] = { v8String(isolate(), errorEvent->message()), v8String(isolate(), errorEvent->filename()), v8::Integer::New(isolate(), errorEvent->lineno()), v8::Integer::New(isolate(), errorEvent->colno()), error };
+        v8::Local<v8::Value> parameters[5] = { v8String(isolate(), errorEvent->message()), v8String(isolate(), errorEvent->filename()), v8::Integer::New(isolate(), errorEvent->lineno()), v8::Integer::New(isolate(), errorEvent->colno()), error };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
         if (scriptState->executionContext()->isWorkerGlobalScope())
@@ -78,7 +78,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
 }
 
 // static
-void V8ErrorHandler::storeExceptionOnErrorEventWrapper(v8::Isolate* isolate, ErrorEvent* event, v8::Handle<v8::Value> data, v8::Handle<v8::Object> creationContext)
+void V8ErrorHandler::storeExceptionOnErrorEventWrapper(v8::Isolate* isolate, ErrorEvent* event, v8::Local<v8::Value> data, v8::Local<v8::Object> creationContext)
 {
     v8::Local<v8::Value> wrappedEvent = toV8(event, creationContext, isolate);
     if (!wrappedEvent.IsEmpty()) {

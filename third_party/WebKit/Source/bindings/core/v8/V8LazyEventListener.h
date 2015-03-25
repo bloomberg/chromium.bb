@@ -56,7 +56,7 @@ protected:
 private:
     V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition&, Node*, v8::Isolate*);
 
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Handle<v8::Value>, Event*) override;
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
 
     // Needs to return true for all event handlers implemented in JavaScript so that
     // the SVG code does not add the event handler in both

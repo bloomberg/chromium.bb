@@ -65,7 +65,7 @@ public:
         EXPECT_EQ(event->type(), "blah");
 
         ScriptState::Scope scope(scriptState);
-        v8::Handle<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
+        v8::Local<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
 
         EXPECT_EQ(jsEvent->ToObject(isolate())->Get(v8AtomicString(isolate(), "detail")), v8::Boolean::New(isolate(), true));
     }
@@ -81,7 +81,7 @@ private:
     {
     }
 
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Handle<v8::Value>, Event*)
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*)
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Value>();

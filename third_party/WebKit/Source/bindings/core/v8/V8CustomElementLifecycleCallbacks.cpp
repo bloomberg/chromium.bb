@@ -49,7 +49,7 @@ namespace blink {
     V(detached, DetachedCallback)           \
     V(attributeChanged, AttributeChangedCallback)
 
-PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Local<v8::Object> prototype, v8::Local<v8::Function> created, v8::Local<v8::Function> attached, v8::Local<v8::Function> detached, v8::Local<v8::Function> attributeChanged)
 {
     v8::Isolate* isolate = scriptState->isolate();
     // A given object can only be used as a Custom Element prototype
@@ -65,7 +65,7 @@ PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecyc
     return adoptRefWillBeNoop(new V8CustomElementLifecycleCallbacks(scriptState, prototype, created, attached, detached, attributeChanged));
 }
 
-static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Local<v8::Function> attached, v8::Local<v8::Function> detached, v8::Local<v8::Function> attributeChanged)
 {
     // V8 Custom Elements always run created to swizzle prototypes.
     int flags = CustomElementLifecycleCallbacks::CreatedCallback;
@@ -88,7 +88,7 @@ static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T>>& dat
     data.GetParameter()->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState* scriptState, v8::Local<v8::Object> prototype, v8::Local<v8::Function> created, v8::Local<v8::Function> attached, v8::Local<v8::Function> detached, v8::Local<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
     , ContextLifecycleObserver(scriptState->executionContext())
     , m_scriptState(scriptState)
@@ -113,7 +113,7 @@ V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
     if (!executionContext())
         return 0;
 
-    v8::Handle<v8::Context> context = m_scriptState->context();
+    v8::Local<v8::Context> context = m_scriptState->context();
     if (context.IsEmpty())
         return 0;
 
@@ -195,18 +195,18 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
+    v8::Local<v8::Context> context = m_scriptState->context();
+    v8::Local<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
     ASSERT(!receiver.IsEmpty());
 
-    v8::Handle<v8::Function> callback = m_attributeChanged.newLocal(isolate);
+    v8::Local<v8::Function> callback = m_attributeChanged.newLocal(isolate);
     if (callback.IsEmpty())
         return;
 
-    v8::Handle<v8::Value> argv[] = {
+    v8::Local<v8::Value> argv[] = {
         v8String(isolate, name),
-        oldValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(isolate, oldValue)),
-        newValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(isolate, newValue))
+        oldValue.isNull() ? v8::Local<v8::Value>(v8::Null(isolate)) : v8::Local<v8::Value>(v8String(isolate, oldValue)),
+        newValue.isNull() ? v8::Local<v8::Value>(v8::Null(isolate)) : v8::Local<v8::Value>(v8String(isolate, newValue))
     };
 
     v8::TryCatch exceptionCatcher;
@@ -226,12 +226,12 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Handle<v8::Function> callback = weakCallback.newLocal(isolate);
+    v8::Local<v8::Context> context = m_scriptState->context();
+    v8::Local<v8::Function> callback = weakCallback.newLocal(isolate);
     if (callback.IsEmpty())
         return;
 
-    v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
+    v8::Local<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
     ASSERT(!receiver.IsEmpty());
 
     v8::TryCatch exceptionCatcher;

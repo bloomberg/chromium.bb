@@ -60,7 +60,7 @@ public:
 
     ScriptValue() { }
 
-    ScriptValue(ScriptState* scriptState, v8::Handle<v8::Value> value)
+    ScriptValue(ScriptState* scriptState, v8::Local<v8::Value> value)
         : m_scriptState(scriptState)
         , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, scriptState->isolate()))
     {
@@ -111,7 +111,7 @@ public:
     bool isFunction() const
     {
         ASSERT(!isEmpty());
-        v8::Handle<v8::Value> value = v8Value();
+        v8::Local<v8::Value> value = v8Value();
         return !value.IsEmpty() && value->IsFunction();
     }
 
@@ -119,7 +119,7 @@ public:
     bool isNull() const
     {
         ASSERT(!isEmpty());
-        v8::Handle<v8::Value> value = v8Value();
+        v8::Local<v8::Value> value = v8Value();
         return !value.IsEmpty() && value->IsNull();
     }
 
@@ -127,7 +127,7 @@ public:
     bool isUndefined() const
     {
         ASSERT(!isEmpty());
-        v8::Handle<v8::Value> value = v8Value();
+        v8::Local<v8::Value> value = v8Value();
         return !value.IsEmpty() && value->IsUndefined();
     }
 
@@ -135,7 +135,7 @@ public:
     bool isObject() const
     {
         ASSERT(!isEmpty());
-        v8::Handle<v8::Value> value = v8Value();
+        v8::Local<v8::Value> value = v8Value();
         return !value.IsEmpty() && value->IsObject();
     }
 
@@ -149,8 +149,8 @@ public:
         m_value = nullptr;
     }
 
-    v8::Handle<v8::Value> v8Value() const;
-    v8::Handle<v8::Value> v8ValueUnsafe() const;
+    v8::Local<v8::Value> v8Value() const;
+    v8::Local<v8::Value> v8ValueUnsafe() const;
 
     bool toString(String&) const;
     PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;

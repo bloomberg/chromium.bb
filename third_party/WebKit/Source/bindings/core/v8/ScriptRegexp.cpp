@@ -77,7 +77,7 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
 
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
     v8::Local<v8::Function> exec = regex->Get(v8AtomicString(isolate, "exec")).As<v8::Function>();
-    v8::Handle<v8::Value> argv[] = { v8String(isolate, string.substring(startFrom)) };
+    v8::Local<v8::Value> argv[] = { v8String(isolate, string.substring(startFrom)) };
     v8::Local<v8::Value> returnValue = V8ScriptRunner::callInternalFunction(exec, regex, WTF_ARRAY_LENGTH(argv), argv, isolate);
 
     if (tryCatch.HasCaught())

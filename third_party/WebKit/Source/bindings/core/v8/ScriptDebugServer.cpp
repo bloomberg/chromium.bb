@@ -63,10 +63,10 @@ const char stepIntoV8MethodName[] = "stepIntoStatement";
 const char stepOutV8MethodName[] = "stepOutOfFunction";
 }
 
-v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[])
+v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[])
 {
     v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
-    v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString(functionName)));
+    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString(functionName)));
     ASSERT(m_isolate->InContext());
     return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate);
 }
@@ -101,7 +101,7 @@ void ScriptDebugServer::disable()
     // FIXME: Remove all breakpoints set by the agent.
 }
 
-void ScriptDebugServer::setContextDebugData(v8::Handle<v8::Context> context, const String& contextDebugData)
+void ScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context, const String& contextDebugData)
 {
     v8::HandleScope scope(context->GetIsolate());
     v8::Context::Scope contextScope(context);
@@ -116,15 +116,15 @@ void ScriptDebugServer::reportCompiledScripts(const String& contextDebugDataSubs
 
     v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
     ASSERT(!debuggerScript->IsUndefined());
-    v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
-    v8::Handle<v8::Value> argv[] = { v8String(m_isolate, contextDebugDataSubstring) };
-    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
+    v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
+    v8::Local<v8::Value> argv[] = { v8String(m_isolate, contextDebugDataSubstring) };
+    v8::Local<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
     if (value.IsEmpty())
         return;
     ASSERT(value->IsArray());
-    v8::Handle<v8::Array> scriptsArray = v8::Handle<v8::Array>::Cast(value);
+    v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
     for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
+        dispatchDidParseSource(listener, v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
 }
 
 String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
@@ -140,8 +140,8 @@ String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBrea
     info->Set(v8InternalizedString("interstatementLocation"), v8Boolean(interstatementLocation, m_isolate));
     info->Set(v8InternalizedString("condition"), v8String(m_isolate, scriptBreakpoint.condition));
 
-    v8::Handle<v8::Function> setBreakpointFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("setBreakpoint")));
-    v8::Handle<v8::Value> breakpointId = v8::Debug::Call(setBreakpointFunction, info);
+    v8::Local<v8::Function> setBreakpointFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("setBreakpoint")));
+    v8::Local<v8::Value> breakpointId = v8::Debug::Call(setBreakpointFunction, info);
     if (breakpointId.IsEmpty() || !breakpointId->IsString())
         return "";
     *actualLineNumber = info->Get(v8InternalizedString("lineNumber"))->Int32Value();
@@ -158,7 +158,7 @@ void ScriptDebugServer::removeBreakpoint(const String& breakpointId)
     v8::Local<v8::Object> info = v8::Object::New(m_isolate);
     info->Set(v8InternalizedString("breakpointId"), v8String(m_isolate, breakpointId));
 
-    v8::Handle<v8::Function> removeBreakpointFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("removeBreakpoint")));
+    v8::Local<v8::Function> removeBreakpointFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("removeBreakpoint")));
     v8::Debug::Call(removeBreakpointFunction, info);
 }
 
@@ -169,7 +169,7 @@ void ScriptDebugServer::clearBreakpoints()
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
-    v8::Handle<v8::Function> clearBreakpoints = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("clearBreakpoints")));
+    v8::Local<v8::Function> clearBreakpoints = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("clearBreakpoints")));
     v8::Debug::Call(clearBreakpoints);
 }
 
@@ -182,7 +182,7 @@ void ScriptDebugServer::setBreakpointsActivated(bool activated)
 
     v8::Local<v8::Object> info = v8::Object::New(m_isolate);
     info->Set(v8InternalizedString("enabled"), v8::Boolean::New(m_isolate, activated));
-    v8::Handle<v8::Function> setBreakpointsActivated = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("setBreakpointsActivated")));
+    v8::Local<v8::Function> setBreakpointsActivated = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("setBreakpointsActivated")));
     v8::Debug::Call(setBreakpointsActivated, info);
 
     m_breakpointsActivated = activated;
@@ -194,8 +194,8 @@ ScriptDebugServer::PauseOnExceptionsState ScriptDebugServer::pauseOnExceptionsSt
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
-    v8::Handle<v8::Value> argv[] = { v8Undefined() };
-    v8::Handle<v8::Value> result = callDebuggerMethod("pauseOnExceptionsState", 0, argv);
+    v8::Local<v8::Value> argv[] = { v8Undefined() };
+    v8::Local<v8::Value> result = callDebuggerMethod("pauseOnExceptionsState", 0, argv);
     return static_cast<ScriptDebugServer::PauseOnExceptionsState>(result->Int32Value());
 }
 
@@ -205,7 +205,7 @@ void ScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pauseOn
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
-    v8::Handle<v8::Value> argv[] = { v8::Int32::New(m_isolate, pauseOnExceptionsState) };
+    v8::Local<v8::Value> argv[] = { v8::Int32::New(m_isolate, pauseOnExceptionsState) };
     callDebuggerMethod("setPauseOnExceptionsState", 1, argv);
 }
 
@@ -234,8 +234,8 @@ void ScriptDebugServer::breakProgram()
 {
     if (isPaused()) {
         ASSERT(!m_runningNestedMessageLoop);
-        v8::Handle<v8::Value> exception;
-        v8::Handle<v8::Array> hitBreakpoints;
+        v8::Local<v8::Value> exception;
+        v8::Local<v8::Array> hitBreakpoints;
         handleProgramBreak(m_pausedScriptState.get(), m_executionState, exception, hitBreakpoints);
         return;
     }
@@ -245,12 +245,12 @@ void ScriptDebugServer::breakProgram()
 
     v8::HandleScope scope(m_isolate);
     if (m_breakProgramCallbackTemplate.IsEmpty()) {
-        v8::Handle<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate);
+        v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate);
         templ->SetCallHandler(&ScriptDebugServer::breakProgramCallback, v8::External::New(m_isolate, this));
         m_breakProgramCallbackTemplate.Reset(m_isolate, templ);
     }
 
-    v8::Handle<v8::Function> breakProgramFunction = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_breakProgramCallbackTemplate)->GetFunction();
+    v8::Local<v8::Function> breakProgramFunction = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_breakProgramCallbackTemplate)->GetFunction();
     v8::Debug::Call(breakProgramFunction);
 }
 
@@ -267,7 +267,7 @@ void ScriptDebugServer::stepIntoStatement()
     ASSERT(isPaused());
     ASSERT(!m_executionState.IsEmpty());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> argv[] = { m_executionState };
+    v8::Local<v8::Value> argv[] = { m_executionState };
     callDebuggerMethod(stepIntoV8MethodName, 1, argv);
     continueProgram();
 }
@@ -277,7 +277,7 @@ void ScriptDebugServer::stepOverStatement()
     ASSERT(isPaused());
     ASSERT(!m_executionState.IsEmpty());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> argv[] = { m_executionState };
+    v8::Local<v8::Value> argv[] = { m_executionState };
     callDebuggerMethod("stepOverStatement", 1, argv);
     continueProgram();
 }
@@ -287,7 +287,7 @@ void ScriptDebugServer::stepOutOfFunction()
     ASSERT(isPaused());
     ASSERT(!m_executionState.IsEmpty());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> argv[] = { m_executionState };
+    v8::Local<v8::Value> argv[] = { m_executionState };
     callDebuggerMethod(stepOutV8MethodName, 1, argv);
     continueProgram();
 }
@@ -298,7 +298,7 @@ void ScriptDebugServer::clearStepping()
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
-    v8::Handle<v8::Value> argv[] = { v8Undefined() };
+    v8::Local<v8::Value> argv[] = { v8Undefined() };
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
@@ -316,11 +316,11 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     v8::HandleScope scope(m_isolate);
 
     OwnPtr<v8::Context::Scope> contextScope;
-    v8::Handle<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
+    v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     if (!isPaused())
         contextScope = adoptPtr(new v8::Context::Scope(debuggerContext));
 
-    v8::Handle<v8::Value> argv[] = { v8String(m_isolate, sourceID), v8String(m_isolate, newContent), v8Boolean(preview, m_isolate) };
+    v8::Local<v8::Value> argv[] = { v8String(m_isolate, sourceID), v8String(m_isolate, newContent), v8Boolean(preview, m_isolate) };
 
     v8::Local<v8::Value> v8result;
     {
@@ -375,8 +375,8 @@ int ScriptDebugServer::frameCount()
 {
     ASSERT(isPaused());
     ASSERT(!m_executionState.IsEmpty());
-    v8::Handle<v8::Value> argv[] = { m_executionState };
-    v8::Handle<v8::Value> result = callDebuggerMethod("frameCount", WTF_ARRAY_LENGTH(argv), argv);
+    v8::Local<v8::Value> argv[] = { m_executionState };
+    v8::Local<v8::Value> result = callDebuggerMethod("frameCount", WTF_ARRAY_LENGTH(argv), argv);
     if (result->IsInt32())
         return result->Int32Value();
     return 0;
@@ -391,7 +391,7 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::toJavaScriptCallF
         return nullptr;
     ScriptState::Scope scope(scriptState);
     ASSERT(value.isObject());
-    return V8JavaScriptCallFrame::toImpl(v8::Handle<v8::Object>::Cast(value.v8ValueUnsafe()));
+    return V8JavaScriptCallFrame::toImpl(v8::Local<v8::Object>::Cast(value.v8ValueUnsafe()));
 }
 
 PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
@@ -401,18 +401,18 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(in
 
     ASSERT(maximumLimit >= 0);
     int data = (maximumLimit << scopeBits) | scopeDetails;
-    v8::Handle<v8::Value> currentCallFrameV8;
+    v8::Local<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
-        v8::Handle<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("currentCallFrame")));
+        v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("currentCallFrame")));
         currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(m_isolate, data));
     } else {
-        v8::Handle<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, data) };
+        v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, data) };
         currentCallFrameV8 = callDebuggerMethod("currentCallFrame", WTF_ARRAY_LENGTH(argv), argv);
     }
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
         return nullptr;
-    return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
+    return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
 ScriptValue ScriptDebugServer::currentCallFramesInner(ScopeInfoDetails scopeDetails)
@@ -451,18 +451,18 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::callFrameNoScopes
         return nullptr;
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Value> currentCallFrameV8;
+    v8::Local<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
-        v8::Handle<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("currentCallFrameByIndex")));
+        v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(debuggerScriptLocal()->Get(v8InternalizedString("currentCallFrameByIndex")));
         currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(m_isolate, index));
     } else {
-        v8::Handle<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, index) };
+        v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, index) };
         currentCallFrameV8 = callDebuggerMethod("currentCallFrameByIndex", WTF_ARRAY_LENGTH(argv), argv);
     }
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
         return nullptr;
-    return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
+    return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
 void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
@@ -475,9 +475,9 @@ void ScriptDebugServer::runPendingTasks()
     v8::Debug::ProcessDebugMessages();
 }
 
-static ScriptDebugServer* toScriptDebugServer(v8::Handle<v8::Value> data)
+static ScriptDebugServer* toScriptDebugServer(v8::Local<v8::Value> data)
 {
-    void* p = v8::Handle<v8::External>::Cast(data)->Value();
+    void* p = v8::Local<v8::External>::Cast(data)->Value();
     return static_cast<ScriptDebugServer*>(p);
 }
 
@@ -486,12 +486,12 @@ void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::
     ASSERT(2 == info.Length());
     ScriptDebugServer* thisPtr = toScriptDebugServer(info.Data());
     ScriptState* pausedScriptState = ScriptState::current(thisPtr->m_isolate);
-    v8::Handle<v8::Value> exception;
-    v8::Handle<v8::Array> hitBreakpoints;
-    thisPtr->handleProgramBreak(pausedScriptState, v8::Handle<v8::Object>::Cast(info[0]), exception, hitBreakpoints);
+    v8::Local<v8::Value> exception;
+    v8::Local<v8::Array> hitBreakpoints;
+    thisPtr->handleProgramBreak(pausedScriptState, v8::Local<v8::Object>::Cast(info[0]), exception, hitBreakpoints);
 }
 
-void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers, bool isPromiseRejection)
+void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpointNumbers, bool isPromiseRejection)
 {
     // Don't allow nested breaks.
     if (m_runningNestedMessageLoop)
@@ -505,7 +505,7 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::H
     if (!hitBreakpointNumbers.IsEmpty()) {
         breakpointIds.resize(hitBreakpointNumbers->Length());
         for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {
-            v8::Handle<v8::Value> hitBreakpointNumber = hitBreakpointNumbers->Get(i);
+            v8::Local<v8::Value> hitBreakpointNumber = hitBreakpointNumbers->Get(i);
             ASSERT(!hitBreakpointNumber.IsEmpty() && hitBreakpointNumber->IsInt32());
             breakpointIds[i] = String::number(hitBreakpointNumber->Int32Value());
         }
@@ -523,13 +523,13 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::H
     m_executionState.Clear();
 
     if (result == ScriptDebugListener::StepFrame) {
-        v8::Handle<v8::Value> argv[] = { executionState };
+        v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod("stepFrameStatement", 1, argv);
     } else if (result == ScriptDebugListener::StepInto) {
-        v8::Handle<v8::Value> argv[] = { executionState };
+        v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod(stepIntoV8MethodName, 1, argv);
     } else if (result == ScriptDebugListener::StepOut) {
-        v8::Handle<v8::Value> argv[] = { executionState };
+        v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod(stepOutV8MethodName, 1, argv);
     }
 }
@@ -540,11 +540,11 @@ void ScriptDebugServer::v8DebugEventCallback(const v8::Debug::EventDetails& even
     thisPtr->handleV8DebugEvent(eventDetails);
 }
 
-static v8::Handle<v8::Value> callInternalGetterFunction(v8::Handle<v8::Object> object, const char* functionName, v8::Isolate* isolate)
+static v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object> object, const char* functionName, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Value> getterValue = object->Get(v8AtomicString(isolate, functionName));
+    v8::Local<v8::Value> getterValue = object->Get(v8AtomicString(isolate, functionName));
     ASSERT(!getterValue.IsEmpty() && getterValue->IsFunction());
-    return V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(getterValue), object, 0, 0, isolate);
+    return V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0, isolate);
 }
 
 void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
@@ -560,7 +560,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
     if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError && event != v8::PromiseEvent)
         return;
 
-    v8::Handle<v8::Context> eventContext = eventDetails.GetEventContext();
+    v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
     ASSERT(!eventContext.IsEmpty());
 
     ScriptDebugListener* listener = getDebugListenerForContext(eventContext);
@@ -568,22 +568,22 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
         v8::HandleScope scope(m_isolate);
         if (event == v8::AfterCompile || event == v8::CompileError) {
             v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
-            v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv);
+            v8::Local<v8::Value> argv[] = { eventDetails.GetEventData() };
+            v8::Local<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv);
             ASSERT(value->IsObject());
-            v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+            v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
             dispatchDidParseSource(listener, object, event != v8::AfterCompile ? CompileError : CompileSuccess);
         } else if (event == v8::Exception) {
-            v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
-            v8::Handle<v8::Value> exception = callInternalGetterFunction(eventData, "exception", m_isolate);
-            v8::Handle<v8::Value> promise = callInternalGetterFunction(eventData, "promise", m_isolate);
+            v8::Local<v8::Object> eventData = eventDetails.GetEventData();
+            v8::Local<v8::Value> exception = callInternalGetterFunction(eventData, "exception", m_isolate);
+            v8::Local<v8::Value> promise = callInternalGetterFunction(eventData, "promise", m_isolate);
             bool isPromiseRejection = !promise.IsEmpty() && promise->IsObject();
-            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>(), isPromiseRejection);
+            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Local<v8::Array>(), isPromiseRejection);
         } else if (event == v8::Break) {
-            v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> hitBreakpoints = callDebuggerMethod("getBreakpointNumbers", 1, argv);
+            v8::Local<v8::Value> argv[] = { eventDetails.GetEventData() };
+            v8::Local<v8::Value> hitBreakpoints = callDebuggerMethod("getBreakpointNumbers", 1, argv);
             ASSERT(hitBreakpoints->IsArray());
-            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
+            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), v8::Local<v8::Value>(), hitBreakpoints.As<v8::Array>());
         } else if (event == v8::AsyncTaskEvent) {
             if (listener->v8AsyncTaskEventsEnabled())
                 handleV8AsyncTaskEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
@@ -594,7 +594,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
     }
 }
 
-void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData)
+void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
     String type = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "type", m_isolate));
     String name = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "name", m_isolate));
@@ -607,15 +607,15 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
     m_executionState.Clear();
 }
 
-void ScriptDebugServer::handleV8PromiseEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData)
+void ScriptDebugServer::handleV8PromiseEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
-    v8::Handle<v8::Value> argv[] = { eventData };
-    v8::Handle<v8::Value> value = callDebuggerMethod("getPromiseDetails", 1, argv);
+    v8::Local<v8::Value> argv[] = { eventData };
+    v8::Local<v8::Value> value = callDebuggerMethod("getPromiseDetails", 1, argv);
     ASSERT(value->IsObject());
-    v8::Handle<v8::Object> promiseDetails = v8::Handle<v8::Object>::Cast(value);
-    v8::Handle<v8::Object> promise = promiseDetails->Get(v8InternalizedString("promise"))->ToObject(m_isolate);
+    v8::Local<v8::Object> promiseDetails = v8::Local<v8::Object>::Cast(value);
+    v8::Local<v8::Object> promise = promiseDetails->Get(v8InternalizedString("promise"))->ToObject(m_isolate);
     int status = promiseDetails->Get(v8InternalizedString("status"))->ToInteger(m_isolate)->Value();
-    v8::Handle<v8::Value> parentPromise = promiseDetails->Get(v8InternalizedString("parentPromise"));
+    v8::Local<v8::Value> parentPromise = promiseDetails->Get(v8InternalizedString("parentPromise"));
 
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
@@ -624,9 +624,9 @@ void ScriptDebugServer::handleV8PromiseEvent(ScriptDebugListener* listener, Scri
     m_executionState.Clear();
 }
 
-void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> object, CompileResult compileResult)
+void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8::Local<v8::Object> object, CompileResult compileResult)
 {
-    v8::Handle<v8::Value> id = object->Get(v8InternalizedString("id"));
+    v8::Local<v8::Value> id = object->Get(v8InternalizedString("id"));
     ASSERT(!id.IsEmpty() && id->IsInt32());
     String sourceID = String::number(id->Int32Value());
 
@@ -653,12 +653,12 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
     const blink::WebData& debuggerScriptSourceResource = blink::Platform::current()->loadResource("DebuggerScriptSource.js");
-    v8::Handle<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
+    v8::Local<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
     v8::Local<v8::Value> value;
     if (!V8ScriptRunner::compileAndRunInternalScript(source, m_isolate).ToLocal(&value))
         return;
     ASSERT(value->IsObject());
-    m_debuggerScript.Reset(m_isolate, v8::Handle<v8::Object>::Cast(value));
+    m_debuggerScript.Reset(m_isolate, v8::Local<v8::Object>::Cast(value));
 }
 
 void ScriptDebugServer::discardDebuggerScript()
@@ -677,47 +677,47 @@ v8::Local<v8::String> ScriptDebugServer::v8InternalizedString(const char* str) c
     return v8::String::NewFromUtf8(m_isolate, str, v8::String::kInternalizedString);
 }
 
-v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Handle<v8::Function> function)
+v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Local<v8::Function> function)
 {
     ensureDebuggerScriptCompiled();
 
-    v8::Handle<v8::Value> argv[] = { function };
+    v8::Local<v8::Value> argv[] = { function };
     return callDebuggerMethod("getFunctionScopes", 1, argv);
 }
 
-v8::Local<v8::Value> ScriptDebugServer::generatorObjectDetails(v8::Handle<v8::Object>& object)
+v8::Local<v8::Value> ScriptDebugServer::generatorObjectDetails(v8::Local<v8::Object>& object)
 {
     ensureDebuggerScriptCompiled();
 
-    v8::Handle<v8::Value> argv[] = { object };
+    v8::Local<v8::Value> argv[] = { object };
     return callDebuggerMethod("getGeneratorObjectDetails", 1, argv);
 }
 
-v8::Local<v8::Value> ScriptDebugServer::collectionEntries(v8::Handle<v8::Object>& object)
+v8::Local<v8::Value> ScriptDebugServer::collectionEntries(v8::Local<v8::Object>& object)
 {
     ensureDebuggerScriptCompiled();
 
-    v8::Handle<v8::Value> argv[] = { object };
+    v8::Local<v8::Value> argv[] = { object };
     return callDebuggerMethod("getCollectionEntries", 1, argv);
 }
 
-v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Handle<v8::Object>& object)
+v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Local<v8::Object>& object)
 {
     if (m_debuggerScript.IsEmpty())
         return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
 
-    v8::Handle<v8::Value> argv[] = { object };
+    v8::Local<v8::Value> argv[] = { object };
     return callDebuggerMethod("getInternalProperties", 1, argv);
 }
 
-v8::Handle<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue)
+v8::Local<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue)
 {
     if (m_debuggerScript.IsEmpty())
         return m_isolate->ThrowException(v8::String::NewFromUtf8(m_isolate, "Debugging is not enabled."));
 
-    v8::Handle<v8::Value> argv[] = {
+    v8::Local<v8::Value> argv[] = {
         functionValue,
-        v8::Handle<v8::Value>(v8::Integer::New(m_isolate, scopeNumber)),
+        v8::Local<v8::Value>(v8::Integer::New(m_isolate, scopeNumber)),
         v8String(m_isolate, variableName),
         newValue
     };
@@ -736,7 +736,7 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
         return;
     ScriptState::Scope scope(scriptState);
 
-    v8::Handle<v8::String> source = v8String(m_isolate, expression);
+    v8::Local<v8::String> source = v8String(m_isolate, expression);
     v8::TryCatch tryCatch;
     v8::Local<v8::Script> script;
     if (!v8Call(V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), m_isolate), script, tryCatch)) {
@@ -745,7 +745,7 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
             *lineNumber = message->GetLineNumber();
             *columnNumber = message->GetStartColumn();
-            v8::Handle<v8::StackTrace> messageStackTrace = message->GetStackTrace();
+            v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
             if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
                 *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
         }
@@ -788,7 +788,7 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
             *lineNumber = message->GetLineNumber();
             *columnNumber = message->GetStartColumn();
-            v8::Handle<v8::StackTrace> messageStackTrace = message->GetStackTrace();
+            v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
             if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
                 *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
         }

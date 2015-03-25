@@ -110,7 +110,7 @@ void ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argume
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Array> result = v8::Array::New(isolate, argument.size());
+    v8::Local<v8::Array> result = v8::Array::New(isolate, argument.size());
     for (size_t i = 0; i < argument.size(); ++i) {
         if (argument[i].scriptState() != m_scriptState)
             result->Set(v8::Integer::New(isolate, i), v8::Undefined(isolate));
@@ -139,7 +139,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(reportExceptions);
 
-    v8::Handle<v8::Object> thisObject = v8::Handle<v8::Object>::Cast(m_thisObject.v8Value());
+    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
     v8::Local<v8::Value> value = thisObject->Get(v8String(m_scriptState->isolate(), m_name));
     if (tryCatch.HasCaught()) {
         hadException = true;
@@ -149,7 +149,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    OwnPtr<v8::Handle<v8::Value>[]> info = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
+    OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i) {
         info[i] = m_arguments[i].v8Value();
         ASSERT(!info[i].IsEmpty());
@@ -176,7 +176,7 @@ ScriptValue ScriptFunctionCall::construct(bool& hadException, bool reportExcepti
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(reportExceptions);
 
-    v8::Handle<v8::Object> thisObject = v8::Handle<v8::Object>::Cast(m_thisObject.v8Value());
+    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
     v8::Local<v8::Value> value = thisObject->Get(v8String(m_scriptState->isolate(), m_name));
     if (tryCatch.HasCaught()) {
         hadException = true;
@@ -186,7 +186,7 @@ ScriptValue ScriptFunctionCall::construct(bool& hadException, bool reportExcepti
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Function> constructor = v8::Local<v8::Function>::Cast(value);
-    OwnPtr<v8::Handle<v8::Value>[]> info = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
+    OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i)
         info[i] = m_arguments[i].v8Value();
 

@@ -52,7 +52,7 @@ protected:
     V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, ScriptState*);
 
 private:
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Handle<v8::Value>, Event*) override;
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
     v8::Local<v8::Object> getReceiverObject(ScriptState*, Event*);
 };
 

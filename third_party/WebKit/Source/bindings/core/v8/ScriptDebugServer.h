@@ -57,7 +57,7 @@ public:
     void enable();
     void disable();
 
-    static void setContextDebugData(v8::Handle<v8::Context>, const String& contextDebugData);
+    static void setContextDebugData(v8::Local<v8::Context>, const String& contextDebugData);
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data contains |contextDebugDataSubstring| substring will be reported.
     // Passing empty string will result in reporting all scripts.
@@ -106,12 +106,12 @@ public:
 
     bool isPaused();
 
-    v8::Local<v8::Value> functionScopes(v8::Handle<v8::Function>);
-    v8::Local<v8::Value> generatorObjectDetails(v8::Handle<v8::Object>&);
-    v8::Local<v8::Value> collectionEntries(v8::Handle<v8::Object>&);
-    v8::Local<v8::Value> getInternalProperties(v8::Handle<v8::Object>&);
-    v8::Handle<v8::Value> setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);
-    v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[]);
+    v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>);
+    v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
+    v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&);
+    v8::Local<v8::Value> getInternalProperties(v8::Local<v8::Object>&);
+    v8::Local<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
+    v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
 
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
     virtual void clearCompiledScripts();
@@ -125,14 +125,14 @@ public:
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
 
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) = 0;
-    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) = 0;
+    virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
+    virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
     virtual void quitMessageLoopOnPause() = 0;
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    void handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
+    void handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
 
-    void dispatchDidParseSource(ScriptDebugListener*, v8::Handle<v8::Object> sourceObject, CompileResult);
+    void dispatchDidParseSource(ScriptDebugListener*, v8::Local<v8::Object> sourceObject, CompileResult);
 
     void ensureDebuggerScriptCompiled();
     void discardDebuggerScript();
@@ -153,8 +153,8 @@ private:
     };
     ScriptValue currentCallFramesInner(ScopeInfoDetails);
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
-    void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData);
-    void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData);
+    void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     bool m_breakpointsActivated;
     V8PersistentValueMap<String, v8::Script, false> m_compiledScripts;
