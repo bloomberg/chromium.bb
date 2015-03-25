@@ -24276,6 +24276,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="OSX.CatSixtyFour" enum="CatSixtyFour">
+  <obsolete>
+    Obselete as of Chrome 43. See OmahaProxy for more relevant statistics.
+  </obsolete>
   <owner>mark@chromium.org</owner>
   <summary>The cat's flavor and how many bits there are in it.</summary>
 </histogram>

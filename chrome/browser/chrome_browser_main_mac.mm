@@ -5,14 +5,12 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
-#include <sys/sysctl.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
@@ -31,125 +29,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
-
-namespace {
-
-// This is one enum instead of two so that the values can be correlated in a
-// histogram.
-enum CatSixtyFour {
-  // Older than any expected cat.
-  SABER_TOOTHED_CAT_32 = 0,
-  SABER_TOOTHED_CAT_64,
-
-  // Known cats.
-  SNOW_LEOPARD_32,
-  SNOW_LEOPARD_64,
-  LION_32,  // Unexpected, Lion requires a 64-bit CPU.
-  LION_64,
-  MOUNTAIN_LION_32,  // Unexpected, Mountain Lion requires a 64-bit CPU.
-  MOUNTAIN_LION_64,
-  MAVERICKS_32,  // Unexpected, Mavericks requires a 64-bit CPU.
-  MAVERICKS_64,
-
-  // DON'T add new constants here. It's important to keep the constant values,
-  // um, constant. Add new constants at the bottom.
-
-  // What if the bitsiness of the CPU can't be determined?
-  SABER_TOOTHED_CAT_DUNNO,
-  SNOW_LEOPARD_DUNNO,
-  LION_DUNNO,
-  MOUNTAIN_LION_DUNNO,
-  MAVERICKS_DUNNO,
-
-  // More known cats.
-  YOSEMITE_32,  // Unexpected, Yosemite requires a 64-bit CPU.
-  YOSEMITE_64,
-  YOSEMITE_DUNNO,
-
-  // Newer than any known cat.
-  FUTURE_CAT_32,  // Unexpected, it's unlikely Apple will un-obsolete old CPUs.
-  FUTURE_CAT_64,
-  FUTURE_CAT_DUNNO,
-
-  // As new versions of Mac OS X are released with sillier and sillier names,
-  // rename the FUTURE_CAT enum values to match those names, and re-create
-  // FUTURE_CAT_[32|64|DUNNO] here.
-
-  CAT_SIXTY_FOUR_MAX
-};
-
-CatSixtyFour CatSixtyFourValue() {
-#if defined(ARCH_CPU_64_BITS)
-  // If 64-bit code is running, then it's established that this CPU can run
-  // 64-bit code, and no further inquiry is necessary.
-  int cpu64 = 1;
-  bool cpu64_known = true;
-#else
-  // Check a sysctl conveniently provided by the kernel that identifies
-  // whether the CPU supports 64-bit operation. Note that this tests the
-  // actual hardware capabilities, not the bitsiness of the running process,
-  // and not the bitsiness of the running kernel. The value thus determines
-  // whether the CPU is capable of running 64-bit programs (in the presence of
-  // proper OS runtime support) without regard to whether the current program
-  // is 64-bit (it may not be) or whether the current kernel is (the kernel
-  // can launch cross-bitted user-space tasks).
-
-  int cpu64;
-  size_t len = sizeof(cpu64);
-  const char kSysctlName[] = "hw.cpu64bit_capable";
-  bool cpu64_known = sysctlbyname(kSysctlName, &cpu64, &len, NULL, 0) == 0;
-  if (!cpu64_known) {
-    PLOG(WARNING) << "sysctlbyname(\"" << kSysctlName << "\")";
-  }
-#endif
-
-  if (base::mac::IsOSSnowLeopard()) {
-    return cpu64_known ? (cpu64 ? SNOW_LEOPARD_64 : SNOW_LEOPARD_32) :
-                         SNOW_LEOPARD_DUNNO;
-  }
-  if (base::mac::IsOSLion()) {
-    return cpu64_known ? (cpu64 ? LION_64 : LION_32) :
-                         LION_DUNNO;
-  }
-  if (base::mac::IsOSMountainLion()) {
-    return cpu64_known ? (cpu64 ? MOUNTAIN_LION_64 : MOUNTAIN_LION_32) :
-                         MOUNTAIN_LION_DUNNO;
-  }
-  if (base::mac::IsOSMavericks()) {
-    return cpu64_known ? (cpu64 ? MAVERICKS_64 : MAVERICKS_32) :
-                         MAVERICKS_DUNNO;
-  }
-  if (base::mac::IsOSYosemite()) {
-    return cpu64_known ? (cpu64 ? YOSEMITE_64 : YOSEMITE_32) :
-                         YOSEMITE_DUNNO;
-  }
-  if (base::mac::IsOSLaterThanYosemite_DontCallThis()) {
-    return cpu64_known ? (cpu64 ? FUTURE_CAT_64 : FUTURE_CAT_32) :
-                         FUTURE_CAT_DUNNO;
-  }
-
-  // If it's not any of the expected OS versions or later than them, it must
-  // be prehistoric.
-  return cpu64_known ? (cpu64 ? SABER_TOOTHED_CAT_64 : SABER_TOOTHED_CAT_32) :
-                       SABER_TOOTHED_CAT_DUNNO;
-}
-
-void RecordCatSixtyFour() {
-  CatSixtyFour cat_sixty_four = CatSixtyFourValue();
-
-  // Set this higher than the highest value in the CatSixtyFour enum to provide
-  // some headroom and then leave it alone. See UMA_HISTOGRAM_ENUMERATION in
-  // base/metrics/histogram.h.
-  const int kMaxCatsAndSixtyFours = 32;
-  static_assert(kMaxCatsAndSixtyFours >= CAT_SIXTY_FOUR_MAX,
-                "kMaxCatsAndSixtyFours is too large");
-
-  UMA_HISTOGRAM_ENUMERATION("OSX.CatSixtyFour",
-                            cat_sixty_four,
-                            kMaxCatsAndSixtyFours);
-}
-
-}  // namespace
 
 // ChromeBrowserMainPartsMac ---------------------------------------------------
 
@@ -173,8 +52,6 @@ void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
         base::CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
   }
-
-  RecordCatSixtyFour();
 }
 
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
