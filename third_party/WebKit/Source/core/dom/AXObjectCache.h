@@ -63,6 +63,7 @@ public:
         AXLoadComplete,
         AXLocationChanged,
         AXMenuListItemSelected,
+        AXMenuListItemUnselected,
         AXMenuListValueChanged,
         AXRowCollapsed,
         AXRowCountChanged,

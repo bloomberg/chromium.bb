@@ -161,6 +161,7 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXEventLiveRegionChanged, AXObjectCache::AXLiveRe
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventLoadComplete, AXObjectCache::AXLoadComplete);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventLocationChanged, AXObjectCache::AXLocationChanged);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventMenuListItemSelected, AXObjectCache::AXMenuListItemSelected);
+STATIC_ASSERT_MATCHING_ENUM(WebAXEventMenuListItemUnselected, AXObjectCache::AXMenuListItemUnselected);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventMenuListValueChanged, AXObjectCache::AXMenuListValueChanged);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventRowCollapsed, AXObjectCache::AXRowCollapsed);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventRowCountChanged, AXObjectCache::AXRowCountChanged);

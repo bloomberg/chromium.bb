@@ -52,6 +52,7 @@ enum WebAXEvent {
     WebAXEventLoadComplete,
     WebAXEventLocationChanged,
     WebAXEventMenuListItemSelected,
+    WebAXEventMenuListItemUnselected,
     WebAXEventMenuListValueChanged,
     WebAXEventRowCollapsed,
     WebAXEventRowCountChanged,

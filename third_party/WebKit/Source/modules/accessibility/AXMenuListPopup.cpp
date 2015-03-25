@@ -35,7 +35,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl* axObjectCache)
-    : AXMockObject(axObjectCache)
+    : AXMockObject(axObjectCache), m_activeIndex(-1)
 {
 }
 
@@ -100,7 +100,9 @@ void AXMenuListPopup::addChildren()
 
     m_haveChildren = true;
 
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = toHTMLSelectElement(selectNode)->listItems();
+    HTMLSelectElement* htmlSelectElement = toHTMLSelectElement(selectNode);
+    m_activeIndex = htmlSelectElement->selectedIndex();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = htmlSelectElement->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
         AXMenuListOption* option = menuListOptionAXObject(listItems[i]);
@@ -141,10 +143,15 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
     ASSERT_ARG(optionIndex, optionIndex < static_cast<int>(m_children.size()));
 
     AXObjectCacheImpl* cache = axObjectCache();
-    RefPtr<AXObject> child = m_children[optionIndex].get();
+    if (m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_children.size())) {
+        RefPtr<AXObject> previousChild = m_children[m_activeIndex].get();
+        cache->postNotification(previousChild.get(), document(), AXObjectCacheImpl::AXMenuListItemUnselected, true);
+    }
 
+    RefPtr<AXObject> child = m_children[optionIndex].get();
     cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXFocusedUIElementChanged, true);
     cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXMenuListItemSelected, true);
+    m_activeIndex = optionIndex;
 }
 
 } // namespace blink

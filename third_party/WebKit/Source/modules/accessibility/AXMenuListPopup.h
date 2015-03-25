@@ -58,6 +58,9 @@ private:
     virtual bool computeAccessibilityIsIgnored() const override;
 
     AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;
+
+    // Note that this may be -1 if nothing is selected.
+    int m_activeIndex;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListPopup, isMenuListPopup());
