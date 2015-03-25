@@ -218,7 +218,6 @@ component("platform") {
       "fonts/opentype/OpenTypeVerticalData.cpp",
       "fonts/opentype/OpenTypeVerticalData.h",
       # The Mac currently uses FontCustomPlatformDataMac.cpp instead.
-      "fonts/skia/FontCustomPlatformDataSkia.cpp",
       "fonts/skia/FontCacheSkia.cpp",
       # Uses LocaleMac instead.
       "text/LocaleICU.cpp",
