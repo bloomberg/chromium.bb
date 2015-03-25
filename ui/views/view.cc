@@ -764,64 +764,66 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void View::Paint(gfx::Canvas* canvas, const CullSet& cull_set) {
+  if (!visible_)
+    return;
   // The cull_set may allow us to skip painting without canvas construction or
   // even canvas rect intersection.
-  if (cull_set.ShouldPaint(this)) {
-    TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
+  if (!cull_set.ShouldPaint(this))
+    return;
 
-    gfx::ScopedCanvas scoped_canvas(canvas);
+  TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
-    // Paint this View and its children, setting the clip rect to the bounds
-    // of this View and translating the origin to the local bounds' top left
-    // point.
-    //
-    // Note that the X (or left) position we pass to ClipRectInt takes into
-    // consideration whether or not the view uses a right-to-left layout so that
-    // we paint our view in its mirrored position if need be.
-    gfx::Rect clip_rect = bounds();
-    clip_rect.Inset(clip_insets_);
-    if (parent_)
-      clip_rect.set_x(parent_->GetMirroredXForRect(clip_rect));
-    canvas->ClipRect(clip_rect);
-    if (canvas->IsClipEmpty())
+  gfx::ScopedCanvas scoped_canvas(canvas);
+
+  // Paint this View and its children, setting the clip rect to the bounds
+  // of this View and translating the origin to the local bounds' top left
+  // point.
+  //
+  // Note that the X (or left) position we pass to ClipRectInt takes into
+  // consideration whether or not the view uses a right-to-left layout so that
+  // we paint our view in its mirrored position if need be.
+  gfx::Rect clip_rect = bounds();
+  clip_rect.Inset(clip_insets_);
+  if (parent_)
+    clip_rect.set_x(parent_->GetMirroredXForRect(clip_rect));
+  canvas->ClipRect(clip_rect);
+  if (canvas->IsClipEmpty())
+    return;
+
+  // Non-empty clip, translate the graphics such that 0,0 corresponds to where
+  // this view is located (related to its parent).
+  canvas->Translate(GetMirroredPosition().OffsetFromOrigin());
+  canvas->Transform(GetTransform());
+
+  // If we are a paint root, we need to construct our own CullSet object for
+  // propagation to our children.
+  if (IsPaintRoot()) {
+    if (!bounds_tree_)
+      bounds_tree_.reset(new BoundsTree(2, 5));
+
+    // Recompute our bounds tree as needed.
+    UpdateRootBounds(bounds_tree_.get(), gfx::Vector2d());
+
+    // Grab the clip rect from the supplied canvas to use as the query rect.
+    gfx::Rect canvas_bounds;
+    if (!canvas->GetClipBounds(&canvas_bounds)) {
+      NOTREACHED() << "Failed to get clip bounds from the canvas!";
       return;
-
-    // Non-empty clip, translate the graphics such that 0,0 corresponds to where
-    // this view is located (related to its parent).
-    canvas->Translate(GetMirroredPosition().OffsetFromOrigin());
-    canvas->Transform(GetTransform());
-
-    // If we are a paint root, we need to construct our own CullSet object for
-    // propagation to our children.
-    if (IsPaintRoot()) {
-      if (!bounds_tree_)
-        bounds_tree_.reset(new BoundsTree(2, 5));
-
-      // Recompute our bounds tree as needed.
-      UpdateRootBounds(bounds_tree_.get(), gfx::Vector2d());
-
-      // Grab the clip rect from the supplied canvas to use as the query rect.
-      gfx::Rect canvas_bounds;
-      if (!canvas->GetClipBounds(&canvas_bounds)) {
-        NOTREACHED() << "Failed to get clip bounds from the canvas!";
-        return;
-      }
-
-      // Now query our bounds_tree_ for a set of damaged views that intersect
-      // our canvas bounds.
-      scoped_ptr<base::hash_set<intptr_t> > damaged_views(
-          new base::hash_set<intptr_t>());
-      bounds_tree_->AppendIntersectingRecords(
-          canvas_bounds, damaged_views.get());
-      // Construct a CullSet to wrap the damaged views set, it will delete it
-      // for us on scope exit.
-      CullSet paint_root_cull_set(damaged_views.Pass());
-      // Paint all descendents using our new cull set.
-      PaintCommon(canvas, paint_root_cull_set);
-    } else {
-      // Not a paint root, so we can proceed as normal.
-      PaintCommon(canvas, cull_set);
     }
+
+    // Now query our bounds_tree_ for a set of damaged views that intersect
+    // our canvas bounds.
+    scoped_ptr<base::hash_set<intptr_t>> damaged_views(
+        new base::hash_set<intptr_t>());
+    bounds_tree_->AppendIntersectingRecords(canvas_bounds, damaged_views.get());
+    // Construct a CullSet to wrap the damaged views set, it will delete it
+    // for us on scope exit.
+    CullSet paint_root_cull_set(damaged_views.Pass());
+    // Paint all descendents using our new cull set.
+    PaintCommon(canvas, paint_root_cull_set);
+  } else {
+    // Not a paint root, so we can proceed as normal.
+    PaintCommon(canvas, cull_set);
   }
 }
 
@@ -1464,6 +1466,8 @@ void View::UpdateChildLayerBounds(const gfx::Vector2d& offset) {
 void View::OnPaintLayer(gfx::Canvas* canvas) {
   if (!layer() || !layer()->fills_bounds_opaquely())
     canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+  if (!visible_)
+    return;
   PaintCommon(canvas, CullSet());
 }
 
@@ -1748,9 +1752,6 @@ void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
 }
 
 void View::PaintCommon(gfx::Canvas* canvas, const CullSet& cull_set) {
-  if (!visible_)
-    return;
-
   {
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.
