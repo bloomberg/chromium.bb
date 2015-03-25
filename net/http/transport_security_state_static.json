@@ -2259,7 +2259,9 @@
     { "name": "xf-liam.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "yksityisyydensuoja.fi", "include_subdomains": true, "mode": "force-https" },
     { "name": "yokeepo.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "zravypapir.cz", "include_subdomains": true, "mode": "force-https" }
+    { "name": "zravypapir.cz", "include_subdomains": true, "mode": "force-https" },
+    { "name": "healthcare.gov", "mode": "force-https" },
+    { "name": "www.healthcare.gov", "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
