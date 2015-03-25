@@ -51,6 +51,10 @@ var availableTests = [
     chrome.networkingPrivate.createNetwork(
         false, { 'GUID': kGuid }, callbackPass(callbackResult));
   },
+  function forgetNetwork() {
+    chrome.networkingPrivate.forgetNetwork(
+        kGuid, callbackPass(callbackResult));
+  },
   function getNetworks() {
     chrome.networkingPrivate.getNetworks(
         { networkType: 'Ethernet' }, callbackPass(callbackResult));

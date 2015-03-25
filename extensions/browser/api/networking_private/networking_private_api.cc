@@ -200,6 +200,35 @@ void NetworkingPrivateCreateNetworkFunction::Failure(const std::string& error) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateForgetNetworkFunction
+
+NetworkingPrivateForgetNetworkFunction::
+    ~NetworkingPrivateForgetNetworkFunction() {
+}
+
+bool NetworkingPrivateForgetNetworkFunction::RunAsync() {
+  scoped_ptr<private_api::ForgetNetwork::Params> params =
+      private_api::ForgetNetwork::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GetDelegate(browser_context())
+      ->ForgetNetwork(
+          params->network_guid,
+          base::Bind(&NetworkingPrivateForgetNetworkFunction::Success, this),
+          base::Bind(&NetworkingPrivateForgetNetworkFunction::Failure, this));
+  return true;
+}
+
+void NetworkingPrivateForgetNetworkFunction::Success() {
+  SendResponse(true);
+}
+
+void NetworkingPrivateForgetNetworkFunction::Failure(const std::string& error) {
+  error_ = error;
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateGetNetworksFunction
 
 NetworkingPrivateGetNetworksFunction::~NetworkingPrivateGetNetworksFunction() {

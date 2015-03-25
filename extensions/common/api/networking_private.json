@@ -189,6 +189,24 @@
         ]
       },
       {
+        "name": "forgetNetwork",
+        "description": "Forgets a network configuration by clearing any configured properties for the network with GUID 'networkGuid'. This may also include any other networks with matching identifiers (e.g. WiFi SSID and Security). If no such configuration exists, an error will be set and the operation will fail.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to forget."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when the operation has completed."
+          }
+        ]
+      },
+      {
         "name": "getNetworks",
         "description": "Returns a list of network objects with the same properties provided by getState. A filter is provided to specify the type of networks returned and to limit the number of networks. Networks are ordered by the system based on their priority, with connected or connecting networks listed first.",
         "parameters": [

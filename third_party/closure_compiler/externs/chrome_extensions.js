@@ -8328,6 +8328,13 @@ chrome.networkingPrivate.createNetwork =
 
 
 /**
+ * @param {string} guid
+ * @param {function()=} opt_callback
+ */
+chrome.networkingPrivate.forgetNetwork = function(guid, opt_callback) {};
+
+
+/**
  * @param {!chrome.networkingPrivate.NetworkFilter} filter
  * @param {function(!Array.<!Object>)=} opt_callback
  */

@@ -219,6 +219,14 @@ void NetworkingPrivateServiceClient::CreateNetwork(
                  base::Owned(network_guid), base::Owned(error)));
 }
 
+void NetworkingPrivateServiceClient::ForgetNetwork(
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  // TODO(mef): Implement for Win/Mac
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
 void NetworkingPrivateServiceClient::GetNetworks(
     const std::string& network_type,
     bool configured_only,

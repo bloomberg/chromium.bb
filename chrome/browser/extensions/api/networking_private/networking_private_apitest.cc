@@ -71,6 +71,12 @@ class TestDelegate : public NetworkingPrivateDelegate {
     StringResult(success_callback, failure_callback);
   }
 
+  void ForgetNetwork(const std::string& guid,
+                     const VoidCallback& success_callback,
+                     const FailureCallback& failure_callback) override {
+    VoidResult(success_callback, failure_callback);
+  }
+
   void GetNetworks(const std::string& network_type,
                    bool configured_only,
                    bool visible_only,
@@ -338,6 +344,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, CreateNetwork) {
   EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, ForgetNetwork) {
+  EXPECT_TRUE(RunNetworkingSubtest("forgetNetwork")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getNetworks")) << message_;
 }
@@ -429,6 +439,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, SetProperties) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, CreateNetwork) {
   EXPECT_FALSE(RunNetworkingSubtest("createNetwork")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, ForgetNetwork) {
+  EXPECT_FALSE(RunNetworkingSubtest("forgetNetwork")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetNetworks) {

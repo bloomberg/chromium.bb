@@ -269,6 +269,14 @@ void NetworkingPrivateLinux::CreateNetwork(
   ReportNotSupported("CreateNetwork", failure_callback);
 }
 
+void NetworkingPrivateLinux::ForgetNetwork(
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  // TODO(zentaro): Implement for Linux.
+  ReportNotSupported("ForgetNetwork", failure_callback);
+}
+
 void NetworkingPrivateLinux::GetNetworks(
     const std::string& network_type,
     bool configured_only,

@@ -125,6 +125,26 @@ class NetworkingPrivateCreateNetworkFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCreateNetworkFunction);
 };
 
+// Implements the chrome.networkingPrivate.createNetwork method.
+class NetworkingPrivateForgetNetworkFunction : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateForgetNetworkFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.forgetNetwork",
+                             NETWORKINGPRIVATE_FORGETNETWORK);
+
+ protected:
+  ~NetworkingPrivateForgetNetworkFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  void Success();
+  void Failure(const std::string& error);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateForgetNetworkFunction);
+};
+
 // Implements the chrome.networkingPrivate.getNetworks method.
 class NetworkingPrivateGetNetworksFunction : public AsyncExtensionFunction {
  public:

@@ -470,6 +470,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CreateNetwork) {
   EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, ForgetNetwork) {
+  EXPECT_TRUE(RunNetworkingSubtest("forgetNetwork")) << message_;
+}
+
 // TODO(stevenjb): Find a better way to set this up on Chrome OS.
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
   const std::string uidata_blob =

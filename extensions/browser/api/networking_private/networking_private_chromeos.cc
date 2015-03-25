@@ -203,6 +203,21 @@ void NetworkingPrivateChromeOS::CreateNetwork(
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
+void NetworkingPrivateChromeOS::ForgetNetwork(
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  std::string service_path, error;
+  if (!GetServicePathFromGuid(guid, &service_path, &error)) {
+    failure_callback.Run(error);
+    return;
+  }
+
+  GetManagedConfigurationHandler()->RemoveConfiguration(
+      service_path, success_callback,
+      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+}
+
 void NetworkingPrivateChromeOS::GetNetworks(
     const std::string& network_type,
     bool configured_only,

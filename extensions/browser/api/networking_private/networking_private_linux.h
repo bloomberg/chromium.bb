@@ -56,6 +56,9 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                      scoped_ptr<base::DictionaryValue> properties,
                      const StringCallback& success_callback,
                      const FailureCallback& failure_callback) override;
+  void ForgetNetwork(const std::string& guid,
+                     const VoidCallback& success_callback,
+                     const FailureCallback& failure_callback) override;
   void GetNetworks(const std::string& network_type,
                    bool configured_only,
                    bool visible_only,

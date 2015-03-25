@@ -139,6 +139,32 @@ var availableTests = [
           }));
       }));
   },
+  function forgetNetwork() {
+    var kNumNetworks = 2;
+    var kTestNetworkGuid = "stub_wifi1_guid";
+    function guidExists(networks, guid) {
+      for (var n of networks) {
+        if (n.GUID == kTestNetworkGuid)
+          return true;
+      }
+      return false;
+    }
+    chrome.networkingPrivate.getNetworks(
+      { "networkType": "WiFi", "visible": true, "configured": true },
+      callbackPass(function(networks) {
+        assertEq(kNumNetworks, networks.length);
+        assertTrue(guidExists(networks, kTestNetworkGuid));
+        chrome.networkingPrivate.forgetNetwork(
+          kTestNetworkGuid, callbackPass(function() {
+            chrome.networkingPrivate.getNetworks(
+              { "networkType": "WiFi", "visible": true, "configured": true },
+              callbackPass(function(networks) {
+                assertEq(kNumNetworks - 1, networks.length);
+                assertFalse(guidExists(networks, kTestNetworkGuid));
+              }));
+          }));
+      }));
+  },
   function getNetworks() {
     // Test 'type' and 'configured'.
     chrome.networkingPrivate.getNetworks(
