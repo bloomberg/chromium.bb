@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptHost.h"
 
+#include "bindings/core/v8/ScriptDebugServer.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
@@ -64,7 +65,7 @@ DEFINE_TRACE(InjectedScriptHost)
 {
     visitor->trace(m_consoleAgent);
     visitor->trace(m_debuggerAgent);
-    visitor->trace(m_inspectCallback);
+    visitor->trace(m_scriptDebugServer);
 }
 
 void InjectedScriptHost::disconnect()
@@ -152,4 +153,3 @@ void InjectedScriptHost::unmonitorFunction(const String& scriptId, int lineNumbe
 }
 
 } // namespace blink
-

@@ -106,7 +106,7 @@ private:
     RawPtrWillBeMember<InspectorConsoleAgent> m_consoleAgent;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
-    ScriptDebugServer* m_scriptDebugServer;
+    RawPtrWillBeMember<ScriptDebugServer> m_scriptDebugServer;
     Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;
 };
