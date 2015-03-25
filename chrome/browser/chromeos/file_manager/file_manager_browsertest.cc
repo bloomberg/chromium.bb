@@ -1274,7 +1274,8 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
+// Disabled under MSAN as well. http://crbug.com/468982.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
 #define MAYBE_PRE_BasicDrive DISABLED_PRE_BasicDrive
 #define MAYBE_BasicDrive DISABLED_BasicDrive
 #else
