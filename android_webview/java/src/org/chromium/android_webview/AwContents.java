@@ -286,12 +286,16 @@ public class AwContents implements SmartClipProvider,
 
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwContents;
-        private DestroyRunnable(long nativeAwContents) {
+        private final WindowAndroid mWindowAndroid;
+
+        private DestroyRunnable(long nativeAwContents, WindowAndroid windowAndroid) {
             mNativeAwContents = nativeAwContents;
+            mWindowAndroid = windowAndroid;
         }
         @Override
         public void run() {
             nativeDestroy(mNativeAwContents);
+            mWindowAndroid.destroy();
         }
     }
 
@@ -863,10 +867,6 @@ public class AwContents implements SmartClipProvider,
         // each other, we should update |mBrowserContext| according to the newly received native
         // WebContent's browser context.
 
-        // The native side object has been bound to this java instance, so now is the time to
-        // bind all the native->java relationships.
-        mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
-
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
         Activity activity = ContentViewCore.activityFromContext(mContext);
@@ -884,6 +884,11 @@ public class AwContents implements SmartClipProvider,
         mSettings.setWebContents(webContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
         mContentViewCore.onShow();
+
+        // The native side object has been bound to this java instance, so now is the time to
+        // bind all the native->java relationships.
+        mCleanupReference =
+                new CleanupReference(this, new DestroyRunnable(mNativeAwContents, mWindowAndroid));
     }
 
     private void installWebContentsObserver() {

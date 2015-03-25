@@ -17,8 +17,8 @@ namespace ui {
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj)
-  : weak_java_window_(env, obj), compositor_(NULL) {
+WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj) : compositor_(NULL) {
+  java_window_.Reset(env, obj);
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -26,7 +26,7 @@ void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
 }
 
 ScopedJavaLocalRef<jobject> WindowAndroid::GetJavaObject() {
-  return weak_java_window_.get(AttachCurrentThread());
+  return base::android::ScopedJavaLocalRef<jobject>(java_window_);
 }
 
 bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {
@@ -77,10 +77,7 @@ void WindowAndroid::DetachCompositor() {
 
 void WindowAndroid::RequestVSyncUpdate() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaObject();
-  if (obj.is_null())
-    return;
-  Java_WindowAndroid_requestVSyncUpdate(env, obj.obj());
+  Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject().obj());
 }
 
 void WindowAndroid::SetNeedsAnimate() {

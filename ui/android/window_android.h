@@ -66,7 +66,7 @@ class UI_ANDROID_EXPORT WindowAndroid {
  private:
   ~WindowAndroid();
 
-  JavaObjectWeakGlobalRef weak_java_window_;
+  base::android::ScopedJavaGlobalRef<jobject> java_window_;
   gfx::Vector2dF content_offset_;
   WindowAndroidCompositor* compositor_;
 
