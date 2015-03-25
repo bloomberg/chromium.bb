@@ -926,27 +926,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     }
   }
 
-  if (client_auth_cert_needed_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "424386 SSLClientSocketOpenSSL::DoHandshake2"));
-
-    net_error = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
-    // If the handshake already succeeded (because the server requests but
-    // doesn't require a client cert), we need to invalidate the SSL session
-    // so that we won't try to resume the non-client-authenticated session in
-    // the next handshake.  This will cause the server to ask for a client
-    // cert again.
-    if (rv == 1) {
-      // Remove from session cache but don't clear this connection.
-      SSL_SESSION* session = SSL_get_session(ssl_);
-      if (session) {
-        int rv = SSL_CTX_remove_session(SSL_get_SSL_CTX(ssl_), session);
-        LOG_IF(WARNING, !rv) << "Couldn't invalidate SSL session: " << session;
-      }
-    }
-  } else if (rv == 1) {
+  if (rv == 1) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
     tracked_objects::ScopedTracker tracking_profile3(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -1003,6 +983,9 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     tracked_objects::ScopedTracker tracking_profile4(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "424386 SSLClientSocketOpenSSL::DoHandshake4"));
+
+    if (client_auth_cert_needed_)
+      return ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
 
     int ssl_error = SSL_get_error(ssl_, rv);
 

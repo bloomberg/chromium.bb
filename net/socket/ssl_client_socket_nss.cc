@@ -1857,14 +1857,6 @@ int SSLClientSocketNSS::Core::DoHandshake() {
         base::Bind(&AddLogEventWithCallback, weak_net_log_,
                    NetLog::TYPE_SSL_HANDSHAKE_ERROR,
                    CreateNetLogSSLErrorCallback(net_error, 0)));
-
-    // If the handshake already succeeded (because the server requests but
-    // doesn't require a client cert), we need to invalidate the SSL session
-    // so that we won't try to resume the non-client-authenticated session in
-    // the next handshake.  This will cause the server to ask for a client
-    // cert again.
-    if (rv == SECSuccess && SSL_InvalidateSession(nss_fd_) != SECSuccess)
-      LOG(WARNING) << "Couldn't invalidate SSL session: " << PR_GetError();
   } else if (rv == SECSuccess) {
     if (!handshake_callback_called_) {
       false_started_ = true;
