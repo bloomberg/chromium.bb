@@ -862,6 +862,10 @@ String UseCounter::deprecationMessage(Feature feature)
     case ServiceWorkerClientsGetAll:
         return "'Clients.getAll()' is deprecated and will be removed soon. Please use 'Clients.matchAll()' instead.";
 
+    case AttrChildAccess:
+    case AttrChildChange:
+        return "Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

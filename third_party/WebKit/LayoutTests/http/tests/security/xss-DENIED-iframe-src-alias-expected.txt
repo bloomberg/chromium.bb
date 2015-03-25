@@ -1,5 +1,7 @@
 CONSOLE ERROR: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8080". Protocols, domains, and ports must match.
 CONSOLE ERROR: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8080". Protocols, domains, and ports must match.
+CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
+CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
 CONSOLE ERROR: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8080". Protocols, domains, and ports must match.
 CONSOLE ERROR: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8080". Protocols, domains, and ports must match.
 CONSOLE ERROR: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8080". Protocols, domains, and ports must match.
