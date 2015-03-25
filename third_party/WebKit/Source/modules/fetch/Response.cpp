@@ -210,8 +210,11 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
             r->m_response->headerList()->append("Content-Type", body->type());
     }
 
-    // FIXME: "8. Set |r|'s MIME type to the result of extracting a MIME type
-    //        from |r|'s response's header list."
+    // "8. Set |r|'s MIME type to the result of extracting a MIME type
+    // from |r|'s response's header list."
+    String type;
+    if (r->m_response->headerList()->get("Content-Type", type))
+        r->m_response->setContentTypeForBuffer(type);
 
     // "9. Return |r|."
     return r;

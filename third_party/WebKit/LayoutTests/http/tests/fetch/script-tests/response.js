@@ -10,6 +10,33 @@ function size(headers) {
   return count;
 }
 
+function consume(reader) {
+  var chunks = [];
+  function rec(reader) {
+    return reader.read().then(function(r) {
+        if (r.done) {
+          return chunks;
+        }
+        chunks.push(r.value);
+        return rec(reader);
+      });
+  }
+  return rec(reader);
+}
+
+function flatten(chunks) {
+  var size = 0;
+  for (var chunk of chunks) {
+    size += chunk.byteLength;
+  }
+  var buffer = new Uint8Array(size);
+  var current = 0;
+  for (var chunk of chunks) {
+    buffer.set(chunk, 0);
+  }
+  return buffer;
+}
+
 test(function() {
     var response = new Response(new Blob());
     assert_equals(response.type, 'default',
@@ -265,5 +292,90 @@ test(function() {
           ') must throw');
       });
   }, 'Response throw error test');
+
+promise_test(function(t) {
+    var res = new Response('hello');
+    return consume(res.body.getReader()).then(function(chunks) {
+        return flatten(chunks);
+      }).then(function(view) {
+        assert_equals(new TextDecoder().decode(view), 'hello');
+        return res.body.getReader().read();
+      }).then(function(r) {
+        assert_true(r.done);
+        return res.text();
+      }).then(function(r) {
+        assert_equals(r, '');
+      });
+  }, 'Read Response body via stream');
+
+promise_test(function(t) {
+    var res = new Response('hello');
+    res.body.cancel();
+    return res.body.getReader().read().then(function(r) {
+        assert_true(r.done);
+        return res.text();
+      }).then(function(r) {
+        assert_equals(r, '');
+      });
+  }, 'Cancel body stream on Response');
+
+promise_test(function(t) {
+    // TODO(yhirano): In the current implementation, The body stream always
+    // consists of one chunk and hence, we cannot create a meaning test case
+    // here. Fix this test case when reading into a size-specified buffer gets
+    // possible.
+    var size = 8 * 1024 * 1024;
+    var buffer = new ArrayBuffer(size);
+    var blob = new Blob([buffer]);
+
+    var res = new Response(blob);
+    var reader = res.body.getReader();
+    var head;
+    return reader.read().then(function(r) {
+        assert_false(r.done);
+        head = r.value;
+        assert_not_equals(head.byteLength, 0);
+        // TODO(yhirano): See above.
+        // assert_not_equals(head.byteLength, size);
+        reader.releaseLock();
+        return res.arrayBuffer();
+      }).then(function(buffer) {
+        assert_equals(buffer.byteLength + head.byteLength, size);
+        return res.body.getReader().read();
+      }).then(function(r) {
+        assert_true(r.done);
+      });
+  }, 'Partial read on Response');
+
+promise_test(function(t) {
+    var res = new Response('hello');
+    var clone = res.clone();
+    return Promise.all([res.text(), clone.text()]).then(function(r) {
+        assert_equals(r[0], 'hello');
+        assert_equals(r[1], 'hello');
+      });
+  }, 'Clone on Response');
+
+promise_test(function(t) {
+    var res = new Response('hello');
+    var clone = res.clone();
+    res.body.cancel();
+    return Promise.all([res.text(), clone.text()]).then(function(r) {
+        assert_equals(r[0], '');
+        assert_equals(r[1], 'hello');
+      });
+  }, 'Clone and Cancel on Response');
+
+promise_test(function(t) {
+    var res = new Response('hello');
+    res.body.cancel();
+    var clone = res.clone();
+    return Promise.all([res.blob(), clone.blob()]).then(function(r) {
+        assert_equals(r[0].type, 'text/plain;charset=UTF-8', 'cloned type');
+        assert_equals(r[1].type, 'text/plain;charset=UTF-8', 'original type');
+        assert_equals(r[0].size, 0, 'original size');
+        assert_equals(r[1].size, 0, 'cloned size');
+      });
+  }, 'Cancel and Clone on Response');
 
 done();

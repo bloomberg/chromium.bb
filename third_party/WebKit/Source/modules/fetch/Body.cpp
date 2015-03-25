@@ -223,10 +223,15 @@ private:
     }
     void cancel()
     {
-        if (m_bodyStreamBuffer)
+        if (m_bodyStreamBuffer) {
             m_bodyStreamBuffer->cancel();
-        if (m_loader)
-            m_loader->cancel();
+            // We should not close the stream here, because it is canceller's
+            // responsibility.
+        } else {
+            if (m_loader)
+                m_loader->cancel();
+            close();
+        }
     }
 
     PassRefPtrWillBeRawPtr<DOMException> exception()
