@@ -74,11 +74,6 @@ int syscall(int number, ...);
 # define __NR_openat             295
 # define __NR_fstatat64          300
 
-#define SYS_SOCKETPAIR 8
-#define SYS_SHUTDOWN   13
-#define SYS_SENDMSG    16
-#define SYS_RECVMSG    17
-
 #elif defined(__arm__)
 
 # define __NR_exit               1

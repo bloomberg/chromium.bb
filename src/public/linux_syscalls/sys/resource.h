@@ -20,6 +20,7 @@
 extern "C" {
 #endif
 
+#define RLIMIT_DATA 2
 #define RLIMIT_CORE 4
 #define RLIMIT_NOFILE 7
 #define RLIMIT_AS 9

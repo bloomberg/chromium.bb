@@ -27,6 +27,7 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
+#include "native_client/src/public/linux_syscalls/linux/net.h"
 #include "native_client/src/public/linux_syscalls/poll.h"
 #include "native_client/src/public/linux_syscalls/sched.h"
 #include "native_client/src/public/linux_syscalls/sys/prctl.h"
