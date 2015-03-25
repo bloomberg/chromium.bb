@@ -35,3 +35,6 @@ WebRtcBrowserTest.CallAndModifyStream
 # http://crbug.com/464033
 RenderFrameHostImplBrowserTest.IsFocused_AtLoad
 RenderFrameHostImplBrowserTest.IsFocused_Widget
+
+# http://crbug.com/470507
+SRC_ClearKey/EncryptedMediaTest.Playback_VideoClearAudio_WebM/0
