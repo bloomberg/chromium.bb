@@ -433,11 +433,10 @@ BaseElementType* ListContainer<BaseElementType>::ElementAt(size_t index) {
 }
 
 template <typename BaseElementType>
-BaseElementType* ListContainer<BaseElementType>::Allocate(
+void* ListContainer<BaseElementType>::Allocate(
     size_t size_of_actual_element_in_bytes) {
   DCHECK_LE(size_of_actual_element_in_bytes, data_->element_size());
-  void* result = data_->Allocate();
-  return static_cast<BaseElementType*>(result);
+  return data_->Allocate();
 }
 
 template <typename BaseElementType>

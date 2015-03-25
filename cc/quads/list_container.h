@@ -218,7 +218,7 @@ class CC_EXPORT ListContainer {
 
  private:
   // Hands out memory location for an element at the end of data structure.
-  BaseElementType* Allocate(size_t size_of_actual_element_in_bytes);
+  void* Allocate(size_t size_of_actual_element_in_bytes);
 
   scoped_ptr<ListContainerCharAllocator> data_;
 
