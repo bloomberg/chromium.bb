@@ -15,7 +15,7 @@ Running build_ffmpeg.sh for ia32, arm, arm-neon and mips32 platforms is
 required prior to running this script. The arm, arm-neon and mips32 platforms
 assume a Chromium OS build environment.
 
-The Ensemble branding supports the following architectures: x86, arm, and
+The Ensemble branding supports the following architectures: ia32, x86, arm, and
 mipsel.
 
 Step 1: Have a Chromium OS checkout (refer to http://dev.chromium.org)
