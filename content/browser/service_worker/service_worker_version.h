@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
 #include <map>
+#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -67,7 +68,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode, bool)>
+  typedef base::Callback<void(ServiceWorkerStatusCode,
+                              bool /* accept_connction */)>
       CrossOriginConnectCallback;
 
   enum RunningStatus {
@@ -304,6 +306,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, KeepAlive);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, SetDevToolsAttached);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutStartingWorker);
@@ -313,10 +316,30 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   typedef ServiceWorkerVersion self;
 
+  enum RequestType {
+    REQUEST_ACTIVATE,
+    REQUEST_INSTALL,
+    REQUEST_FETCH,
+    REQUEST_SYNC,
+    REQUEST_NOTIFICATION_CLICK,
+    REQUEST_PUSH,
+    REQUEST_GEOFENCING,
+    REQUEST_CROSS_ORIGIN_CONNECT
+  };
   enum PingState { NOT_PINGING, PINGING, PING_TIMED_OUT };
+
+  struct RequestInfo {
+    RequestInfo(int id, RequestType type);
+    ~RequestInfo();
+    int id;
+    RequestType type;
+    base::TimeTicks time;
+  };
 
   // Timeout for the worker to start.
   static const int kStartWorkerTimeoutMinutes;
+  // Timeout for a request to be handled.
+  static const int kRequestTimeoutMinutes;
 
   ~ServiceWorkerVersion() override;
 
@@ -428,6 +451,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   template <typename IDMAP>
   void RemoveCallbackAndStopIfDoomed(IDMAP* callbacks, int request_id);
 
+  template <typename CallbackType>
+  int AddRequest(const CallbackType& callback,
+                 IDMap<CallbackType, IDMapOwnPointer>* callback_map,
+                 RequestType request_type);
+
+  bool OnRequestTimeout(const RequestInfo& info);
+  void SetAllRequestTimes(const base::TimeTicks& ticks);
+
   const int64 version_id_;
   int64 registration_id_;
   GURL script_url_;
@@ -469,6 +500,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   PingState ping_state_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
+
+  // New requests are added to |requests_| along with their entry in a callback
+  // map. The timeout timer periodically checks |requests_| for entries that
+  // should time out or have already been fulfilled (i.e., removed from the
+  // callback map).
+  std::queue<RequestInfo> requests_;
 
   bool is_doomed_ = false;
   bool skip_waiting_ = false;

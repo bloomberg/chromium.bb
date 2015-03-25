@@ -92,6 +92,19 @@ void RunIDMapCallbacks(IDMAP* callbacks, const Params&... params) {
   callbacks->Clear();
 }
 
+template <typename CallbackType, typename... Params>
+bool RunIDMapCallback(IDMap<CallbackType, IDMapOwnPointer>* callbacks,
+                      int request_id,
+                      const Params&... params) {
+  CallbackType* callback = callbacks->Lookup(request_id);
+  if (!callback)
+    return false;
+
+  callback->Run(params...);
+  callbacks->Remove(request_id);
+  return true;
+}
+
 void RunStartWorkerCallback(
     const StatusCallback& callback,
     scoped_refptr<ServiceWorkerRegistration> protect,
@@ -142,7 +155,7 @@ void RunErrorMessageCallback(
 void RunErrorCrossOriginConnectCallback(
     const ServiceWorkerVersion::CrossOriginConnectCallback& callback,
     ServiceWorkerStatusCode status) {
-  callback.Run(status, false);
+  callback.Run(status, false /* accept_connection */);
 }
 
 using WindowOpenedCallback = base::Callback<void(int, int)>;
@@ -304,6 +317,7 @@ void OnGetClientsFromUI(
 }  // namespace
 
 const int ServiceWorkerVersion::kStartWorkerTimeoutMinutes = 5;
+const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
@@ -536,7 +550,7 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 
   prepare_callback.Run();
 
-  int request_id = fetch_callbacks_.Add(new FetchCallback(fetch_callback));
+  int request_id = AddRequest(fetch_callback, &fetch_callbacks_, REQUEST_FETCH);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_FetchEvent(request_id, request));
   if (status != SERVICE_WORKER_OK) {
@@ -566,7 +580,7 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
     return;
   }
 
-  int request_id = sync_callbacks_.Add(new StatusCallback(callback));
+  int request_id = AddRequest(callback, &sync_callbacks_, REQUEST_SYNC);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_SyncEvent(request_id));
   if (status != SERVICE_WORKER_OK) {
@@ -591,8 +605,8 @@ void ServiceWorkerVersion::DispatchNotificationClickEvent(
     return;
   }
 
-  int request_id =
-      notification_click_callbacks_.Add(new StatusCallback(callback));
+  int request_id = AddRequest(callback, &notification_click_callbacks_,
+                              REQUEST_NOTIFICATION_CLICK);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_NotificationClickEvent(request_id,
                                               notification_id,
@@ -616,7 +630,7 @@ void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
     return;
   }
 
-  int request_id = push_callbacks_.Add(new StatusCallback(callback));
+  int request_id = AddRequest(callback, &push_callbacks_, REQUEST_PUSH);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_PushEvent(request_id, data));
   if (status != SERVICE_WORKER_OK) {
@@ -652,7 +666,8 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
     return;
   }
 
-  int request_id = geofencing_callbacks_.Add(new StatusCallback(callback));
+  int request_id =
+      AddRequest(callback, &geofencing_callbacks_, REQUEST_GEOFENCING);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_GeofencingEvent(
           request_id, event_type, region_id, region));
@@ -683,8 +698,8 @@ void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
     return;
   }
 
-  int request_id = cross_origin_connect_callbacks_.Add(
-      new CrossOriginConnectCallback(callback));
+  int request_id = AddRequest(callback, &cross_origin_connect_callbacks_,
+                              REQUEST_CROSS_ORIGIN_CONNECT);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_CrossOriginConnectEvent(request_id, client));
   if (status != SERVICE_WORKER_OK) {
@@ -780,9 +795,16 @@ void ServiceWorkerVersion::Doom() {
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   embedded_worker()->set_devtools_attached(attached);
   if (attached) {
+    // TODO(falken): Canceling the timeouts when debugging could cause
+    // heisenbugs; we should instead run them as normal show an educational
+    // message in DevTools when they occur. crbug.com/470419
+
     // Don't record the startup time metric once DevTools is attached.
     ClearTick(&start_time_);
     skip_recording_startup_time_ = true;
+
+    // Cancel request timeouts.
+    SetAllRequestTimes(base::TimeTicks());
     return;
   }
   if (!start_callbacks_.empty()) {
@@ -792,6 +814,9 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
         << running_status();
     RestartTick(&start_time_);
   }
+
+  // Reactivate request timeouts.
+  SetAllRequestTimes(base::TimeTicks::Now());
 }
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
@@ -802,6 +827,13 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
 const net::HttpResponseInfo*
 ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
   return main_script_http_info_.get();
+}
+
+ServiceWorkerVersion::RequestInfo::RequestInfo(int id, RequestType type)
+    : id(id), type(type), time(base::TimeTicks::Now()) {
+}
+
+ServiceWorkerVersion::RequestInfo::~RequestInfo() {
 }
 
 void ServiceWorkerVersion::OnScriptLoaded() {
@@ -960,7 +992,7 @@ void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
 
-  int request_id = install_callbacks_.Add(new StatusCallback(callback));
+  int request_id = AddRequest(callback, &install_callbacks_, REQUEST_INSTALL);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_InstallEvent(request_id));
   if (status != SERVICE_WORKER_OK) {
@@ -974,7 +1006,7 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
 
-  int request_id = activate_callbacks_.Add(new StatusCallback(callback));
+  int request_id = AddRequest(callback, &activate_callbacks_, REQUEST_ACTIVATE);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_ActivateEvent(request_id));
   if (status != SERVICE_WORKER_OK) {
@@ -1516,9 +1548,22 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     return;
   }
 
-  // This check occurs after the start_time_ timeout check, since in that case
-  // the start callbacks should fail with ERROR_TIMEOUT. In the other timeout
-  // checks, there's nothing more to do as the worker is already stopping.
+  // Requests have not finished within a certain period.
+  bool request_timed_out = false;
+  while (!requests_.empty()) {
+    RequestInfo info = requests_.front();
+    if (GetTickDuration(info.time) <
+        base::TimeDelta::FromMinutes(kRequestTimeoutMinutes))
+      break;
+    if (OnRequestTimeout(info))
+      request_timed_out = true;
+    requests_.pop();
+  }
+  if (request_timed_out && running_status() != STOPPING)
+    embedded_worker_->Stop();
+
+  // For the timeouts below, there are no callbacks to timeout so there is
+  // nothing more to do if the worker is already stopping.
   if (running_status() == STOPPING)
     return;
 
@@ -1654,6 +1699,61 @@ void ServiceWorkerVersion::RemoveCallbackAndStopIfDoomed(
     // order to release worker resources soon.
     StopWorkerIfIdle();
   }
+}
+
+template <typename CallbackType>
+int ServiceWorkerVersion::AddRequest(
+    const CallbackType& callback,
+    IDMap<CallbackType, IDMapOwnPointer>* callback_map,
+    RequestType request_type) {
+  int request_id = callback_map->Add(new CallbackType(callback));
+  requests_.push(RequestInfo(request_id, request_type));
+  return request_id;
+}
+
+bool ServiceWorkerVersion::OnRequestTimeout(const RequestInfo& info) {
+  switch (info.type) {
+    case REQUEST_ACTIVATE:
+      return RunIDMapCallback(&activate_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case REQUEST_INSTALL:
+      return RunIDMapCallback(&install_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case REQUEST_FETCH:
+      return RunIDMapCallback(
+          &fetch_callbacks_, info.id, SERVICE_WORKER_ERROR_TIMEOUT,
+          /* The other args are ignored for non-OK status. */
+          SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse());
+    case REQUEST_SYNC:
+      return RunIDMapCallback(&sync_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case REQUEST_NOTIFICATION_CLICK:
+      return RunIDMapCallback(&notification_click_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case REQUEST_PUSH:
+      return RunIDMapCallback(&push_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case REQUEST_GEOFENCING:
+      return RunIDMapCallback(&geofencing_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
+    case REQUEST_CROSS_ORIGIN_CONNECT:
+      return RunIDMapCallback(&cross_origin_connect_callbacks_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT,
+                              false /* accept_connection */);
+  }
+  NOTREACHED() << "Got unexpected request type: " << info.type;
+  return false;
+}
+
+void ServiceWorkerVersion::SetAllRequestTimes(const base::TimeTicks& ticks) {
+  std::queue<RequestInfo> new_requests;
+  while (!requests_.empty()) {
+    RequestInfo info = requests_.front();
+    info.time = ticks;
+    new_requests.push(info);
+    requests_.pop();
+  }
+  requests_ = new_requests;
 }
 
 }  // namespace content

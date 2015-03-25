@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +77,13 @@ void ObserveStatusChanges(ServiceWorkerVersion* version,
   statuses->push_back(version->status());
   version->RegisterStatusChangeCallback(
       base::Bind(&ObserveStatusChanges, base::Unretained(version), statuses));
+}
+
+void ReceiveFetchResult(ServiceWorkerStatusCode* status,
+                        ServiceWorkerStatusCode actual_status,
+                        ServiceWorkerFetchEventResult actual_result,
+                        const ServiceWorkerResponse& response) {
+  *status = actual_status;
 }
 
 // A specialized listener class to receive test messages from a worker.
@@ -196,6 +204,33 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFailToStartTest);
+};
+
+class MessageReceiverDisallowFetch : public MessageReceiver {
+ public:
+  MessageReceiverDisallowFetch() : MessageReceiver() {}
+  ~MessageReceiverDisallowFetch() override {}
+
+  void OnFetchEvent(int embedded_worker_id,
+                    int request_id,
+                    const ServiceWorkerFetchRequest& request) override {
+    // Do nothing.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowFetch);
+};
+
+class ServiceWorkerWaitForeverInFetchTest : public ServiceWorkerVersionTest {
+ protected:
+  ServiceWorkerWaitForeverInFetchTest() : ServiceWorkerVersionTest() {}
+
+  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
+    return make_scoped_ptr(new MessageReceiverDisallowFetch());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerWaitForeverInFetchTest);
 };
 
 TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
@@ -439,6 +474,31 @@ TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+}
+
+TEST_F(ServiceWorkerWaitForeverInFetchTest, RequestTimeout) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
+                               base::Bind(&base::DoNothing),
+                               base::Bind(&ReceiveFetchResult, &status));
+  base::RunLoop().RunUntilIdle();
+
+  // Callback has not completed yet.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // Simulate timeout.
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  version_->SetAllRequestTimes(
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromMinutes(
+          ServiceWorkerVersion::kRequestTimeoutMinutes + 1));
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 }
 
 TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
