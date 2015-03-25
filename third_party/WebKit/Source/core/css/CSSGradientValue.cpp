@@ -86,8 +86,8 @@ PassRefPtr<Image> CSSGradientValue::image(LayoutObject* renderer, const IntSize&
 // Should only ever be called for deprecated gradients.
 static inline bool compareStops(const CSSGradientColorStop& a, const CSSGradientColorStop& b)
 {
-    double aVal = a.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER);
-    double bVal = b.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER);
+    double aVal = a.m_position->getDoubleValue();
+    double bVal = b.m_position->getDoubleValue();
 
     return aVal < bVal;
 }
@@ -209,9 +209,9 @@ void CSSGradientValue::addDeprecatedStops(Gradient* gradient, const LayoutObject
     for (const auto& stop : m_stops) {
         float offset;
         if (stop.m_position->isPercentage())
-            offset = stop.m_position->getFloatValue(CSSPrimitiveValue::CSS_PERCENTAGE) / 100;
+            offset = stop.m_position->getFloatValue() / 100;
         else
-            offset = stop.m_position->getFloatValue(CSSPrimitiveValue::CSS_NUMBER);
+            offset = stop.m_position->getFloatValue();
 
         gradient->addColorStop(offset, resolveStopColor(stop.m_color.get(), object));
     }
@@ -379,7 +379,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
 
         if (stop.m_position) {
             if (stop.m_position->isPercentage())
-                stops[i].offset = stop.m_position->getFloatValue(CSSPrimitiveValue::CSS_PERCENTAGE) / 100;
+                stops[i].offset = stop.m_position->getFloatValue() / 100;
             else if (stop.m_position->isLength() || stop.m_position->isCalculatedPercentageWithLength()) {
                 float length;
                 if (stop.m_position->isLength())
@@ -742,7 +742,7 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthCon
     FloatPoint firstPoint;
     FloatPoint secondPoint;
     if (m_angle) {
-        float angle = m_angle->getFloatValue(CSSPrimitiveValue::CSS_DEG);
+        float angle = m_angle->computeDegrees();
         endPointsFromAngle(angle, size, firstPoint, secondPoint, m_gradientType);
     } else {
         switch (m_gradientType) {
@@ -845,17 +845,17 @@ inline void CSSGradientValue::appendCSSTextForDeprecatedColorStops(StringBuilder
     for (unsigned i = 0; i < m_stops.size(); i++) {
         const CSSGradientColorStop& stop = m_stops[i];
         result.appendLiteral(", ");
-        if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 0) {
+        if (stop.m_position->getDoubleValue() == 0) {
             result.appendLiteral("from(");
             result.append(stop.m_color->cssText());
             result.append(')');
-        } else if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 1) {
+        } else if (stop.m_position->getDoubleValue() == 1) {
             result.appendLiteral("to(");
             result.append(stop.m_color->cssText());
             result.append(')');
         } else {
             result.appendLiteral("color-stop(");
-            result.appendNumber(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER));
+            result.appendNumber(stop.m_position->getDoubleValue());
             result.appendLiteral(", ");
             result.append(stop.m_color->cssText());
             result.append(')');

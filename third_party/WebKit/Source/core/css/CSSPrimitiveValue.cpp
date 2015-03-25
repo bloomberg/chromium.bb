@@ -773,11 +773,24 @@ Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conve
     return Length(cssCalcValue()->toCalcValue(conversionData));
 }
 
-double CSSPrimitiveValue::getDoubleValue(UnitType unitType) const
+// TODO(timloh): This function doesn't make much sense since we need a
+// CSSToLengthConversionData to convert an arbitrary <length>s to pixels.
+// We should see if this can be removed.
+double CSSPrimitiveValue::deprecatedGetDoubleValue() const
 {
-    double result = 0;
-    getDoubleValueInternal(unitType, &result);
-    return result;
+    // Returns the double value in pixels
+    if (!isValidCSSUnitTypeForDoubleConversion(static_cast<UnitType>(m_primitiveUnitType)))
+        return 0;
+
+    UnitType type = primitiveType();
+    if (type == CSS_NUMBER)
+        type = CSS_PX;
+    UnitCategory category = unitCategory(type);
+    ASSERT(category != UOther);
+
+    if (category != ULength)
+        return 0;
+    return getDoubleValue() * conversionToCanonicalUnitsScaleFactor(type);
 }
 
 double CSSPrimitiveValue::getDoubleValue() const
@@ -807,56 +820,6 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::canonicalUnitTypeForCategory(Unit
     default:
         return CSS_UNKNOWN;
     }
-}
-
-bool CSSPrimitiveValue::getDoubleValueInternal(UnitType requestedUnitType, double* result) const
-{
-    if (!isValidCSSUnitTypeForDoubleConversion(static_cast<UnitType>(m_primitiveUnitType)) || !isValidCSSUnitTypeForDoubleConversion(requestedUnitType))
-        return false;
-
-    UnitType sourceUnitType = primitiveType();
-    if (requestedUnitType == sourceUnitType) {
-        *result = getDoubleValue();
-        return true;
-    }
-
-    UnitCategory sourceCategory = unitCategory(sourceUnitType);
-    ASSERT(sourceCategory != UOther);
-
-    UnitType targetUnitType = requestedUnitType;
-    UnitCategory targetCategory = unitCategory(targetUnitType);
-    ASSERT(targetCategory != UOther);
-
-    // Cannot convert between unrelated unit categories if one of them is not UNumber.
-    if (sourceCategory != targetCategory && sourceCategory != UNumber && targetCategory != UNumber)
-        return false;
-
-    if (targetCategory == UNumber) {
-        // We interpret conversion to CSS_NUMBER as conversion to a canonical unit in this value's category.
-        targetUnitType = canonicalUnitTypeForCategory(sourceCategory);
-        if (targetUnitType == CSS_UNKNOWN)
-            return false;
-    }
-
-    if (sourceUnitType == CSS_NUMBER) {
-        // We interpret conversion from CSS_NUMBER in the same way as BisonCSSParser::validUnit() while using non-strict mode.
-        sourceUnitType = canonicalUnitTypeForCategory(targetCategory);
-        if (sourceUnitType == CSS_UNKNOWN)
-            return false;
-    }
-
-    double convertedValue = getDoubleValue();
-
-    // First convert the value from m_primitiveUnitType to canonical type.
-    double factor = conversionToCanonicalUnitsScaleFactor(sourceUnitType);
-    convertedValue *= factor;
-
-    // Now convert from canonical type to the target unitType.
-    factor = conversionToCanonicalUnitsScaleFactor(targetUnitType);
-    convertedValue /= factor;
-
-    *result = convertedValue;
-    return true;
 }
 
 bool CSSPrimitiveValue::unitTypeToLengthUnitType(UnitType unitType, LengthUnitType& lengthType)

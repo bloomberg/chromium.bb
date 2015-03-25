@@ -1636,7 +1636,7 @@ static bool isCSSValueLength(CSSPrimitiveValue* value)
 int legacyFontSizeFromCSSValue(Document* document, CSSPrimitiveValue* value, FixedPitchFontType fixedPitchFontType, LegacyFontSizeMode mode)
 {
     if (isCSSValueLength(value)) {
-        int pixelFontSize = value->getIntValue(CSSPrimitiveValue::CSS_PX);
+        int pixelFontSize = clampTo<int>(value->deprecatedGetDoubleValue());
         int legacyFontSize = FontSize::legacyFontSize(document, pixelFontSize, fixedPitchFontType);
         // Use legacy font size only if pixel value matches exactly to that of legacy font size.
         if (mode == AlwaysUseLegacyFontSize || FontSize::fontSizeForKeyword(document, legacyFontSize, fixedPitchFontType) == pixelFontSize)

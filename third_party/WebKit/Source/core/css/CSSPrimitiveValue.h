@@ -283,16 +283,11 @@ public:
     // Converts to a Length (Fixed, Percent or Calculated)
     Length convertToLength(const CSSToLengthConversionData&);
 
-    double getDoubleValue(UnitType) const;
+    double deprecatedGetDoubleValue() const;
+
     double getDoubleValue() const;
-
-    float getFloatValue(UnitType type) const { return getValue<float>(type); }
     float getFloatValue() const { return getValue<float>(); }
-
-    int getIntValue(UnitType type) const { return getValue<int>(type); }
     int getIntValue() const { return getValue<int>(); }
-
-    template<typename T> inline T getValue(UnitType type) const { return clampTo<T>(getDoubleValue(type)); }
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 
     String getStringValue() const;
@@ -368,7 +363,6 @@ private:
     void init(PassRefPtrWillBeRawPtr<Quad>);
     void init(PassRefPtrWillBeRawPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
-    bool getDoubleValueInternal(UnitType targetUnitType, double* result) const;
 
     double computeLengthDouble(const CSSToLengthConversionData&);
 
