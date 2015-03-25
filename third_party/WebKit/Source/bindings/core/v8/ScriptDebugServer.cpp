@@ -41,7 +41,9 @@
 #include "platform/JSONValues.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "wtf/Deque.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
 #include "wtf/text/CString.h"
@@ -49,19 +51,30 @@
 namespace blink {
 
 namespace {
-
-class ClientDataImpl : public v8::Debug::ClientData {
-public:
-    ClientDataImpl(PassOwnPtr<ScriptDebugServer::Task> task) : m_task(task) { }
-    virtual ~ClientDataImpl() { }
-    ScriptDebugServer::Task* task() const { return m_task.get(); }
-private:
-    OwnPtr<ScriptDebugServer::Task> m_task;
-};
-
 const char stepIntoV8MethodName[] = "stepIntoStatement";
 const char stepOutV8MethodName[] = "stepOutOfFunction";
 }
+
+class ScriptDebugServer::ThreadSafeTaskQueue {
+    WTF_MAKE_NONCOPYABLE(ThreadSafeTaskQueue);
+public:
+    ThreadSafeTaskQueue() { }
+    PassOwnPtr<Task> tryTake()
+    {
+        MutexLocker lock(m_mutex);
+        if (m_queue.isEmpty())
+            return nullptr;
+        return m_queue.takeFirst();
+    }
+    void append(PassOwnPtr<Task> task)
+    {
+        MutexLocker lock(m_mutex);
+        m_queue.append(task);
+    }
+private:
+    Mutex m_mutex;
+    Deque<OwnPtr<Task>> m_queue;
+};
 
 v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[])
 {
@@ -76,6 +89,7 @@ ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
     , m_breakpointsActivated(true)
     , m_compiledScripts(isolate)
     , m_runningNestedMessageLoop(false)
+    , m_taskQueue(adoptPtr(new ThreadSafeTaskQueue))
 {
 }
 
@@ -468,12 +482,18 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::callFrameNoScopes
 
 void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
 {
-    v8::Debug::DebugBreakForCommand(m_isolate, new ClientDataImpl(task));
+    m_taskQueue->append(task);
+    m_isolate->RequestInterrupt(&v8InterruptCallback, this);
 }
 
 void ScriptDebugServer::runPendingTasks()
 {
-    v8::Debug::ProcessDebugMessages();
+    while (true) {
+        OwnPtr<Task> task = m_taskQueue->tryTake();
+        if (!task)
+            return;
+        task->run();
+    }
 }
 
 static ScriptDebugServer* toScriptDebugServer(v8::Local<v8::Value> data)
@@ -535,6 +555,12 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::L
     }
 }
 
+void ScriptDebugServer::v8InterruptCallback(v8::Isolate*, void* data)
+{
+    ScriptDebugServer* server = static_cast<ScriptDebugServer*>(data);
+    server->runPendingTasks();
+}
+
 void ScriptDebugServer::v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails)
 {
     ScriptDebugServer* thisPtr = toScriptDebugServer(eventDetails.GetCallbackData());
@@ -551,13 +577,6 @@ v8::Local<v8::Value> ScriptDebugServer::callInternalGetterFunction(v8::Local<v8:
 void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
 {
     v8::DebugEvent event = eventDetails.GetEvent();
-
-    if (event == v8::BreakForCommand) {
-        ClientDataImpl* data = static_cast<ClientDataImpl*>(eventDetails.GetClientData());
-        data->task()->run();
-        return;
-    }
-
     if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError && event != v8::PromiseEvent)
         return;
 

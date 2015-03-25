@@ -141,6 +141,7 @@ protected:
     v8::Isolate* m_isolate;
 
 private:
+    static void v8InterruptCallback(v8::Isolate*, void*);
     static void v8DebugEventCallback(const v8::Debug::EventDetails&);
     v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object>, const char* functionName);
     void handleV8DebugEvent(const v8::Debug::EventDetails&);
@@ -164,6 +165,8 @@ private:
     v8::Local<v8::Object> m_executionState;
     RefPtr<ScriptState> m_pausedScriptState;
     bool m_runningNestedMessageLoop;
+    class ThreadSafeTaskQueue;
+    OwnPtr<ThreadSafeTaskQueue> m_taskQueue;
 };
 
 } // namespace blink
