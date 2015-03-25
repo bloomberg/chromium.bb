@@ -1417,6 +1417,9 @@ int SSLClientSocketOpenSSL::DoWriteLoop() {
 int SSLClientSocketOpenSSL::DoPayloadRead() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
+  DCHECK_LT(0, user_read_buf_len_);
+  DCHECK(user_read_buf_.get());
+
   int rv;
   if (pending_read_error_ != kNoPendingReadResult) {
     rv = pending_read_error_;
@@ -1436,71 +1439,61 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
   }
 
   int total_bytes_read = 0;
+  int ssl_ret;
   do {
-    rv = SSL_read(ssl_, user_read_buf_->data() + total_bytes_read,
-                  user_read_buf_len_ - total_bytes_read);
-    if (rv > 0)
-      total_bytes_read += rv;
-  } while (total_bytes_read < user_read_buf_len_ && rv > 0);
+    ssl_ret = SSL_read(ssl_, user_read_buf_->data() + total_bytes_read,
+                       user_read_buf_len_ - total_bytes_read);
+    if (ssl_ret > 0)
+      total_bytes_read += ssl_ret;
+  } while (total_bytes_read < user_read_buf_len_ && ssl_ret > 0);
 
-  if (total_bytes_read == user_read_buf_len_) {
-    rv = total_bytes_read;
-  } else {
-    // Otherwise, an error occurred (rv <= 0). The error needs to be handled
-    // immediately, while the OpenSSL errors are still available in
-    // thread-local storage. However, the handled/remapped error code should
-    // only be returned if no application data was already read; if it was, the
-    // error code should be deferred until the next call of DoPayloadRead.
+  // Although only the final SSL_read call may have failed, the failure needs to
+  // processed immediately, while the information still available in OpenSSL's
+  // error queue.
+  if (client_auth_cert_needed_) {
+    pending_read_error_ = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
+  } else if (ssl_ret <= 0) {
+    // A zero return from SSL_read may mean any of:
+    // - The underlying BIO_read returned 0.
+    // - The peer sent a close_notify.
+    // - Any arbitrary error. https://crbug.com/466303
     //
-    // If no data was read, |*next_result| will point to the return value of
-    // this function. If at least some data was read, |*next_result| will point
-    // to |pending_read_error_|, to be returned in a future call to
-    // DoPayloadRead() (e.g.: after the current data is handled).
-    int *next_result = &rv;
-    if (total_bytes_read > 0) {
-      pending_read_error_ = rv;
-      rv = total_bytes_read;
-      next_result = &pending_read_error_;
+    // TransportReadComplete converts the first to an ERR_CONNECTION_CLOSED
+    // error, so it does not occur. The second and third are distinguished by
+    // SSL_ERROR_ZERO_RETURN.
+    pending_read_ssl_error_ = SSL_get_error(ssl_, ssl_ret);
+    if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
+      pending_read_error_ = 0;
+    } else {
+      pending_read_error_ = MapOpenSSLErrorWithDetails(
+          pending_read_ssl_error_, err_tracer, &pending_read_error_info_);
     }
 
-    if (client_auth_cert_needed_) {
-      *next_result = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
-    } else if (*next_result <= 0) {
-      // A zero return from SSL_read may mean any of:
-      // - The underlying BIO_read returned 0.
-      // - The peer sent a close_notify.
-      // - Any arbitrary error. https://crbug.com/466303
-      //
-      // TransportReadComplete converts the first to an ERR_CONNECTION_CLOSED
-      // error, so it does not occur. The second and third are distinguished by
-      // SSL_ERROR_ZERO_RETURN.
-      pending_read_ssl_error_ = SSL_get_error(ssl_, *next_result);
-      if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
-        *next_result = 0;
-      } else {
-        *next_result = MapOpenSSLErrorWithDetails(
-            pending_read_ssl_error_, err_tracer, &pending_read_error_info_);
-      }
+    // Many servers do not reliably send a close_notify alert when shutting down
+    // a connection, and instead terminate the TCP connection. This is reported
+    // as ERR_CONNECTION_CLOSED. Because of this, map the unclean shutdown to a
+    // graceful EOF, instead of treating it as an error as it should be.
+    if (pending_read_error_ == ERR_CONNECTION_CLOSED)
+      pending_read_error_ = 0;
+  }
 
-      // Many servers do not reliably send a close_notify alert when shutting
-      // down a connection, and instead terminate the TCP connection. This is
-      // reported as ERR_CONNECTION_CLOSED. Because of this, map the unclean
-      // shutdown to a graceful EOF, instead of treating it as an error as it
-      // should be.
-      if (*next_result == ERR_CONNECTION_CLOSED)
-        *next_result = 0;
+  if (total_bytes_read > 0) {
+    // Return any bytes read to the caller. The error will be deferred to the
+    // next call of DoPayloadRead.
+    rv = total_bytes_read;
 
-      if (rv > 0 && *next_result == ERR_IO_PENDING) {
-          // If at least some data was read from SSL_read(), do not treat
-          // insufficient data as an error to return in the next call to
-          // DoPayloadRead() - instead, let the call fall through to check
-          // SSL_read() again. This is because DoTransportIO() may complete
-          // in between the next call to DoPayloadRead(), and thus it is
-          // important to check SSL_read() on subsequent invocations to see
-          // if a complete record may now be read.
-        *next_result = kNoPendingReadResult;
-      }
-    }
+    // Do not treat insufficient data as an error to return in the next call to
+    // DoPayloadRead() - instead, let the call fall through to check SSL_read()
+    // again. This is because DoTransportIO() may complete in between the next
+    // call to DoPayloadRead(), and thus it is important to check SSL_read() on
+    // subsequent invocations to see if a complete record may now be read.
+    if (pending_read_error_ == ERR_IO_PENDING)
+      pending_read_error_ = kNoPendingReadResult;
+  } else {
+    // No bytes were returned. Return the pending read error immediately.
+    DCHECK_NE(kNoPendingReadResult, pending_read_error_);
+    rv = pending_read_error_;
+    pending_read_error_ = kNoPendingReadResult;
   }
 
   if (rv >= 0) {
