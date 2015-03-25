@@ -815,8 +815,6 @@ def SDKLibs(arch, is_canonical):
               'src_include': os.path.join(NACL_DIR, 'src', 'include'),
               'scons.py': os.path.join(NACL_DIR, 'scons.py'),
               'site_scons': os.path.join(NACL_DIR, 'site_scons'),
-              'prep_nacl_sdk':
-                  os.path.join(NACL_DIR, 'build', 'prep_nacl_sdk.py'),
           },
           'commands': [
             command.Command(
