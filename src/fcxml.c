@@ -2265,8 +2265,8 @@ FcParseInclude (FcConfigParse *parse)
     attr = FcConfigGetAttribute (parse, "ignore_missing");
     if (attr && FcConfigLexBool (parse, (FcChar8 *) attr) == FcTrue)
 	ignore_missing = FcTrue;
-#ifndef _WIN32
     attr = FcConfigGetAttribute (parse, "deprecated");
+#ifndef _WIN32
     if (attr && FcConfigLexBool (parse, (FcChar8 *) attr) == FcTrue)
         deprecated = FcTrue;
 #endif
