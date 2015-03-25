@@ -25,6 +25,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -60,6 +61,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
       storage_row_(nullptr),
       storage_checkbox_(nullptr),
       progress_overlay_(nullptr),
+      progress_throbber_(nullptr),
       progress_label_(nullptr),
       overlay_animation_(this),
       weak_ptr_factory_(this) {
@@ -84,6 +86,7 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   SetInputsEnabled(false);
   progress_overlay_->SetOpacity(0.0);
   progress_overlay_->SetVisible(true);
+  progress_throbber_->Start();
   overlay_animation_.Show();
   GetDialogClientView()->UpdateDialogButtons();
   Layout();
@@ -92,9 +95,11 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
 void CardUnmaskPromptViews::GotVerificationResult(
     const base::string16& error_message,
     bool allow_retry) {
+  progress_throbber_->Stop();
   if (error_message.empty()) {
     progress_label_->SetText(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS));
+    progress_throbber_->SetChecked(true);
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
                               weak_ptr_factory_.GetWeakPtr()),
@@ -222,6 +227,7 @@ void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   progress_overlay_->set_background(
       views::Background::CreateSolidBackground(bg_color));
+  progress_label_->SetBackgroundColor(bg_color);
 }
 
 ui::ModalType CardUnmaskPromptViews::GetModalType() const {
@@ -396,18 +402,23 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   progress_overlay_ = new FadeOutView();
   progress_overlay_->set_fade_everything(true);
   views::BoxLayout* progress_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-  progress_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5);
   progress_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  progress_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   progress_overlay_->SetLayoutManager(progress_layout);
 
   progress_overlay_->SetVisible(false);
   AddChildView(progress_overlay_);
 
+  progress_throbber_ = new views::CheckmarkThrobber();
+  progress_overlay_->AddChildView(progress_throbber_);
+
   progress_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS));
+  // Material blue. TODO(estade): find an appropriate place for this color.
+  progress_label_->SetEnabledColor(SkColorSetRGB(0x42, 0x85, 0xF4));
   progress_overlay_->AddChildView(progress_label_);
 }
 
