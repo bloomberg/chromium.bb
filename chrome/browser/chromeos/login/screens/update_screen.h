@@ -77,6 +77,8 @@ class UpdateScreen : public UpdateModel,
   // Skip update UI, usually used only in debug builds/tests.
   void CancelUpdate();
 
+  base::OneShotTimer<UpdateScreen>& GetErrorMessageTimerForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestUpdateAvailable);
@@ -116,6 +118,9 @@ class UpdateScreen : public UpdateModel,
   void UpdateErrorMessage(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalStatus status);
+
+  void DelayErrorMessage();
+
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer<UpdateScreen> reboot_timer_;
@@ -169,6 +174,11 @@ class UpdateScreen : public UpdateModel,
   bool is_first_portal_notification_;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+
+  // Timer for the captive portal detector to show portal login page.
+  // If redirect did not happen during this delay, error message is shown
+  // instead.
+  base::OneShotTimer<UpdateScreen> error_message_timer_;
 
   base::WeakPtrFactory<UpdateScreen> weak_factory_;
 

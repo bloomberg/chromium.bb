@@ -66,6 +66,11 @@ const double kDownloadAverageSpeedDropBound = 1e-8;
 // An upper bound for possible downloading time left estimations.
 const double kMaxTimeLeft = 24 * 60 * 60;
 
+// Delay before showing error message if captive portal is detected.
+// We wait for this delay to let captive portal to perform redirect and show
+// its login page before error message appears.
+const int kDelayErrorMessageSec = 10;
+
 // Invoked from call to RequestUpdateCheck upon completion of the DBus call.
 void StartUpdateCallback(UpdateScreen* screen,
                          UpdateEngineClient::UpdateCheckResult result) {
@@ -251,7 +256,7 @@ void UpdateScreen::UpdateStatusChanged(
 void UpdateScreen::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  LOG(WARNING) << "UpdateScreen::PortalDetectionCompleted(): "
+  LOG(WARNING) << "UpdateScreen::OnPortalDetectionCompleted(): "
                << "network=" << (network ? network->path() : "") << ", "
                << "state.status=" << state.status << ", "
                << "state.response_code=" << state.response_code;
@@ -291,7 +296,11 @@ void UpdateScreen::OnPortalDetectionCompleted(
       StartUpdateCheck();
     } else {
       UpdateErrorMessage(network, status);
-      ShowErrorMessage();
+
+      if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL)
+        DelayErrorMessage();
+      else
+        ShowErrorMessage();
     }
   }
 }
@@ -509,6 +518,9 @@ ErrorScreen* UpdateScreen::GetErrorScreen() {
 }
 
 void UpdateScreen::StartUpdateCheck() {
+  error_message_timer_.Stop();
+  GetErrorScreen()->HideCaptivePortal();
+
   NetworkPortalDetector::Get()->RemoveObserver(this);
   if (state_ == STATE_ERROR)
     HideErrorMessage();
@@ -521,6 +533,9 @@ void UpdateScreen::StartUpdateCheck() {
 
 void UpdateScreen::ShowErrorMessage() {
   LOG(WARNING) << "UpdateScreen::ShowErrorMessage()";
+
+  error_message_timer_.Stop();
+
   state_ = STATE_ERROR;
   GetErrorScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
   get_base_screen_delegate()->ShowErrorScreen();
@@ -569,6 +584,21 @@ void UpdateScreen::SetHostPairingControllerStatus(
   if (remora_controller_) {
     remora_controller_->OnUpdateStatusChanged(update_status);
   }
+}
+
+void UpdateScreen::DelayErrorMessage() {
+  if (error_message_timer_.IsRunning())
+    return;
+
+  state_ = STATE_ERROR;
+  error_message_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kDelayErrorMessageSec), this,
+      &UpdateScreen::ShowErrorMessage);
+}
+
+base::OneShotTimer<UpdateScreen>&
+UpdateScreen::GetErrorMessageTimerForTesting() {
+  return error_message_timer_;
 }
 
 }  // namespace chromeos

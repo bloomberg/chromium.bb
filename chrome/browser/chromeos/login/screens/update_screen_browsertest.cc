@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
   portal_state.response_code = 200;
   SetDetectionResults(kStubEthernetGuid, portal_state);
 
-  // Update screen will show error message about portal state because
+  // Update screen will delay error message about portal state because
   // ethernet is behind captive portal.
   EXPECT_CALL(*mock_error_screen_,
               MockSetUIState(NetworkError::UI_STATE_UPDATE)).Times(1);
@@ -251,6 +251,15 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
   EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
 
   update_screen_->StartNetworkCheck();
+
+  // Force timer expiration.
+  {
+    base::Closure timed_callback =
+        update_screen_->GetErrorMessageTimerForTesting().user_task();
+    ASSERT_FALSE(timed_callback.is_null());
+    update_screen_->GetErrorMessageTimerForTesting().Reset();
+    timed_callback.Run();
+  }
 
   NetworkPortalDetector::CaptivePortalState online_state;
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
@@ -282,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   portal_state.response_code = 200;
   SetDetectionResults(kStubEthernetGuid, portal_state);
 
-  // Update screen will show error message about portal state because
+  // Update screen will delay error message about portal state because
   // ethernet is behind captive portal.
   EXPECT_CALL(*mock_error_screen_,
               MockSetUIState(NetworkError::UI_STATE_UPDATE)).Times(1);
@@ -293,6 +302,15 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
 
   update_screen_->StartNetworkCheck();
+
+  // Force timer expiration.
+  {
+    base::Closure timed_callback =
+        update_screen_->GetErrorMessageTimerForTesting().user_task();
+    ASSERT_FALSE(timed_callback.is_null());
+    update_screen_->GetErrorMessageTimerForTesting().Reset();
+    timed_callback.Run();
+  }
 
   // Change active network to the wifi behind proxy.
   NetworkPortalDetector::CaptivePortalState proxy_state;
@@ -349,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   portal_state.response_code = 200;
   SetDetectionResults(kStubEthernetGuid, portal_state);
 
-  // Update screen will show error message about portal state because
+  // Update screen will delay error message about portal state because
   // ethernet is behind captive portal.
   EXPECT_CALL(*mock_error_screen_,
               MockSetUIState(NetworkError::UI_STATE_UPDATE)).Times(1);
@@ -360,6 +378,15 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
 
   update_screen_->StartNetworkCheck();
+
+  // Force timer expiration.
+  {
+    base::Closure timed_callback =
+        update_screen_->GetErrorMessageTimerForTesting().user_task();
+    ASSERT_FALSE(timed_callback.is_null());
+    update_screen_->GetErrorMessageTimerForTesting().Reset();
+    timed_callback.Run();
+  }
 
   // User re-selects the same network manually. In this case, hide
   // offline message and skip network check. Since ethernet is still

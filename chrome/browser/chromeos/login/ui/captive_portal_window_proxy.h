@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace content {
@@ -112,6 +113,8 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   content::WebContents* web_contents_;
 
   CaptivePortalView* captive_portal_view_for_testing_;
+
+  base::Time started_loading_at_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalWindowProxy);
 };
