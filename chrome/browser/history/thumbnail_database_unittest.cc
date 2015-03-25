@@ -671,34 +671,8 @@ TEST_F(ThumbnailDatabaseTest, Version5) {
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 
-  EXPECT_TRUE(CheckPageHasIcon(db.get(),
-                               kPageUrl1,
-                               favicon_base::FAVICON,
-                               kIconUrl1,
-                               gfx::Size(),
-                               sizeof(kBlob1),
-                               kBlob1));
-  EXPECT_TRUE(CheckPageHasIcon(db.get(),
-                               kPageUrl2,
-                               favicon_base::FAVICON,
-                               kIconUrl2,
-                               gfx::Size(),
-                               sizeof(kBlob2),
-                               kBlob2));
-  EXPECT_TRUE(CheckPageHasIcon(db.get(),
-                               kPageUrl3,
-                               favicon_base::FAVICON,
-                               kIconUrl1,
-                               gfx::Size(),
-                               sizeof(kBlob1),
-                               kBlob1));
-  EXPECT_TRUE(CheckPageHasIcon(db.get(),
-                               kPageUrl3,
-                               favicon_base::TOUCH_ICON,
-                               kIconUrl3,
-                               gfx::Size(),
-                               sizeof(kBlob2),
-                               kBlob2));
+  // Version 5 is deprecated, the data should all be gone.
+  VerifyDatabaseEmpty(&db->db_);
 }
 
 // Test loading version 6 database.

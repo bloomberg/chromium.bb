@@ -79,7 +79,7 @@ namespace {
 
 // Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
 // Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
-// Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12
+// Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12 (deprecated)
 // Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08 (deprecated)
 // Version 3: 09911bf3/r15 by initial.commit on 2008-07-26 (deprecated)
 
@@ -88,7 +88,7 @@ namespace {
 // the new version and a test to verify that Init() works with it.
 const int kCurrentVersionNumber = 7;
 const int kCompatibleVersionNumber = 7;
-const int kDeprecatedVersionNumber = 4;  // and earlier.
+const int kDeprecatedVersionNumber = 5;  // and earlier.
 
 void FillIconMapping(const sql::Statement& statement,
                      const GURL& page_url,
@@ -438,8 +438,8 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
 
   // This code may be able to fetch version information that the regular
   // deprecation path cannot.
-  // NOTE(shess): v5 and v6 are currently not deprecated in the normal Init()
-  // path, but are deprecated in the recovery path in the interest of keeping
+  // NOTE(shess,rogerm): v6 is not currently deprecated in the normal Init()
+  // path, but is deprecated in the recovery path in the interest of keeping
   // the code simple.  http://crbug.com/327485 for numbers.
   DCHECK_LE(kDeprecatedVersionNumber, 6);
   if (version <= 6) {
@@ -1240,12 +1240,6 @@ sql::InitStatus ThumbnailDatabase::InitImpl(const base::FilePath& db_name) {
     return sql::INIT_FAILURE;
   }
 
-  if (cur_version == 5) {
-    ++cur_version;
-    if (!UpgradeToVersion6())
-      return CantUpgradeToVersion(cur_version);
-  }
-
   if (cur_version == 6) {
     ++cur_version;
     if (!UpgradeToVersion7())
@@ -1281,32 +1275,6 @@ sql::InitStatus ThumbnailDatabase::CantUpgradeToVersion(int cur_version) {
                cur_version << ".";
   db_.Close();
   return sql::INIT_FAILURE;
-}
-
-bool ThumbnailDatabase::UpgradeToVersion6() {
-  // Move bitmap data from favicons to favicon_bitmaps.
-  bool success =
-      db_.Execute("INSERT INTO favicon_bitmaps (icon_id, last_updated, "
-                  "image_data, width, height)"
-                  "SELECT id, last_updated, image_data, 0, 0 FROM favicons") &&
-      db_.Execute("CREATE TABLE temp_favicons ("
-                  "id INTEGER PRIMARY KEY,"
-                  "url LONGVARCHAR NOT NULL,"
-                  "icon_type INTEGER DEFAULT 1,"
-                  // default icon_type FAVICON to be consistent with
-                  // past migration.
-                  "sizes LONGVARCHAR)") &&
-      db_.Execute("INSERT INTO temp_favicons (id, url, icon_type) "
-                  "SELECT id, url, icon_type FROM favicons") &&
-      db_.Execute("DROP TABLE favicons") &&
-      db_.Execute("ALTER TABLE temp_favicons RENAME TO favicons");
-  // NOTE(shess): v7 will re-create the index.
-  if (!success)
-    return false;
-
-  meta_table_.SetVersionNumber(6);
-  meta_table_.SetCompatibleVersionNumber(std::min(6, kCompatibleVersionNumber));
-  return true;
 }
 
 bool ThumbnailDatabase::UpgradeToVersion7() {
