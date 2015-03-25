@@ -1052,6 +1052,13 @@ void ContainerNode::focusStateChanged()
 
     if (layoutObject() && layoutObject()->style()->hasAppearance())
         LayoutTheme::theme().stateChanged(layoutObject(), FocusControlState);
+
+    // If any of the shadow hosts above has :focus CSS style rule, this focus has to affect the
+    // style of the shadow host.
+    if (isInShadowTree()) {
+        if (Element* host = shadowHost())
+            host->focusStateChanged();
+    }
 }
 
 void ContainerNode::setFocus(bool received)

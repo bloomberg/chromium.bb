@@ -1,0 +1,36 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+testing single shadow DOM tree
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+testing shadow tree of trees
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(255, 255, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(255, 255, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(255, 255, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(0, 0, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(255, 255, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(255, 255, 0)"
+testing distributed nodes
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+
+

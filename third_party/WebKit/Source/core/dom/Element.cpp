@@ -2269,6 +2269,7 @@ bool Element::isTabStop() const
 void Element::setIsTabStop(bool flag)
 {
     ensureElementRareData().setIsTabStop(flag);
+    focusStateChanged();
 }
 
 void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)

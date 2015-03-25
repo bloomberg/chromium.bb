@@ -1173,7 +1173,13 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
 {
     if (InspectorInstrumentation::forcePseudoState(const_cast<Element*>(&element), CSSSelector::PseudoFocus))
         return true;
-    return element.focused() && isFrameFocused(element);
+    if (element.focused() && isFrameFocused(element))
+        return true;
+    // TODO(kochi): adjustedFocusedElement is slow.  Before isTabStop gets out of experimental state,
+    // investigate performance impact and fix any performance regression.  Unless isTabStop is set
+    // explicitly, adjustedFocusedElement() will not be called.
+    return isFrameFocused(element) && isShadowHost(element) && element.tabIndex() >= 0 && !element.isTabStop()
+        && &element == element.treeScope().adjustedFocusedElement();
 }
 
 bool SelectorChecker::matchesSpatialNavigationFocusPseudoClass(const Element& element)
