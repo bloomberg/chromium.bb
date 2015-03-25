@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/web_modal/popup_manager.h"
@@ -30,7 +29,6 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       SSLClientAuthObserver(web_contents->GetBrowserContext(),
                             cert_request_info,
                             delegate.Pass()) {
-  DVLOG(1) << __FUNCTION__;
 }
 
 SSLClientCertificateSelector::~SSLClientCertificateSelector() {
@@ -44,19 +42,15 @@ void SSLClientCertificateSelector::Init() {
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
-  DVLOG(1) << __FUNCTION__;
   GetWidget()->Close();
 }
 
 bool SSLClientCertificateSelector::Cancel() {
-  DVLOG(1) << __FUNCTION__;
-  StopObserving();
   CertificateSelected(nullptr);
   return true;
 }
 
 bool SSLClientCertificateSelector::Accept() {
-  DVLOG(1) << __FUNCTION__;
   scoped_refptr<net::X509Certificate> cert = GetSelectedCert();
   if (cert.get()) {
     // Remove the observer before we try unlocking, otherwise we might act on a
@@ -88,7 +82,6 @@ bool SSLClientCertificateSelector::Close() {
 }
 
 void SSLClientCertificateSelector::Unlocked(net::X509Certificate* cert) {
-  DVLOG(1) << __FUNCTION__;
   CertificateSelected(cert);
   GetWidget()->Close();
 }
@@ -99,7 +92,6 @@ void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
     scoped_ptr<content::ClientCertificateDelegate> delegate) {
-  DVLOG(1) << __FUNCTION__ << " " << contents;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Not all WebContentses can show modal dialogs.
