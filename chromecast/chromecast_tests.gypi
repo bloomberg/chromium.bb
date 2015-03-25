@@ -47,7 +47,8 @@
               # readonly certdb (b/8153161)
               # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
               # timeout to 75s from 45s to allow it to pass (b/19821476)
-             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest --test-launcher-timeout=75000',
+              # ProxyScriptFetcherImplTest.HttpMimeType is flaking (b/19848784)
+             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=75000',
               # Disable OutOfMemoryDeathTest.ViaSharedLibraries due to gTrusty eglibc incompatibility (crbug/428211)
               # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
               # Disable ProcessUtilTest.* (need to define OS_ANDROID)
