@@ -288,7 +288,7 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
     if (m_displayItemList && contentsOpaque()) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         FloatRect rect(FloatPoint(), size());
-        DrawingRecorder recorder(&context, displayItemClient(), DisplayItem::DebugRedFill, rect);
+        DrawingRecorder recorder(&context, *this, DisplayItem::DebugRedFill, rect);
         if (!recorder.canUseCachedDrawing())
             context.fillRect(rect, SK_ColorRED);
     }
@@ -988,12 +988,12 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
     }
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientData& displayItemClientData)
+void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-    displayItemList()->invalidate(displayItemClientData.displayItemClient());
+    displayItemList()->invalidate(displayItemClient.displayItemClient());
     if (isTrackingPaintInvalidations())
-        trackPaintInvalidationObject(displayItemClientData.debugName());
+        trackPaintInvalidationObject(displayItemClient.debugName());
 }
 
 void GraphicsLayer::setContentsRect(const IntRect& rect)

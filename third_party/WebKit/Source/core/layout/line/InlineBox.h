@@ -44,7 +44,7 @@ public:
         : m_next(0)
         , m_prev(0)
         , m_parent(0)
-        , m_renderer(obj)
+        , m_layoutObject(obj)
         , m_logicalWidth()
 #if ENABLE(ASSERT)
         , m_hasBadParent(false)
@@ -57,7 +57,7 @@ public:
         : m_next(next)
         , m_prev(prev)
         , m_parent(parent)
-        , m_renderer(obj)
+        , m_layoutObject(obj)
         , m_topLeft(topLeft)
         , m_logicalWidth(logicalWidth)
         , m_bitfields(firstLine, constructed, dirty, extracted, isHorizontal)
@@ -113,8 +113,10 @@ public:
 
     virtual void showBox(int = 0) const;
     virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0, int = 0) const;
-    virtual const char* boxName() const;
 #endif
+
+    virtual const char* boxName() const;
+    virtual String debugName() const;
 
     bool isText() const { return m_bitfields.isText(); }
     void setIsText(bool isText) { m_bitfields.setIsText(isText); }
@@ -179,7 +181,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    LayoutObject& layoutObject() const { return m_renderer; }
+    LayoutObject& layoutObject() const { return m_layoutObject; }
 
     InlineFlowBox* parent() const
     {
@@ -395,7 +397,7 @@ private:
     InlineBox* m_prev; // The previous element on the same line as us.
 
     InlineFlowBox* m_parent; // The box that contains us.
-    LayoutObject& m_renderer;
+    LayoutObject& m_layoutObject;
 
 protected:
     // For RootInlineBox

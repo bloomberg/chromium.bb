@@ -77,7 +77,8 @@ struct PopupItem {
     {
     }
 
-    DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "PopupItem " + label; }
 
     String label;
     Type type;
@@ -178,7 +179,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "PopupListBox"; }
 
 protected:
     virtual void invalidateScrollCornerRect(const IntRect&) override { }

@@ -12,7 +12,7 @@
 
 namespace blink {
 
-ClipRecorder::ClipRecorder(DisplayItemClient client, GraphicsContext* context, DisplayItem::Type type, const LayoutRect& clipRect, SkRegion::Op operation)
+ClipRecorder::ClipRecorder(const DisplayItemClientWrapper& client, GraphicsContext* context, DisplayItem::Type type, const LayoutRect& clipRect, SkRegion::Op operation)
     : m_client(client)
     , m_context(context)
     , m_type(type)

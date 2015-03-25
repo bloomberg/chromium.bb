@@ -19,10 +19,10 @@ class GraphicsContext;
 class ScrollRecorder {
     WTF_MAKE_FAST_ALLOCATED(ScrollRecorder);
 public:
-    ScrollRecorder(GraphicsContext*, DisplayItemClient, PaintPhase, const IntSize& currentOffset);
+    ScrollRecorder(GraphicsContext*, const DisplayItemClientWrapper&, PaintPhase, const IntSize& currentOffset);
     ~ScrollRecorder();
 private:
-    DisplayItemClient m_client;
+    DisplayItemClientWrapper m_client;
     DisplayItem::Type m_beginItemType;
     GraphicsContext* m_context;
 };

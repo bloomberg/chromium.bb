@@ -290,15 +290,15 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     }
 }
 
-void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientData& displayItemClientData) const
+void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient) const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
     if (layer()->groupedMapping()) {
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->invalidateDisplayItemClient(displayItemClientData);
+            squashingLayer->invalidateDisplayItemClient(displayItemClient);
     } else if (CompositedDeprecatedPaintLayerMapping* compositedDeprecatedPaintLayerMapping = layer()->compositedDeprecatedPaintLayerMapping()) {
-        compositedDeprecatedPaintLayerMapping->invalidateDisplayItemClient(displayItemClientData);
+        compositedDeprecatedPaintLayerMapping->invalidateDisplayItemClient(displayItemClient);
     }
 }
 

@@ -19,11 +19,16 @@ namespace {
 
 using RangeRecord = WebDisplayItemTransformTree::RangeRecord;
 
+struct DummyClient {
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "DummyClient"; }
+};
+
 class DummyDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<DummyDisplayItem> create(DisplayItemClient client) { return adoptPtr(new DummyDisplayItem(client)); }
+    static PassOwnPtr<DummyDisplayItem> create(const DummyClient& client) { return adoptPtr(new DummyDisplayItem(client)); }
 private:
-    DummyDisplayItem(DisplayItemClient client) : DisplayItem(client, DisplayItem::DrawingFirst) { }
+    DummyDisplayItem(const DummyClient& client) : DisplayItem(client, DisplayItem::DrawingFirst) { }
 };
 
 class DisplayItemTransformTreeBuilderTest : public ::testing::Test {
@@ -33,25 +38,23 @@ protected:
     void processDisplayItem(const DisplayItem& displayItem) { m_builder.processDisplayItem(displayItem); }
     void processDisplayItem(PassOwnPtr<DisplayItem> displayItem) { processDisplayItem(*displayItem); }
     void processDummyDisplayItem() { processDisplayItem(DummyDisplayItem::create(newDummyClient())); }
-    DisplayItemClient processBeginTransform3D(const TransformationMatrix& transform)
+    const DummyClient& processBeginTransform3D(const TransformationMatrix& transform)
     {
-        DisplayItemClient client = newDummyClient();
+        const DummyClient& client = newDummyClient();
         processDisplayItem(BeginTransform3DDisplayItem::create(client, DisplayItem::Transform3DElementTransform, transform));
         return client;
     }
-    void processEndTransform3D(DisplayItemClient client)
+    void processEndTransform3D(const DummyClient& client)
     {
         processDisplayItem(EndTransform3DDisplayItem::create(client, DisplayItem::transform3DTypeToEndTransform3DType(DisplayItem::Transform3DElementTransform)));
     }
 
 private:
-    struct DummyClient { };
-
     // This makes empty objects which can be used as display item clients.
-    DisplayItemClient newDummyClient()
+    const DummyClient& newDummyClient()
     {
         m_dummyClients.append(adoptPtr(new DummyClient));
-        return toDisplayItemClient(m_dummyClients.last().get());
+        return *m_dummyClients.last();
     }
 
     DisplayItemTransformTreeBuilder m_builder;

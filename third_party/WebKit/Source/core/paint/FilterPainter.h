@@ -24,7 +24,7 @@ private:
     bool m_filterInProgress;
     GraphicsContext* m_context;
     OwnPtr<LayerClipRecorder> m_clipRecorder;
-    LayoutObject* m_renderer;
+    LayoutObject* m_layoutObject;
 };
 
 } // namespace blink

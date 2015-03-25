@@ -12,7 +12,7 @@
 
 namespace blink {
 
-Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, DisplayItemClient client, DisplayItem::Type type, const TransformationMatrix& transform)
+Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type, const TransformationMatrix& transform)
     : m_context(context)
     , m_client(client)
     , m_type(type)

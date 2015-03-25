@@ -15,7 +15,7 @@ namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<DrawingDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<const SkPicture> picture)
+    static PassOwnPtr<DrawingDisplayItem> create(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
     {
         return adoptPtr(new DrawingDisplayItem(client, type, picture));
     }
@@ -26,7 +26,7 @@ public:
 
     PassRefPtr<const SkPicture> picture() const { return m_picture; }
 
-    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<const SkPicture> picture)
+    DrawingDisplayItem(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
         : DisplayItem(client, type), m_picture(picture)
     {
         ASSERT(m_picture);

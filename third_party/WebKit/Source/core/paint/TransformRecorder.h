@@ -14,12 +14,12 @@ class AffineTransform;
 
 class TransformRecorder {
 public:
-    TransformRecorder(GraphicsContext&, DisplayItemClient, const AffineTransform&);
+    TransformRecorder(GraphicsContext&, const DisplayItemClientWrapper&, const AffineTransform&);
     ~TransformRecorder();
 
 private:
     GraphicsContext& m_context;
-    DisplayItemClient m_client;
+    DisplayItemClientWrapper m_client;
     bool m_skipRecordingForIdentityTransform;
 };
 

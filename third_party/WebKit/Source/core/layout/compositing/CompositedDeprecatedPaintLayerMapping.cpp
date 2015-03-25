@@ -2063,15 +2063,15 @@ void CompositedDeprecatedPaintLayerMapping::setContentsNeedDisplayInRect(const L
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-void CompositedDeprecatedPaintLayerMapping::invalidateDisplayItemClient(const DisplayItemClientData& displayItemClientData)
+void CompositedDeprecatedPaintLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
     // FIXME: need to split out paint invalidations for the background.
     // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
-    ApplyToGraphicsLayers(this, [&displayItemClientData](GraphicsLayer* layer) {
+    ApplyToGraphicsLayers(this, [&displayItemClient](GraphicsLayer* layer) {
         if (layer->drawsContent())
-            layer->invalidateDisplayItemClient(displayItemClientData);
+            layer->invalidateDisplayItemClient(displayItemClient);
     }, ApplyToContentLayers);
 }
 
@@ -2120,7 +2120,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
     IntSize offset = paintInfo.offsetFromRenderer;
     AffineTransform translation;
     translation.translate(-offset.width(), -offset.height());
-    TransformRecorder transformRecorder(*context, displayItemClient(), translation);
+    TransformRecorder transformRecorder(*context, *this, translation);
 
     // The dirtyRect is in the coords of the painting root.
     IntRect dirtyRect(clip);
@@ -2158,7 +2158,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         {
-            OwnPtr<DisplayItem> clipDisplayItem = ClipDisplayItem::create(displayItemClient(), DisplayItem::ClipLayerOverflowControls, dirtyRect);
+            OwnPtr<DisplayItem> clipDisplayItem = ClipDisplayItem::create(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
             if (context->displayItemList()) {
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
                 context->displayItemList()->add(clipDisplayItem.release());
@@ -2168,7 +2168,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
         }
         DeprecatedPaintLayerPainter(*paintInfo.renderLayer).paintLayer(context, paintingInfo, paintLayerFlags);
         {
-            OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(displayItemClient(), DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
+            OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
             if (context->displayItemList()) {
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
                 context->displayItemList()->add(endClipDisplayItem.release());
@@ -2185,7 +2185,7 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
         return;
 
     const IntRect& scrollbarRect = scrollbar->frameRect();
-    TransformRecorder transformRecorder(context, scrollbar->displayItemClient(), AffineTransform::translation(-scrollbarRect.x(), -scrollbarRect.y()));
+    TransformRecorder transformRecorder(context, *scrollbar, AffineTransform::translation(-scrollbarRect.x(), -scrollbarRect.y()));
     IntRect transformedClip = clip;
     transformedClip.moveBy(scrollbarRect.location());
     scrollbar->paint(&context, transformedClip);
@@ -2246,7 +2246,7 @@ void CompositedDeprecatedPaintLayerMapping::paintContents(const GraphicsLayer* g
         paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForScrollCorner()) {
         const IntRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
-        TransformRecorder transformRecorder(context, m_owningLayer.scrollableArea()->displayItemClient(), AffineTransform::translation(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y()));
+        TransformRecorder transformRecorder(context, *m_owningLayer.scrollableArea(), AffineTransform::translation(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y()));
         IntRect transformedClip = clip;
         transformedClip.moveBy(scrollCornerAndResizer.location());
         ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, IntPoint(), transformedClip);

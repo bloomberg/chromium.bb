@@ -77,8 +77,8 @@ public:
 
 #ifndef NDEBUG
     virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0, int = 0) const override;
-    virtual const char* boxName() const override;
 #endif
+    virtual const char* boxName() const override;
 
     InlineFlowBox* prevLineBox() const { return m_prevLineBox; }
     InlineFlowBox* nextLineBox() const { return m_nextLineBox; }

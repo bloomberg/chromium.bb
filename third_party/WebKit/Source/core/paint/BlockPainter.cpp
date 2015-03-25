@@ -200,11 +200,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled()
             && m_layoutBlock.hasOverflowClip()
             && m_layoutBlock.layer()->scrollsOverflow()) {
-            scrollRecorder = adoptPtr(new ScrollRecorder(
-                paintInfo.context,
-                m_layoutBlock.displayItemClient(),
-                paintPhase,
-                m_layoutBlock.scrolledContentOffset()));
+            scrollRecorder = adoptPtr(new ScrollRecorder(paintInfo.context, m_layoutBlock, paintPhase, m_layoutBlock.scrolledContentOffset()));
         }
 
         if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
@@ -434,7 +430,7 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
             // like overflow:hidden.
             // FIXME: Content and column rules that extend outside column boxes at the edges of the multi-column element
             // are clipped according to the 'overflow' property.
-            ClipRecorder clipRecorder(m_layoutBlock.displayItemClient(), paintInfo.context,
+            ClipRecorder clipRecorder(m_layoutBlock, paintInfo.context,
                 DisplayItem::paintPhaseToClipColumnBoundsType(paintInfo.phase), LayoutRect(enclosingIntRect(clipRect)));
 
             // Adjust our x and y when painting.

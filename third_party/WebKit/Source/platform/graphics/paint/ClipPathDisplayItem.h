@@ -15,12 +15,12 @@ namespace blink {
 class PLATFORM_EXPORT BeginClipPathDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginClipPathDisplayItem);
 public:
-    static PassOwnPtr<BeginClipPathDisplayItem> create(DisplayItemClient client, const Path& clipPath, WindRule windRule)
+    static PassOwnPtr<BeginClipPathDisplayItem> create(const DisplayItemClientWrapper& client, const Path& clipPath, WindRule windRule)
     {
         return adoptPtr(new BeginClipPathDisplayItem(client, clipPath, windRule));
     }
 
-    BeginClipPathDisplayItem(DisplayItemClient client, const Path& clipPath, WindRule windRule)
+    BeginClipPathDisplayItem(const DisplayItemClientWrapper& client, const Path& clipPath, WindRule windRule)
         : PairedBeginDisplayItem(client, BeginClipPath)
         , m_clipPath(clipPath)
         , m_windRule(windRule) { }
@@ -39,12 +39,12 @@ private:
 class PLATFORM_EXPORT EndClipPathDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(EndClipPathDisplayItem);
 public:
-    static PassOwnPtr<EndClipPathDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndClipPathDisplayItem> create(const DisplayItemClientWrapper& client)
     {
         return adoptPtr(new EndClipPathDisplayItem(client));
     }
 
-    EndClipPathDisplayItem(DisplayItemClient client)
+    EndClipPathDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndClipPath) { }
 
     virtual void replay(GraphicsContext*) override;

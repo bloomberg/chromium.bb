@@ -26,7 +26,7 @@ public:
     ~RoundedInnerRectClipper();
 
 private:
-    LayoutObject& m_renderer;
+    LayoutObject& m_layoutObject;
     const PaintInfo& m_paintInfo;
     bool m_useDisplayItemList;
     DisplayItem::Type m_clipType;

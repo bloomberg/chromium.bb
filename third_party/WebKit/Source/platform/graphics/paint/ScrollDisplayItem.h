@@ -15,12 +15,12 @@ namespace blink {
 class PLATFORM_EXPORT BeginScrollDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginScrollDisplayItem);
 public:
-    static PassOwnPtr<BeginScrollDisplayItem> create(DisplayItemClient client, Type type, const IntSize& currentOffset)
+    static PassOwnPtr<BeginScrollDisplayItem> create(const DisplayItemClientWrapper& client, Type type, const IntSize& currentOffset)
     {
         return adoptPtr(new BeginScrollDisplayItem(client, type, currentOffset));
     }
 
-    BeginScrollDisplayItem(DisplayItemClient client, Type type, const IntSize& currentOffset)
+    BeginScrollDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntSize& currentOffset)
         : PairedBeginDisplayItem(client, type)
         , m_currentOffset(currentOffset)
     {
@@ -37,12 +37,12 @@ private:
 class PLATFORM_EXPORT EndScrollDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(EndScrollDisplayItem);
 public:
-    static PassOwnPtr<EndScrollDisplayItem> create(DisplayItemClient client, Type type)
+    static PassOwnPtr<EndScrollDisplayItem> create(const DisplayItemClientWrapper& client, Type type)
     {
         return adoptPtr(new EndScrollDisplayItem(client, type));
     }
 
-    EndScrollDisplayItem(DisplayItemClient client, Type type)
+    EndScrollDisplayItem(const DisplayItemClientWrapper& client, Type type)
         : PairedEndDisplayItem(client, type)
     {
         ASSERT(isEndScrollType(type));

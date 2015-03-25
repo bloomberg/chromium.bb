@@ -7,6 +7,7 @@
 
 #include "core/layout/PaintPhase.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 
@@ -17,20 +18,19 @@ class LayoutObject;
 
 class LayoutObjectDrawingRecorder {
 public:
-    LayoutObjectDrawingRecorder(GraphicsContext*, const LayoutObject&, PaintPhase, const FloatRect&);
-    LayoutObjectDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const FloatRect&);
-    // paintRect will be pixel-snapped.
-    LayoutObjectDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const LayoutRect& paintRect);
+    LayoutObjectDrawingRecorder(GraphicsContext* context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
+        : m_drawingRecorder(context, layoutObject, displayItemType, pixelSnappedIntRect(clip)) { }
 
-    ~LayoutObjectDrawingRecorder();
+    LayoutObjectDrawingRecorder(GraphicsContext* context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
+        : m_drawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
+
+    LayoutObjectDrawingRecorder(GraphicsContext* context, const LayoutObject& layoutObject, DisplayItem::Type type, const FloatRect& clip)
+        : m_drawingRecorder(context, layoutObject, type, clip) { }
 
     bool canUseCachedDrawing() const { return m_drawingRecorder.canUseCachedDrawing(); }
 
 private:
     DrawingRecorder m_drawingRecorder;
-#ifndef NDEBUG
-    const LayoutObject& m_layoutObject;
-#endif
 };
 
 } // namespace blink

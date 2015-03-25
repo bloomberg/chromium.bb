@@ -14,12 +14,12 @@ namespace blink {
 class PLATFORM_EXPORT BeginTransformDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginTransformDisplayItem);
 public:
-    static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const AffineTransform& transform)
+    static PassOwnPtr<BeginTransformDisplayItem> create(const DisplayItemClientWrapper& client, const AffineTransform& transform)
     {
         return adoptPtr(new BeginTransformDisplayItem(client, transform));
     }
 
-    BeginTransformDisplayItem(DisplayItemClient client, const AffineTransform& transform)
+    BeginTransformDisplayItem(const DisplayItemClientWrapper& client, const AffineTransform& transform)
         : PairedBeginDisplayItem(client, BeginTransform)
         , m_transform(transform) { }
 
@@ -33,12 +33,12 @@ private:
 class PLATFORM_EXPORT EndTransformDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(EndTransformDisplayItem);
 public:
-    static PassOwnPtr<EndTransformDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndTransformDisplayItem> create(const DisplayItemClientWrapper& client)
     {
         return adoptPtr(new EndTransformDisplayItem(client));
     }
 
-    EndTransformDisplayItem(DisplayItemClient client)
+    EndTransformDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndTransform) { }
 
     virtual void replay(GraphicsContext*) override;

@@ -55,7 +55,7 @@ BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutP
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         m_clipType = m_paintInfo.displayItemTypeForClipping();
 
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box.displayItemClient(), m_clipType, pixelSnappedIntRect(clipRect));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect));
     if (hasBorderRadius)
         clipDisplayItem->roundedRectClips().append(clipRoundedRect);
 
@@ -77,11 +77,11 @@ BoxClipper::~BoxClipper()
 
     DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_box.displayItemClient(), endType);
+        OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_box, endType);
         ASSERT(m_paintInfo.context->displayItemList());
         m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
-        EndClipDisplayItem endClipDisplayItem(m_box.displayItemClient(), endType);
+        EndClipDisplayItem endClipDisplayItem(m_box, endType);
         endClipDisplayItem.replay(m_paintInfo.context);
     }
 }

@@ -176,9 +176,8 @@ public:
     Node* getLogicalStartBoxWithNode(InlineBox*&) const;
     Node* getLogicalEndBoxWithNode(InlineBox*&) const;
 
-#ifndef NDEBUG
     virtual const char* boxName() const override;
-#endif
+
 private:
     LayoutUnit beforeAnnotationsAdjustment() const;
 

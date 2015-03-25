@@ -46,12 +46,12 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     // Apply initial viewport clip.
     OwnPtr<ClipRecorder> clipRecorder;
     if (m_renderSVGRoot.shouldApplyViewportClip())
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderSVGRoot.displayItemClient(), paintInfoBeforeFiltering.context, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_renderSVGRoot.overflowClipRect(paintOffset)))));
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderSVGRoot, paintInfoBeforeFiltering.context, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_renderSVGRoot.overflowClipRect(paintOffset)))));
 
     // Convert from container offsets (html renderers) to a relative transform (svg renderers).
     // Transform from our paint container's coordinate system to our local coords.
     IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGRoot.displayItemClient(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_renderSVGRoot.localToBorderBoxTransform());
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGRoot, AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_renderSVGRoot.localToBorderBoxTransform());
 
     // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
     paintInfoBeforeFiltering.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());

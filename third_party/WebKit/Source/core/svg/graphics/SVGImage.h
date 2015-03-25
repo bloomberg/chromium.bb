@@ -69,6 +69,9 @@ public:
     // Does the SVG image/document contain any animations?
     bool hasAnimations() const;
 
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "SVGImage"; }
+
 private:
     friend class AXLayoutObject;
     friend class SVGImageChromeClient;
@@ -92,8 +95,6 @@ private:
 
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() override { return false; }
-
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     SVGImage(ImageObserver*);
     void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, SkXfermode::Mode, RespectImageOrientationEnum) override;

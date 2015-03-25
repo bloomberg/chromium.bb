@@ -6,7 +6,7 @@
 #define SVGClipPainter_h
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ public:
     bool applyClippingToContext(const LayoutObject&, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
 
 private:
-    void drawClipMaskContent(GraphicsContext*, DisplayItemClient, const FloatRect&);
+    void drawClipMaskContent(GraphicsContext*, const LayoutObject&, const FloatRect&);
 
     LayoutSVGResourceClipper& m_clip;
 };

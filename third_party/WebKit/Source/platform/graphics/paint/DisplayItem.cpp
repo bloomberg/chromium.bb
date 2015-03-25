@@ -162,12 +162,12 @@ WTF::String DisplayItem::asDebugString() const
 
 void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
-    stringBuilder.append(String::format("client: \"%p\", ", client()));
+    stringBuilder.append(String::format("client: \"%p", client()));
     if (!clientDebugString().isEmpty()) {
+        stringBuilder.append(' ');
         stringBuilder.append(clientDebugString());
-        stringBuilder.append(", ");
     }
-    stringBuilder.append("type: \"");
+    stringBuilder.append("\", type: \"");
     stringBuilder.append(typeAsDebugString(type()));
     stringBuilder.append('"');
     if (m_id.scopeContainer)

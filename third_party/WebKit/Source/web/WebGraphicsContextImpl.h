@@ -20,7 +20,7 @@ class GraphicsContext;
 // External consumers can make a single drawing using a WebCanvas.
 class WebGraphicsContextImpl : public WebGraphicsContext {
 public:
-    WebGraphicsContextImpl(GraphicsContext&, DisplayItemClient, DisplayItem::Type);
+    WebGraphicsContextImpl(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
     ~WebGraphicsContextImpl();
     GraphicsContext& graphicsContext() { return m_graphicsContext; }
 
@@ -30,7 +30,7 @@ public:
 
 private:
     GraphicsContext& m_graphicsContext;
-    DisplayItemClient m_client;
+    DisplayItemClientWrapper m_client;
     DisplayItem::Type m_type;
     OwnPtr<DrawingRecorder> m_drawingRecorder;
 #ifndef NDEBUG

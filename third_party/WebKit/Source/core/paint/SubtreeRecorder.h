@@ -33,8 +33,6 @@ public:
     void begin();
 
 private:
-    void addDisplayItem(PassOwnPtr<DisplayItem>);
-
     DisplayItemList* m_displayItemList;
     const LayoutObject& m_subtreeRoot;
     const PaintPhase m_paintPhase;

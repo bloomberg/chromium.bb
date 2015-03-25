@@ -199,7 +199,7 @@ public:
 
     void setContentsNeedsDisplay();
 
-    void invalidateDisplayItemClient(const DisplayItemClientData&);
+    void invalidateDisplayItemClient(const DisplayItemClientWrapper&);
 
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);
@@ -263,6 +263,11 @@ public:
     // Exposed for tests.
     virtual WebLayer* contentsLayer() const { return m_contentsLayer; }
 
+#ifndef NDEBUG
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return m_client->debugName(this) + " debug red fill"; }
+#endif
+
 protected:
     String debugName(WebLayer*) const;
 
@@ -297,8 +302,6 @@ private:
     void setupContentsLayer(WebLayer*);
     void clearContentsLayerIfUnregistered();
     WebLayer* contentsLayerIfRegistered();
-
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     GraphicsLayerClient* m_client;
 

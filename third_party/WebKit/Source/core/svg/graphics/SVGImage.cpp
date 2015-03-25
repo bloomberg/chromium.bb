@@ -248,7 +248,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         // When generating an expanded tile, make sure we don't draw into the spacing area.
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (tile != spacedTile)
-            clipRecorder = adoptPtr(new FloatClipRecorder(recordingContext, displayItemClient(), PaintPhaseForeground, tile));
+            clipRecorder = adoptPtr(new FloatClipRecorder(recordingContext, *this, PaintPhaseForeground, tile));
         drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
     }
 
@@ -285,12 +285,12 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         DisplayItemListScope displayItemListScope(&recordingContext);
         GraphicsContext* paintContext = displayItemListScope.context();
 
-        ClipRecorder clipRecorder(displayItemClient(), paintContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
+        ClipRecorder clipRecorder(*this, paintContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;
         if (hasCompositing || opacity < 1)
-            compositingRecorder = adoptPtr(new CompositingRecorder(paintContext, displayItemClient(), compositeOp, opacity));
+            compositingRecorder = adoptPtr(new CompositingRecorder(paintContext, *this, compositeOp, opacity));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.
@@ -299,7 +299,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         FloatPoint destOffset = dstRect.location() - topLeftOffset;
         AffineTransform transform = AffineTransform::translation(destOffset.x(), destOffset.y());
         transform.scale(scale.width(), scale.height());
-        TransformRecorder transformRecorder(*paintContext, displayItemClient(), transform);
+        TransformRecorder transformRecorder(*paintContext, *this, transform);
 
         FrameView* view = frameView();
         view->resize(containerSize());

@@ -16,13 +16,13 @@ namespace blink {
 class PLATFORM_EXPORT CachedDisplayItem : public DisplayItem {
     WTF_MAKE_FAST_ALLOCATED(CachedDisplayItem);
 public:
-    static PassOwnPtr<CachedDisplayItem> create(DisplayItemClient client, Type type)
+    static PassOwnPtr<CachedDisplayItem> create(const DisplayItemClientWrapper& client, Type type)
     {
         return adoptPtr(new CachedDisplayItem(client, type));
     }
 
 private:
-    CachedDisplayItem(DisplayItemClient client, Type type)
+    CachedDisplayItem(const DisplayItemClientWrapper& client, Type type)
         : DisplayItem(client, type)
     {
         ASSERT(isCachedType(type));

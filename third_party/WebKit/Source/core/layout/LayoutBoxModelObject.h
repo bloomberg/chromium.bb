@@ -199,7 +199,7 @@ public:
     // Indicate that the contents of this renderer need to be repainted. Only has an effect if compositing is being used,
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this render object
 
-    void invalidateDisplayItemClientOnBacking(const DisplayItemClientData&) const;
+    void invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper&) const;
 
 protected:
     virtual void willBeDestroyed() override;

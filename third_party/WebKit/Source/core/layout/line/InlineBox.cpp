@@ -61,7 +61,7 @@ InlineBox::~InlineBox()
 
 void InlineBox::destroy()
 {
-    m_renderer.invalidateDisplayItemClient(DisplayItemClientData(*this, DisplayItemClientData::NoDebugName));
+    m_layoutObject.invalidateDisplayItemClient(*this);
     delete this;
 }
 
@@ -81,12 +81,17 @@ void InlineBox::operator delete(void* ptr)
     partitionFree(ptr);
 }
 
-#ifndef NDEBUG
 const char* InlineBox::boxName() const
 {
     return "InlineBox";
 }
 
+String InlineBox::debugName() const
+{
+    return boxName();
+}
+
+#ifndef NDEBUG
 void InlineBox::showTreeForThis() const
 {
     layoutObject().showTreeForThis();

@@ -17,18 +17,18 @@
 
 namespace blink {
 
-LayerClipRecorder::LayerClipRecorder(const LayoutBoxModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
+LayerClipRecorder::LayerClipRecorder(const LayoutBoxModelObject* layoutObject, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
     const DeprecatedPaintLayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
     : m_graphicsContext(graphicsContext)
-    , m_renderer(renderer)
+    , m_layoutObject(layoutObject)
     , m_clipType(clipType)
 {
-    ASSERT(renderer);
+    ASSERT(layoutObject);
 
     IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(renderer->displayItemClient(), clipType, snappedClipRect);
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(*layoutObject, clipType, snappedClipRect);
     if (localPaintingInfo && clipRect.hasRadius())
-        collectRoundedRectClips(*renderer->layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, clipDisplayItem->roundedRectClips());
+        collectRoundedRectClips(*layoutObject->layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, clipDisplayItem->roundedRectClips());
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         clipDisplayItem->replay(graphicsContext);
     } else {
@@ -80,7 +80,7 @@ LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
-        OwnPtr<EndClipDisplayItem> endClip = EndClipDisplayItem::create(m_renderer->displayItemClient(), endType);
+        OwnPtr<EndClipDisplayItem> endClip = EndClipDisplayItem::create(*m_layoutObject, endType);
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(endClip.release());
     } else {

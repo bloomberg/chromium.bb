@@ -581,7 +581,7 @@ double LocalFrame::devicePixelRatio() const
 }
 
 PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
-    DisplayItemClient displayItemClient, DisplayItem::Type clipType, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect)
+    const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type clipType, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect)
 {
     ASSERT(document()->isActive());
     float deviceScaleFactor = m_host->deviceScaleFactor();
@@ -625,14 +625,14 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
 
     // Document::updateLayout may have blown away the original LayoutObject.
-    LayoutObject* renderer = node.layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node.layoutObject();
+    if (!layoutObject)
         return nullptr;
 
     IntRect rect;
 
-    return paintIntoDragImage(renderer->displayItemClient(), DisplayItem::ClipNodeImage, renderer->shouldRespectImageOrientation(),
-        renderer->paintingRootRect(rect));
+    return paintIntoDragImage(*layoutObject, DisplayItem::ClipNodeImage, layoutObject->shouldRespectImageOrientation(),
+        layoutObject->paintingRootRect(rect));
 }
 
 PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
@@ -644,8 +644,7 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
     m_view->updateLayoutAndStyleForPainting();
 
-    return paintIntoDragImage(
-        displayItemClient(), DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, enclosingIntRect(selection().bounds()));
+    return paintIntoDragImage(*this, DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, enclosingIntRect(selection().bounds()));
 }
 
 String LocalFrame::selectedText() const

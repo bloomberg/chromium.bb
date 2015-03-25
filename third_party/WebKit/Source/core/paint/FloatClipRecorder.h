@@ -13,12 +13,13 @@ namespace blink {
 
 class FloatClipRecorder {
 public:
-    FloatClipRecorder(GraphicsContext&, DisplayItemClient, PaintPhase, const FloatRect&);
+    FloatClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, PaintPhase, const FloatRect&);
+
     ~FloatClipRecorder();
 
 private:
     GraphicsContext& m_context;
-    DisplayItemClient m_client;
+    DisplayItemClientWrapper m_client;
     DisplayItem::Type m_clipType;
 };
 

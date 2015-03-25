@@ -65,7 +65,7 @@ void LayoutSVGResourceClipper::removeClientFromCache(LayoutObject* client, bool 
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, GraphicsContext* context,
+bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObject, GraphicsContext* context,
     const AffineTransform& animatedLocalTransform, const FloatRect& objectBoundingBox) {
     // If the current clip-path gets clipped itself, we have to fallback to masking.
     if (!style()->svgStyle().clipperResource().isEmpty())
@@ -74,16 +74,16 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
     Path clipPath = Path();
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* layoutObject = childElement->layoutObject();
-        if (!layoutObject)
+        LayoutObject* childLayoutObject = childElement->layoutObject();
+        if (!childLayoutObject)
             continue;
         // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
-        if (layoutObject->isSVGText())
+        if (childLayoutObject->isSVGText())
             return false;
         if (!childElement->isSVGGraphicsElement())
             continue;
         SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
-        const LayoutStyle* style = layoutObject->style();
+        const LayoutStyle* style = childLayoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
         const SVGLayoutStyle& svgStyle = style->svgStyle();
@@ -126,9 +126,9 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
         clipPath.addRect(FloatRect());
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        context->displayItemList()->add(BeginClipPathDisplayItem::create(client, clipPath, clipRule));
+        context->displayItemList()->add(BeginClipPathDisplayItem::create(layoutObject, clipPath, clipRule));
     } else {
-        BeginClipPathDisplayItem clipPathDisplayItem(client, clipPath, clipRule);
+        BeginClipPathDisplayItem clipPathDisplayItem(layoutObject, clipPath, clipRule);
         clipPathDisplayItem.replay(context);
     }
 

@@ -169,6 +169,7 @@ namespace blink {
         void clearWeakMembers(Visitor*);
 #endif
         DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+        String debugName() const { return "LocalFrame"; }
 
         void setShouldSendDPRHint() { m_shouldSendDPRHint = true; }
         void setShouldSendRWHint() { m_shouldSendRWHint = true; }
@@ -189,7 +190,7 @@ namespace blink {
 
         // Paints the area for the given rect into a DragImage, with the given displayItemClient id attached.
         // The rect is in the coordinate space of the frame.
-        PassOwnPtr<DragImage> paintIntoDragImage(DisplayItemClient, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect);
+        PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect);
 
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;

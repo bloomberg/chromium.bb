@@ -29,8 +29,8 @@ public:
         : m_layoutView(nullptr) { }
 
 protected:
-    LayoutView* layoutView() { return m_layoutView; }
-    DisplayItemList& rootDisplayItemList() { return *layoutView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    LayoutView& layoutView() { return *m_layoutView; }
+    DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
     const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
 
 private:
@@ -55,8 +55,7 @@ private:
 
 class TestDisplayItem : public DisplayItem {
 public:
-    TestDisplayItem(const LayoutObject* renderer, Type type) : DisplayItem(renderer->displayItemClient(), type) { }
-    TestDisplayItem(DisplayItemClient displayItemClient, Type type) : DisplayItem(displayItemClient, type) { }
+    TestDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
     virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
@@ -80,29 +79,29 @@ public:
     } \
 }
 
-void drawRect(GraphicsContext* context, LayoutObject* renderer, PaintPhase phase, const FloatRect& bound)
+void drawRect(GraphicsContext& context, LayoutObject& layoutObject, PaintPhase phase, const FloatRect& bound)
 {
-    LayoutObjectDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    LayoutObjectDrawingRecorder drawingRecorder(&context, layoutObject, phase, bound);
     if (drawingRecorder.canUseCachedDrawing())
         return;
     IntRect rect(0, 0, 10, 10);
-    context->drawRect(rect);
+    context.drawRect(rect);
 }
 
-void drawClippedRect(GraphicsContext* context, LayoutBoxModelObject* renderer, PaintPhase phase, const FloatRect& bound)
+void drawClippedRect(GraphicsContext& context, LayoutBoxModelObject& layoutObject, PaintPhase phase, const FloatRect& bound)
 {
     LayoutRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
-    LayerClipRecorder layerClipRecorder(renderer, context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
-    drawRect(context, renderer, phase, bound);
+    LayerClipRecorder layerClipRecorder(&layoutObject, &context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
+    drawRect(context, layoutObject, phase, bound);
 }
 
 TEST_F(ViewDisplayListTest, NestedRecorders)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = layoutView()->viewRect();
+    FloatRect bound = layoutView().viewRect();
 
-    drawClippedRect(&context, layoutView(), PaintPhaseForeground, bound);
+    drawClippedRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -114,13 +113,13 @@ TEST_F(ViewDisplayListTest, NestedRecorders)
 TEST_F(ViewDisplayListTest, UpdateBasic)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutObject* first = document().body()->firstChild()->layoutObject();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& first = *document().body()->firstChild()->layoutObject();
+    LayoutObject& second = *document().body()->firstChild()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
-    drawRect(&context, second, PaintPhaseChildBlockBackground, FloatRect(100, 100, 200, 200));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
+    drawRect(context, second, PaintPhaseChildBlockBackground, FloatRect(100, 100, 200, 200));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -128,9 +127,9 @@ TEST_F(ViewDisplayListTest, UpdateBasic)
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseChildBlockBackground)),
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
+    rootDisplayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
@@ -141,14 +140,14 @@ TEST_F(ViewDisplayListTest, UpdateBasic)
 TEST_F(ViewDisplayListTest, UpdateSwapOrder)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='unaffected'></div>");
-    LayoutObject* first = document().body()->firstChild()->layoutObject();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
-    LayoutObject* unaffected = document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject& first = *document().body()->firstChild()->layoutObject();
+    LayoutObject& second = *document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& unaffected = *document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, unaffected, PaintPhaseBlockBackground, FloatRect(300, 300, 10, 10));
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, unaffected, PaintPhaseBlockBackground, FloatRect(300, 300, 10, 10));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -156,10 +155,10 @@ TEST_F(ViewDisplayListTest, UpdateSwapOrder)
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(unaffected, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, unaffected, PaintPhaseBlockBackground, FloatRect(300, 300, 10, 10));
+    rootDisplayItemList().invalidate(second.displayItemClient());
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, unaffected, PaintPhaseBlockBackground, FloatRect(300, 300, 10, 10));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -171,23 +170,23 @@ TEST_F(ViewDisplayListTest, UpdateSwapOrder)
 TEST_F(ViewDisplayListTest, UpdateNewItemInMiddle)
 {
     setBodyInnerHTML("<div id='first'><div id='second'><div id='third'></div></div></div>");
-    LayoutObject* first = document().body()->firstChild()->layoutObject();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
-    LayoutObject* third = document().body()->firstChild()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& first = *document().body()->firstChild()->layoutObject();
+    LayoutObject& second = *document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& third = *document().body()->firstChild()->firstChild()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
-    rootDisplayItemList().invalidate(third->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, third, PaintPhaseBlockBackground, FloatRect(125, 100, 200, 50));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    rootDisplayItemList().invalidate(third.displayItemClient());
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, third, PaintPhaseBlockBackground, FloatRect(125, 100, 200, 50));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -199,20 +198,20 @@ TEST_F(ViewDisplayListTest, UpdateNewItemInMiddle)
 TEST_F(ViewDisplayListTest, UpdateInvalidationWithPhases)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='third'></div>");
-    LayoutObject* first = document().body()->firstChild()->layoutObject();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
-    LayoutObject* third = document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject& first = *document().body()->firstChild()->layoutObject();
+    LayoutObject& second = *document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& third = *document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, third, PaintPhaseBlockBackground, FloatRect(300, 100, 50, 50));
-    drawRect(&context, first, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, third, PaintPhaseForeground, FloatRect(300, 100, 50, 50));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(100, 100, 50, 200));
-    drawRect(&context, third, PaintPhaseOutline, FloatRect(300, 100, 50, 50));
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, third, PaintPhaseBlockBackground, FloatRect(300, 100, 50, 50));
+    drawRect(context, first, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(context, third, PaintPhaseForeground, FloatRect(300, 100, 50, 50));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseOutline, FloatRect(100, 100, 50, 200));
+    drawRect(context, third, PaintPhaseOutline, FloatRect(300, 100, 50, 50));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 9,
@@ -226,16 +225,16 @@ TEST_F(ViewDisplayListTest, UpdateInvalidationWithPhases)
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)),
         TestDisplayItem(third, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, third, PaintPhaseBlockBackground, FloatRect(300, 100, 50, 50));
-    drawRect(&context, first, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, third, PaintPhaseForeground, FloatRect(300, 100, 50, 50));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 100, 100));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(100, 100, 50, 200));
-    drawRect(&context, third, PaintPhaseOutline, FloatRect(300, 100, 50, 50));
+    rootDisplayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, third, PaintPhaseBlockBackground, FloatRect(300, 100, 50, 50));
+    drawRect(context, first, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(context, third, PaintPhaseForeground, FloatRect(300, 100, 50, 50));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, PaintPhaseOutline, FloatRect(100, 100, 50, 200));
+    drawRect(context, third, PaintPhaseOutline, FloatRect(300, 100, 50, 50));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 9,
@@ -253,24 +252,24 @@ TEST_F(ViewDisplayListTest, UpdateInvalidationWithPhases)
 TEST_F(ViewDisplayListTest, UpdateAddFirstOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    LayoutObject* first = document().body()->firstChild()->layoutObject();
-    LayoutObject* second = document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject& first = *document().body()->firstChild()->layoutObject();
+    LayoutObject& second = *document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
+    drawRect(context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
-    rootDisplayItemList().invalidate(first->displayItemClient());
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().invalidate(first.displayItemClient());
+    rootDisplayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
+    drawRect(context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
@@ -279,9 +278,9 @@ TEST_F(ViewDisplayListTest, UpdateAddFirstOverlap)
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
-    rootDisplayItemList().invalidate(first->displayItemClient());
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().invalidate(first.displayItemClient());
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
+    drawRect(context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
@@ -292,24 +291,24 @@ TEST_F(ViewDisplayListTest, UpdateAddFirstOverlap)
 TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    LayoutObject* first = document().body()->firstChild()->layoutObject();
-    LayoutObject* second = document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject& first = *document().body()->firstChild()->layoutObject();
+    LayoutObject& second = *document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
-    rootDisplayItemList().invalidate(first->displayItemClient());
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
-    drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
-    drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
+    rootDisplayItemList().invalidate(first.displayItemClient());
+    rootDisplayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
+    drawRect(context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
+    drawRect(context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
@@ -318,10 +317,10 @@ TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseOutline)));
 
-    rootDisplayItemList().invalidate(first->displayItemClient());
-    rootDisplayItemList().invalidate(second->displayItemClient());
-    drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().invalidate(first.displayItemClient());
+    rootDisplayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
@@ -332,89 +331,89 @@ TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
 TEST_F(ViewDisplayListTest, UpdateClip)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
-    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
+    LayoutBoxModelObject& firstLayoutObject = *toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
+    LayoutBoxModelObject& secondLayoutObject = *toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     ClipRect firstClipRect(LayoutRect(1, 1, 2, 2));
     {
-        LayerClipRecorder layerClipRecorder(firstRenderer, &context, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
-        drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-        drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+        LayerClipRecorder layerClipRecorder(&firstLayoutObject, &context, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
+        drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+        drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(firstRenderer, DisplayItem::ClipLayerForeground),
-        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(firstRenderer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
+        TestDisplayItem(firstLayoutObject, DisplayItem::ClipLayerForeground),
+        TestDisplayItem(firstLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(firstLayoutObject, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 
-    rootDisplayItemList().invalidate(firstRenderer->displayItemClient());
-    drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().invalidate(firstLayoutObject.displayItemClient());
+    drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
+        TestDisplayItem(firstLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
-    rootDisplayItemList().invalidate(secondRenderer->displayItemClient());
-    drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().invalidate(secondLayoutObject.displayItemClient());
+    drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     ClipRect secondClipRect(LayoutRect(1, 1, 2, 2));
     {
-        LayerClipRecorder layerClipRecorder(secondRenderer, &context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
-        drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+        LayerClipRecorder layerClipRecorder(&secondLayoutObject, &context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
+        drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
-        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(secondRenderer, DisplayItem::ClipLayerForeground),
-        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(secondRenderer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
+        TestDisplayItem(firstLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondLayoutObject, DisplayItem::ClipLayerForeground),
+        TestDisplayItem(secondLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondLayoutObject, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 }
 
 TEST_F(ViewDisplayListTest, CachedDisplayItems)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
-    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
+    LayoutBoxModelObject& firstLayoutObject = *toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
+    LayoutBoxModelObject& secondLayoutObject = *toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+        TestDisplayItem(firstLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondLayoutObject.displayItemClient()));
     DisplayItem* firstDisplayItem = rootDisplayItemList().paintList()[0].get();
     DisplayItem* secondDisplayItem = rootDisplayItemList().paintList()[1].get();
 
-    rootDisplayItemList().invalidate(firstRenderer->displayItemClient());
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+    rootDisplayItemList().invalidate(firstLayoutObject.displayItemClient());
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondLayoutObject.displayItemClient()));
 
-    drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(firstRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
-        TestDisplayItem(secondRenderer, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
+        TestDisplayItem(firstLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(secondLayoutObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
     // The first display item should be updated.
     EXPECT_NE(firstDisplayItem, rootDisplayItemList().paintList()[0].get());
     // The second display item should be cached.
     EXPECT_EQ(secondDisplayItem, rootDisplayItemList().paintList()[1].get());
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(firstLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(secondLayoutObject.displayItemClient()));
 
     rootDisplayItemList().invalidateAll();
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstLayoutObject.displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(secondLayoutObject.displayItemClient()));
 }
 
 TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
@@ -422,73 +421,73 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
-    LayoutView* layoutView = document().layoutView();
-    DeprecatedPaintLayer* rootLayer = layoutView->layer();
-    LayoutObject* htmlRenderer = document().documentElement()->layoutObject();
-    LayoutObject* bodyRenderer = document().body()->layoutObject();
-    Element* div = toElement(document().body()->firstChild());
-    LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
-    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
+    LayoutView& layoutView = *document().layoutView();
+    DeprecatedPaintLayer& rootLayer = *layoutView.layer();
+    LayoutObject& htmlLayoutObject = *document().documentElement()->layoutObject();
+    LayoutObject& bodyLayoutObject = *document().body()->layoutObject();
+    Element& div = *toElement(document().body()->firstChild());
+    LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
+    InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 10,
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
 
-    div->focus();
+    div.focus();
     document().view()->updateLayoutAndStyleForPainting();
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlRenderer->displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyRenderer->displayItemClient()));
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divRenderer->displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox->displayItemClient()));
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyLayoutObject.displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox.displayItemClient()));
+    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divRenderer, DisplayItem::Caret), // New!
-        TestDisplayItem(divRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(htmlRenderer, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divLayoutObject, DisplayItem::Caret), // New!
+        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
 }
 
 TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
 {
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
-    LayoutObject* container1 = document().body()->firstChild()->layoutObject();
-    LayoutObject* content1 = document().body()->firstChild()->firstChild()->layoutObject();
-    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->layoutObject();
-    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->layoutObject();
+    LayoutObject& container1 = *document().body()->firstChild()->layoutObject();
+    LayoutObject& content1 = *document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& container2 = *document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject& content2 = *document().body()->firstChild()->nextSibling()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
-    drawRect(&context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
-    drawRect(&context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
-    drawRect(&context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
+    drawRect(context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    drawRect(context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+    drawRect(context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
+    drawRect(context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
+    drawRect(context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 8,
@@ -502,15 +501,15 @@ TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container2, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    rootDisplayItemList().invalidate(container1->displayItemClient());
-    drawRect(&context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
-    drawRect(&context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
-    drawRect(&context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
-    drawRect(&context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
-    drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-    drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
-    drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+    rootDisplayItemList().invalidate(container1.displayItemClient());
+    drawRect(context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+    drawRect(context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
+    drawRect(context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
+    drawRect(context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
+    drawRect(context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 8,
@@ -529,35 +528,35 @@ TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
 {
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
-    LayoutObject* container1 = document().body()->firstChild()->layoutObject();
-    LayoutObject* content1 = document().body()->firstChild()->firstChild()->layoutObject();
-    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->layoutObject();
-    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->layoutObject();
+    LayoutObject& container1 = *document().body()->firstChild()->layoutObject();
+    LayoutObject& content1 = *document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& container2 = *document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject& content2 = *document().body()->firstChild()->nextSibling()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     {
-        SubtreeRecorder r(&context, *container1, PaintPhaseBlockBackground);
+        SubtreeRecorder r(&context, container1, PaintPhaseBlockBackground);
         r.begin();
-        drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-        drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+        drawRect(context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+        drawRect(context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     }
     {
-        SubtreeRecorder r(&context, *container1, PaintPhaseForeground);
+        SubtreeRecorder r(&context, container1, PaintPhaseForeground);
         r.begin();
-        drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
-        drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+        drawRect(context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+        drawRect(context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
     }
     {
-        SubtreeRecorder r(&context, *container2, PaintPhaseBlockBackground);
+        SubtreeRecorder r(&context, container2, PaintPhaseBlockBackground);
         r.begin();
-        drawRect(&context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
-        drawRect(&context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
+        drawRect(context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+        drawRect(context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
     }
     {
-        SubtreeRecorder r(&context, *container2, PaintPhaseForeground);
+        SubtreeRecorder r(&context, container2, PaintPhaseForeground);
         r.begin();
-        drawRect(&context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
-        drawRect(&context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
+        drawRect(context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
+        drawRect(context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
     }
     rootDisplayItemList().endNewPaints();
 
@@ -584,28 +583,28 @@ TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2,
     // and at the same time container2 is scrolled out of viewport and content2 is invalidated.
-    rootDisplayItemList().invalidate(content2->displayItemClient());
+    rootDisplayItemList().invalidate(content2.displayItemClient());
     {
-        SubtreeRecorder r(&context, *container2, PaintPhaseBlockBackground);
+        SubtreeRecorder r(&context, container2, PaintPhaseBlockBackground);
     }
     EXPECT_EQ((size_t)1, newPaintListBeforeUpdate().size());
     EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
     {
-        SubtreeRecorder r(&context, *container2, PaintPhaseForeground);
+        SubtreeRecorder r(&context, container2, PaintPhaseForeground);
     }
     EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
     EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
     {
-        SubtreeRecorder r(&context, *container1, PaintPhaseBlockBackground);
+        SubtreeRecorder r(&context, container1, PaintPhaseBlockBackground);
         r.begin();
-        drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
-        drawRect(&context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+        drawRect(context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+        drawRect(context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     }
     {
-        SubtreeRecorder r(&context, *container1, PaintPhaseForeground);
+        SubtreeRecorder r(&context, container1, PaintPhaseForeground);
         r.begin();
-        drawRect(&context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
-        drawRect(&context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
+        drawRect(context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+        drawRect(context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
     }
     rootDisplayItemList().endNewPaints();
 
@@ -633,21 +632,21 @@ TEST_F(ViewDisplayListTest, Scope)
 {
     setBodyInnerHTML("<div id='multicol'><div id='content'></div></div>");
 
-    LayoutObject* multicol = document().body()->firstChild()->layoutObject();
-    LayoutObject* content = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject& multicol = *document().body()->firstChild()->layoutObject();
+    LayoutObject& content = *document().body()->firstChild()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     FloatRect rect1(100, 100, 50, 50);
     FloatRect rect2(150, 100, 50, 50);
     FloatRect rect3(200, 100, 50, 50);
-    drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
+    drawRect(context, multicol, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect1);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect1);
     }
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect2);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect2);
     }
     rootDisplayItemList().endNewPaints();
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -659,14 +658,14 @@ TEST_F(ViewDisplayListTest, Scope)
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
-    drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect1);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect1);
     }
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect2);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect2);
     }
     EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
     EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isCached());
@@ -680,20 +679,20 @@ TEST_F(ViewDisplayListTest, Scope)
     EXPECT_EQ(picture2, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[2].get())->picture());
 
     // Now the multicol becomes 3 columns and repaints.
-    rootDisplayItemList().invalidate(multicol->displayItemClient());
-    rootDisplayItemList().invalidate(content->displayItemClient());
-    drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    rootDisplayItemList().invalidate(multicol.displayItemClient());
+    rootDisplayItemList().invalidate(content.displayItemClient());
+    drawRect(context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect1);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect1);
     }
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect2);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect2);
     }
     {
-        ScopeRecorder r(&context, *multicol);
-        drawRect(&context, content, PaintPhaseForeground, rect3);
+        ScopeRecorder r(&context, multicol);
+        drawRect(context, content, PaintPhaseForeground, rect3);
     }
     // We should repaint everything on invalidation of the scope container.
     EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isDrawing());
@@ -713,19 +712,19 @@ TEST_F(ViewDisplayListTest, Scope)
 TEST_F(ViewDisplayListTest, InlineRelayout)
 {
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
-    LayoutView* layoutView = document().layoutView();
-    DeprecatedPaintLayer* rootLayer = layoutView->layer();
-    LayoutObject* htmlObject = document().documentElement()->layoutObject();
-    LayoutObject* bodyObject = document().body()->layoutObject();
-    Element* div = toElement(document().body()->firstChild());
-    LayoutBlock* divBlock = toLayoutBlock(document().body()->firstChild()->layoutObject());
-    LayoutText* text = toLayoutText(divBlock->firstChild());
-    InlineTextBox* firstTextBox = text->firstTextBox();
-    DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox->displayItemClient();
+    LayoutView& layoutView = *document().layoutView();
+    DeprecatedPaintLayer& rootLayer = *layoutView.layer();
+    LayoutObject& htmlObject = *document().documentElement()->layoutObject();
+    LayoutObject& bodyObject = *document().body()->layoutObject();
+    Element& div = *toElement(document().body()->firstChild());
+    LayoutBlock& divBlock = *toLayoutBlock(document().body()->firstChild()->layoutObject());
+    LayoutText& text = *toLayoutText(divBlock.firstChild());
+    InlineTextBox& firstTextBox = *text.firstTextBox();
+    DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox.displayItemClient();
 
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
@@ -736,23 +735,23 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
         TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(bodyObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(firstTextBoxDisplayItemClient, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(bodyObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
 
-    div->setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
+    div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
     document().view()->updateLayoutAndStyleForPainting();
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlObject->displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyObject->displayItemClient()));
-    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyObject.displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
-    text = toLayoutText(divBlock->firstChild());
-    firstTextBox = text->firstTextBox();
-    InlineTextBox* secondTextBox = text->firstTextBox()->nextTextBox();
+    LayoutText& newText = *toLayoutText(divBlock.firstChild());
+    InlineTextBox& newFirstTextBox = *newText.firstTextBox();
+    InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
         TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
@@ -761,8 +760,8 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
         TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(bodyObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(firstTextBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(secondTextBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(bodyObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));

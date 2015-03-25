@@ -31,7 +31,7 @@ SubtreeRecorder::~SubtreeRecorder()
         return;
 
     if (m_begun)
-        addDisplayItem(EndSubtreeDisplayItem::create(m_subtreeRoot.displayItemClient(), DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase)));
+        m_displayItemList->add(EndSubtreeDisplayItem::create(m_subtreeRoot, DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase)));
 }
 
 void SubtreeRecorder::begin()
@@ -39,17 +39,8 @@ void SubtreeRecorder::begin()
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
-    addDisplayItem(BeginSubtreeDisplayItem::create(m_subtreeRoot.displayItemClient(), DisplayItem::paintPhaseToBeginSubtreeType(m_paintPhase)));
+    m_displayItemList->add(BeginSubtreeDisplayItem::create(m_subtreeRoot, DisplayItem::paintPhaseToBeginSubtreeType(m_paintPhase)));
     m_begun = true;
-}
-
-void SubtreeRecorder::addDisplayItem(PassOwnPtr<DisplayItem> displayItem)
-{
-#ifndef NDEBUG
-    displayItem->setClientDebugString(String::format("subtreeRoot: \"%p %s\"", &m_subtreeRoot,
-        m_subtreeRoot.debugName().utf8().data()));
-#endif
-    m_displayItemList->add(displayItem);
 }
 
 } // namespace blink

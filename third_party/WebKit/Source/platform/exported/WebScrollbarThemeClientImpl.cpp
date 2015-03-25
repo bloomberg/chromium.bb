@@ -236,4 +236,9 @@ DisplayItemClient WebScrollbarThemeClientImpl::displayItemClient() const
     return toDisplayItemClient(this);
 }
 
+String WebScrollbarThemeClientImpl::debugName() const
+{
+    return "WebScrollbarThemeClientImpl";
+}
+
 } // namespace blink

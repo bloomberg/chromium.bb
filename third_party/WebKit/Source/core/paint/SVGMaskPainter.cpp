@@ -29,9 +29,9 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(BeginCompositingDisplayItem::create(object.displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
+        context->displayItemList()->add(BeginCompositingDisplayItem::create(object, WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
     } else {
-        BeginCompositingDisplayItem beginCompositingContent(object.displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
+        BeginCompositingDisplayItem beginCompositingContent(object, WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
         beginCompositingContent.replay(context);
     }
 
@@ -48,33 +48,33 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
     {
         ColorFilter maskLayerFilter = m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
             ? ColorFilterLuminanceToAlpha : ColorFilterNone;
-        CompositingRecorder maskCompositing(context, object.displayItemClient(), SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
-        drawMaskForRenderer(context, object.displayItemClient(), object.objectBoundingBox());
+        CompositingRecorder maskCompositing(context, object, SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
+        drawMaskForLayoutObject(context, object, object.objectBoundingBox());
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(EndCompositingDisplayItem::create(object.displayItemClient()));
+        context->displayItemList()->add(EndCompositingDisplayItem::create(object));
     } else {
-        EndCompositingDisplayItem endCompositingContent(object.displayItemClient());
+        EndCompositingDisplayItem endCompositingContent(object);
         endCompositingContent.replay(context);
     }
 }
 
-void SVGMaskPainter::drawMaskForRenderer(GraphicsContext* context, DisplayItemClient client, const FloatRect& targetBoundingBox)
+void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext* context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox)
 {
     ASSERT(context);
 
     AffineTransform contentTransformation;
     RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox);
 
-    TransformRecorder recorder(*context, client, contentTransformation);
+    TransformRecorder recorder(*context, layoutObject, contentTransformation);
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(DrawingDisplayItem::create(client, DisplayItem::SVGMask, maskContentPicture));
+        context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGMask, maskContentPicture));
     } else {
-        DrawingDisplayItem maskPicture(client, DisplayItem::SVGMask, maskContentPicture);
+        DrawingDisplayItem maskPicture(layoutObject, DisplayItem::SVGMask, maskContentPicture);
         maskPicture.replay(context);
     }
 }

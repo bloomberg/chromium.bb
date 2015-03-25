@@ -212,7 +212,7 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scro
     if (scrollRect.isEmpty())
         return;
 
-    box().invalidateDisplayItemClient(DisplayItemClientData(*scrollbar));
+    box().invalidateDisplayItemClient(*scrollbar);
 
     LayoutRect paintInvalidationRect = LayoutRect(scrollRect);
     box().flipForWritingMode(paintInvalidationRect);

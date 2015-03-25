@@ -37,10 +37,10 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
     documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
 
     if (!documentDirtyRect.isEmpty()) {
-        TransformRecorder transformRecorder(*context, m_frameView.layoutView()->displayItemClient(),
+        TransformRecorder transformRecorder(*context, *m_frameView.layoutView(),
             AffineTransform::translation(m_frameView.x() - m_frameView.scrollX(), m_frameView.y() - m_frameView.scrollY()));
 
-        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(m_frameView.visibleContentRect()));
+        ClipRecorder recorder(*m_frameView.layoutView(), context, DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(m_frameView.visibleContentRect()));
 
         documentDirtyRect.moveBy(-m_frameView.location() + m_frameView.scrollPosition());
         paintContents(context, documentDirtyRect);
@@ -55,10 +55,10 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
         scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
         scrollViewDirtyRect.moveBy(-m_frameView.location());
 
-        TransformRecorder transformRecorder(*context, m_frameView.layoutView()->displayItemClient(),
+        TransformRecorder transformRecorder(*context, *m_frameView.layoutView(),
             AffineTransform::translation(m_frameView.x(), m_frameView.y()));
 
-        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameScrollbars, LayoutRect(IntPoint(), visibleAreaWithScrollbars.size()));
+        ClipRecorder recorder(*m_frameView.layoutView(), context, DisplayItem::ClipFrameScrollbars, LayoutRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }
@@ -89,7 +89,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     if (fillWithRed) {
         IntRect contentRect(IntPoint(), m_frameView.contentsSize());
-        DrawingRecorder drawingRecorder(context, m_frameView.layoutView()->displayItemClient(), DisplayItem::DebugRedFill, contentRect);
+        DrawingRecorder drawingRecorder(context, *m_frameView.layoutView(), DisplayItem::DebugRedFill, contentRect);
         if (!drawingRecorder.canUseCachedDrawing())
             context->fillRect(contentRect, Color(0xFF, 0, 0));
     }
@@ -186,7 +186,7 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
     if (m_frameView.scrollCorner()) {
         bool needsBackground = m_frameView.frame().isMainFrame();
         if (needsBackground) {
-            DrawingRecorder drawingRecorder(context, m_frameView.layoutView()->displayItemClient(), DisplayItem::ScrollbarCorner, cornerRect);
+            DrawingRecorder drawingRecorder(context, *m_frameView.layoutView(), DisplayItem::ScrollbarCorner, cornerRect);
             if (!drawingRecorder.canUseCachedDrawing())
                 context->fillRect(cornerRect, m_frameView.baseBackgroundColor());
         }
@@ -194,7 +194,7 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
         return;
     }
 
-    ScrollbarTheme::theme()->paintScrollCorner(context, m_frameView.displayItemClient(), cornerRect);
+    ScrollbarTheme::theme()->paintScrollCorner(context, m_frameView, cornerRect);
 }
 
 void FramePainter::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)

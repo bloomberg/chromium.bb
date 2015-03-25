@@ -216,6 +216,8 @@ public:
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
+    virtual String debugName() const override { return "ScrollableArea for " + box().debugName(); }
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;

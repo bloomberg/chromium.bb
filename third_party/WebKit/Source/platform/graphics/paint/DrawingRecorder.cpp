@@ -15,7 +15,7 @@
 
 namespace blink {
 
-DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
+DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
     : m_context(context)
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
@@ -33,15 +33,15 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient dis
     context->setInDrawingRecorder(true);
 #endif
     ASSERT(context->displayItemList());
-    m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient)
+    m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient.displayItemClient())
         && !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled();
 
 #ifndef NDEBUG
     // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.
-    m_context->beginRecording(bounds);
+    context->beginRecording(bounds);
 #else
     if (!m_canUseCachedDrawing)
-        m_context->beginRecording(bounds);
+        context->beginRecording(bounds);
 #endif
 }
 
@@ -62,7 +62,7 @@ DrawingRecorder::~DrawingRecorder()
         RefPtr<const SkPicture> picture = m_context->endRecording();
         if (picture && picture->approximateOpCount()) {
             WTF_LOG_ERROR("Unnecessary painting for %s\n. Should check recorder.canUseCachedDrawing() before painting",
-                m_clientDebugString.utf8().data());
+                m_displayItemClient.debugName().utf8().data());
         }
 #endif
         displayItem = CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType));
@@ -73,21 +73,10 @@ DrawingRecorder::~DrawingRecorder()
         displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);
     }
 
-#ifndef NDEBUG
-    displayItem->setClientDebugString(m_clientDebugString);
-#endif
-
 #if ENABLE(ASSERT)
     ASSERT(m_displayItemPosition == m_context->displayItemList()->newPaintsSize());
 #endif
     m_context->displayItemList()->add(displayItem.release());
 }
-
-#ifndef NDEBUG
-void DrawingRecorder::setClientDebugString(const WTF::String& clientDebugString)
-{
-    m_clientDebugString = clientDebugString;
-}
-#endif
 
 } // namespace blink

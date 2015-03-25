@@ -13,7 +13,7 @@
 
 namespace blink {
 
-ScrollRecorder::ScrollRecorder(GraphicsContext* context, DisplayItemClient client, PaintPhase phase, const IntSize& currentOffset)
+ScrollRecorder::ScrollRecorder(GraphicsContext* context, const DisplayItemClientWrapper& client, PaintPhase phase, const IntSize& currentOffset)
     : m_client(client)
     , m_beginItemType(DisplayItem::paintPhaseToScrollType(phase))
     , m_context(context)

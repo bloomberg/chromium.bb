@@ -793,7 +793,7 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
 
     AffineTransform translation;
     translation.translate(-paintOffset.x(), -paintOffset.y());
-    TransformRecorder transformRecorder(context, scrollbar->displayItemClient(), translation);
+    TransformRecorder transformRecorder(context, *scrollbar, translation);
 
     scrollbar->paint(&context, transformedClip);
 }

@@ -43,7 +43,7 @@ private:
         BorderRadiusClippingRule, Vector<FloatRoundedRect>& roundedRectClips);
 
     GraphicsContext* m_graphicsContext;
-    const LayoutBoxModelObject* m_renderer;
+    const LayoutBoxModelObject* m_layoutObject;
     DisplayItem::Type m_clipType;
 };
 

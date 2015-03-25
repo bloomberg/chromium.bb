@@ -21,7 +21,7 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGForeignObject.displayItemClient(), m_renderSVGForeignObject.localTransform());
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGForeignObject, m_renderSVGForeignObject.localTransform());
 
     // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
     // because it can be used for clipping.
@@ -29,7 +29,7 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 
     OwnPtr<FloatClipRecorder> clipRecorder;
     if (SVGLayoutSupport::isOverflowHidden(&m_renderSVGForeignObject))
-        clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGForeignObject.displayItemClient(), paintInfoBeforeFiltering.phase, m_renderSVGForeignObject.viewportRect()));
+        clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGForeignObject, paintInfoBeforeFiltering.phase, m_renderSVGForeignObject.viewportRect()));
 
     SVGPaintContext paintContext(m_renderSVGForeignObject, paintInfoBeforeFiltering);
     bool continueRendering = true;

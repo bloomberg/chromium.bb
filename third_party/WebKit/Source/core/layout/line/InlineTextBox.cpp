@@ -523,26 +523,35 @@ TextRun InlineTextBox::constructTextRunForInspector(const LayoutStyle& style, co
     return InlineTextBox::constructTextRun(style, font);
 }
 
-#ifndef NDEBUG
-
 const char* InlineTextBox::boxName() const
 {
     return "InlineTextBox";
 }
 
+String InlineTextBox::debugName() const
+{
+    return String(boxName()) + " '" + text() + "'";
+}
+
+String InlineTextBox::text() const
+{
+    return layoutObject().text().substring(start(), len());
+}
+
+#ifndef NDEBUG
+
 void InlineTextBox::showBox(int printedCharacters) const
 {
-    const LayoutText& obj = layoutObject();
-    String value = obj.text();
-    value = value.substring(start(), len());
+    String value = text();
     value.replaceWithLiteral('\\', "\\\\");
     value.replaceWithLiteral('\n', "\\n");
     printedCharacters += fprintf(stderr, "%s %p", boxName(), this);
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
+    const LayoutText& obj = layoutObject();
     printedCharacters = fprintf(stderr, "\t%s %p", obj.name(), &obj);
-    const int rendererCharacterOffset = 75;
-    for (; printedCharacters < rendererCharacterOffset; printedCharacters++)
+    const int layoutObjectCharacterOffset = 75;
+    for (; printedCharacters < layoutObjectCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
     fprintf(stderr, "(%d,%d) \"%s\"\n", start(), start() + len(), value.utf8().data());
 }

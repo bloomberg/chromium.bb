@@ -33,7 +33,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     FloatRect boundingBox = m_renderSVGImage.paintInvalidationRectInLocalCoordinates();
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGImage, m_renderSVGImage.localToParentTransform());
     {
         SVGPaintContext paintContext(m_renderSVGImage, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {

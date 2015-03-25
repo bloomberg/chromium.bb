@@ -15,12 +15,12 @@ namespace blink {
 class PLATFORM_EXPORT BeginTransform3DDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginTransform3DDisplayItem);
 public:
-    static PassOwnPtr<BeginTransform3DDisplayItem> create(DisplayItemClient client, DisplayItem::Type type, const TransformationMatrix& transform)
+    static PassOwnPtr<BeginTransform3DDisplayItem> create(const DisplayItemClientWrapper& client, DisplayItem::Type type, const TransformationMatrix& transform)
     {
         return adoptPtr(new BeginTransform3DDisplayItem(client, type, transform));
     }
 
-    BeginTransform3DDisplayItem(DisplayItemClient client, DisplayItem::Type type, const TransformationMatrix& transform)
+    BeginTransform3DDisplayItem(const DisplayItemClientWrapper& client, DisplayItem::Type type, const TransformationMatrix& transform)
         : PairedBeginDisplayItem(client, type)
         , m_transform(transform)
     {
@@ -40,12 +40,12 @@ private:
 class PLATFORM_EXPORT EndTransform3DDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(EndTransform3DDisplayItem);
 public:
-    static PassOwnPtr<EndTransform3DDisplayItem> create(DisplayItemClient client, DisplayItem::Type type)
+    static PassOwnPtr<EndTransform3DDisplayItem> create(const DisplayItemClientWrapper& client, DisplayItem::Type type)
     {
         return adoptPtr(new EndTransform3DDisplayItem(client, type));
     }
 
-    EndTransform3DDisplayItem(DisplayItemClient client, DisplayItem::Type type)
+    EndTransform3DDisplayItem(const DisplayItemClientWrapper& client, DisplayItem::Type type)
         : PairedEndDisplayItem(client, type)
     {
         ASSERT(DisplayItem::isEndTransform3DType(type));

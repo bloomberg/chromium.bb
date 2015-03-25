@@ -29,7 +29,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
             m_renderFileUploadControl.size() + LayoutSize(0, -m_renderFileUploadControl.borderWidth() + buttonShadowHeight)));
         if (clipRect.isEmpty())
             return;
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderFileUploadControl.displayItemClient(), paintInfo.context, DisplayItem::ClipFileUploadControlRect, LayoutRect(clipRect)));
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderFileUploadControl, paintInfo.context, DisplayItem::ClipFileUploadControlRect, LayoutRect(clipRect)));
     }
 
     if (paintInfo.phase == PaintPhaseForeground) {

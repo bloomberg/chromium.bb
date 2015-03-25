@@ -12,7 +12,7 @@
 
 namespace blink {
 
-ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, DisplayItemClient client, const Path& clipPath, WindRule windRule)
+ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, const Path& clipPath, WindRule windRule)
     : m_context(context)
     , m_client(client)
 {

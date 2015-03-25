@@ -98,7 +98,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
         return false;
 
     if (!isIsolationInstalled() && SVGLayoutSupport::isIsolationRequired(m_object))
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, m_object->displayItemClient(), WebCoreCompositeToSkiaComposite(m_paintInfo.context->compositeOperationDeprecated(), WebBlendModeNormal), 1));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object, WebCoreCompositeToSkiaComposite(m_paintInfo.context->compositeOperationDeprecated(), WebBlendModeNormal), 1));
 
     return true;
 }
@@ -115,10 +115,10 @@ void SVGPaintContext::applyCompositingIfNecessary()
     float opacity = style.opacity();
     bool hasBlendMode = style.hasBlendMode() && m_object->isBlendingAllowed();
     if (opacity < 1 || hasBlendMode) {
-        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, m_object->displayItemClient(), m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
+        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, *m_object, m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
         WebBlendMode blendMode = hasBlendMode ? style.blendMode() : WebBlendModeNormal;
         CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo.context->compositeOperationDeprecated();
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, m_object->displayItemClient(), WebCoreCompositeToSkiaComposite(compositeOp, blendMode), opacity));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object, WebCoreCompositeToSkiaComposite(compositeOp, blendMode), opacity));
     }
 }
 
@@ -137,7 +137,7 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
             if (!clipPath->isValid())
                 return false;
-            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo.context, m_object->displayItemClient(), clipPath->path(m_object->objectBoundingBox()), clipPath->windRule()));
+            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo.context, *m_object, clipPath->path(m_object->objectBoundingBox()), clipPath->windRule()));
         }
     }
     return true;

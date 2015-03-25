@@ -19,12 +19,12 @@ namespace blink {
 class PLATFORM_EXPORT BeginFilterDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginFilterDisplayItem);
 public:
-    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds)
+    static PassOwnPtr<BeginFilterDisplayItem> create(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds)
     {
         return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds));
     }
 
-    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations)
+    static PassOwnPtr<BeginFilterDisplayItem> create(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations)
     {
         return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds, filterOperations));
     }
@@ -34,8 +34,8 @@ public:
     virtual bool drawsContent() const override;
 
 private:
-    BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<SkImageFilter>, const FloatRect& bounds);
-    BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<SkImageFilter>, const FloatRect& bounds, PassOwnPtr<WebFilterOperations>);
+    BeginFilterDisplayItem(const DisplayItemClientWrapper&, PassRefPtr<SkImageFilter>, const FloatRect& bounds);
+    BeginFilterDisplayItem(const DisplayItemClientWrapper&, PassRefPtr<SkImageFilter>, const FloatRect& bounds, PassOwnPtr<WebFilterOperations>);
 
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
@@ -50,12 +50,12 @@ private:
 class PLATFORM_EXPORT EndFilterDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(EndFilterDisplayItem);
 public:
-    static PassOwnPtr<EndFilterDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndFilterDisplayItem> create(const DisplayItemClientWrapper& client)
     {
         return adoptPtr(new EndFilterDisplayItem(client));
     }
 
-    EndFilterDisplayItem(DisplayItemClient client)
+    EndFilterDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFilter) { }
 
     virtual void replay(GraphicsContext*) override;

@@ -127,7 +127,7 @@ public:
                     rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
-                m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, renderLayer.layoutObject()->displayItemClient(),
+                m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, *renderLayer.layoutObject(),
                     clipPath->path(rootRelativeBounds), clipPath->windRule()));
             }
         } else if (style.clipPath()->type() == ClipPathOperation::REFERENCE) {
@@ -216,7 +216,7 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
             m_renderLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
             &paintingInfo, LayoutPoint(), paintFlags));
 
-        compositingRecorder = adoptPtr(new CompositingRecorder(context, m_renderLayer.layoutObject()->displayItemClient(),
+        compositingRecorder = adoptPtr(new CompositingRecorder(context, *m_renderLayer.layoutObject(),
             WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), m_renderLayer.layoutObject()->style()->blendMode()),
             m_renderLayer.layoutObject()->opacity()));
     }
@@ -395,7 +395,7 @@ void DeprecatedPaintLayerPainter::paintFragmentByApplyingTransform(GraphicsConte
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
-    Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), DisplayItem::Transform3DElementTransform, transform);
+    Transform3DRecorder transform3DRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::Transform3DElementTransform, transform);
 
     // Now do a paint with the root layer shifted to be us.
     DeprecatedPaintLayerPaintingInfo transformedPaintingInfo(&m_renderLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.paintBehavior,
@@ -557,7 +557,7 @@ void DeprecatedPaintLayerPainter::paintChildLayerIntoColumns(GraphicsContext* co
         if (!localDirtyRect.isEmpty()) {
             // Each strip pushes a clip, since column boxes are specified as being
             // like overflow:hidden.
-            ClipRecorder clipRecorder(m_renderLayer.layoutObject()->displayItemClient(), context, DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
+            ClipRecorder clipRecorder(*m_renderLayer.layoutObject(), context, DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
 
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.
@@ -586,7 +586,7 @@ void DeprecatedPaintLayerPainter::paintChildLayerIntoColumns(GraphicsContext* co
                 TransformationMatrix transform;
                 transform.translateRight(roundToInt(childOffset.x() + offset.width()), roundToInt(childOffset.y() + offset.height()));
 
-                Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), DisplayItem::Transform3DElementTransform, transform);
+                Transform3DRecorder transform3DRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::Transform3DElementTransform, transform);
 
                 // Now do a paint with the root layer shifted to be the next multicol block.
                 DeprecatedPaintLayerPaintingInfo columnPaintingInfo(paintingInfo);

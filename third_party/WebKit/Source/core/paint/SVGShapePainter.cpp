@@ -55,7 +55,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     FloatRect boundingBox = m_renderSVGShape.paintInvalidationRectInLocalCoordinates();
 
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGShape.displayItemClient(), m_renderSVGShape.localTransform());
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGShape, m_renderSVGShape.localTransform());
     {
         SVGPaintContext paintContext(m_renderSVGShape, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
@@ -194,10 +194,10 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
         PaintInfo markerPaintInfo(paintInfo);
         markerPaintInfo.context = displayItemListScope.context();
 
-        TransformRecorder transformRecorder(*markerPaintInfo.context, marker.displayItemClient(), marker.markerTransformation(position.origin, position.angle, strokeWidth));
+        TransformRecorder transformRecorder(*markerPaintInfo.context, marker, marker.markerTransformation(position.origin, position.angle, strokeWidth));
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (SVGLayoutSupport::isOverflowHidden(&marker))
-            clipRecorder = adoptPtr(new FloatClipRecorder(*markerPaintInfo.context, marker.displayItemClient(), markerPaintInfo.phase, marker.viewport()));
+            clipRecorder = adoptPtr(new FloatClipRecorder(*markerPaintInfo.context, marker, markerPaintInfo.phase, marker.viewport()));
 
         SVGContainerPainter(marker).paint(markerPaintInfo);
     }

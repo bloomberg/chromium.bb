@@ -2161,7 +2161,7 @@ void LayoutBlockFlow::clipOutFloatingObjects(const LayoutBlock* rootBlock, const
 
         ASSERT(paintInfo->context->clipRecorderStack());
         paintInfo->context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
-            displayItemClient(), paintInfo->context, paintInfo->displayItemTypeForClipping(), floatBox, SkRegion::kDifference_Op)));
+            *this, paintInfo->context, paintInfo->displayItemTypeForClipping(), floatBox, SkRegion::kDifference_Op)));
     }
 }
 
@@ -2731,7 +2731,7 @@ static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoi
         LayoutBox* r = *it;
         ASSERT(paintInfo.context->clipRecorderStack());
         paintInfo.context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
-            r->displayItemClient(), paintInfo.context, paintInfo.displayItemTypeForClipping(),
+            *r, paintInfo.context, paintInfo.displayItemTypeForClipping(),
             LayoutRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())), SkRegion::kDifference_Op)));
     }
 }

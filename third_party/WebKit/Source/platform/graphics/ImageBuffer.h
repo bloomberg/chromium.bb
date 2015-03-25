@@ -148,6 +148,7 @@ public:
     PassRefPtr<SkImage> newImageSnapshot() const;
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "ImageBuffer"; }
 
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);

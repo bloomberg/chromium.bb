@@ -17,32 +17,31 @@ using DisplayItemClient = const DisplayItemClientInternalVoid*;
 inline DisplayItemClient toDisplayItemClient(const void* object) { return static_cast<DisplayItemClient>(object); }
 
 // Used to pass DisplayItemClient and debugName() (called only when needed) from
-// layout module to GraphicsLayer.
-// The instance must be temporary in stack. Long-time reference to a client must use
-// DisplayItemClient.
-class PLATFORM_EXPORT DisplayItemClientData {
-    STACK_ALLOCATED();
+// core/layout module etc. to platform/paint module.
+// The instance must not out-live the object. Long-time reference to a client must
+// use DisplayItemClient.
+class PLATFORM_EXPORT DisplayItemClientWrapper {
+    DISALLOW_ALLOCATION(); // Allow allocated in stack or in another object only.
 public:
     template <typename T>
-    DisplayItemClientData(const T& object)
+    DisplayItemClientWrapper(const T& object)
         : m_displayItemClient(object.displayItemClient())
         , m_object(reinterpret_cast<const GenericClass&>(object))
         , m_debugNameInvoker(&invokeDebugName<T>)
     { }
 
-    enum NoDebugNameTag { NoDebugName };
-
-    template <typename Object>
-    DisplayItemClientData(const Object& object, NoDebugNameTag)
-        : m_displayItemClient(object.displayItemClient())
-        , m_object(reinterpret_cast<const GenericClass&>(object))
-        , m_debugNameInvoker(nullptr)
+    DisplayItemClientWrapper(const DisplayItemClientWrapper& other)
+        : m_displayItemClient(other.m_displayItemClient)
+        , m_object(other.m_object)
+        , m_debugNameInvoker(other.m_debugNameInvoker)
     { }
 
     DisplayItemClient displayItemClient() const { return m_displayItemClient; }
-    String debugName() const { return m_debugNameInvoker ? m_debugNameInvoker(m_object) : ""; }
+    String debugName() const { return m_debugNameInvoker(m_object); }
 
 private:
+    DisplayItemClientWrapper& operator=(const DisplayItemClientWrapper&) = delete;
+
     class GenericClass;
     template <typename T>
     static String invokeDebugName(const GenericClass& object) { return reinterpret_cast<const T&>(object).debugName(); }

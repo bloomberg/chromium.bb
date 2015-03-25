@@ -1087,7 +1087,7 @@ public:
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
-    void invalidateDisplayItemClient(const DisplayItemClientData&) const;
+    void invalidateDisplayItemClient(const DisplayItemClientWrapper&) const;
 
 protected:
     enum LayoutObjectType {

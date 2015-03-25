@@ -91,6 +91,7 @@ public:
     virtual void setElasticOverscroll(float) = 0;
 
     virtual DisplayItemClient displayItemClient() const = 0;
+    virtual String debugName() const = 0;
 
 protected:
     virtual ~ScrollbarThemeClient() { }

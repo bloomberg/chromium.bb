@@ -849,11 +849,9 @@ Node* RootInlineBox::getLogicalEndBoxWithNode(InlineBox*& endBox) const
     return 0;
 }
 
-#ifndef NDEBUG
 const char* RootInlineBox::boxName() const
 {
     return "RootInlineBox";
 }
-#endif
 
 } // namespace blink

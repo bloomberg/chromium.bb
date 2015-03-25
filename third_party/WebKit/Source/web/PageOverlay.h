@@ -64,7 +64,8 @@ public:
     void paintWebFrame(GraphicsContext&);
 
     GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
-    DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "PageOverlay"; }
 
     // GraphicsLayerClient implementation
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;

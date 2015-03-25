@@ -30,7 +30,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/Path.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
@@ -81,8 +80,6 @@ private:
     // This function computes the highlight path, and returns true if it has changed
     // size since the last call to this function.
     bool computeHighlightLayerPathAndPosition(const LayoutBoxModelObject*);
-
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     OwnPtr<WebContentLayer> m_contentLayer;
     OwnPtr<WebLayer> m_clipLayer;

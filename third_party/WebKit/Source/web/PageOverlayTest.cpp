@@ -106,10 +106,13 @@ public:
     {
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
         FloatRect rect(0, 0, size.width, size.height);
-        DrawingRecorder drawingRecorder(&graphicsContext, toDisplayItemClient(this), DisplayItem::PageOverlay, rect);
+        DrawingRecorder drawingRecorder(&graphicsContext, *this, DisplayItem::PageOverlay, rect);
         if (!drawingRecorder.canUseCachedDrawing())
             graphicsContext.fillRect(rect, m_color);
     }
+
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "PrivateGraphicsContextOverlay"; }
 
 private:
     Color m_color;

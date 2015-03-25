@@ -6,7 +6,6 @@
 #define SVGMaskPainter_h
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
@@ -22,7 +21,7 @@ public:
     void finishEffect(const LayoutObject&, GraphicsContext*);
 
 private:
-    void drawMaskForRenderer(GraphicsContext*, DisplayItemClient, const FloatRect& targetBoundingBox);
+    void drawMaskForLayoutObject(GraphicsContext*, const LayoutObject&, const FloatRect& targetBoundingBox);
 
     LayoutSVGResourceMasker& m_mask;
 };

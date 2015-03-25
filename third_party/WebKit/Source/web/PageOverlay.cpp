@@ -97,7 +97,7 @@ void PageOverlay::update()
 
 void PageOverlay::paintWebFrame(GraphicsContext& gc)
 {
-    WebGraphicsContextImpl contextWrapper(gc, displayItemClient(), DisplayItem::PageOverlay);
+    WebGraphicsContextImpl contextWrapper(gc, *this, DisplayItem::PageOverlay);
     m_overlay->paintPageOverlay(&contextWrapper, m_viewImpl->size());
 }
 

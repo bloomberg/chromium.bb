@@ -19,12 +19,12 @@ namespace blink {
 class PLATFORM_EXPORT BeginCompositingDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginCompositingDisplayItem);
 public:
-    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds = nullptr, ColorFilter colorFilter = ColorFilterNone)
+    static PassOwnPtr<BeginCompositingDisplayItem> create(const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds = nullptr, ColorFilter colorFilter = ColorFilterNone)
     {
         return adoptPtr(new BeginCompositingDisplayItem(client, xferMode, opacity, bounds, colorFilter));
     }
 
-    BeginCompositingDisplayItem(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter = ColorFilterNone)
+    BeginCompositingDisplayItem(const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter = ColorFilterNone)
         : PairedBeginDisplayItem(client, BeginCompositing)
         , m_xferMode(xferMode)
         , m_opacity(opacity)
@@ -52,12 +52,12 @@ private:
 class PLATFORM_EXPORT EndCompositingDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(EndCompositingDisplayItem);
 public:
-    static PassOwnPtr<EndCompositingDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndCompositingDisplayItem> create(const DisplayItemClientWrapper& client)
     {
         return adoptPtr(new EndCompositingDisplayItem(client));
     }
 
-    EndCompositingDisplayItem(DisplayItemClient client)
+    EndCompositingDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndCompositing) { }
 
     virtual void replay(GraphicsContext*) override;

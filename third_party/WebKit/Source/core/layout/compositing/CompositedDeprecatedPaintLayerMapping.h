@@ -121,7 +121,7 @@ public:
     // r is in the coordinate space of the layer's render object
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
 
-    void invalidateDisplayItemClient(const DisplayItemClientData&);
+    void invalidateDisplayItemClient(const DisplayItemClientWrapper&);
 
     // Notification from the renderer that its content changed.
     void contentChanged(ContentChangeType);
@@ -196,6 +196,7 @@ public:
     void updateScrollingBlockSelection();
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "CompositedLayerMapping for " + owningLayer().debugName(); }
 
 private:
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);

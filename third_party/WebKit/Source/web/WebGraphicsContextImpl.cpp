@@ -10,7 +10,7 @@
 
 namespace blink {
 
-WebGraphicsContextImpl::WebGraphicsContextImpl(GraphicsContext& graphicsContext, DisplayItemClient client, DisplayItem::Type type)
+WebGraphicsContextImpl::WebGraphicsContextImpl(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, DisplayItem::Type type)
     : m_graphicsContext(graphicsContext)
     , m_client(client)
     , m_type(type)

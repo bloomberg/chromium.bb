@@ -77,7 +77,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
         DisplayItemListScope displayItemListScope(buffer->context());
         GraphicsContext* paintContext = displayItemListScope.context();
 
-        DrawingRecorder recorder(paintContext, buffer->displayItemClient(), DisplayItem::VideoBitmap, videoRect);
+        DrawingRecorder recorder(paintContext, *buffer, DisplayItem::VideoBitmap, videoRect);
         if (!recorder.canUseCachedDrawing()) {
             paintContext->clip(dstRect);
             paintContext->translate(-srcRect.x(), -srcRect.y());

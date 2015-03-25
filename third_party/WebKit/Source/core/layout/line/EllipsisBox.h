@@ -51,6 +51,8 @@ public:
     const AtomicString& ellipsisStr() { return m_str; }
     InlineBox* markupBox() const;
 
+    virtual const char* boxName() const override;
+
 private:
 
     bool m_shouldPaintMarkupBox;

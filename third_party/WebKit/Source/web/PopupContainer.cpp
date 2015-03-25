@@ -358,7 +358,7 @@ void PopupContainer::hide()
 
 void PopupContainer::paint(GraphicsContext* gc, const IntRect& paintRect)
 {
-    TransformRecorder transformRecorder(*gc, displayItemClient(), AffineTransform::translation(x(),  y()));
+    TransformRecorder transformRecorder(*gc, *this, AffineTransform::translation(x(),  y()));
     IntRect adjustedPaintRect = intersection(paintRect, frameRect());
     adjustedPaintRect.moveBy(-location());
 
@@ -368,7 +368,7 @@ void PopupContainer::paint(GraphicsContext* gc, const IntRect& paintRect)
 
 void PopupContainer::paintBorder(GraphicsContext* gc, const IntRect& rect)
 {
-    DrawingRecorder drawingRecorder(gc, displayItemClient(), DisplayItem::PopupContainerBorder, boundsRect());
+    DrawingRecorder drawingRecorder(gc, *this, DisplayItem::PopupContainerBorder, boundsRect());
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

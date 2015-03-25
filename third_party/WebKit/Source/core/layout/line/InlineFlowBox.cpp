@@ -1272,12 +1272,12 @@ void InlineFlowBox::collectLeafBoxesInLogicalOrder(Vector<InlineBox*>& leafBoxes
     }
 }
 
-#ifndef NDEBUG
-
 const char* InlineFlowBox::boxName() const
 {
     return "InlineFlowBox";
 }
+
+#ifndef NDEBUG
 
 void InlineFlowBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const LayoutObject* obj, int depth) const
 {

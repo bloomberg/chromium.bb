@@ -250,24 +250,25 @@ public:
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
-
-    void setClientDebugString(const WTF::String& clientDebugString) { m_clientDebugString = clientDebugString; }
     const WTF::String& clientDebugString() const { return m_clientDebugString; }
-
     WTF::String asDebugString() const;
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
 
 protected:
-    DisplayItem(DisplayItemClient client, Type type)
-        : m_id(client, type)
-    {
-        ASSERT(client);
-    }
+    DisplayItem(const DisplayItemClientWrapper& client, Type type)
+        : m_id(client.displayItemClient(), type)
+#ifndef NDEBUG
+        , m_clientDebugString(client.debugName())
+#endif
+    { }
 
 private:
     struct Id {
-        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeContainer(nullptr), scopeId(0) { }
+        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeContainer(nullptr), scopeId(0)
+        {
+            ASSERT(c);
+        }
 
         const DisplayItemClient client;
         const Type type;
@@ -282,7 +283,7 @@ private:
 
 class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
 protected:
-    PairedBeginDisplayItem(DisplayItemClient client, Type type) : DisplayItem(client, type) { }
+    PairedBeginDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 private:
     virtual bool isBegin() const override final { return true; }
@@ -290,7 +291,7 @@ private:
 
 class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
 protected:
-    PairedEndDisplayItem(DisplayItemClient client, Type type) : DisplayItem(client, type) { }
+    PairedEndDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 #if ENABLE(ASSERT)
     virtual bool isEndAndPairedWith(const DisplayItem& other) const override = 0;

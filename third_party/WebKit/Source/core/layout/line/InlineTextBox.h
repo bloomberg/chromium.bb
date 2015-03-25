@@ -93,8 +93,11 @@ public:
 
 #ifndef NDEBUG
     virtual void showBox(int = 0) const override;
-    virtual const char* boxName() const override;
 #endif
+    virtual const char* boxName() const override;
+    virtual String debugName() const override;
+
+    String text() const;
 
 public:
     TextRun constructTextRunForInspector(const LayoutStyle&, const Font&) const;

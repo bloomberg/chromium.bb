@@ -95,4 +95,9 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     return false;
 }
 
+const char* EllipsisBox::boxName() const
+{
+    return "EllipsisBox";
+}
+
 } // namespace blink
