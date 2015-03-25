@@ -9,6 +9,9 @@
   <li class="navbar">
     <a class="navbar" href="{% url 'build_annotations:builds_list' 'master-release' %}">Master-Release</a>
   </li>
+  <li class="navbar">
+    <a class="navbar" href="{% url 'build_annotations:builds_list' 'master-chromium-pfq' %}">Chromium-PFQ</a>
+  </li>
 </ul>
 <form action="{% url 'build_annotations:builds_list' build_config %}" method="post">
   {% csrf_token %}
