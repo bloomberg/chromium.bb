@@ -223,15 +223,15 @@
       'message': 'Create installer archive',
     },
   ],
-  # TODO(mark):  <(branding_dir) should be defined by the
-  # global condition block at the bottom of the file, but
-  # this doesn't work due to the following issue:
-  #
-  #   http://code.google.com/p/gyp/issues/detail?id=22
-  #
-  # Remove this block once the above issue is fixed.
   'conditions': [
-    [ 'branding == "Chrome"', {
+    # TODO(mark):  <(branding_dir) should be defined by the
+    # global condition block at the bottom of the file, but
+    # this doesn't work due to the following issue:
+    #
+    #   http://code.google.com/p/gyp/issues/detail?id=22
+    #
+    # Remove this block once the above issue is fixed.
+    ['branding == "Chrome"', {
       'variables': {
          'branding_dir': '../app/theme/google_chrome',
       },
@@ -239,6 +239,10 @@
       'variables': {
          'branding_dir': '../app/theme/chromium',
       },
+    }],
+    ['OS=="win" and buildtype=="Official"', {
+      # Optimize for size when doing an official build.
+      'optimize' :'size',
     }],
   ],
 }
