@@ -3,16 +3,13 @@ Tests that injected user stylesheets are reflected in the Styles pane.
 
 
 Main frame style:
--webkit-background-clip: border-box;
--webkit-background-origin: padding-box;
--webkit-background-size: auto;
--webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) 100% / 1 / 0px stretch;
 background-attachment: scroll;
 background-clip: border-box;
 background-color: rgb(0, 0, 255);
 background-image: none;
 background-origin: padding-box;
 background-size: auto;
+-webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) 100% / 1 / 0px stretch;
 color: rgb(255, 0, 0);
 display: block;
 [expanded] 
@@ -43,9 +40,6 @@ div  { (user agent stylesheet)
   display: block;
 
 iframe style:
--webkit-background-clip: border-box;
--webkit-background-origin: padding-box;
--webkit-background-size: auto;
 background-attachment: scroll;
 background-clip: border-box;
 background-color: rgb(255, 0, 0);

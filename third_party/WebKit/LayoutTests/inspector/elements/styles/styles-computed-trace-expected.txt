@@ -1,9 +1,6 @@
 Tests that computed styles expand and allow tracing to style rules.
 
 ==== Computed style for ID1 ====
--webkit-background-clip: border-box;
--webkit-background-origin: padding-box;
--webkit-background-size: auto;
 background-attachment: scroll;
 background-clip: border-box;
 background-color: rgb(128, 128, 128);

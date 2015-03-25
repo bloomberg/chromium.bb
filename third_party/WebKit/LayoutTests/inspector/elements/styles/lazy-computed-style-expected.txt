@@ -33,9 +33,6 @@ div  { (user agent stylesheet)
   display: block;
 
 ==== All styles (computed should be there) ====
--webkit-background-clip: border-box;
--webkit-background-origin: padding-box;
--webkit-background-size: auto;
 background-attachment: scroll;
 background-clip: border-box;
 background-color: rgb(128, 128, 128);
