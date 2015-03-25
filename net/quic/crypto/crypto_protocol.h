@@ -73,6 +73,7 @@ const QuicTag kFHDR = TAG('F', 'H', 'D', 'R');   // FEC protect headers
 
 // Enable bandwidth resumption experiment.
 const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
+const QuicTag kBWMX = TAG('B', 'W', 'M', 'X');  // Max bandwidth resumption.
 
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R

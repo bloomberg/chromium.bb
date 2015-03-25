@@ -269,7 +269,8 @@ int main(int argc, char *argv[]) {
       cout << " " << kv.first << ": " << kv.second << endl;
     }
     cout << "body: " << FLAGS_body << endl;
-    cout << endl << "Response:";
+    cout << endl;
+    cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;
     cout << "body: " << client.latest_response_body() << endl;
   }

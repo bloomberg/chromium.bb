@@ -172,6 +172,10 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     receive_buffer_bytes_ =
         max(kMinSocketReceiveBuffer,
             static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
+    if (FLAGS_quic_limit_max_cwnd_to_receive_buffer) {
+      send_algorithm_->SetMaxCongestionWindow(receive_buffer_bytes_ *
+                                              kUsableRecieveBufferFraction);
+    }
   }
   send_algorithm_->SetFromConfig(config, perspective_, using_pacing_);
 
@@ -181,7 +185,8 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
 }
 
 bool QuicSentPacketManager::ResumeConnectionState(
-    const CachedNetworkParameters& cached_network_params) {
+    const CachedNetworkParameters& cached_network_params,
+    bool max_bandwidth_resumption) {
   if (cached_network_params.has_min_rtt_ms()) {
     uint32 initial_rtt_us =
         kNumMicrosPerMilli * cached_network_params.min_rtt_ms();
@@ -189,7 +194,8 @@ bool QuicSentPacketManager::ResumeConnectionState(
         max(kMinInitialRoundTripTimeUs,
             min(kMaxInitialRoundTripTimeUs, initial_rtt_us)));
   }
-  return send_algorithm_->ResumeConnectionState(cached_network_params);
+  return send_algorithm_->ResumeConnectionState(cached_network_params,
+                                                max_bandwidth_resumption);
 }
 
 void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
@@ -791,8 +797,9 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
   if (pending_timer_transmission_count_ > 0) {
     return QuicTime::Delta::Zero();
   }
-  if (unacked_packets_.bytes_in_flight() >=
-      kUsableRecieveBufferFraction * receive_buffer_bytes_) {
+  if (!FLAGS_quic_limit_max_cwnd_to_receive_buffer &&
+      unacked_packets_.bytes_in_flight() >=
+          kUsableRecieveBufferFraction * receive_buffer_bytes_) {
     return QuicTime::Delta::Infinite();
   }
   return send_algorithm_->TimeUntilSend(

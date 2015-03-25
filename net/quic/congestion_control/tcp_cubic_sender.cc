@@ -78,7 +78,8 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config,
 }
 
 bool TcpCubicSender::ResumeConnectionState(
-    const CachedNetworkParameters& cached_network_params) {
+    const CachedNetworkParameters& cached_network_params,
+    bool max_bandwidth_resumption) {
   // If the previous bandwidth estimate is less than an hour old, store in
   // preparation for doing bandwidth resumption.
   int64 seconds_since_estimate =
@@ -88,7 +89,9 @@ bool TcpCubicSender::ResumeConnectionState(
   }
 
   QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(
-      cached_network_params.bandwidth_estimate_bytes_per_second());
+      max_bandwidth_resumption
+          ? cached_network_params.max_bandwidth_estimate_bytes_per_second()
+          : cached_network_params.bandwidth_estimate_bytes_per_second());
   QuicTime::Delta rtt_ms =
       QuicTime::Delta::FromMilliseconds(cached_network_params.min_rtt_ms());
 
@@ -106,6 +109,11 @@ bool TcpCubicSender::ResumeConnectionState(
 void TcpCubicSender::SetNumEmulatedConnections(int num_connections) {
   num_connections_ = max(1, num_connections);
   cubic_.SetNumConnections(num_connections_);
+}
+
+void TcpCubicSender::SetMaxCongestionWindow(
+    QuicByteCount max_congestion_window) {
+  max_tcp_congestion_window_ = max_congestion_window / kMaxPacketSize;
 }
 
 float TcpCubicSender::RenoBeta() const {
@@ -197,6 +205,10 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
                                   QuicPacketSequenceNumber sequence_number,
                                   QuicByteCount bytes,
                                   HasRetransmittableData is_retransmittable) {
+  if (InSlowStart()) {
+    ++(stats_->slowstart_packets_sent);
+  }
+
   // Only update bytes_in_flight_ for data packets.
   if (is_retransmittable != HAS_RETRANSMITTABLE_DATA) {
     return false;

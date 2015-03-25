@@ -712,26 +712,33 @@ TEST_F(TcpCubicSenderTest, BandwidthResumption) {
   // Ensure that an old estimate is not used for bandwidth resumption.
   cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
                                       (kNumSecondsPerHour + 1));
-  EXPECT_FALSE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_FALSE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(10u, sender_->congestion_window());
 
   // If the estimate is new enough, make sure it is used.
   cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
                                       (kNumSecondsPerHour - 1));
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(kNumberOfPackets, sender_->congestion_window());
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       (kMaxTcpCongestionWindow + 1) * kMaxPacketSize);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(kMaxTcpCongestionWindow, sender_->congestion_window());
 
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       (kMinCongestionWindowForBandwidthResumption - 1) * kMaxPacketSize);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(kMinCongestionWindowForBandwidthResumption,
             sender_->congestion_window());
+
+  // Resume to the max value.
+  cached_network_params.set_max_bandwidth_estimate_bytes_per_second(
+      (kMinCongestionWindowForBandwidthResumption + 10) * kDefaultTCPMSS);
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, true));
+  EXPECT_EQ((kMinCongestionWindowForBandwidthResumption + 10) * kDefaultTCPMSS,
+            sender_->GetCongestionWindow());
 }
 
 }  // namespace test

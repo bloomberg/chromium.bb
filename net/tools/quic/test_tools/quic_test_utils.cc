@@ -14,14 +14,13 @@ using base::StringPiece;
 using net::test::MakeAckFrame;
 using net::test::MockHelper;
 using net::test::QuicConnectionPeer;
+using testing::_;
+using testing::AnyNumber;
+using testing::Invoke;
 
 namespace net {
 namespace tools {
 namespace test {
-
-using testing::_;
-using testing::AnyNumber;
-using testing::Invoke;
 
 QuicAckFrame MakeAckFrameWithNackRanges(
     size_t num_nack_ranges, QuicPacketSequenceNumber least_unacked) {

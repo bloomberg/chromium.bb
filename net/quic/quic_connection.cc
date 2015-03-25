@@ -324,11 +324,13 @@ void QuicConnection::OnSendConnectionState(
 }
 
 bool QuicConnection::ResumeConnectionState(
-    const CachedNetworkParameters& cached_network_params) {
+    const CachedNetworkParameters& cached_network_params,
+    bool max_bandwidth_resumption) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnResumeConnectionState(cached_network_params);
   }
-  return sent_packet_manager_.ResumeConnectionState(cached_network_params);
+  return sent_packet_manager_.ResumeConnectionState(cached_network_params,
+                                                    max_bandwidth_resumption);
 }
 
 void QuicConnection::SetNumOpenStreams(size_t num_streams) {
@@ -1905,6 +1907,7 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionClosed(error, from_peer);
   }
+  DCHECK(visitor_ != nullptr);
   visitor_->OnConnectionClosed(error, from_peer);
   // Cancel the alarms so they don't trigger any action now that the
   // connection is closed.

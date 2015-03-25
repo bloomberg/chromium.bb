@@ -15,12 +15,11 @@ NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_fec;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_bbr_congestion_control;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_bbr;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_too_many_outstanding_packets;
-NET_EXPORT_PRIVATE
-extern bool FLAGS_quic_enable_bandwidth_resumption_experiment;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_multiple_address_in_source_tokens;
 NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_seconds;
 NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_max_connections;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_small_default_packet_size;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_not_retransmit_for_reset_streams;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd_to_receive_buffer;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

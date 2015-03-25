@@ -338,7 +338,8 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD0(OnCanWrite, void());
 
   MOCK_METHOD1(OnSendConnectionState, void(const CachedNetworkParameters&));
-  MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
+  MOCK_METHOD2(ResumeConnectionState,
+               bool(const CachedNetworkParameters&, bool));
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,
@@ -477,7 +478,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                     Perspective perspective,
                     bool using_pacing));
   MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
-  MOCK_METHOD1(SetMaxPacketSize, void(QuicByteCount max_packet_size));
+  MOCK_METHOD1(SetMaxCongestionWindow,
+               void(QuicByteCount max_congestion_window));
   MOCK_METHOD4(OnCongestionEvent, void(bool rtt_updated,
                                        QuicByteCount bytes_in_flight,
                                        const CongestionVector& acked_packets,
@@ -501,7 +503,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_CONST_METHOD0(InRecovery, bool());
   MOCK_CONST_METHOD0(GetSlowStartThreshold, QuicByteCount());
   MOCK_CONST_METHOD0(GetCongestionControlType, CongestionControlType());
-  MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
+  MOCK_METHOD2(ResumeConnectionState,
+               bool(const CachedNetworkParameters&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);

@@ -31,7 +31,7 @@ class QuicTimeWaitListManagerPeer;
 }  // namespace test
 
 // Maintains a list of all connection_ids that have been recently closed. A
-// connection_id lives in this state for kTimeWaitPeriod. All packets received
+// connection_id lives in this state for time_wait_period_. All packets received
 // for connection_ids in this state are handed over to the
 // QuicTimeWaitListManager by the QuicDispatcher.  Decides whether to send a
 // public reset packet, a copy of the previously sent connection close packet,
@@ -50,15 +50,17 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
                           const QuicVersionVector& supported_versions);
   ~QuicTimeWaitListManager() override;
 
-  // Adds the given connection_id to time wait state for kTimeWaitPeriod.
+  // Adds the given connection_id to time wait state for time_wait_period_.
   // Henceforth, any packet bearing this connection_id should not be processed
   // while the connection_id remains in this list. If a non-nullptr
-  // |close_packet| is provided, it is sent again when packets are received for
-  // added connection_ids. If nullptr, a public reset packet is sent with the
-  // specified |version|. DCHECKs that connection_id is not already on the list.
-  void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
-                                 QuicVersion version,
-                                 QuicEncryptedPacket* close_packet);  // Owned.
+  // |close_packet| is provided, the TimeWaitListManager takes ownership of it
+  // and sends it again when packets are received for added connection_ids. If
+  // nullptr, a public reset packet is sent with the specified |version|.
+  // DCHECKs that connection_id is not already on the list. "virtual" to
+  // override in tests.
+  virtual void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
+                                         QuicVersion version,
+                                         QuicEncryptedPacket* close_packet);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
   // Packets received for this connection_id should not lead to creation of new
@@ -169,7 +171,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   QuicConnectionHelperInterface* helper_;
 
   // Time period for which connection_ids should remain in time wait state.
-  const QuicTime::Delta kTimeWaitPeriod_;
+  const QuicTime::Delta time_wait_period_;
 
   // Alarm registered with the connection helper to clean up connection_ids that
   // have

@@ -270,7 +270,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Called by the Session when the client has provided CachedNetworkParameters.
   // Returns true if this changes the initial connection state.
   virtual bool ResumeConnectionState(
-      const CachedNetworkParameters& cached_network_params);
+      const CachedNetworkParameters& cached_network_params,
+      bool max_bandwidth_resumption);
 
   // Sets the number of active streams on the connection for congestion control.
   void SetNumOpenStreams(size_t num_streams);

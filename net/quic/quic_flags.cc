@@ -25,10 +25,6 @@ bool FLAGS_quic_use_bbr_congestion_control = false;
 // connection options.
 bool FLAGS_quic_allow_bbr = false;
 
-// If true, enables the QUIC bandwidth resumption experiment (triggered by
-// Chrome/Finch).
-bool FLAGS_quic_enable_bandwidth_resumption_experiment = true;
-
 // If true, then the source address tokens generated for QUIC connects will
 // store multiple addresses.
 bool FLAGS_quic_use_multiple_address_in_source_tokens = false;
@@ -52,3 +48,7 @@ bool FLAGS_quic_small_default_packet_size = true;
 
 // Do not retransmit data for streams that have been reset.
 bool FLAGS_quic_do_not_retransmit_for_reset_streams = true;
+
+// If true, use the peer's receive buffer size to set the max CWND used by the
+// send algorithms.
+bool FLAGS_quic_limit_max_cwnd_to_receive_buffer = true;

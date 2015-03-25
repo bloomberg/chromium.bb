@@ -81,7 +81,7 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicConnectionHelperInterface* helper,
     const QuicVersionVector& supported_versions)
     : helper_(helper),
-      kTimeWaitPeriod_(
+      time_wait_period_(
           QuicTime::Delta::FromSeconds(FLAGS_quic_time_wait_list_seconds)),
       connection_id_clean_up_alarm_(
           helper_->CreateAlarm(new ConnectionIdCleanUpAlarm(this))),
@@ -254,14 +254,14 @@ void QuicTimeWaitListManager::SetConnectionIdCleanUpAlarm() {
   if (!connection_id_map_.empty()) {
     QuicTime oldest_connection_id =
         connection_id_map_.begin()->second.time_added;
-    if (now.Subtract(oldest_connection_id) < kTimeWaitPeriod_) {
-      next_alarm_time = oldest_connection_id.Add(kTimeWaitPeriod_);
+    if (now.Subtract(oldest_connection_id) < time_wait_period_) {
+      next_alarm_time = oldest_connection_id.Add(time_wait_period_);
     } else {
       LOG(ERROR) << "ConnectionId lingered for longer than kTimeWaitPeriod";
     }
   } else {
-    // No connection_ids added so none will expire before kTimeWaitPeriod_.
-    next_alarm_time = now.Add(kTimeWaitPeriod_);
+    // No connection_ids added so none will expire before time_wait_period_.
+    next_alarm_time = now.Add(time_wait_period_);
   }
 
   connection_id_clean_up_alarm_->Set(next_alarm_time);
@@ -288,7 +288,7 @@ bool QuicTimeWaitListManager::MaybeExpireOldestConnection(
 
 void QuicTimeWaitListManager::CleanUpOldConnectionIds() {
   QuicTime now = helper_->GetClock()->ApproximateNow();
-  QuicTime expiration = now.Subtract(kTimeWaitPeriod_);
+  QuicTime expiration = now.Subtract(time_wait_period_);
 
   while (MaybeExpireOldestConnection(expiration)) {
   }

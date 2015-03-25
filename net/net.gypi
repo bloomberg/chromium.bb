@@ -1587,6 +1587,8 @@
       'quic/test_tools/quic_test_utils.h',
       'quic/test_tools/reliable_quic_stream_peer.cc',
       'quic/test_tools/reliable_quic_stream_peer.h',
+      'quic/test_tools/rtt_stats_peer.cc',
+      'quic/test_tools/rtt_stats_peer.h',
       'quic/test_tools/simple_quic_framer.cc',
       'quic/test_tools/simple_quic_framer.h',
       'quic/test_tools/test_task_runner.cc',

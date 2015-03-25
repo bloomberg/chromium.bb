@@ -127,11 +127,11 @@ TEST_F(TcpCubicBytesSenderTest, SimpleSender) {
   // At startup make sure we are at the default.
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA)
-                  .IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA)
-                  .IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
   // And that window is un-affected.
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 
@@ -146,11 +146,11 @@ TEST_F(TcpCubicBytesSenderTest, ApplicationLimitedSlowStart) {
   // Send exactly 10 packets and ensure the CWND ends at 14 packets.
   const int kNumberOfAcks = 5;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA)
-                  .IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA)
-                  .IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
 
   SendAvailableSendWindow();
   for (int i = 0; i < kNumberOfAcks; ++i) {
@@ -165,13 +165,13 @@ TEST_F(TcpCubicBytesSenderTest, ApplicationLimitedSlowStart) {
 TEST_F(TcpCubicBytesSenderTest, ExponentialSlowStart) {
   const int kNumberOfAcks = 20;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA)
-                  .IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
   EXPECT_FALSE(sender_->HasReliableBandwidthEstimate());
   EXPECT_EQ(QuicBandwidth::Zero(), sender_->BandwidthEstimate());
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA)
-                  .IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), 0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
 
   for (int i = 0; i < kNumberOfAcks; ++i) {
     // Send our full send window.
@@ -480,8 +480,7 @@ TEST_F(TcpCubicBytesSenderTest, ConfigureMaxInitialWindow) {
   QuicTagVector options;
   options.push_back(kIW10);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  sender_->SetFromConfig(config,
-                         /* is_server= */ Perspective::IS_SERVER,
+  sender_->SetFromConfig(config, Perspective::IS_SERVER,
                          /* using_pacing= */ false);
   EXPECT_EQ(10u * kDefaultTCPMSS, sender_->GetCongestionWindow());
 }
@@ -490,8 +489,7 @@ TEST_F(TcpCubicBytesSenderTest, DisableAckTrainDetectionWithPacing) {
   EXPECT_TRUE(sender_->hybrid_slow_start().ack_train_detection());
 
   QuicConfig config;
-  sender_->SetFromConfig(config,
-                         /* is_server= */ Perspective::IS_SERVER,
+  sender_->SetFromConfig(config, Perspective::IS_SERVER,
                          /* using_pacing= */ true);
   EXPECT_FALSE(sender_->hybrid_slow_start().ack_train_detection());
 }
@@ -615,26 +613,33 @@ TEST_F(TcpCubicBytesSenderTest, BandwidthResumption) {
   // Ensure that an old estimate is not used for bandwidth resumption.
   cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
                                       (kNumSecondsPerHour + 1));
-  EXPECT_FALSE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_FALSE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(10u * kDefaultTCPMSS, sender_->GetCongestionWindow());
 
   // If the estimate is new enough, make sure it is used.
   cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
                                       (kNumSecondsPerHour - 1));
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(kNumberOfPackets * kDefaultTCPMSS, sender_->GetCongestionWindow());
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       (kMaxTcpCongestionWindow + 1) * kDefaultTCPMSS);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(kMaxTcpCongestionWindow * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       (kMinCongestionWindowForBandwidthResumption - 1) * kDefaultTCPMSS);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params));
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
   EXPECT_EQ(kMinCongestionWindowForBandwidthResumption * kDefaultTCPMSS,
+            sender_->GetCongestionWindow());
+
+  // Resume to the max value.
+  cached_network_params.set_max_bandwidth_estimate_bytes_per_second(
+      (kMinCongestionWindowForBandwidthResumption + 10) * kDefaultTCPMSS);
+  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, true));
+  EXPECT_EQ((kMinCongestionWindowForBandwidthResumption + 10) * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 }
 

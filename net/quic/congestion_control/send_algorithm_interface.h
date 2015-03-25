@@ -47,6 +47,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // particularly for congestion avoidance.  Can be set any time.
   virtual void SetNumEmulatedConnections(int num_connections) = 0;
 
+  // Sets the maximum congestion window in bytes.
+  virtual void SetMaxCongestionWindow(QuicByteCount max_congestion_window) = 0;
+
   // Indicates an update to the congestion state, caused either by an incoming
   // ack or loss event timeout.  |rtt_updated| indicates whether a new
   // latest_rtt sample has been taken, |byte_in_flight| the bytes in flight
@@ -114,9 +117,11 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual CongestionControlType GetCongestionControlType() const = 0;
 
   // Called by the Session when we get a bandwidth estimate from the client.
+  // Uses the max bandwidth in the params if |max_bandwidth_resumption| is true.
   // Returns true if initial connection state is changed as a result.
   virtual bool ResumeConnectionState(
-      const CachedNetworkParameters& cached_network_params) = 0;
+      const CachedNetworkParameters& cached_network_params,
+      bool max_bandwidth_resumption) = 0;
 };
 
 }  // namespace net

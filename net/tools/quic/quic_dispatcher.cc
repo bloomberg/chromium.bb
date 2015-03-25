@@ -224,7 +224,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
 
   // The session that we have identified as the one to which this packet
   // belongs.
-  QuicSession* session = nullptr;
+  QuicServerSession* session = nullptr;
   QuicConnectionId connection_id = header.connection_id;
   SessionMap::iterator it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
@@ -271,10 +271,10 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   return false;
 }
 
-QuicSession* QuicDispatcher::AdditionalValidityChecksThenCreateSession(
+QuicServerSession* QuicDispatcher::AdditionalValidityChecksThenCreateSession(
     const QuicPacketPublicHeader& header,
     QuicConnectionId connection_id) {
-  QuicSession* session = CreateQuicSession(
+  QuicServerSession* session = CreateQuicSession(
       connection_id, current_server_address_, current_client_address_);
 
   if (session == nullptr) {
@@ -347,7 +347,7 @@ bool QuicDispatcher::HasPendingWrites() const {
 
 void QuicDispatcher::Shutdown() {
   while (!session_map_.empty()) {
-    QuicSession* session = session_map_.begin()->second;
+    QuicServerSession* session = session_map_.begin()->second;
     session->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
     // Validate that the session removes itself from the session map on close.
     DCHECK(session_map_.empty() || session_map_.begin()->second != session);
@@ -405,11 +405,11 @@ QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
   return new QuicDefaultPacketWriter(fd);
 }
 
-QuicSession* QuicDispatcher::CreateQuicSession(
+QuicServerSession* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
-  // The QuicSession takes ownership of |connection| below.
+  // The QuicServerSession takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
       connection_id, client_address, helper_.get(), connection_writer_factory_,
       /* owns_writer= */ true, Perspective::IS_SERVER,

@@ -382,9 +382,6 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
 }
 
 TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
-  ValueRestore<bool> old_flag(
-      &FLAGS_quic_enable_bandwidth_resumption_experiment, true);
-
   // Test that if a client provides a CachedNetworkParameters with the same
   // serving region as the current server, that this data is passed down to the
   // send algorithm.
@@ -402,7 +399,7 @@ TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
           QuicSessionPeer::GetCryptoStream(session_.get()));
 
   // No effect if no CachedNetworkParameters provided.
-  EXPECT_CALL(*connection_, ResumeConnectionState(_)).Times(0);
+  EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);
   session_->OnConfigNegotiated();
 
   // No effect if CachedNetworkParameters provided, but different serving
@@ -411,13 +408,13 @@ TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
   cached_network_params.set_bandwidth_estimate_bytes_per_second(1);
   cached_network_params.set_serving_region("different serving region");
   crypto_stream->set_previous_cached_network_params(cached_network_params);
-  EXPECT_CALL(*connection_, ResumeConnectionState(_)).Times(0);
+  EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);
   session_->OnConfigNegotiated();
 
   // Same serving region results in CachedNetworkParameters being stored.
   cached_network_params.set_serving_region(kTestServingRegion);
   crypto_stream->set_previous_cached_network_params(cached_network_params);
-  EXPECT_CALL(*connection_, ResumeConnectionState(_)).Times(1);
+  EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(1);
   session_->OnConfigNegotiated();
 }
 

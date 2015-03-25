@@ -24,7 +24,7 @@ namespace net {
 
 class QuicConfig;
 class QuicCryptoServerConfig;
-class QuicSession;
+class QuicServerSession;
 
 namespace tools {
 
@@ -114,7 +114,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   void OnConnectionRemovedFromTimeWaitList(
       QuicConnectionId connection_id) override;
 
-  typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
+  typedef base::hash_map<QuicConnectionId, QuicServerSession*> SessionMap;
 
   const SessionMap& session_map() const { return session_map_; }
 
@@ -126,9 +126,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // returned object.
   virtual QuicPacketWriter* CreateWriter(int fd);
 
-  virtual QuicSession* CreateQuicSession(QuicConnectionId connection_id,
-                                         const IPEndPoint& server_address,
-                                         const IPEndPoint& client_address);
+  virtual QuicServerSession* CreateQuicSession(
+      QuicConnectionId connection_id,
+      const IPEndPoint& server_address,
+      const IPEndPoint& client_address);
 
   // Called by |framer_visitor_| when the public header has been parsed.
   virtual bool OnUnauthenticatedPublicHeader(
@@ -139,9 +140,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // certain simple processing rules.  This method may apply validity checks to
   // reject stray packets.  If the packet appears to be valid, it calls
   // CreateQuicSession to create a new session for the packet.  Returns the
-  // QuicSession that was created, or nullptr if the packet failed the validity
-  // checks.
-  virtual QuicSession* AdditionalValidityChecksThenCreateSession(
+  // QuicServerSession that was created, or nullptr if the packet failed the
+  // validity checks.
+  virtual QuicServerSession* AdditionalValidityChecksThenCreateSession(
       const QuicPacketPublicHeader& header,
       QuicConnectionId connection_id);
 
@@ -223,7 +224,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   scoped_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
 
   // The list of closed but not-yet-deleted sessions.
-  std::list<QuicSession*> closed_session_list_;
+  std::list<QuicServerSession*> closed_session_list_;
 
   // The helper used for all connections.
   scoped_ptr<QuicConnectionHelperInterface> helper_;

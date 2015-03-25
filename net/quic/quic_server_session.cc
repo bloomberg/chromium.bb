@@ -47,11 +47,14 @@ void QuicServerSession::OnConfigNegotiated() {
   // bandwidth resumption.
   const CachedNetworkParameters* cached_network_params =
       crypto_stream_->previous_cached_network_params();
-  if (FLAGS_quic_enable_bandwidth_resumption_experiment &&
-      cached_network_params != nullptr &&
-      ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWRE) &&
+  const bool max_bandwidth_resumption =
+      ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWMX);
+  if (cached_network_params != nullptr &&
+      (ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWRE) ||
+       max_bandwidth_resumption) &&
       cached_network_params->serving_region() == serving_region_) {
-    connection()->ResumeConnectionState(*cached_network_params);
+    connection()->ResumeConnectionState(*cached_network_params,
+                                        max_bandwidth_resumption);
   }
 
   if (FLAGS_enable_quic_fec &&

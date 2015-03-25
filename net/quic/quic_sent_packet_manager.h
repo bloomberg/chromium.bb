@@ -106,7 +106,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Pass the CachedNetworkParameters to the send algorithm.
   // Returns true if this changes the initial connection state.
   bool ResumeConnectionState(
-      const CachedNetworkParameters& cached_network_params);
+      const CachedNetworkParameters& cached_network_params,
+      bool max_bandwidth_resumption);
 
   void SetNumOpenStreams(size_t num_streams);
 

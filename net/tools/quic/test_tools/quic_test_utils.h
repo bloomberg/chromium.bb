@@ -162,11 +162,10 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
                     QuicEncryptedPacket* close_packet));
 
   void QuicTimeWaitListManager_AddConnectionIdToTimeWait(
-           QuicConnectionId connection_id,
-           QuicVersion version,
-           QuicEncryptedPacket* close_packet) {
-    QuicTimeWaitListManager::AddConnectionIdToTimeWait(connection_id,
-                                                       version,
+      QuicConnectionId connection_id,
+      QuicVersion version,
+      QuicEncryptedPacket* close_packet) {
+    QuicTimeWaitListManager::AddConnectionIdToTimeWait(connection_id, version,
                                                        close_packet);
   }
 

@@ -42,6 +42,20 @@ namespace tools {
 namespace test {
 namespace {
 
+class TestServerSession : public QuicServerSession {
+ public:
+  TestServerSession(const QuicConfig& config, QuicConnection* connection)
+      : QuicServerSession(config, connection, nullptr) {}
+  ~TestServerSession() override{};
+
+  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestServerSession);
+};
+
 class TestDispatcher : public QuicDispatcher {
  public:
   explicit TestDispatcher(const QuicConfig& config,
@@ -54,10 +68,10 @@ class TestDispatcher : public QuicDispatcher {
                        new QuicEpollConnectionHelper(eps)) {
   }
 
-  MOCK_METHOD3(CreateQuicSession, QuicSession*(
-      QuicConnectionId connection_id,
-      const IPEndPoint& server_address,
-      const IPEndPoint& client_address));
+  MOCK_METHOD3(CreateQuicSession,
+               QuicServerSession*(QuicConnectionId connection_id,
+                                  const IPEndPoint& server_address,
+                                  const IPEndPoint& client_address));
 
   using QuicDispatcher::current_server_address;
   using QuicDispatcher::current_client_address;
@@ -78,17 +92,20 @@ class MockServerConnection : public MockConnection {
     LOG(ERROR) << "Unregistering " << connection_id();
     dispatcher_->OnConnectionClosed(connection_id(), QUIC_NO_ERROR);
   }
+
  private:
   QuicDispatcher* dispatcher_;
 };
 
-QuicSession* CreateSession(QuicDispatcher* dispatcher,
-                           QuicConnectionId connection_id,
-                           const IPEndPoint& client_address,
-                           MockSession** session) {
+QuicServerSession* CreateSession(QuicDispatcher* dispatcher,
+                                 const QuicConfig& config,
+                                 QuicConnectionId connection_id,
+                                 const IPEndPoint& client_address,
+                                 TestServerSession** session) {
   MockServerConnection* connection =
       new MockServerConnection(connection_id, dispatcher);
-  *session = new MockSession(connection);
+  *session = new TestServerSession(config, connection);
+  connection->set_visitor(*session);
   ON_CALL(*connection, SendConnectionClose(_)).WillByDefault(
       WithoutArgs(Invoke(
           connection, &MockServerConnection::UnregisterOnConnectionClosed)));
@@ -162,8 +179,8 @@ class QuicDispatcherTest : public ::testing::Test {
   IPEndPoint server_address_;
   TestDispatcher dispatcher_;
   MockTimeWaitListManager* time_wait_list_manager_;
-  MockSession* session1_;
-  MockSession* session2_;
+  TestServerSession* session1_;
+  TestServerSession* session2_;
   string data_;
 };
 
@@ -174,16 +191,15 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
   server_address_ = IPEndPoint(any4, 5);
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address))
-      .WillOnce(testing::Return(CreateSession(
-          &dispatcher_, 1, client_address, &session1_)));
+      .WillOnce(testing::Return(
+          CreateSession(&dispatcher_, config_, 1, client_address, &session1_)));
   ProcessPacket(client_address, 1, true, "foo");
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());
 
-
   EXPECT_CALL(dispatcher_, CreateQuicSession(2, _, client_address))
-      .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, 2, client_address, &session2_)));
+      .WillOnce(testing::Return(
+          CreateSession(&dispatcher_, config_, 2, client_address, &session2_)));
   ProcessPacket(client_address, 2, true, "bar");
 
   EXPECT_CALL(*reinterpret_cast<MockConnection*>(session1_->connection()),
@@ -197,8 +213,8 @@ TEST_F(QuicDispatcherTest, Shutdown) {
   IPEndPoint client_address(net::test::Loopback4(), 1);
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, client_address))
-      .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, 1, client_address, &session1_)));
+      .WillOnce(testing::Return(
+          CreateSession(&dispatcher_, config_, 1, client_address, &session1_)));
 
   ProcessPacket(client_address, 1, true, "foo");
 
@@ -216,7 +232,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   QuicConnectionId connection_id = 1;
   EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, _, client_address))
       .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, connection_id, client_address, &session1_)));
+          &dispatcher_, config_, connection_id, client_address, &session1_)));
   ProcessPacket(client_address, connection_id, true, "foo");
 
   // Close the connection by sending public reset packet.
@@ -244,8 +260,8 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // wait list manager.
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
+      .Times(0);
   ProcessPacket(client_address, connection_id, true, "foo");
 }
 
@@ -259,8 +275,8 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _)).Times(1);
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
+      .Times(1);
   ProcessPacket(client_address, connection_id, false, "data");
 }
 
@@ -275,8 +291,8 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
   // dispatcher_ should drop this packet.
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
+      .Times(0);
   ProcessPacket(client_address, 1, true, "foo");
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());
@@ -314,13 +330,13 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
     IPEndPoint client_address(net::test::Loopback4(), 1);
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, client_address))
-        .WillOnce(testing::Return(CreateSession(
-                      &dispatcher_, 1, client_address, &session1_)));
+        .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
+                                                client_address, &session1_)));
     ProcessPacket(client_address, 1, true, "foo");
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, client_address))
-        .WillOnce(testing::Return(CreateSession(
-                      &dispatcher_, 2, client_address, &session2_)));
+        .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 2,
+                                                client_address, &session2_)));
     ProcessPacket(client_address, 2, true, "bar");
 
     blocked_list_ = QuicDispatcherPeer::GetWriteBlockedList(&dispatcher_);

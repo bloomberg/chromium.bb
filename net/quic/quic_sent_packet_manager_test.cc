@@ -1637,6 +1637,10 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
   QuicConfig client_config;
   QuicConfigPeer::SetReceivedSocketReceiveBuffer(&client_config, 1024);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  if (FLAGS_quic_limit_max_cwnd_to_receive_buffer) {
+    EXPECT_CALL(*send_algorithm_,
+                SetMaxCongestionWindow(kMinSocketReceiveBuffer * 0.95));
+  }
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
@@ -1659,6 +1663,10 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
     manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024,
                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   }
+  if (FLAGS_quic_limit_max_cwnd_to_receive_buffer) {
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+        .WillOnce(Return(QuicTime::Delta::Infinite()));
+  }
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
 }
@@ -1679,6 +1687,10 @@ TEST_F(QuicSentPacketManagerTest, ReceiveWindowLimited) {
     SerializedPacket packet(CreatePacket(i, true));
     manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024,
                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+  }
+  if (FLAGS_quic_limit_max_cwnd_to_receive_buffer) {
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+        .WillOnce(Return(QuicTime::Delta::Infinite()));
   }
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -1707,8 +1719,8 @@ TEST_F(QuicSentPacketManagerTest, ResumeConnectionState) {
   CachedNetworkParameters cached_network_params;
   cached_network_params.set_min_rtt_ms(kRttMs);
 
-  EXPECT_CALL(*send_algorithm_, ResumeConnectionState(_));
-  manager_.ResumeConnectionState(cached_network_params);
+  EXPECT_CALL(*send_algorithm_, ResumeConnectionState(_, false));
+  manager_.ResumeConnectionState(cached_network_params, false);
   EXPECT_EQ(kRttMs * kNumMicrosPerMilli,
             static_cast<uint64>(manager_.GetRttStats()->initial_rtt_us()));
 }
