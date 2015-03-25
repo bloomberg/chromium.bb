@@ -27,6 +27,7 @@
 #ifndef SandboxFlags_h
 #define SandboxFlags_h
 
+#include "core/dom/SpaceSplitString.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -51,6 +52,7 @@ enum SandboxFlag {
 typedef int SandboxFlags;
 
 SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage);
+SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidTokensErrorMessage);
 
 }
 

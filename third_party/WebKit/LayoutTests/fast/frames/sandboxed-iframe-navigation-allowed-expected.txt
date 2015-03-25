@@ -8,7 +8,7 @@ PASS successfullyParsed is true
 TEST COMPLETE
 PASS (self.sandboxedFrame.frameWithPlugin.document.getElementById('plugin').destroyStream) == undefined is true
 PASS (self.frameWithPlugin.document.getElementById('plugin').destroyStream) != undefined is true
-PASS document.getElementById('sandboxedFrameId').sandbox is 'allow-scripts allow-same-origin'
+PASS document.getElementById('sandboxedFrameId').sandbox is ['allow-scripts', 'allow-same-origin']
 PASS successfullyParsed is true
 
 TEST COMPLETE

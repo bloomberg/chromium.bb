@@ -29,9 +29,10 @@
 
 namespace blink {
 
-DOMSettableTokenList::DOMSettableTokenList()
+DOMSettableTokenList::DOMSettableTokenList(DOMSettableTokenListObserver* observer)
     : m_value()
     , m_tokens()
+    , m_observer(observer)
 {
 }
 
@@ -89,6 +90,8 @@ void DOMSettableTokenList::setValue(const AtomicString& value)
 {
     m_value = value;
     m_tokens.set(value, false);
+    if (m_observer)
+        m_observer->valueChanged();
 }
 
 } // namespace blink

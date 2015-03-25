@@ -34,24 +34,23 @@ namespace blink {
 
 SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage)
 {
+    const bool shouldFoldCase = false;
+    SpaceSplitString policyTokens(AtomicString(policy), shouldFoldCase);
+    return parseSandboxPolicy(policyTokens, invalidTokensErrorMessage);
+}
+
+SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidTokensErrorMessage)
+{
     // http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
     // Parse the unordered set of unique space-separated tokens.
     SandboxFlags flags = SandboxAll;
-    unsigned length = policy.length();
-    unsigned start = 0;
+    unsigned length = policy.size();
     unsigned numberOfTokenErrors = 0;
     StringBuilder tokenErrors;
-    while (true) {
-        while (start < length && isHTMLSpace<UChar>(policy[start]))
-            ++start;
-        if (start >= length)
-            break;
-        unsigned end = start + 1;
-        while (end < length && !isHTMLSpace<UChar>(policy[end]))
-            ++end;
 
+    for (unsigned index = 0; index < length; index++) {
         // Turn off the corresponding sandbox flag if it's set as "allowed".
-        String sandboxToken = policy.substring(start, end - start);
+        String sandboxToken(policy[index]);
         if (equalIgnoringCase(sandboxToken, "allow-same-origin")) {
             flags &= ~SandboxOrigin;
         } else if (equalIgnoringCase(sandboxToken, "allow-forms")) {
@@ -76,8 +75,6 @@ SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensError
             tokenErrors.append('\'');
             numberOfTokenErrors++;
         }
-
-        start = end + 1;
     }
 
     if (numberOfTokenErrors) {
