@@ -491,15 +491,15 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       this.initProtocolExtensions_();
       break;
 
-    case remoting.ClientSession.State.CREATED:
-      console.log('Created plugin');
-      break;
-
     case remoting.ClientSession.State.CONNECTING:
       remoting.identity.getEmail().then(
           function(/** string */ email) {
             console.log('Connecting as ' + email);
           });
+      break;
+
+    case remoting.ClientSession.State.AUTHENTICATED:
+      console.log('Connection authenticated');
       break;
 
     case remoting.ClientSession.State.INITIALIZING:

@@ -109,6 +109,7 @@ remoting.LogToServer.prototype.logSignalStrategyProgress =
 remoting.LogToServer.isStartOfSession_ = function(state) {
   return ((state == remoting.ClientSession.State.CONNECTING) ||
       (state == remoting.ClientSession.State.INITIALIZING) ||
+      (state == remoting.ClientSession.State.AUTHENTICATED) ||
       (state == remoting.ClientSession.State.CONNECTED));
 };
 

@@ -59,12 +59,12 @@ remoting.ServerLogEntry.getValueForSessionState_ = function(state) {
   switch(state) {
     case remoting.ClientSession.State.UNKNOWN:
       return 'unknown';
-    case remoting.ClientSession.State.CREATED:
-      return 'created';
-    case remoting.ClientSession.State.CONNECTING:
-      return 'connecting';
     case remoting.ClientSession.State.INITIALIZING:
       return 'initializing';
+    case remoting.ClientSession.State.CONNECTING:
+      return 'connecting';
+    case remoting.ClientSession.State.AUTHENTICATED:
+      return 'authenticated';
     case remoting.ClientSession.State.CONNECTED:
       return 'connected';
     case remoting.ClientSession.State.CLOSED:

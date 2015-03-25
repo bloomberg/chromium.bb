@@ -50,7 +50,7 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode,
   base.inherits(this, base.EventSourceImpl);
 
   /** @private */
-  this.state_ = remoting.ClientSession.State.CREATED;
+  this.state_ = remoting.ClientSession.State.INITIALIZING;
 
   /** @private {!remoting.Error} */
   this.error_ = remoting.Error.none();
@@ -98,20 +98,27 @@ remoting.ClientSession.Events = {
 };
 
 // Note that the positive values in both of these enums are copied directly
-// from chromoting_scriptable_object.h and must be kept in sync. The negative
-// values represent state transitions that occur within the web-app that have
-// no corresponding plugin state transition.
+// from connection_to_host.h and must be kept in sync. Code in
+// chromoting_instance.cc converts the C++ enums into strings that must match
+// the names given here.
+// The negative values represent state transitions that occur within the
+// web-app that have no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
   CONNECTION_CANCELED: -3,  // Connection closed (gracefully) before connecting.
   CONNECTION_DROPPED: -2,  // Succeeded, but subsequently closed with an error.
   CREATED: -1,
   UNKNOWN: 0,
-  CONNECTING: 1,
-  INITIALIZING: 2,
-  CONNECTED: 3,
-  CLOSED: 4,
-  FAILED: 5
+  INITIALIZING: 1,
+  CONNECTING: 2,
+  // We don't currently receive AUTHENTICATED from the host - it comes through
+  // as 'CONNECTING' instead.
+  // TODO(garykac) Update chromoting_instance.cc to send this once we've
+  // shipped a webapp release with support for AUTHENTICATED.
+  AUTHENTICATED: 3,
+  CONNECTED: 4,
+  CLOSED: 5,
+  FAILED: 6
 };
 
 /**
@@ -484,7 +491,8 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   var oldState = this.state_;
   this.state_ = newState;
   var state = this.state_;
-  if (oldState == remoting.ClientSession.State.CONNECTING) {
+  if (oldState == remoting.ClientSession.State.CONNECTING ||
+      oldState == remoting.ClientSession.State.AUTHENTICATED) {
     if (this.state_ == remoting.ClientSession.State.CLOSED) {
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
     } else if (this.state_ == remoting.ClientSession.State.FAILED &&
