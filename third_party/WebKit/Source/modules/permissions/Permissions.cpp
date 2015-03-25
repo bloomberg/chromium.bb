@@ -33,10 +33,6 @@ WebPermissionClient* permissionClient(ExecutionContext* executionContext)
 
 } // anonymous namespace
 
-Permissions::~Permissions()
-{
-}
-
 ScriptPromise Permissions::query(ScriptState* scriptState, const AtomicString& permissionName)
 {
     WebPermissionClient* client = permissionClient(scriptState->executionContext());
@@ -66,10 +62,6 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const AtomicString& p
     // likely be "prompt".
     client->queryPermission(type, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionQueryCallback(resolver, type));
     return promise;
-}
-
-DEFINE_TRACE(Permissions)
-{
 }
 
 } // namespace blink

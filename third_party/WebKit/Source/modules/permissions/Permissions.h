@@ -18,13 +18,11 @@ namespace blink {
 class ScriptState;
 
 class Permissions final
-    : public GarbageCollectedFinalized<Permissions>
+    : public GarbageCollected<Permissions>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~Permissions();
-
-    DECLARE_VIRTUAL_TRACE();
+    DEFINE_INLINE_TRACE() { }
 
     ScriptPromise query(ScriptState*, const AtomicString&);
 };

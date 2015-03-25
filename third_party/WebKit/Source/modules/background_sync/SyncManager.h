@@ -16,14 +16,13 @@ class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;
 
-class SyncManager final : public GarbageCollectedFinalized<SyncManager> , public ScriptWrappable {
+class SyncManager final : public GarbageCollected<SyncManager> , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SyncManager* create(ServiceWorkerRegistration* registration)
     {
         return new SyncManager(registration);
     }
-    ~SyncManager() { }
 
     unsigned long minAllowablePeriod();
 
