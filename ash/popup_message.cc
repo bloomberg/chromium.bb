@@ -63,6 +63,10 @@ class PopupMessage::MessageBubble : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(MessageBubble);
 };
 
+// static
+const int PopupMessage::kCaptionLabelID = 1000;
+const int PopupMessage::kMessageLabelID = 1001;
+
 PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
                                            const base::string16& message,
                                            IconType message_type,
@@ -128,6 +132,7 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
   // The caption label.
   if (!caption.empty()) {
     views::Label* caption_label = new views::Label(caption);
+    caption_label->set_id(kCaptionLabelID);
     caption_label->SetMultiLine(true);
     caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     caption_label->SetFontList(
@@ -139,6 +144,7 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
   // The message label.
   if (!message.empty()) {
     views::Label* message_label = new views::Label(message);
+    message_label->set_id(kMessageLabelID);
     message_label->SetMultiLine(true);
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_label->SetEnabledColor(kMessageTextColor);

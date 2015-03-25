@@ -787,6 +787,7 @@
       'keyboard_overlay/keyboard_overlay_delegate_unittest.cc',
       'keyboard_overlay/keyboard_overlay_view_unittest.cc',
       'magnifier/magnification_controller_unittest.cc',
+      'popup_message_unittest.cc',
       'root_window_controller_unittest.cc',
       'screen_util_unittest.cc',
       'shelf/scoped_observer_with_duplicated_sources_unittest.cc',
