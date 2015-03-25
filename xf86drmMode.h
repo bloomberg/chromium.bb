@@ -240,7 +240,7 @@ typedef struct _drmModeProperty {
 	uint32_t *blob_ids; /* store the blob IDs */
 } drmModePropertyRes, *drmModePropertyPtr;
 
-static inline int drm_property_type_is(drmModePropertyPtr property,
+static __inline int drm_property_type_is(drmModePropertyPtr property,
 		uint32_t type)
 {
 	/* instanceof for props.. handles extended type vs original types: */
