@@ -20,6 +20,7 @@
       'autofill/content/browser/request_autocomplete_manager_unittest.cc',
       'autofill/content/browser/wallet/full_wallet_unittest.cc',
       'autofill/content/browser/wallet/instrument_unittest.cc',
+      'autofill/content/browser/wallet/real_pan_wallet_client_unittest.cc',
       'autofill/content/browser/wallet/wallet_address_unittest.cc',
       'autofill/content/browser/wallet/wallet_client_unittest.cc',
       'autofill/content/browser/wallet/wallet_items_unittest.cc',

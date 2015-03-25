@@ -129,6 +129,7 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   std::string data;
   source->GetResponseAsString(&data);
+  VLOG(2) << "Got data: " << data;
 
   std::string real_pan;
   AutofillClient::GetRealPanResult result = AutofillClient::SUCCESS;
@@ -181,8 +182,8 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   if (real_pan.empty()) {
-    LOG(ERROR) << "Wallet returned error: " << response_code
-               << " with data: " << data;
+    VLOG(1) << "Wallet returned error: " << response_code
+            << " with data: " << data;
   }
 
   DCHECK_EQ(result != AutofillClient::SUCCESS, real_pan.empty());
@@ -205,7 +206,7 @@ void RealPanWalletClient::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(request, access_token_request_.get());
-  LOG(ERROR) << "Unhandled OAuth2 error: " << error.ToString();
+  VLOG(1) << "Unhandled OAuth2 error: " << error.ToString();
   if (request_) {
     request_.reset();
     delegate_->OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE,

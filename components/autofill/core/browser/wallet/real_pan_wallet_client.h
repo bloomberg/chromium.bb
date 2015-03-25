@@ -27,6 +27,7 @@ namespace wallet {
 // RealPanWalletClient is modelled on WalletClient. Whereas the latter is used
 // for requestAutocomplete-related requests, RealPanWalletClient is used to
 // import user data from Wallet for normal web Autofill.
+// Tests: See content/browser/wallet/real_pan_wallet_client_unittest.cc
 class RealPanWalletClient : public net::URLFetcherDelegate,
                             public OAuth2TokenService::Consumer  {
  public:
