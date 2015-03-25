@@ -1184,7 +1184,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return parseShorthand(propId, parsingShorthandForProperty(CSSPropertyMotion), important);
     case CSSPropertyMotionPath:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        parsedValue = parseMotionPath();
+        if (id == CSSValueNone)
+            validPrimitive = true;
+        else
+            parsedValue = parseMotionPath();
         break;
     case CSSPropertyMotionOffset:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
@@ -1518,7 +1521,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         }
         break;
     case CSSPropertyShapeOutside:
-        parsedValue = parseShapeProperty(propId);
+        if (id == CSSValueNone)
+            validPrimitive = true;
+        else
+            parsedValue = parseShapeProperty(propId);
         break;
     case CSSPropertyShapeMargin:
         validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
@@ -1532,7 +1538,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertyScrollBlocksOn:
-        parsedValue = parseScrollBlocksOn();
+        if (id == CSSValueNone)
+            validPrimitive = true;
+        else
+            parsedValue = parseScrollBlocksOn();
         break;
 
     case CSSPropertyAlignContent:
@@ -4399,17 +4408,8 @@ static bool isBoxValue(CSSValueID valueId)
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseShapeProperty(CSSPropertyID propId)
 {
-    CSSParserValue* value = m_valueList->current();
-    CSSValueID valueId = value->id;
-
-    if (valueId == CSSValueNone) {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> keywordValue = parseValidPrimitive(valueId, value);
-        m_valueList->next();
-        return keywordValue.release();
-    }
-
     RefPtrWillBeRawPtr<CSSValue> imageValue = nullptr;
-    if (valueId != CSSValueNone && parseFillImage(m_valueList, imageValue)) {
+    if (parseFillImage(m_valueList, imageValue)) {
         m_valueList->next();
         return imageValue.release();
     }
@@ -7417,13 +7417,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTouchAction()
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollBlocksOn()
 {
-    CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueNone) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
-
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    CSSParserValue* value = m_valueList->current();
     while (value) {
         switch (value->id) {
         case CSSValueStartTouch:
@@ -8445,10 +8440,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPrope
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseMotionPath()
 {
     CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueNone) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
 
     // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
     if (value->unit != CSSParserValue::Function || value->function->id != CSSValuePath)
