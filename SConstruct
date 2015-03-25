@@ -269,6 +269,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'translate_fast', default=False,
     desc='When using pnacl TC (bitcode=1) use accelerated translation step')
 
+  BitFromArgument(env, 'use_sz', default=False,
+    desc='When using pnacl TC (bitcode=1) use Subzero for fast translation')
+
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc='The programs have already been built by another system')
 
@@ -404,6 +407,7 @@ def SetUpArgumentBits(env):
                         'pnacl_unsandboxed',
                         'skip_nonstable_bitcode',
                         'translate_fast',
+                        'use_sz',
                         'use_sandboxed_translator')
 
     for flag_name in pnacl_only_flags:
@@ -1827,6 +1831,7 @@ def GetPerfEnvDescription(env):
   bit_to_description = [ ('tests_use_irt', ('with_irt', '')),
                          ('bitcode', ('pnacl', 'nnacl')),
                          ('translate_fast', ('fast', '')),
+                         ('use_sz', ('sz', '')),
                          ('nacl_glibc', ('glibc', 'newlib')),
                          ('nacl_static_link', ('static', 'dynamic')),
                          ]
@@ -3135,6 +3140,8 @@ if nacl_env.Bit('bitcode'):
   if nacl_env.Bit('translate_fast'):
     nacl_env.Append(LINKFLAGS=['-Xlinker', '-translate-fast'])
     nacl_env.Append(TRANSLATEFLAGS=['-translate-fast'])
+  if nacl_env.Bit('use_sz'):
+    nacl_env.Append(TRANSLATEFLAGS=['--use-sz'])
 
   # With pnacl's clang base/ code uses the "override" keyword.
   nacl_env.Append(CXXFLAGS=['-Wno-c++11-extensions'])
@@ -3177,6 +3184,7 @@ nacl_irt_env.Append(CPPPATH='${MAIN_DIR}/src/untrusted/pthread')
 target_variant_map = [
     ('bitcode', 'pnacl'),
     ('translate_fast', 'fast'),
+    ('use_sz', 'subzero'),
     ('nacl_pic', 'pic'),
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),

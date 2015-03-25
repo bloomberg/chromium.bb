@@ -289,6 +289,7 @@ EXTRA_TRANSLATOR_FLAGS=
 endif
 
 PNACL_TRANSLATOR_FLAGS_FAST=-translate-fast
+PNACL_SZ_FLAGS=--use-sz -O2
 
 PNACL_BIN=$(PNACL_ROOT)/bin
 # Sandboxed translation uses the standalone translator install (which only
@@ -405,12 +406,22 @@ $(IT).pnacl.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl.opt.sz.x8632: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $(PNACL_SZ_FLAGS) $^ \
+	-o $@ -arch x86-32
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
 $(IT).pnacl_translator.x8632: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32	
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+$(IT).pnacl_translator.opt.sz.x8632: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_SZ_FLAGS) $^ \
+	-o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator_fast.opt.x8632: $(IT).opt.stripped.pexe

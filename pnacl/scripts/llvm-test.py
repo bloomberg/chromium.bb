@@ -56,7 +56,7 @@ Specify the tests or test subsets in the options; common tests are
 --llvm-regression and --testsuite-all.
 
 The --opt arguments control the frontend/backend optimization flags.
-The default set is {O3f,O2b}, other options are {O0f,O0b}.
+The default set is {O3f,O2b}, other options are {O0f,O0b,O2b_sz,O0b_sz}.
 """
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('--arch', dest='arch',
@@ -150,7 +150,12 @@ def ParseConfig(options):
                  O3f={'frontend_opt': '-O3', 'frontend_attr': 'O3f'},
                  O0b={'backend_opt': '-translate-fast',
                       'backend_attr': 'O0b'},
-                 O2b={'backend_opt': '-O2', 'backend_attr': 'O2b'})
+                 O2b={'backend_opt': '-O2', 'backend_attr': 'O2b'},
+                 O0b_sz={'backend_opt': '-translate-fast --use-sz',
+                         'backend_attr': 'O0b_sz'},
+                 O2b_sz={'backend_opt': '-O2 --use-sz',
+                         'backend_attr': 'O2b_sz'},
+                 )
   result = {}
   # Default is pnacl-clang -O3, pnacl-translate -O2
   for attr in ['O3f', 'O2b'] + options.opt_attributes:

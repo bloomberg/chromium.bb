@@ -191,7 +191,7 @@ TranslatorPatterns = [
   # improving translation speed at the expense of code quality.
   ( '-translate-fast',  "env.set('FAST_TRANSLATION', '1')"),
   # Allow Subzero.
-  ( '--sz', "env.set('USE_SZ', '1')"),
+  ( '--use-sz', "env.set('USE_SZ', '1')"),
 
   ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
 
@@ -591,6 +591,7 @@ ADVANCED OPTIONS:
                           turns cpu features on and off.
   -S                      Generate native assembly only.
   -c                      Generate native object file only.
+  --use-sz                Use the Subzero fast translator.
   --pnacl-sb              Use the translator which runs inside the NaCl sandbox.
                           Applies to both pnacl-llc and pnacl-sz translators.
   -O[0-3]                 Change translation-time optimization level.
