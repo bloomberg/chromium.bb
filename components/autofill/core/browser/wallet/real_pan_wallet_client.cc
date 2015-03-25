@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -135,16 +136,20 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
   switch (response_code) {
     // Valid response.
     case net::HTTP_OK: {
+      std::string error_code;
       scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
       if (message_value.get() &&
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(
             static_cast<base::DictionaryValue*>(message_value.release()));
         response_dict->GetString("pan", &real_pan);
-        // TODO(estade): check response for allow_retry.
+        response_dict->GetString("error.code", &error_code);
       }
-      if (real_pan.empty())
+
+      if (LowerCaseEqualsASCII(error_code, "internal"))
         result = AutofillClient::TRY_AGAIN_FAILURE;
+      else if (real_pan.empty() || !error_code.empty())
+        result = AutofillClient::PERMANENT_FAILURE;
 
       break;
     }
