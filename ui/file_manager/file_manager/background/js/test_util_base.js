@@ -194,8 +194,8 @@ test.util.sync.queryAllElements = function(
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
  * @param {Array.<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {{attributes:Object.<string, string>, text:string,
- *                  styles:Object.<string, string>, hidden:boolean}=} Element
+ * @return {?{attributes:Object.<string, string>, text:string,
+ *                  styles:Object.<string, string>, hidden:boolean}} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values. If there is no
  *     active element, returns null.
