@@ -333,11 +333,11 @@ LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit 
 LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
 {
     LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
-    LayoutStyle* multicolStyle = multicolBlock->style();
+    const LayoutStyle& multicolStyle = multicolBlock->styleRef();
     LayoutUnit availableHeight = m_columnSet.multiColumnFlowThread()->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutFlowThread::maxLogicalHeight();
-    if (!multicolStyle->logicalMaxHeight().isMaxSizeNone()) {
-        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle->logicalMaxHeight(), -1);
+    if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
+        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle.logicalMaxHeight(), -1);
         if (logicalMaxHeight != -1 && maxColumnHeight > logicalMaxHeight)
             maxColumnHeight = logicalMaxHeight;
     }

@@ -177,7 +177,7 @@ static LayoutUnit contentHeightForChild(LayoutBox* child)
 
 void LayoutDeprecatedFlexibleBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
-    LayoutStyle* oldStyle = style();
+    const LayoutStyle* oldStyle = style();
     if (oldStyle && !oldStyle->lineClamp().isNone() && newStyle.lineClamp().isNone())
         clearLineClamp();
 

@@ -41,7 +41,7 @@ inline const LayoutStyle* Node::layoutStyle() const
 inline LayoutStyle* Node::mutableLayoutStyle() const
 {
     if (LayoutObject* renderer = this->layoutObject())
-        return renderer->style();
+        return const_cast<LayoutStyle*>(renderer->style());
     // <option> and <optgroup> can be styled even if they don't get renderers,
     // so they store their style internally and return it through nonRendererStyle().
     // We check here explicitly to avoid the virtual call in the common case.

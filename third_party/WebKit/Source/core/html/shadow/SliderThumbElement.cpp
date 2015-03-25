@@ -54,9 +54,9 @@ using namespace HTMLNames;
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
     ASSERT(input->layoutObject());
-    LayoutStyle* sliderStyle = input->layoutObject()->style();
+    const LayoutStyle& sliderStyle = input->layoutObject()->styleRef();
 
-    return sliderStyle->appearance() == SliderVerticalPart;
+    return sliderStyle.appearance() == SliderVerticalPart;
 }
 
 inline SliderThumbElement::SliderThumbElement(Document& document)
@@ -283,8 +283,8 @@ const AtomicString& SliderThumbElement::shadowPseudoId() const
     if (!input || !input->layoutObject())
         return sliderThumbShadowPartId();
 
-    LayoutStyle* sliderStyle = input->layoutObject()->style();
-    switch (sliderStyle->appearance()) {
+    const LayoutStyle& sliderStyle = input->layoutObject()->styleRef();
+    switch (sliderStyle.appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
     case MediaVolumeSliderPart:
@@ -319,8 +319,8 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     if (!shadowHost() || !shadowHost()->layoutObject())
         return sliderContainer;
 
-    LayoutStyle* sliderStyle = shadowHost()->layoutObject()->style();
-    switch (sliderStyle->appearance()) {
+    const LayoutStyle& sliderStyle = shadowHost()->layoutObject()->styleRef();
+    switch (sliderStyle.appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
     case MediaVolumeSliderPart:

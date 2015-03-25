@@ -100,13 +100,13 @@ void LayoutSliderContainer::layout()
 {
     HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
     bool isVertical = hasVerticalAppearance(input);
-    style()->setFlexDirection(isVertical ? FlowColumn : FlowRow);
+    mutableStyleRef().setFlexDirection(isVertical ? FlowColumn : FlowRow);
     TextDirection oldTextDirection = style()->direction();
     if (isVertical) {
         // FIXME: Work around rounding issues in RTL vertical sliders. We want them to
         // render identically to LTR vertical sliders. We can remove this work around when
         // subpixel rendering is enabled on all ports.
-        style()->setDirection(LTR);
+        mutableStyleRef().setDirection(LTR);
     }
 
     Element* thumbElement = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
@@ -122,7 +122,7 @@ void LayoutSliderContainer::layout()
 
     LayoutFlexibleBox::layout();
 
-    style()->setDirection(oldTextDirection);
+    mutableStyleRef().setDirection(oldTextDirection);
     // These should always exist, unless someone mutates the shadow DOM (e.g., in the inspector).
     if (!thumb || !track)
         return;

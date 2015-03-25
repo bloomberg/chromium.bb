@@ -125,7 +125,7 @@ void LayoutTextCombine::updateFont()
 
     FontSelector* fontSelector = style()->font().fontSelector();
 
-    bool shouldUpdateFont = style()->setFontDescription(description); // Need to change font orientation to horizontal.
+    bool shouldUpdateFont = mutableStyleRef().setFontDescription(description); // Need to change font orientation to horizontal.
 
     if (m_combinedTextWidth <= emWidth) {
         m_scaleX = 1.0f;
@@ -141,7 +141,7 @@ void LayoutTextCombine::updateFont()
                 m_combinedTextWidth = runWidth;
 
                 // Replace my font with the new one.
-                shouldUpdateFont = style()->setFontDescription(description);
+                shouldUpdateFont = mutableStyleRef().setFontDescription(description);
                 break;
             }
         }

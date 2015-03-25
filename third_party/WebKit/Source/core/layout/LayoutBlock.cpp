@@ -278,7 +278,7 @@ void LayoutBlock::willBeDestroyed()
 
 void LayoutBlock::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
-    LayoutStyle* oldStyle = style();
+    const LayoutStyle* oldStyle = style();
 
     setReplaced(newStyle.isDisplayInlineType());
 

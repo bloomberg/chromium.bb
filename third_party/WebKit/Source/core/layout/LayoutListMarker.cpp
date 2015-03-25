@@ -1467,8 +1467,8 @@ void LayoutListMarker::updateMargins()
 
     }
 
-    style()->setMarginStart(Length(marginStart, Fixed));
-    style()->setMarginEnd(Length(marginEnd, Fixed));
+    mutableStyleRef().setMarginStart(Length(marginStart, Fixed));
+    mutableStyleRef().setMarginEnd(Length(marginEnd, Fixed));
 }
 
 LayoutUnit LayoutListMarker::lineHeight(bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const

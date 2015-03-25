@@ -2668,7 +2668,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
         if (parentStyle != rendererForFirstLineStyle->parent()->style()) {
             if (type == Cached) {
                 // A first-line style is in effect. Cache a first-line style for ourselves.
-                rendererForFirstLineStyle->style()->setHasPseudoStyle(FIRST_LINE_INHERITED);
+                rendererForFirstLineStyle->mutableStyleRef().setHasPseudoStyle(FIRST_LINE_INHERITED);
                 return rendererForFirstLineStyle->getCachedPseudoStyle(FIRST_LINE_INHERITED, parentStyle);
             }
             return rendererForFirstLineStyle->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE_INHERITED), parentStyle, style);
@@ -2708,7 +2708,7 @@ LayoutStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const LayoutSty
 
     RefPtr<LayoutStyle> result = getUncachedPseudoStyle(PseudoStyleRequest(pseudo), parentStyle);
     if (result)
-        return style()->addCachedPseudoStyle(result.release());
+        return mutableStyleRef().addCachedPseudoStyle(result.release());
     return 0;
 }
 

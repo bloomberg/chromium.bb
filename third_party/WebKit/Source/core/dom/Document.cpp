@@ -4186,7 +4186,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         m_visuallyOrdered = shouldUseVisualOrdering;
         // FIXME: How is possible to not have a renderer here?
         if (layoutView())
-            layoutView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
+            layoutView()->mutableStyleRef().setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisuallyOrdered));
     }
 }

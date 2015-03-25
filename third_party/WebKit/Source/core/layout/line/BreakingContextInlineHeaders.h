@@ -119,8 +119,8 @@ private:
     LayoutObject* m_lastObject;
     LayoutObject* m_nextObject;
 
-    LayoutStyle* m_currentStyle;
-    LayoutStyle* m_blockStyle;
+    const LayoutStyle* m_currentStyle;
+    const LayoutStyle* m_blockStyle;
 
     LineInfo& m_lineInfo;
 

@@ -149,12 +149,12 @@ void LayoutTreeBuilderForElement::createLayoutObject()
 void LayoutTreeBuilderForText::createLayoutObject()
 {
     LayoutObject* parentLayoutObject = this->parentLayoutObject();
-    LayoutStyle* style = parentLayoutObject->style();
+    LayoutStyle& style = parentLayoutObject->mutableStyleRef();
 
-    ASSERT(m_node->textRendererIsNeeded(*style, *parentLayoutObject));
+    ASSERT(m_node->textRendererIsNeeded(style, *parentLayoutObject));
 
     LayoutText* newLayoutObject = m_node->createTextRenderer(style);
-    if (!parentLayoutObject->isChildAllowed(newLayoutObject, *style)) {
+    if (!parentLayoutObject->isChildAllowed(newLayoutObject, style)) {
         newLayoutObject->destroy();
         return;
     }
@@ -166,7 +166,7 @@ void LayoutTreeBuilderForText::createLayoutObject()
     LayoutObject* nextLayoutObject = this->nextLayoutObject();
     m_node->setLayoutObject(newLayoutObject);
     // Parent takes care of the animations, no need to call setAnimatableStyle.
-    newLayoutObject->setStyle(style);
+    newLayoutObject->setStyle(&style);
     parentLayoutObject->addChild(newLayoutObject, nextLayoutObject);
 }
 

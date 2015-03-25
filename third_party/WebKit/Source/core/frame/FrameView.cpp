@@ -1300,15 +1300,15 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
 
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         LayoutObject* renderer = viewportConstrainedObject;
-        LayoutStyle* style = renderer->style();
+        const LayoutStyle& style = renderer->styleRef();
         if (widthChanged) {
-            if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
+            if (style.width().isFixed() && (style.left().isAuto() || style.right().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
                 renderer->setNeedsLayoutAndFullPaintInvalidation();
         }
         if (heightChanged) {
-            if (style->height().isFixed() && (style->top().isAuto() || style->bottom().isAuto()))
+            if (style.height().isFixed() && (style.top().isAuto() || style.bottom().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
                 renderer->setNeedsLayoutAndFullPaintInvalidation();

@@ -911,7 +911,7 @@ PassRefPtr<LayoutStyle> SVGElement::customStyleForLayoutObject()
     if (!correspondingElement())
         return document().ensureStyleResolver().styleForElement(this);
 
-    LayoutStyle* style = 0;
+    const LayoutStyle* style = 0;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->layoutObject())
             style = renderer->style();

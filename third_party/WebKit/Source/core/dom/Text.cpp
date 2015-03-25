@@ -350,12 +350,12 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-LayoutText* Text::createTextRenderer(LayoutStyle* style)
+LayoutText* Text::createTextRenderer(const LayoutStyle& style)
 {
     if (isSVGText(this))
         return new LayoutSVGInlineText(this, dataImpl());
 
-    if (style->hasTextCombine())
+    if (style.hasTextCombine())
         return new LayoutTextCombine(this, dataImpl());
 
     return new LayoutText(this, dataImpl());

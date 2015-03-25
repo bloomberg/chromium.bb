@@ -113,15 +113,15 @@ void LayoutTextControlSingleLine::layout()
     LayoutBox* viewPortRenderer = editingViewPortElement() ? editingViewPortElement()->layoutBox() : 0;
 
     // To ensure consistency between layouts, we need to reset any conditionally overriden height.
-    if (innerEditorRenderer && !innerEditorRenderer->style()->logicalHeight().isAuto()) {
-        innerEditorRenderer->style()->setLogicalHeight(Length(Auto));
+    if (innerEditorRenderer && !innerEditorRenderer->styleRef().logicalHeight().isAuto()) {
+        innerEditorRenderer->mutableStyleRef().setLogicalHeight(Length(Auto));
         layoutScope.setNeedsLayout(innerEditorRenderer);
         HTMLElement* placeholderElement = inputElement()->placeholderElement();
         if (LayoutBox* placeholderBox = placeholderElement ? placeholderElement->layoutBox() : 0)
             layoutScope.setNeedsLayout(placeholderBox);
     }
-    if (viewPortRenderer && !viewPortRenderer->style()->logicalHeight().isAuto()) {
-        viewPortRenderer->style()->setLogicalHeight(Length(Auto));
+    if (viewPortRenderer && !viewPortRenderer->styleRef().logicalHeight().isAuto()) {
+        viewPortRenderer->mutableStyleRef().setLogicalHeight(Length(Auto));
         layoutScope.setNeedsLayout(viewPortRenderer);
     }
 
@@ -139,10 +139,10 @@ void LayoutTextControlSingleLine::layout()
 
         m_desiredInnerEditorLogicalHeight = desiredLogicalHeight;
 
-        innerEditorRenderer->style()->setLogicalHeight(Length(desiredLogicalHeight, Fixed));
+        innerEditorRenderer->mutableStyleRef().setLogicalHeight(Length(desiredLogicalHeight, Fixed));
         layoutScope.setNeedsLayout(innerEditorRenderer);
         if (viewPortRenderer) {
-            viewPortRenderer->style()->setLogicalHeight(Length(desiredLogicalHeight, Fixed));
+            viewPortRenderer->mutableStyleRef().setLogicalHeight(Length(desiredLogicalHeight, Fixed));
             layoutScope.setNeedsLayout(viewPortRenderer);
         }
     }
@@ -151,13 +151,13 @@ void LayoutTextControlSingleLine::layout()
         containerRenderer->layoutIfNeeded();
         LayoutUnit containerLogicalHeight = containerRenderer->logicalHeight();
         if (containerLogicalHeight > logicalHeightLimit) {
-            containerRenderer->style()->setLogicalHeight(Length(logicalHeightLimit, Fixed));
+            containerRenderer->mutableStyleRef().setLogicalHeight(Length(logicalHeightLimit, Fixed));
             layoutScope.setNeedsLayout(this);
         } else if (containerRenderer->logicalHeight() < contentLogicalHeight()) {
-            containerRenderer->style()->setLogicalHeight(Length(contentLogicalHeight(), Fixed));
+            containerRenderer->mutableStyleRef().setLogicalHeight(Length(contentLogicalHeight(), Fixed));
             layoutScope.setNeedsLayout(this);
         } else {
-            containerRenderer->style()->setLogicalHeight(Length(containerLogicalHeight, Fixed));
+            containerRenderer->mutableStyleRef().setLogicalHeight(Length(containerLogicalHeight, Fixed));
         }
     }
 
@@ -184,8 +184,8 @@ void LayoutTextControlSingleLine::layout()
 
         if (innerEditorRenderer)
             innerEditorSize = innerEditorRenderer->size();
-        placeholderBox->style()->setWidth(Length(innerEditorSize.width() - placeholderBox->borderAndPaddingWidth(), Fixed));
-        placeholderBox->style()->setHeight(Length(innerEditorSize.height() - placeholderBox->borderAndPaddingHeight(), Fixed));
+        placeholderBox->mutableStyleRef().setWidth(Length(innerEditorSize.width() - placeholderBox->borderAndPaddingWidth(), Fixed));
+        placeholderBox->mutableStyleRef().setHeight(Length(innerEditorSize.height() - placeholderBox->borderAndPaddingHeight(), Fixed));
         bool neededLayout = placeholderBox->needsLayout();
         placeholderBox->layoutIfNeeded();
         LayoutPoint textOffset;
@@ -236,13 +236,13 @@ void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const Lay
     // Reset them now to avoid getting a spurious layout hint.
     Element* viewPort = editingViewPortElement();
     if (LayoutObject* viewPortRenderer = viewPort ? viewPort->layoutObject() : 0) {
-        viewPortRenderer->style()->setHeight(Length());
-        viewPortRenderer->style()->setWidth(Length());
+        viewPortRenderer->mutableStyleRef().setHeight(Length());
+        viewPortRenderer->mutableStyleRef().setWidth(Length());
     }
     Element* container = containerElement();
     if (LayoutObject* containerRenderer = container ? container->layoutObject() : 0) {
-        containerRenderer->style()->setHeight(Length());
-        containerRenderer->style()->setWidth(Length());
+        containerRenderer->mutableStyleRef().setHeight(Length());
+        containerRenderer->mutableStyleRef().setWidth(Length());
     }
     LayoutObject* innerEditorRenderer = innerEditorElement()->layoutObject();
     if (innerEditorRenderer && diff.needsFullLayout())
@@ -311,7 +311,7 @@ LayoutUnit LayoutTextControlSingleLine::preferredContentLogicalWidth(float charW
     LayoutUnit result = LayoutUnit::fromFloatCeil(charWidth * factor);
 
     float maxCharWidth = 0.f;
-    AtomicString family = style()->font().fontDescription().family().family();
+    AtomicString family = styleRef().font().fontDescription().family().family();
     // Since Lucida Grande is the default font, we want this to match the width
     // of MS Shell Dlg, the default font for textareas in Firefox, Safari Win and
     // IE for some encodings (in IE, the default font is encoding specific).
@@ -319,7 +319,7 @@ LayoutUnit LayoutTextControlSingleLine::preferredContentLogicalWidth(float charW
     if (family == "Lucida Grande")
         maxCharWidth = scaleEmToUnits(4027);
     else if (hasValidAvgCharWidth(family))
-        maxCharWidth = roundf(style()->font().primaryFont()->maxCharWidth());
+        maxCharWidth = roundf(styleRef().font().primaryFont()->maxCharWidth());
 
     // For text inputs, IE adds some extra width.
     if (maxCharWidth > 0.f)
@@ -372,7 +372,7 @@ PassRefPtr<LayoutStyle> LayoutTextControlSingleLine::createInnerEditorStyle(cons
 
 bool LayoutTextControlSingleLine::textShouldBeTruncated() const
 {
-    return document().focusedElement() != node() && style()->textOverflow() == TextOverflowEllipsis;
+    return document().focusedElement() != node() && styleRef().textOverflow() == TextOverflowEllipsis;
 }
 
 void LayoutTextControlSingleLine::autoscroll(const IntPoint& position)
