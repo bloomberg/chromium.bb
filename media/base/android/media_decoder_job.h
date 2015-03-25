@@ -108,6 +108,9 @@ class MediaDecoderJob {
 
   bool prerolling() const { return prerolling_; }
 
+  // Returns true if this object has data to decode.
+  bool HasData() const;
+
  protected:
   // Creates a new MediaDecoderJob instance.
   // |decoder_task_runner| - Thread on which the decoder task will run.
@@ -161,9 +164,6 @@ class MediaDecoderJob {
 
   // Queues an access unit into |media_codec_bridge_|'s input buffer.
   MediaCodecStatus QueueInputBuffer(const AccessUnit& unit);
-
-  // Returns true if this object has data to decode.
-  bool HasData() const;
 
   // Initiates a request for more data.
   // |done_cb| is called when more data is available in |received_data_|.
