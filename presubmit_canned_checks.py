@@ -948,7 +948,8 @@ def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
 def _CheckConstNSObject(input_api, output_api, source_file_filter):
   """Checks to make sure no objective-c files have |const NSSomeClass*|."""
   pattern = input_api.re.compile(
-      r'const\s+NS(?!(Point|Range|Rect|Size)\s*\*)\w*\s*\*')
+    r'(?<!reinterpret_cast<)'
+    r'const\s+NS(?!(Point|Range|Rect|Size)\s*\*)\w*\s*\*')
 
   def objective_c_filter(f):
     return (source_file_filter(f) and
