@@ -8,7 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/tools/balsa/balsa_frame.h"
 #include "net/tools/balsa/balsa_headers.h"
+#include "net/tools/balsa/noop_balsa_visitor.h"
+#include "net/tools/quic/spdy_utils.h"
 
 using base::FilePath;
 using base::StringPiece;
@@ -16,11 +19,6 @@ using std::string;
 
 namespace net {
 namespace tools {
-
-// Specifies the directory used during QuicInMemoryCache
-// construction to seed the cache. Cache directory can be
-// generated using `wget -p --save-headers <url>
-string FLAGS_quic_in_memory_cache_dir = "";
 
 namespace {
 
@@ -52,6 +50,10 @@ class CachingBalsaVisitor : public NoOpBalsaVisitor {
 
 }  // namespace
 
+QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {}
+
+QuicInMemoryCache::Response::~Response() {}
+
 // static
 QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
   return Singleton<QuicInMemoryCache>::get();
@@ -72,18 +74,18 @@ void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
                                           int response_code,
                                           StringPiece response_detail,
                                           StringPiece body) {
-  BalsaHeaders response_headers;
-  response_headers.SetRequestFirstlineFromStringPieces(
-      "HTTP/1.1", base::IntToString(response_code), response_detail);
-  response_headers.AppendHeader("content-length",
-                                base::IntToString(body.length()));
-
+  SpdyHeaderBlock response_headers;
+  response_headers[":version"] = "HTTP/1.1";
+  string status = base::IntToString(response_code) + " ";
+  response_detail.AppendToString(&status);
+  response_headers[":status"] = status;
+  response_headers["content-length"] = base::IntToString(body.length());
   AddResponse(host, path, response_headers, body);
 }
 
 void QuicInMemoryCache::AddResponse(StringPiece host,
                                     StringPiece path,
-                                    const BalsaHeaders& response_headers,
+                                    const SpdyHeaderBlock& response_headers,
                                     StringPiece response_body) {
   AddResponseImpl(host, path, REGULAR_RESPONSE, response_headers,
                   response_body);
@@ -92,43 +94,44 @@ void QuicInMemoryCache::AddResponse(StringPiece host,
 void QuicInMemoryCache::AddSpecialResponse(StringPiece host,
                                            StringPiece path,
                                            SpecialResponseType response_type) {
-  AddResponseImpl(host, path, response_type, BalsaHeaders(), "");
+  AddResponseImpl(host, path, response_type, SpdyHeaderBlock(), "");
 }
 
-QuicInMemoryCache::QuicInMemoryCache() {
-  Initialize();
-}
+QuicInMemoryCache::QuicInMemoryCache() {}
 
 void QuicInMemoryCache::ResetForTests() {
   STLDeleteValues(&responses_);
-  Initialize();
 }
 
-void QuicInMemoryCache::Initialize() {
-  // If there's no defined cache dir, we have no initialization to do.
-  if (FLAGS_quic_in_memory_cache_dir.empty()) {
-    VLOG(1) << "No cache directory found. Skipping initialization.";
+void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
+  if (cache_directory.empty()) {
+    LOG(DFATAL) << "cache_directory must not be empty.";
     return;
   }
   VLOG(1) << "Attempting to initialize QuicInMemoryCache from directory: "
-          << FLAGS_quic_in_memory_cache_dir;
-
-  FilePath directory(FLAGS_quic_in_memory_cache_dir);
+          << cache_directory;
+  FilePath directory(cache_directory);
   base::FileEnumerator file_list(directory,
                                  true,
                                  base::FileEnumerator::FILES);
 
-  for (FilePath file = file_list.Next(); !file.empty();
-       file = file_list.Next()) {
+  for (FilePath file_iter = file_list.Next(); !file_iter.empty();
+       file_iter = file_list.Next()) {
+    BalsaHeaders request_headers, response_headers;
     // Need to skip files in .svn directories
-    if (file.value().find("/.svn/") != string::npos) {
+    if (file_iter.value().find("/.svn/") != string::npos) {
       continue;
     }
 
-    BalsaHeaders request_headers, response_headers;
+    // Tease apart filename into host and path.
+    StringPiece file(file_iter.value());
+    file.remove_prefix(cache_directory.length());
+    if (file[0] == '/') {
+      file.remove_prefix(1);
+    }
 
     string file_contents;
-    base::ReadFileToString(file, &file_contents);
+    base::ReadFileToString(file_iter, &file_contents);
 
     // Frame HTTP.
     CachingBalsaVisitor caching_visitor;
@@ -143,7 +146,7 @@ void QuicInMemoryCache::Initialize() {
     }
 
     if (!caching_visitor.done_framing()) {
-      LOG(DFATAL) << "Did not frame entire message from file: " << file.value()
+      LOG(DFATAL) << "Did not frame entire message from file: " << file
                   << " (" << processed << " of " << file_contents.length()
                   << " bytes).";
     }
@@ -156,7 +159,7 @@ void QuicInMemoryCache::Initialize() {
       processed += file_contents.length();
     }
 
-    StringPiece base = file.value();
+    StringPiece base = file;
     if (response_headers.HasHeader("X-Original-Url")) {
       base = response_headers.GetHeader("X-Original-Url");
       response_headers.RemoveAllOfHeader("X-Original-Url");
@@ -175,7 +178,9 @@ void QuicInMemoryCache::Initialize() {
     if (path[path.length() - 1] == ',') {
       path.remove_suffix(1);
     }
-    AddResponse(host, path, response_headers, caching_visitor.body());
+    AddResponse(host, path,
+                SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers),
+                caching_visitor.body());
   }
 }
 
@@ -187,7 +192,7 @@ void QuicInMemoryCache::AddResponseImpl(
     StringPiece host,
     StringPiece path,
     SpecialResponseType response_type,
-    const BalsaHeaders& response_headers,
+    const SpdyHeaderBlock& response_headers,
     StringPiece response_body) {
   string key = GetKey(host, path);
   VLOG(1) << "Adding response for: " << key;

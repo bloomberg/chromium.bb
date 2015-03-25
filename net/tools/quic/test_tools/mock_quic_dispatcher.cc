@@ -14,12 +14,12 @@ MockQuicDispatcher::MockQuicDispatcher(
     const QuicConfig& config,
     const QuicCryptoServerConfig& crypto_config,
     QuicDispatcher::PacketWriterFactory* packet_writer_factory,
-    EpollServer* eps)
+    QuicConnectionHelperInterface* helper)
     : QuicDispatcher(config,
                      crypto_config,
                      QuicSupportedVersions(),
                      packet_writer_factory,
-                     eps) {}
+                     helper) {}
 
 MockQuicDispatcher::~MockQuicDispatcher() {}
 

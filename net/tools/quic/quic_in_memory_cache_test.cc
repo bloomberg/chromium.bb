@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -25,26 +26,32 @@ namespace test {
 class QuicInMemoryCacheTest : public ::testing::Test {
  protected:
   QuicInMemoryCacheTest() {
+    QuicInMemoryCachePeer::ResetForTests();
+  }
+
+  ~QuicInMemoryCacheTest() override { QuicInMemoryCachePeer::ResetForTests(); }
+
+  void CreateRequest(string host, string path, BalsaHeaders* headers) {
+    headers->SetRequestFirstlineFromStringPieces("GET", path, "HTTP/1.1");
+    headers->ReplaceOrAppendHeader("host", host);
+  }
+
+  string CacheDirectory() {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("net").AppendASCII("data")
         .AppendASCII("quic_in_memory_cache_data");
     // The file path is known to be an ascii string.
-    FLAGS_quic_in_memory_cache_dir = path.MaybeAsASCII();
+    return path.MaybeAsASCII();
   }
-
-  ~QuicInMemoryCacheTest() override { QuicInMemoryCachePeer::ResetForTests(); }
-
-  void CreateRequest(StringPiece host,
-                     StringPiece path,
-                     BalsaHeaders* headers) {
-    headers->SetRequestFirstlineFromStringPieces("GET", path, "HTTP/1.1");
-    headers->ReplaceOrAppendHeader("host", host);
-  }
-
-  void SetUp() override { QuicInMemoryCachePeer::ResetForTests(); }
-
 };
+
+TEST_F(QuicInMemoryCacheTest, GetResponseNoMatch) {
+  const QuicInMemoryCache::Response* response =
+      QuicInMemoryCache::GetInstance()->GetResponse("mail.google.com",
+                                                    "/index.html");
+  ASSERT_FALSE(response);
+}
 
 TEST_F(QuicInMemoryCacheTest, AddSimpleResponseGetResponse) {
   string response_body("hello response");
@@ -56,38 +63,35 @@ TEST_F(QuicInMemoryCacheTest, AddSimpleResponseGetResponse) {
   const QuicInMemoryCache::Response* response =
       cache->GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  EXPECT_EQ("200", response->headers().response_code());
+  ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
   EXPECT_EQ(response_body.size(), response->body().length());
 }
 
 TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
+  QuicInMemoryCache::GetInstance()->InitializeFromDirectory(CacheDirectory());
   const QuicInMemoryCache::Response* response =
       QuicInMemoryCache::GetInstance()->GetResponse("quic.test.url",
                                                     "/index.html");
   ASSERT_TRUE(response);
-  string value;
-  response->headers().GetAllOfHeaderAsString("Connection", &value);
-  EXPECT_EQ("200", response->headers().response_code());
-  EXPECT_EQ("Keep-Alive", value);
+  ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
+  ASSERT_TRUE(ContainsKey(response->headers(), "connection"));
+  EXPECT_EQ("close", response->headers().find("connection")->second);
   EXPECT_LT(0U, response->body().length());
 }
 
 TEST_F(QuicInMemoryCacheTest, UsesOriginalUrl) {
+  QuicInMemoryCache::GetInstance()->InitializeFromDirectory(CacheDirectory());
   const QuicInMemoryCache::Response* response =
       QuicInMemoryCache::GetInstance()->GetResponse("quic.test.url",
                                                     "/index.html");
   ASSERT_TRUE(response);
-  EXPECT_EQ("200", response->headers().response_code());
-  string value;
-  response->headers().GetAllOfHeaderAsString("Connection", &value);
+  ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
+  ASSERT_TRUE(ContainsKey(response->headers(), "connection"));
+  EXPECT_EQ("close", response->headers().find("connection")->second);
   EXPECT_LT(0U, response->body().length());
-}
-
-TEST_F(QuicInMemoryCacheTest, GetResponseNoMatch) {
-  const QuicInMemoryCache::Response* response =
-      QuicInMemoryCache::GetInstance()->GetResponse("mail.google.com",
-                                                    "/index.html");
-  ASSERT_FALSE(response);
 }
 
 }  // namespace test

@@ -21,6 +21,8 @@
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_dispatcher.h"
+#include "net/tools/quic/quic_epoll_clock.h"
+#include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_socket_utils.h"
@@ -38,8 +40,12 @@
 
 namespace net {
 namespace tools {
-
 namespace {
+
+// Specifies the directory used during QuicInMemoryCache
+// construction to seed the cache. Cache directory can be
+// generated using `wget -p --save-headers <url>`
+std::string FLAGS_quic_in_memory_cache_dir = "";
 
 const PollBits kEpollFlags = PollBits(NET_POLLIN | NET_POLLOUT | NET_POLLET);
 const char kSourceAddressTokenSecret[] = "secret";
@@ -93,8 +99,11 @@ void QuicServer::Initialize() {
   }
 
   epoll_server_.set_timeout_in_us(50 * 1000);
-  // Initialize the in memory cache now.
-  QuicInMemoryCache::GetInstance();
+
+  if (!FLAGS_quic_in_memory_cache_dir.empty()) {
+    QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
+        FLAGS_quic_in_memory_cache_dir);
+  }
 
   QuicEpollClock clock(&epoll_server_);
 
@@ -185,7 +194,7 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
       crypto_config_,
       supported_versions_,
       new QuicDispatcher::DefaultPacketWriterFactory(),
-      &epoll_server_);
+      new QuicEpollConnectionHelper(&epoll_server_));
 }
 
 void QuicServer::WaitForEvents() {

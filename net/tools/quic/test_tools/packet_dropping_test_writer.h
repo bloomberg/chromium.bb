@@ -43,7 +43,8 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   // called after connecting if the helper is not available before.
   // |on_can_write| will be triggered when fake-unblocking; ownership will be
   // assumed.
-  void Initialize(QuicEpollConnectionHelper* helper, Delegate* on_can_write);
+  void Initialize(QuicConnectionHelperInterface* helper,
+                  Delegate* on_can_write);
 
   // QuicPacketWriter methods:
   WriteResult WritePacket(const char* buffer,

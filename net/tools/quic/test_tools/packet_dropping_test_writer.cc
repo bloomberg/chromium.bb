@@ -61,7 +61,7 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
 PacketDroppingTestWriter::~PacketDroppingTestWriter() {}
 
 void PacketDroppingTestWriter::Initialize(
-    QuicEpollConnectionHelper* helper,
+    QuicConnectionHelperInterface* helper,
     Delegate* on_can_write) {
   clock_ = helper->GetClock();
   write_unblocked_alarm_.reset(

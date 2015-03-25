@@ -10,9 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
-#include "net/tools/balsa/balsa_frame.h"
-#include "net/tools/balsa/balsa_headers.h"
-#include "net/tools/balsa/noop_balsa_visitor.h"
+#include "net/spdy/spdy_framer.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -22,8 +20,6 @@ namespace tools {
 namespace test {
 class QuicInMemoryCachePeer;
 }  // namespace
-
-extern std::string FLAGS_quic_in_memory_cache_dir;
 
 class QuicServer;
 
@@ -41,12 +37,12 @@ class QuicInMemoryCache {
   // Container for response header/body pairs.
   class Response {
    public:
-    Response() : response_type_(REGULAR_RESPONSE) {}
-    ~Response() {}
+    Response();
+    ~Response();
 
-    SpecialResponseType response_type() const { return response_type_; }
-    const BalsaHeaders& headers() const { return headers_; }
-    const base::StringPiece body() const { return base::StringPiece(body_); }
+    const SpecialResponseType response_type() const { return response_type_; }
+    const SpdyHeaderBlock& headers() const { return headers_; }
+    const StringPiece body() const { return StringPiece(body_); }
 
    private:
     friend class QuicInMemoryCache;
@@ -54,15 +50,15 @@ class QuicInMemoryCache {
     void set_response_type(SpecialResponseType response_type) {
       response_type_ = response_type;
     }
-    void set_headers(const BalsaHeaders& headers) {
-      headers_.CopyFrom(headers);
+    void set_headers(const SpdyHeaderBlock& headers) {
+      headers_ = headers;
     }
     void set_body(base::StringPiece body) {
       body.CopyToString(&body_);
     }
 
     SpecialResponseType response_type_;
-    BalsaHeaders headers_;
+    SpdyHeaderBlock headers_;
     std::string body_;
 
     DISALLOW_COPY_AND_ASSIGN(Response);
@@ -87,13 +83,16 @@ class QuicInMemoryCache {
   // Add a response to the cache.
   void AddResponse(base::StringPiece host,
                    base::StringPiece path,
-                   const BalsaHeaders& response_headers,
+                   const SpdyHeaderBlock& response_headers,
                    base::StringPiece response_body);
 
   // Simulate a special behavior at a particular path.
   void AddSpecialResponse(base::StringPiece host,
                           base::StringPiece path,
                           SpecialResponseType response_type);
+
+  // |cache_cirectory| can be generated using `wget -p --save-headers <url>`.
+  void InitializeFromDirectory(const std::string& cache_directory);
 
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;
@@ -105,12 +104,10 @@ class QuicInMemoryCache {
 
   void ResetForTests();
 
-  void Initialize();
-
   void AddResponseImpl(base::StringPiece host,
                        base::StringPiece path,
                        SpecialResponseType response_type,
-                       const BalsaHeaders& response_headers,
+                       const SpdyHeaderBlock& response_headers,
                        base::StringPiece response_body);
 
   std::string GetKey(base::StringPiece host, base::StringPiece path) const;

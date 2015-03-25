@@ -16,14 +16,12 @@
 #include "base/strings/string_piece.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
+#include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/quic/quic_epoll_clock.h"
 
 namespace net {
-
-class EpollServer;
 
 namespace tools {
 
@@ -35,7 +33,7 @@ class QuicTimeWaitListManagerPeer;
 }  // namespace test
 
 // Maintains a list of all connection_ids that have been recently closed. A
-// connection_id lives in this state for kTimeWaitPeriod. All packets received
+// connection_id lives in this state for time_wait_period_. All packets received
 // for connection_ids in this state are handed over to the
 // QuicTimeWaitListManager by the QuicDispatcher.  Decides whether to send a
 // public reset packet, a copy of the previously sent connection close packet,
@@ -47,22 +45,25 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
  public:
   // writer - the entity that writes to the socket. (Owned by the dispatcher)
   // visitor - the entity that manages blocked writers. (The dispatcher)
-  // epoll_server - used to run clean up alarms. (Owned by the dispatcher)
+  // helper - used to run clean up alarms. (Owned by the dispatcher)
   QuicTimeWaitListManager(QuicPacketWriter* writer,
                           QuicServerSessionVisitor* visitor,
-                          EpollServer* epoll_server,
+                          QuicConnectionHelperInterface* helper,
                           const QuicVersionVector& supported_versions);
   ~QuicTimeWaitListManager() override;
 
-  // Adds the given connection_id to time wait state for kTimeWaitPeriod.
-  // Henceforth, any packet bearing this connection_id should not be processed
-  // while the connection_id remains in this list. If a non-nullptr
-  // |close_packet| is provided, it is sent again when packets are received for
-  // added connection_ids. If nullptr, a public reset packet is sent with the
-  // specified |version|. DCHECKs that connection_id is not already on the list.
-  void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
-                                 QuicVersion version,
-                                 QuicEncryptedPacket* close_packet);  // Owned.
+  // Adds the given connection_id to time wait state for
+  // time_wait_period_.  Henceforth, any packet bearing this
+  // connection_id should not be processed while the connection_id
+  // remains in this list. If a non-nullptr |close_packet| is
+  // provided, the TimeWaitListManager takes ownership of it and sends
+  // it again when packets are received for added connection_ids. If
+  // nullptr, a public reset packet is sent with the specified
+  // |version|. DCHECKs that connection_id is not already on the list.
+  // virtual to override in tests.
+  virtual void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
+                                         QuicVersion version,
+                                         QuicEncryptedPacket* close_packet);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
   // Packets received for this connection_id should not lead to creation of new
@@ -130,7 +131,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // packet.
   bool WriteToWire(QueuedPacket* packet);
 
-  // Register the alarm with the epoll server to wake up at appropriate time.
+  // Register the alarm server to wake up at appropriate time.
   void SetConnectionIdCleanUpAlarm();
 
   // Removes the oldest connection from the time-wait list if it was added prior
@@ -168,19 +169,15 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // when we are given a chance to write by the dispatcher.
   std::deque<QueuedPacket*> pending_packets_queue_;
 
-  // Used to schedule alarms to delete old connection_ids which have been in the
-  // list for too long.
-  EpollServer* epoll_server_;
-
   // Time period for which connection_ids should remain in time wait state.
-  const QuicTime::Delta kTimeWaitPeriod_;
+  const QuicTime::Delta time_wait_period_;
 
-  // Alarm registered with the epoll server to clean up connection_ids that have
-  // out lived their duration in time wait state.
-  scoped_ptr<ConnectionIdCleanUpAlarm> connection_id_clean_up_alarm_;
+  // Alarm to clean up connection_ids that have out lived their duration in
+  // time wait state.
+  scoped_ptr<QuicAlarm> connection_id_clean_up_alarm_;
 
-  // Clock to efficiently measure approximate time from the epoll server.
-  QuicEpollClock clock_;
+  // Clock to efficiently measure approximate time.
+  const QuicClock* clock_;
 
   // Interface that writes given buffer to the socket.
   QuicPacketWriter* writer_;

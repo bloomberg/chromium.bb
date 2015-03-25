@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "net/base/io_buffer.h"
 #include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/balsa/balsa_headers.h"
+#include "net/spdy/spdy_framer.h"
 
 namespace net {
 
@@ -35,10 +34,12 @@ class QuicSpdyServerStream : public QuicDataStream {
   uint32 ProcessData(const char* data, uint32 data_len) override;
   void OnFinRead() override;
 
-  void ParseRequestHeaders();
-
  private:
   friend class test::QuicSpdyServerStreamPeer;
+
+  // Parses the request headers from |data| to |request_headers_|.
+  // Returns false if there was an error parsing the headers.
+  bool ParseRequestHeaders(const char* data, uint32 data_len);
 
   // Sends a basic 200 response using SendHeaders for the headers and WriteData
   // for the body.
@@ -48,15 +49,13 @@ class QuicSpdyServerStream : public QuicDataStream {
   // for the body
   void SendErrorResponse();
 
-  void SendHeadersAndBody(const BalsaHeaders& response_headers,
+  void SendHeadersAndBody(const SpdyHeaderBlock& response_headers,
                           base::StringPiece body);
 
-  BalsaHeaders headers_;
+  // The parsed headers received from the client.
+  SpdyHeaderBlock request_headers_;
+  int content_length_;
   std::string body_;
-
-  // Buffer into which response header data is read.
-  scoped_refptr<GrowableIOBuffer> read_buf_;
-  bool request_headers_received_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyServerStream);
 };

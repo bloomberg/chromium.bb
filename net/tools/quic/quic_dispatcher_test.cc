@@ -10,11 +10,13 @@
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
+#include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 #include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
@@ -28,7 +30,6 @@ using net::test::ConstructEncryptedPacket;
 using net::test::MockConnection;
 using net::test::MockSession;
 using net::test::ValueRestore;
-using std::make_pair;
 using std::string;
 using testing::DoAll;
 using testing::InSequence;
@@ -50,7 +51,7 @@ class TestDispatcher : public QuicDispatcher {
                        crypto_config,
                        QuicSupportedVersions(),
                        new QuicDispatcher::DefaultPacketWriterFactory(),
-                       eps) {
+                       new QuicEpollConnectionHelper(eps)) {
   }
 
   MOCK_METHOD3(CreateQuicSession, QuicSession*(
@@ -97,26 +98,11 @@ QuicSession* CreateSession(QuicDispatcher* dispatcher,
   return *session;
 }
 
-class MockTimeWaitListManager : public QuicTimeWaitListManager {
- public:
-  MockTimeWaitListManager(QuicPacketWriter* writer,
-                          QuicServerSessionVisitor* visitor,
-                          EpollServer* eps)
-      : QuicTimeWaitListManager(writer, visitor, eps, QuicSupportedVersions()) {
-  }
-
-  MOCK_METHOD5(ProcessPacket,
-               void(const IPEndPoint& server_address,
-                    const IPEndPoint& client_address,
-                    QuicConnectionId connection_id,
-                    QuicPacketSequenceNumber sequence_number,
-                    const QuicEncryptedPacket& packet));
-};
-
 class QuicDispatcherTest : public ::testing::Test {
  public:
   QuicDispatcherTest()
-      : crypto_config_(QuicCryptoServerConfig::TESTING,
+      : helper_(&eps_),
+        crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
         dispatcher_(config_, crypto_config_, &eps_),
         time_wait_list_manager_(nullptr),
@@ -163,13 +149,14 @@ class QuicDispatcherTest : public ::testing::Test {
 
   void CreateTimeWaitListManager() {
     time_wait_list_manager_ = new MockTimeWaitListManager(
-        QuicDispatcherPeer::GetWriter(&dispatcher_), &dispatcher_, &eps_);
+        QuicDispatcherPeer::GetWriter(&dispatcher_), &dispatcher_, &helper_);
     // dispatcher_ takes the ownership of time_wait_list_manager_.
     QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
                                                time_wait_list_manager_);
   }
 
   EpollServer eps_;
+  QuicEpollConnectionHelper helper_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   IPEndPoint server_address_;
@@ -257,6 +244,8 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // wait list manager.
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _)).Times(0);
   ProcessPacket(client_address, connection_id, true, "foo");
 }
 
@@ -270,6 +259,8 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _)).Times(1);
   ProcessPacket(client_address, connection_id, false, "data");
 }
 
@@ -284,6 +275,8 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
   // dispatcher_ should drop this packet.
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              AddConnectionIdToTimeWait(_, _, _)).Times(0);
   ProcessPacket(client_address, 1, true, "foo");
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());

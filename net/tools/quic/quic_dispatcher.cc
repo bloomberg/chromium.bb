@@ -8,7 +8,6 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
@@ -25,21 +24,29 @@ namespace tools {
 
 using base::StringPiece;
 
-class DeleteSessionsAlarm : public EpollAlarm {
+namespace {
+
+// An alarm that informs the QuicDispatcher to delete old sessions.
+class DeleteSessionsAlarm : public QuicAlarm::Delegate {
  public:
   explicit DeleteSessionsAlarm(QuicDispatcher* dispatcher)
       : dispatcher_(dispatcher) {
   }
 
-  int64 OnAlarm() override {
-    EpollAlarm::OnAlarm();
+  QuicTime OnAlarm() override {
     dispatcher_->DeleteSessions();
-    return 0;
+    // Let the dispatcher register the alarm at appropriate time.
+    return QuicTime::Zero();
   }
 
  private:
+  // Not owned.
   QuicDispatcher* dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteSessionsAlarm);
 };
+
+}  // namespace
 
 class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
  public:
@@ -164,12 +171,12 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig& crypto_config,
                                const QuicVersionVector& supported_versions,
                                PacketWriterFactory* packet_writer_factory,
-                               EpollServer* epoll_server)
+                               QuicConnectionHelperInterface* helper)
     : config_(config),
       crypto_config_(crypto_config),
-      delete_sessions_alarm_(new DeleteSessionsAlarm(this)),
-      epoll_server_(epoll_server),
-      helper_(new QuicEpollConnectionHelper(epoll_server_)),
+      helper_(helper),
+      delete_sessions_alarm_(
+          helper_->CreateAlarm(new DeleteSessionsAlarm(this))),
       packet_writer_factory_(packet_writer_factory),
       connection_writer_factory_(this),
       supported_versions_(supported_versions),
@@ -365,8 +372,8 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
                                         << QuicUtils::ErrorToString(error);
 
   if (closed_session_list_.empty()) {
-    epoll_server_->RegisterAlarmApproximateDelta(
-        0, delete_sessions_alarm_.get());
+    delete_sessions_alarm_->Cancel();
+    delete_sessions_alarm_->Set(helper()->GetClock()->ApproximateNow());
   }
   closed_session_list_.push_back(it->second);
   CleanUpSession(it);
@@ -415,7 +422,7 @@ QuicSession* QuicDispatcher::CreateQuicSession(
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
   return new QuicTimeWaitListManager(
-      writer_.get(), this, epoll_server(), supported_versions());
+      writer_.get(), this, helper_.get(), supported_versions());
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

@@ -22,16 +22,11 @@
 
 namespace net {
 
-class EpollServer;
 class QuicConfig;
 class QuicCryptoServerConfig;
 class QuicSession;
 
 namespace tools {
-
-class DeleteSessionsAlarm;
-class QuicEpollConnectionHelper;
-class QuicPacketWriterWrapper;
 
 namespace test {
 class QuicDispatcherPeer;
@@ -81,7 +76,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                  const QuicCryptoServerConfig& crypto_config,
                  const QuicVersionVector& supported_versions,
                  PacketWriterFactory* packet_writer_factory,
-                 EpollServer* epoll_server);
+                 QuicConnectionHelperInterface* helper);
 
   ~QuicDispatcher() override;
 
@@ -121,10 +116,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
 
+  const SessionMap& session_map() const { return session_map_; }
+
   // Deletes all sessions on the closed session list and clears the list.
   void DeleteSessions();
-
-  const SessionMap& session_map() const { return session_map_; }
 
  protected:
   // Instantiates a new low-level packet writer. Caller takes ownership of the
@@ -158,8 +153,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
     return time_wait_list_manager_.get();
   }
 
-  EpollServer* epoll_server() { return epoll_server_; }
-
   const QuicVersionVector& supported_versions() const {
     return supported_versions_;
   }
@@ -180,7 +173,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   QuicFramer* framer() { return &framer_; }
 
-  QuicEpollConnectionHelper* helper() { return helper_.get(); }
+  QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
   QuicPacketWriter* writer() { return writer_.get(); }
 
@@ -229,16 +222,14 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // Entity that manages connection_ids in time wait state.
   scoped_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
 
-  // An alarm which deletes closed sessions.
-  scoped_ptr<DeleteSessionsAlarm> delete_sessions_alarm_;
-
   // The list of closed but not-yet-deleted sessions.
   std::list<QuicSession*> closed_session_list_;
 
-  EpollServer* epoll_server_;  // Owned by the server.
-
   // The helper used for all connections.
-  scoped_ptr<QuicEpollConnectionHelper> helper_;
+  scoped_ptr<QuicConnectionHelperInterface> helper_;
+
+  // An alarm which deletes closed sessions.
+  scoped_ptr<QuicAlarm> delete_sessions_alarm_;
 
   // The writer to write to the socket with.
   scoped_ptr<QuicPacketWriter> writer_;

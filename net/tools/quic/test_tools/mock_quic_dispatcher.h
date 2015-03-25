@@ -22,7 +22,7 @@ class MockQuicDispatcher : public QuicDispatcher {
   MockQuicDispatcher(const QuicConfig& config,
                      const QuicCryptoServerConfig& crypto_config,
                      PacketWriterFactory* packet_writer_factory,
-                     EpollServer* eps);
+                     QuicConnectionHelperInterface* helper);
 
   ~MockQuicDispatcher() override;
 

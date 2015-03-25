@@ -19,6 +19,10 @@ namespace net {
 namespace tools {
 namespace test {
 
+using testing::_;
+using testing::AnyNumber;
+using testing::Invoke;
+
 QuicAckFrame MakeAckFrameWithNackRanges(
     size_t num_nack_ranges, QuicPacketSequenceNumber least_unacked) {
   QuicAckFrame ack = MakeAckFrame(2 * num_nack_ranges + least_unacked);
@@ -115,8 +119,17 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
 MockTimeWaitListManager::MockTimeWaitListManager(
     QuicPacketWriter* writer,
     QuicServerSessionVisitor* visitor,
-    EpollServer* eps)
-    : QuicTimeWaitListManager(writer, visitor, eps, QuicSupportedVersions()) {
+    QuicConnectionHelperInterface* helper)
+    : QuicTimeWaitListManager(writer, visitor, helper,
+                              QuicSupportedVersions()) {
+  // Though AddConnectionIdToTimeWait is mocked, we want to retain its
+  // functionality.
+  EXPECT_CALL(*this, AddConnectionIdToTimeWait(_, _, _))
+    .Times(AnyNumber());
+  ON_CALL(*this, AddConnectionIdToTimeWait(_, _, _))
+    .WillByDefault(Invoke(this,
+                          &MockTimeWaitListManager::
+                          QuicTimeWaitListManager_AddConnectionIdToTimeWait));
 }
 
 MockTimeWaitListManager::~MockTimeWaitListManager() {

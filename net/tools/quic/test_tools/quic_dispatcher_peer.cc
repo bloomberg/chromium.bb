@@ -38,7 +38,7 @@ void QuicDispatcherPeer::SetPacketWriterFactory(
 }
 
 // static
-QuicEpollConnectionHelper* QuicDispatcherPeer::GetHelper(
+QuicConnectionHelperInterface* QuicDispatcherPeer::GetHelper(
     QuicDispatcher* dispatcher) {
   return dispatcher->helper_.get();
 }

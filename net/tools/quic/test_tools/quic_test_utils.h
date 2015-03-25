@@ -152,8 +152,23 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
  public:
   MockTimeWaitListManager(QuicPacketWriter* writer,
                           QuicServerSessionVisitor* visitor,
-                          EpollServer* eps);
+                          QuicConnectionHelperInterface* helper);
+
   ~MockTimeWaitListManager() override;
+
+  MOCK_METHOD3(AddConnectionIdToTimeWait,
+               void(QuicConnectionId connection_id,
+                    QuicVersion version,
+                    QuicEncryptedPacket* close_packet));
+
+  void QuicTimeWaitListManager_AddConnectionIdToTimeWait(
+           QuicConnectionId connection_id,
+           QuicVersion version,
+           QuicEncryptedPacket* close_packet) {
+    QuicTimeWaitListManager::AddConnectionIdToTimeWait(connection_id,
+                                                       version,
+                                                       close_packet);
+  }
 
   MOCK_METHOD5(ProcessPacket,
                void(const IPEndPoint& server_address,

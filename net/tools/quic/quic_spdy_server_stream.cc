@@ -4,7 +4,7 @@
 
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
-#include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_session.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -12,39 +12,41 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
+using base::StringToInt;
 using std::string;
 
 namespace net {
 namespace tools {
 
-static const size_t kHeaderBufInitialSize = 4096;
-
 QuicSpdyServerStream::QuicSpdyServerStream(QuicStreamId id,
                                            QuicSession* session)
     : QuicDataStream(id, session),
-      read_buf_(new GrowableIOBuffer()),
-      request_headers_received_(false) {
+      content_length_(-1) {
 }
 
 QuicSpdyServerStream::~QuicSpdyServerStream() {
 }
 
 uint32 QuicSpdyServerStream::ProcessData(const char* data, uint32 data_len) {
-  uint32 total_bytes_processed = 0;
-
-  // Are we still reading the request headers.
-  if (!request_headers_received_) {
-    // Grow the read buffer if necessary.
-    if (read_buf_->RemainingCapacity() < (int)data_len) {
-      read_buf_->SetCapacity(read_buf_->capacity() + kHeaderBufInitialSize);
-    }
-    memcpy(read_buf_->data(), data, data_len);
-    read_buf_->set_offset(read_buf_->offset() + data_len);
-    ParseRequestHeaders();
-  } else {
-    body_.append(data + total_bytes_processed,
-                 data_len - total_bytes_processed);
+  if (!headers_decompressed()) {
+    // Let the headers data accumulate in the underlying QuicDataStream.
+    return 0;
   }
+  if (request_headers_.empty()) {
+    if (!ParseRequestHeaders(data, data_len)) {
+      // Headers were invalid.
+      SendErrorResponse();
+      return 0;
+    }
+  } else {
+    body_.append(data, data_len);
+  }
+  DCHECK(!request_headers_.empty());
+  if (content_length_ > 0 && static_cast<int>(body_.size()) > content_length_) {
+    SendErrorResponse();
+    return 0;
+  }
+  DVLOG(1) << "Processed " << data_len << " bytes for stream " << id();
   return data_len;
 }
 
@@ -54,52 +56,54 @@ void QuicSpdyServerStream::OnFinRead() {
     return;
   }
 
-  if (!request_headers_received_) {
-    SendErrorResponse();  // We're not done reading headers.
-  } else if ((headers_.content_length_status() ==
-              BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
-             body_.size() != headers_.content_length()) {
-    SendErrorResponse();  // Invalid content length
-  } else {
-    SendResponse();
-  }
-}
-
-void QuicSpdyServerStream::ParseRequestHeaders() {
-  size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
-  SpdyFramer framer(SPDY3);
-  SpdyHeaderBlock headers;
-  char* data = read_buf_->StartOfBuffer();
-  size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
-                                               &headers);
-  if (len == 0) {
-    return;
-  }
-
-  if (!SpdyUtils::FillBalsaRequestHeaders(headers, &headers_)) {
+  if (request_headers_.empty()) {
     SendErrorResponse();
     return;
   }
 
-  size_t delta = read_buf_len - len;
-  if (delta > 0) {
-    body_.append(data + len, delta);
+  if (content_length_ > 0 &&
+      content_length_ != static_cast<int>(body_.size())) {
+    SendErrorResponse();
+    return;
   }
 
-  request_headers_received_ = true;
+  SendResponse();
+}
+
+bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
+                                               uint32 data_len) {
+  DCHECK(headers_decompressed());
+  SpdyFramer framer(SPDY3);
+  size_t len = framer.ParseHeaderBlockInBuffer(data,
+                                               data_len,
+                                               &request_headers_);
+  DCHECK_LE(len, data_len);
+  if (len == 0 || request_headers_.empty()) {
+    return false;  // Headers were invalid.
+  }
+
+  if (data_len > len) {
+    body_.append(data + len, data_len - len);
+  }
+  if (ContainsKey(request_headers_, "content-length") &&
+      !StringToInt(request_headers_["content-length"], &content_length_)) {
+    return false;  // Invalid content-length.
+  }
+  return true;
 }
 
 void QuicSpdyServerStream::SendResponse() {
-  // Find response in cache. If not found, send error response.
-  GURL url(headers_.request_uri().as_string());
-  if (!url.is_valid()) {
+  if (!ContainsKey(request_headers_, ":host") ||
+      !ContainsKey(request_headers_, ":path")) {
     SendErrorResponse();
     return;
   }
+
+  // Find response in cache. If not found, send error response.
   const QuicInMemoryCache::Response* response =
       QuicInMemoryCache::GetInstance()->GetResponse(
-          url.host(),
-          url.PathForRequest());
+          request_headers_[":host"],
+          request_headers_[":path"]);
   if (response == nullptr) {
     SendErrorResponse();
     return;
@@ -122,25 +126,22 @@ void QuicSpdyServerStream::SendResponse() {
 
 void QuicSpdyServerStream::SendErrorResponse() {
   DVLOG(1) << "Sending error response for stream " << id();
-  BalsaHeaders headers;
-  headers.SetResponseFirstlineFromStringPieces(
-      "HTTP/1.1", "500", "Server Error");
-  headers.ReplaceOrAppendHeader("content-length", "3");
+  SpdyHeaderBlock headers;
+  headers[":version"] = "HTTP/1.1";
+  headers[":status"] = "500 Server Error";
+  headers["content-length"] = "3";
   SendHeadersAndBody(headers, "bad");
 }
 
 void QuicSpdyServerStream::SendHeadersAndBody(
-    const BalsaHeaders& response_headers,
+    const SpdyHeaderBlock& response_headers,
     StringPiece body) {
   // We only support SPDY and HTTP, and neither handles bidirectional streaming.
   if (!read_side_closed()) {
     CloseReadSide();
   }
 
-  SpdyHeaderBlock header_block =
-      SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
-
-  WriteHeaders(header_block, body.empty(), nullptr);
+  WriteHeaders(response_headers, body.empty(), nullptr);
 
   if (!body.empty()) {
     WriteOrBufferData(body, true, nullptr);
