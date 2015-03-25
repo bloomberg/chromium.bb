@@ -18,7 +18,8 @@
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='allcontent'",
         "LayoutBlockFlow (relative positioned) P",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'SUCCESS'"
       ]
     }
   ]

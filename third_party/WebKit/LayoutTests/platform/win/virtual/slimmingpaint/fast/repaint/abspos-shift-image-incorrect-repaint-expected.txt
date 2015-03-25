@@ -25,6 +25,7 @@
         "LayoutImage IMG",
         "LayoutText #text",
         "LayoutText #text",
+        "InlineTextBox '\n'",
         "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
         "LayoutImage IMG",
         "LayoutText #text",

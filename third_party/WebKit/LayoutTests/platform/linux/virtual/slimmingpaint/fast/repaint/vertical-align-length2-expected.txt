@@ -11,6 +11,10 @@
         [0, 0, 800, 204]
       ],
       "paintInvalidationClients": [
+        "InlineBox",
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='target'"
       ]

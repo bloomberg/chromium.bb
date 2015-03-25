@@ -14,10 +14,13 @@
         [0, 202, 106, 100]
       ],
       "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'MIDDLE'",
         "LayoutBlockFlow HTML",
         "LayoutTableRow TR id='row'",
         "LayoutTableCell TD",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'MIDDLE'"
       ]
     }
   ]

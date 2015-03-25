@@ -10,7 +10,8 @@
       ],
       "paintInvalidationClients": [
         "LayoutInline SPAN id='target'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'PASS'"
       ]
     }
   ]

@@ -32,10 +32,24 @@
         [8, 10, 91, 82]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'ipsum dolor'",
         "LayoutText #text",
+        "RootInlineBox",
         "LayoutTableCell TD id='d'",
+        "InlineTextBox 'dolor'",
         "LayoutText #text",
+        "RootInlineBox",
         "LayoutTableCell TD id='d2'",
+        "RootInlineBox",
+        "InlineTextBox 'Lorem'",
+        "RootInlineBox",
+        "InlineTextBox 'sit amet'",
+        "RootInlineBox",
+        "InlineTextBox 'Lorem'",
+        "RootInlineBox",
+        "InlineTextBox 'sit amet'",
+        "RootInlineBox",
+        "InlineTextBox 'ipsum dolor'",
         "LayoutTable TABLE id='t'",
         "LayoutTable TABLE",
         "LayoutTableSection TBODY",
@@ -47,6 +61,7 @@
         "LayoutTableCell TD",
         "LayoutTableCell TD id='d3'",
         "LayoutText #text",
+        "InlineTextBox 'ipsum dolor'",
         "LayoutTableCell TD"
       ]
     }

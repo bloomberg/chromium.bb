@@ -20,10 +20,15 @@
         "LayoutSVGContainer g",
         "LayoutSVGText text id='text'",
         "LayoutSVGTSpan tspan id='tspan'",
+        "InlineFlowBox",
         "LayoutSVGInlineText #text",
+        "InlineTextBox 'Two lines of text should be visible.'",
         "LayoutSVGInlineText #text",
+        "InlineTextBox ' '",
         "LayoutSVGTSpan tspan",
-        "LayoutSVGInlineText #text"
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Two lines of text should be visible.'"
       ]
     }
   ]

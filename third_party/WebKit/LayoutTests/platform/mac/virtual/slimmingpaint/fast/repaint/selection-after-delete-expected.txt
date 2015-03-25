@@ -14,11 +14,30 @@
         [8, 75, 784, 108]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello world'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello world'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello'",
         "LayoutText #text",
         "LayoutBlockFlow HTML",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox '\n'",
+        "RootInlineBox",
         "LayoutBlockFlow DIV id='test'",
         "LayoutBlockFlow DIV id='test'",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutBlockFlow DIV id='test'"
       ]
     }

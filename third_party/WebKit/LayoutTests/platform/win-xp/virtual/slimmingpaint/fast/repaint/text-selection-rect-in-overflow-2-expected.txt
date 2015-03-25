@@ -12,7 +12,8 @@
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='t'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Should have blue, not gray, highlight'"
       ]
     }
   ]

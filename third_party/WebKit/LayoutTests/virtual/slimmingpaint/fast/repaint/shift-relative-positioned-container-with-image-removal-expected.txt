@@ -18,7 +18,9 @@
       ],
       "paintInvalidationClients": [
         "LayoutIFrame IFRAME id='iframe'",
+        "InlineBox",
         "LayoutText #text",
+        "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow (relative positioned) DIV class='relative'",

@@ -9,7 +9,8 @@
         [8, 17, 199, 18]
       ],
       "paintInvalidationClients": [
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Should have green background'"
       ]
     }
   ]

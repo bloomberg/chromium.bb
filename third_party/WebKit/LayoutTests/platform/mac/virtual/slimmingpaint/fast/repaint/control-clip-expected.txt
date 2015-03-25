@@ -14,11 +14,17 @@
         [8, 76, 200, 30]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "RootInlineBox",
         "LayoutMenuList SELECT id='popup'",
         "LayoutBlockFlow (anonymous)",
         "LayoutText",
+        "InlineTextBox 'SUCCESS'",
         "LayoutBlockFlow (anonymous)",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'SUCCESS'"
       ]
     }
   ]

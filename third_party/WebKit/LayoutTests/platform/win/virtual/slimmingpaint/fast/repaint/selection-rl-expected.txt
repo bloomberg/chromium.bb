@@ -11,7 +11,8 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Testing both hit testing'"
       ]
     }
   ]

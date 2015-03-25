@@ -10,6 +10,8 @@
         [43, 103, 91, 30]
       ],
       "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Lorem Ipsum'",
         "LayoutBlockFlow (positioned) A id='link' class='updated'"
       ]
     }

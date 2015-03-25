@@ -11,7 +11,8 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'some text'"
       ]
     }
   ]

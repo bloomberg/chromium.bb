@@ -11,8 +11,15 @@
         [8, 8, 470, 20]
       ],
       "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\n'",
         "LayoutMultiColumnFlowThread",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'PASS'"
       ]
     }
   ]

@@ -10,6 +10,8 @@
         [11, 131, 50, 100]
       ],
       "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox '\u00A0'",
         "LayoutBlockFlow DIV id='im'"
       ]
     }

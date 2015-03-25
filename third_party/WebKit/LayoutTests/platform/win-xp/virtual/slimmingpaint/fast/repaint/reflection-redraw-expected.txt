@@ -13,9 +13,21 @@
       ],
       "paintInvalidationClients": [
         "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'",
         "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'",
         "LayoutText #text",
-        "LayoutText #text"
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'",
+        "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'"
       ]
     }
   ]

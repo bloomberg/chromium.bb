@@ -13,6 +13,10 @@
         [0, 0, 800, 246]
       ],
       "paintInvalidationClients": [
+        "InlineBox",
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow BODY",

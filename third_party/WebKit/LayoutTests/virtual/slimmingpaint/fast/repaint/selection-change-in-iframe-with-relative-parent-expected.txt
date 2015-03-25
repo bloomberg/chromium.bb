@@ -15,13 +15,21 @@
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutText #text",
+        "InlineTextBox 'Foo'",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutText #text",
+        "InlineTextBox 'Bar'",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutText #text",
-        "LayoutBR BR"
+        "InlineTextBox 'Bazz'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
       ]
     }
   ]

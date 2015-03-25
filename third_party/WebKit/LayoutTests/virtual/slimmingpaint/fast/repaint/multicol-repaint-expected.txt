@@ -10,8 +10,12 @@
         [9, 9, 400, 100]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "InlineFlowBox",
+        "RootInlineBox",
         "LayoutBlockFlow DIV class='container'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'XXXXXX'"
       ]
     }
   ]

@@ -16,14 +16,22 @@
         [0, 192, 800, 28]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "InlineTextBox '\n'",
+        "RootInlineBox",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
         "LayoutInline SPAN id='d'",
+        "InlineFlowBox",
         "LayoutText #text",
+        "InlineTextBox '\u00A0'",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutText #text",
-        "LayoutBR BR"
+        "InlineTextBox 'Hello'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
       ]
     }
   ]

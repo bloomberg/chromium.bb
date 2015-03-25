@@ -11,8 +11,14 @@
         [8, 70, 80, 36]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "RootInlineBox",
         "LayoutBlockFlow DIV id='dv'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Lorem ipsu'"
       ]
     }
   ]

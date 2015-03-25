@@ -24,7 +24,9 @@
         [88, 88, 4, 19]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox '\u00A0'",
         "LayoutText #text",
+        "RootInlineBox",
         "LayoutBlockFlow DIV id='to_remove' class='item'",
         "LayoutBlockFlow (floating) DIV id='to_remove_inner' class='inner'",
         "LayoutBlockFlow (floating) DIV id='node' class='outer'",
@@ -33,7 +35,8 @@
         "LayoutBlockFlow (floating) DIV id='keep_inner' class='inner'",
         "LayoutBlockFlow (positioned) DIV class='abs_pos'",
         "LayoutBlockFlow DIV id='keep' class='item'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox '\u00A0'"
       ]
     }
   ]

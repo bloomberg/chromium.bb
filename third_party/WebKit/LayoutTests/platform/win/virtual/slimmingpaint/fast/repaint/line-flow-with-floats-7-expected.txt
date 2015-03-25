@@ -10,9 +10,22 @@
         [8, 386, 418, 53]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'for turns,\n'",
+        "InlineTextBox 'quarrelling all the while, and fighting'",
+        "RootInlineBox",
+        "InlineTextBox 'for the hedgehogs; and in\n'",
+        "InlineTextBox 'a very short time '",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "InlineTextBox ' was in a furious passion, and went\n'",
+        "InlineTextBox 'stamping'",
+        "RootInlineBox",
         "LayoutBlockFlow P",
         "LayoutInline SPAN id='theQueen'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'the'",
+        "InlineTextBox 'Queen'"
       ]
     }
   ]

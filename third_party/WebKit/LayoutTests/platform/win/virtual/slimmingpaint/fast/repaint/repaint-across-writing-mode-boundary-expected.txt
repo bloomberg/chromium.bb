@@ -14,7 +14,8 @@
         "LayoutBlockFlow DIV class='lrblock'",
         "LayoutBlockFlow DIV class='basic d1 vert'",
         "LayoutBlockFlow P",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox '\u7B2C\u4E00\u6BB5\u843D paragraph 1'"
       ]
     }
   ]

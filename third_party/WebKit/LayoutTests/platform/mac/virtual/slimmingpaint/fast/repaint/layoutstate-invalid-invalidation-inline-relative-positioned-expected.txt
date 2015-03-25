@@ -15,11 +15,17 @@
         [8, 40, 784, 104]
       ],
       "paintInvalidationClients": [
+        "InlineBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
         "LayoutInline (relative positioned) SPAN id='target'",
+        "InlineFlowBox",
         "LayoutText #text",
         "LayoutBlockFlow DIV",
         "LayoutText #text",
+        "InlineTextBox 'x'",
         "LayoutText #text"
       ]
     }

@@ -15,11 +15,14 @@
         [0, 192, 800, 18]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'abc'",
         "LayoutText #text",
+        "RootInlineBox",
         "LayoutBlockFlow DIV id='inner-target'",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='inner-target'",
         "LayoutText #text",
+        "InlineTextBox 'abc'",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY"
       ]

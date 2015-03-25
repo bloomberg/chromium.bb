@@ -17,6 +17,7 @@
         "LayoutBlockFlow (positioned) DIV id='container'",
         "LayoutBlockFlow (relative positioned) DIV",
         "LayoutText #text",
+        "InlineTextBox 'There should only be one copy of this text.'",
         "LayoutText #text"
       ]
     }

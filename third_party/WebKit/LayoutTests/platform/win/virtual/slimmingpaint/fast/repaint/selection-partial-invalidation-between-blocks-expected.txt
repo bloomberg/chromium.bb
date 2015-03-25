@@ -17,8 +17,10 @@
         "LayoutTable TABLE",
         "LayoutTableCell TD id='firstCell'",
         "LayoutText #text",
+        "InlineTextBox 'First cell'",
         "LayoutTableCell TD id='secondCell'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Second cell'"
       ]
     }
   ]

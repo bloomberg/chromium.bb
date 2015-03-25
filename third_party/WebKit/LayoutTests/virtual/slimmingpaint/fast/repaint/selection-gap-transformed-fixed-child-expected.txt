@@ -13,8 +13,10 @@
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV",
         "LayoutBR BR",
+        "InlineTextBox '\n'",
         "LayoutBlockFlow (positioned) DIV id='target'",
-        "LayoutBR BR"
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
       ]
     }
   ]

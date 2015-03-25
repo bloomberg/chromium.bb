@@ -9,6 +9,10 @@
         [8, 124, 784, 39]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
+        "RootInlineBox",
+        "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit'",
+        "RootInlineBox",
         "LayoutBlockFlow P id='target'"
       ]
     }

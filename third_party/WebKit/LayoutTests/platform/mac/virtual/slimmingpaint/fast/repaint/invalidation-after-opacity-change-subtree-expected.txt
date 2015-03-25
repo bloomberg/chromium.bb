@@ -17,8 +17,12 @@
         "LayoutBlockFlow (positioned) DIV id='absolute'",
         "LayoutBlockFlow P",
         "LayoutText #text",
+        "InlineTextBox 'This test checks that switching opacity'",
+        "InlineTextBox 'invalidates the full subtree.'",
         "LayoutBlockFlow P",
         "LayoutText #text",
+        "InlineTextBox 'This text should be visible in the'",
+        "InlineTextBox 'output.'",
         "LayoutBlockFlow DIV id='container'"
       ]
     }

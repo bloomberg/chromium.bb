@@ -11,9 +11,12 @@
         [8, 8, 244, 68]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
         "LayoutTextControl (positioned) INPUT id='input'",
         "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'NEW'"
       ]
     }
   ]

@@ -11,6 +11,8 @@
         [8, 52, 214, 236]
       ],
       "paintInvalidationClients": [
+        "InlineBox",
+        "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
         "LayoutImage IMG id='test' class='moved'"
       ]

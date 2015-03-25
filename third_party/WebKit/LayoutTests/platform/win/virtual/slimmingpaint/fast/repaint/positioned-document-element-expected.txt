@@ -17,11 +17,14 @@
         [0, 0, 800, 50]
       ],
       "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
         "LayoutView #document",
         "LayoutBlockFlow (positioned) HTML class='changed'",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'"
       ]
     }
   ]

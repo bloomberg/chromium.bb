@@ -9,7 +9,8 @@
         [0, 288, 430, 18]
       ],
       "paintInvalidationClients": [
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'"
       ]
     }
   ]

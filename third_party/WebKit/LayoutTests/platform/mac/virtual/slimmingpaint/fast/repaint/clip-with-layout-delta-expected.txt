@@ -12,10 +12,16 @@
         [8, 8, 4, 18]
       ],
       "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox '\u00A0'",
+        "RootInlineBox",
+        "InlineTextBox '\u00A0'",
         "LayoutBlockFlow SPAN id='t1'",
         "LayoutText #text",
+        "InlineTextBox '\u00A0'",
         "LayoutBlockFlow SPAN id='t2' class='blue'",
-        "LayoutText #text"
+        "LayoutText #text",
+        "InlineTextBox '\u00A0'"
       ]
     }
   ]
