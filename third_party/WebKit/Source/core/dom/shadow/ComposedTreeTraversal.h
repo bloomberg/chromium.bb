@@ -52,13 +52,15 @@ public:
     typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
 
     static Node* next(const Node&);
+    static Node* next(const Node&, const Node* stayWithin);
     static Node* previous(const Node&);
 
     static Node* firstChild(const Node&);
     static Node* lastChild(const Node&);
     static bool hasChildren(const Node&);
 
-    static ContainerNode* parent(const Node&,  ParentTraversalDetails* = 0);
+    static ContainerNode* parent(const Node&, ParentTraversalDetails* = 0);
+    static Element* parentElement(const Node&);
 
     static Node* nextSibling(const Node&);
     static Node* previousSibling(const Node&);
@@ -71,6 +73,7 @@ public:
     // function is similar to |next()| but skips child nodes of a specified
     // node.
     static Node* nextSkippingChildren(const Node&);
+    static Node* nextSkippingChildren(const Node&, const Node* stayWithin);
 
     // Composed tree version of |NodeTraversal::previousSkippingChildren()|
     // similar to |previous()| but skipping child nodes of the specified node.
@@ -121,6 +124,8 @@ private:
     static Node* traverseLightChildren(const Node&, TraversalDirection);
 
     static Node* traverseNext(const Node&);
+    static Node* traverseNext(const Node&, const Node* stayWithin);
+    static Node* traverseNextSkippingChildren(const Node&, const Node* stayWithin);
     static Node* traversePrevious(const Node&);
 
     static Node* traverseFirstChild(const Node&);
@@ -153,6 +158,12 @@ inline ContainerNode* ComposedTreeTraversal::parent(const Node& node, ParentTrav
     return result;
 }
 
+inline Element* ComposedTreeTraversal::parentElement(const Node& node)
+{
+    ContainerNode* parent = ComposedTreeTraversal::parent(node);
+    return parent && parent->isElementNode() ? toElement(parent) : nullptr;
+}
+
 inline Node* ComposedTreeTraversal::nextSibling(const Node& node)
 {
     assertPrecondition(node);
@@ -177,6 +188,22 @@ inline Node* ComposedTreeTraversal::next(const Node& node)
     return result;
 }
 
+inline Node* ComposedTreeTraversal::next(const Node& node, const Node* stayWithin)
+{
+    assertPrecondition(node);
+    Node* result = traverseNext(node, stayWithin);
+    assertPostcondition(result);
+    return result;
+}
+
+inline Node* ComposedTreeTraversal::nextSkippingChildren(const Node& node, const Node* stayWithin)
+{
+    assertPrecondition(node);
+    Node* result = traverseNextSkippingChildren(node, stayWithin);
+    assertPostcondition(result);
+    return result;
+}
+
 inline Node* ComposedTreeTraversal::traverseNext(const Node& node)
 {
     if (Node* next = traverseFirstChild(node))
@@ -186,6 +213,24 @@ inline Node* ComposedTreeTraversal::traverseNext(const Node& node)
             return sibling;
     }
     return 0;
+}
+
+inline Node* ComposedTreeTraversal::traverseNext(const Node& node, const Node* stayWithin)
+{
+    if (Node* next = traverseFirstChild(node))
+        return next;
+    return traverseNextSkippingChildren(node, stayWithin);
+}
+
+inline Node* ComposedTreeTraversal::traverseNextSkippingChildren(const Node& node, const Node* stayWithin)
+{
+    for (const Node* next = &node; next; next = traverseParent(*next)) {
+        if (next == stayWithin)
+            return nullptr;
+        if (Node* sibling = traverseNextSibling(*next))
+            return sibling;
+    }
+    return nullptr;
 }
 
 inline Node* ComposedTreeTraversal::previous(const Node& node)
