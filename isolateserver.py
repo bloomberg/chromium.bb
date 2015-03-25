@@ -2040,7 +2040,7 @@ def CMDdownload(parser, args):
       '-f', '--file', metavar='HASH DEST', default=[], action='append', nargs=2,
       help='hash and destination of a file, can be used multiple times')
   parser.add_option(
-      '-t', '--target', metavar='DIR', default=os.getcwd(),
+      '-t', '--target', metavar='DIR', default='download',
       help='destination directory')
   add_cache_options(parser)
   options, args = parser.parse_args(args)
@@ -2053,6 +2053,11 @@ def CMDdownload(parser, args):
 
   cache = process_cache_options(options)
   options.target = os.path.abspath(options.target)
+  if options.isolated:
+    if (os.path.isfile(options.target) or
+        (os.path.isdir(options.target) and os.listdir(options.target))):
+      parser.error(
+          '--target \'%s\' exists, please use another target' % options.target)
   with get_storage(options.isolate_server, options.namespace) as storage:
     # Fetching individual files.
     if options.file:
