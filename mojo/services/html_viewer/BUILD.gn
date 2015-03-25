@@ -102,6 +102,7 @@ source_set("lib") {
     "//third_party/mojo_services/src/surfaces/public/interfaces",
     "//ui/gfx/geometry",
     "//ui/native_theme",
+    "//ui/resources:ui_test_pak",
     "//url",
   ]
 
