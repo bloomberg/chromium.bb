@@ -23,6 +23,15 @@ public:
         return peek(0);
     }
 
+    // For fast-path code, don't replace nulls with replacement characters
+    UChar peekWithoutReplacement(unsigned lookaheadOffset)
+    {
+        ASSERT((m_offset + lookaheadOffset) <= m_stringLength);
+        if ((m_offset + lookaheadOffset) == m_stringLength)
+            return '\0';
+        return (*m_string)[m_offset + lookaheadOffset];
+    }
+
     void advance(unsigned = 1);
     void pushBack(UChar);
 

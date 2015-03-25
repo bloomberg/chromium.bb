@@ -26,7 +26,7 @@ CSSTokenizer::Scope::Scope(const String& string)
     // However, we can skip this step since:
     // * We're using HTML spaces (which accept \r and \f as a valid white space)
     // * Do not count white spaces
-    // * consumeEscape replaces NULLs for replacement characters
+    // * CSSTokenizerInputStream::peek replaces NULLs for replacement characters
 
     if (string.isEmpty())
         return;
@@ -469,17 +469,17 @@ CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
 {
     // Strings without escapes get handled without allocations
     for (unsigned size = 0; ; size++) {
-        UChar cc = m_input.peek(size);
-        if (cc == endingCodePoint || cc == kEndOfFileMarker) {
+        UChar cc = m_input.peekWithoutReplacement(size);
+        if (cc == endingCodePoint) {
             unsigned startOffset = m_input.offset();
-            m_input.advance(size + (cc == endingCodePoint));
+            m_input.advance(size + 1);
             return CSSParserToken(StringToken, m_input.rangeAsCSSParserString(startOffset, size));
         }
         if (isNewLine(cc)) {
             m_input.advance(size);
             return CSSParserToken(BadStringToken);
         }
-        if (cc == '\\')
+        if (cc == '\0' || cc == '\\')
             break;
     }
 
@@ -554,13 +554,13 @@ CSSParserToken CSSTokenizer::consumeUrlToken()
 
     // URL tokens without escapes get handled without allocations
     for (unsigned size = 0; ; size++) {
-        UChar cc = m_input.peek(size);
-        if (cc == ')' || cc == kEndOfFileMarker) {
+        UChar cc = m_input.peekWithoutReplacement(size);
+        if (cc == ')') {
             unsigned startOffset = m_input.offset();
-            m_input.advance(size + (cc == ')'));
+            m_input.advance(size + 1);
             return CSSParserToken(UrlToken, m_input.rangeAsCSSParserString(startOffset, size));
         }
-        if (cc == '\\' || cc == '"' || cc == '\'' || cc == '(' || isNonPrintableCodePoint(cc) || isHTMLSpace(cc))
+        if (cc == '\0' || cc == '\\' || cc == '"' || cc == '\'' || cc == '(' || isNonPrintableCodePoint(cc) || isHTMLSpace(cc))
             break;
     }
 
@@ -658,12 +658,11 @@ bool CSSTokenizer::consumeIfNext(UChar character)
 CSSParserString CSSTokenizer::consumeName()
 {
     // Names without escapes get handled without allocations
-    {
-        unsigned size = 0;
-        while (isNameChar(m_input.peek(size)))
-            size++;
-
-        if (!twoCharsAreValidEscape(m_input.peek(size), m_input.peek(size + 1))) {
+    for (unsigned size = 0; ; ++size) {
+        UChar cc = m_input.peekWithoutReplacement(size);
+        if (cc == '\0' || cc == '\\')
+            break;
+        if (!isNameChar(cc)) {
             unsigned startOffset = m_input.offset();
             m_input.advance(size);
             return m_input.rangeAsCSSParserString(startOffset, size);
@@ -709,7 +708,6 @@ UChar32 CSSTokenizer::consumeEscape()
         return codePoint;
     }
 
-    // Replaces NULLs with replacement characters, since we do not perform preprocessing
     if (cc == kEndOfFileMarker)
         return WTF::Unicode::replacementCharacter;
     return cc;
@@ -717,6 +715,7 @@ UChar32 CSSTokenizer::consumeEscape()
 
 bool CSSTokenizer::nextTwoCharsAreValidEscape()
 {
+    // TODO(timloh): This check is wrong
     if (m_input.leftChars() < 1)
         return false;
     return twoCharsAreValidEscape(m_input.nextInputChar(), m_input.peek(1));

@@ -210,6 +210,7 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("sp\\61\tc\\65\fs", ident("spaces"));
     TEST_TOKENS("hel\\6c  o", ident("hell"), whitespace, ident("o"));
     TEST_TOKENS("test\\\n", ident("test"), delim('\\'), whitespace);
+    // TODO(timloh): This should be ident("eof" + replacement)
     TEST_TOKENS("eof\\", ident("eof"), delim('\\'));
     TEST_TOKENS("test\\D799", ident("test" + fromUChar32(0xD799)));
     TEST_TOKENS("\\E000", ident(fromUChar32(0xE000)));
@@ -220,6 +221,8 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("\\\f", delim('\\'), whitespace);
     TEST_TOKENS("\\\r\n", delim('\\'), whitespace);
     String replacement = fromUChar32(0xFFFD);
+    TEST_TOKENS(String("null\\\0", 6), ident("null" + replacement));
+    TEST_TOKENS(String("null\\\0\0", 7), ident("null" + replacement + replacement));
     TEST_TOKENS("null\\0", ident("null" + replacement));
     TEST_TOKENS("null\\0000", ident("null" + replacement));
     TEST_TOKENS("large\\110000", ident("large" + replacement));
@@ -250,8 +253,9 @@ TEST(CSSTokenizerTest, IdentToken)
     TEST_TOKENS(fromUChar32(0xA0), ident(fromUChar32(0xA0))); // non-breaking space
     TEST_TOKENS(fromUChar32(0x1234), ident(fromUChar32(0x1234)));
     TEST_TOKENS(fromUChar32(0x12345), ident(fromUChar32(0x12345)));
-    // FIXME: Preprocessing is supposed to replace U+0000 with U+FFFD
-    // TEST_TOKENS("\0", ident(fromUChar32(0xFFFD)));
+    TEST_TOKENS(String("\0", 1), ident(fromUChar32(0xFFFD)));
+    TEST_TOKENS(String("ab\0c", 4), ident("ab" + fromUChar32(0xFFFD) + "c"));
+    TEST_TOKENS(String("ab\0c", 4), ident("ab" + fromUChar32(0xFFFD) + "c"));
 }
 
 TEST(CSSTokenizerTest, FunctionToken)
@@ -325,8 +329,9 @@ TEST(CSSTokenizerTest, StringToken)
     TEST_TOKENS("'bad\rstring", badString, whitespace, ident("string"));
     TEST_TOKENS("'bad\r\nstring", badString, whitespace, ident("string"));
     TEST_TOKENS("'bad\fstring", badString, whitespace, ident("string"));
-    // FIXME: Preprocessing is supposed to replace U+0000 with U+FFFD
-    // TEST_TOKENS("'\0'", string(fromUChar32(0xFFFD)));
+    TEST_TOKENS(String("'\0'", 3), string(fromUChar32(0xFFFD)));
+    TEST_TOKENS(String("'hel\0lo'", 8), string("hel" + fromUChar32(0xFFFD) + "lo"));
+    TEST_TOKENS(String("'h\\65l\0lo'", 10), string("hel" + fromUChar32(0xFFFD) + "lo"));
 }
 
 TEST(CSSTokenizerTest, HashToken)
