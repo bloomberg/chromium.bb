@@ -8,8 +8,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
-namespace content {
-class BrowserContext;
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace chromeos {
@@ -31,8 +31,8 @@ class ProfileAuthData {
   //   |transfer_saml_auth_cookies_on_subsequent_login| is true and
   //   |to_context|'s cookie jar is not empty.
   static void Transfer(
-      content::BrowserContext* from_context,
-      content::BrowserContext* to_context,
+      net::URLRequestContextGetter* from_context,
+      net::URLRequestContextGetter* to_context,
       bool transfer_auth_cookies_and_channel_ids_on_first_login,
       bool transfer_saml_auth_cookies_on_subsequent_login,
       const base::Closure& completion_callback);

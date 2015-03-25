@@ -40,8 +40,8 @@ const char kSAMLEndCookie[] = "google-accounts-saml-end";
 class ProfileAuthDataTransferer {
  public:
   ProfileAuthDataTransferer(
-      content::BrowserContext* from_context,
-      content::BrowserContext* to_context,
+      net::URLRequestContextGetter* from_context,
+      net::URLRequestContextGetter* to_context,
       bool transfer_auth_cookies_and_channel_ids_on_first_login,
       bool transfer_saml_auth_cookies_on_subsequent_login,
       const base::Closure& completion_callback);
@@ -119,13 +119,13 @@ class ProfileAuthDataTransferer {
 };
 
 ProfileAuthDataTransferer::ProfileAuthDataTransferer(
-    content::BrowserContext* from_context,
-    content::BrowserContext* to_context,
+    net::URLRequestContextGetter* from_context,
+    net::URLRequestContextGetter* to_context,
     bool transfer_auth_cookies_and_channel_ids_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback)
-    : from_context_(from_context->GetRequestContext()),
-      to_context_(to_context->GetRequestContext()),
+    : from_context_(from_context),
+      to_context_(to_context),
       transfer_auth_cookies_and_channel_ids_on_first_login_(
           transfer_auth_cookies_and_channel_ids_on_first_login),
       transfer_saml_auth_cookies_on_subsequent_login_(
@@ -314,8 +314,8 @@ void ProfileAuthDataTransferer::Finish() {
 }  // namespace
 
 void ProfileAuthData::Transfer(
-    content::BrowserContext* from_context,
-    content::BrowserContext* to_context,
+    net::URLRequestContextGetter* from_context,
+    net::URLRequestContextGetter* to_context,
     bool transfer_auth_cookies_and_channel_ids_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback) {

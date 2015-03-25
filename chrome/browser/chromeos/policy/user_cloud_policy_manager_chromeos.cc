@@ -12,10 +12,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -212,7 +212,7 @@ void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
   // access token is already available.
   if (!client()->is_registered()) {
     if (wait_for_policy_fetch_) {
-      FetchPolicyOAuthTokenUsingSigninProfile();
+      FetchPolicyOAuthTokenUsingSigninContext();
     } else if (!access_token_.empty()) {
       OnAccessTokenAvailable(access_token_);
     }
@@ -286,13 +286,11 @@ void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
   SetEnterpriseUsersDefaults(policy_map);
 }
 
-void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {
-  scoped_refptr<net::URLRequestContextGetter> signin_context;
-  Profile* signin_profile = chromeos::ProfileHelper::GetSigninProfile();
-  if (signin_profile)
-    signin_context = signin_profile->GetRequestContext();
+void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninContext() {
+  scoped_refptr<net::URLRequestContextGetter> signin_context =
+      chromeos::login::GetSigninContext();
   if (!signin_context.get()) {
-    LOG(ERROR) << "No signin Profile for policy oauth token fetch!";
+    LOG(ERROR) << "No signin context for policy oauth token fetch!";
     OnOAuth2PolicyTokenFetched(
         std::string(), GoogleServiceAuthError(GoogleServiceAuthError::NONE));
     return;

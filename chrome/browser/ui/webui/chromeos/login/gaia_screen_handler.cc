@@ -402,7 +402,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& gaia_id,
     const std::string& email,
     const std::string& password,
-    const std::string& auth_code) {
+    const std::string& auth_code,
+    bool using_saml) {
   if (!Delegate())
     return;
 
@@ -416,6 +417,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
+  user_context.SetAuthFlow(using_saml
+                               ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
+                               : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
   Delegate()->CompleteLogin(user_context);
 }
 

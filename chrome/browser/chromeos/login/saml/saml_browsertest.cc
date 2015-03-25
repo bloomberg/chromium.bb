@@ -293,23 +293,28 @@ class SamlTest : public InProcessBrowserTest,
 
   bool SetUpUserDataDirectory() override {
     if (UseWebView()) {
-      // Enable webview signin.
+      // Fake Dev channel to enable webview signin.
       scoped_channel_.reset(new extensions::ScopedCurrentChannel(
           chrome::VersionInfo::CHANNEL_DEV));
-
-      base::DictionaryValue local_state_dict;
-      local_state_dict.SetBoolean(prefs::kWebviewSigninEnabled, true);
-      // OobeCompleted to skip controller-pairing-screen which still uses
-      // iframe and ends up in a JS error in oobe page init.
-      // See http://crbug.com/467147
-      local_state_dict.SetBoolean(prefs::kOobeComplete, true);
 
       base::FilePath user_data_dir;
       CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
       base::FilePath local_state_path =
           user_data_dir.Append(chrome::kLocalStateFilename);
-      CHECK(JSONFileValueSerializer(local_state_path)
-                .Serialize(local_state_dict));
+
+      // Set webview enabled flag only when local state file does not exist.
+      // Otherwise, we break PRE tests that leave state in it.
+      if (!base::PathExists(local_state_path)) {
+        base::DictionaryValue local_state_dict;
+        local_state_dict.SetBoolean(prefs::kWebviewSigninEnabled, true);
+        // OobeCompleted to skip controller-pairing-screen which still uses
+        // iframe and ends up in a JS error in oobe page init.
+        // See http://crbug.com/467147
+        local_state_dict.SetBoolean(prefs::kOobeComplete, true);
+
+        CHECK(JSONFileValueSerializer(local_state_path)
+                  .Serialize(local_state_dict));
+      }
     }
 
     return InProcessBrowserTest::SetUpUserDataDirectory();
@@ -1250,6 +1255,6 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, TransferCookiesUnaffiliated) {
 // TODO(xiyuan): Update once cookies are properly handled.
 INSTANTIATE_TEST_CASE_P(SamlSuite,
                         SAMLPolicyTest,
-                        testing::Values(false));
+                        testing::Bool());
 
 }  // namespace chromeos

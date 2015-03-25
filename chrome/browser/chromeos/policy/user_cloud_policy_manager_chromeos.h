@@ -110,8 +110,8 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
  private:
   // Fetches a policy token using the authentication context of the signin
-  // Profile, and calls back to OnOAuth2PolicyTokenFetched when done.
-  void FetchPolicyOAuthTokenUsingSigninProfile();
+  // context, and calls back to OnOAuth2PolicyTokenFetched when done.
+  void FetchPolicyOAuthTokenUsingSigninContext();
 
   // Called once the policy access token is available, and starts the
   // registration with the policy server if the token was successfully fetched.

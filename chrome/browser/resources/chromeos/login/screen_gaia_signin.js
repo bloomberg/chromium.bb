@@ -600,7 +600,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                       [credentials.gaiaId,
                        credentials.email,
                        credentials.password,
-                       credentials.authCode]);
+                       credentials.authCode,
+                       credentials.usingSAML]);
         }
       } else {
         chrome.send('completeLogin',

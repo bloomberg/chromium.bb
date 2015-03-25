@@ -21,6 +21,14 @@ class Rect;
 class Size;
 }  // namespace gfx
 
+namespace content {
+class StoragePartition;
+}
+
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace chromeos {
 
 // Returns bounds of the screen to use for login wizard.
@@ -65,6 +73,20 @@ class NetworkStateHelper {
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHelper);
 };
+
+//
+// Webview based login helpers.
+//
+
+// Returns the storage partition for the sign-in webview. Note the function gets
+// the partition via the sign-in WebContents thus returns nullptr if the sign-in
+// webui is torn down.
+content::StoragePartition* GetSigninPartition();
+
+// Returns the request context that contains sign-in cookies. For old iframe
+// based flow, the context of the sign-in profile is returned. For webview based
+// flow, the context of the sign-in webview storage partition is returned.
+net::URLRequestContextGetter* GetSigninContext();
 
 }  // namespace login
 

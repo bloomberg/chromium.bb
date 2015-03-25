@@ -172,6 +172,22 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
         name, base::Bind(&::login::CallbackWrapper4<A1, A2, A3, A4>, callback));
   }
 
+  template <typename T,
+            typename A1,
+            typename A2,
+            typename A3,
+            typename A4,
+            typename A5>
+  void AddCallback(
+      const std::string& name,
+      void (T::*method)(A1 arg1, A2 arg2, A3 arg3, A4 arg4, A5 arg5)) {
+    base::Callback<void(A1, A2, A3, A4, A5)> callback =
+        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+    web_ui()->RegisterMessageCallback(
+        name,
+        base::Bind(&::login::CallbackWrapper5<A1, A2, A3, A4, A5>, callback));
+  }
+
   template <typename Method>
   void AddPrefixedCallback(const std::string& unprefixed_name,
                            const Method& method) {

@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
@@ -72,7 +73,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -974,8 +974,8 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     const bool transfer_auth_cookies_and_channel_ids_on_first_login =
         has_auth_cookies_;
     ProfileAuthData::Transfer(
-        authenticator_->authentication_context(),
-        profile,
+        GetAuthRequestContext(),
+        profile->GetRequestContext(),
         transfer_auth_cookies_and_channel_ids_on_first_login,
         transfer_saml_auth_cookies_on_subsequent_login,
         base::Bind(&UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
@@ -1204,27 +1204,10 @@ void UserSessionManager::RestoreAuthSessionImpl(
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
-  net::URLRequestContextGetter* auth_request_context = NULL;
 
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    // Webview uses different partition storage than iframe. We need to get
-    // cookies from the right storage for url request to get auth token into
-    // session.
-    GURL oobe_url(chrome::kChromeUIOobeURL);
-    GURL guest_url(std::string(content::kGuestScheme) +
-                   url::kStandardSchemeSeparator + oobe_url.GetContent());
-    content::StoragePartition* partition =
-        content::BrowserContext::GetStoragePartitionForSite(
-            ProfileHelper::GetSigninProfile(), guest_url);
-    auth_request_context = partition->GetURLRequestContext();
-  } else if (authenticator_.get() && authenticator_->authentication_context()) {
-    auth_request_context =
-        authenticator_->authentication_context()->GetRequestContext();
-  }
-
-  login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
-                                user_context_.GetRefreshToken(),
-                                user_context_.GetAuthCode());
+  login_manager->RestoreSession(
+      GetAuthRequestContext(), session_restore_strategy_,
+      user_context_.GetRefreshToken(), user_context_.GetAuthCode());
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
@@ -1409,6 +1392,22 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
       user_context, *device_list,
       base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished, AsWeakPtr(),
                  user_context.GetUserID()));
+}
+
+net::URLRequestContextGetter*
+UserSessionManager::GetAuthRequestContext() const {
+  net::URLRequestContextGetter* auth_request_context = NULL;
+
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    // Webview uses different partition storage than iframe. We need to get
+    // cookies from the right storage for url request to get auth token into
+    // session.
+    auth_request_context = login::GetSigninPartition()->GetURLRequestContext();
+  } else if (authenticator_.get() && authenticator_->authentication_context()) {
+    auth_request_context =
+        authenticator_->authentication_context()->GetRequestContext();
+  }
+  return auth_request_context;
 }
 
 void UserSessionManager::AttemptRestart(Profile* profile) {

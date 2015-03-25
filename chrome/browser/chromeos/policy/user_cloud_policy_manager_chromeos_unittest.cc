@@ -342,14 +342,9 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   TestingProfile* profile_;
   TestingProfile* signin_profile_;
 
-  static const char kSigninProfile[];
-
  private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOSTest);
 };
-
-const char UserCloudPolicyManagerChromeOSTest::kSigninProfile[] =
-    "signin_profile";
 
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the

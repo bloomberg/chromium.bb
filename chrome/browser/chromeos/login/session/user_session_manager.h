@@ -28,6 +28,10 @@ class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace user_manager {
 class User;
 }  // namespace user_manager
@@ -219,6 +223,9 @@ class UserSessionManager
 
   // Update Easy unlock cryptohome keys for given user context.
   void UpdateEasyUnlockKeys(const UserContext& user_context);
+
+  // Returns the auth request context associated with auth data.
+  net::URLRequestContextGetter* GetAuthRequestContext() const;
 
   // Removes a profile from the per-user input methods states map.
   void RemoveProfileForTesting(Profile* profile);

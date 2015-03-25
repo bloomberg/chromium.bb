@@ -103,7 +103,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void HandleCompleteAuthentication(const std::string& gaia_id,
                                     const std::string& email,
                                     const std::string& password,
-                                    const std::string& auth_code);
+                                    const std::string& auth_code,
+                                    bool using_saml);
   void HandleCompleteAuthenticationAuthCodeOnly(const std::string& auth_code);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,

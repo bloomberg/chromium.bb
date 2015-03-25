@@ -122,6 +122,25 @@ void CallbackWrapper4(base::Callback<void(A1, A2, A3, A4)> callback,
   callback.Run(arg1, arg2, arg3, arg4);
 }
 
+template <typename A1, typename A2, typename A3, typename A4, typename A5>
+void CallbackWrapper5(base::Callback<void(A1, A2, A3, A4, A5)> callback,
+                      const base::ListValue* args) {
+  DCHECK(args);
+  DCHECK_EQ(5u, args->GetSize());
+  typename UnwrapConstRef<A1>::Type arg1;
+  typename UnwrapConstRef<A2>::Type arg2;
+  typename UnwrapConstRef<A3>::Type arg3;
+  typename UnwrapConstRef<A4>::Type arg4;
+  typename UnwrapConstRef<A5>::Type arg5;
+  if (!GetArg(args, 0, &arg1) || !GetArg(args, 1, &arg2) ||
+      !GetArg(args, 2, &arg3) || !GetArg(args, 3, &arg4) ||
+      !GetArg(args, 4, &arg5)) {
+    NOTREACHED();
+    return;
+  }
+  callback.Run(arg1, arg2, arg3, arg4, arg5);
+}
+
 }  // namespace login
 
 #endif  // COMPONENTS_LOGIN_BASE_SCREEN_HANDLER_UTILS_H_

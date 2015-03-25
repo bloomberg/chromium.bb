@@ -589,9 +589,15 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   StopPublicSessionAutoLoginTimer();
 
+  // Truth table of |has_auth_cookies|:
+  //                          Regular        SAML
+  //  /ServiceLogin              T            T
+  //  /ChromeOsEmbeddedSetup     F            T
+  //  Bootstrap experiment       F            N/A
   const bool has_auth_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
-      user_context.GetAuthCode().empty() &&
+      (user_context.GetAuthCode().empty() ||
+       user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML) &&
       user_context.GetAuthFlow() != UserContext::AUTH_FLOW_EASY_BOOTSTRAP;
 
   // LoginPerformer instance will delete itself in case of successful auth.
