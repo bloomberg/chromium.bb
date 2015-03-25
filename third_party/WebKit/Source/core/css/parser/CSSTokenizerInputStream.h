@@ -32,19 +32,8 @@ public:
         return (*m_string)[m_offset + lookaheadOffset];
     }
 
-    void advance(unsigned = 1);
+    void advance(unsigned offset = 1) { m_offset += offset; }
     void pushBack(UChar);
-
-    inline size_t maxLength()
-    {
-        return m_stringLength + 1;
-    }
-
-    inline size_t leftChars()
-    {
-        return m_stringLength - m_offset;
-
-    }
 
     double getDouble(unsigned start, unsigned end);
 

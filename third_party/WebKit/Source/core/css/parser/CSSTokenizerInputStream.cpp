@@ -19,17 +19,10 @@ CSSTokenizerInputStream::CSSTokenizerInputStream(String input)
 
 UChar CSSTokenizerInputStream::peek(unsigned lookaheadOffset)
 {
-    ASSERT((m_offset + lookaheadOffset) <= maxLength());
     if ((m_offset + lookaheadOffset) >= m_stringLength)
         return kEndOfFileMarker;
     UChar result = (*m_string)[m_offset + lookaheadOffset];
     return result ? result : 0xFFFD;
-}
-
-void CSSTokenizerInputStream::advance(unsigned offset)
-{
-    ASSERT(m_offset + offset <= maxLength());
-    m_offset += offset;
 }
 
 void CSSTokenizerInputStream::pushBack(UChar cc)

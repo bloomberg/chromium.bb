@@ -210,8 +210,6 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("sp\\61\tc\\65\fs", ident("spaces"));
     TEST_TOKENS("hel\\6c  o", ident("hell"), whitespace, ident("o"));
     TEST_TOKENS("test\\\n", ident("test"), delim('\\'), whitespace);
-    // TODO(timloh): This should be ident("eof" + replacement)
-    TEST_TOKENS("eof\\", ident("eof"), delim('\\'));
     TEST_TOKENS("test\\D799", ident("test" + fromUChar32(0xD799)));
     TEST_TOKENS("\\E000", ident(fromUChar32(0xE000)));
     TEST_TOKENS("te\\s\\t", ident("test"));
@@ -233,6 +231,7 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("\\10fFfF", ident(fromUChar32(0x10ffff)));
     TEST_TOKENS("\\10fFfF0", ident(fromUChar32(0x10ffff) + "0"));
     TEST_TOKENS("\\10000000", ident(fromUChar32(0x100000) + "00"));
+    TEST_TOKENS("eof\\", ident("eof" + replacement));
 }
 
 TEST(CSSTokenizerTest, IdentToken)

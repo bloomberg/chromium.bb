@@ -77,7 +77,7 @@ static bool isNewLine(UChar cc)
 // http://dev.w3.org/csswg/css-syntax/#check-if-two-code-points-are-a-valid-escape
 static bool twoCharsAreValidEscape(UChar first, UChar second)
 {
-    return first == '\\' && !isNewLine(second) && second != kEndOfFileMarker;
+    return first == '\\' && !isNewLine(second);
 }
 
 CSSTokenizer::CSSTokenizer(CSSTokenizerInputStream& inputStream, Scope& scope)
@@ -486,12 +486,8 @@ CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
     StringBuilder output;
     while (true) {
         UChar cc = consume();
-        if (cc == endingCodePoint || cc == kEndOfFileMarker) {
-            // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
-            if (cc == kEndOfFileMarker)
-                reconsume(cc);
+        if (cc == endingCodePoint || cc == kEndOfFileMarker)
             return CSSParserToken(StringToken, registerString(output.toString()));
-        }
         if (isNewLine(cc)) {
             reconsume(cc);
             return CSSParserToken(BadStringToken);
@@ -567,12 +563,8 @@ CSSParserToken CSSTokenizer::consumeUrlToken()
     StringBuilder result;
     while (true) {
         UChar cc = consume();
-        if (cc == ')' || cc == kEndOfFileMarker) {
-            // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
-            if (cc == kEndOfFileMarker)
-                reconsume(cc);
+        if (cc == ')' || cc == kEndOfFileMarker)
             return CSSParserToken(UrlToken, registerString(result.toString()));
-        }
 
         if (isHTMLSpace(cc)) {
             consumeUntilNonWhitespace();
@@ -715,9 +707,6 @@ UChar32 CSSTokenizer::consumeEscape()
 
 bool CSSTokenizer::nextTwoCharsAreValidEscape()
 {
-    // TODO(timloh): This check is wrong
-    if (m_input.leftChars() < 1)
-        return false;
     return twoCharsAreValidEscape(m_input.nextInputChar(), m_input.peek(1));
 }
 
