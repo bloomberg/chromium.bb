@@ -7675,6 +7675,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Never saved' tab">
         Never saved
       </message>
+      <message name="IDS_PASSWORDS_VIA_FEDERATION" desc="Text for federated credential's value.">
+        via <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
+      </message>
       <message name="IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS" desc="Placeholder text shown in password table search box">
         Search passwords
       </message>

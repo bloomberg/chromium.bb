@@ -202,6 +202,12 @@ void PasswordManagerHandler::SetPasswordList(
       entry->AppendString(
           base::string16(password_list[i]->password_value.length(), ' '));
     }
+    const GURL& federation_url = password_list[i]->federation_url;
+    if (!federation_url.is_empty()) {
+      entry->AppendString(l10n_util::GetStringFUTF16(
+          IDS_PASSWORDS_VIA_FEDERATION,
+          base::UTF8ToUTF16(federation_url.host())));
+    }
     entries.Append(entry);
   }
 
