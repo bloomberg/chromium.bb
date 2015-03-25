@@ -1,3 +1,10 @@
-Test that WebSocket is not subject to HTTP connection limit. Should say PASS:
+Test that WebSockets are not subject to the HTTP connection limit.
 
-PASS
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS socketsOpened is 50
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

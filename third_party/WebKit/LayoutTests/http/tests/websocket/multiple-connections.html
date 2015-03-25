@@ -1,34 +1,51 @@
-<p>Test that WebSocket is not subject to HTTP connection limit. Should say PASS:</p>
-<p id=result>Running...</p>
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
+description("Test that WebSockets are not subject to the HTTP connection limit.");
 
-var socketCount = 50;
-var result = document.getElementById("result");
+window.jsTestIsAsync = true;
+
+const SOCKETS_TO_OPEN = 50;
+// PARALLELISM limits the number of connections we try to open simultaneously.
+// This avoids triggering the throttling added in http://crrev.com/972963002,
+// which slows the test down considerably. 4 is the maximum number of
+// simultaneous pending connections guaranteeed to have zero throttling delay
+// applied, but parallelism of 2 seems to give the best performance in practice.
+const PARALLELISM = 2;
+
+var socketsOpened = 0;
 var sockets = [];
 
-for (i = 0; i < socketCount; ++i) {
+function createNewWebSocket()
+{
     var ws = new WebSocket("ws://127.0.0.1:8880/echo");
-    sockets[i] = ws;
+    sockets.push(ws);
     ws.onopen = function() {
-        var num = parseInt(result.innerHTML);
-        if (!num)
-            num = 0;
-        if (num != socketCount - 1)
-            result.innerHTML = num + 1;
-        else {
-            result.innerHTML = "PASS";
-            for (j = 0; j < socketCount; ++j) {
-                sockets[j].onclose = null;
-                sockets[j].close();
-            }
-            if (window.testRunner)
-                testRunner.notifyDone();
+        if (sockets.length < SOCKETS_TO_OPEN) {
+            createNewWebSocket();
         }
+        ++socketsOpened;
+        if (socketsOpened == SOCKETS_TO_OPEN) {
+            cleanUpSocketsAndFinish();
+        }
+    };
+    ws.onclose = function() {
+        testFailed("unexpected close event");
+        cleanUpSocketsAndFinish();
+    };
+}
+
+function cleanUpSocketsAndFinish()
+{
+    for (var ws of sockets) {
+        ws.onclose = null;
+        ws.close();
     }
-    ws.onclose = function() { alert("FAIL: unexpected close event") }
+    shouldBeEqualToNumber("socketsOpened", SOCKETS_TO_OPEN);
+    finishJSTest();
+}
+
+for (var i = 0; i < PARALLELISM; ++i) {
+    createNewWebSocket();
 }
 </script>
