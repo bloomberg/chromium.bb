@@ -1322,12 +1322,18 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
         scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
   } else {
     float visible_ratio = clip_rect.height() / scroll_rect.height();
-    scrollbar_needs_animation |=
+    bool y_offset_did_change =
         scrollbar_layer->SetCurrentPos(current_offset.y());
+    scrollbar_needs_animation |= y_offset_did_change;
     scrollbar_needs_animation |=
         scrollbar_layer->SetMaximum(scroll_rect.height() - clip_rect.height());
     scrollbar_needs_animation |=
         scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
+    if (y_offset_did_change && layer_tree_impl()->IsActiveTree() &&
+        this == layer_tree_impl()->InnerViewportScrollLayer()) {
+      TRACE_COUNTER_ID1("cc", "scroll_offset_y", this->id(),
+                        current_offset.y());
+    }
   }
   if (scrollbar_needs_animation) {
     layer_tree_impl()->set_needs_update_draw_properties();
