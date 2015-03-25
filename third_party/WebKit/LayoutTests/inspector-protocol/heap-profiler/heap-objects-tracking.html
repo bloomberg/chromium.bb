@@ -24,8 +24,6 @@ function setupIntervalAndRunTest()
 
 function test()
 {
-    InspectorTest.importScript("../../../../inspector-protocol/heap-profiler/resources/heap-snapshot-common.js");
-
     var lastSeenObjectIdEventCount = 0;
     var heapStatsUpdateEventCount = 0;
     function trackingStarted()

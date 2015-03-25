@@ -9,6 +9,8 @@ InspectorTest.importScript("../../../../../Source/devtools/front_end/common/UISt
 InspectorTest.importScript("../../../../../Source/devtools/front_end/profiler/HeapSnapshotCommon.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/heap_snapshot_worker/HeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/heap_snapshot_worker/JSHeapSnapshot.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/common/TextUtils.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/heap_snapshot_worker/HeapSnapshotLoader.js");
 
 InspectorTest.fail = function(message)
 {
@@ -16,24 +18,31 @@ InspectorTest.fail = function(message)
     InspectorTest.completeTest();
 }
 
-InspectorTest.takeHeapSnapshot = function(callback)
+InspectorTest._takeHeapSnapshotInternal = function(command, callback)
 {
-    var chunks = [];
+    var loader = new WebInspector.HeapSnapshotLoader();
     InspectorTest.eventHandler["HeapProfiler.addHeapSnapshotChunk"] = function(messageObject)
     {
-        chunks.push(messageObject["params"]["chunk"]);
+        loader.write(messageObject["params"]["chunk"]);
     }
 
     function didTakeHeapSnapshot(messageObject)
     {
-        var serializedSnapshot = chunks.join("");
-        var parsed = JSON.parse(serializedSnapshot);
-        parsed.nodes = new Uint32Array(parsed.nodes);
-        parsed.edges = new Uint32Array(parsed.edges);
-        var snapshot = new WebInspector.JSHeapSnapshot(parsed, new WebInspector.HeapSnapshotProgress());
+        InspectorTest.log("Took heap snapshot");
+        loader.close();
+        var snapshot = loader.buildSnapshot(false);
+        InspectorTest.log("Parsed snapshot");
         callback(snapshot);
-        InspectorTest.log("SUCCESS: didGetHeapSnapshot");
-        InspectorTest.completeTest();
     }
-    InspectorTest.sendCommand("HeapProfiler.takeHeapSnapshot", {}, didTakeHeapSnapshot);
+    InspectorTest.sendCommand(command, {}, didTakeHeapSnapshot);
+}
+
+InspectorTest.takeHeapSnapshot = function(callback)
+{
+    InspectorTest._takeHeapSnapshotInternal("HeapProfiler.takeHeapSnapshot", callback);
+}
+
+InspectorTest.stopRecordingHeapTimeline = function(callback)
+{
+    InspectorTest._takeHeapSnapshotInternal("HeapProfiler.stopTrackingHeapObjects", callback);
 }

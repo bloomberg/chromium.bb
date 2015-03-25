@@ -53,6 +53,7 @@ function test()
         }
         if (!nativeRetainers)
             return fail("cannot find HTMLBodyElement among retainers of " + node.name());
+        InspectorTest.completeTest();
     }
 
     function fail(message) {
