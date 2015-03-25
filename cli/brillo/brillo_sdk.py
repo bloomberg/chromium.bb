@@ -27,8 +27,7 @@ class SdkCommand(command.CliCommand):
 
   BRILLO_SDK_NO_UPDATE = 'BRILLO_SDK_NO_UPDATE'
 
-  @classmethod
-  def _UpdateWorkspaceSdk(cls, bootstrap_path, workspace_path, version):
+  def _UpdateWorkspaceSdk(self, bootstrap_path, workspace_path, version):
     """Install specified SDK, and associate the workspace with it."""
     if project_sdk.FindSourceRoot(bootstrap_path):
       cros_build_lib.Die('brillo sdk must run from a git clone. brbug.com/580')
@@ -37,13 +36,12 @@ class SdkCommand(command.CliCommand):
 
     # If this version already exists, no need to reinstall it.
     if not project_sdk.FindSourceRoot(sdk_path):
-      cls._UpdateSdk(sdk_path, version)
+      self._UpdateSdk(sdk_path, version)
 
     # Store the new version in the workspace.
     workspace_lib.SetActiveSdkVersion(workspace_path, version)
 
-  @classmethod
-  def _UpdateSdk(cls, sdk_dir, version):
+  def _UpdateSdk(self, sdk_dir, version):
     """Install the specified SDK at the specified location.
 
     Args:
@@ -70,18 +68,16 @@ class SdkCommand(command.CliCommand):
     # Sync it.
     repo.Sync()
 
-  @classmethod
-  def _HandleUpdate(cls, bootstrap_path, workspace_path, sdk_dir, version):
+  def _HandleUpdate(self, bootstrap_path, workspace_path, sdk_dir, version):
     if sdk_dir:
       # Install the SDK to an explicit location.
-      cls._UpdateSdk(sdk_dir, version)
+      self._UpdateSdk(sdk_dir, version)
 
     if workspace_path:
       # If we are in a workspace, update the SDK for that workspace.
-      cls._UpdateWorkspaceSdk(bootstrap_path, workspace_path, version)
+      self._UpdateWorkspaceSdk(bootstrap_path, workspace_path, version)
 
-  @classmethod
-  def _FindVersion(cls, workspace_path, sdk_dir):
+  def _FindVersion(self, workspace_path, sdk_dir):
     if sdk_dir:
       return project_sdk.FindVersion(sdk_dir)
 
@@ -90,15 +86,14 @@ class SdkCommand(command.CliCommand):
 
     return None
 
-  @classmethod
-  def _SelfUpdate(cls, bootstrap_path):
+  def _SelfUpdate(self, bootstrap_path):
     """Update the bootstrap repository."""
     # If our bootstrap is part of a repository, we shouldn't update.
     if project_sdk.FindSourceRoot(bootstrap_path):
       return
 
     # If the 'skip update' variable is set, we shouldn't update.
-    if os.environ.get(cls.BRILLO_SDK_NO_UPDATE):
+    if os.environ.get(self.BRILLO_SDK_NO_UPDATE):
       return
 
     # Perform the git pull to update our bootstrap.
@@ -107,7 +102,7 @@ class SdkCommand(command.CliCommand):
 
     # Prevent updating again, after we restart.
     logging.debug('Re-exec...')
-    os.environ[cls.BRILLO_SDK_NO_UPDATE] = "1"
+    os.environ[self.BRILLO_SDK_NO_UPDATE] = "1"
     commandline.ReExec()
 
   @classmethod

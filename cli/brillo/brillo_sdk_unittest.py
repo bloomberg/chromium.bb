@@ -80,21 +80,25 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     self.StartPatcher(self.cmd_mock)
 
   def testFindVersion(self):
+    self.SetupCommandMock([])
+
     # If we only no the workspace, use the workspace version.
     self.assertEqual(
         self.workspace_version,
-        brillo_sdk.SdkCommand._FindVersion(self.workspace_path, None))
+        self.cmd_mock.inst._FindVersion(self.workspace_path, None))
 
     # If we have an explicit sdk path, use it's version.
     self.assertEqual(
         self.sdk_version,
-        brillo_sdk.SdkCommand._FindVersion(None, self.sdk_path))
+        self.cmd_mock.inst._FindVersion(None, self.sdk_path))
     self.assertEqual(
         self.sdk_version,
-        brillo_sdk.SdkCommand._FindVersion(self.workspace_path, self.sdk_path))
+        self.cmd_mock.inst._FindVersion(self.workspace_path, self.sdk_path))
 
   def testHandleExplicitUpdate(self):
-    brillo_sdk.SdkCommand._HandleUpdate(
+    self.SetupCommandMock([])
+
+    self.cmd_mock.inst._HandleUpdate(
         self.bootstrap_path, None, self.sdk_path, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
@@ -107,7 +111,9 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
   def testHandleLatestUpdate(self):
-    brillo_sdk.SdkCommand._HandleUpdate(
+    self.SetupCommandMock([])
+
+    self.cmd_mock.inst._HandleUpdate(
         self.bootstrap_path, None, self.sdk_path, 'latest')
 
     # Given the explicit path and version, sync what we expect, and where.
@@ -120,7 +126,9 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
   def testHandleTotUpdate(self):
-    brillo_sdk.SdkCommand._HandleUpdate(
+    self.SetupCommandMock([])
+
+    self.cmd_mock.inst._HandleUpdate(
         self.bootstrap_path, None, self.sdk_path, 'tot')
 
     # Given the explicit path and version, sync what we expect, and where.
@@ -133,7 +141,9 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
   def testHandleWorkspaceUpdate(self):
-    brillo_sdk.SdkCommand._HandleUpdate(
+    self.SetupCommandMock([])
+
+    self.cmd_mock.inst._HandleUpdate(
         self.bootstrap_path, self.workspace_path, None, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
