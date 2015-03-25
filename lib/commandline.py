@@ -71,6 +71,26 @@ class ChrootRequiredError(Exception):
     self.chroot_args = chroot_args
 
 
+class ExecRequiredError(Exception):
+  """Raised when a command needs to exec, after cleanup.
+
+  This exception is intended to be caught by code which will exec another
+  command. Throwing this exception allows contexts to be exited and general
+  cleanup to happen before we exec an external binary.
+
+  The command to run is attached to the exception. Any adjustments to the
+  arguments should be done before raising the exception.
+  """
+  def __init__(self, cmd):
+    """Constructor for ExecRequiredError.
+
+    Args:
+      cmd: Command line to run inside the chroot as a list of strings.
+    """
+    super(ExecRequiredError, self).__init__(self)
+    self.cmd = cmd
+
+
 def DetermineCheckout(cwd):
   """Gather information on the checkout we are in.
 
@@ -810,6 +830,17 @@ def RunInsideChroot(command, auto_detect_brick=False,
   raise ChrootRequiredError(argv, chroot_args)
 
 
+def ReExec():
+  """Restart the current command.
+
+  This method is only valid for any code that is run via ScriptWrapperMain.
+  It allows proper cleanup of the local context by raising an exception handled
+  in ScriptWrapperMain.
+  """
+  # The command to exec.
+  raise ExecRequiredError(sys.argv[:])
+
+
 def ScriptWrapperMain(find_target_func, argv=None,
                       log_level=logging.DEBUG,
                       log_format=constants.LOGGER_FMT):
@@ -868,6 +899,10 @@ def ScriptWrapperMain(find_target_func, argv=None,
     raise
   except ChrootRequiredError as e:
     ret = _RestartInChroot(e.cmd, e.chroot_args)
+  except ExecRequiredError as e:
+    logging.shutdown()
+    # This does not return.
+    os.execv(e.cmd[0], e.cmd)
   except Exception as e:
     sys.stdout.flush()
     print('%s: Unhandled exception:' % (name,), file=sys.stderr)
