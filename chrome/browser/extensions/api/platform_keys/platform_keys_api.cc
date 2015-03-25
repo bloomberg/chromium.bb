@@ -24,8 +24,12 @@ namespace api_pki = api::platform_keys_internal;
 namespace {
 
 const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
+const char kErrorAlgorithmNotPermittedByCertificate[] =
+    "The requested Algorithm is not permitted by the certificate.";
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
+
+const char kWebCryptoRSASSA_PKCS1_v1_5[] = "RSASSA-PKCS1-v1_5";
 
 struct PublicKeyInfo {
   // The X.509 Subject Public Key Info of the key in DER encoding.
@@ -46,7 +50,7 @@ struct PublicKeyInfo {
 void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
                                           base::DictionaryValue* algorithm) {
   CHECK_EQ(net::X509Certificate::kPublicKeyTypeRSA, key_info.key_type);
-  algorithm->SetStringWithoutPathExpansion("name", "RSASSA-PKCS1-v1_5");
+  algorithm->SetStringWithoutPathExpansion("name", kWebCryptoRSASSA_PKCS1_v1_5);
   algorithm->SetIntegerWithoutPathExpansion("modulusLength",
                                             key_info.key_size_bits);
 
@@ -120,6 +124,13 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
                                              &key_info.key_size_bits) ||
       key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA) {
     return RespondNow(Error(kErrorAlgorithmNotSupported));
+  }
+
+  // Currently, the only supported combination is:
+  //   A certificate declaring rsaEncryption in the SubjectPublicKeyInfo used
+  //   with the RSASSA-PKCS1-v1.5 algorithm.
+  if (params->algorithm_name != kWebCryptoRSASSA_PKCS1_v1_5) {
+    return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
   }
 
   api_pki::GetPublicKey::Results::Algorithm algorithm;

@@ -19,11 +19,14 @@ var callbackFail= chrome.test.callbackFail;
 // Each value is the path to a file in this extension's folder that will be
 // loaded and replaced by a Uint8Array in the setUp() function below.
 var data = {
-  // X.509 client certificates in DER encoding.
+  // X.509 client certificate in DER encoding.
+  // Algorithm in SPKI: rsaEncryption.
   // openssl x509 -in net/data/ssl/certificates/client_1.pem -outform DER -out
   //   client_1.der
   client_1: 'client_1.der',
 
+  // X.509 client certificate in DER encoding.
+  // Algorithm in SPKI: rsaEncryption.
   // openssl x509 -in net/data/ssl/certificates/client_2.pem -outform DER -out
   //   client_2.der
   client_2: 'client_2.der',
@@ -267,6 +270,17 @@ function testGetKeyPairMissingAlgorithName() {
   }
 }
 
+function testGetKeyPairRejectsRSAPSS() {
+  var keyParams = {
+    name: 'RSA-PSS',
+    hash: {name: 'SHA-1'}
+  };
+  chrome.platformKeys.getKeyPair(
+      data.client_1.buffer, keyParams,
+      callbackFail(
+          'The requested Algorithm is not permitted by the certificate.'));
+}
+
 function testGetKeyPair() {
   var keyParams = {
     // Algorithm names are case-insensitive.
@@ -390,6 +404,7 @@ var testSuites = {
       testInteractiveSelectNoCerts,
       testMatchResult,
       testGetKeyPairMissingAlgorithName,
+      testGetKeyPairRejectsRSAPSS,
       testGetKeyPair,
       testSignNoHash,
       testSignSha1Client1,

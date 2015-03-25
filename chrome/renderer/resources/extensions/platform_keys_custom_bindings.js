@@ -49,6 +49,10 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest(
       'getKeyPair', function(cert, params, callback) {
         getPublicKey(cert, params, function(publicKey, algorithm) {
+          if (chrome.runtime.lastError) {
+            callback();
+            return;
+          }
           callback(createPublicKey(publicKey, algorithm),
                    createPrivateKey(publicKey, algorithm));
         });

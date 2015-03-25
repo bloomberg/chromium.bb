@@ -53,14 +53,15 @@ function combineAlgorithms(algorithm, importParams) {
 
 function getPublicKey(cert, importParams, callback) {
   importParams = normalizeImportParams(importParams);
-  // TODO(pneubeck): pass importParams.name to the internal getPublicKey and
-  // verify on the C++ side that the requested algorithm is compatible with the
-  // given SubjectPublicKeyInfo of the certificate.
-  // https://crbug.com/466584
-  internalAPI.getPublicKey(cert, function(publicKey, algorithm) {
-    var combinedAlgorithm = combineAlgorithms(algorithm, importParams);
-    callback(publicKey, combinedAlgorithm);
-  });
+  internalAPI.getPublicKey(
+      cert, importParams.name, function(publicKey, algorithm) {
+        if (chrome.runtime.lastError) {
+          callback();
+          return;
+        }
+        var combinedAlgorithm = combineAlgorithms(algorithm, importParams);
+        callback(publicKey, combinedAlgorithm);
+      });
 }
 
 exports.getPublicKey = getPublicKey;
