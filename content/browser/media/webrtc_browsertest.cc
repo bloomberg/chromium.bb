@@ -33,9 +33,6 @@ namespace content {
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
-#elif defined(OS_WIN)
-// Test is flaky on Win. http://crbug.com/470013.
-#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
 #endif
@@ -48,6 +45,10 @@ class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
   // Convenience function since most peerconnection-call.html tests just load
   // the page, kick off some javascript and wait for the title to change to OK.
   void MakeTypicalPeerConnectionCall(const std::string& javascript) {
+    if (OnWinXp()) {
+      // Test is flaky on Win XP. http://crbug.com/470013.
+      return;
+    }
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
