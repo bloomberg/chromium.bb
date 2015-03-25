@@ -6,6 +6,7 @@ Running: selectInitialNode
 Running: testSimpleFiltering
 Filtering styles by: padding
 element.style {
+   margin:>1px
 }
 .mydiv {
    border:>1px solid black
@@ -19,6 +20,11 @@ F      padding-left: 10px
 Running: testLonghandsAreAutoExpanded
 Filtering styles by: -top
 element.style {
+   margin:v1px
+F      margin-top: 1px
+       margin-right: 1px
+       margin-bottom: 1px
+       margin-left: 1px
 }
 .mydiv {
    border:v1px solid black
@@ -44,6 +50,7 @@ F      padding-top: 10px
 Running: testAutoExpandedLonghandsAreCollapsed
 Filtering styles by: null
 element.style {
+   margin:>1px
 }
 #inspected {
    border-size: 2px
