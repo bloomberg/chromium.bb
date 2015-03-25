@@ -79,6 +79,7 @@ html {
   line-height: 1.4;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Classes for light, dark and sepia themes.
