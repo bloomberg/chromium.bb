@@ -42,8 +42,8 @@ ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
                      !base::CommandLine::ForCurrentProcess()->HasSwitch(
                          chromeos::switches::kDisableVoiceInput));
   output->SetBoolean("isNewMDInputViewEnabled",
-                     base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         chromeos::switches::kEnableNewMDInputView));
+                     !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                         chromeos::switches::kDisableNewMDInputView));
   return RespondNow(OneArgument(output));
 #endif
 }
