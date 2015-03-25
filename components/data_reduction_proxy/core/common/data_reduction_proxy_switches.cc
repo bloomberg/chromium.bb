@@ -70,5 +70,9 @@ const char kEnableDataReductionProxyBypassWarning[] =
 const char kClearDataReductionProxyDataSavings[] =
     "clear-data-reduction-proxy-data-savings";
 
+// Enable the data reduction proxy config client.
+const char kEnableDataReductionProxyConfigClient[] =
+    "enable-data-reduction-proxy-config-client";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

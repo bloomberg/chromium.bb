@@ -90,6 +90,12 @@ void DataReductionProxyConfig::SetProxyPrefs(bool enabled,
                             alternative_enabled, at_startup));
 }
 
+void DataReductionProxyConfig::ReloadConfig() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
+                     restricted_by_carrier_, false /* at_startup */);
+}
+
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
     const net::URLRequest* request,
     DataReductionProxyTypeInfo* proxy_info) const {
@@ -276,18 +282,31 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
-  if (enabled & !config_values_->holdback()) {
+  std::string origin;
+  std::string fallback_origin;
+  std::string ssl_origin;
+  bool fallback_allowed = false;
+  if (enabled && !disabled_on_vpn_ && !config_values_->holdback()) {
     if (alternative_enabled) {
-      configurator_->Enable(restricted,
-                            !config_values_->alternative_fallback_allowed(),
-                            config_values_->alt_origin().ToURI(), std::string(),
-                            config_values_->ssl_origin().ToURI());
+      fallback_allowed = config_values_->alternative_fallback_allowed();
+      if (config_values_->alt_origin().is_valid())
+        origin = config_values_->alt_origin().ToURI();
+      if (config_values_->ssl_origin().is_valid())
+        ssl_origin = config_values_->ssl_origin().ToURI();
     } else {
-      configurator_->Enable(restricted, !config_values_->fallback_allowed(),
-                            config_values_->origin().ToURI(),
-                            config_values_->fallback_origin().ToURI(),
-                            std::string());
+      fallback_allowed = config_values_->fallback_allowed();
+      if (config_values_->origin().is_valid())
+        origin = config_values_->origin().ToURI();
+      if (config_values_->fallback_origin().is_valid())
+        fallback_origin = config_values_->fallback_origin().ToURI();
     }
+  }
+
+  // TODO(jeremyim): Enable should take std::vector<net::ProxyServer> as its
+  // parameters.
+  if (!origin.empty() || !fallback_origin.empty() || !ssl_origin.empty()) {
+    configurator_->Enable(restricted, !fallback_allowed, origin,
+                          fallback_origin, ssl_origin);
   } else {
     configurator_->Disable();
   }
@@ -475,17 +494,18 @@ bool DataReductionProxyConfig::DisableIfVPN() {
             interface_name.begin(),
             interface_name.begin() + vpn_interface_name_prefix.size(),
             vpn_interface_name_prefix.c_str())) {
-      UpdateConfigurator(false, alternative_enabled_by_user_, false, false);
       disabled_on_vpn_ = true;
+      UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
+                         restricted_by_carrier_, false);
       RecordNetworkChangeEvent(DISABLED_ON_VPN);
       return true;
     }
   }
   if (disabled_on_vpn_) {
+    disabled_on_vpn_ = false;
     UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
                        restricted_by_carrier_, false);
   }
-  disabled_on_vpn_ = false;
   return false;
 }
 

@@ -12,11 +12,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "net/base/backoff_entry.h"
 #include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -38,12 +40,14 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
+class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
 class DataReductionProxyStatisticsPrefs;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
 class TestDataReductionProxyConfigurator;
+class TestDataReductionProxyParams;
 
 // Test version of |DataReductionProxyRequestOptions|.
 class TestDataReductionProxyRequestOptions
@@ -83,6 +87,69 @@ class MockDataReductionProxyRequestOptions
                      void(base::DictionaryValue* response));
 };
 
+// Test version of |DataReductionProxyConfigServiceClient|, which permits
+// finely controlling the backoff timer.
+class TestDataReductionProxyConfigServiceClient
+    : public DataReductionProxyConfigServiceClient {
+ public:
+  TestDataReductionProxyConfigServiceClient(
+      scoped_ptr<DataReductionProxyParams> params,
+      DataReductionProxyRequestOptions* request_options,
+      DataReductionProxyMutableConfigValues* config_values,
+      DataReductionProxyConfig* config,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+
+  ~TestDataReductionProxyConfigServiceClient() override;
+
+  void SetNow(const base::Time& time);
+
+  void SetCustomReleaseTime(const base::TimeTicks& release_time);
+
+  base::TimeDelta GetDelay() const;
+
+ protected:
+  // Overrides of DataReductionProxyConfigServiceClient
+  base::Time Now() const override;
+  net::BackoffEntry* GetBackoffEntry() override;
+
+ private:
+  // A clock which returns a fixed value in both base::Time and base::TimeTicks.
+  class TestTickClock {
+   public:
+    TestTickClock(const base::Time& initial_time);
+
+    // Returns the current base::TimeTicks
+    base::TimeTicks NowTicks() const;
+
+    // Returns the current base::Time
+    base::Time Now() const;
+
+    // Sets the current time.
+    void SetTime(const base::Time& time);
+
+   private:
+    base::Time time_;
+  };
+
+  // A net::BackoffEntry which uses an injected base::TickClock to control
+  // the backoff expiration time.
+  class TestBackoffEntry : public net::BackoffEntry {
+   public:
+    TestBackoffEntry(const BackoffEntry::Policy* const policy,
+                     const TestTickClock* tick_clock);
+
+   protected:
+    // Override of net::BackoffEntry.
+    base::TimeTicks ImplGetTimeNow() const override;
+
+   private:
+    const TestTickClock* tick_clock_;
+  };
+
+  TestTickClock tick_clock_;
+  TestBackoffEntry test_backoff_entry_;
+};
+
 // Test version of |DataReductionProxyService|, which permits mocking of various
 // methods.
 class MockDataReductionProxyService : public DataReductionProxyService {
@@ -105,14 +172,19 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
  public:
   TestDataReductionProxyIOData(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_ptr<TestDataReductionProxyConfig> config,
+      scoped_ptr<DataReductionProxyConfig> config,
       scoped_ptr<DataReductionProxyEventStore> event_store,
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
-      scoped_ptr<DataReductionProxyConfigurator> configurator);
+      scoped_ptr<DataReductionProxyConfigurator> configurator,
+      scoped_ptr<DataReductionProxyConfigServiceClient> config_client);
   ~TestDataReductionProxyIOData() override;
 
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
+  }
+
+  DataReductionProxyConfigServiceClient* config_client() const {
+    return config_client_.get();
   }
 };
 
@@ -165,6 +237,13 @@ class DataReductionProxyTestContext {
     // |DataReductionProxyRequestOptions|.
     Builder& WithMockRequestOptions();
 
+    // Specifies the use of the |DataReductionProxyConfigServiceClient|.
+    Builder& WithConfigClient();
+
+    // Specifies the use of the a |TestDataReductionProxyConfigServiceClient|
+    // instead of a |DataReductionProxyConfigServiceClient|.
+    Builder& WithTestConfigClient();
+
     // Construct, but do not initialize the |DataReductionProxySettings| object.
     Builder& SkipSettingsInitialization();
 
@@ -182,6 +261,8 @@ class DataReductionProxyTestContext {
     bool use_test_configurator_;
     bool use_mock_service_;
     bool use_mock_request_options_;
+    bool use_config_client_;
+    bool use_test_config_client_;
     bool skip_settings_initialization_;
   };
 
@@ -231,6 +312,17 @@ class DataReductionProxyTestContext {
   // only be called if built with WithMockRequestOptions.
   MockDataReductionProxyRequestOptions* mock_request_options() const;
 
+  // Returns the underlying |TestDataReductionProxyConfig|.
+  TestDataReductionProxyConfig* config() const;
+
+  // Returns the underlying |DataReductionProxyMutableConfigValues|. This can
+  // only be called if built with WithConfigClient.
+  DataReductionProxyMutableConfigValues* mutable_config_values();
+
+  // Returns the underlying |TestDataReductionProxyConfigServiceClient|. This
+  // can only be called if built with WithTestConfigClient.
+  TestDataReductionProxyConfigServiceClient* test_config_client();
+
   // Obtains a callback for notifying that the Data Reduction Proxy is no
   // longer reachable.
   DataReductionProxyUsageStats::UnreachableCallback
@@ -260,16 +352,16 @@ class DataReductionProxyTestContext {
     return io_data_->configurator();
   }
 
-  TestDataReductionProxyConfig* config() const {
-    return reinterpret_cast<TestDataReductionProxyConfig*>(io_data_->config());
-  }
-
   TestDataReductionProxyIOData* io_data() const {
     return io_data_.get();
   }
 
   DataReductionProxySettings* settings() const {
     return settings_.get();
+  }
+
+  TestDataReductionProxyParams* test_params() const {
+    return params_;
   }
 
  private:
@@ -287,6 +379,10 @@ class DataReductionProxyTestContext {
     USE_MOCK_SERVICE = 0x8,
     // Permits mocking of the underlying |DataReductionProxyRequestOptions|.
     USE_MOCK_REQUEST_OPTIONS = 0x10,
+    // Specifies the use of the |DataReductionProxyConfigServiceClient|.
+    USE_CONFIG_CLIENT = 0x20,
+    // Specifies the use of the |TESTDataReductionProxyConfigServiceClient|.
+    USE_TEST_CONFIG_CLIENT = 0x40,
   };
 
   DataReductionProxyTestContext(
@@ -298,6 +394,7 @@ class DataReductionProxyTestContext {
       net::MockClientSocketFactory* mock_socket_factory,
       scoped_ptr<TestDataReductionProxyIOData> io_data,
       scoped_ptr<DataReductionProxySettings> settings,
+      TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
 
   void InitSettingsWithoutCheck();
@@ -319,6 +416,8 @@ class DataReductionProxyTestContext {
 
   scoped_ptr<TestDataReductionProxyIOData> io_data_;
   scoped_ptr<DataReductionProxySettings> settings_;
+
+  TestDataReductionProxyParams* params_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyTestContext);
 };

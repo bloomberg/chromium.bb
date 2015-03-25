@@ -45,7 +45,7 @@ class DataReductionProxySettingsTest
     test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                               initially_enabled);
     test_context_->config()->SetStateForTest(initially_enabled, false,
-                                             !request_succeeded, false);
+                                             !request_succeeded);
     ExpectSetProxyPrefs(expected_enabled, false, false);
     settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
@@ -55,7 +55,7 @@ class DataReductionProxySettingsTest
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   settings_->InitPrefMembers();
   // The proxy is disabled initially.
-  test_context_->config()->SetStateForTest(false, false, false, false);
+  test_context_->config()->SetStateForTest(false, false, false);
 
   EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
@@ -74,7 +74,7 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
 TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
   settings_->InitPrefMembers();
   // The proxy is disabled initially.
-  test_context_->config()->SetStateForTest(false, false, false, false);
+  test_context_->config()->SetStateForTest(false, false, false);
 
   GURL http_gurl("http://url.com/");
   EXPECT_FALSE(settings_->CanUseDataReductionProxy(http_gurl));
@@ -240,7 +240,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .Build();
 
   // The proxy is enabled initially.
-  drp_test_context->config()->SetStateForTest(true, false, false, true);
+  drp_test_context->config()->SetStateForTest(true, false, false);
   drp_test_context->InitSettings();
 
   // The pref is disabled, so correspondingly should be the proxy.
@@ -269,7 +269,7 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
 
   // TODO(bengr): Test enabling/disabling while a secure proxy check is
   // outstanding.
-  // The proxy is enabled and unrestructed initially.
+  // The proxy is enabled and unrestricted initially.
   // Request succeeded but with bad response, expect proxy to be restricted.
   CheckMaybeActivateDataReductionProxy(true, true, true, true, false);
   // Request succeeded with valid response, expect proxy to be unrestricted.

@@ -90,6 +90,11 @@ class DataReductionProxyConfig
                              bool alternative_enabled,
                              bool at_startup);
 
+  // Provides a mechanism for an external object to force |this| to refresh
+  // the Data Reduction Proxy configuration from |config_values_| and apply to
+  // |configurator_|. Used by the Data Reduction Proxy config service client.
+  void ReloadConfig();
+
   // Returns true if a Data Reduction Proxy was used for the given |request|.
   // If true, |proxy_info.proxy_servers.first| will contain the name of the
   // proxy that was used. |proxy_info.proxy_servers.second| will contain the

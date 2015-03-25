@@ -10,9 +10,11 @@
 #include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -46,12 +48,32 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   event_store_.reset(new DataReductionProxyEventStore(ui_task_runner));
   configurator_.reset(new DataReductionProxyConfigurator(
       io_task_runner, net_log, event_store_.get()));
-  config_.reset(new DataReductionProxyConfig(
-      io_task_runner_, ui_task_runner_, net_log, params.Pass(),
-      configurator_.get(), event_store_.get()));
+  bool use_config_client = DataReductionProxyParams::IsConfigClientEnabled();
+  DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
+  if (use_config_client) {
+    scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =
+        DataReductionProxyMutableConfigValues::CreateFromParams(io_task_runner_,
+                                                                params.get());
+    raw_mutable_config = mutable_config.get();
+    config_.reset(new DataReductionProxyConfig(
+        io_task_runner_, ui_task_runner_, net_log, mutable_config.Pass(),
+        configurator_.get(), event_store_.get()));
+  } else {
+    config_.reset(new DataReductionProxyConfig(
+        io_task_runner_, ui_task_runner_, net_log, params.Pass(),
+        configurator_.get(), event_store_.get()));
+  }
+
   request_options_.reset(new DataReductionProxyRequestOptions(
       client_, config_.get(), io_task_runner_));
   request_options_->Init();
+
+  if (use_config_client) {
+    config_client_.reset(new DataReductionProxyConfigServiceClient(
+        params.Pass(), GetBackoffPolicy(), request_options_.get(),
+        raw_mutable_config, config_.get(), io_task_runner_));
+  }
+
   proxy_delegate_.reset(
       new DataReductionProxyDelegate(request_options_.get(), config_.get()));
  }

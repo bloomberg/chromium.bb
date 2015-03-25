@@ -125,6 +125,10 @@ class DataReductionProxyRequestOptions {
   // Virtualized for testing.
   virtual void PopulateConfigResponse(base::DictionaryValue* response) const;
 
+  // Sets the credentials for sending to the Data Reduction Proxy.
+  void SetCredentials(const std::string& session,
+                      const std::string& credentials);
+
  protected:
   void SetHeader(net::HttpRequestHeaders* headers);
 
@@ -210,6 +214,10 @@ class DataReductionProxyRequestOptions {
   // The time at which the session expires. Used to ensure that a session is
   // never used for more than twenty-four hours.
   base::Time credentials_expiration_time_;
+
+  // Whether the authentication headers are sourced by |this| or injected via
+  // |SetCredentials|.
+  bool use_assigned_credentials_;
 
   DataReductionProxyConfig* data_reduction_proxy_config_;
 

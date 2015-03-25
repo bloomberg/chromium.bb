@@ -21,6 +21,7 @@ class URLRequestInterceptor;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
+class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyService;
@@ -149,6 +150,9 @@ class DataReductionProxyIOData {
 
   // Constructs credentials suitable for authenticating the client.
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;
+
+  // Requests new Data Reduction Proxy configurations from a remote service.
+  scoped_ptr<DataReductionProxyConfigServiceClient> config_client_;
 
   // A net log.
   net::NetLog* net_log_;

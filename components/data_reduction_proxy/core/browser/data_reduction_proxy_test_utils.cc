@@ -6,9 +6,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -25,6 +27,16 @@
 namespace {
 
 const char kTestKey[] = "test-key";
+
+const net::BackoffEntry::Policy kTestBackoffPolicy = {
+    0,               // num_errors_to_ignore
+    10 * 1000,       // initial_delay_ms
+    2,               // multiply_factor
+    0,               // jitter_factor
+    30 * 60 * 1000,  // maximum_backoff_ms
+    -1,              // entry_lifetime_ms
+    true,            // always_use_initial_delay
+};
 
 }  // namespace
 
@@ -71,6 +83,82 @@ MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
 MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {
 }
 
+TestDataReductionProxyConfigServiceClient::
+    TestDataReductionProxyConfigServiceClient(
+        scoped_ptr<DataReductionProxyParams> params,
+        DataReductionProxyRequestOptions* request_options,
+        DataReductionProxyMutableConfigValues* config_values,
+        DataReductionProxyConfig* config,
+        scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : DataReductionProxyConfigServiceClient(params.Pass(),
+                                            kTestBackoffPolicy,
+                                            request_options,
+                                            config_values,
+                                            config,
+                                            io_task_runner),
+      tick_clock_(base::Time::UnixEpoch()),
+      test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {
+}
+
+TestDataReductionProxyConfigServiceClient::
+    ~TestDataReductionProxyConfigServiceClient() {
+}
+
+void TestDataReductionProxyConfigServiceClient::SetNow(const base::Time& time) {
+  tick_clock_.SetTime(time);
+}
+
+void TestDataReductionProxyConfigServiceClient::SetCustomReleaseTime(
+    const base::TimeTicks& release_time) {
+  test_backoff_entry_.SetCustomReleaseTime(release_time);
+}
+
+base::TimeDelta TestDataReductionProxyConfigServiceClient::GetDelay() const {
+  return config_refresh_timer_.GetCurrentDelay();
+}
+
+base::Time TestDataReductionProxyConfigServiceClient::Now() const {
+  return tick_clock_.Now();
+}
+
+net::BackoffEntry*
+TestDataReductionProxyConfigServiceClient::GetBackoffEntry() {
+  return &test_backoff_entry_;
+}
+
+TestDataReductionProxyConfigServiceClient::TestTickClock::TestTickClock(
+    const base::Time& initial_time)
+    : time_(initial_time) {
+}
+
+base::TimeTicks
+TestDataReductionProxyConfigServiceClient::TestTickClock::NowTicks() const {
+  return base::TimeTicks::UnixEpoch() + (time_ - base::Time::UnixEpoch());
+}
+
+base::Time
+TestDataReductionProxyConfigServiceClient::TestTickClock::Now() const {
+  return time_;
+}
+
+void TestDataReductionProxyConfigServiceClient::TestTickClock::SetTime(
+    const base::Time& time) {
+  time_ = time;
+}
+
+TestDataReductionProxyConfigServiceClient::TestBackoffEntry::TestBackoffEntry(
+    const net::BackoffEntry::Policy* const policy,
+    const TestTickClock* tick_clock)
+    : net::BackoffEntry(policy),
+      tick_clock_(tick_clock) {
+}
+
+base::TimeTicks
+TestDataReductionProxyConfigServiceClient::TestBackoffEntry::ImplGetTimeNow()
+    const {
+  return tick_clock_->NowTicks();
+}
+
 MockDataReductionProxyService::MockDataReductionProxyService(
     scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
     DataReductionProxySettings* settings,
@@ -84,10 +172,11 @@ MockDataReductionProxyService::~MockDataReductionProxyService() {
 
 TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_ptr<TestDataReductionProxyConfig> config,
+    scoped_ptr<DataReductionProxyConfig> config,
     scoped_ptr<DataReductionProxyEventStore> event_store,
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
-    scoped_ptr<DataReductionProxyConfigurator> configurator)
+    scoped_ptr<DataReductionProxyConfigurator> configurator,
+    scoped_ptr<DataReductionProxyConfigServiceClient> config_client)
     : DataReductionProxyIOData() {
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
@@ -95,6 +184,7 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   event_store_ = event_store.Pass();
   request_options_ = request_options.Pass();
   configurator_ = configurator.Pass();
+  config_client_ = config_client.Pass();
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
 }
@@ -113,6 +203,8 @@ DataReductionProxyTestContext::Builder::Builder()
       use_test_configurator_(false),
       use_mock_service_(false),
       use_mock_request_options_(false),
+      use_config_client_(false),
+      use_test_config_client_(false),
       skip_settings_initialization_(false) {
 }
 
@@ -174,6 +266,19 @@ DataReductionProxyTestContext::Builder::WithMockRequestOptions() {
 }
 
 DataReductionProxyTestContext::Builder&
+DataReductionProxyTestContext::Builder::WithConfigClient() {
+  use_config_client_ = true;
+  return *this;
+}
+
+DataReductionProxyTestContext::Builder&
+DataReductionProxyTestContext::Builder::WithTestConfigClient() {
+  use_config_client_ = true;
+  use_test_config_client_ = true;
+  return *this;
+}
+
+DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::SkipSettingsInitialization() {
   skip_settings_initialization_ = true;
   return *this;
@@ -181,6 +286,8 @@ DataReductionProxyTestContext::Builder::SkipSettingsInitialization() {
 
 scoped_ptr<DataReductionProxyTestContext>
 DataReductionProxyTestContext::Builder::Build() {
+  // Check for invalid builder combinations.
+  DCHECK(!(use_mock_config_ && use_config_client_));
   scoped_ptr<base::MessageLoopForIO> loop(new base::MessageLoopForIO());
 
   unsigned int test_context_flags = 0;
@@ -216,15 +323,29 @@ DataReductionProxyTestContext::Builder::Build() {
   }
 
   scoped_ptr<TestDataReductionProxyConfig> config;
-  if (use_mock_config_) {
+  scoped_ptr<DataReductionProxyConfigServiceClient> config_client;
+  DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
+  scoped_ptr<TestDataReductionProxyParams> params(
+      new TestDataReductionProxyParams(params_flags_, params_definitions_));
+  TestDataReductionProxyParams* raw_params = params.get();
+  if (use_config_client_) {
+    test_context_flags |= USE_CONFIG_CLIENT;
+    scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =
+        DataReductionProxyMutableConfigValues::CreateFromParams(task_runner,
+                                                                params.get());
+    raw_mutable_config = mutable_config.get();
+    config.reset(new TestDataReductionProxyConfig(
+        mutable_config.Pass(), task_runner, net_log.get(), configurator.get(),
+        event_store.get()));
+  } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
     config.reset(new MockDataReductionProxyConfig(
-        params_flags_, params_definitions_, task_runner, net_log.get(),
-        configurator.get(), event_store.get()));
+        params.Pass(), task_runner, net_log.get(), configurator.get(),
+        event_store.get()));
   } else {
     config.reset(new TestDataReductionProxyConfig(
-        params_flags_, params_definitions_, task_runner, net_log.get(),
-        configurator.get(), event_store.get()));
+        params.Pass(), task_runner, net_log.get(), configurator.get(),
+        event_store.get()));
   }
 
   scoped_ptr<DataReductionProxyRequestOptions> request_options;
@@ -235,6 +356,17 @@ DataReductionProxyTestContext::Builder::Build() {
   } else {
     request_options.reset(new DataReductionProxyRequestOptions(
         client_, config.get(), task_runner));
+  }
+
+  if (use_test_config_client_) {
+    test_context_flags |= USE_TEST_CONFIG_CLIENT;
+    config_client.reset(new TestDataReductionProxyConfigServiceClient(
+        params.Pass(), request_options.get(), raw_mutable_config, config.get(),
+        task_runner));
+  } else if (use_config_client_) {
+    config_client.reset(new DataReductionProxyConfigServiceClient(
+        params.Pass(), GetBackoffPolicy(), request_options.get(),
+        raw_mutable_config, config.get(), task_runner));
   }
 
   scoped_ptr<DataReductionProxySettings> settings(
@@ -250,14 +382,14 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_ptr<TestDataReductionProxyIOData> io_data(
       new TestDataReductionProxyIOData(
           task_runner, config.Pass(), event_store.Pass(),
-          request_options.Pass(), configurator.Pass()));
+          request_options.Pass(), configurator.Pass(), config_client.Pass()));
   io_data->InitOnUIThread(pref_service.get());
 
   scoped_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(
           loop.Pass(), task_runner, pref_service.Pass(), net_log.Pass(),
           request_context_getter, mock_socket_factory_, io_data.Pass(),
-          settings.Pass(), test_context_flags));
+          settings.Pass(), raw_params, test_context_flags));
 
   if (!skip_settings_initialization_)
     test_context->InitSettingsWithoutCheck();
@@ -274,6 +406,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     net::MockClientSocketFactory* mock_socket_factory,
     scoped_ptr<TestDataReductionProxyIOData> io_data,
     scoped_ptr<DataReductionProxySettings> settings,
+    TestDataReductionProxyParams* params,
     unsigned int test_context_flags)
     : test_context_flags_(test_context_flags),
       loop_(loop.Pass()),
@@ -283,7 +416,8 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       request_context_getter_(request_context_getter),
       mock_socket_factory_(mock_socket_factory),
       io_data_(io_data.Pass()),
-      settings_(settings.Pass()) {
+      settings_(settings.Pass()),
+      params_(params) {
 }
 
 DataReductionProxyTestContext::~DataReductionProxyTestContext() {
@@ -411,6 +545,26 @@ DataReductionProxyTestContext::mock_request_options() const {
          DataReductionProxyTestContext::USE_MOCK_REQUEST_OPTIONS);
   return reinterpret_cast<MockDataReductionProxyRequestOptions*>(
       io_data_->request_options());
+}
+
+TestDataReductionProxyConfig* DataReductionProxyTestContext::config() const {
+  return reinterpret_cast<TestDataReductionProxyConfig*>(io_data_->config());
+}
+
+DataReductionProxyMutableConfigValues*
+DataReductionProxyTestContext::mutable_config_values() {
+  DCHECK(test_context_flags_ &
+         DataReductionProxyTestContext::USE_CONFIG_CLIENT);
+  return reinterpret_cast<DataReductionProxyMutableConfigValues*>(
+      config()->config_values());
+}
+
+TestDataReductionProxyConfigServiceClient*
+DataReductionProxyTestContext::test_config_client() {
+  DCHECK(test_context_flags_ &
+         DataReductionProxyTestContext::USE_TEST_CONFIG_CLIENT);
+  return reinterpret_cast<TestDataReductionProxyConfigServiceClient*>(
+      io_data_->config_client());
 }
 
 DataReductionProxyUsageStats::UnreachableCallback

@@ -23,6 +23,7 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
+class DataReductionProxyMutableConfigValues;
 class TestDataReductionProxyParams;
 
 // Test version of |DataReductionProxyConfig|, which uses an underlying
@@ -39,6 +40,17 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventStore* event_store);
+
+  // Creates a |TestDataReductionProxyConfig| with the provided |config_values|.
+  // This permits any DataReductionProxyConfigValues to be used (such as
+  // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
+  TestDataReductionProxyConfig(
+      scoped_ptr<DataReductionProxyConfigValues> config_values,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      net::NetLog* net_log,
+      DataReductionProxyConfigurator* configurator,
+      DataReductionProxyEventStore* event_store);
+
   ~TestDataReductionProxyConfig() override;
 
   void GetNetworkList(net::NetworkInterfaceList* interfaces,
@@ -53,11 +65,14 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Retrieves the test params being used for the configuration.
   TestDataReductionProxyParams* test_params();
 
+  // Retrieves the underlying config values.
+  // TODO(jeremyim): Rationalize with test_params().
+  DataReductionProxyConfigValues* config_values();
+
   // Allows tests to set the internal state.
   void SetStateForTest(bool enabled_by_user,
                        bool alternative_enabled_by_user,
-                       bool restricted_by_carrier,
-                       bool at_startup);
+                       bool restricted_by_carrier);
 
   net::NetworkInterfaceList* interfaces() {
     return network_interfaces_.get();
@@ -71,10 +86,9 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 // testing.
 class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
  public:
-  // Creates a |MockDataReductionProxyConfig| with the provided |params_flags|.
+  // Creates a |MockDataReductionProxyConfig|.
   MockDataReductionProxyConfig(
-      int params_flags,
-      unsigned int params_definitions,
+      scoped_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,

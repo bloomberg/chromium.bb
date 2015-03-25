@@ -99,6 +99,7 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     DataReductionProxyConfig* config,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : client_(GetString(client)),
+      use_assigned_credentials_(false),
       data_reduction_proxy_config_(config),
       network_task_runner_(network_task_runner) {
   GetChromiumBuildAndPatch(ChromiumVersion(), &build_, &patch_);
@@ -110,6 +111,7 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     DataReductionProxyConfig* config,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : client_(GetString(client)),
+      use_assigned_credentials_(false),
       data_reduction_proxy_config_(config),
       network_task_runner_(network_task_runner) {
   GetChromiumBuildAndPatch(version, &build_, &patch_);
@@ -227,7 +229,7 @@ void DataReductionProxyRequestOptions::SetHeader(
     net::HttpRequestHeaders* headers) {
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
-  if (now > credentials_expiration_time_)
+  if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
     UpdateCredentials();
   UpdateLoFi();
   const char kChromeProxyHeader[] = "Chrome-Proxy";
@@ -264,8 +266,6 @@ void DataReductionProxyRequestOptions::ComputeCredentials(
 }
 
 void DataReductionProxyRequestOptions::UpdateCredentials() {
-  std::string session;
-  std::string credentials;
   base::Time now = Now();
   ComputeCredentials(now, &session_, &credentials_);
   credentials_expiration_time_ = now + base::TimeDelta::FromHours(24);
@@ -291,6 +291,18 @@ void DataReductionProxyRequestOptions::PopulateConfigResponse(
                       CreateLocalSessionKey(session, credentials));
   response->SetString("expireTime",
                       config_parser::TimeToISO8601(expiration_time));
+}
+
+void DataReductionProxyRequestOptions::SetCredentials(
+    const std::string& session,
+    const std::string& credentials) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  session_ = session;
+  credentials_ = credentials;
+  // Force skipping of credential regeneration. It should be handled by the
+  // caller.
+  use_assigned_credentials_ = true;
+  RegenerateRequestHeaderValue();
 }
 
 std::string DataReductionProxyRequestOptions::GetDefaultKey() const {

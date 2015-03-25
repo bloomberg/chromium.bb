@@ -130,6 +130,12 @@ std::string DataReductionProxyParams::GetQuicFieldTrialName() {
   return kQuicFieldTrial;
 }
 
+// static
+bool DataReductionProxyParams::IsConfigClientEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyConfigClient);
+}
+
 void DataReductionProxyParams::EnableQuic(bool enable) {
   quic_enabled_ = enable;
   DCHECK(!quic_enabled_ || IsIncludedInQuicFieldTrial());

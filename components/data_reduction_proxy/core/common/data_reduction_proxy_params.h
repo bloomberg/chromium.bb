@@ -113,6 +113,9 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   static std::string GetQuicFieldTrialName();
 
+  // Returns true if the Data Reduction Proxy config client should be used.
+  static bool IsConfigClientEnabled();
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is

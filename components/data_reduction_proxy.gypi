@@ -108,6 +108,8 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_metrics.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_prefs.cc',
