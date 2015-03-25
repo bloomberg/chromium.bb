@@ -53,9 +53,15 @@ public:
     }
 
     template<typename T, typename... Arguments>
+    static inline T to(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, Arguments const&... arguments)
+    {
+        return NativeValueTraits<T>::nativeValue(isolate, value, exceptionState, arguments...);
+    }
+
+    template<typename T, typename... Arguments>
     static inline T to(v8::Isolate* isolate, const ScriptValue& value, ExceptionState& exceptionState, Arguments const&... arguments)
     {
-        return NativeValueTraits<T>::nativeValue(isolate, value.v8Value(), exceptionState, arguments...);
+        return to<T>(isolate, value.v8Value(), exceptionState, arguments...);
     }
 
     ScriptValue() { }
@@ -153,7 +159,6 @@ public:
     v8::Local<v8::Value> v8ValueUnsafe() const;
 
     bool toString(String&) const;
-    PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
 
     static ScriptValue createNull(ScriptState*);
 

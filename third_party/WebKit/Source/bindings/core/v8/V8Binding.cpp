@@ -835,7 +835,7 @@ v8::Isolate* toIsolate(LocalFrame* frame)
     return frame->script().isolate();
 }
 
-PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, int maxDepth)
+JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, int maxDepth)
 {
     if (value.IsEmpty()) {
         ASSERT_NOT_REACHED();
@@ -860,7 +860,7 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; i++) {
             v8::Local<v8::Value> value = array->Get(v8::Int32::New(isolate, i));
-            RefPtr<JSONValue> element = v8ToJSONValue(isolate, value, maxDepth);
+            RefPtr<JSONValue> element = nativeValue(isolate, value, exceptionState, maxDepth);
             if (!element)
                 return nullptr;
             inspectorArray->pushValue(element);
@@ -879,7 +879,7 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
             // FIXME(yurys): v8::Object should support GetOwnPropertyNames
             if (name->IsString() && !object->HasRealNamedProperty(v8::Handle<v8::String>::Cast(name)))
                 continue;
-            RefPtr<JSONValue> propertyValue = v8ToJSONValue(isolate, object->Get(name), maxDepth);
+            RefPtr<JSONValue> propertyValue = nativeValue(isolate, object->Get(name), exceptionState, maxDepth);
             if (!propertyValue)
                 return nullptr;
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, nameString, name, nullptr);

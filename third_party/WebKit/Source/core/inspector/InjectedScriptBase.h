@@ -42,7 +42,7 @@ class JSONValue;
 class ScriptFunctionCall;
 
 typedef String ErrorString;
-
+PassRefPtr<JSONValue> toJSONValue(const ScriptValue&);
 
 class InjectedScriptBase {
 public:

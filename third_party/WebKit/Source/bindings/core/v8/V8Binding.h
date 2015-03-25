@@ -45,6 +45,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/core/v8/V8ValueCache.h"
 #include "core/CoreExport.h"
+#include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
@@ -838,6 +839,12 @@ struct NativeValueTraits<Vector<T>> {
     }
 };
 
+using JSONValuePtr = PassRefPtr<JSONValue>;
+template <>
+struct NativeValueTraits<JSONValuePtr> {
+    static JSONValuePtr nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, int maxDepth = JSONValue::maxDepth);
+};
+
 CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
 v8::Isolate* toIsolate(LocalFrame*);
 
@@ -898,8 +905,6 @@ template<class Collection> static void indexedPropertyEnumerator(const v8::Prope
 void addHiddenValueToArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
 void removeHiddenValueFromArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
 CORE_EXPORT void moveEventListenerToNewWrapper(v8::Isolate*, v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex);
-
-PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate*, v8::Handle<v8::Value>, int);
 
 // Result values for platform object 'deleter' methods,
 // http://www.w3.org/TR/WebIDL/#delete

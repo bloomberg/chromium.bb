@@ -344,7 +344,8 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     case 0:
         {
             v8::Local<v8::Value> normalResult = resultTuple->Get(1);
-            RefPtr<JSONValue> jsonResult = v8ToJSONValue(m_isolate, normalResult, JSONValue::maxDepth);
+            NonThrowableExceptionState exceptionState;
+            RefPtr<JSONValue> jsonResult = ScriptValue::to<JSONValuePtr>(m_isolate, normalResult, exceptionState);
             if (jsonResult)
                 *result = jsonResult->asObject();
             // Call stack may have changed after if the edited function was on the stack.

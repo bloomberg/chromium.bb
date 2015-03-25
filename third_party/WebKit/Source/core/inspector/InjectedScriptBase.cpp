@@ -34,6 +34,7 @@
 #include "core/inspector/InjectedScriptBase.h"
 
 #include "bindings/core/v8/ScriptFunctionCall.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/JSONValues.h"
@@ -43,6 +44,15 @@ using blink::TypeBuilder::Array;
 using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
+
+PassRefPtr<JSONValue> toJSONValue(const ScriptValue& value)
+{
+    ScriptState* scriptState = value.scriptState();
+    ASSERT(scriptState->contextIsValid());
+    ScriptState::Scope scope(scriptState);
+    NonThrowableExceptionState exceptionState;
+    return ScriptValue::to<JSONValuePtr>(scriptState->isolate(), value, exceptionState);
+}
 
 static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(PassRefPtr<JSONObject> object)
 {
@@ -166,7 +176,7 @@ void InjectedScriptBase::makeCall(ScriptFunctionCall& function, RefPtr<JSONValue
 
     ASSERT(!hadException);
     if (!hadException) {
-        *result = resultValue.toJSONValue(m_injectedScriptObject.scriptState());
+        *result = toJSONValue(resultValue);
         if (!*result)
             *result = JSONString::create(String::format("Object has too long reference chain(must not be longer than %d)", JSONValue::maxDepth));
     } else {
