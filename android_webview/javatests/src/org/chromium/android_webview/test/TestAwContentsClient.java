@@ -19,6 +19,9 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * AwContentsClient subclass used for testing.
  */
@@ -327,8 +330,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-        mAddMessageToConsoleHelper.notifyCalled(consoleMessage.messageLevel().ordinal(),
-                consoleMessage.message(), consoleMessage.lineNumber(), consoleMessage.sourceId());
+        mAddMessageToConsoleHelper.notifyCalled(consoleMessage);
         return false;
     }
 
@@ -336,36 +338,42 @@ public class TestAwContentsClient extends NullContentsClient {
      * Callback helper for AddMessageToConsole.
      */
     public static class AddMessageToConsoleHelper extends CallbackHelper {
-        private int mLevel;
-        private String mMessage;
-        private int mLineNumber;
-        private String mSourceId;
+        private List<ConsoleMessage> mMessages = new ArrayList<ConsoleMessage>();
+
+        public void clearMessages() {
+            mMessages.clear();
+        }
+
+        public List<ConsoleMessage> getMessages() {
+            return mMessages;
+        }
 
         public int getLevel() {
             assert getCallCount() > 0;
-            return mLevel;
+            return getLastMessage().messageLevel().ordinal();
         }
 
         public String getMessage() {
             assert getCallCount() > 0;
-            return mMessage;
+            return getLastMessage().message();
         }
 
         public int getLineNumber() {
             assert getCallCount() > 0;
-            return mLineNumber;
+            return getLastMessage().lineNumber();
         }
 
         public String getSourceId() {
             assert getCallCount() > 0;
-            return mSourceId;
+            return getLastMessage().sourceId();
         }
 
-        void notifyCalled(int level, String message, int lineNumer, String sourceId) {
-            mLevel = level;
-            mMessage = message;
-            mLineNumber = lineNumer;
-            mSourceId = sourceId;
+        private ConsoleMessage getLastMessage() {
+            return mMessages.get(mMessages.size() - 1);
+        }
+
+        void notifyCalled(ConsoleMessage message) {
+            mMessages.add(message);
             notifyCalled();
         }
     }
