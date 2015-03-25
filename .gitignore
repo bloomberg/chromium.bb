@@ -89,6 +89,7 @@ spring-tool
 
 *.weston
 *.test
+*.ivi
 wcap-decode
 matrix-test
 setbacklight

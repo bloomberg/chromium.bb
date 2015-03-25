@@ -74,4 +74,39 @@
       <arg name="n" type="uint"/>
     </event>
   </interface>
+
+  <interface name="weston_test_runner" version="1">
+    <description summary="weston internal testing">
+      This is a global singleton interface for Weston internal tests.
+
+      This interface allows a test client to trigger compositor-side
+      test procedures. This is useful for cases, where the actual tests
+      are in compositor plugins, but they also require the presence of
+      a particular client.
+
+      This interface is implemented by the compositor plugins containing
+      the testing code.
+
+      A test client starts a test with the "run" request. It must not send
+      another "run" request until receiving the "finished" event. If the
+      compositor-side test succeeds, the "finished" event is sent. If the
+      compositor-side test fails, the compositor should send the protocol
+      error "test_failed", but it may also exit with an error (e.g. SEGV).
+
+      Unknown test name will raise "unknown_test" protocol error.
+    </description>
+
+    <enum name="error">
+      <entry name="test_failed" value="0" summary="compositor test failed"/>
+      <entry name="unknown_test" value="1" summary="unrecognized test name"/>
+    </enum>
+
+    <request name="destroy" type="destructor"/>
+
+    <request name="run">
+      <arg name="test_name" type="string"/>
+    </request>
+
+    <event name="finished"/>
+  </interface>
 </protocol>

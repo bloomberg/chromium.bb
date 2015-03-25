@@ -1096,6 +1096,19 @@ matrix_test_CPPFLAGS = -DUNIT_TEST
 matrix_test_LDADD = -lm -lrt
 
 if ENABLE_IVI_SHELL
+module_tests += 				\
+	ivi-layout-test.la
+
+ivi_layout_test_la_LIBADD = $(COMPOSITOR_LIBS)
+ivi_layout_test_la_LDFLAGS = $(test_module_ldflags)
+ivi_layout_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+ivi_layout_test_la_SOURCES =			\
+	tests/ivi_layout-test-plugin.c		\
+	tests/ivi-test.h
+nodist_ivi_layout_test_la_SOURCES =		\
+	protocol/weston-test-protocol.c		\
+	protocol/weston-test-server-protocol.h
+
 ivi_tests +=					\
 	ivi-shell-app.weston
 
@@ -1105,6 +1118,17 @@ nodist_ivi_shell_app_weston_SOURCES =		\
 	protocol/ivi-application-client-protocol.h
 ivi_shell_app_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 ivi_shell_app_weston_LDADD = libtest-client.la
+
+noinst_PROGRAMS += ivi-layout.ivi
+
+ivi_layout_ivi_SOURCES =			\
+	tests/ivi_layout-test.c 		\
+	tests/ivi-test.h
+nodist_ivi_layout_ivi_SOURCES = 		\
+	protocol/ivi-application-protocol.c	\
+	protocol/ivi-application-client-protocol.h
+ivi_layout_ivi_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+ivi_layout_ivi_LDADD = libtest-client.la
 endif
 
 if BUILD_SETBACKLIGHT

@@ -27,6 +27,19 @@ TEST_PLUGIN=$MODDIR/weston-test.so
 XWAYLAND_PLUGIN=$MODDIR/xwayland.so
 
 case $TEST_FILE in
+	ivi-*.la|ivi-*.so)
+		SHELL_PLUGIN=$MODDIR/ivi-shell.so
+
+		WESTON_BUILD_DIR=$abs_builddir \
+		$WESTON --backend=$MODDIR/$BACKEND \
+			--config=$abs_builddir/tests/weston-ivi.ini \
+			--shell=$SHELL_PLUGIN \
+			--socket=test-${TEST_NAME} \
+			--modules=$TEST_PLUGIN \
+			--ivi-module=$MODDIR/${TEST_FILE/.la/.so} \
+			--log="$SERVERLOG" \
+			&> "$OUTLOG"
+		;;
 	*.la|*.so)
 		WESTON_BUILD_DIR=$abs_builddir \
 		$WESTON --backend=$MODDIR/$BACKEND \
