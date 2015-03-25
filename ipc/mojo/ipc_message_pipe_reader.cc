@@ -161,9 +161,8 @@ void MessagePipeReader::ReadMessagesThenWait() {
     // If can fail with |MOJO_RESULT_ALREADY_EXISTS| otherwise.
     // Also, we don't use MOJO_HANDLE_SIGNAL_WRITABLE here, expecting buffer in
     // MessagePipe.
-    MojoResult result = async_waiter_->Wait(
-        pipe_.get().value(),
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+    MojoResult result =
+        async_waiter_->Wait(pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE);
     // If the result is |MOJO_RESULT_ALREADY_EXISTS|, there could be messages
     // that have been arrived after the last |ReadAvailableMessages()|.
     // We have to consume then and retry in that case.
@@ -181,9 +180,13 @@ void MessagePipeReader::ReadMessagesThenWait() {
 
 void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
   if (wait_result != MOJO_RESULT_OK) {
-    CHECK_NE(wait_result, MOJO_RESULT_ABORTED);
-    LOG(ERROR) << "Pipe got error from the waiter. Closing: " << wait_result;
-    OnPipeError(wait_result);
+    if (wait_result != MOJO_RESULT_ABORTED) {
+      // FAILED_PRECONDITION happens every time the peer is dead so
+      // it isn't worth polluting the log message.
+      LOG_IF(WARNING, wait_result != MOJO_RESULT_FAILED_PRECONDITION)
+          << "Pipe got error from the waiter. Closing: " << wait_result;
+      OnPipeError(wait_result);
+    }
 
     Close();
     return;
