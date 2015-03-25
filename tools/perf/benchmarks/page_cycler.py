@@ -70,7 +70,6 @@ class PageCyclerIntlEsFrPtBr(_PageCycler):
     return 'page_cycler.intl_es_fr_pt-BR'
 
 
-@benchmark.Disabled('win', 'mac', 'linux')  # crbug.com/470071
 class PageCyclerIntlHiRu(_PageCycler):
   """Page load time benchmark for a variety of pages in Hindi and Russian.
 
@@ -199,8 +198,7 @@ class PageCyclerToughLayoutCases(_PageCycler):
 
 
 # crbug.com/273986: This test is flakey on Windows.
-# crbug.com/470071: This test is failing on N10
-@benchmark.Disabled('win', 'android')
+@benchmark.Disabled('win')
 class PageCyclerTypical25(_PageCycler):
   """Page load time benchmark for a 25 typical web pages.
 
