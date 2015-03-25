@@ -1936,3 +1936,9 @@ crbug.com/469767 webaudio/audiochannelmerger-disconnect.html [ Pass Failure ]
 
 crbug.com/470429 inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
 crbug.com/470429 virtual/deferred/inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
+
+# Temporarily skipped until V8 roll.
+crbug.com/468781 fast/events/window-onerror-11.html [ Skip ]
+crbug.com/468781 fast/events/window-onerror-12.html [ Skip ]
+crbug.com/468781 virtual/slimmingpaint/fast/events/window-onerror-11.html [ Skip ]
+crbug.com/468781 virtual/slimmingpaint/fast/events/window-onerror-12.html [ Skip ]
