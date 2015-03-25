@@ -736,15 +736,17 @@ base::Process StartSandboxedProcess(
   if (sandbox::SBOX_ALL_OK != result) {
     if (result == sandbox::SBOX_ERROR_GENERIC)
       DPLOG(ERROR) << "Failed to launch process";
-    else
+    else if (result == sandbox::SBOX_ERROR_CREATE_PROCESS) {
+      // TODO(shrikant): Remove this special case handling after determining
+      // cause for lowbox/createprocess errors.
+      sandbox::PolicyBase* policy_base =
+          static_cast<sandbox::PolicyBase*>(policy);
+      if (policy_base->GetLowBoxSid()) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Lowbox.Launch.Error",
+                                    last_error);
+      }
+    } else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
-
-    sandbox::PolicyBase* policy_base =
-        static_cast<sandbox::PolicyBase*>(policy);
-    if (policy_base->GetLowBoxSid()) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Lowbox.Launch.Error",
-                                  last_error);
-    }
     return base::Process();
   }
 
