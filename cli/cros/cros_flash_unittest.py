@@ -6,20 +6,12 @@
 
 from __future__ import print_function
 
-import mock
-import os
-
 from chromite.cli import command_unittest
+from chromite.cli import flash
 from chromite.cli.cros import cros_flash
-from chromite.lib import brick_lib
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import dev_server_wrapper
-from chromite.lib import partial_mock
-from chromite.lib import remote_access
 
 
-# pylint: disable=W0212
 class MockFlashCommand(command_unittest.MockCommand):
   """Mock out the flash command."""
   TARGET = 'chromite.cli.cros.cros_flash.FlashCommand'
@@ -33,43 +25,14 @@ class MockFlashCommand(command_unittest.MockCommand):
     command_unittest.MockCommand.Run(self, inst)
 
 
-class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
-  """Mock out RemoteDeviceUpdater."""
-  TARGET = 'chromite.cli.cros.cros_flash.RemoteDeviceUpdater'
-  ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate', 'Verify')
+class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
+                    cros_test_lib.OutputTestCase):
+  """Test calling `cros flash` with various arguments.
 
-  def __init__(self):
-    partial_mock.PartialCmdMock.__init__(self)
-
-  def UpdateStateful(self, _inst, *_args, **_kwargs):
-    """Mock out UpdateStateful."""
-
-  def UpdateRootfs(self, _inst, *_args, **_kwargs):
-    """Mock out UpdateRootfs."""
-
-  def SetupRootfsUpdate(self, _inst, *_args, **_kwargs):
-    """Mock out SetupRootfsUpdate."""
-
-  def Verify(self, _inst, *_args, **_kwargs):
-    """Mock out SetupRootfsUpdate."""
-
-
-class BrickMock(partial_mock.PartialMock):
-  """Mock out brick_lib.Brick."""
-  TARGET = 'chromite.lib.brick_lib.Brick'
-  ATTRS = ('Inherits')
-
-  def __init__(self):
-    partial_mock.PartialMock.__init__(self)
-
-  def Inherits(self, _inst, *_args, **_kwargs):
-    """Mock out Inherits."""
-    return True
-
-
-class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
-                           cros_test_lib.LoggingTestCase):
-  """Test the flow of FlashCommand.run with the update methods mocked out."""
+  These tests just check that arguments as specified on the command
+  line are properly passed through to flash.Flash(). Testing the
+  actual update flow is done in the flash.Flash() unit tests.
+  """
 
   IMAGE = '/path/to/image'
   DEVICE = '1.1.1.1'
@@ -83,181 +46,87 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def setUp(self):
     """Patches objects."""
     self.cmd_mock = None
-    self.updater_mock = self.StartPatcher(RemoteDeviceUpdaterMock())
-    self.PatchObject(dev_server_wrapper, 'GenerateXbuddyRequest',
-                     return_value='xbuddy/local/latest')
-    self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
-    self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
-                     return_value='taco-paladin/R36/chromiumos_test_image.bin')
-    self.PatchObject(dev_server_wrapper, 'GetUpdatePayloads')
-    self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
-    self.PatchObject(remote_access, 'ChromiumOSDevice')
+    self.flash_mock = self.PatchObject(flash, 'Flash', autospec=True)
 
-  def testUpdateAll(self):
-    """Tests that update methods are called correctly."""
+  def VerifyFlashParameters(self, device, image, **kwargs):
+    """Verifies the arguments passed to flash.Flash().
+
+    This function helps verify that command line specifications are
+    parsed properly and handed to flash.Flash() as expected.
+
+    Args:
+      device: expected device hostname; currently only SSH devices
+          are supported.
+      image: expected image parameter.
+      kwargs: keyword arguments expected in the call to flash.Flash().
+          Arguments unspecified here are checked against their default
+          value for `cros flash`.
+    """
+    flash_args, flash_kwargs = self.flash_mock.call_args
+    self.assertEqual(device, flash_args[0].hostname)
+    self.assertEqual(image, flash_args[1])
+    # `cros flash` default options. Must match the configuration in AddParser().
+    expected_kwargs = {
+        'project_sdk_image': False,
+        'board': None,
+        'brick': None,
+        'install': False,
+        'src_image_to_delta': None,
+        'rootfs_update': True,
+        'stateful_update': True,
+        'clobber_stateful': False,
+        'reboot': True,
+        'wipe': True,
+        'ping': True,
+        'disable_rootfs_verification': False,
+        'clear_cache': False,
+        'yes': False,
+        'force': False,
+        'debug': False}
+    # Overwrite defaults with any variations in this test.
+    expected_kwargs.update(kwargs)
+    self.assertDictEqual(expected_kwargs, flash_kwargs)
+
+  def testDefaults(self):
+    """Tests `cros flash` default values."""
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    proj = BrickMock()
-    with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        self.cmd_mock.inst.Run()
-        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
-
-  def testUpdateStateful(self):
-    """Tests that update methods are called correctly."""
-    self.SetupCommandMock(['--no-rootfs-update', self.DEVICE, self.IMAGE])
-    proj = BrickMock()
-    with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        self.cmd_mock.inst.Run()
-        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
-
-  def testUpdateRootfs(self):
-    """Tests that update methods are called correctly."""
-    self.SetupCommandMock(['--no-stateful-update', self.DEVICE, self.IMAGE])
-    proj = BrickMock()
-    with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        self.cmd_mock.inst.Run()
-        self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
-
-  def testMissingPayloads(self):
-    """Tests we exit when payloads are missing."""
-    self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    with mock.patch('os.path.exists', return_value=False):
-      self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
-
-  def testProjectSdk(self):
-    """Tests that Project SDK flashing invoked as expected."""
-    self.SetupCommandMock(['--project-sdk', self.DEVICE, self.IMAGE])
-    proj = BrickMock()
-    with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        with mock.patch('chromite.lib.project_sdk.FindVersion',
-                        return_value='1.2.3'):
-          self.cmd_mock.inst.Run()
-          dev_server_wrapper.GetImagePathWithXbuddy.assert_called_with(
-              'project_sdk', mock.ANY, version='1.2.3', static_dir=mock.ANY,
-              device='ssh://%s' % self.DEVICE, lookup_only=True)
-          self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-          self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
-
-
-class USBImagerMock(partial_mock.PartialCmdMock):
-  """Mock out USBImager."""
-  TARGET = 'chromite.cli.cros.cros_flash.USBImager'
-  ATTRS = ('CopyImageToDevice', 'InstallImageToDevice',
-           'ChooseRemovableDevice', 'ListAllRemovableDevices',
-           'GetRemovableDeviceDescription', 'IsFilePathGPTDiskImage')
-  VALID_IMAGE = True
-
-  def __init__(self):
-    partial_mock.PartialCmdMock.__init__(self)
-
-  def CopyImageToDevice(self, _inst, *_args, **_kwargs):
-    """Mock out CopyImageToDevice."""
-
-  def InstallImageToDevice(self, _inst, *_args, **_kwargs):
-    """Mock out InstallImageToDevice."""
-
-  def ChooseRemovableDevice(self, _inst, *_args, **_kwargs):
-    """Mock out ChooseRemovableDevice."""
-
-  def ListAllRemovableDevices(self, _inst, *_args, **_kwargs):
-    """Mock out ListAllRemovableDevices."""
-    return ['foo', 'taco', 'milk']
-
-  def GetRemovableDeviceDescription(self, _inst, *_args, **_kwargs):
-    """Mock out GetRemovableDeviceDescription."""
-
-  def IsFilePathGPTDiskImage(self, _inst, *_args, **_kwargs):
-    """Mock out IsFilePathGPTDiskImage."""
-    return self.VALID_IMAGE
-
-
-class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
-                            cros_test_lib.LoggingTestCase):
-  """Test the flow of FlashCommand.run with the imaging methods mocked out."""
-  IMAGE = '/path/to/image'
-
-  def SetupCommandMock(self, cmd_args):
-    """Setup comand mock."""
-    self.cmd_mock = MockFlashCommand(
-        cmd_args, base_args=['--cache-dir', self.tempdir, '--debug'])
-    self.StartPatcher(self.cmd_mock)
-
-  def setUp(self):
-    """Patches objects."""
-    self.cmd_mock = None
-    self.usb_mock = USBImagerMock()
-    self.imager_mock = self.StartPatcher(self.usb_mock)
-    self.PatchObject(dev_server_wrapper, 'GenerateXbuddyRequest',
-                     return_value='xbuddy/local/latest')
-    self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
-    self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
-                     return_value='taco-paladin/R36/chromiumos_test_image.bin')
-    self.PatchObject(os.path, 'exists', return_value=True)
-    self.PatchObject(brick_lib, 'FindBrickInPath', return_value=None)
-
-  def testLocalImagePathCopy(self):
-    """Tests that imaging methods are called correctly."""
-    self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch('os.path.isfile', return_value=True):
-      self.cmd_mock.inst.Run()
-      self.assertTrue(self.imager_mock.patched['CopyImageToDevice'].called)
-
-  def testLocalImagePathInstall(self):
-    """Tests that imaging methods are called correctly."""
-    self.SetupCommandMock(['--board=taco', '--install', 'usb:///dev/foo',
-                           self.IMAGE])
-    with mock.patch('os.path.isfile', return_value=True):
-      self.cmd_mock.inst.Run()
-      self.assertTrue(self.imager_mock.patched['InstallImageToDevice'].called)
-
-  def testLocalBadImagePath(self):
-    """Tests that using an image not having the magic bytes has prompt."""
-    self.usb_mock.VALID_IMAGE = False
-    self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch('os.path.isfile', return_value=True):
-      with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
-        mock_prompt.return_value = False
-        self.cmd_mock.inst.Run()
-        self.assertTrue(mock_prompt.called)
-
-  def testNonLocalImagePath(self):
-    """Tests that we try to get the image path using xbuddy."""
-    self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch.object(
-        dev_server_wrapper,
-        'GetImagePathWithXbuddy',
-        return_value='translated/xbuddy/path') as mock_xbuddy:
-      with mock.patch('os.path.isfile', return_value=False):
-        with mock.patch('os.path.isdir', return_value=False):
-          self.cmd_mock.inst.Run()
-          self.assertTrue(mock_xbuddy.called)
-
-  def testConfirmNonRemovableDevice(self):
-    """Tests that we ask user to confirm if the device is not removable."""
-    with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
-      self.SetupCommandMock(['usb:///dev/dummy', self.IMAGE])
-      self.cmd_mock.inst.Run()
-      self.assertTrue(mock_prompt.called)
-
-  def testSkipPromptNonRemovableDevice(self):
-    """Tests that we skip the prompt for non-removable with --yes."""
-    with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
-      self.SetupCommandMock(['--yes', 'usb:///dev/dummy', self.IMAGE])
-      self.cmd_mock.inst.Run()
-      self.assertFalse(mock_prompt.called)
-
-  def testChooseRemovableDevice(self):
-    """Tests that we ask user to choose a device if none is given."""
-    self.SetupCommandMock(['usb://', self.IMAGE])
     self.cmd_mock.inst.Run()
-    self.assertTrue(self.imager_mock.patched['ChooseRemovableDevice'].called)
+    self.VerifyFlashParameters(self.DEVICE, self.IMAGE)
+
+  def testBrick(self):
+    """Tests command line --brick."""
+    self.SetupCommandMock([self.DEVICE, self.IMAGE, '--brick', '//foo'])
+    self.cmd_mock.inst.Run()
+    self.VerifyFlashParameters(self.DEVICE, self.IMAGE, brick='//foo')
+
+  def testImplicitBrick(self):
+    """Tests an implicit brick based on |curr_brick_locator|."""
+    self.SetupCommandMock([self.DEVICE, self.IMAGE])
+    self.cmd_mock.inst.curr_brick_locator = '//bar'
+    self.cmd_mock.inst.Run()
+    self.VerifyFlashParameters(self.DEVICE, self.IMAGE, brick='//bar')
+
+  def testBrickPriority(self):
+    """Tests that command line --brick takes precedence."""
+    self.SetupCommandMock([self.DEVICE, self.IMAGE, '--brick', '//foo'])
+    self.cmd_mock.inst.curr_brick_locator = '//bar'
+    self.cmd_mock.inst.Run()
+    self.VerifyFlashParameters(self.DEVICE, self.IMAGE, brick='//foo')
+
+  def testFlashError(self):
+    """Tests that FlashErrors are caught and logged."""
+    with self.OutputCapturer():
+      self.SetupCommandMock([self.DEVICE, self.IMAGE])
+      self.flash_mock.side_effect = flash.FlashError
+      with self.assertRaises(SystemExit):
+        self.cmd_mock.inst.Run()
+    self.AssertOutputContainsError(check_stderr=True)
+
+  def testFlashErrorDebug(self):
+    """Tests that FlashErrors are passed through with --debug."""
+    with self.OutputCapturer():
+      self.SetupCommandMock([self.DEVICE, self.IMAGE, '--debug'])
+      self.flash_mock.side_effect = flash.FlashError
+      with self.assertRaises(flash.FlashError):
+        self.cmd_mock.inst.Run()
+    self.AssertOutputContainsError(check_stderr=True)

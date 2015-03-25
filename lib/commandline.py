@@ -220,11 +220,13 @@ def NormalizeUri(value):
 #   hostname: String SSH hostname or None.
 #   port: Int SSH port or None.
 #   path: String USB/file path or None.
+#   raw: String raw input from the command line.
 # For now this is a superset of all information for USB, SSH, or file devices.
 # If functionality diverges based on type, it may be useful to split this into
 # separate device classes instead.
 Device = cros_build_lib.Collection(
-    'Device', scheme=None, username=None, hostname=None, port=None, path=None)
+    'Device', scheme=None, username=None, hostname=None, port=None, path=None,
+    raw=None)
 
 
 class DeviceParser(object):
@@ -346,16 +348,16 @@ class DeviceParser(object):
       if not hostname:
         raise ValueError('Hostname is required for device "%s"' % value)
       return Device(scheme=scheme, username=parsed.username, hostname=hostname,
-                    port=parsed.port)
+                    port=parsed.port, raw=value)
     elif scheme == DEVICE_SCHEME_USB:
       path = parsed.netloc + parsed.path
       # Change path '' to None for consistency.
-      return Device(scheme=scheme, path=path if path else None)
+      return Device(scheme=scheme, path=path if path else None, raw=value)
     elif scheme == DEVICE_SCHEME_FILE:
       path = parsed.netloc + parsed.path
       if not path:
         raise ValueError('Path is required for "%s"' % value)
-      return Device(scheme=scheme, path=path)
+      return Device(scheme=scheme, path=path, raw=value)
     else:
       raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
 

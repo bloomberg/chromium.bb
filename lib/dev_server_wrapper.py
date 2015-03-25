@@ -52,6 +52,10 @@ ROOTFS_FILENAME = 'update.gz'
 STATEFUL_FILENAME = 'stateful.tgz'
 
 
+class ImagePathError(Exception):
+  """Raised when the provided path can't be resolved to an image."""
+
+
 def ConvertTranslatedPath(original_path, translated_path):
   """Converts a translated xbuddy path to an xbuddy path.
 
@@ -108,8 +112,7 @@ def GetXbuddyPath(path):
 
 # pylint: disable=import-error
 def GetImagePathWithXbuddy(path, board, version=None,
-                           static_dir=DEFAULT_STATIC_DIR, device='<DEVICE>',
-                           lookup_only=False):
+                           static_dir=DEFAULT_STATIC_DIR, lookup_only=False):
   """Gets image path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -120,7 +123,6 @@ def GetImagePathWithXbuddy(path, board, version=None,
     board: The default board to use if board is not specified in |path|.
     version: The default version to use if one is not specified in |path|.
     static_dir: Static directory to stage the image in.
-    device: The device specified by the user.
     lookup_only: Caller only wants to translate the path not download the
       artifact.
 
@@ -145,10 +147,8 @@ def GetImagePathWithXbuddy(path, board, version=None,
     return os.path.join(build_id, file_name)
   except xbuddy.XBuddyException as e:
     logging.error('Locating image "%s" failed. The path might not be valid or '
-                  'the image might not exist. To get the latest remote image, '
-                  'please run:\ncros flash --board=%s %s remote/latest', path,
-                  board, device)
-    raise ValueError('Cannot locate image %s: %s' % (path, e))
+                  'the image might not exist.', path)
+    raise ImagePathError('Cannot locate image %s: %s' % (path, e))
 
 
 def GenerateXbuddyRequest(path, req_type):
