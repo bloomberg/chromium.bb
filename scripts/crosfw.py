@@ -123,10 +123,9 @@ default_board = None
 family = None
 in_chroot = True
 
-logger = logging.getLogger('chromite')
 logging.basicConfig(format='%(message)s')
 kwargs = {'print_cmd': False, 'error_code_ok': True,
-          'debug_level': logger.getEffectiveLevel()}
+          'debug_level': logging.getLogger().getEffectiveLevel()}
 
 outdir = ''
 
@@ -295,7 +294,7 @@ def SetupBuild(options):
   if not verbose:
     verbose = options.verbose != 0
 
-  logger.setLevel(options.verbose)
+  logging.getLogger().setLevel(options.verbose)
 
   Log('Building for %s' % options.board)
 

@@ -220,9 +220,9 @@ def main(argv):
     cros_build_lib.Die('Did you swap the branch/gerrit number?')
   branch = args[-1]
 
-  # Suppress all cros_build_lib info output unless we're running debug.
+  # Suppress all logging info output unless we're running debug.
   if not options.debug:
-    cros_build_lib.logger.setLevel(logging.ERROR)
+    logging.getLogger().setLevel(logging.ERROR)
 
   # Get a pointer to your repo checkout to look up the local project paths for
   # both email addresses and for using your checkout as a git mirror.

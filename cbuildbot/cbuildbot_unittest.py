@@ -427,7 +427,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
 
   def testCreateBranchNoVersion(self):
     """Test we require --version with branch-util."""
-    with cros_test_lib.LoggingCapturer('chromite') as logger:
+    with cros_test_lib.LoggingCapturer() as logger:
       args = [constants.BRANCH_UTIL_CONFIG]
       self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
       self.AssertLogsContain(logger, '--branch-name')
@@ -443,7 +443,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     for extra_args in [['--delete-branch'],
                        ['--branch-name', 'refs/heads/test'],
                        ['--rename-to', 'abc']]:
-      with cros_test_lib.LoggingCapturer('chromite') as logger:
+      with cros_test_lib.LoggingCapturer() as logger:
         args = [self._X86_PREFLIGHT] + extra_args
         self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
         self.AssertLogsContain(logger, 'Cannot specify')

@@ -1019,7 +1019,7 @@ def main(argv):
   cros_build_lib.AssertOutsideChroot()
 
   if options.remote:
-    cros_build_lib.logger.setLevel(logging.WARNING)
+    logging.getLogger().setLevel(logging.WARNING)
 
     # Verify configs are valid.
     # If hwtest flag is enabled, post a warning that HWTest step may fail if the

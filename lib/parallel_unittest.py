@@ -24,7 +24,6 @@ except ImportError:
   # pylint: disable=F0401
   import queue as Queue
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -487,9 +486,8 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     with mock.patch.multiple(parallel._BackgroundTask, **kwargs):
       with self.OutputCapturer() as capture:
         try:
-          with cros_test_lib.LoggingCapturer(cros_build_lib.logger.name):
-            with cros_test_lib.LoggingCapturer(parallel.logger.name):
-              parallel.RunParallelSteps(steps)
+          with cros_test_lib.LoggingCapturer():
+            parallel.RunParallelSteps(steps)
         except parallel.BackgroundFailure as ex:
           ex_str = str(ex)
           error_str = capture.GetStderr()

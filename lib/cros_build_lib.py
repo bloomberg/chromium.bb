@@ -36,8 +36,6 @@ from chromite.lib import signals
 
 STRICT_SUDO = False
 
-logger = logging.getLogger('chromite')
-
 # For use by ShellQuote.  Match all characters that the shell might treat
 # specially.  This means a number of things:
 #  - Reserved characters.
@@ -330,7 +328,8 @@ def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
         # Still doesn't want to die.  Too bad, so sad, time to die.
         proc.kill()
     except EnvironmentError as e:
-      Warning('Ignoring unhandled exception in _KillChildProcess: %s', e)
+      logging.warning('Ignoring unhandled exception in _KillChildProcess: %s',
+                      e)
 
     # Ensure our child process has been reaped.
     proc.wait()
@@ -466,7 +465,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   cmd_result = CommandResult()
 
   if mute_output is None:
-    mute_output = logger.getEffectiveLevel() > debug_level
+    mute_output = logging.getLogger().getEffectiveLevel() > debug_level
 
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.
@@ -546,9 +545,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # Print out the command before running.
   if print_cmd or log_output:
     if cwd:
-      logger.log(debug_level, 'RunCommand: %s in %s', CmdToStr(cmd), cwd)
+      logging.log(debug_level, 'RunCommand: %s in %s', CmdToStr(cmd), cwd)
     else:
-      logger.log(debug_level, 'RunCommand: %s', CmdToStr(cmd))
+      logging.log(debug_level, 'RunCommand: %s', CmdToStr(cmd))
 
   cmd_result.cmd = cmd
 
@@ -597,9 +596,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
     if log_output:
       if cmd_result.output:
-        logger.log(debug_level, '(stdout):\n%s', cmd_result.output)
+        logging.log(debug_level, '(stdout):\n%s', cmd_result.output)
       if cmd_result.error:
-        logger.log(debug_level, '(stderr):\n%s', cmd_result.error)
+        logging.log(debug_level, '(stderr):\n%s', cmd_result.error)
 
     if not error_code_ok and proc.returncode:
       msg = ('Failed command "%s", cwd=%s, extra env=%r'
@@ -642,28 +641,8 @@ def Die(message, *args, **kwargs):
   Args:
     message: The message to be emitted before exiting.
   """
-  logger.error(message, *args, **kwargs)
+  logging.error(message, *args, **kwargs)
   raise DieSystemExit(1)
-
-
-def Error(message, *args, **kwargs):
-  """Emits a red warning message using the logging module."""
-  logger.error(message, *args, **kwargs)
-
-
-def Warning(message, *args, **kwargs):  # pylint: disable=redefined-builtin
-  """Emits a warning message using the logging module."""
-  logger.warn(message, *args, **kwargs)
-
-
-def Info(message, *args, **kwargs):
-  """Emits an info message using the logging module."""
-  logger.info(message, *args, **kwargs)
-
-
-def Debug(message, *args, **kwargs):
-  """Emits a debugging message using the logging module."""
-  logger.debug(message, *args, **kwargs)
 
 
 def PrintBuildbotLink(text, url, handle=None):
@@ -747,10 +726,10 @@ def GetChromeosVersion(str_obj):
   if str_obj is not None:
     match = re.search(r'CHROMEOS_VERSION_STRING=([0-9_.]+)', str_obj)
     if match and match.group(1):
-      Info('CHROMEOS_VERSION_STRING = %s' % match.group(1))
+      logging.info('CHROMEOS_VERSION_STRING = %s' % match.group(1))
       return match.group(1)
 
-  Info('CHROMEOS_VERSION_STRING NOT found')
+  logging.info('CHROMEOS_VERSION_STRING NOT found')
   return None
 
 
@@ -760,8 +739,8 @@ def GetHostName(fully_qualified=False):
   try:
     hostname = socket.gethostbyaddr(hostname)[0]
   except socket.gaierror as e:
-    Warning('please check your /etc/hosts file; resolving your hostname '
-            '(%s) failed: %s', hostname, e)
+    logging.warning('please check your /etc/hosts file; resolving your hostname'
+                    ' (%s) failed: %s', hostname, e)
 
   if fully_qualified:
     return hostname
@@ -1125,7 +1104,7 @@ def BooleanShellValue(sval, default, msg=None):
       return False
 
   if msg is not None:
-    Warning('%s: %r' % (msg, sval))
+    logging.warning('%s: %r', msg, sval)
     return default
   else:
     raise ValueError('Could not decode as a boolean value: %r' % sval)
@@ -1337,7 +1316,7 @@ def GetChrootVersion(chroot=None, buildroot=None):
   try:
     return osutils.ReadFile(ver_path).strip()
   except IOError:
-    Warning('could not read %s', ver_path)
+    logging.warning('could not read %s', ver_path)
     return None
 
 
@@ -1622,8 +1601,8 @@ def GetDefaultBoard():
       default_board = default_board_file.read().strip()
       # Check for user typos like whitespace
       if not re.match('[a-zA-Z0-9-_]*$', default_board):
-        Warning('Noticed invalid default board: |%s|. '
-                'Ignoring this default.', default_board)
+        logging.warning('Noticed invalid default board: |%s|. Ignoring this '
+                        'default.', default_board)
         default_board = None
   except IOError:
     return None
@@ -1658,7 +1637,7 @@ def GetBoard(device_board, override_board=None, force=False):
     if not force and not BooleanPrompt(default=False, prolog=msg):
       Die('Exiting...')
 
-    Warning(msg)
+    logging.warning(msg)
 
   return board
 
@@ -1745,7 +1724,7 @@ def GetIPv4Address(dev=None, global_ip=True):
   matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
   if matches:
     return matches[0]
-  Warning('Failed to find ip address in %r', result.output)
+  logging.warning('Failed to find ip address in %r', result.output)
   return None
 
 

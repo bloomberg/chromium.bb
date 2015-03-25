@@ -198,12 +198,13 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
 
 def _ForceLoggingLevel(functor):
   def inner(*args, **kwargs):
-    current = cros_build_lib.logger.getEffectiveLevel()
+    logger = logging.getLogger()
+    current = logger.getEffectiveLevel()
     try:
-      cros_build_lib.logger.setLevel(logging.INFO)
+      logger.setLevel(logging.INFO)
       return functor(*args, **kwargs)
     finally:
-      cros_build_lib.logger.setLevel(current)
+      logger.setLevel(current)
   return inner
 
 

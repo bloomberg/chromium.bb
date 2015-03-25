@@ -15,9 +15,6 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_logging as logging
 
 
-logger = logging.getLogger('chromite')
-
-
 class LabIsDownException(Exception):
   """Raised when the Lab is Down."""
 
@@ -45,8 +42,7 @@ def GetLabStatus(max_attempts=5):
     try:
       response = urllib.urlopen(status_url)
     except IOError as e:
-      logger.log(logging.WARNING,
-                 'Error occurred when grabbing the lab status: %s.', e)
+      logging.warning('Error occurred when grabbing the lab status: %s.', e)
       time.sleep(retry_waittime)
       continue
     # Check for successful response code.
@@ -57,12 +53,11 @@ def GetLabStatus(max_attempts=5):
       result['message'] = data['message']
       return result
     else:
-      logger.log(logging.WARNING,
-                 'Get HTTP code %d when grabbing the lab status from %s',
-                 code, status_url)
+      logging.warning('Get HTTP code %d when grabbing the lab status from %s',
+                      code, status_url)
       time.sleep(retry_waittime)
   # We go ahead and say the lab is open if we can't get the status.
-  logger.log(logging.WARNING, 'Could not get a status from %s', status_url)
+  logging.warning('Could not get a status from %s', status_url)
   return result
 
 
