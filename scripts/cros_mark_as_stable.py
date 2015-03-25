@@ -112,11 +112,11 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   # For the commit queue, our local branch may contain commits that were
   # just tested and pushed during the CommitQueueCompletion stage. Sync
   # and rebase our local branch on top of the remote commits.
-  remote, push_branch = git.GetTrackingBranch(cwd, for_push=True)
-  git.SyncPushBranch(cwd, remote, push_branch)
+  remote_ref = git.GetTrackingBranch(cwd, for_push=True)
+  git.SyncPushBranch(cwd, remote_ref.remote, remote_ref.ref)
 
   # Check whether any local changes remain after the sync.
-  if not _DoWeHaveLocalCommits(stable_branch, push_branch, cwd):
+  if not _DoWeHaveLocalCommits(stable_branch, remote_ref.ref, cwd):
     logging.info('All changes already pushed for %s. Exiting', cwd)
     return
 
@@ -125,7 +125,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   # In dryruns extra CLs are normal, though, and can be ignored.
   bad_cl_cmd = ['log', '--format=short', '--perl-regexp',
                 '--author', '^(?!chrome-bot)', '%s..%s' % (
-                    push_branch, stable_branch)]
+                    remote_ref.ref, stable_branch)]
   bad_cls = git.RunGit(cwd, bad_cl_cmd).output
   if bad_cls.strip() and not dryrun:
     logging.error('The Uprev stage found changes from users other than '
@@ -135,7 +135,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   description = git.RunGit(
       cwd,
       ['log', '--format=format:%s%n%n%b',
-       '%s..%s' % (push_branch, stable_branch)]).output
+       '%s..%s' % (remote_ref.ref, stable_branch)]).output
   description = '%s\n\n%s' % (GIT_COMMIT_SUBJECT, description)
   logging.info('For %s, using description %s', cwd, description)
   git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
@@ -280,7 +280,7 @@ def main(argv):
       # thus we should honor that.  During the actual push, the code switches
       # to the correct urls, and does an appropriate rebasing.
       tracking_branch = git.GetTrackingBranchViaManifest(
-          overlay, manifest=manifest)[1]
+          overlay, manifest=manifest).ref
 
       if options.command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,

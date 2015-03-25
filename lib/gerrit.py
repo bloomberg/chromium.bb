@@ -387,11 +387,11 @@ class GerritHelper(object):
       True if we were able to submit the change using 'git push'. If not, we
       output a warning and return False.
     """
-    remote, checkout_ref = git.GetTrackingBranch(git_repo)
+    remote_ref = git.GetTrackingBranch(git_repo)
     uploaded_sha1 = change.sha1
     for _ in range(3):
       # Get our updated SHA1.
-      local_sha1 = change.GetLocalSHA1(git_repo, checkout_ref)
+      local_sha1 = change.GetLocalSHA1(git_repo, remote_ref.ref)
       if local_sha1 is None:
         logging.warn('%s is not present in %s', change, git_repo)
         break
@@ -416,7 +416,7 @@ class GerritHelper(object):
 
       # Rebase the branch.
       try:
-        git.SyncPushBranch(git_repo, remote, checkout_ref)
+        git.SyncPushBranch(git_repo, remote_ref.remote, remote_ref.reference)
       except cros_build_lib.RunCommandError:
         logging.warn('git rebase failed for %s; was a change chumped in the '
                      'middle of the CQ run?',

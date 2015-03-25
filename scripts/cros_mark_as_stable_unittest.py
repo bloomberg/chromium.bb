@@ -49,8 +49,9 @@ class NonClassTests(cros_test_lib.MockTestCase):
                      side_effect=side_effect)
 
     push_mock = self.PatchObject(git, 'PushWithRetry')
-    self.PatchObject(git, 'GetTrackingBranch',
-                     return_value=['gerrit', 'refs/remotes/gerrit/master'])
+    self.PatchObject(
+        git, 'GetTrackingBranch',
+        return_value=git.RemoteRef('gerrit', 'refs/remotes/gerrit/master'))
     sync_mock = self.PatchObject(git, 'SyncPushBranch')
     create_mock = self.PatchObject(git, 'CreatePushBranch')
     git_mock = self.StartPatcher(RunGitMock())

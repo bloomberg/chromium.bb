@@ -102,14 +102,12 @@ def _PushGitChanges(git_repo, message, dry_run=True, push_to=None):
     push_to: A git.RemoteRef object specifying the remote branch to push to.
       Defaults to the tracking branch of the current branch.
   """
-  push_branch = None
   if push_to is None:
     # TODO(akeshet): Clean up git.GetTrackingBranch to always or never return a
     # tuple.
     # pylint: disable=unpacking-non-sequence
-    remote, push_branch = git.GetTrackingBranch(
+    push_to = git.GetTrackingBranch(
         git_repo, for_checkout=False, for_push=True)
-    push_to = git.RemoteRef(remote, push_branch)
 
   git.RunGit(git_repo, ['add', '-A'])
 

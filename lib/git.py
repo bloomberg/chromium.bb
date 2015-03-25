@@ -706,7 +706,7 @@ class ManifestCheckout(Manifest):
         path, 'default', allow_broken_merge_settings=True, for_checkout=False)
 
     if result is not None:
-      return StripRefsHeads(result[1], False)
+      return StripRefsHeads(result.ref, False)
 
     raise OSError(errno.ENOENT,
                   "Manifest repository at %s is checked out to 'default', but "
@@ -853,8 +853,8 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
       remotes. Disabling it is a matter of passing 0.
 
   Returns:
-    A tuple of the remote and the ref name of the tracking branch, or
-    None if it couldn't be found.
+    A RemoteRef, or None.  If for_checkout, then it returns the localized
+    version of it.
   """
   try:
     cmd = ['config', '--get-regexp',
@@ -879,7 +879,7 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
     # which is wrong (git hates it, nor will it honor it).
     if rev.startswith('refs/remotes/'):
       if for_checkout:
-        return remote, rev
+        return RemoteRef(remote, rev)
       # We can't backtrack from here, or at least don't want to.
       # This is likely refs/remotes/m/ which repo writes when dealing
       # with a revision locked manifest.
@@ -900,7 +900,7 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
           recurse=recurse - 1)
     elif for_checkout:
       rev = 'refs/remotes/%s/%s' % (remote, StripRefsHeads(rev))
-    return remote, rev
+    return RemoteRef(remote, rev)
   except cros_build_lib.RunCommandError as e:
     # 1 is the retcode for no matches.
     if e.result.returncode != 1:
@@ -923,9 +923,8 @@ def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
       ManifestCheckout is created and used.
 
   Returns:
-    A tuple of a git target repo and the remote ref to push to, or
-    None if it couldnt be found.  If for_checkout, then it returns
-    the localized version of it.
+    A RemoteRef, or None.  If for_checkout, then it returns the localized
+    version of it.
   """
   try:
     if manifest is None:
@@ -951,7 +950,7 @@ def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
       if not revision.startswith('refs/heads/'):
         return None
 
-    return remote, revision
+    return RemoteRef(remote, revision)
   except EnvironmentError as e:
     if e.errno != errno.ENOENT:
       raise
@@ -986,9 +985,8 @@ def GetTrackingBranch(git_repo, branch=None, for_checkout=True, fallback=True,
       ManifestCheckout is created and used.
 
   Returns:
-    A tuple of a git target repo and the remote ref to push to.
+    A RemoteRef, or None.
   """
-
   result = GetTrackingBranchViaManifest(git_repo, for_checkout=for_checkout,
                                         manifest=manifest, for_push=for_push)
   if result is not None:
@@ -1000,15 +998,15 @@ def GetTrackingBranch(git_repo, branch=None, for_checkout=True, fallback=True,
     result = GetTrackingBranchViaGitConfig(git_repo, branch,
                                            for_checkout=for_checkout)
     if result is not None:
-      if (result[1].startswith('refs/heads/') or
-          result[1].startswith('refs/remotes/')):
+      if (result.ref.startswith('refs/heads/') or
+          result.ref.startswith('refs/remotes/')):
         return result
 
   if not fallback:
     return None
   if for_checkout:
-    return 'origin', 'refs/remotes/origin/master'
-  return 'origin', 'master'
+    return RemoteRef('origin', 'refs/remotes/origin/master')
+  return RemoteRef('origin', 'master')
 
 
 def CreateBranch(git_repo, branch, branch_point='HEAD', track=False):
@@ -1190,21 +1188,19 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
     branch: Local branch to create.
     git_repo: Git repository to create the branch in.
     sync: Update remote before creating push branch.
-    remote_push_branch: A tuple of the (remote, branch) to push to. i.e.,
-                        ('cros', 'master').  By default it tries to
+    remote_push_branch: A RemoteRef to push to. i.e.,
+                        RemoteRef('cros', 'master').  By default it tries to
                         automatically determine which tracking branch to use
                         (see GetTrackingBranch()).
   """
   if not remote_push_branch:
-    remote, push_branch = GetTrackingBranch(git_repo, for_push=True)
-  else:
-    remote, push_branch = remote_push_branch
+    remote_push_branch = GetTrackingBranch(git_repo, for_push=True)
 
   if sync:
-    cmd = ['remote', 'update', remote]
+    cmd = ['remote', 'update', remote_push_branch.remote]
     RunGit(git_repo, cmd)
 
-  RunGit(git_repo, ['checkout', '-B', branch, '-t', push_branch])
+  RunGit(git_repo, ['checkout', '-B', branch, '-t', remote_push_branch.ref])
 
 
 def SyncPushBranch(git_repo, remote, rebase_target):
@@ -1253,22 +1249,25 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
   Raises:
     GitPushFailed if push was unsuccessful after retries
   """
-  remote, ref = GetTrackingBranch(git_repo, branch, for_checkout=False,
-                                  for_push=True)
+  remote_ref = GetTrackingBranch(git_repo, branch, for_checkout=False,
+                                 for_push=True)
   # Don't like invoking this twice, but there is a bit of API
   # impedence here; cros_mark_as_stable
-  _, local_ref = GetTrackingBranch(git_repo, branch, for_push=True)
+  local_ref = GetTrackingBranch(git_repo, branch, for_push=True)
 
-  if not ref.startswith('refs/heads/'):
-    raise Exception('Was asked to push to a non branch namespace: %s' % (ref,))
+  if not remote_ref.ref.startswith('refs/heads/'):
+    raise Exception('Was asked to push to a non branch namespace: %s' %
+                    remote_ref.ref)
 
-  push_command = ['push', remote, '%s:%s' % (branch, ref)]
-  logging.debug('Trying to push %s to %s:%s', git_repo, branch, ref)
+  push_command = ['push', remote_ref.remote, '%s:%s' %
+                  (branch, remote_ref.ref)]
+  logging.debug('Trying to push %s to %s:%s',
+                git_repo, branch, remote_ref.ref)
 
   if dryrun:
     push_command.append('--dry-run')
   for retry in range(1, retries + 1):
-    SyncPushBranch(git_repo, remote, local_ref)
+    SyncPushBranch(git_repo, remote_ref.remote, local_ref.ref)
     try:
       RunGit(git_repo, push_command)
       break
@@ -1279,7 +1278,8 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
         continue
       raise
 
-  logging.info('Successfully pushed %s to %s:%s', git_repo, branch, ref)
+  logging.info('Successfully pushed %s to %s:%s',
+               git_repo, branch, remote_ref.ref)
 
 
 def CleanAndDetachHead(git_repo):
@@ -1304,20 +1304,19 @@ def CleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
     git_repo: Directory of git repository.
     refresh_upstream: If True, run a remote update prior to checking it out.
   """
-  remote, local_upstream = GetTrackingBranch(git_repo,
-                                             for_push=refresh_upstream)
+  remote_ref = GetTrackingBranch(git_repo, for_push=refresh_upstream)
   CleanAndDetachHead(git_repo)
   if refresh_upstream:
-    RunGit(git_repo, ['remote', 'update', remote])
-  RunGit(git_repo, ['checkout', local_upstream])
+    RunGit(git_repo, ['remote', 'update', remote_ref.remote])
+  RunGit(git_repo, ['checkout', remote_ref.ref])
 
 
 def GetChromiteTrackingBranch():
   """Returns the remote branch associated with chromite."""
   cwd = os.path.dirname(os.path.realpath(__file__))
-  result = GetTrackingBranch(cwd, for_checkout=False, fallback=False)
-  if result:
-    _remote, branch = result
+  result_ref = GetTrackingBranch(cwd, for_checkout=False, fallback=False)
+  if result_ref:
+    branch = result_ref.ref
     if branch.startswith('refs/heads/'):
       # Normal scenario.
       return StripRefsHeads(branch)
