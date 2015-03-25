@@ -160,9 +160,9 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
 // key system-specific behaviors not fully defined by the EME specification.
 // That specification should be provided by the owner of the domain that is the
 // reverse of the |key_system| string.
-// This involves more than calling a library, SDK, or platform API. KeySystems
-// must be populated appropriately, and there will likely be glue code to adapt
-// to the API of the library, SDK, or platform API.
+// This involves more than calling a library, SDK, or platform API.
+// KeySystemsImpl must be populated appropriately, and there will likely be glue
+// code to adapt to the API of the library, SDK, or platform API.
 //
 // Chromium mainline contains this data and glue code for specific key systems,
 // which should help ensure interoperability with other implementations using
@@ -171,7 +171,7 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
 // If you need to add support for other key systems, ensure that you have
 // obtained the specification for how to integrate it with EME, implemented the
 // appropriate glue/adapter code, and added all the appropriate data to
-// KeySystems. Only then should you change this function.
+// KeySystemsImpl. Only then should you change this function.
 static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
   // Known and supported key systems.
   if (key_system == kWidevineKeySystem)
@@ -198,55 +198,66 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
   return false;
 }
 
-class KeySystems {
+class KeySystemsImpl : public KeySystems {
  public:
-  static KeySystems& GetInstance();
+  static KeySystemsImpl& GetInstance();
 
   void UpdateIfNeeded();
 
-  bool IsConcreteSupportedKeySystem(const std::string& key_system);
-
-  bool IsSupportedKeySystem(const std::string& key_system);
+  bool IsConcreteSupportedKeySystem(const std::string& key_system) const;
 
   bool IsSupportedKeySystemWithInitDataType(
       const std::string& key_system,
-      const std::string& init_data_type);
+      const std::string& init_data_type) const;
+
+  bool PrefixedIsSupportedKeySystemWithMediaMimeType(
+      const std::string& mime_type,
+      const std::vector<std::string>& codecs,
+      const std::string& key_system);
 
   bool IsSupportedKeySystemWithMediaMimeType(
       const std::string& mime_type,
       const std::vector<std::string>& codecs,
-      const std::string& key_system,
-      bool is_prefixed);
+      const std::string& key_system) const;
 
   std::string GetKeySystemNameForUMA(const std::string& key_system) const;
 
-  bool UseAesDecryptor(const std::string& concrete_key_system);
+  bool UseAesDecryptor(const std::string& concrete_key_system) const;
 
 #if defined(ENABLE_PEPPER_CDMS)
-  std::string GetPepperType(const std::string& concrete_key_system);
+  std::string GetPepperType(const std::string& concrete_key_system) const;
 #endif
+
+  void AddContainerMask(const std::string& container, uint32 mask);
+  void AddCodecMask(const std::string& codec, uint32 mask);
+
+  // Implementation of KeySystems interface.
+  bool IsSupportedKeySystem(const std::string& key_system) const override;
+
+  bool IsSupportedCodecCombination(
+      const std::string& key_system,
+      EmeMediaType media_type,
+      const std::string& container_mime_type,
+      const std::vector<std::string>& codecs) const override;
 
   EmeConfigRule GetRobustnessConfigRule(
       const std::string& key_system,
       EmeMediaType media_type,
-      const std::string& requested_robustness);
+      const std::string& requested_robustness) const override;
 
   EmeConfigRule GetPersistentLicenseSessionConfigRule(
-      const std::string& key_system);
+      const std::string& key_system) const override;
 
   EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
-      const std::string& key_system);
+      const std::string& key_system) const override;
 
   EmeConfigRule GetPersistentStateConfigRule(
       const std::string& key_system,
-      EmeFeatureRequirement requirement);
+      EmeFeatureRequirement requirement) const override;
 
   EmeConfigRule GetDistinctiveIdentifierConfigRule(
       const std::string& key_system,
-      EmeFeatureRequirement requirement);
-
-  void AddContainerMask(const std::string& container, uint32 mask);
-  void AddCodecMask(const std::string& codec, uint32 mask);
+      EmeFeatureRequirement requirement) const override;
 
  private:
   void InitializeUMAInfo();
@@ -256,7 +267,7 @@ class KeySystems {
   void AddConcreteSupportedKeySystems(
       const std::vector<KeySystemInfo>& concrete_key_systems);
 
-  friend struct base::DefaultLazyInstanceTraits<KeySystems>;
+  friend struct base::DefaultLazyInstanceTraits<KeySystemsImpl>;
 
   typedef base::hash_map<std::string, KeySystemInfo> KeySystemInfoMap;
   typedef base::hash_map<std::string, std::string> ParentKeySystemMap;
@@ -265,8 +276,8 @@ class KeySystems {
   typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
   typedef base::hash_map<std::string, std::string> KeySystemNameForUMAMap;
 
-  KeySystems();
-  ~KeySystems() {}
+  KeySystemsImpl();
+  ~KeySystemsImpl() {}
 
   EmeInitDataType GetInitDataTypeForName(
       const std::string& init_data_type) const;
@@ -309,20 +320,21 @@ class KeySystems {
   // Makes sure all methods are called from the same thread.
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(KeySystems);
+  DISALLOW_COPY_AND_ASSIGN(KeySystemsImpl);
 };
 
-static base::LazyInstance<KeySystems> g_key_systems = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<KeySystemsImpl> g_key_systems =
+    LAZY_INSTANCE_INITIALIZER;
 
-KeySystems& KeySystems::GetInstance() {
-  KeySystems& key_systems = g_key_systems.Get();
+KeySystemsImpl& KeySystemsImpl::GetInstance() {
+  KeySystemsImpl& key_systems = g_key_systems.Get();
   key_systems.UpdateIfNeeded();
   return key_systems;
 }
 
 // Because we use a LazyInstance, the key systems info must be populated when
 // the instance is lazily initiated.
-KeySystems::KeySystems() {
+KeySystemsImpl::KeySystemsImpl() {
   for (size_t i = 0; i < arraysize(kInitDataTypeNames); ++i) {
     const std::string& name = kInitDataTypeNames[i].name;
     DCHECK(!init_data_type_name_map_.count(name));
@@ -345,7 +357,7 @@ KeySystems::KeySystems() {
   UpdateSupportedKeySystems();
 }
 
-EmeInitDataType KeySystems::GetInitDataTypeForName(
+EmeInitDataType KeySystemsImpl::GetInitDataTypeForName(
     const std::string& init_data_type) const {
   InitDataTypesMap::const_iterator iter =
       init_data_type_name_map_.find(init_data_type);
@@ -354,7 +366,7 @@ EmeInitDataType KeySystems::GetInitDataTypeForName(
   return EME_INIT_DATA_TYPE_NONE;
 }
 
-SupportedCodecs KeySystems::GetCodecMaskForContainer(
+SupportedCodecs KeySystemsImpl::GetCodecMaskForContainer(
     const std::string& container) const {
   ContainerCodecsMap::const_iterator iter =
       container_to_codec_mask_map_.find(container);
@@ -363,14 +375,14 @@ SupportedCodecs KeySystems::GetCodecMaskForContainer(
   return EME_CODEC_NONE;
 }
 
-EmeCodec KeySystems::GetCodecForString(const std::string& codec) const {
+EmeCodec KeySystemsImpl::GetCodecForString(const std::string& codec) const {
   CodecsMap::const_iterator iter = codec_string_map_.find(codec);
   if (iter != codec_string_map_.end())
     return iter->second;
   return EME_CODEC_NONE;
 }
 
-const std::string& KeySystems::PrefixedGetConcreteKeySystemNameFor(
+const std::string& KeySystemsImpl::PrefixedGetConcreteKeySystemNameFor(
     const std::string& key_system) const {
   ParentKeySystemMap::const_iterator iter =
       parent_key_system_map_.find(key_system);
@@ -379,7 +391,7 @@ const std::string& KeySystems::PrefixedGetConcreteKeySystemNameFor(
   return key_system;
 }
 
-void KeySystems::InitializeUMAInfo() {
+void KeySystemsImpl::InitializeUMAInfo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(key_system_name_for_uma_map_.empty());
 
@@ -399,12 +411,12 @@ void KeySystems::InitializeUMAInfo() {
       kClearKeyKeySystemNameForUMA;
 }
 
-void KeySystems::UpdateIfNeeded() {
+void KeySystemsImpl::UpdateIfNeeded() {
   if (GetMediaClient() && GetMediaClient()->IsKeySystemsUpdateNeeded())
     UpdateSupportedKeySystems();
 }
 
-void KeySystems::UpdateSupportedKeySystems() {
+void KeySystemsImpl::UpdateSupportedKeySystems() {
   DCHECK(thread_checker_.CalledOnValidThread());
   concrete_key_system_map_.clear();
   parent_key_system_map_.clear();
@@ -422,7 +434,7 @@ void KeySystems::UpdateSupportedKeySystems() {
   AddConcreteSupportedKeySystems(key_systems_info);
 }
 
-void KeySystems::AddConcreteSupportedKeySystems(
+void KeySystemsImpl::AddConcreteSupportedKeySystems(
     const std::vector<KeySystemInfo>& concrete_key_systems) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(concrete_key_system_map_.empty());
@@ -506,12 +518,13 @@ void KeySystems::AddConcreteSupportedKeySystems(
   }
 }
 
-bool KeySystems::IsConcreteSupportedKeySystem(const std::string& key_system) {
+bool KeySystemsImpl::IsConcreteSupportedKeySystem(
+    const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return concrete_key_system_map_.count(key_system) != 0;
 }
 
-bool KeySystems::IsSupportedContainer(
+bool KeySystemsImpl::IsSupportedContainer(
     const std::string& container,
     SupportedCodecs key_system_supported_codecs) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -532,7 +545,7 @@ bool KeySystems::IsSupportedContainer(
   return (supported_codecs & key_system_supported_codecs) != 0;
 }
 
-bool KeySystems::IsSupportedContainerAndCodecs(
+bool KeySystemsImpl::IsSupportedContainerAndCodecs(
     const std::string& container,
     const std::vector<std::string>& codecs,
     SupportedCodecs key_system_supported_codecs) const {
@@ -564,15 +577,9 @@ bool KeySystems::IsSupportedContainerAndCodecs(
   return true;
 }
 
-bool KeySystems::IsSupportedKeySystem(const std::string& key_system) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Unprefixed EME only supports concrete key systems.
-  return concrete_key_system_map_.count(key_system) != 0;
-}
-
-bool KeySystems::IsSupportedKeySystemWithInitDataType(
+bool KeySystemsImpl::IsSupportedKeySystemWithInitDataType(
     const std::string& key_system,
-    const std::string& init_data_type) {
+    const std::string& init_data_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Locate |key_system|. Only concrete key systems are supported in unprefixed.
@@ -587,27 +594,18 @@ bool KeySystems::IsSupportedKeySystemWithInitDataType(
   return (info.supported_init_data_types & eme_init_data_type) != 0;
 }
 
-// TODO(sandersd): Reorganize to be more similar to
-// IsKeySystemSupportedWithInitDataType(). Note that a fork may still be
-// required; http://crbug.com/417461.
-bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
+bool KeySystemsImpl::PrefixedIsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
-    const std::string& key_system,
-    bool is_prefixed) {
+    const std::string& key_system) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const bool report_to_uma = is_prefixed;
 
-  // If |is_prefixed| and |key_system| is a parent key system, use its concrete
-  // child.
-  const std::string& concrete_key_system = is_prefixed ?
-      PrefixedGetConcreteKeySystemNameFor(key_system) :
-      key_system;
+  const std::string& concrete_key_system =
+      PrefixedGetConcreteKeySystemNameFor(key_system);
 
   bool has_type = !mime_type.empty();
 
-  if (report_to_uma)
-    key_systems_support_uma_.ReportKeySystemQuery(key_system, has_type);
+  key_systems_support_uma_.ReportKeySystemQuery(key_system, has_type);
 
   // Check key system support.
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -615,8 +613,7 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
   if (key_system_iter == concrete_key_system_map_.end())
     return false;
 
-  if (report_to_uma)
-    key_systems_support_uma_.ReportKeySystemSupport(key_system, false);
+  key_systems_support_uma_.ReportKeySystemSupport(key_system, false);
 
   if (!has_type) {
     DCHECK(codecs.empty());
@@ -635,12 +632,43 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
     return false;
   }
 
-  if (report_to_uma)
-    key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
+  key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
+
   return true;
 }
 
-std::string KeySystems::GetKeySystemNameForUMA(
+bool KeySystemsImpl::IsSupportedKeySystemWithMediaMimeType(
+    const std::string& mime_type,
+    const std::vector<std::string>& codecs,
+    const std::string& key_system) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  KeySystemInfoMap::const_iterator key_system_iter =
+      concrete_key_system_map_.find(key_system);
+  if (key_system_iter == concrete_key_system_map_.end())
+    return false;
+
+  if (mime_type.empty()) {
+    DCHECK(codecs.empty());
+    return true;
+  }
+
+  SupportedCodecs key_system_supported_codecs =
+      key_system_iter->second.supported_codecs;
+
+  if (!IsSupportedContainer(mime_type, key_system_supported_codecs))
+    return false;
+
+  if (!codecs.empty() &&
+      !IsSupportedContainerAndCodecs(
+          mime_type, codecs, key_system_supported_codecs)) {
+    return false;
+  }
+
+  return true;
+}
+
+std::string KeySystemsImpl::GetKeySystemNameForUMA(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -652,7 +680,8 @@ std::string KeySystems::GetKeySystemNameForUMA(
   return iter->second;
 }
 
-bool KeySystems::UseAesDecryptor(const std::string& concrete_key_system) {
+bool KeySystemsImpl::UseAesDecryptor(
+    const std::string& concrete_key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -666,7 +695,8 @@ bool KeySystems::UseAesDecryptor(const std::string& concrete_key_system) {
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-std::string KeySystems::GetPepperType(const std::string& concrete_key_system) {
+std::string KeySystemsImpl::GetPepperType(
+    const std::string& concrete_key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -682,10 +712,50 @@ std::string KeySystems::GetPepperType(const std::string& concrete_key_system) {
 }
 #endif
 
-EmeConfigRule KeySystems::GetRobustnessConfigRule(
+void KeySystemsImpl::AddContainerMask(const std::string& container,
+                                      uint32 mask) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!container_to_codec_mask_map_.count(container));
+  container_to_codec_mask_map_[container] = static_cast<EmeCodec>(mask);
+}
+
+void KeySystemsImpl::AddCodecMask(const std::string& codec, uint32 mask) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!codec_string_map_.count(codec));
+  codec_string_map_[codec] = static_cast<EmeCodec>(mask);
+}
+
+bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return concrete_key_system_map_.count(key_system) != 0;
+}
+
+// TODO(sandersd): Make sure that the codecs also match the |media_type|.
+// http://crbug.com/457386
+bool KeySystemsImpl::IsSupportedCodecCombination(
     const std::string& key_system,
     EmeMediaType media_type,
-    const std::string& requested_robustness) {
+    const std::string& container_mime_type,
+    const std::vector<std::string>& codecs) const {
+  // Make sure the container matches |media_type|.
+  switch (media_type) {
+    case EmeMediaType::AUDIO:
+      if (!StartsWithASCII(container_mime_type, "audio/", true))
+        return false;
+      break;
+    case EmeMediaType::VIDEO:
+      if (!StartsWithASCII(container_mime_type, "video/", true))
+        return false;
+      break;
+  }
+  return IsSupportedKeySystemWithMediaMimeType(
+      container_mime_type, codecs, key_system);
+}
+
+EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
+    const std::string& key_system,
+    EmeMediaType media_type,
+    const std::string& requested_robustness) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   EmeRobustness robustness = ConvertRobustness(requested_robustness);
@@ -742,8 +812,8 @@ EmeConfigRule KeySystems::GetRobustnessConfigRule(
   return EmeConfigRule::SUPPORTED;
 }
 
-EmeConfigRule KeySystems::GetPersistentLicenseSessionConfigRule(
-    const std::string& key_system) {
+EmeConfigRule KeySystemsImpl::GetPersistentLicenseSessionConfigRule(
+    const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -756,8 +826,8 @@ EmeConfigRule KeySystems::GetPersistentLicenseSessionConfigRule(
       key_system_iter->second.persistent_license_support);
 }
 
-EmeConfigRule KeySystems::GetPersistentReleaseMessageSessionConfigRule(
-    const std::string& key_system) {
+EmeConfigRule KeySystemsImpl::GetPersistentReleaseMessageSessionConfigRule(
+    const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -770,9 +840,9 @@ EmeConfigRule KeySystems::GetPersistentReleaseMessageSessionConfigRule(
       key_system_iter->second.persistent_release_message_support);
 }
 
-EmeConfigRule KeySystems::GetPersistentStateConfigRule(
+EmeConfigRule KeySystemsImpl::GetPersistentStateConfigRule(
     const std::string& key_system,
-    EmeFeatureRequirement requirement) {
+    EmeFeatureRequirement requirement) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -812,9 +882,9 @@ EmeConfigRule KeySystems::GetPersistentStateConfigRule(
   return EmeConfigRule::SUPPORTED;
 }
 
-EmeConfigRule KeySystems::GetDistinctiveIdentifierConfigRule(
+EmeConfigRule KeySystemsImpl::GetDistinctiveIdentifierConfigRule(
     const std::string& key_system,
-    EmeFeatureRequirement requirement) {
+    EmeFeatureRequirement requirement) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
@@ -850,16 +920,8 @@ EmeConfigRule KeySystems::GetDistinctiveIdentifierConfigRule(
   return EmeConfigRule::SUPPORTED;
 }
 
-void KeySystems::AddContainerMask(const std::string& container, uint32 mask) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!container_to_codec_mask_map_.count(container));
-  container_to_codec_mask_map_[container] = static_cast<EmeCodec>(mask);
-}
-
-void KeySystems::AddCodecMask(const std::string& codec, uint32 mask) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!codec_string_map_.count(codec));
-  codec_string_map_[codec] = static_cast<EmeCodec>(mask);
+KeySystems& KeySystems::GetInstance() {
+  return KeySystemsImpl::GetInstance();
 }
 
 //------------------------------------------------------------------------------
@@ -896,11 +958,11 @@ bool IsSaneInitDataTypeWithContainer(
 }
 
 bool PrefixedIsSupportedConcreteKeySystem(const std::string& key_system) {
-  return KeySystems::GetInstance().IsConcreteSupportedKeySystem(key_system);
+  return KeySystemsImpl::GetInstance().IsConcreteSupportedKeySystem(key_system);
 }
 
 bool IsSupportedKeySystem(const std::string& key_system) {
-  if (!KeySystems::GetInstance().IsSupportedKeySystem(key_system))
+  if (!KeySystemsImpl::GetInstance().IsSupportedKeySystem(key_system))
     return false;
 
   // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
@@ -918,7 +980,7 @@ bool IsSupportedKeySystem(const std::string& key_system) {
 bool IsSupportedKeySystemWithInitDataType(
     const std::string& key_system,
     const std::string& init_data_type) {
-  return KeySystems::GetInstance().IsSupportedKeySystemWithInitDataType(
+  return KeySystemsImpl::GetInstance().IsSupportedKeySystemWithInitDataType(
       key_system, init_data_type);
 }
 
@@ -926,65 +988,32 @@ bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
-  return KeySystems::GetInstance().IsSupportedKeySystemWithMediaMimeType(
-      mime_type, codecs, key_system, false);
+  return KeySystemsImpl::GetInstance().IsSupportedKeySystemWithMediaMimeType(
+      mime_type, codecs, key_system);
 }
 
 bool PrefixedIsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
-  return KeySystems::GetInstance().IsSupportedKeySystemWithMediaMimeType(
-      mime_type, codecs, key_system, true);
+  return KeySystemsImpl::GetInstance()
+      .PrefixedIsSupportedKeySystemWithMediaMimeType(mime_type, codecs,
+                                                     key_system);
 }
 
 std::string GetKeySystemNameForUMA(const std::string& key_system) {
-  return KeySystems::GetInstance().GetKeySystemNameForUMA(key_system);
+  return KeySystemsImpl::GetInstance().GetKeySystemNameForUMA(key_system);
 }
 
 bool CanUseAesDecryptor(const std::string& concrete_key_system) {
-  return KeySystems::GetInstance().UseAesDecryptor(concrete_key_system);
+  return KeySystemsImpl::GetInstance().UseAesDecryptor(concrete_key_system);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
 std::string GetPepperType(const std::string& concrete_key_system) {
-  return KeySystems::GetInstance().GetPepperType(concrete_key_system);
+  return KeySystemsImpl::GetInstance().GetPepperType(concrete_key_system);
 }
 #endif
-
-EmeConfigRule GetRobustnessConfigRule(
-    const std::string& key_system,
-    EmeMediaType media_type,
-    const std::string& robustness) {
-  return KeySystems::GetInstance().GetRobustnessConfigRule(
-      key_system, media_type, robustness);
-}
-
-EmeConfigRule GetPersistentLicenseSessionConfigRule(
-    const std::string& key_system) {
-  return KeySystems::GetInstance().GetPersistentLicenseSessionConfigRule(
-      key_system);
-}
-
-EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
-    const std::string& key_system) {
-  return KeySystems::GetInstance().GetPersistentReleaseMessageSessionConfigRule(
-      key_system);
-}
-
-EmeConfigRule GetPersistentStateConfigRule(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement) {
-  return KeySystems::GetInstance().GetPersistentStateConfigRule(
-      key_system, requirement);
-}
-
-EmeConfigRule GetDistinctiveIdentifierConfigRule(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement) {
-  return KeySystems::GetInstance().GetDistinctiveIdentifierConfigRule(
-      key_system, requirement);
-}
 
 // These two functions are for testing purpose only. The declaration in the
 // header file is guarded by "#if defined(UNIT_TEST)" so that they can be used
@@ -993,11 +1022,11 @@ EmeConfigRule GetDistinctiveIdentifierConfigRule(
 // "MEDIA_EXPORT" here again so that they are visible to tests.
 
 MEDIA_EXPORT void AddContainerMask(const std::string& container, uint32 mask) {
-  KeySystems::GetInstance().AddContainerMask(container, mask);
+  KeySystemsImpl::GetInstance().AddContainerMask(container, mask);
 }
 
 MEDIA_EXPORT void AddCodecMask(const std::string& codec, uint32 mask) {
-  KeySystems::GetInstance().AddCodecMask(codec, mask);
+  KeySystemsImpl::GetInstance().AddCodecMask(codec, mask);
 }
 
 }  // namespace media

@@ -14,6 +14,58 @@
 
 namespace media {
 
+// Provides an interface for querying registered key systems. The exposed API is
+// only intended to support unprefixed EME.
+//
+// Many of the original static methods are still available, they should be
+// migrated into this interface over time (or removed).
+//
+// TODO(sandersd): Provide GetKeySystem() so that it is not necessary to pass
+// |key_system| to every method. http://crbug.com/457438
+class MEDIA_EXPORT KeySystems {
+ public:
+  static KeySystems& GetInstance();
+
+  // Returns whether |key_system| is a supported key system.
+  virtual bool IsSupportedKeySystem(const std::string& key_system) const = 0;
+
+  // Returns whether the list of codecs are supported together by |key_system|.
+  // TODO(sandersd): Return a rule instead of a bool so that codec selection can
+  // affect other configuration options (namely robustness).
+  virtual bool IsSupportedCodecCombination(
+      const std::string& key_system,
+      EmeMediaType media_type,
+      const std::string& container_mime_type,
+      const std::vector<std::string>& codecs) const = 0;
+
+  // Returns the configuration rule for supporting a robustness requirement.
+  virtual EmeConfigRule GetRobustnessConfigRule(
+      const std::string& key_system,
+      EmeMediaType media_type,
+      const std::string& requested_robustness) const = 0;
+
+  // Returns the configuration rule for supporting persistent-license sessions.
+  virtual EmeConfigRule GetPersistentLicenseSessionConfigRule(
+      const std::string& key_system) const = 0;
+
+  // Returns the configuration rule for supporting persistent-release-message
+  // sessions.
+  virtual EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
+      const std::string& key_system) const = 0;
+
+  // Returns the configuration rule for supporting a persistent state
+  // requirement.
+  virtual EmeConfigRule GetPersistentStateConfigRule(
+      const std::string& key_system,
+      EmeFeatureRequirement requirement) const = 0;
+
+  // Returns the configuration rule for supporting a distinctive identifier
+  // requirement.
+  virtual EmeConfigRule GetDistinctiveIdentifierConfigRule(
+      const std::string& key_system,
+      EmeFeatureRequirement requirement) const = 0;
+};
+
 // Prefixed EME API only supports prefixed (webkit-) key system name for
 // certain key systems. But internally only unprefixed key systems are
 // supported. The following two functions help convert between prefixed and
@@ -84,33 +136,6 @@ MEDIA_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
 MEDIA_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
-
-// Returns the configuration rule for supporting a robustness requirement.
-// TODO(sandersd): Also take a list of codecs, as they may affect the result.
-MEDIA_EXPORT EmeConfigRule GetRobustnessConfigRule(
-    const std::string& key_system,
-    EmeMediaType media_type,
-    const std::string& requested_robustness);
-
-// Returns the configuration rule for supporting persistent-license sessions.
-MEDIA_EXPORT EmeConfigRule GetPersistentLicenseSessionConfigRule(
-    const std::string& key_system);
-
-// Returns the configuration rule for supporting persistent-release-message
-// sessions.
-MEDIA_EXPORT EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
-    const std::string& key_system);
-
-// Returns the configuration rule for supporting a persistent state requirement.
-MEDIA_EXPORT EmeConfigRule GetPersistentStateConfigRule(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement);
-
-// Returns the configuration rule for supporting a distinctive identifier
-// requirement.
-MEDIA_EXPORT EmeConfigRule GetDistinctiveIdentifierConfigRule(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement);
 
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.

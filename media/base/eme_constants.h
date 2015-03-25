@@ -90,8 +90,8 @@ enum class EmeMediaType {
 };
 
 // Robustness values understood by KeySystems.
-// Note: KeySystems expects this ordering (in GetRobustnessConfigRule()),
-// changes may be required there if this list changes.
+// Note: key_systems.cc expects this ordering in GetRobustnessConfigRule(),
+// make sure to correct that code if this list changes.
 enum class EmeRobustness {
   INVALID,
   EMPTY,

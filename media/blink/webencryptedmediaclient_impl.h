@@ -18,6 +18,7 @@
 
 namespace media {
 
+class KeySystems;
 class MediaPermission;
 
 class MEDIA_EXPORT WebEncryptedMediaClientImpl
@@ -60,6 +61,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   typedef base::ScopedPtrHashMap<std::string, Reporter> Reporters;
   Reporters reporters_;
 
+  const KeySystems& key_systems_;
   scoped_ptr<CdmFactory> cdm_factory_;
   MediaPermission* media_permission_;
 
