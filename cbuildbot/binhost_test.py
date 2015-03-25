@@ -42,7 +42,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     boards = set(key.board for key in board_keys)
     for board in sorted(boards):
       binhost.GenConfigsForBoard(board, regen=not cls.CACHING,
-                                 error_code_ok=True)
+                                 error_code_ok=False)
     fetcher = binhost.CompatIdFetcher(caching=cls.CACHING)
     cls.COMPAT_IDS = fetcher.FetchCompatIds(board_keys)
 

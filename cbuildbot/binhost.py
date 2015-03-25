@@ -275,11 +275,8 @@ class CompatIdFetcher(object):
       self.FetchCompatIds = memory.cache(self.FetchCompatIds)
 
   def _FetchCompatId(self, board, extra_useflags):
-    try:
-      self.compat_ids[(board, extra_useflags)] = \
-          CalculateCompatId(board, extra_useflags)
-    except cros_build_lib.RunCommandError:
-      logging.warning('Ignoring error in board: %s', board, exc_info=True)
+    self.compat_ids[(board, extra_useflags)] = (
+        CalculateCompatId(board, extra_useflags))
 
   def FetchCompatIds(self, board_keys):
     """Generate a dict mapping BoardKeys to their associated CompatId.
