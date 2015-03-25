@@ -336,7 +336,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     IdentifiersFactory::setProcessId(processId);
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
 
-    m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
+    OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgentPtr(InspectorInspectorAgent::create(injectedScriptManager));
+    m_inspectorAgent = inspectorAgentPtr.get();
+    m_agents.append(inspectorAgentPtr.release());
 
     OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), injectedScriptManager, m_overlay));
     m_pageAgent = pageAgentPtr.get();
@@ -360,6 +362,8 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(pageRuntimeAgentPtr.release());
 
     OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_pageAgent);
+    m_pageConsoleAgent = pageConsoleAgentPtr.get();
+
     OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(pageConsoleAgentPtr.get());
 
     OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(this, workerAgentPtr.get(), m_pageAgent);
@@ -368,8 +372,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     m_agents.append(workerAgentPtr.release());
     m_agents.append(pageConsoleAgentPtr.release());
-
-    m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), scriptDebugServer);
 
     m_webLocalFrameImpl->frame()->setInstrumentingAgents(m_instrumentingAgents.get());
 }
@@ -410,6 +412,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_state);
     visitor->trace(m_overlay);
     visitor->trace(m_asyncCallTracker);
+    visitor->trace(m_inspectorAgent);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_cssAgent);
@@ -417,6 +420,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
     visitor->trace(m_pageRuntimeAgent);
+    visitor->trace(m_pageConsoleAgent);
     visitor->trace(m_inspectorBackendDispatcher);
     visitor->trace(m_agents);
 }
@@ -475,6 +479,13 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
 
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
+
+    PageScriptDebugServer* scriptDebugServer = PageScriptDebugServer::instance();
+    m_injectedScriptManager->injectedScriptHost()->init(
+        m_pageConsoleAgent.get(),
+        debuggerAgent,
+        bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
+        scriptDebugServer);
 }
 
 void WebDevToolsAgentImpl::registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)

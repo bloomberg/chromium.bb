@@ -48,10 +48,12 @@ namespace blink {
 
 class DebuggerTask;
 class GraphicsLayer;
+class InspectorInspectorAgent;
 class InspectorOverlay;
 class InspectorPageAgent;
 class LocalFrame;
 class Page;
+class PageConsoleAgent;
 class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
@@ -143,6 +145,7 @@ private:
     OwnPtr<InspectorInputAgent::Client> m_inputClient;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 
+    RawPtrWillBeMember<InspectorInspectorAgent> m_inspectorAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
@@ -150,6 +153,7 @@ private:
     RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
     RawPtrWillBeMember<PageRuntimeAgent> m_pageRuntimeAgent;
+    RawPtrWillBeMember<PageConsoleAgent> m_pageConsoleAgent;
 
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
