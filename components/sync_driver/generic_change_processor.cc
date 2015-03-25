@@ -471,7 +471,11 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       NOTREACHED();
       return error;
     }
-    attachment_service_->UploadAttachments(new_attachments);
+    syncer::AttachmentIdList ids_to_upload;
+    ids_to_upload.reserve(new_attachments.size());
+    std::copy(new_attachments.begin(), new_attachments.end(),
+              std::back_inserter(ids_to_upload));
+    attachment_service_->UploadAttachments(ids_to_upload);
   }
 
   return syncer::SyncError();
@@ -705,13 +709,13 @@ syncer::UserShare* GenericChangeProcessor::share_handle() const {
 void GenericChangeProcessor::UploadAllAttachmentsNotOnServer() {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_service_.get());
-  syncer::AttachmentIdSet id_set;
+  syncer::AttachmentIdList ids;
   {
     syncer::ReadTransaction trans(FROM_HERE, share_handle());
-    trans.GetAttachmentIdsToUpload(type_, &id_set);
+    trans.GetAttachmentIdsToUpload(type_, &ids);
   }
-  if (!id_set.empty()) {
-    attachment_service_->UploadAttachments(id_set);
+  if (!ids.empty()) {
+    attachment_service_->UploadAttachments(ids);
   }
 }
 

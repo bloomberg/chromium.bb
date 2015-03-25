@@ -260,6 +260,14 @@ class AttachmentServiceImplTest : public testing::Test,
     }
   }
 
+  static AttachmentIdSet AttachmentIdSetFromList(
+      const AttachmentIdList& id_list) {
+    AttachmentIdSet id_set;
+    std::copy(id_list.begin(), id_list.end(),
+              std::inserter(id_set, id_set.end()));
+    return id_set;
+  }
+
   const std::vector<AttachmentService::GetOrDownloadResult>&
   download_results() const {
     return download_results_;
@@ -420,10 +428,10 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_NoDownloader) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
-  AttachmentIdSet attachment_ids;
+  AttachmentIdList attachment_ids;
   const unsigned num_attachments = 3;
   for (unsigned i = 0; i < num_attachments; ++i) {
-    attachment_ids.insert(AttachmentId::Create(0, 0));
+    attachment_ids.push_back(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
 
@@ -432,7 +440,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
     // See that the service has issued a read for at least one of the
     // attachments.
     ASSERT_GE(store()->read_ids.size(), 1U);
-    store()->RespondToRead(attachment_ids);
+    store()->RespondToRead(AttachmentIdSetFromList(attachment_ids));
     RunLoop();
     ASSERT_GE(uploader()->upload_requests.size(), 1U);
     uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
@@ -444,9 +452,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
 
   // See that all the attachments were uploaded.
   ASSERT_EQ(attachment_ids.size(), on_attachment_uploaded_list().size());
-  AttachmentIdSet::const_iterator iter = attachment_ids.begin();
-  const AttachmentIdSet::const_iterator end = attachment_ids.end();
-  for (iter = attachment_ids.begin(); iter != end; ++iter) {
+  for (auto iter = attachment_ids.begin(); iter != attachment_ids.end();
+       ++iter) {
     EXPECT_THAT(on_attachment_uploaded_list(), testing::Contains(*iter));
   }
 }
@@ -456,13 +463,13 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
                               make_scoped_ptr(new MockAttachmentDownloader()),
                               NULL);  // No delegate.
 
-  AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create(0, 0));
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoopAndFireTimer();
   ASSERT_EQ(1U, store()->read_ids.size());
   ASSERT_EQ(0U, uploader()->upload_requests.size());
-  store()->RespondToRead(attachment_ids);
+  store()->RespondToRead(AttachmentIdSetFromList(attachment_ids));
   RunLoop();
   ASSERT_EQ(0U, store()->read_ids.size());
   ASSERT_EQ(1U, uploader()->upload_requests.size());
@@ -473,15 +480,15 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_SomeMissingFromStore) {
-  AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create(0, 0));
-  attachment_ids.insert(AttachmentId::Create(0, 0));
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoopAndFireTimer();
   ASSERT_GE(store()->read_ids.size(), 1U);
 
   ASSERT_EQ(0U, uploader()->upload_requests.size());
-  store()->RespondToRead(attachment_ids);
+  store()->RespondToRead(AttachmentIdSetFromList(attachment_ids));
   RunLoop();
   ASSERT_EQ(1U, uploader()->upload_requests.size());
 
@@ -498,10 +505,10 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_SomeMissingFromStore) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
-  AttachmentIdSet attachment_ids;
+  AttachmentIdList attachment_ids;
   const unsigned num_attachments = 2;
   for (unsigned i = 0; i < num_attachments; ++i) {
-    attachment_ids.insert(AttachmentId::Create(0, 0));
+    attachment_ids.push_back(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
 
@@ -524,8 +531,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
                               make_scoped_ptr(new MockAttachmentDownloader()),
                               this);
 
-  AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create(0, 0));
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoop();
   EXPECT_EQ(0U, store()->read_ids.size());
@@ -534,17 +541,17 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
 
 // Upload three attachments.  For one of them, server responds with error.
 TEST_F(AttachmentServiceImplTest, UploadAttachments_OneUploadFails) {
-  AttachmentIdSet attachment_ids;
+  AttachmentIdList attachment_ids;
   const unsigned num_attachments = 3;
   for (unsigned i = 0; i < num_attachments; ++i) {
-    attachment_ids.insert(AttachmentId::Create(0, 0));
+    attachment_ids.push_back(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
 
   for (unsigned i = 0; i < 3; ++i) {
     RunLoopAndFireTimer();
     ASSERT_GE(store()->read_ids.size(), 1U);
-    store()->RespondToRead(attachment_ids);
+    store()->RespondToRead(AttachmentIdSetFromList(attachment_ids));
     RunLoop();
     ASSERT_EQ(1U, uploader()->upload_requests.size());
     AttachmentUploader::UploadResult result =
@@ -566,13 +573,13 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_OneUploadFails) {
 // network disconnect/connect events and see that backoff is cleared.
 TEST_F(AttachmentServiceImplTest,
        UploadAttachments_ResetBackoffAfterNetworkChange) {
-  AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create(0, 0));
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
 
   RunLoopAndFireTimer();
   ASSERT_EQ(1U, store()->read_ids.size());
-  store()->RespondToRead(attachment_ids);
+  store()->RespondToRead(AttachmentIdSetFromList(attachment_ids));
   RunLoop();
   ASSERT_EQ(1U, uploader()->upload_requests.size());
 

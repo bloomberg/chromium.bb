@@ -273,14 +273,13 @@ void AttachmentServiceImpl::BeginUpload(const AttachmentId& attachment_id) {
 }
 
 void AttachmentServiceImpl::UploadAttachments(
-    const AttachmentIdSet& attachment_ids) {
+    const AttachmentIdList& attachment_ids) {
   DCHECK(CalledOnValidThread());
   if (!attachment_uploader_.get()) {
     return;
   }
-  AttachmentIdSet::const_iterator iter = attachment_ids.begin();
-  AttachmentIdSet::const_iterator end = attachment_ids.end();
-  for (; iter != end; ++iter) {
+  for (auto iter = attachment_ids.begin(); iter != attachment_ids.end();
+       ++iter) {
     upload_task_queue_->AddToQueue(*iter);
   }
 }

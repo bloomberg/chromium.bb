@@ -48,10 +48,9 @@ void ReadTransaction::GetDataTypeContext(
 }
 
 void ReadTransaction::GetAttachmentIdsToUpload(ModelType type,
-                                               AttachmentIdSet* id_set) const {
-  DCHECK(id_set);
-  transaction_->directory()->GetAttachmentIdsToUpload(
-      transaction_, type, id_set);
+                                               AttachmentIdList* ids) const {
+  DCHECK(ids);
+  transaction_->directory()->GetAttachmentIdsToUpload(transaction_, type, ids);
 }
 
 std::string ReadTransaction::GetStoreBirthday() const {

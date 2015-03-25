@@ -1865,21 +1865,21 @@ TEST_F(SyncableDirectoryTest, Directory_GetAttachmentIdsToUpload) {
       PREFERENCES, "some other entry", id2, attachment_metadata);
 
   // See that Directory reports that this attachment is not on the server.
-  AttachmentIdSet id_set;
+  AttachmentIdList ids;
   {
     ReadTransaction trans(FROM_HERE, dir().get());
-    dir()->GetAttachmentIdsToUpload(&trans, PREFERENCES, &id_set);
+    dir()->GetAttachmentIdsToUpload(&trans, PREFERENCES, &ids);
   }
-  ASSERT_EQ(1U, id_set.size());
-  ASSERT_EQ(attachment_id, *id_set.begin());
+  ASSERT_EQ(1U, ids.size());
+  ASSERT_EQ(attachment_id, *ids.begin());
 
   // Call again, but this time with a ModelType for which there are no entries.
   // See that Directory correctly reports that there are none.
   {
     ReadTransaction trans(FROM_HERE, dir().get());
-    dir()->GetAttachmentIdsToUpload(&trans, PASSWORDS, &id_set);
+    dir()->GetAttachmentIdsToUpload(&trans, PASSWORDS, &ids);
   }
-  ASSERT_TRUE(id_set.empty());
+  ASSERT_TRUE(ids.empty());
 
   // Now, mark the attachment as "on the server" via entry_1.
   {
@@ -1892,9 +1892,9 @@ TEST_F(SyncableDirectoryTest, Directory_GetAttachmentIdsToUpload) {
   // server.
   {
     ReadTransaction trans(FROM_HERE, dir().get());
-    dir()->GetAttachmentIdsToUpload(&trans, PREFERENCES, &id_set);
+    dir()->GetAttachmentIdsToUpload(&trans, PREFERENCES, &ids);
   }
-  ASSERT_TRUE(id_set.empty());
+  ASSERT_TRUE(ids.empty());
 }
 
 // Verify that the directory accepts entries with unset parent ID.

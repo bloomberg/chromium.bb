@@ -40,11 +40,11 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
   MockAttachmentService(scoped_ptr<syncer::AttachmentStore> attachment_store);
   ~MockAttachmentService() override;
   void UploadAttachments(
-      const syncer::AttachmentIdSet& attachment_ids) override;
-  std::vector<syncer::AttachmentIdSet>* attachment_id_sets();
+      const syncer::AttachmentIdList& attachment_ids) override;
+  std::vector<syncer::AttachmentIdList>* attachment_id_lists();
 
  private:
-  std::vector<syncer::AttachmentIdSet> attachment_id_sets_;
+  std::vector<syncer::AttachmentIdList> attachment_id_lists_;
 };
 
 MockAttachmentService::MockAttachmentService(
@@ -63,14 +63,14 @@ MockAttachmentService::~MockAttachmentService() {
 }
 
 void MockAttachmentService::UploadAttachments(
-    const syncer::AttachmentIdSet& attachment_ids) {
-  attachment_id_sets_.push_back(attachment_ids);
+    const syncer::AttachmentIdList& attachment_ids) {
+  attachment_id_lists_.push_back(attachment_ids);
   AttachmentServiceImpl::UploadAttachments(attachment_ids);
 }
 
-std::vector<syncer::AttachmentIdSet>*
-MockAttachmentService::attachment_id_sets() {
-  return &attachment_id_sets_;
+std::vector<syncer::AttachmentIdList>*
+MockAttachmentService::attachment_id_lists() {
+  return &attachment_id_lists_;
 }
 
 // MockSyncApiComponentFactory needed to initialize GenericChangeProcessor and
@@ -385,9 +385,9 @@ TEST_F(SyncGenericChangeProcessorTest,
   RunLoop();
 
   // Check that the AttachmentService received the new attachments.
-  ASSERT_EQ(mock_attachment_service()->attachment_id_sets()->size(), 1U);
-  const syncer::AttachmentIdSet& attachments_added =
-      mock_attachment_service()->attachment_id_sets()->front();
+  ASSERT_EQ(mock_attachment_service()->attachment_id_lists()->size(), 1U);
+  const syncer::AttachmentIdList& attachments_added =
+      mock_attachment_service()->attachment_id_lists()->front();
   ASSERT_THAT(
       attachments_added,
       testing::UnorderedElementsAre(attachment_ids[0], attachment_ids[1]));
@@ -395,7 +395,7 @@ TEST_F(SyncGenericChangeProcessorTest,
   // Update the SyncData, replacing its two attachments with one new attachment.
   syncer::AttachmentIdList new_attachment_ids;
   new_attachment_ids.push_back(syncer::AttachmentId::Create(0, 0));
-  mock_attachment_service()->attachment_id_sets()->clear();
+  mock_attachment_service()->attachment_id_lists()->clear();
   change_list.clear();
   change_list.push_back(
       syncer::SyncChange(FROM_HERE,
@@ -407,9 +407,9 @@ TEST_F(SyncGenericChangeProcessorTest,
   RunLoop();
 
   // Check that the AttachmentService received it.
-  ASSERT_EQ(mock_attachment_service()->attachment_id_sets()->size(), 1U);
-  const syncer::AttachmentIdSet& new_attachments_added =
-      mock_attachment_service()->attachment_id_sets()->front();
+  ASSERT_EQ(mock_attachment_service()->attachment_id_lists()->size(), 1U);
+  const syncer::AttachmentIdList& new_attachments_added =
+      mock_attachment_service()->attachment_id_lists()->front();
   ASSERT_THAT(new_attachments_added,
               testing::UnorderedElementsAre(new_attachment_ids[0]));
 }
@@ -473,8 +473,8 @@ TEST_F(SyncGenericChangeProcessorTest, UploadAllAttachmentsNotOnServer) {
   // Construct the GenericChangeProcessor and see that it asks the
   // AttachmentService to upload id1 only.
   ConstructGenericChangeProcessor(kType);
-  ASSERT_EQ(1U, mock_attachment_service()->attachment_id_sets()->size());
-  ASSERT_THAT(mock_attachment_service()->attachment_id_sets()->front(),
+  ASSERT_EQ(1U, mock_attachment_service()->attachment_id_lists()->size());
+  ASSERT_THAT(mock_attachment_service()->attachment_id_lists()->front(),
               testing::UnorderedElementsAre(id1));
 }
 

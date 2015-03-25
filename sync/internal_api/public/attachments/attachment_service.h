@@ -68,7 +68,7 @@ class SYNC_EXPORT AttachmentService {
   // A request to upload attachments does not persist across restarts of Chrome.
   //
   // Invokes OnAttachmentUploaded on the Delegate (if provided).
-  virtual void UploadAttachments(const AttachmentIdSet& attachment_ids) = 0;
+  virtual void UploadAttachments(const AttachmentIdList& attachment_ids) = 0;
 };
 
 }  // namespace syncer

@@ -52,7 +52,7 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
 
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
                                 const GetOrDownloadCallback& callback) override;
-  void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
+  void UploadAttachments(const AttachmentIdList& attachment_ids) override;
 
  protected:
   // Core does the work of proxying calls to AttachmentService methods from one
@@ -78,7 +78,7 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
     void GetOrDownloadAttachments(
         const AttachmentIdList& attachment_ids,
         const GetOrDownloadCallback& callback) override;
-    void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
+    void UploadAttachments(const AttachmentIdList& attachment_ids) override;
 
    protected:
     friend class base::RefCountedThreadSafe<Core>;

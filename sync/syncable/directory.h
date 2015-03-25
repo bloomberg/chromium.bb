@@ -417,11 +417,11 @@ class SYNC_EXPORT Directory {
   // preserve sync preferences in DB on disk.
   void UnmarkDirtyEntry(WriteTransaction* trans, Entry* entry);
 
-  // Clears |id_set| and fills it with the ids of attachments that need to be
+  // Clears |ids| and fills it with the ids of attachments that need to be
   // uploaded to the sync server.
   void GetAttachmentIdsToUpload(BaseTransaction* trans,
                                 ModelType type,
-                                AttachmentIdSet* id_set);
+                                AttachmentIdList* ids);
 
  private:
   struct Kernel {

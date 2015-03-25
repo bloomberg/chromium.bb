@@ -75,6 +75,8 @@ class SYNC_EXPORT AttachmentId {
   AttachmentId(sync_pb::AttachmentIdProto* proto);
 };
 
+// All public interfaces use AttachmentIdList. AttachmentIdSet is used in
+// implementations of algorithms where set properties are needed.
 typedef std::vector<AttachmentId> AttachmentIdList;
 typedef std::set<AttachmentId> AttachmentIdSet;
 

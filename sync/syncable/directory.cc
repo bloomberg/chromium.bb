@@ -1498,13 +1498,13 @@ void Directory::UnmarkDirtyEntry(WriteTransaction* trans, Entry* entry) {
 
 void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
                                          ModelType type,
-                                         AttachmentIdSet* id_set) {
+                                         AttachmentIdList* ids) {
   // TODO(maniscalco): Maintain an index by ModelType and rewrite this method to
   // use it.  The approach below is likely very expensive because it iterates
   // all entries (bug 415199).
   DCHECK(trans);
-  DCHECK(id_set);
-  id_set->clear();
+  DCHECK(ids);
+  ids->clear();
   AttachmentIdSet on_server_id_set;
   AttachmentIdSet not_on_server_id_set;
   std::vector<int64> metahandles;
@@ -1543,11 +1543,9 @@ void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
   // return.
   //
   // TODO(maniscalco): Eliminate redundant metadata storage (bug 415203).
-  std::set_difference(not_on_server_id_set.begin(),
-                      not_on_server_id_set.end(),
-                      on_server_id_set.begin(),
-                      on_server_id_set.end(),
-                      std::inserter(*id_set, id_set->end()));
+  std::set_difference(not_on_server_id_set.begin(), not_on_server_id_set.end(),
+                      on_server_id_set.begin(), on_server_id_set.end(),
+                      std::back_inserter(*ids));
 }
 
 }  // namespace syncable

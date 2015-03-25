@@ -46,9 +46,9 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
   void GetDataTypeContext(ModelType type,
                           sync_pb::DataTypeContext* context) const;
 
-  // Clear |id_set| and fill it with the ids of attachments that need to be
+  // Clear |ids| and fill it with the ids of attachments that need to be
   // uploaded to the sync server.
-  void GetAttachmentIdsToUpload(ModelType type, AttachmentIdSet* id_set) const;
+  void GetAttachmentIdsToUpload(ModelType type, AttachmentIdList* ids) const;
 
   // Return the current (opaque) store birthday.
   std::string GetStoreBirthday() const;

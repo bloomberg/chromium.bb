@@ -46,7 +46,7 @@ class StubAttachmentService : public AttachmentService,
                    base::Passed(&attachments)));
   }
 
-  void UploadAttachments(const AttachmentIdSet& attachments_ids) override {
+  void UploadAttachments(const AttachmentIdList& attachments_ids) override {
     CalledOnValidThread();
     Increment();
   }
@@ -135,7 +135,7 @@ class AttachmentServiceProxyTest : public testing::Test,
 // thread.
 TEST_F(AttachmentServiceProxyTest, MethodsAreProxied) {
   proxy->GetOrDownloadAttachments(AttachmentIdList(), callback_get_or_download);
-  proxy->UploadAttachments(AttachmentIdSet());
+  proxy->UploadAttachments(AttachmentIdList());
   // Wait for the posted calls to execute in the stub thread.
   WaitForStubThread();
   EXPECT_EQ(2, stub->GetCallCount());

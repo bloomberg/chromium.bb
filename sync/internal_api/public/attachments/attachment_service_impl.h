@@ -64,7 +64,7 @@ class SYNC_EXPORT AttachmentServiceImpl
   // AttachmentService implementation.
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
                                 const GetOrDownloadCallback& callback) override;
-  void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
+  void UploadAttachments(const AttachmentIdList& attachment_ids) override;
 
   // NetworkChangeObserver implementation.
   void OnNetworkChanged(

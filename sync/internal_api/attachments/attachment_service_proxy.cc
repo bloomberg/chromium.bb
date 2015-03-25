@@ -66,7 +66,7 @@ void AttachmentServiceProxy::GetOrDownloadAttachments(
 }
 
 void AttachmentServiceProxy::UploadAttachments(
-    const AttachmentIdSet& attachment_ids) {
+    const AttachmentIdList& attachment_ids) {
   DCHECK(wrapped_task_runner_.get());
   wrapped_task_runner_->PostTask(
       FROM_HERE,
@@ -91,7 +91,7 @@ void AttachmentServiceProxy::Core::GetOrDownloadAttachments(
 }
 
 void AttachmentServiceProxy::Core::UploadAttachments(
-    const AttachmentIdSet& attachment_ids) {
+    const AttachmentIdList& attachment_ids) {
   if (!wrapped_) {
     return;
   }
