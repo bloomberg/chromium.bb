@@ -12,7 +12,7 @@
     ['OS == "linux" and target_arch != "arm" and use_x11==1', {
       'targets': [
         {
-          # GN: //gpu:compositor_model_bench
+          # GN version: //gpu/tools/compositor_model_bench
           'target_name': 'compositor_model_bench',
           'type': 'executable',
           'dependencies': [
