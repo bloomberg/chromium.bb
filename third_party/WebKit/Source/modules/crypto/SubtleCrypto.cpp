@@ -151,7 +151,7 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const AlgorithmIde
     if (!key->canBeUsedForAlgorithm(algorithm, WebCryptoKeyUsageEncrypt, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), algorithm, key->key());
     Platform::current()->crypto()->encrypt(algorithm, key->key(), data.bytes(), data.byteLength(), result->result());
     return promise;
 }
@@ -171,7 +171,7 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const AlgorithmIde
     if (!key->canBeUsedForAlgorithm(algorithm, WebCryptoKeyUsageDecrypt, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), algorithm, key->key());
     Platform::current()->crypto()->decrypt(algorithm, key->key(), data.bytes(), data.byteLength(), result->result());
     return promise;
 }
@@ -191,7 +191,7 @@ ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const AlgorithmIdenti
     if (!key->canBeUsedForAlgorithm(algorithm, WebCryptoKeyUsageSign, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), algorithm, key->key());
     Platform::current()->crypto()->sign(algorithm, key->key(), data.bytes(), data.byteLength(), result->result());
     return promise;
 }
@@ -211,7 +211,7 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
     if (!key->canBeUsedForAlgorithm(algorithm, WebCryptoKeyUsageVerify, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), algorithm, key->key());
     Platform::current()->crypto()->verifySignature(algorithm, key->key(), signature.bytes(), signature.byteLength(), data.bytes(), data.byteLength(), result->result());
     return promise;
 }
@@ -228,7 +228,7 @@ ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const AlgorithmIden
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationDigest, algorithm, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithm(scriptState->executionContext(), algorithm);
     Platform::current()->crypto()->digest(algorithm, data.bytes(), data.byteLength(), result->result());
     return promise;
 }
@@ -249,7 +249,7 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Algorith
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationGenerateKey, algorithm, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithm(scriptState->executionContext(), algorithm);
     Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
     return promise;
 }
@@ -300,7 +300,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
         ptr = reinterpret_cast<const unsigned char*>(jsonUtf8.data());
         len = jsonUtf8.length();
     }
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithm(scriptState->executionContext(), algorithm);
     Platform::current()->crypto()->importKey(format, ptr, len, algorithm, extractable, keyUsages, result->result());
     return promise;
 }
@@ -322,7 +322,7 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
         return promise;
     }
 
-    reportWebCryptoKeyAlgorithmUsage(scriptState->executionContext(), key->key().algorithm());
+    histogramKey(scriptState->executionContext(), key->key());
     Platform::current()->crypto()->exportKey(format, key->key(), result->result());
     return promise;
 }
@@ -351,7 +351,8 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
     if (!wrappingKey->canBeUsedForAlgorithm(wrapAlgorithm, WebCryptoKeyUsageWrapKey, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), wrapAlgorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), wrapAlgorithm, wrappingKey->key());
+    histogramKey(scriptState->executionContext(), key->key());
     Platform::current()->crypto()->wrapKey(format, key->key(), wrappingKey->key(), wrapAlgorithm, result->result());
     return promise;
 }
@@ -383,7 +384,8 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
     if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, WebCryptoKeyUsageUnwrapKey, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), unwrapAlgorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), unwrapAlgorithm, unwrappingKey->key());
+    histogramAlgorithm(scriptState->executionContext(), unwrappedKeyAlgorithm);
     Platform::current()->crypto()->unwrapKey(format, wrappedKey.bytes(), wrappedKey.byteLength(), unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }
@@ -403,7 +405,7 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState, const Algorithm
     if (!baseKey->canBeUsedForAlgorithm(algorithm, WebCryptoKeyUsageDeriveBits, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), algorithm, baseKey->key());
     Platform::current()->crypto()->deriveBits(algorithm, baseKey->key(), lengthBits, result->result());
     return promise;
 }
@@ -435,7 +437,8 @@ ScriptPromise SubtleCrypto::deriveKey(ScriptState* scriptState, const AlgorithmI
     if (!parseAlgorithm(rawDerivedKeyType, WebCryptoOperationGetKeyLength, keyLengthAlgorithm, result.get()))
         return promise;
 
-    reportWebCryptoAlgorithmUsage(scriptState->executionContext(), algorithm);
+    histogramAlgorithmAndKey(scriptState->executionContext(), algorithm, baseKey->key());
+    histogramAlgorithm(scriptState->executionContext(), importAlgorithm);
     Platform::current()->crypto()->deriveKey(algorithm, baseKey->key(), importAlgorithm, keyLengthAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }

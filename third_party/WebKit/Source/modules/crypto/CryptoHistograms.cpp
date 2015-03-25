@@ -8,6 +8,7 @@
 #include "core/frame/UseCounter.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithm.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 
 namespace blink {
@@ -53,18 +54,85 @@ static UseCounter::Feature algorithmIdToFeature(WebCryptoAlgorithmId id)
     return static_cast<UseCounter::Feature>(0);
 }
 
-void reportWebCryptoAlgorithmUsage(ExecutionContext* context, const WebCryptoAlgorithm& algorithm)
+static void histogramAlgorithmId(ExecutionContext* context, WebCryptoAlgorithmId algorithmId)
 {
-    UseCounter::Feature feature = algorithmIdToFeature(algorithm.id());
-    if (!feature)
+    UseCounter::Feature feature = algorithmIdToFeature(algorithmId);
+    if (feature)
         UseCounter::count(context, feature);
 }
 
-void reportWebCryptoKeyAlgorithmUsage(ExecutionContext* context, const WebCryptoKeyAlgorithm& algorithm)
+void histogramAlgorithm(ExecutionContext* context, const WebCryptoAlgorithm& algorithm)
 {
-    UseCounter::Feature feature = algorithmIdToFeature(algorithm.id());
-    if (!feature)
-        UseCounter::count(context, feature);
+    histogramAlgorithmId(context, algorithm.id());
+
+    // Histogram any interesting parameters for the algorithm. For instance
+    // the inner hash for algorithms which include one (HMAC, RSA-PSS, etc)
+    switch (algorithm.paramsType()) {
+    case WebCryptoAlgorithmParamsTypeHmacImportParams:
+        histogramAlgorithm(context, algorithm.hmacImportParams()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
+        histogramAlgorithm(context, algorithm.hmacKeyGenParams()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
+        histogramAlgorithm(context, algorithm.rsaHashedKeyGenParams()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
+        histogramAlgorithm(context, algorithm.rsaHashedImportParams()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypeEcdsaParams:
+        histogramAlgorithm(context, algorithm.ecdsaParams()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypeHkdfParams:
+        histogramAlgorithm(context, algorithm.hkdfParams()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypePbkdf2Params:
+        histogramAlgorithm(context, algorithm.pbkdf2Params()->hash());
+        break;
+    case WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams:
+    case WebCryptoAlgorithmParamsTypeNone:
+    case WebCryptoAlgorithmParamsTypeAesCbcParams:
+    case WebCryptoAlgorithmParamsTypeAesGcmParams:
+    case WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+    case WebCryptoAlgorithmParamsTypeRsaOaepParams:
+    case WebCryptoAlgorithmParamsTypeAesCtrParams:
+    case WebCryptoAlgorithmParamsTypeRsaPssParams:
+    case WebCryptoAlgorithmParamsTypeEcKeyGenParams:
+    case WebCryptoAlgorithmParamsTypeEcKeyImportParams:
+    case WebCryptoAlgorithmParamsTypeAesDerivedKeyParams:
+        break;
+    }
+}
+
+void histogramKey(ExecutionContext* context, const WebCryptoKey& key)
+{
+    const WebCryptoKeyAlgorithm& algorithm = key.algorithm();
+
+    histogramAlgorithmId(context, algorithm.id());
+
+    // Histogram any interesting parameters that are attached to the key. For
+    // instance the inner hash being used for HMAC.
+    switch (algorithm.paramsType()) {
+    case WebCryptoKeyAlgorithmParamsTypeHmac:
+        histogramAlgorithm(context, algorithm.hmacParams()->hash());
+        break;
+    case WebCryptoKeyAlgorithmParamsTypeRsaHashed:
+        histogramAlgorithm(context, algorithm.rsaHashedParams()->hash());
+        break;
+    case WebCryptoKeyAlgorithmParamsTypeNone:
+    case WebCryptoKeyAlgorithmParamsTypeAes:
+    case WebCryptoKeyAlgorithmParamsTypeEc:
+        break;
+    }
+}
+
+void histogramAlgorithmAndKey(ExecutionContext* context, const WebCryptoAlgorithm& algorithm, const WebCryptoKey& key)
+{
+    // Note that the algorithm ID for |algorithm| and |key| will usually be the
+    // same. This is OK because UseCounter only increments things once per the
+    // context.
+    histogramAlgorithm(context, algorithm);
+    histogramKey(context, key);
 }
 
 } // namespace blink
