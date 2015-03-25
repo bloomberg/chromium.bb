@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
-#include "chrome/browser/metrics/network_stats_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -24,6 +23,7 @@ class DriveMetricsProvider;
 class GoogleUpdateMetricsProviderWin;
 class PluginMetricsProvider;
 class PrefRegistrySimple;
+class PrefService;
 
 #if !defined(OS_CHROMEOS) && !defined(OS_IOS)
 class SigninStatusMetricsProvider;
@@ -139,8 +139,6 @@ class ChromeMetricsServiceClient
   // On ChromeOS, holds a weak pointer to the ChromeOSMetricsProvider instance
   // that has been registered with MetricsService. On other platforms, is NULL.
   ChromeOSMetricsProvider* chromeos_metrics_provider_;
-
-  NetworkStatsUploader network_stats_uploader_;
 
   // Saved callback received from CollectFinalMetrics().
   base::Closure collect_final_metrics_done_callback_;

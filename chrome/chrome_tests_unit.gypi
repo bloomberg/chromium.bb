@@ -156,7 +156,6 @@
       'browser/net/evicted_domain_cookie_counter_unittest.cc',
       'browser/net/net_error_tab_helper_unittest.cc',
       'browser/net/net_log_temp_file_unittest.cc',
-      'browser/net/network_stats_unittest.cc',
       'browser/net/predictor_unittest.cc',
       'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
       'browser/net/probe_message_unittest.cc',

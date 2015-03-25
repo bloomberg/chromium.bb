@@ -25,6 +25,7 @@
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/drive_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
+#include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -220,8 +221,10 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
 }
 
 void ChromeMetricsServiceClient::OnLogUploadComplete() {
-  // Collect network stats after each UMA upload.
-  network_stats_uploader_.CollectAndReportNetworkStats();
+  // Collect time ticks stats after each UMA upload.
+#if defined(OS_WIN)
+  chrome::CollectTimeTicksStats();
+#endif
 }
 
 void ChromeMetricsServiceClient::StartGatheringMetrics(
