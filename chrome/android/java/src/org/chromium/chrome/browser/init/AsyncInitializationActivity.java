@@ -16,6 +16,9 @@ import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.base.library_loader.LoaderErrors;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -96,7 +99,9 @@ public abstract class AsyncInitializationActivity extends ActionBarActivity impl
 
     @Override
     public void onStartupFailure() {
-        finish();
+        ProcessInitException e =
+                new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_STARTUP_FAILED);
+        ChromiumApplication.reportStartupErrorAndExit(e);
     }
 
     /**

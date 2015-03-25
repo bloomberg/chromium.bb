@@ -5,15 +5,10 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import org.chromium.base.ActivityState;
@@ -21,14 +16,13 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
+import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -215,51 +209,10 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     public static void reportStartupErrorAndExit(final ProcessInitException e) {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED
-                || !(activity instanceof FragmentActivity)) {
+        if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
             return;
         }
-        int errorCode = e.getErrorCode();
-        int msg;
-        switch (errorCode) {
-            case LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED:
-                msg = R.string.os_version_missing_features;
-                break;
-            case LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION:
-                msg = R.string.incompatible_libraries;
-                break;
-            default:
-                msg = R.string.native_startup_failed;
-        }
-        final String message = activity.getResources().getString(msg);
-
-        DialogFragment dialog = new DialogFragment() {
-            @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState) {
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-                dialogBuilder
-                        .setMessage(message)
-                        .setCancelable(true)
-                        .setPositiveButton(getResources().getString(android.R.string.ok),
-                                new DialogInterface.OnClickListener() {
-                                    @SuppressFBWarnings("DM_EXIT")
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        System.exit(-1);
-                                    }
-                                })
-                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                            @SuppressFBWarnings("DM_EXIT")
-                            @Override
-                            public void onCancel(DialogInterface dialog) {
-                                System.exit(-1);
-                            }
-                        });
-                return dialogBuilder.create();
-            }
-        };
-        dialog.show(
-                ((FragmentActivity) activity).getSupportFragmentManager(), "InvalidStartupDialog");
+        InvalidStartupDialog.show(activity, e.getErrorCode());
     }
 
     /**
