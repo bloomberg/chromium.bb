@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/util.h"
 #include "remoting/host/clipboard.h"
+#include "remoting/host/touch_injector_win.h"
 #include "remoting/proto/event.pb.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
@@ -87,6 +88,7 @@ class InputInjectorWin : public InputInjector {
     void InjectKeyEvent(const KeyEvent& event);
     void InjectTextEvent(const TextEvent& event);
     void InjectMouseEvent(const MouseEvent& event);
+    void InjectTouchEvent(const TouchEvent& event);
 
     // Mirrors the InputInjector interface.
     void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
@@ -100,10 +102,12 @@ class InputInjectorWin : public InputInjector {
     void HandleKey(const KeyEvent& event);
     void HandleText(const TextEvent& event);
     void HandleMouse(const MouseEvent& event);
+    void HandleTouch(const TouchEvent& event);
 
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
     scoped_ptr<Clipboard> clipboard_;
+    TouchInjectorWin touch_injector_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -140,7 +144,7 @@ void InputInjectorWin::InjectMouseEvent(const MouseEvent& event) {
 }
 
 void InputInjectorWin::InjectTouchEvent(const TouchEvent& event) {
-  NOTIMPLEMENTED() << "Raw touch event injection not implemented for Windows.";
+  core_->InjectTouchEvent(event);
 }
 
 void InputInjectorWin::Start(
@@ -197,6 +201,16 @@ void InputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
+void InputInjectorWin::Core::InjectTouchEvent(const TouchEvent& event) {
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::InjectTouchEvent, this, event));
+    return;
+  }
+
+  HandleTouch(event);
+}
+
 void InputInjectorWin::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
@@ -207,6 +221,7 @@ void InputInjectorWin::Core::Start(
   }
 
   clipboard_->Start(client_clipboard.Pass());
+  touch_injector_.Init();
 }
 
 void InputInjectorWin::Core::Stop() {
@@ -216,6 +231,7 @@ void InputInjectorWin::Core::Stop() {
   }
 
   clipboard_.reset();
+  touch_injector_.Deinitialize();
 }
 
 InputInjectorWin::Core::~Core() {}
@@ -324,6 +340,10 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
     if (SendInput(1, &input, sizeof(INPUT)) == 0)
       PLOG(ERROR) << "Failed to inject a mouse event";
   }
+}
+
+void InputInjectorWin::Core::HandleTouch(const TouchEvent& event) {
+  touch_injector_.InjectTouchEvent(event);
 }
 
 }  // namespace

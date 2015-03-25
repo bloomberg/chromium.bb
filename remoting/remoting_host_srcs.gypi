@@ -224,6 +224,8 @@
       'host/token_validator_base.h',
       'host/token_validator_factory_impl.cc',
       'host/token_validator_factory_impl.h',
+      'host/touch_injector_win.h',
+      'host/touch_injector_win.cc',
       'host/usage_stats_consent.h',
       'host/usage_stats_consent_mac.cc',
       'host/usage_stats_consent_win.cc',

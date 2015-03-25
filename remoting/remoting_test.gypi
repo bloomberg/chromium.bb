@@ -214,6 +214,7 @@
         'host/shaped_desktop_capturer_unittest.cc',
         'host/third_party_auth_config_unittest.cc',
         'host/token_validator_factory_impl_unittest.cc',
+        'host/touch_injector_win_unittest.cc',
         'host/video_frame_pump_unittest.cc',
         'host/video_frame_recorder_unittest.cc',
         'host/win/rdp_client_unittest.cc',

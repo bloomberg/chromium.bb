@@ -190,7 +190,14 @@ void SessionInputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
 }
 
 void SessionInputInjectorWin::Core::InjectTouchEvent(const TouchEvent& event) {
-  NOTIMPLEMENTED();
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::InjectTouchEvent, this, event));
+    return;
+  }
+
+  SwitchToInputDesktop();
+  nested_executor_->InjectTouchEvent(event);
 }
 
 SessionInputInjectorWin::Core::~Core() {
