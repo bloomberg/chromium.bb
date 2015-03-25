@@ -403,7 +403,7 @@ def RunBinhostTest(buildroot):
   Args:
     buildroot: The buildroot of the current build.
   """
-  cmd = ['../cbuildbot/binhost_test']
+  cmd = ['../cbuildbot/binhost_test', '--log-level=debug']
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
