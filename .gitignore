@@ -4,26 +4,9 @@
 
 # Ignore these filename patterns
 *~
-*.gypcmd
-*.Makefile
-*.mk
-*.props
 *.pyc
-*.pyc-2.4
 *.pyo
-*.pyo-2.4
-*.rules
-*.sdf
-*.sln
-*.slo
 *.swp
-*.suo
-*.targets
-*.user
-*.vcproj
-*.vcxproj
-*.vcxproj.filters
-*.xcodeproj/
 testserver.log
 
 # Ignore these directories wherever they appear
@@ -31,15 +14,12 @@ testserver.log
 .project/
 .pydevproject/
 .settings/
-hg/
-toolchain/hg-build/
-toolchain/hg-log/
 
 # toolchain_build/toolchain_build.py creates these.
-toolchain_build/cache/
-toolchain_build/git_cache/
-toolchain_build/out/
-toolchain_build/src/
+/toolchain_build/cache/
+/toolchain_build/git_cache/
+/toolchain_build/out/
+/toolchain_build/src/
 
 # Ignore these absolute directories (relative to native_client directory)
 /build/Debug/
@@ -65,9 +45,9 @@ toolchain_build/src/
 /tests/spec2k/[0-9][0-9][0-9].*/
 
 # These directories are created by pnacl/build.sh sync-sources
-pnacl/build/
-pnacl/git/
-pnacl/src/
+/pnacl/build/
+/pnacl/git/
+/pnacl/src/
 
 # Ignore the hermetic cygwin used on windows toolchain builds.
-cygwin/
+/cygwin/
