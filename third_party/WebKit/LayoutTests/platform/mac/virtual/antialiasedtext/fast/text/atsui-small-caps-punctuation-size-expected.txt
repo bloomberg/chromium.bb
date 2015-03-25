@@ -22,9 +22,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,104) size 784x18
         LayoutText {#text} at (0,0) size 56x18
           text run at (0,0) width 56: "ATSUI: "
-        LayoutInline {SPAN} at (0,0) size 47x18
-          LayoutText {#text} at (55,0) size 47x18
-            text run at (55,0) width 47: "A?b?e\x{300}"
+        LayoutInline {SPAN} at (0,0) size 41x18
+          LayoutText {#text} at (55,0) size 41x18
+            text run at (55,0) width 41: "A?b?e\x{300}"
       LayoutBlockFlow {P} at (0,138) size 784x18
         LayoutText {#text} at (0,0) size 31x18
           text run at (0,0) width 31: "CG: "
