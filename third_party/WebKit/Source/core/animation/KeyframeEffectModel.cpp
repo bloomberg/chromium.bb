@@ -79,7 +79,7 @@ void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, c
         if (!affects(property))
             continue;
         for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes)
-            keyframe->ensureAnimatableValue(property, element, baseStyle);
+            keyframe->populateAnimatableValue(property, element, baseStyle);
     }
 }
 

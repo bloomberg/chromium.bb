@@ -149,6 +149,9 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const Animation
         for (size_t j = 0; j < frames.size() - 1; ++j) {
             const AnimatableTransform* startTransform = toAnimatableTransform(frames[j]->getAnimatableValue().get());
             const AnimatableTransform* endTransform = toAnimatableTransform(frames[j+1]->getAnimatableValue().get());
+            if (!startTransform || !endTransform)
+                return false;
+
             // TODO: Add support for inflating modes other than Replace.
             if (frames[j]->composite() != AnimationEffect::CompositeReplace)
                 return false;

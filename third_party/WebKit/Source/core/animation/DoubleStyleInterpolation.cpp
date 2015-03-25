@@ -12,7 +12,6 @@ namespace blink {
 
 bool DoubleStyleInterpolation::canCreateFrom(const CSSValue& value)
 {
-    ASSERT(value.isPrimitiveValue());
     return value.isPrimitiveValue() && (toCSSPrimitiveValue(value).isNumber() || toCSSPrimitiveValue(value).isAngle());
 }
 

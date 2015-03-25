@@ -84,9 +84,9 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     ASSERT(!isNull(m_offset));
 }
 
-void StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValue(CSSPropertyID property, Element& element, const LayoutStyle* baseStyle) const
+void StringKeyframe::PropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const LayoutStyle* baseStyle) const
 {
-    if (!m_animatableValueCache)
+    if (!m_animatableValueCache && (baseStyle || !m_value->isInheritedValue()))
         m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
 }
 
@@ -380,8 +380,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
         // FIXME: Remove the use of AnimatableValues and Elements here.
         ASSERT(element);
-        ensureAnimatableValue(property, *element, baseStyle);
-        end.ensureAnimatableValue(property, *element, baseStyle);
+        populateAnimatableValue(property, *element, baseStyle);
+        end.populateAnimatableValue(property, *element, baseStyle);
         return LegacyStyleInterpolation::create(getAnimatableValue(), end.getAnimatableValue(), property);
     }
 
