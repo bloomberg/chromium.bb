@@ -92,6 +92,14 @@ float GetScaleForScaleFactor(ScaleFactor scale_factor) {
   return kScaleFactorScales[scale_factor];
 }
 
+bool IsSupportedScale(float scale) {
+  for (auto scale_factor_idx : *g_supported_scale_factors) {
+    if (kScaleFactorScales[scale_factor_idx] == scale)
+      return true;
+  }
+  return false;
+}
+
 namespace test {
 
 ScopedSetSupportedScaleFactors::ScopedSetSupportedScaleFactors(
