@@ -62,6 +62,9 @@ To enable building a package from latest or stable ebuilds:
   cros package --enable stable foo-category/bar-package
 """
 
+  _GROUP_HAS_LATEST = '@has-latest'
+  _GROUP_ONLY_LATEST = '@only-latest'
+
   def __init__(self, options):
     super(PackageCommand, self).__init__(options)
     self.brick = None
@@ -70,14 +73,18 @@ To enable building a package from latest or stable ebuilds:
   def AddParser(cls, parser):
     super(cls, PackageCommand).AddParser(parser)
     parser.add_argument('package_name', metavar='package',
-                        help='Name of package (category/package).')
+                        help='Name of package (category/package). When using '
+                        '--enable, %s applies to all packages that have a '
+                        'latest ebuild; %s applies to packages that have only '
+                        'a latest ebuild.' %
+                        (cls._GROUP_HAS_LATEST, cls._GROUP_ONLY_LATEST))
     parser.add_argument('--brick',
                         help='The brick to use. Auto-detected by default.')
     parser.add_argument('--create-source', metavar='src_path',
                         help='Create package from code in specified path. Path '
                         'is relative to the brick\'s source root.')
     parser.add_argument('--enable', '-e', choices=('latest', 'stable'),
-                        help='Build package from latest/stable source.')
+                        help='Build package(s) from latest/stable source.')
     parser.add_argument('--force', action='store_true',
                         help='Ignore checks, clobber everything.')
 
@@ -127,25 +134,24 @@ To enable building a package from latest or stable ebuilds:
       osutils.WriteFile(categories_file, category_line, mode='a',
                         makedirs=True)
 
-  def _CrosWorkonAlreadyStarted(self, output):
-    return 'Already working on' in output
-
-  def _CrosWorkonAlreadyStopped(self, output):
-    return 'Not working on' in output
-
   def _EnableBuild(self):
     """Enable latest/stable build."""
-    latest = self.options.enable == 'latest'
+    to_latest = self.options.enable == 'latest'
     cmd = ['cros_workon',
-           'start' if latest else 'stop',
-           '--brick=%s' % self.options.brick,
-           self.options.package_name]
+           'start' if to_latest else 'stop',
+           '--brick=%s' % self.options.brick]
+
+    if self.options.package_name == self._GROUP_HAS_LATEST:
+      cmd.append('--all')
+    elif self.options.package_name == self._GROUP_ONLY_LATEST:
+      cmd.append('--workon_only')
+    else:
+      cmd.append(self.options.package_name)
+
     result = cros_build_lib.RunCommand(cmd, quiet=True, error_code_ok=True)
-    if (result.returncode and
-        not ((latest and self._CrosWorkonAlreadyStarted(result.output)) or
-             (not latest and self._CrosWorkonAlreadyStopped(result.output)))):
-      cros_build_lib.Die('Failed to %s latest build for package %s:\n%s' %
-                         ('enable' if latest else 'disable',
+    if result.returncode:
+      cros_build_lib.Die('Failed to %s latest build for %s:\n%s' %
+                         ('enable' if to_latest else 'disable',
                           self.options.package_name, result.output))
 
   def _ReadOptions(self):
