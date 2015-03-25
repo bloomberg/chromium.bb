@@ -29,13 +29,13 @@ class SdkCommand(command.CliCommand):
 
   def _UpdateWorkspaceSdk(self, bootstrap_path, workspace_path, version):
     """Install specified SDK, and associate the workspace with it."""
-    if project_sdk.FindSourceRoot(bootstrap_path):
+    if project_sdk.FindRepoRoot(bootstrap_path):
       cros_build_lib.Die('brillo sdk must run from a git clone. brbug.com/580')
 
     sdk_path = bootstrap_lib.ComputeSdkPath(bootstrap_path, version)
 
     # If this version already exists, no need to reinstall it.
-    if not project_sdk.FindSourceRoot(sdk_path):
+    if not project_sdk.FindRepoRoot(sdk_path):
       self._UpdateSdk(sdk_path, version)
 
     # Store the new version in the workspace.
@@ -89,7 +89,7 @@ class SdkCommand(command.CliCommand):
   def _SelfUpdate(self, bootstrap_path):
     """Update the bootstrap repository."""
     # If our bootstrap is part of a repository, we shouldn't update.
-    if project_sdk.FindSourceRoot(bootstrap_path):
+    if project_sdk.FindRepoRoot(bootstrap_path):
       return
 
     # If the 'skip update' variable is set, we shouldn't update.

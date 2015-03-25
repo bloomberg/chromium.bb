@@ -50,26 +50,26 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
     osutils.Touch(real_manifest_path, makedirs=True)
     os.symlink(real_manifest_path, sym_manifest_path)
 
-  def testFindSourceRootCurrentRepo(self):
-    """Test FindSourceRoot with default of CWD."""
-    self.assertEqual(constants.SOURCE_ROOT, project_sdk.FindSourceRoot())
+  def testFindRepoRootCurrentRepo(self):
+    """Test FindRepoRoot with default of CWD."""
+    self.assertEqual(constants.SOURCE_ROOT, project_sdk.FindRepoRoot())
 
-  def testFindSourceRootSpecifiedBogus(self):
-    """Test FindSourceRoot with non-existent directory outside the repo."""
-    self.assertIsNone(project_sdk.FindSourceRoot(self.bogus_dir))
+  def testFindRepoRootSpecifiedBogus(self):
+    """Test FindRepoRoot with non-existent directory outside the repo."""
+    self.assertIsNone(project_sdk.FindRepoRoot(self.bogus_dir))
 
-  def testFindSourceRootSpecifiedRoot(self):
-    """Test FindSourceRoot with top level of repo tree."""
-    self.assertEqual(self.repo_dir, project_sdk.FindSourceRoot(self.repo_dir))
+  def testFindRepoRootSpecifiedRoot(self):
+    """Test FindRepoRoot with top level of repo tree."""
+    self.assertEqual(self.repo_dir, project_sdk.FindRepoRoot(self.repo_dir))
 
-  def testFindSourceRootSpecifiedNested(self):
-    """Test FindSourceRoot with nested inside repo tree."""
-    self.assertEqual(self.repo_dir, project_sdk.FindSourceRoot(self.nested_dir))
+  def testFindRepoRootSpecifiedNested(self):
+    """Test FindRepoRoot with nested inside repo tree."""
+    self.assertEqual(self.repo_dir, project_sdk.FindRepoRoot(self.nested_dir))
 
-  def testFindSourceRootSpecifiedNonexistent(self):
-    """Test FindSourceRoot refuses to scan a nonexistent path."""
+  def testFindRepoRootSpecifiedNonexistent(self):
+    """Test FindRepoRoot refuses to scan a nonexistent path."""
     self.assertIsNone(
-        project_sdk.FindSourceRoot(os.path.join(self.nested_dir, 'not_there')))
+        project_sdk.FindRepoRoot(os.path.join(self.nested_dir, 'not_there')))
 
   def testFindVersionDefault(self):
     """Test FindVersion with default of CWD."""

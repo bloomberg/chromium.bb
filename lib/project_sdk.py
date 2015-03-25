@@ -13,7 +13,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import osutils
 
 
-def FindSourceRoot(sdk_dir=None):
+def FindRepoRoot(sdk_dir=None):
   """Locate the SDK root directly by looking for .repo dir.
 
   This is very similar to constants.SOURCE_ROOT, except that it can operate
@@ -63,7 +63,7 @@ def FindVersion(sdk_dir=None):
     The version of your SDK as a string. '6500.0.0'
     None if the directory doesn't appear to be an SDK.
   """
-  sdk_root = FindSourceRoot(sdk_dir)
+  sdk_root = FindRepoRoot(sdk_dir)
   if sdk_root is None:
     return None
 
