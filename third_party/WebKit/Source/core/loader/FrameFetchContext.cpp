@@ -649,6 +649,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
             || request.requestContext() == WebURLRequest::RequestContextForm
             || (!url.host().isNull() && m_document->insecureNavigationsToUpgrade()->contains(url.host().impl()->hash())))
         {
+            UseCounter::count(m_document, UseCounter::UpgradeInsecureRequestsUpgradedRequest);
             url.setProtocol("https");
             if (url.port() == 80)
                 url.setPort(443);

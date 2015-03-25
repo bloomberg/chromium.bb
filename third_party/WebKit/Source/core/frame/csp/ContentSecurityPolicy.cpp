@@ -177,7 +177,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
-        if (m_insecureRequestsPolicy > document->insecureRequestsPolicy()) {
+        if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
+            UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
             if (!securityOrigin()->host().isNull())
                 document->addInsecureNavigationUpgrade(securityOrigin()->host().impl()->hash());

@@ -673,6 +673,9 @@ public:
         CryptoAlgorithmHkdf = 737,
         CryptoAlgorithmPbkdf2 = 738,
         DocumentSetDomain = 739,
+        UpgradeInsecureRequestsEnabled = 740,
+        UpgradeInsecureRequestsUpgradedRequest = 741,
+
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
