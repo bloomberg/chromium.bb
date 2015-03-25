@@ -19,6 +19,7 @@ namespace blink {
 
 class DOMException;
 class ExceptionState;
+class ExecutionContext;
 class ScriptState;
 
 // ReadableStreamReader corresponds to the same-name class in the Streams spec
@@ -28,7 +29,7 @@ class CORE_EXPORT ReadableStreamReader final : public GarbageCollectedFinalized<
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamReader);
 public:
     // The stream must not be locked to any ReadableStreamReader when called.
-    ReadableStreamReader(ReadableStream*);
+    ReadableStreamReader(ExecutionContext*, ReadableStream*);
 
     ScriptPromise closed(ScriptState*);
     bool isActive() const;

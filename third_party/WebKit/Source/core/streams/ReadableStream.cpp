@@ -11,7 +11,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/streams/ReadableStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 
@@ -36,15 +35,13 @@ private:
 
 } // namespace
 
-ReadableStream::ReadableStream(ExecutionContext* executionContext, UnderlyingSource* source)
-    : ActiveDOMObject(executionContext)
-    , m_source(source)
+ReadableStream::ReadableStream(UnderlyingSource* source)
+    : m_source(source)
     , m_isStarted(false)
     , m_isDraining(false)
     , m_isPulling(false)
     , m_state(Readable)
 {
-    suspendIfNeeded();
 }
 
 ReadableStream::~ReadableStream()
@@ -135,13 +132,13 @@ void ReadableStream::didSourceStart()
     callPullIfNeeded();
 }
 
-ReadableStreamReader* ReadableStream::getReader(ExceptionState& exceptionState)
+ReadableStreamReader* ReadableStream::getReader(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
     if (m_reader) {
         exceptionState.throwTypeError("already locked to a ReadableStreamReader");
         return nullptr;
     }
-    return new ReadableStreamReader(this);
+    return new ReadableStreamReader(executionContext, this);
 }
 
 void ReadableStream::setReader(ReadableStreamReader* reader)
@@ -183,23 +180,11 @@ void ReadableStream::closeInternal()
         m_reader->releaseLock();
 }
 
-bool ReadableStream::hasPendingActivity() const
-{
-    return m_state == Readable;
-}
-
-void ReadableStream::stop()
-{
-    error(DOMException::create(AbortError, "execution context is stopped"));
-    ActiveDOMObject::stop();
-}
-
 DEFINE_TRACE(ReadableStream)
 {
     visitor->trace(m_source);
     visitor->trace(m_exception);
     visitor->trace(m_reader);
-    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

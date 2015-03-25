@@ -6,8 +6,7 @@
     RuntimeEnabled=ExperimentalStream,
     GarbageCollected,
     Exposed=(Window,Worker),
-    ActiveDOMObject,
 ] interface ReadableStream {
-    [RaisesException] ReadableStreamReader getReader();
+    [CallWith=ExecutionContext, RaisesException] ReadableStreamReader getReader();
     [CallWith=ScriptState] Promise<void> cancel(optional any reason);
 };

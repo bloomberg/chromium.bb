@@ -12,7 +12,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -22,12 +21,12 @@ namespace blink {
 
 class DOMException;
 class ExceptionState;
+class ExecutionContext;
 class ReadableStreamReader;
 class UnderlyingSource;
 
-class CORE_EXPORT ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStream);
 public:
     enum State {
         Readable,
@@ -38,7 +37,7 @@ public:
     // After ReadableStream construction, |didSourceStart| must be called when
     // |source| initialization succeeds and |error| must be called when
     // |source| initialization fails.
-    ReadableStream(ExecutionContext*, UnderlyingSource* /* source */);
+    explicit ReadableStream(UnderlyingSource* /* source */);
     virtual ~ReadableStream();
 
     bool isStarted() const { return m_isStarted; }
@@ -63,15 +62,13 @@ public:
 
     // This function is not a getter. It creates an ReadableStreamReader and
     // returns it.
-    ReadableStreamReader* getReader(ExceptionState&);
+    ReadableStreamReader* getReader(ExecutionContext*, ExceptionState&);
     // Only ReadableStreamReader methods should call this function.
     void setReader(ReadableStreamReader*);
 
     bool isLocked() const { return m_reader; }
     bool isLockedTo(const ReadableStreamReader* reader) const { return m_reader == reader; }
 
-    bool hasPendingActivity() const override;
-    void stop() override;
     DECLARE_VIRTUAL_TRACE();
 
 protected:

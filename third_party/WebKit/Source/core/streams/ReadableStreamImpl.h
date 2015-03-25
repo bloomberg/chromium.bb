@@ -96,10 +96,10 @@ public:
         bool shouldApplyBackpressure(size_t totalQueueSize, ReadableStream*) override { return true; }
     };
 
-    ReadableStreamImpl(ExecutionContext* executionContext, UnderlyingSource* source)
-        : ReadableStreamImpl(executionContext, source, new DefaultStrategy) { }
-    ReadableStreamImpl(ExecutionContext* executionContext, UnderlyingSource* source, Strategy* strategy)
-        : ReadableStream(executionContext, source)
+    explicit ReadableStreamImpl(UnderlyingSource* source)
+        : ReadableStreamImpl(source, new DefaultStrategy) { }
+    ReadableStreamImpl(UnderlyingSource* source, Strategy* strategy)
+        : ReadableStream(source)
         , m_strategy(strategy)
         , m_totalQueueSize(0) { }
     ~ReadableStreamImpl() override { }

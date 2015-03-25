@@ -358,7 +358,7 @@ ReadableStream* Body::body()
     if (!m_stream) {
         ASSERT(!m_streamSource);
         m_streamSource = new ReadableStreamSource(this);
-        m_stream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(executionContext(), m_streamSource);
+        m_stream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(m_streamSource);
         m_streamSource->startStream(m_stream);
     }
     return m_stream;
@@ -377,7 +377,7 @@ void Body::setBodyUsed()
     // closed or errored, but getReader doesn't work then.
     if (m_stream && m_stream->stateInternal() != ReadableStream::Closed && m_stream->stateInternal() != ReadableStream::Errored) {
         TrackExceptionState exceptionState;
-        m_streamReader = m_stream->getReader(exceptionState);
+        m_streamReader = m_stream->getReader(executionContext(), exceptionState);
         ASSERT(!exceptionState.hadException());
     }
     m_bodyUsed = true;
@@ -410,7 +410,7 @@ bool Body::hasPendingActivity() const
         return false;
     if (m_resolver)
         return true;
-    if (m_stream && m_stream->hasPendingActivity())
+    if (m_stream && m_stream->isLocked())
         return true;
     return false;
 }

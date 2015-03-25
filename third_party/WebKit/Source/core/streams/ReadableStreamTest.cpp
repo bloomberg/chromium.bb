@@ -132,7 +132,7 @@ public:
             EXPECT_CALL(*strategy, shouldApplyBackpressure(0, _)).WillOnce(Return(true));
             EXPECT_CALL(checkpoint, Call(1));
         }
-        StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource, strategy);
+        StringStream* stream = new StringStream(m_underlyingSource, strategy);
         checkpoint.Call(0);
         stream->didSourceStart();
         checkpoint.Call(1);
@@ -147,7 +147,7 @@ public:
             EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
             EXPECT_CALL(checkpoint, Call(1));
         }
-        StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource, new PermissiveStrategy);
+        StringStream* stream = new StringStream(m_underlyingSource, new PermissiveStrategy);
         checkpoint.Call(0);
         stream->didSourceStart();
         checkpoint.Call(1);
@@ -170,7 +170,7 @@ TEST_F(ReadableStreamTest, Start)
         EXPECT_CALL(checkpoint, Call(1));
     }
 
-    StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource);
+    StringStream* stream = new StringStream(m_underlyingSource);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_FALSE(stream->isStarted());
     EXPECT_FALSE(stream->isDraining());
@@ -193,7 +193,7 @@ TEST_F(ReadableStreamTest, Start)
 
 TEST_F(ReadableStreamTest, StartFail)
 {
-    StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource);
+    StringStream* stream = new StringStream(m_underlyingSource);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_FALSE(stream->isStarted());
     EXPECT_FALSE(stream->isDraining());
@@ -375,7 +375,7 @@ TEST_F(ReadableStreamTest, CancelWhenLocked)
 {
     String onFulfilled, onRejected;
     StringStream* stream = construct();
-    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
+    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), m_exceptionState);
 
     EXPECT_TRUE(reader->isActive());
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -398,14 +398,14 @@ TEST_F(ReadableStreamTest, ReadableArrayBufferStreamCompileTest)
 {
     // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be
     // instantiated.
-    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(scriptState()->executionContext(), m_underlyingSource);
+    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(m_underlyingSource);
 }
 
 TEST_F(ReadableStreamTest, ReadableArrayBufferViewStreamCompileTest)
 {
     // This test tests if ReadableStreamImpl<DOMArrayBufferVIew> can be
     // instantiated.
-    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(scriptState()->executionContext(), m_underlyingSource);
+    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(m_underlyingSource);
 }
 
 TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
@@ -491,14 +491,14 @@ TEST_F(ReadableStreamTest, BackpressureOnReading)
 TEST_F(ReadableStreamTest, ReadableStreamReader)
 {
     StringStream* stream = construct();
-    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
+    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), m_exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(stream->isLockedTo(reader));
 
-    ReadableStreamReader* another = stream->getReader(m_exceptionState);
+    ReadableStreamReader* another = stream->getReader(scriptState()->executionContext(), m_exceptionState);
     ASSERT_EQ(nullptr, another);
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_TRUE(reader->isActive());
@@ -509,7 +509,7 @@ TEST_F(ReadableStreamTest, GetClosedReader)
 {
     StringStream* stream = construct();
     stream->close();
-    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
+    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), m_exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -530,7 +530,7 @@ TEST_F(ReadableStreamTest, GetErroredReader)
 {
     StringStream* stream = construct();
     stream->error(DOMException::create(SyntaxError, "some error"));
-    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
+    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), m_exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -566,8 +566,8 @@ TEST_F(ReadableStreamTest, StrictStrategy)
         EXPECT_CALL(checkpoint, Call(9));
         EXPECT_CALL(*m_underlyingSource, pullSource());
     }
-    StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource, new StringStream::StrictStrategy);
-    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
+    StringStream* stream = new StringStream(m_underlyingSource, new StringStream::StrictStrategy);
+    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), m_exceptionState);
 
     checkpoint.Call(0);
     stream->didSourceStart();

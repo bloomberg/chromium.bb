@@ -1668,7 +1668,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
         ASSERT(!m_responseStream);
         ASSERT(!m_responseStreamSource);
         m_responseStreamSource = new ReadableStreamSource(this, handle);
-        m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(executionContext(), m_responseStreamSource);
+        m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(m_responseStreamSource);
         m_responseStreamSource->startStream(m_responseStream);
 
         changeState(HEADERS_RECEIVED);
@@ -1766,7 +1766,7 @@ void XMLHttpRequest::didReceiveData(const char* data, unsigned len)
         if (!m_responseStream) {
             ASSERT(!m_responseStreamSource);
             m_responseStreamSource = new ReadableStreamSource(this, nullptr);
-            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(executionContext(), m_responseStreamSource);
+            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(m_responseStreamSource);
             m_responseStreamSource->startStream(m_responseStream);
         }
         m_responseStreamSource->didReceiveData(data, len);
@@ -1843,7 +1843,7 @@ bool XMLHttpRequest::hasPendingActivity() const
     // DocumentParserClient callbacks may be called.
     if (m_loader || m_responseDocumentParser)
         return true;
-    if (m_responseStream && m_responseStream->hasPendingActivity())
+    if (m_responseStream && m_responseStream->isLocked())
         return true;
     return m_eventDispatchRecursionLevel > 0;
 }

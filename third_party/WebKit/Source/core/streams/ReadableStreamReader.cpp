@@ -9,15 +9,16 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/streams/ReadableStream.h"
 
 namespace blink {
 
-ReadableStreamReader::ReadableStreamReader(ReadableStream* stream)
-    : ActiveDOMObject(stream->executionContext())
+ReadableStreamReader::ReadableStreamReader(ExecutionContext* executionContext, ReadableStream* stream)
+    : ActiveDOMObject(executionContext)
     , m_stream(stream)
     , m_stateAfterRelease(ReadableStream::Closed)
-    , m_closed(new ClosedPromise(stream->executionContext(), this, ClosedPromise::Closed))
+    , m_closed(new ClosedPromise(executionContext, this, ClosedPromise::Closed))
 {
     suspendIfNeeded();
     ASSERT(m_stream->isLockedTo(nullptr));
@@ -119,7 +120,10 @@ bool ReadableStreamReader::hasPendingActivity() const
 
 void ReadableStreamReader::stop()
 {
-    releaseLock();
+    if (isActive()) {
+        // Calling |error| will release the lock.
+        m_stream->error(DOMException::create(AbortError, "The frame stops working."));
+    }
     ActiveDOMObject::stop();
 }
 

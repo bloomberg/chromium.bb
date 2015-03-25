@@ -128,7 +128,7 @@ public:
         : m_page(DummyPageHolder::create(IntSize(1, 1)))
         , m_scope(scriptState())
         , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate())
-        , m_stream(new StringStream(scriptState()->executionContext(), new NoopUnderlyingSource, new PermissiveStrategy))
+        , m_stream(new StringStream(new NoopUnderlyingSource, new PermissiveStrategy))
     {
         m_stream->didSourceStart();
     }
@@ -144,6 +144,7 @@ public:
 
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     v8::Isolate* isolate() { return scriptState()->isolate(); }
+    ExecutionContext* executionContext() { return scriptState()->executionContext(); }
 
     v8::Handle<v8::Function> createCaptor(String* value)
     {
@@ -163,14 +164,14 @@ public:
 
 TEST_F(ReadableStreamReaderTest, Construct)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
 }
 
 TEST_F(ReadableStreamReaderTest, Release)
 {
     String onFulfilled, onRejected;
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
 
     reader->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
@@ -185,7 +186,7 @@ TEST_F(ReadableStreamReaderTest, Release)
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
 
-    ReadableStreamReader* another = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* another = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(another->isActive());
     EXPECT_FALSE(reader->isActive());
     reader->releaseLock(m_exceptionState);
@@ -196,7 +197,7 @@ TEST_F(ReadableStreamReaderTest, Release)
 
 TEST_F(ReadableStreamReaderTest, ReadAfterRelease)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
     reader->releaseLock(m_exceptionState);
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -218,7 +219,7 @@ TEST_F(ReadableStreamReaderTest, ReadAfterRelease)
 
 TEST_F(ReadableStreamReaderTest, ReleaseShouldFailWhenCalledWhileReading)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
     reader->read(scriptState());
 
@@ -237,7 +238,7 @@ TEST_F(ReadableStreamReaderTest, EnqueueThenRead)
 {
     m_stream->enqueue("hello");
     m_stream->enqueue("world");
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     ReadResult result;
@@ -271,7 +272,7 @@ TEST_F(ReadableStreamReaderTest, EnqueueThenRead)
 
 TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     ReadResult result, result2;
@@ -312,7 +313,7 @@ TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
 
 TEST_F(ReadableStreamReaderTest, ClosedReader)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
 
     m_stream->close();
 
@@ -340,7 +341,7 @@ TEST_F(ReadableStreamReaderTest, ClosedReader)
 
 TEST_F(ReadableStreamReaderTest, ErroredReader)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
 
     m_stream->error(DOMException::create(SyntaxError, "some error"));
 
@@ -366,7 +367,7 @@ TEST_F(ReadableStreamReaderTest, ErroredReader)
 
 TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenClosed)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     ReadResult result, result2;
@@ -401,7 +402,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenClosed)
 
 TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeRejectedWhenErrored)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     String onFulfilled, onFulfilled2;
@@ -431,7 +432,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeRejectedWhenErrored)
 
 TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenCanceled)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     ReadResult result, result2;
@@ -467,7 +468,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenCanceled)
 
 TEST_F(ReadableStreamReaderTest, CancelShouldNotWorkWhenNotActive)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     reader->releaseLock(m_exceptionState);
     EXPECT_FALSE(reader->isActive());
 
@@ -487,7 +488,7 @@ TEST_F(ReadableStreamReaderTest, CancelShouldNotWorkWhenNotActive)
 
 TEST_F(ReadableStreamReaderTest, Cancel)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     String onClosedFulfilled, onClosedRejected;
@@ -510,7 +511,7 @@ TEST_F(ReadableStreamReaderTest, Cancel)
 
 TEST_F(ReadableStreamReaderTest, Close)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     String onFulfilled, onRejected;
@@ -529,7 +530,7 @@ TEST_F(ReadableStreamReaderTest, Close)
 
 TEST_F(ReadableStreamReaderTest, Error)
 {
-    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
     String onFulfilled, onRejected;
