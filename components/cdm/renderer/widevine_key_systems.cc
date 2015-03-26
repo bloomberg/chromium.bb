@@ -62,10 +62,10 @@ void AddWidevineWithCodecs(
   // associated initialization data type. KeySystems handles validating
   // |init_data_type| x |container| pairings.
   if (supported_codecs & media::EME_CODEC_WEBM_ALL)
-    info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_WEBM;
+    info.supported_init_data_types |= media::kInitDataTypeMaskWebM;
 #if defined(USE_PROPRIETARY_CODECS)
   if (supported_codecs & media::EME_CODEC_MP4_ALL)
-    info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
+    info.supported_init_data_types |= media::kInitDataTypeMaskCenc;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.max_audio_robustness = max_audio_robustness;

@@ -7,7 +7,7 @@
 namespace media {
 
 KeySystemInfo::KeySystemInfo()
-    : supported_init_data_types(EME_INIT_DATA_TYPE_NONE),
+    : supported_init_data_types(kInitDataTypeMaskNone),
       supported_codecs(EME_CODEC_NONE),
       max_audio_robustness(EmeRobustness::INVALID),
       max_video_robustness(EmeRobustness::INVALID),

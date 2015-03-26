@@ -76,10 +76,10 @@ static void AddExternalClearKey(
   info.key_system = kExternalClearKeyKeySystem;
 
   info.supported_init_data_types =
-      media::EME_INIT_DATA_TYPE_WEBM | media::EME_INIT_DATA_TYPE_KEYIDS;
+    media::kInitDataTypeMaskWebM | media::kInitDataTypeMaskKeyIds;
   info.supported_codecs = media::EME_CODEC_WEBM_ALL;
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
+  info.supported_init_data_types |= media::kInitDataTypeMaskCenc;
   info.supported_codecs |= media::EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 

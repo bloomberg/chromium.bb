@@ -79,15 +79,6 @@ MEDIA_EXPORT std::string GetUnprefixedKeySystemName(
 MEDIA_EXPORT std::string GetPrefixedKeySystemName(
     const std::string& key_system);
 
-// Returns false if a container-specific |init_data_type| is specified with an
-// inappropriate container.
-// TODO(sandersd): Remove this essentially internal detail if the spec is
-// updated to not convolve the two in a single method call.
-// TODO(sandersd): Use enum values instead of strings. http://crbug.com/417440
-MEDIA_EXPORT bool IsSaneInitDataTypeWithContainer(
-    const std::string& init_data_type,
-    const std::string& container);
-
 // Use for unprefixed EME only!
 // Returns whether |key_system| is a supported key system.
 // Note: Shouldn't be used for prefixed API as the original

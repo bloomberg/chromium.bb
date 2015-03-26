@@ -347,14 +347,14 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
     return;
   }
 
-  media::EmeInitDataType eme_init_data_type = media::EME_INIT_DATA_TYPE_NONE;
+  media::EmeInitDataType eme_init_data_type;
   switch (init_data_type) {
     case INIT_DATA_TYPE_WEBM:
-      eme_init_data_type = media::EME_INIT_DATA_TYPE_WEBM;
+      eme_init_data_type = media::EmeInitDataType::WEBM;
       break;
 #if defined(USE_PROPRIETARY_CODECS)
     case INIT_DATA_TYPE_CENC:
-      eme_init_data_type = media::EME_INIT_DATA_TYPE_CENC;
+      eme_init_data_type = media::EmeInitDataType::CENC;
       break;
 #endif
     default:
@@ -560,11 +560,11 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
   // "audio"/"video" does not matter, so use "video".
   std::string init_data_type_string;
   switch (init_data_type) {
-    case media::EME_INIT_DATA_TYPE_WEBM:
+    case media::EmeInitDataType::WEBM:
       init_data_type_string = "video/webm";
       break;
 #if defined(USE_PROPRIETARY_CODECS)
-    case media::EME_INIT_DATA_TYPE_CENC:
+    case media::EmeInitDataType::CENC:
       init_data_type_string = "video/mp4";
       break;
 #endif

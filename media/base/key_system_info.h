@@ -35,7 +35,7 @@ struct MEDIA_EXPORT KeySystemInfo {
 
   std::string key_system;
 
-  SupportedInitDataTypes supported_init_data_types;
+  InitDataTypeMask supported_init_data_types;
   SupportedCodecs supported_codecs;
   EmeRobustness max_audio_robustness;
   EmeRobustness max_video_robustness;

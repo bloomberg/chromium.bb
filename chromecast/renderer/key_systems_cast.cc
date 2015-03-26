@@ -22,7 +22,7 @@ void AddKeySystemWithCodecs(
     std::vector<::media::KeySystemInfo>* key_systems_info) {
   ::media::KeySystemInfo info;
   info.key_system = key_system_name;
-  info.supported_init_data_types = ::media::EME_INIT_DATA_TYPE_CENC;
+  info.supported_init_data_types = ::media::kInitDataTypeMaskCenc;
   info.supported_codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
   info.max_audio_robustness = ::media::EmeRobustness::EMPTY;

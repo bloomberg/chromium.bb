@@ -34,14 +34,11 @@ struct NamedInitDataType {
   EmeInitDataType type;
 };
 
-// Mapping between initialization data types names and enum values. When adding
-// entries, make sure to update IsSaneInitDataTypeWithContainer().
+// Mapping between initialization data types names and enum values.
 static NamedInitDataType kInitDataTypeNames[] = {
-    {"webm", EME_INIT_DATA_TYPE_WEBM},
-#if defined(USE_PROPRIETARY_CODECS)
-    {"cenc", EME_INIT_DATA_TYPE_CENC},
-#endif  // defined(USE_PROPRIETARY_CODECS)
-    {"keyids", EME_INIT_DATA_TYPE_KEYIDS},
+    {"webm", EmeInitDataType::WEBM},
+    {"cenc", EmeInitDataType::CENC},
+    {"keyids", EmeInitDataType::KEYIDS},
 };
 
 struct NamedCodec {
@@ -120,7 +117,7 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   // VP9 support is device dependent.
 
   info.supported_init_data_types =
-      EME_INIT_DATA_TYPE_WEBM | EME_INIT_DATA_TYPE_KEYIDS;
+      kInitDataTypeMaskWebM | kInitDataTypeMaskKeyIds;
   info.supported_codecs = EME_CODEC_WEBM_ALL;
 
 #if defined(OS_ANDROID)
@@ -134,7 +131,7 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_init_data_types |= EME_INIT_DATA_TYPE_CENC;
+  info.supported_init_data_types |= kInitDataTypeMaskCenc;
   info.supported_codecs |= EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
@@ -368,7 +365,7 @@ EmeInitDataType KeySystemsImpl::GetInitDataTypeForName(
       init_data_type_name_map_.find(init_data_type);
   if (iter != init_data_type_name_map_.end())
     return iter->second;
-  return EME_INIT_DATA_TYPE_NONE;
+  return EmeInitDataType::UNKNOWN;
 }
 
 SupportedCodecs KeySystemsImpl::GetCodecMaskForContainer(
@@ -591,10 +588,21 @@ bool KeySystemsImpl::IsSupportedKeySystemWithInitDataType(
   if (key_system_iter == concrete_key_system_map_.end())
     return false;
 
-  // Check |init_data_type| and |key_system| x |init_data_type|.
-  const KeySystemInfo& info = key_system_iter->second;
-  EmeInitDataType eme_init_data_type = GetInitDataTypeForName(init_data_type);
-  return (info.supported_init_data_types & eme_init_data_type) != 0;
+  // Check |init_data_type|.
+  InitDataTypeMask available_init_data_types =
+      key_system_iter->second.supported_init_data_types;
+  switch (GetInitDataTypeForName(init_data_type)) {
+    case EmeInitDataType::UNKNOWN:
+      return false;
+    case EmeInitDataType::WEBM:
+      return (available_init_data_types & kInitDataTypeMaskWebM) != 0;
+    case EmeInitDataType::CENC:
+      return (available_init_data_types & kInitDataTypeMaskCenc) != 0;
+    case EmeInitDataType::KEYIDS:
+      return (available_init_data_types & kInitDataTypeMaskKeyIds) != 0;
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool KeySystemsImpl::PrefixedIsSupportedKeySystemWithMediaMimeType(
@@ -951,18 +959,6 @@ std::string GetPrefixedKeySystemName(const std::string& key_system) {
     return kPrefixedClearKeyKeySystem;
 
   return key_system;
-}
-
-bool IsSaneInitDataTypeWithContainer(
-    const std::string& init_data_type,
-    const std::string& container) {
-  if (init_data_type == "cenc") {
-    return container == "audio/mp4" || container == "video/mp4";
-  } else if (init_data_type == "webm") {
-    return  container == "audio/webm" || container == "video/webm";
-  } else {
-    return true;
-  }
 }
 
 bool PrefixedIsSupportedConcreteKeySystem(const std::string& key_system) {
