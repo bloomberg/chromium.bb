@@ -2077,13 +2077,16 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     Node* stopNode = m_previousWheelScrolledNode.get();
     ScrollGranularity granularity = wheelGranularityToScrollGranularity(wheelEvent);
+    IntPoint absolutePosition = roundedIntPoint(wheelEvent->absoluteLocation());
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
-    if (scroll(ScrollRight, granularity, startNode, &stopNode, wheelEvent->deltaX(), roundedIntPoint(wheelEvent->absoluteLocation())))
+    if (wheelEvent->railsMode() != Event::RailsModeVertical
+        && scroll(ScrollRight, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition))
         wheelEvent->setDefaultHandled();
 
-    if (scroll(ScrollDown, granularity, startNode, &stopNode, wheelEvent->deltaY(), roundedIntPoint(wheelEvent->absoluteLocation())))
+    if (wheelEvent->railsMode() != Event::RailsModeHorizontal
+        && scroll(ScrollDown, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition))
         wheelEvent->setDefaultHandled();
 
     if (!m_latchedWheelEventNode)
