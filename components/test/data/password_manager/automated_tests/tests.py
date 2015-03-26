@@ -14,15 +14,10 @@ from websitetest import WebsiteTest
 
 class TypeOfTestedWebsites:
   """An enum to specify which groups of tests to run."""
-  # Runs only the disabled tests.
-  # TODO(vabr): Remove this option.
-  DISABLED_TESTS = 0
-  # Runs only the enabled tests.
-  ENABLED_TESTS = 1
   # Runs all the tests.
-  ALL_TESTS = 2
+  ALL_TESTS = 0
   # Runs a specified list of tests.
-  LIST_OF_TESTS = 3
+  LIST_OF_TESTS = 1
 
   def __init__(self):
     pass
@@ -218,8 +213,6 @@ class Yandex(WebsiteTest):
     self.FillPasswordInto("#b-mail-domik-password11")
     self.Click(".b-mail-button__button")
 
-
-# Disabled tests.
 
 # Fails due to test framework issue(?).
 class Aliexpress(WebsiteTest):
@@ -454,32 +447,10 @@ class Ziddu(WebsiteTest):
 
 def Tests(environment, tests_to_run=None):
 
-  working_tests = {
-    "alexa": Alexa("alexa"),
-    "dropbox": Dropbox("dropbox"),
-    "facebook": Facebook("facebook"),
-    "github": Github("github"),
-    "google": Google("google"),
-    "imgur": Imgur("imgur"),
-    "liveinternet": Liveinternet("liveinternet"),
-    "linkedin": Linkedin("linkedin"),
-    "mailru": Mailru("mailru"),
-    "nytimes": Nytimes("nytimes"),
-    "odnoklassniki": Odnoklassniki("odnoklassniki"),
-    "pinterest": Pinterest("pinterest"),
-    "reddit": Reddit("reddit", username_not_auto=True),
-    "tumblr": Tumblr("tumblr", username_not_auto=True),
-    "twitter": Twitter("twitter"),
-    "vkontakte": Vkontakte("vkontakte"),
-    "wikia": Wikia("wikia"),
-    "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
-    "wordpress": Wordpress("wordpress"),
-    "yahoo": Yahoo("yahoo", username_not_auto=True),
-    "yandex": Yandex("yandex")
-  }
-
-  disabled_tests = {
+  all_tests = {
+    "163": One63("163"), # http://crbug.com/368690
     "adobe": Adobe("adobe"), # Password saving not offered.
+    "alexa": Alexa("alexa"),
     "aliexpress": Aliexpress("aliexpress"), # Fails due to test framework issue.
     "amazon": Amazon("amazon"), # Bug not reproducible without test.
     "ask": Ask("ask"), # Password not saved.
@@ -487,33 +458,40 @@ def Tests(environment, tests_to_run=None):
     "cnn": Cnn("cnn"), # http://crbug.com/368690
     "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
     "dailymotion": Dailymotion("dailymotion"), # Crashes.
+    "dropbox": Dropbox("dropbox"),
     "ebay": Ebay("ebay"), # http://crbug.com/368690
     "espn": Espn("espn"), # Iframe, password saved but not autofilled.
+    "facebook": Facebook("facebook"),
     "flipkart": Flipkart("flipkart"), # Fails due to test framework issue.
+    "github": Github("github"),
+    "google": Google("google"),
+    "imgur": Imgur("imgur"),
     "instagram": Instagram("instagram"), # Iframe, pw saved but not autofilled.
+    "linkedin": Linkedin("linkedin"),
+    "liveinternet": Liveinternet("liveinternet"),
     "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
-    "163": One63("163"), # http://crbug.com/368690
+    "mailru": Mailru("mailru"),
+    "nytimes": Nytimes("nytimes"),
+    "odnoklassniki": Odnoklassniki("odnoklassniki"),
+    "pinterest": Pinterest("pinterest"),
+    "reddit": Reddit("reddit", username_not_auto=True),
     "stackexchange": StackExchange("stackexchange"), # Iframe, not autofilled.
+    "tumblr": Tumblr("tumblr", username_not_auto=True),
+    "twitter": Twitter("twitter"),
+    "vkontakte": Vkontakte("vkontakte"),
     "vube": Vube("vube"), # http://crbug.com/368690
+    "wikia": Wikia("wikia"),
+    "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
+    "wordpress": Wordpress("wordpress"),
+    "yahoo": Yahoo("yahoo", username_not_auto=True),
+    "yandex": Yandex("yandex"),
     "ziddu": Ziddu("ziddu"), # Password not saved.
   }
 
-  if tests_to_run:
-    for test in tests_to_run:
-      if (test not in working_tests.keys() and
-          test not in disabled_tests.keys()):
-        print "Skip test: test {} is not in known tests".format(test)
-        continue
-      if test in working_tests.keys():
-        test_class = working_tests[test]
-      else:
-        test_class = disabled_tests[test]
-      environment.AddWebsiteTest(test_class)
-  else:
-    for test in working_tests.itervalues():
-      environment.AddWebsiteTest(test)
-    for test in disabled_tests.itervalues():
-      environment.AddWebsiteTest(test, disabled=True)
+  tests_to_run = tests_to_run or all_tests.keys()
+  for test_name in tests_to_run:
+    if test_name in all_tests.keys():
+      environment.AddWebsiteTest(all_tests[test_name])
 
 
 def saveResults(environment_tests_results, environment_save_path):
@@ -581,12 +559,8 @@ def RunTests(chrome_path, chromedriver_path, profile_path,
 
   if environment_tested_websites == TypeOfTestedWebsites.ALL_TESTS:
     environment.AllTests(run_prompt_tests)
-  elif environment_tested_websites == TypeOfTestedWebsites.DISABLED_TESTS:
-    environment.DisabledTests(run_prompt_tests)
   elif environment_tested_websites == TypeOfTestedWebsites.LIST_OF_TESTS:
     environment.Test(tests, run_prompt_tests)
-  elif environment_tested_websites == TypeOfTestedWebsites.ENABLED_TESTS:
-    environment.WorkingTests(run_prompt_tests)
   else:
     raise Exception("Error: |environment_tested_websites| has to be one of the"
         "TypeOfTestedWebsites values")
@@ -617,10 +591,6 @@ if __name__ == "__main__":
       "--passwords-path", action="store", dest="passwords_path",
       help="Set the usernames/passwords path (required).", nargs=1,
       required=True)
-  parser.add_argument("--all", action="store_true", dest="all",
-                      help="Run all tests.")
-  parser.add_argument("--disabled", action="store_true", dest="disabled",
-                      help="Run only disabled tests.")
   parser.add_argument("--log", action="store", nargs=1, dest="log_level",
                       help="Set log level.")
   parser.add_argument("--log-screen", action="store_true", dest="log_screen",
@@ -635,14 +605,9 @@ if __name__ == "__main__":
 
   passwords_path = args.passwords_path[0]
 
-  if args.all:
-    tested_websites = TypeOfTestedWebsites.ALL_TESTS
-  elif args.disabled:
-    tested_websites = TypeOfTestedWebsites.DISABLED_TESTS
-  elif args.tests:
+  tested_websites = TypeOfTestedWebsites.ALL_TESTS
+  if args.tests:
     tested_websites = TypeOfTestedWebsites.LIST_OF_TESTS
-  else:
-    tested_websites = TypeOfTestedWebsites.ENABLED_TESTS
 
   numeric_level = None
   if args.log_level:

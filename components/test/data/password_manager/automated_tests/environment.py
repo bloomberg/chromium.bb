@@ -118,10 +118,6 @@ class Environment:
     self.website_window = None
     # The WebsiteTests list.
     self.websitetests = []
-    # The enabled WebsiteTests list.
-    self.working_tests = []
-    # The disabled WebsiteTests list.
-    self.disabled_tests = []
     # Map messages to the number of their appearance in the log.
     self.message_count = dict()
     self.message_count[MESSAGE_ASK] = 0
@@ -133,12 +129,11 @@ class Environment:
     # List of all tests results.
     self.tests_results = []
 
-  def AddWebsiteTest(self, websitetest, disabled=False):
+  def AddWebsiteTest(self, websitetest):
     """Adds a WebsiteTest to the testing Environment.
 
     Args:
       websitetest: The WebsiteTest instance to be added.
-      disabled: Whether test is disabled.
     """
     websitetest.environment = self
     if hasattr(self, "driver"):
@@ -157,10 +152,6 @@ class Environment:
         if password_tag.text:
           websitetest.password = password_tag.text
     self.websitetests.append(websitetest)
-    if disabled:
-      self.disabled_tests.append(websitetest.name)
-    else:
-      self.working_tests.append(websitetest.name)
 
   def ClearCache(self, clear_passwords):
     """Clear the browser cookies. If |clear_passwords| is true, clear all the
@@ -315,32 +306,6 @@ class Environment:
       self.PromptTestList(self.websitetests)
     else:
       self.TestList(self.websitetests)
-
-  def DisabledTests(self, prompt_test):
-    """Runs the tests on all the disabled WebsiteTests.
-
-    Args:
-      prompt_test: If True, tests caring about showing the save-password
-          prompt are going to be run, otherwise tests which don't care about
-          the prompt are going to be executed.
-
-    Raises:
-      Exception: An exception is raised if the tests fail.
-    """
-    self.Test(self.disabled_tests, prompt_test)
-
-  def WorkingTests(self, prompt_test):
-    """Runs the tests on all the enabled WebsiteTests.
-
-    Args:
-      prompt_test: If True, tests caring about showing the save-password
-          prompt are going to be run, otherwise tests which don't care about
-          the prompt are going to be executed.
-
-    Raises:
-      Exception: An exception is raised if the tests fail.
-    """
-    self.Test(self.working_tests, prompt_test)
 
   def Test(self, tests, prompt_test):
     """Runs the tests on websites named in |tests|.
