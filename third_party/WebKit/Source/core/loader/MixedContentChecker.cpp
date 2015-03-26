@@ -229,7 +229,7 @@ const char* MixedContentChecker::typeNameFromContext(WebURLRequest::RequestConte
 }
 
 // static
-void MixedContentChecker::logToConsole(LocalFrame* frame, const KURL& url, WebURLRequest::RequestContext requestContext, bool allowed)
+void MixedContentChecker::logToConsoleAboutFetch(LocalFrame* frame, const KURL& url, WebURLRequest::RequestContext requestContext, bool allowed)
 {
     String message = String::format(
         "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an insecure %s '%s'. %s",
@@ -336,12 +336,23 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
     };
 
     if (reportingStatus == SendReport)
-        logToConsole(frame, url, requestContext, allowed);
+        logToConsoleAboutFetch(frame, url, requestContext, allowed);
     return !allowed;
 }
 
 // static
-bool MixedContentChecker::shouldBlockConnection(LocalFrame* frame, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
+void MixedContentChecker::logToConsoleAboutWebSocket(LocalFrame* frame, const KURL& url, bool allowed)
+{
+    String message = String::format(
+        "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted to connect to the insecure WebSocket endpoint '%s'. %s",
+        frame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data(),
+        allowed ? "This endpoint should be available via WSS. Insecure access is deprecated." : "This request has been blocked; this endpoint must be available over WSS.");
+    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
+    frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
+}
+
+// static
+bool MixedContentChecker::shouldBlockWebSocket(LocalFrame* frame, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
 {
     LocalFrame* mixedFrame = inWhichFrameIsContentMixed(frame, WebURLRequest::FrameTypeNone, url);
     if (!mixedFrame)
@@ -353,22 +364,21 @@ bool MixedContentChecker::shouldBlockConnection(LocalFrame* frame, const KURL& u
     Settings* settings = mixedFrame->settings();
     FrameLoaderClient* client = mixedFrame->loader().client();
     SecurityOrigin* securityOrigin = mixedFrame->document()->securityOrigin();
+    bool allowed = false;
 
     // If we're in strict mode, we'll automagically fail everything, and intentionally skip
     // the client checks in order to prevent degrading the site's security UI.
     bool strictMode = mixedFrame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
-    bool allowedPerSettings = !strictMode && settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket());
-    bool allowed = !strictMode && client->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
-
-    if (reportingStatus == SendReport) {
-        String message = String::format(
-            "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted to connect to the insecure WebSocket endpoint '%s'. %s",
-            frame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data(),
-            allowed ? "This endpoint should be available via WSS. Insecure access is deprecated." : "This request has been blocked; this endpoint must be available over WSS.");
-        MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
-        mixedFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
+    if (!strictMode) {
+        bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket());
+        allowed = client->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
     }
 
+    if (allowed)
+        client->didRunInsecureContent(securityOrigin, url);
+
+    if (reportingStatus == SendReport)
+        logToConsoleAboutWebSocket(frame, url, allowed);
     return !allowed;
 }
 

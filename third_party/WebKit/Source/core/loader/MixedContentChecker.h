@@ -55,7 +55,7 @@ public:
         return shouldBlockFetch(frame, request.requestContext(), request.frameType(), url, status);
     }
 
-    static bool shouldBlockConnection(LocalFrame*, const KURL&, ReportingStatus = SendReport);
+    static bool shouldBlockWebSocket(LocalFrame*, const KURL&, ReportingStatus = SendReport);
 
     static bool isMixedContent(SecurityOrigin*, const KURL&);
     static bool isMixedFormAction(LocalFrame*, const KURL&, ReportingStatus = SendReport);
@@ -80,7 +80,8 @@ private:
 
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
-    static void logToConsole(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
+    static void logToConsoleAboutFetch(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
+    static void logToConsoleAboutWebSocket(LocalFrame*, const KURL&, bool allowed);
     static void count(LocalFrame*, WebURLRequest::RequestContext);
 };
 

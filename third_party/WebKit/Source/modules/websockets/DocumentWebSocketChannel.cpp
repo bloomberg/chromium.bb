@@ -137,7 +137,7 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
         return false;
 
     if (executionContext()->isDocument() && document()->frame()) {
-        if (MixedContentChecker::shouldBlockConnection(document()->frame(), url))
+        if (MixedContentChecker::shouldBlockWebSocket(document()->frame(), url))
             return false;
     }
     if (MixedContentChecker::isMixedContent(document()->securityOrigin(), url)) {
