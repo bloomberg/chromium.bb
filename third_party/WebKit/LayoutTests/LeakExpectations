@@ -96,7 +96,3 @@ crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
 crbug.com/427628 inspector/sources/debugger/debugger-save-to-temp-var.html [ Leak ]
 
 crbug.com/459576 webaudio/dom-exceptions.html [ Crash ]
-
-crbug.com/469271 fast/scroll-behavior/overflow-scroll-animates.html [ Leak ]
-crbug.com/469271 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Leak ]
-crbug.com/469271 virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Leak ]

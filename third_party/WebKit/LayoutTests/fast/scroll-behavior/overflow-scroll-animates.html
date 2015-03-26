@@ -30,12 +30,14 @@ var testConfigs = [
 ];
 var config;
 var waitingForScroll = false;
-var scrollStart, scrollDuration;
+var scrollStart;
 
 function nextConfig() {
     config = testConfigs.shift();
-    if (!config)
+    if (!config) {
         finishJSTest();
+        return;
+    }
 
     element.addEventListener("scroll", onElementScroll);
 
@@ -57,8 +59,6 @@ function reset() {
 function onElementScroll() {
     if (waitingForScroll) {
         if (element.scrollTop == 80) {
-            scrollDuration = performance.now() - scrollStart;
-            shouldBeTrue("scrollDuration < 500");
             reset();
             nextConfig();
         }
