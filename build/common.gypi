@@ -1417,7 +1417,7 @@
 
     # Pseudo locales are special locales which are used for testing and
     # debugging. They don't get copied to the final app. For more info,
-    # check out https://sites.google.com/a/chromium.org/dev/Home/fake-bidi
+    # check out https://www.chromium.org/developers/testing/fake-bidi
     'pseudo_locales': [
       'fake-bidi',
     ],
