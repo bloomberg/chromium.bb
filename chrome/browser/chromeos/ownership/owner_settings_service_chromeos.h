@@ -65,6 +65,8 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   void OnTPMTokenReady(bool tpm_token_enabled);
 
+  bool HasPendingChanges() const;
+
   // ownership::OwnerSettingsService implementation:
   bool HandlesSetting(const std::string& setting) override;
   bool Set(const std::string& setting, const base::Value& value) override;
@@ -100,23 +102,20 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util,
       const IsOwnerCallback& callback);
 
-  // Assembles PolicyData based on |settings|, |policy_data| and
-  // |user_id|.
+  // Assembles PolicyData based on |settings|, |policy_data|, |user_id| and
+  // |pending_management_settings|. Applies local-owner policy fixups if needed.
   static scoped_ptr<enterprise_management::PolicyData> AssemblePolicy(
       const std::string& user_id,
       const enterprise_management::PolicyData* policy_data,
-      const enterprise_management::ChromeDeviceSettingsProto* settings);
+      bool apply_pending_mangement_settings,
+      const ManagementSettings& pending_management_settings,
+      enterprise_management::ChromeDeviceSettingsProto* settings);
 
   // Updates device |settings|.
   static void UpdateDeviceSettings(
       const std::string& path,
       const base::Value& value,
       enterprise_management::ChromeDeviceSettingsProto& settings);
-
-  bool has_pending_changes() const {
-    return !pending_changes_.empty() || tentative_settings_.get() ||
-           has_pending_management_settings_;
-  }
 
  protected:
   OwnerSettingsServiceChromeOS(
@@ -126,6 +125,13 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
  private:
   friend class OwnerSettingsServiceChromeOSFactory;
+
+  // Perform fixups required to ensure sensical local-owner device policy:
+  //  1) user whitelisting must be explicitly allowed or disallowed, and
+  //  2) the owner user must be on the whitelist, if it's enforced.
+  static void FixupLocalOwnerPolicy(
+      const std::string& user_id,
+      enterprise_management::ChromeDeviceSettingsProto* settings);
 
   // OwnerSettingsService protected interface overrides:
 
@@ -167,6 +173,9 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   // Whether TPM token still needs to be initialized.
   bool waiting_for_tpm_token_;
+
+  // True if local-owner policy fixups are still pending.
+  bool has_pending_fixups_;
 
   // A set of pending changes to device settings.
   base::ScopedPtrHashMap<std::string, base::Value> pending_changes_;

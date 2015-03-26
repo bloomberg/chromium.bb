@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
@@ -174,7 +174,6 @@ bool CheckManagementModeTransition(policy::ManagementMode current_mode,
   NOTREACHED();
   return false;
 }
-
 }  // namespace
 
 OwnerSettingsServiceChromeOS::ManagementSettings::ManagementSettings() {
@@ -192,6 +191,7 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
       profile_(profile),
       waiting_for_profile_creation_(true),
       waiting_for_tpm_token_(true),
+      has_pending_fixups_(false),
       has_pending_management_settings_(false),
       weak_factory_(this),
       store_settings_factory_(this) {
@@ -247,6 +247,11 @@ void OwnerSettingsServiceChromeOS::OnTPMTokenReady(
   // TPMTokenLoader initializes the TPM and NSS database which is necessary to
   // determine ownership. Force a reload once we know these are initialized.
   ReloadKeypair();
+}
+
+bool OwnerSettingsServiceChromeOS::HasPendingChanges() const {
+  return !pending_changes_.empty() || tentative_settings_.get() ||
+         has_pending_management_settings_ || has_pending_fixups_;
 }
 
 bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
@@ -414,7 +419,9 @@ void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
 scoped_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
     const std::string& user_id,
     const em::PolicyData* policy_data,
-    const em::ChromeDeviceSettingsProto* settings) {
+    bool apply_pending_management_settings,
+    const ManagementSettings& pending_management_settings,
+    em::ChromeDeviceSettingsProto* settings) {
   scoped_ptr<em::PolicyData> policy(new em::PolicyData());
   if (policy_data) {
     // Preserve management settings.
@@ -429,14 +436,47 @@ scoped_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
     // setting is set. We set the management mode to LOCAL_OWNER initially.
     policy->set_management_mode(em::PolicyData::LOCAL_OWNER);
   }
+  if (apply_pending_management_settings) {
+    policy::SetManagementMode(*policy,
+                              pending_management_settings.management_mode);
+
+    if (pending_management_settings.request_token.empty())
+      policy->clear_request_token();
+    else
+      policy->set_request_token(pending_management_settings.request_token);
+
+    if (pending_management_settings.device_id.empty())
+      policy->clear_device_id();
+    else
+      policy->set_device_id(pending_management_settings.device_id);
+  }
   policy->set_policy_type(policy::dm_protocol::kChromeDevicePolicyType);
   policy->set_timestamp(
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
   policy->set_username(user_id);
+  if (policy_data->management_mode() == em::PolicyData::LOCAL_OWNER ||
+      policy_data->management_mode() == em::PolicyData::CONSUMER_MANAGED) {
+    FixupLocalOwnerPolicy(user_id, settings);
+  }
   if (!settings->SerializeToString(policy->mutable_policy_value()))
     return scoped_ptr<em::PolicyData>();
 
   return policy.Pass();
+}
+
+// static
+void OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy(
+    const std::string& user_id,
+    enterprise_management::ChromeDeviceSettingsProto* settings) {
+  if (!settings->has_allow_new_users())
+    settings->mutable_allow_new_users()->set_allow_new_users(true);
+
+  em::UserWhitelistProto* whitelist_proto = settings->mutable_user_whitelist();
+  if (whitelist_proto->user_whitelist().end() ==
+      std::find(whitelist_proto->user_whitelist().begin(),
+                whitelist_proto->user_whitelist().end(), user_id)) {
+    whitelist_proto->add_user_whitelist(user_id);
+  }
 }
 
 // static
@@ -674,6 +714,8 @@ void OwnerSettingsServiceChromeOS::OnPostKeypairLoadedActions() {
   const bool is_owner = IsOwner() || IsOwnerInTests(user_id_);
   if (is_owner && device_settings_service_)
     device_settings_service_->InitOwner(user_id_, weak_factory_.GetWeakPtr());
+
+  has_pending_fixups_ = true;
 }
 
 void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
@@ -695,7 +737,7 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
 }
 
 void OwnerSettingsServiceChromeOS::StorePendingChanges() {
-  if (!has_pending_changes() || store_settings_factory_.HasWeakPtrs() ||
+  if (!HasPendingChanges() || store_settings_factory_.HasWeakPtrs() ||
       !device_settings_service_ || user_id_.empty()) {
     return;
   }
@@ -716,23 +758,11 @@ void OwnerSettingsServiceChromeOS::StorePendingChanges() {
     UpdateDeviceSettings(change.first, *change.second, settings);
   pending_changes_.clear();
 
-  scoped_ptr<em::PolicyData> policy = AssemblePolicy(
-      user_id_, device_settings_service_->policy_data(), &settings);
-
-  if (has_pending_management_settings_) {
-    policy::SetManagementMode(*policy,
-                              pending_management_settings_.management_mode);
-
-    if (pending_management_settings_.request_token.empty())
-      policy->clear_request_token();
-    else
-      policy->set_request_token(pending_management_settings_.request_token);
-
-    if (pending_management_settings_.device_id.empty())
-      policy->clear_device_id();
-    else
-      policy->set_device_id(pending_management_settings_.device_id);
-  }
+  scoped_ptr<em::PolicyData> policy =
+      AssemblePolicy(user_id_, device_settings_service_->policy_data(),
+                     has_pending_management_settings_,
+                     pending_management_settings_, &settings);
+  has_pending_fixups_ = false;
   has_pending_management_settings_ = false;
 
   bool rv = AssembleAndSignPolicyAsync(

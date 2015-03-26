@@ -45,7 +45,7 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
 
   // OwnerSettingsService::Observer implementation:
   void OnSignedPolicyStored(bool success) override {
-    if (service_->has_pending_changes())
+    if (service_->HasPendingChanges())
       return;
 
     while (!set_requests_.empty()) {
@@ -77,6 +77,13 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(PrefsChecker);
 };
+
+bool FindInListValue(const std::string& needle, const base::Value* haystack) {
+  const base::ListValue* list;
+  if (!haystack->GetAsList(&list))
+    return false;
+  return list->end() != list->Find(base::StringValue(needle));
+}
 
 }  // namespace
 
@@ -123,6 +130,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     management_settings_set_ = success;
   }
 
+ protected:
   OwnerSettingsServiceChromeOS* service_;
   ScopedTestingLocalState local_state_;
   scoped_ptr<DeviceSettingsProvider> provider_;
@@ -294,6 +302,15 @@ TEST_F(OwnerSettingsServiceChromeOSTest, SetManagementSettingsSuccess) {
   EXPECT_EQ("fake_device_id", policy_data->device_id());
 }
 
+TEST_F(OwnerSettingsServiceChromeOSTest, ForceWhitelist) {
+  EXPECT_FALSE(FindInListValue(device_policy_.policy_data().username(),
+                               provider_->Get(kAccountsPrefUsers)));
+  // Force a settings write.
+  TestSingleSet(service_, kReleaseChannel, base::StringValue("dev-channel"));
+  EXPECT_TRUE(FindInListValue(device_policy_.policy_data().username(),
+                              provider_->Get(kAccountsPrefUsers)));
+}
+
 class OwnerSettingsServiceChromeOSNoOwnerTest
     : public OwnerSettingsServiceChromeOSTest {
  public:
@@ -319,6 +336,18 @@ class OwnerSettingsServiceChromeOSNoOwnerTest
 
 TEST_F(OwnerSettingsServiceChromeOSNoOwnerTest, SingleSetTest) {
   ASSERT_FALSE(service_->SetBoolean(kAccountsPrefAllowGuest, false));
+}
+
+TEST_F(OwnerSettingsServiceChromeOSNoOwnerTest, TakeOwnershipForceWhitelist) {
+  EXPECT_FALSE(FindInListValue(device_policy_.policy_data().username(),
+                               provider_->Get(kAccountsPrefUsers)));
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
+  InitOwner(device_policy_.policy_data().username(), true);
+  ReloadDeviceSettings();
+  ASSERT_TRUE(service_->IsOwner());
+
+  EXPECT_TRUE(FindInListValue(device_policy_.policy_data().username(),
+                              provider_->Get(kAccountsPrefUsers)));
 }
 
 }  // namespace chromeos
