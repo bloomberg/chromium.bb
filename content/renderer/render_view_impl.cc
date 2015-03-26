@@ -71,7 +71,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
@@ -409,6 +408,12 @@ static void ConvertToFaviconSizes(
     sizes->push_back(gfx::Size(web_sizes[i]));
 }
 
+static blink::WebDevToolsAgent* GetWebDevToolsAgent(WebView* webview) {
+  if (!webview || !webview->mainFrame()->isWebLocalFrame())
+    return nullptr;
+  return webview->mainFrame()->toWebLocalFrame()->devToolsAgent();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
@@ -630,7 +635,6 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
       speech_recognition_dispatcher_(NULL),
-      devtools_agent_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
@@ -768,14 +772,14 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   new TextInputClientObserver(this);
 #endif  // defined(OS_MACOSX)
 
-  // The next group of objects all implement RenderViewObserver, so are deleted
-  // along with the RenderView automatically.
-  if (!proxy) {
-    devtools_agent_ = new DevToolsAgent(main_render_frame_.get());
+  // TODO(dgozman): do this not for main frame, but for local frame roots.
+  if (blink::WebDevToolsAgent* devToolsAgent = GetWebDevToolsAgent(webview())) {
     if (RenderWidgetCompositor* rwc = compositor())
-      webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
+      devToolsAgent->setLayerTreeId(rwc->GetLayerTreeId());
   }
 
+  // The next group of objects all implement RenderViewObserver, so are deleted
+  // along with the RenderView automatically.
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
 
   history_controller_.reset(new HistoryController(this));
@@ -2014,8 +2018,9 @@ void RenderViewImpl::initializeLayerTreeView() {
   RenderWidgetCompositor* rwc = compositor();
   if (!rwc)
     return;
-  if (webview() && webview()->devToolsAgent())
-    webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
+  // TODO(dgozman): do this not for main frame, but for local frame roots.
+  if (blink::WebDevToolsAgent* devToolsAgent = GetWebDevToolsAgent(webview()))
+    devToolsAgent->setLayerTreeId(rwc->GetLayerTreeId());
 
   bool use_threaded_event_handling = true;
 #if defined(OS_MACOSX) && !defined(OS_IOS)

@@ -74,6 +74,7 @@ namespace content {
 
 class ChildFrameCompositingHelper;
 class CompositorDependencies;
+class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
@@ -755,6 +756,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // case of the main frame, but not subframes).
   blink::WebLocalFrame* frame_;
 
+  // Frame is a local root if it is rendered in a process different than parent
+  // or it is a main frame.
+  bool is_local_root_;
+
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
   bool is_swapped_out_;
@@ -866,6 +871,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // register as an observer for video-hole-specific events.
   bool contains_media_player_;
 #endif
+
+  // The devtools agent for this frame; only created for main frame and
+  // local roots.
+  DevToolsAgent* devtools_agent_;
 
   // The geolocation dispatcher attached to this frame, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;

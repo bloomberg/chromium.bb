@@ -119,7 +119,6 @@ class WebHitTestResult;
 
 namespace content {
 
-class DevToolsAgent;
 class HistoryController;
 class HistoryEntry;
 class MouseLockDispatcher;
@@ -907,8 +906,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.
   SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
-
-  DevToolsAgent* devtools_agent_;
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;

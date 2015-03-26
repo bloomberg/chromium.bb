@@ -7,9 +7,6 @@
 
 #include <string>
 
-#include "base/atomicops.h"
-#include "base/basictypes.h"
-#include "base/time/time.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
@@ -20,16 +17,15 @@ class WebDevToolsAgent;
 
 namespace content {
 
-class RenderViewImpl;
+class RenderFrameImpl;
 
-// DevToolsAgent belongs to the inspectable RenderView and provides Glue's
-// agents with the communication capabilities. All messages from/to Glue's
-// agents infrastructure are flowing through this communication agent.
-// There is a corresponding DevToolsClient object on the client side.
+// DevToolsAgent belongs to the inspectable RenderFrameImpl and communicates
+// with WebDevToolsAgent. There is a corresponding DevToolsAgentHost
+// on the browser side.
 class DevToolsAgent : public RenderFrameObserver,
                       public blink::WebDevToolsAgentClient {
  public:
-  explicit DevToolsAgent(RenderFrame* main_render_frame);
+  explicit DevToolsAgent(RenderFrameImpl* frame);
   ~DevToolsAgent() override;
 
   // Returns agent instance for its routing id.
@@ -47,28 +43,18 @@ class DevToolsAgent : public RenderFrameObserver,
   bool IsAttached();
 
  private:
-  // RenderView::Observer implementation.
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // WebDevToolsAgentClient implementation
+  // WebDevToolsAgentClient implementation.
   void sendProtocolMessage(int call_id,
                            const blink::WebString& response,
                            const blink::WebString& state) override;
-  long processId() override;
-  int debuggerId() override;
   blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop() override;
   void willEnterDebugLoop() override;
   void didExitDebugLoop() override;
 
-  typedef void (*TraceEventCallback)(
-      char phase, const unsigned char*, const char* name, unsigned long long id,
-      int numArgs, const char* const* argNames, const unsigned char* argTypes,
-      const unsigned long long* argValues,
-      unsigned char flags, double timestamp);
-  void resetTraceEventCallback() override;
-  void setTraceEventCallback(const blink::WebString& category_filter,
-                             TraceEventCallback cb) override;
   void enableTracing(const blink::WebString& category_filter) override;
   void disableTracing() override;
 
@@ -83,26 +69,10 @@ class DevToolsAgent : public RenderFrameObserver,
   void ContinueProgram();
   void OnSetupDevToolsClient();
 
-  RenderViewImpl* GetRenderViewImpl();
-
-  static void TraceEventCallbackWrapper(
-      base::TimeTicks timestamp,
-      char phase,
-      const unsigned char* category_group_enabled,
-      const char* name,
-      unsigned long long id,
-      int num_args,
-      const char* const arg_names[],
-      const unsigned char arg_types[],
-      const unsigned long long arg_values[],
-      unsigned char flags);
-
   bool is_attached_;
   bool is_devtools_client_;
   bool paused_in_mouse_move_;
-  RenderFrame* main_render_frame_;
-
-  static base::subtle::AtomicWord /* TraceEventCallback */ event_callback_;
+  RenderFrameImpl* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

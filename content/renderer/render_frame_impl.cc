@@ -647,6 +647,7 @@ blink::WebSandboxFlags RenderFrameImpl::ContentToWebSandboxFlags(
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : frame_(NULL),
+      is_local_root_(false),
       render_view_(render_view->AsWeakPtr()),
       routing_id_(routing_id),
       is_swapped_out_(false),
@@ -673,6 +674,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #if defined(VIDEO_HOLE)
       contains_media_player_(false),
 #endif
+      devtools_agent_(nullptr),
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
@@ -730,6 +732,8 @@ void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
 }
 
 void RenderFrameImpl::Initialize() {
+  is_local_root_ = !frame_->parent() || frame_->parent()->isWebRemoteFrame();
+
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
@@ -737,6 +741,12 @@ void RenderFrameImpl::Initialize() {
 
   if (!frame_->parent())
     new ImageLoadingHelper(this);
+
+  if (is_local_root_ && !render_frame_proxy_) {
+    // DevToolsAgent is a RenderFrameObserver, and will destruct itself
+    // when |this| is deleted.
+    devtools_agent_ = new DevToolsAgent(this);
+  }
 
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
@@ -3318,10 +3328,14 @@ void RenderFrameImpl::didFinishResourceLoad(blink::WebLocalFrame* frame,
     return;
 
   // Do not show error page when DevTools is attached.
-  if (render_view_->devtools_agent_ &&
-      render_view_->devtools_agent_->IsAttached()) {
-    return;
+  RenderFrameImpl* localRoot = this;
+  while (localRoot->frame_ && localRoot->frame_->parent() &&
+      localRoot->frame_->parent()->isWebLocalFrame()) {
+    localRoot = RenderFrameImpl::FromWebFrame(localRoot->frame_->parent());
+    DCHECK(localRoot);
   }
+  if (localRoot->devtools_agent_ && localRoot->devtools_agent_->IsAttached())
+    return;
 
   // Display error page, if appropriate.
   std::string error_domain = "http";

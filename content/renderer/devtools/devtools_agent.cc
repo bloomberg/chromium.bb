@@ -8,25 +8,20 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/devtools/devtools_agent_filter.h"
 #include "content/renderer/devtools/devtools_client.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_widget.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
-#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebSettings.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
@@ -35,19 +30,14 @@
 using blink::WebConsoleMessage;
 using blink::WebDevToolsAgent;
 using blink::WebDevToolsAgentClient;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebPoint;
 using blink::WebString;
-using blink::WebCString;
-using blink::WebVector;
-using blink::WebView;
 
 using base::trace_event::TraceLog;
 using base::trace_event::TraceOptions;
 
 namespace content {
-
-base::subtle::AtomicWord DevToolsAgent::event_callback_;
 
 namespace {
 
@@ -75,21 +65,18 @@ base::LazyInstance<IdToAgentMap>::Leaky
 
 } //  namespace
 
-DevToolsAgent::DevToolsAgent(RenderFrame* main_render_frame)
-    : RenderFrameObserver(main_render_frame),
+DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
+    : RenderFrameObserver(frame),
       is_attached_(false),
       is_devtools_client_(false),
       paused_in_mouse_move_(false),
-      main_render_frame_(main_render_frame) {
+      frame_(frame) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
-
-  main_render_frame_->GetRenderView()->GetWebView()->setDevToolsAgentClient(
-      this);
+  frame_->GetWebFrame()->setDevToolsAgentClient(this);
 }
 
 DevToolsAgent::~DevToolsAgent() {
   g_agent_for_routing_id.Get().erase(routing_id());
-  resetTraceEventCallback();
 }
 
 // Called on the Renderer thread.
@@ -123,48 +110,22 @@ void DevToolsAgent::sendProtocolMessage(
       this, routing_id(), call_id, message.utf8(), state_cookie.utf8());
 }
 
-long DevToolsAgent::processId() {
-  return base::GetCurrentProcId();
-}
-
-int DevToolsAgent::debuggerId() {
-  return routing_id();
-}
-
 blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
     DevToolsAgent::createClientMessageLoop() {
   return new WebKitClientMessageLoopImpl();
 }
 
 void DevToolsAgent::willEnterDebugLoop() {
-  paused_in_mouse_move_ =
-      GetRenderViewImpl()->SendAckForMouseMoveFromDebugger();
+  if (RenderWidget* widget = frame_->GetRenderWidget())
+    paused_in_mouse_move_ = widget->SendAckForMouseMoveFromDebugger();
 }
 
 void DevToolsAgent::didExitDebugLoop() {
-  if (paused_in_mouse_move_) {
-    GetRenderViewImpl()->IgnoreAckForMouseMoveFromDebugger();
+  if (!paused_in_mouse_move_)
+    return;
+  if (RenderWidget* widget = frame_->GetRenderWidget()) {
+    widget->IgnoreAckForMouseMoveFromDebugger();
     paused_in_mouse_move_ = false;
-  }
-}
-
-void DevToolsAgent::resetTraceEventCallback()
-{
-  TraceLog::GetInstance()->SetEventCallbackDisabled();
-  base::subtle::NoBarrier_Store(&event_callback_, 0);
-}
-
-void DevToolsAgent::setTraceEventCallback(const WebString& category_filter,
-                                          TraceEventCallback cb) {
-  TraceLog* trace_log = TraceLog::GetInstance();
-  base::subtle::NoBarrier_Store(&event_callback_,
-                                reinterpret_cast<base::subtle::AtomicWord>(cb));
-  if (!!cb) {
-    trace_log->SetEventCallbackEnabled(
-        base::trace_event::CategoryFilter(category_filter.utf8()),
-        TraceEventCallbackWrapper);
-  } else {
-    trace_log->SetEventCallbackDisabled();
   }
 }
 
@@ -177,28 +138,6 @@ void DevToolsAgent::enableTracing(const WebString& category_filter) {
 
 void DevToolsAgent::disableTracing() {
   TraceLog::GetInstance()->SetDisabled();
-}
-
-// static
-void DevToolsAgent::TraceEventCallbackWrapper(
-    base::TimeTicks timestamp,
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char* const arg_names[],
-    const unsigned char arg_types[],
-    const unsigned long long arg_values[],
-    unsigned char flags) {
-  TraceEventCallback callback =
-      reinterpret_cast<TraceEventCallback>(
-          base::subtle::NoBarrier_Load(&event_callback_));
-  if (callback) {
-    double timestamp_seconds = (timestamp - base::TimeTicks()).InSecondsF();
-    callback(phase, category_group_enabled, name, id, num_args,
-             arg_names, arg_types, arg_values, flags, timestamp_seconds);
-  }
 }
 
 // static
@@ -288,12 +227,8 @@ void DevToolsAgent::OnInspectElement(
 
 void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
                                           const std::string& message) {
-  WebView* web_view = main_render_frame_->GetRenderView()->GetWebView();
-  if (!web_view)
-    return;
-
-  WebFrame* main_frame = web_view->mainFrame();
-  if (!main_frame)
+  WebLocalFrame* web_frame = frame_->GetWebFrame();
+  if (!web_frame)
     return;
 
   WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
@@ -311,7 +246,7 @@ void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
       target_level = WebConsoleMessage::LevelError;
       break;
   }
-  main_frame->addMessageToConsole(
+  web_frame->addMessageToConsole(
       WebConsoleMessage(target_level, WebString::fromUTF8(message)));
 }
 
@@ -322,22 +257,17 @@ void DevToolsAgent::ContinueProgram() {
 }
 
 void DevToolsAgent::OnSetupDevToolsClient() {
-  // We only want to register once per render view.
+  // We only want to register once; and only in main frame.
+  DCHECK(!frame_->GetWebFrame() || !frame_->GetWebFrame()->parent());
   if (is_devtools_client_)
     return;
   is_devtools_client_ = true;
-  new DevToolsClient(main_render_frame_);
+  new DevToolsClient(frame_);
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
-  WebView* web_view = main_render_frame_->GetRenderView()->GetWebView();
-  if (!web_view)
-    return NULL;
-  return web_view->devToolsAgent();
-}
-
-RenderViewImpl* DevToolsAgent::GetRenderViewImpl() {
-  return static_cast<RenderViewImpl*>(main_render_frame_->GetRenderView());
+  WebLocalFrame* web_frame = frame_->GetWebFrame();
+  return web_frame ? web_frame->devToolsAgent() : nullptr;
 }
 
 bool DevToolsAgent::IsAttached() {
