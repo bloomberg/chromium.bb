@@ -134,6 +134,7 @@
                   'BasicRuntimeChecks': '0',
                   'BufferSecurityCheck': 'false',
                   'ExceptionHandling': '0',
+                  'WholeProgramOptimization': 'false',
                 },
                 'VCLinkerTool': {
                   'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
