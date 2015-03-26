@@ -200,16 +200,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     }
 
     /**
-     * Sets the SyncNotificationController.
-     *
-     * This is a temporary method for transferring ownership of SyncNotificationController
-     * upstream. SNC is now created in the constructor and this method can be removed once
-     * the downstream call from GoogleServicesManager is removed.
-     */
-    public void setSyncNotificationController(SyncNotificationController snc) {
-    }
-
-    /**
      * Returns the SyncNotificationController.
      */
     public SyncNotificationController getSyncNotificationController() {
