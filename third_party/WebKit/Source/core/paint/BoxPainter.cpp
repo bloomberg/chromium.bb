@@ -453,7 +453,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
             SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
             LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
-            InterpolationQuality interpolationQuality = chooseInterpolationQuality(obj, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
+            InterpolationQuality interpolationQuality = chooseInterpolationQuality(*clientForBackgroundImage, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
                 context->setColorFilter(ColorFilterLuminanceToAlpha);
             InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
@@ -788,7 +788,7 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
     geometry.clip(snappedPaintRect);
 }
 
-InterpolationQuality BoxPainter::chooseInterpolationQuality(LayoutBoxModelObject& obj, GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
+InterpolationQuality BoxPainter::chooseInterpolationQuality(LayoutObject& obj, GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
 {
     return ImageQualityController::imageQualityController()->chooseInterpolationQuality(context, &obj, image, layer, size);
 }

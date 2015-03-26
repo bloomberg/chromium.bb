@@ -30,7 +30,7 @@ public:
     void paintBoxDecorationBackgroundWithRect(const PaintInfo&, const LayoutPoint&, const LayoutRect&);
     static void paintFillLayerExtended(LayoutBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), SkXfermode::Mode = SkXfermode::kSrcOver_Mode, LayoutObject* backgroundObject = 0, bool skipBaseColor = false);
     static void calculateBackgroundImageGeometry(LayoutBoxModelObject&, const LayoutBoxModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, LayoutObject* = 0);
-    static InterpolationQuality chooseInterpolationQuality(LayoutBoxModelObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);
+    static InterpolationQuality chooseInterpolationQuality(LayoutObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);
     static bool paintNinePieceImage(LayoutBoxModelObject&, GraphicsContext*, const LayoutRect&, const LayoutStyle&, const NinePieceImage&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
     static void paintBorder(LayoutBoxModelObject&, const PaintInfo&, const LayoutRect&, const LayoutStyle&, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const LayoutStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
