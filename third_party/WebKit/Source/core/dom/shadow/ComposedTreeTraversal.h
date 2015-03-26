@@ -98,6 +98,9 @@ public:
     // composed tree.
     static unsigned countChildren(const Node&);
 
+    static Node* lastWithin(const Node&);
+    static Node& lastWithinOrSelf(const Node&);
+
 private:
     enum TraversalDirection {
         TraversalDirectionForward,

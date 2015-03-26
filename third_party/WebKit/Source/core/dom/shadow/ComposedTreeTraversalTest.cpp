@@ -238,7 +238,7 @@ TEST_F(ComposedTreeTraversalTest, nextSkippingChildren)
         "<a id='s11'>s11</a>"
         "<a id='s12'>"
             "<b id='s120'>s120</b>"
-            "<content select='#m10'></content></a>"
+            "<content select='#m10'></content>"
         "</a>";
     setupSampleHTML(mainHTML, shadowHTML, 1);
 
@@ -277,6 +277,55 @@ TEST_F(ComposedTreeTraversalTest, nextSkippingChildren)
     // Node in shadow tree to main tree
     EXPECT_EQ(*m2, ComposedTreeTraversal::nextSkippingChildren(*s12));
     EXPECT_EQ(*m1, ComposedTreeTraversal::previousSkippingChildren(*m2));
+}
+
+// Test case for
+//  - lastWithin
+//  - lastWithinOrSelf
+TEST_F(ComposedTreeTraversalTest, lastWithin)
+{
+    const char* mainHTML =
+        "<div id='m0'>m0</div>"
+        "<div id='m1'>"
+            "<span id='m10'>m10</span>"
+            "<span id='m11'>m11</span>"
+            "<span id='m12'>m12</span>" // #m12 is not distributed.
+        "</div>"
+        "<div id='m2'></div>";
+    const char* shadowHTML =
+        "<content select='#m11'></content>"
+        "<a id='s11'>s11</a>"
+        "<a id='s12'>"
+            "<content select='#m10'></content>"
+        "</a>";
+    setupSampleHTML(mainHTML, shadowHTML, 1);
+
+    RefPtrWillBeRawPtr<Element> body = document().body();
+    RefPtrWillBeRawPtr<Element> m0 = body->querySelector("#m0", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> m1 = body->querySelector("#m1", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> m2 = body->querySelector("#m2", ASSERT_NO_EXCEPTION);
+
+    RefPtrWillBeRawPtr<Element> m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
+
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = m1->shadowRoot();
+    RefPtrWillBeRawPtr<Element> s11 = shadowRoot->querySelector("#s11", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> s12 = shadowRoot->querySelector("#s12", ASSERT_NO_EXCEPTION);
+
+    EXPECT_EQ(m0->firstChild(), ComposedTreeTraversal::lastWithin(*m0));
+    EXPECT_EQ(*m0->firstChild(), ComposedTreeTraversal::lastWithinOrSelf(*m0));
+
+    EXPECT_EQ(m10->firstChild(), ComposedTreeTraversal::lastWithin(*m1));
+    EXPECT_EQ(*m10->firstChild(), ComposedTreeTraversal::lastWithinOrSelf(*m1));
+
+    EXPECT_EQ(nullptr, ComposedTreeTraversal::lastWithin(*m2));
+    EXPECT_EQ(*m2, ComposedTreeTraversal::lastWithinOrSelf(*m2));
+
+    EXPECT_EQ(s11->firstChild(), ComposedTreeTraversal::lastWithin(*s11));
+    EXPECT_EQ(*s11->firstChild(), ComposedTreeTraversal::lastWithinOrSelf(*s11));
+
+    EXPECT_EQ(m10->firstChild(), ComposedTreeTraversal::lastWithin(*s12));
+    EXPECT_EQ(*m10->firstChild(), ComposedTreeTraversal::lastWithinOrSelf(*s12));
 }
 
 } // namespace

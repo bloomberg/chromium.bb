@@ -241,4 +241,23 @@ unsigned ComposedTreeTraversal::countChildren(const Node& node)
     return count;
 }
 
+Node* ComposedTreeTraversal::lastWithin(const Node& node)
+{
+    assertPrecondition(node);
+    Node* descendant = traverseLastChild(node);
+    for (Node* child = descendant; child; child = lastChild(*child))
+        descendant = child;
+    assertPostcondition(descendant);
+    return descendant;
+}
+
+Node& ComposedTreeTraversal::lastWithinOrSelf(const Node& node)
+{
+    assertPrecondition(node);
+    Node* lastDescendant = lastWithin(node);
+    Node& result = lastDescendant ? *lastDescendant : const_cast<Node&>(node);
+    assertPostcondition(&result);
+    return result;
+}
+
 } // namespace
