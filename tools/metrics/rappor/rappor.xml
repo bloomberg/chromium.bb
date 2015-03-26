@@ -117,6 +117,91 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.PermissionActions_Geolocation.Denied.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Geolocation permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Geolocation.Dismissed.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Geolocation permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Geolocation.Granted.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Geolocation permission prompt was accepted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Geolocation.Ignored.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Geolocation permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Denied.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Notification permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Dismissed.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Notification permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Granted.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Notification permission prompt was accepted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Ignored.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain for which a Notification permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionRequested.Geolocation.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain that issues a Geolocation permission prompt.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionRequested.Notifications.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The domain that issues a Notification permission prompt.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
