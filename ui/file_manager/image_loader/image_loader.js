@@ -42,7 +42,7 @@ function ImageLoader() {
       var requestPromise = new Promise(function(callback) {
         chrome.fileSystem.requestFileSystem(
             {volumeId: volumeMetadata.volumeId},
-            callback);
+            /** @type {function(FileSystem=)} */(callback));
       });
       return requestPromise;
     });

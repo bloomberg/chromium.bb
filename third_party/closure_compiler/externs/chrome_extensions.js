@@ -1,3 +1,19 @@
+//    SSSSSSSSSSSSSSS TTTTTTTTTTTTTTTTTTTTTTT     OOOOOOOOO     PPPPPPPPPPPPPPPPP
+//  SS:::::::::::::::ST:::::::::::::::::::::T   OO:::::::::OO   P::::::::::::::::P
+// S:::::SSSSSS::::::ST:::::::::::::::::::::T OO:::::::::::::OO P::::::PPPPPP:::::P
+// S:::::S     SSSSSSST:::::TT:::::::TT:::::TO:::::::OOO:::::::OPP:::::P     P:::::P
+// S:::::S            TTTTTT  T:::::T  TTTTTTO::::::O   O::::::O  P::::P     P:::::P
+// S:::::S                    T:::::T        O:::::O     O:::::O  P::::P     P:::::P
+//  S::::SSSS                                                     P::::PPPPPP:::::P
+//   SS::::::SSSSS       This file is generated. To update it,    P:::::::::::::PP
+//     SSS::::::::SS          run bump_compiler_version.          P::::PPPPPPPPP
+//        SSSSSS::::S                                             P::::P
+//             S:::::S        T:::::T        O:::::O     O:::::O  P::::P
+//             S:::::S        T:::::T        O::::::O   O::::::O  P::::P
+// SSSSSSS     S:::::S      TT:::::::TT      O:::::::OOO:::::::OPP::::::PP
+// S::::::SSSSSS:::::S      T:::::::::T       OO:::::::::::::OO P::::::::P
+// S:::::::::::::::SS       T:::::::::T         OO:::::::::OO   P::::::::P
+//  SSSSSSSSSSSSSSS         TTTTTTTTTTT           OOOOOOOOO     PPPPPPPPPP
 /*
  * Copyright 2009 The Closure Compiler Authors
  *
@@ -555,6 +571,115 @@ chrome.app.window.onMinimized;
  * @see http://developer.chrome.com/apps/app.window.html#event-onRestored
  */
 chrome.app.window.onRestored;
+
+
+/**
+ * Private API.
+ *
+ * @const
+ * @see https://code.google.com/p/chromium/codesearch#chromium/src/chrome/common/extensions/api/audio_modem.idl
+ * @see go/chrome-modem
+ */
+chrome.audioModem = {};
+
+
+/**
+ * @typedef {?{
+ *   tokenLength: number,
+ *   crc: (boolean|undefined),
+ *   parity: (boolean|undefined)
+ * }}
+ */
+chrome.audioModem.TokenEncoding;
+
+
+/**
+ * @typedef {?{
+ *   timeoutMillis: number,
+ *   band: string,
+ *   encoding: !chrome.audioModem.TokenEncoding
+ * }}
+ */
+chrome.audioModem.RequestParams;
+
+
+/** @constructor */
+chrome.audioModem.ReceivedToken = function() {};
+
+
+/** @type {!ArrayBuffer} */
+chrome.audioModem.ReceivedToken.prototype.token;
+
+
+/** @type {string} */
+chrome.audioModem.ReceivedToken.prototype.band;
+
+
+/**
+ * @param {!chrome.audioModem.RequestParams} params
+ * @param {!ArrayBuffer} token
+ * @param {function(string)} callback
+ */
+chrome.audioModem.transmit = function(params, token, callback) {};
+
+
+/**
+ * @param {string} band
+ * @param {function(string)} callback
+ */
+chrome.audioModem.stopTransmit = function(band, callback) {};
+
+
+/**
+ * @param {!chrome.audioModem.RequestParams} params
+ * @param {function(string)} callback
+ */
+chrome.audioModem.receive = function(params, callback) {};
+
+
+/**
+ * @param {string} band
+ * @param {function(string)} callback
+ */
+chrome.audioModem.stopReceive = function(band, callback) {};
+
+
+/** @constructor */
+chrome.audioModem.ReceivedEvent = function() {};
+
+
+/**
+ * @param {function(!Array<!chrome.audioModem.ReceivedToken>)} callback
+ */
+chrome.audioModem.ReceivedEvent.prototype.addListener = function(callback) {};
+
+
+/**
+ * @param {function(!Array<!chrome.audioModem.ReceivedToken>)} callback
+ */
+chrome.audioModem.ReceivedEvent.prototype.removeListener =
+    function(callback) {};
+
+
+/**
+ * @param {function(!Array<!chrome.audioModem.ReceivedToken>)} callback
+ * @return {boolean}
+ */
+chrome.audioModem.ReceivedEvent.prototype.hasListener = function(callback) {};
+
+
+/**
+ * @return {boolean}
+ */
+chrome.audioModem.ReceivedEvent.prototype.hasListeners = function() {};
+
+
+/** @type {!chrome.audioModem.ReceivedEvent} */
+chrome.audioModem.onReceived;
+
+
+/** @type {!ChromeStringEvent} */
+chrome.audioModem.onTransmitFail;
 
 
 /**
@@ -1199,7 +1324,7 @@ chrome.bluetoothLowEnergy.Service.prototype.deviceAddress;
  * @constructor
  * @see https://developer.chrome.com/apps/bluetoothLowEnergy#type-Characteristic
  */
-chrome.bluetoothLowEnergy.Characteristic;
+chrome.bluetoothLowEnergy.Characteristic = function() {};
 
 
 /** @type {string} */
@@ -1226,7 +1351,7 @@ chrome.bluetoothLowEnergy.Characteristic.prototype.value;
  * @constructor
  * @see https://developer.chrome.com/apps/bluetoothLowEnergy#type-Descriptor
  */
-chrome.bluetoothLowEnergy.Descriptor;
+chrome.bluetoothLowEnergy.Descriptor = function() {};
 
 /** @type {string} */
 chrome.bluetoothLowEnergy.Descriptor.prototype.uuid;
@@ -1403,17 +1528,17 @@ chrome.bluetoothLowEnergy.writeDescriptorValue =
 chrome.bluetoothLowEnergy.ServiceEvent = function() {};
 
 
-/** @param {function(!chrome.bluetoothLowEnergy.ServiceEvent): void} callback */
+/** @param {function(!chrome.bluetoothLowEnergy.Service): void} callback */
 chrome.bluetoothLowEnergy.ServiceEvent.prototype.addListener =
     function(callback) {};
 
 
-/** @param {function(!chrome.bluetoothLowEnergy.ServiceEvent): void} callback */
+/** @param {function(!chrome.bluetoothLowEnergy.Service): void} callback */
 chrome.bluetoothLowEnergy.ServiceEvent.prototype.removeListener =
     function(callback) {};
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.ServiceEvent): void} callback
+ * @param {function(!chrome.bluetoothLowEnergy.Service): void} callback
  * @return {boolean}
  */
 chrome.bluetoothLowEnergy.ServiceEvent.prototype.hasListener =
@@ -1453,7 +1578,7 @@ chrome.bluetoothLowEnergy.CharacteristicEvent = function() {};
 
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.CharacteristicEvent): void}
+ * @param {function(!chrome.bluetoothLowEnergy.Characteristic): void}
  *     callback
  */
 chrome.bluetoothLowEnergy.CharacteristicEvent.prototype.addListener =
@@ -1461,7 +1586,7 @@ chrome.bluetoothLowEnergy.CharacteristicEvent.prototype.addListener =
 
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.CharacteristicEvent): void}
+ * @param {function(!chrome.bluetoothLowEnergy.Characteristic): void}
  *     callback
  */
 chrome.bluetoothLowEnergy.CharacteristicEvent.prototype.removeListener =
@@ -1469,7 +1594,7 @@ chrome.bluetoothLowEnergy.CharacteristicEvent.prototype.removeListener =
 
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.CharacteristicEvent): void}
+ * @param {function(!chrome.bluetoothLowEnergy.Characteristic): void}
  *     callback
  * @return {boolean}
  */
@@ -1497,7 +1622,7 @@ chrome.bluetoothLowEnergy.DescriptorEvent = function() {};
 
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.DescriptorEvent): void}
+ * @param {function(!chrome.bluetoothLowEnergy.Descriptor): void}
  *     callback
  */
 chrome.bluetoothLowEnergy.DescriptorEvent.prototype.addListener =
@@ -1505,7 +1630,7 @@ chrome.bluetoothLowEnergy.DescriptorEvent.prototype.addListener =
 
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.DescriptorEvent): void}
+ * @param {function(!chrome.bluetoothLowEnergy.Descriptor): void}
  *     callback
  */
 chrome.bluetoothLowEnergy.DescriptorEvent.prototype.removeListener =
@@ -1513,7 +1638,7 @@ chrome.bluetoothLowEnergy.DescriptorEvent.prototype.removeListener =
 
 
 /**
- * @param {function(!chrome.bluetoothLowEnergy.DescriptorEvent): void} callback
+ * @param {function(!chrome.bluetoothLowEnergy.Descriptor): void} callback
  * @return {boolean}
  */
 chrome.bluetoothLowEnergy.DescriptorEvent.prototype.hasListener =
@@ -2488,6 +2613,38 @@ chrome.tabs.onReplaced;
  * @deprecated Please use tabs.onActivated.
  */
 chrome.tabs.onSelectionChanged;
+
+
+/**
+ * @see https://developer.chrome.com/extensions/topSites
+ * @const
+ */
+chrome.topSites = {};
+
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/extensions/topSites#type-MostVisitedURL
+ */
+chrome.topSites.MostVisitedURL = function() {};
+
+
+/** @type {string} */
+chrome.topSites.MostVisitedURL.prototype.url;
+
+
+/** @type {string} */
+chrome.topSites.MostVisitedURL.prototype.title;
+
+
+/**
+ * Gets a list of top sites.
+ * @param {function(!Array<!chrome.topSites.MostVisitedURL>)} callback Invoked
+ *     with a list of most visited URLs.
+ * @see https://developer.chrome.com/extensions/topSites#method-get
+ */
+chrome.topSites.get = function(callback) {};
 
 
 /**
@@ -6875,7 +7032,7 @@ chrome.fileSystem.retainEntry = function(entry) {};
 /**
  * @param {!chrome.fileSystem.RequestFileSystemOptions} options Options for the
  *     request.
- * @param {!function(FileSystem)} callback A completion callback.
+ * @param {function(!FileSystem=)} callback A completion callback.
  * @see http://developer.chrome.com/apps/fileSystem.html#method-requestFileSystem
  */
 chrome.fileSystem.requestFileSystem = function(options, callback) {};
@@ -7057,16 +7214,20 @@ chrome.alarms.getAll = function(callback) {};
 /**
  * Clears the alarm with the given name.
  * @param {string=} opt_name
+ * @param {function(boolean)=} opt_callback A callback that will be called with
+ *     a boolean for whether the alarm was cleared.
  * @see http://developer.chrome.com/extensions/alarms.html#method-clear
  */
-chrome.alarms.clear = function(opt_name) {};
+chrome.alarms.clear = function(opt_name, opt_callback) {};
 
 
 /**
  * Clears all alarms.
+ * @param {function(boolean)=} opt_callback A callback that will be called with
+ *     a boolean for whether the alarms were cleared.
  * @see http://developer.chrome.com/extensions/alarms.html#method-clearAll
  */
-chrome.alarms.clearAll = function() {};
+chrome.alarms.clearAll = function(opt_callback) {};
 
 
 /**
@@ -8383,11 +8544,11 @@ chrome.networkingPrivate.startDisconnect = function(guid, opt_callback) {};
 
 /**
  * @param {string} guid
- * @param {string} opt_carrier
+ * @param {(string|function())=} opt_carrierOrCallback
  * @param {function()=} opt_callback
  */
 chrome.networkingPrivate.startActivate =
-  function(guid, opt_carrier, opt_callback) {};
+  function(guid, opt_carrierOrCallback, opt_callback) {};
 
 
 /**
@@ -8576,6 +8737,7 @@ chrome.gcdPrivate.prefetchWifiPassword = function(ssid, callback) {};
 
 /**
  * Establish the session.
+ * TODO(user): Deprecated. Remove after app updated to use createSession.
  * @param {string} ipAddress
  * @param {number} port
  * @param {function(number, string, !Array.<string>): void}
@@ -8585,6 +8747,18 @@ chrome.gcdPrivate.prefetchWifiPassword = function(ssid, callback) {};
  *     |pairingTypes|, is a list of pairing types supported by this device.
  */
 chrome.gcdPrivate.establishSession = function(ipAddress, port, callback) {};
+
+
+/**
+ * Create new pairing session.
+ * @param {string} serviceName The mDNS service name of the device.
+ * @param {function(number, string, !Array.<string>): void}
+ *     callback Called when the session is established or on error. 1st param,
+ *     |sessionId|, is the session ID (identifies the session for future calls).
+ *     2nd param, |status|, is the status (success or type of error). 3rd param,
+ *     |pairingTypes|, is a list of pairing types supported by this device.
+ */
+chrome.gcdPrivate.createSession = function(serviceName, callback) {};
 
 
 /**
