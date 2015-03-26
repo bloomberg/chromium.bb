@@ -287,6 +287,11 @@ class CompatIdFetcher(object):
     # pylint: disable=method-hidden
     logging.info('Fetching CompatId objects...')
     with parallel.Manager() as manager:
+      # Fetching the first key updates the cache, so do that first before
+      # launching a bunch of parallel jobs. This is needed because Portage
+      # cache updates aren't parallel-safe. See http://crbug.com/470998
       self.compat_ids = manager.dict()
-      parallel.RunTasksInProcessPool(self._FetchCompatId, board_keys)
+      if board_keys:
+        self._FetchCompatId(*board_keys[0])
+      parallel.RunTasksInProcessPool(self._FetchCompatId, board_keys[1:])
       return dict(self.compat_ids)
