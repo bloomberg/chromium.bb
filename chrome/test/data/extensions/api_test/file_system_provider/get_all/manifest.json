@@ -10,8 +10,7 @@
     {
       "fileSystem": ["requestFileSystem", "write"]
     },
-    "fileManagerPrivate",
-    "fileBrowserHandler"
+    "fileManagerPrivate"
   ],
   "app": {
     "background": {

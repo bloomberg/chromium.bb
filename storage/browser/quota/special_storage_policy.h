@@ -52,10 +52,6 @@ class STORAGE_EXPORT SpecialStoragePolicy
   // disk capacity.
   virtual bool CanQueryDiskSize(const GURL& origin) = 0;
 
-  // Checks if extension identified with |extension_id| is registered as
-  // file handler.
-  virtual bool IsFileHandler(const std::string& extension_id) = 0;
-
   // Checks if the origin contains per-site isolated storage.
   virtual bool HasIsolatedStorage(const GURL& origin) = 0;
 

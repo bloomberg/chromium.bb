@@ -2346,7 +2346,6 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       new drive::FileSystemBackendDelegate,
       new chromeos::file_system_provider::BackendDelegate,
       new chromeos::MTPFileSystemBackendDelegate(storage_partition_path),
-      browser_context->GetSpecialStoragePolicy(),
       external_mount_points,
       storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();

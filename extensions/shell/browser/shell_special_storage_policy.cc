@@ -32,10 +32,6 @@ bool ShellSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return false;
 }
 
-bool ShellSpecialStoragePolicy::IsFileHandler(const std::string& extension_id) {
-  return true;
-}
-
 bool ShellSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
   return false;
 }

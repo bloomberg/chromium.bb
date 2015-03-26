@@ -31,7 +31,6 @@
      "declarativeWebRequest",
      "downloads",
      "experimental",
-     "fileBrowserHandler",
      "fileManagerPrivate",
      "fileSystem",
      "fileSystem.write",

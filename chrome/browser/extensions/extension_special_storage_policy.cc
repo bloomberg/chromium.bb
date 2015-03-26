@@ -129,12 +129,6 @@ bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return false;
 }
 
-bool ExtensionSpecialStoragePolicy::IsFileHandler(
-    const std::string& extension_id) {
-  base::AutoLock locker(lock_);
-  return file_handler_extensions_.ContainsExtension(extension_id);
-}
-
 bool ExtensionSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
   base::AutoLock locker(lock_);
   return isolated_extensions_.Contains(origin);

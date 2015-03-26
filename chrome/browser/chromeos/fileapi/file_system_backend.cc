@@ -39,11 +39,9 @@ FileSystemBackend::FileSystemBackend(
     FileSystemBackendDelegate* drive_delegate,
     FileSystemBackendDelegate* file_system_provider_delegate,
     FileSystemBackendDelegate* mtp_delegate,
-    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::ExternalMountPoints> mount_points,
     storage::ExternalMountPoints* system_mount_points)
-    : special_storage_policy_(special_storage_policy),
-      file_access_permissions_(new FileAccessPermissions()),
+    : file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(storage::AsyncFileUtil::CreateForLocalFileSystem()),
       drive_delegate_(drive_delegate),
       file_system_provider_delegate_(file_system_provider_delegate),
@@ -185,25 +183,12 @@ bool FileSystemBackend::IsAccessAllowed(
     return true;
   }
 
-  // Check first to make sure this extension has fileBrowserHander permissions.
-  if (!special_storage_policy_.get() ||
-      !special_storage_policy_->IsFileHandler(extension_id))
-    return false;
-
   return file_access_permissions_->HasAccessPermission(extension_id,
                                                        url.virtual_path());
 }
 
 void FileSystemBackend::GrantFileAccessToExtension(
     const std::string& extension_id, const base::FilePath& virtual_path) {
-  if (!special_storage_policy_.get())
-    return;
-  // All we care about here is access from extensions for now.
-  if (!special_storage_policy_->IsFileHandler(extension_id)) {
-    NOTREACHED();
-    return;
-  }
-
   std::string id;
   storage::FileSystemType type;
   std::string cracked_id;

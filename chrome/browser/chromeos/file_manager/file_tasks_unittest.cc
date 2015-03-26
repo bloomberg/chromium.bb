@@ -572,36 +572,41 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
   // Foo.app can handle ".txt" and ".html".
   // This one is an extension, and has "file_browser_handlers"
   extensions::ExtensionBuilder foo_app;
-  foo_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Foo")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("file_browser_handlers",
-                           extensions::ListBuilder()
-                           .Append(extensions::DictionaryBuilder()
-                                   .Set("id", "open")
-                                   .Set("default_title", "open")
-                                   .Set("file_filters",
-                                        extensions::ListBuilder()
-                                        .Append("filesystem:*.txt")
-                                        .Append("filesystem:*.html")))));
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("permissions",
+               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set(
+              "file_browser_handlers",
+              extensions::ListBuilder().Append(
+                  extensions::DictionaryBuilder()
+                      .Set("id", "open")
+                      .Set("default_title", "open")
+                      .Set("file_filters", extensions::ListBuilder()
+                                               .Append("filesystem:*.txt")
+                                               .Append("filesystem:*.html")))));
   foo_app.SetID(kFooId);
   extension_service_->AddExtension(foo_app.Build().get());
 
   // Bar.app can only handle ".txt".
   extensions::ExtensionBuilder bar_app;
-  bar_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Bar")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("file_browser_handlers",
-                           extensions::ListBuilder()
-                           .Append(extensions::DictionaryBuilder()
-                                   .Set("id", "open")
-                                   .Set("default_title", "open")
-                                   .Set("file_filters",
-                                        extensions::ListBuilder()
-                                        .Append("filesystem:*.txt")))));
+  bar_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Bar")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("permissions",
+               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("file_browser_handlers",
+               extensions::ListBuilder().Append(
+                   extensions::DictionaryBuilder()
+                       .Set("id", "open")
+                       .Set("default_title", "open")
+                       .Set("file_filters", extensions::ListBuilder().Append(
+                                                "filesystem:*.txt")))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -614,14 +619,15 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
           .Set("name", "Ephemeral")
           .Set("version", "1.0.0")
           .Set("manifest_version", 2)
+          .Set("permissions",
+               extensions::ListBuilder().Append("fileBrowserHandler"))
           .Set("file_browser_handlers",
                extensions::ListBuilder().Append(
                    extensions::DictionaryBuilder()
                        .Set("id", "open")
                        .Set("default_title", "open")
-                       .Set("file_filters",
-                            extensions::ListBuilder().Append(
-                                "filesystem:*.txt")))));
+                       .Set("file_filters", extensions::ListBuilder().Append(
+                                                "filesystem:*.txt")))));
   ephemeral_app.SetID(kEphemeralId);
   scoped_refptr<extensions::Extension> built_ephemeral_app(
       ephemeral_app.Build());
@@ -704,18 +710,20 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   // Bar.app can only handle ".txt".
   // This is an extension (file browser handler).
   extensions::ExtensionBuilder bar_app;
-  bar_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Bar")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("file_browser_handlers",
-                           extensions::ListBuilder()
-                           .Append(extensions::DictionaryBuilder()
-                                   .Set("id", "open")
-                                   .Set("default_title", "open")
-                                   .Set("file_filters",
-                                        extensions::ListBuilder()
-                                        .Append("filesystem:*.txt")))));
+  bar_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Bar")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("permissions",
+               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("file_browser_handlers",
+               extensions::ListBuilder().Append(
+                   extensions::DictionaryBuilder()
+                       .Set("id", "open")
+                       .Set("default_title", "open")
+                       .Set("file_filters", extensions::ListBuilder().Append(
+                                                "filesystem:*.txt")))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -793,18 +801,20 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   // Bar.app can handle ".gdoc" files.
   // This is an extension (file browser handler).
   extensions::ExtensionBuilder bar_app;
-  bar_app.SetManifest(extensions::DictionaryBuilder()
-                      .Set("name", "Bar")
-                      .Set("version", "1.0.0")
-                      .Set("manifest_version", 2)
-                      .Set("file_browser_handlers",
-                           extensions::ListBuilder()
-                           .Append(extensions::DictionaryBuilder()
-                                   .Set("id", "open")
-                                   .Set("default_title", "open")
-                                   .Set("file_filters",
-                                        extensions::ListBuilder()
-                                        .Append("filesystem:*.gdoc")))));
+  bar_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Bar")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("permissions",
+               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("file_browser_handlers",
+               extensions::ListBuilder().Append(
+                   extensions::DictionaryBuilder()
+                       .Set("id", "open")
+                       .Set("default_title", "open")
+                       .Set("file_filters", extensions::ListBuilder().Append(
+                                                "filesystem:*.gdoc")))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
 
@@ -812,18 +822,20 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   // The ID "kFileManagerAppId" used here is precisely the one that identifies
   // the Chrome OS Files.app application.
   extensions::ExtensionBuilder files_app;
-  files_app.SetManifest(extensions::DictionaryBuilder()
-                       .Set("name", "Files")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2)
-                       .Set("file_browser_handlers",
-                            extensions::ListBuilder()
-                            .Append(extensions::DictionaryBuilder()
-                                    .Set("id", "open")
-                                    .Set("default_title", "open")
-                                    .Set("file_filters",
-                                         extensions::ListBuilder()
-                                         .Append("filesystem:*.gdoc")))));
+  files_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Files")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("permissions",
+               extensions::ListBuilder().Append("fileBrowserHandler"))
+          .Set("file_browser_handlers",
+               extensions::ListBuilder().Append(
+                   extensions::DictionaryBuilder()
+                       .Set("id", "open")
+                       .Set("default_title", "open")
+                       .Set("file_filters", extensions::ListBuilder().Append(
+                                                "filesystem:*.gdoc")))));
   files_app.SetID(kFileManagerAppId);
   extension_service_->AddExtension(files_app.Build().get());
 

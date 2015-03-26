@@ -36,7 +36,6 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
   bool CanQueryDiskSize(const GURL& origin) override;
-  bool IsFileHandler(const std::string& extension_id) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
 

@@ -13,6 +13,8 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/url_pattern.h"
 #include "url/url_constants.h"
 
@@ -115,11 +117,12 @@ bool FileBrowserHandler::HasCreateAccessPermission() const {
 // static
 FileBrowserHandler::List*
 FileBrowserHandler::GetHandlers(const extensions::Extension* extension) {
-  FileBrowserHandlerInfo* info = static_cast<FileBrowserHandlerInfo*>(
+  FileBrowserHandlerInfo* const info = static_cast<FileBrowserHandlerInfo*>(
       extension->GetManifestData(keys::kFileBrowserHandlers));
-  if (info)
-    return &info->file_browser_handlers;
-  return NULL;
+  if (!info)
+    return nullptr;
+
+  return &info->file_browser_handlers;
 }
 
 FileBrowserHandlerParser::FileBrowserHandlerParser() {
@@ -268,12 +271,19 @@ bool LoadFileBrowserHandlers(
 
 bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
                                      base::string16* error) {
+  // If the permission is missing, then skip parsing the list of handlers.
+  if (!extensions::PermissionsParser::HasAPIPermission(
+          extension, extensions::APIPermission::ID::kFileBrowserHandler)) {
+    return true;
+  }
+
   const base::ListValue* file_browser_handlers_value = NULL;
   if (!extension->manifest()->GetList(keys::kFileBrowserHandlers,
                                       &file_browser_handlers_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
     return false;
   }
+
   scoped_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);
   if (!LoadFileBrowserHandlers(extension->id(),
                                file_browser_handlers_value,

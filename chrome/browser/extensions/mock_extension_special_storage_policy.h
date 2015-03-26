@@ -23,7 +23,6 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
   bool CanQueryDiskSize(const GURL& origin) override;
-  bool IsFileHandler(const std::string& extension_id) override;
   bool HasSessionOnlyOrigins() override;
 
   void AddProtected(const GURL& origin) {

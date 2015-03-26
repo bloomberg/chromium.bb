@@ -19,7 +19,6 @@
   "permissions": [
     "commandLinePrivate",
     "fileSystem",
-    "fileBrowserHandler",
     "fileManagerPrivate",
     {
       "fileSystem": ["requestFileSystem", "write"]

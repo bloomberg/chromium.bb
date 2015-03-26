@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
-#include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 namespace storage {
@@ -74,7 +73,6 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       FileSystemBackendDelegate* drive_delegate,
       FileSystemBackendDelegate* file_system_provider_delegate,
       FileSystemBackendDelegate* mtp_delegate,
-      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<storage::ExternalMountPoints> mount_points,
       storage::ExternalMountPoints* system_mount_points);
   ~FileSystemBackend() override;
@@ -142,7 +140,6 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       const base::FilePath& entry_path) const override;
 
  private:
-  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
   scoped_ptr<storage::AsyncFileUtil> local_file_util_;
 

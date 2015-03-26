@@ -50,19 +50,12 @@ class PlatformUtilTestContentBrowserClient
       ScopedVector<storage::FileSystemBackend>* additional_backends) override {
     storage::ExternalMountPoints* external_mount_points =
         content::BrowserContext::GetMountPoints(browser_context);
-    scoped_refptr<content::MockSpecialStoragePolicy> special_storage_policy =
-        new content::MockSpecialStoragePolicy();
 
     // New FileSystemBackend that uses our MockSpecialStoragePolicy.
     chromeos::FileSystemBackend* backend = new chromeos::FileSystemBackend(
-        nullptr, nullptr, nullptr, special_storage_policy,
-        external_mount_points,
+        nullptr, nullptr, nullptr, external_mount_points,
         storage::ExternalMountPoints::GetSystemInstance());
     additional_backends->push_back(backend);
-
-    // The only change we need to make is to add kFileManagerAppId as a file
-    // handler.
-    special_storage_policy->AddFileHandler(file_manager::kFileManagerAppId);
   }
 };
 

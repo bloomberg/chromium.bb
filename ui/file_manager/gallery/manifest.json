@@ -21,7 +21,6 @@
     "chrome://extension-icon/",
     "chrome://resources/",
     "chrome://theme/",
-    "fileBrowserHandler",
     "fileManagerPrivate",
     {
       "fileSystem": ["requestFileSystem", "write"]

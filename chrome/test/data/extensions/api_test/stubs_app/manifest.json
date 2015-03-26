@@ -15,7 +15,6 @@
     "clipboardWrite",
     "contextMenus",
     "desktopCapture",
-    "fileBrowserHandler",
     "fileSystem",
     "gcm",
     "geolocation",

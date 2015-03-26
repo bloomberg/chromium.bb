@@ -7,7 +7,6 @@
   "incognito" : "split",
   "manifest_version": 2,
   "permissions": [
-    "fileBrowserHandler",
     {
       "fileSystem": ["requestFileSystem"]
     },

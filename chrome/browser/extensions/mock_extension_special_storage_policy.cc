@@ -24,11 +24,6 @@ bool MockExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
   return false;
 }
 
-bool MockExtensionSpecialStoragePolicy::IsFileHandler(
-    const std::string& extension_id) {
-  return false;
-}
-
 bool MockExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return false;
 }

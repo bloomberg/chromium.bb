@@ -7,12 +7,11 @@
   "file_browser_handlers": [
     {
       "id" : "ID",
-      "default_title" : "Default title",
+      "default_title" : "Test",
       "default_icon" : "icon.png",
       "file_filters" : [
-        "filesystem:*.txt"
-      ],
-      "file_access": [ "read", "read@write" ]
+        "filesystem:*.html"
+      ]
     }
   ]
 }

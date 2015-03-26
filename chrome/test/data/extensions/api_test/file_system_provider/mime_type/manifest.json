@@ -11,8 +11,7 @@
     {
       "fileSystem": ["requestFileSystem", "write"]
     },
-    "fileManagerPrivate",
-    "fileBrowserHandler"
+    "fileManagerPrivate"
   ],
   "file_handlers": {
     "magic_handler": {

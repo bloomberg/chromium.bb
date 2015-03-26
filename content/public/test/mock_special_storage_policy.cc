@@ -30,10 +30,6 @@ bool MockSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
   return ContainsKey(can_query_disk_size_, origin);
 }
 
-bool MockSpecialStoragePolicy::IsFileHandler(const std::string& extension_id) {
-  return ContainsKey(file_handlers_, extension_id);
-}
-
 bool MockSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
   return ContainsKey(isolated_, origin);
 }
