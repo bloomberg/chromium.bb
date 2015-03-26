@@ -438,6 +438,7 @@ void CompositorImpl::CreateLayerTreeHost() {
 }
 
 void CompositorImpl::SetVisible(bool visible) {
+  TRACE_EVENT1("cc", "CompositorImpl::SetVisible", "visible", visible);
   if (!visible) {
     DCHECK(host_);
     // Look for any layers that were attached to the root for readback

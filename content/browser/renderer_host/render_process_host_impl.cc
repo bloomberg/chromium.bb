@@ -2223,6 +2223,8 @@ void RenderProcessHostImpl::OnDumpHandlesDone() {
 }
 
 void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
+  TRACE_EVENT1("renderer_host", "RenderProcessHostImpl::SetBackgrounded",
+               "backgrounded", backgrounded);
   // Note: we always set the backgrounded_ value.  If the process is NULL
   // (and hence hasn't been created yet), we will set the process priority
   // later when we create the process.
