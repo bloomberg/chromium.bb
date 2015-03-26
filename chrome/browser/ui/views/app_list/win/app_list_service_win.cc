@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
@@ -343,6 +344,12 @@ void AppListServiceWin::ScheduleWarmup() {
     case chrome::VersionInfo::CHANNEL_DEV:
     case chrome::VersionInfo::CHANNEL_BETA:
     case chrome::VersionInfo::CHANNEL_STABLE:
+      // Except on Canary, don't bother scheduling an app launcher warmup when
+      // it's not already enabled. Always schedule on Canary while collecting
+      // profiler data (see comment above).
+      if (!IsAppLauncherEnabled())
+        return;
+
       // Profiler instrumentations are not enabled.
       break;
   }
