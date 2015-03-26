@@ -626,11 +626,7 @@ void RenderThreadImpl::Init() {
   } else if (command_line.HasSwitch(switches::kEnableDistanceFieldText)) {
     is_distance_field_text_enabled_ = true;
   } else {
-#if defined(OS_ANDROID)
-    is_distance_field_text_enabled_ = true;
-#else
     is_distance_field_text_enabled_ = false;
-#endif
   }
 
   // Note that under Linux, the media library will normally already have
