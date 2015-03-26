@@ -110,15 +110,6 @@ static bool MaybePrintResultsForVideoSend(
   perf_test::PrintResult("video_resolution", modifier, "goog_frame_height_sent",
                          value, "pixels", false);
 
-  EXPECT_TRUE(pc_dict.GetString(
-      Statistic("googCaptureJitterMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_tx", modifier, "goog_capture_jitter_ms", value, "ms", false);
-  EXPECT_TRUE(pc_dict.GetString(
-      Statistic("googCaptureQueueDelayMsPerS", ssrc), &value));
-  perf_test::PrintResult(
-      "video_tx", modifier, "goog_capture_queue_delay_ms_per_s",
-       value, "ms/s", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googAvgEncodeMs", ssrc), &value));
   perf_test::PrintResult(
       "video_tx", modifier, "goog_avg_encode_ms", value, "ms", false);
