@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<title>Fullscreen UA style sheet cannot be overriden by author style for iframes</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../trusted-event.js"></script>
+<style>
+iframe {
+    border: 10px solid red !important;
+    padding: 10px !important;
+}
+</style>
+<div id="log"></div>
+<iframe></iframe>
+<script>
+async_test(function()
+{
+    var iframe = document.querySelector("iframe");
+
+    // Initial style is from inline stylesheet.
+    var style = getComputedStyle(iframe);
+    assert_equals(style.border, "10px solid rgb(255, 0, 0)");
+    assert_equals(style.padding, "10px");
+
+    document.addEventListener("fullscreenchange", this.step_func_done(function()
+    {
+        // The Fullscreen UA style sheet removes border and padding.
+        var style = getComputedStyle(iframe);
+        assert_equals(style.border, "0px none rgb(0, 0, 0)");
+        assert_equals(style.padding, "0px");
+    }));
+
+    trusted_request(iframe);
+});
+</script>
