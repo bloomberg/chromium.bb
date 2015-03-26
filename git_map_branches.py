@@ -35,6 +35,7 @@ from third_party.colorama import Fore, Style
 
 from git_common import current_branch, upstream, tags, get_branches_info
 from git_common import get_git_version, MIN_UPSTREAM_TRACK_GIT_VERSION, hash_one
+from git_common import run
 
 DEFAULT_SEPARATOR = ' ' * 4
 
@@ -110,6 +111,7 @@ class BranchMapper(object):
   def __init__(self):
     self.verbosity = 0
     self.maxjobs = 0
+    self.show_subject = False
     self.output = OutputManager()
     self.__gone_branches = set()
     self.__branches_info = None
@@ -258,6 +260,10 @@ class BranchMapper(object):
       (url, color) = self.__status_info[branch]
       line.append(url or none_text, color=color)
 
+    # The subject of the most recent commit on the branch.
+    if self.show_subject:
+      line.append(run('log', '-n1', '--format=%s', branch))
+
     self.output.append(line)
 
     for child in sorted(self.__parent_map.pop(branch, ())):
@@ -282,6 +288,8 @@ def main(argv):
   parser.add_argument(
       '-j', '--maxjobs', action='store', type=int,
       help='The number of jobs to use when retrieving review status')
+  parser.add_argument('--show-subject', action='store_true',
+                      dest='show_subject', help='Show the commit subject.')
 
   opts = parser.parse_args(argv)
 
@@ -289,6 +297,7 @@ def main(argv):
   mapper.verbosity = opts.v
   mapper.output.nocolor = opts.nocolor
   mapper.maxjobs = opts.maxjobs
+  mapper.show_subject = opts.show_subject
   mapper.start()
   print mapper.output.as_formatted_string()
   return 0
