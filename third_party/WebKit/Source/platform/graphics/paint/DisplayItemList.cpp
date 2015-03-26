@@ -67,9 +67,7 @@ void DisplayItemList::beginScope(DisplayItemClient client)
     } else {
         scopeId = ++it->value;
     }
-    // We treat a scope as invalid if the containing scope is invalid.
-    bool scopeCacheIsValid = (m_scopeStack.isEmpty() || m_scopeStack.last().cacheIsValid) && clientCacheIsValid(client);
-    m_scopeStack.append(Scope(client, scopeId, scopeCacheIsValid));
+    m_scopeStack.append(Scope(client, scopeId));
 }
 
 void DisplayItemList::endScope(DisplayItemClient client)
@@ -96,9 +94,7 @@ void DisplayItemList::invalidateAll()
 
 bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
 {
-    return m_cachedDisplayItemIndicesByClient.contains(client)
-        // If the scope is invalid, the client is treated invalid even if it's not invalidated explicitly.
-        && (m_scopeStack.isEmpty() || m_scopeStack.last().cacheIsValid);
+    return m_cachedDisplayItemIndicesByClient.contains(client);
 }
 
 size_t DisplayItemList::findMatchingItem(const DisplayItem& displayItem, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const PaintList& list)
@@ -193,9 +189,8 @@ void DisplayItemList::updatePaintList()
         } else {
             if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
                 checkCachedDisplayItemIsUnchangedFromPreviousPaintList(*newDisplayItem);
-            // FIXME: Enable this assert after we resolve the scope invalidation issue.
-            // else
-            //    ASSERT(!newDisplayItem->isDrawing() || !clientCacheIsValid(newDisplayItem->client()));
+            else
+                ASSERT(!newDisplayItem->isDrawing() || !clientCacheIsValid(newDisplayItem->client()));
 
             appendDisplayItem(updatedList, newCachedDisplayItemIndicesByClient, newDisplayItem.release());
         }

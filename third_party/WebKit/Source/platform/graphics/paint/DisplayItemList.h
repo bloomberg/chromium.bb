@@ -82,10 +82,9 @@ private:
     // clients between frames, so that we can use the id to match new display items to cached
     // display items.
     struct Scope {
-        Scope(DisplayItemClient c, int i, bool v) : client(c), id(i), cacheIsValid(v) { }
+        Scope(DisplayItemClient c, int i) : client(c), id(i) { }
         DisplayItemClient client;
         int id;
-        bool cacheIsValid;
     };
     typedef HashMap<DisplayItemClient, int> ClientScopeIdMap;
     ClientScopeIdMap m_clientScopeIdMap;
