@@ -516,15 +516,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
     media::InitializeCPUSpecificMediaFeatures();
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMan");
-    audio_manager_.reset(media::AudioManager::Create(
-        MediaInternals::GetInstance()));
-  }
-  {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MidiManager");
-    midi_manager_.reset(media::MidiManager::Create());
-  }
-  {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:ContentWebUIController");
     WebUIControllerFactory::RegisterFactory(
@@ -1084,6 +1075,17 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = false;
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
 #endif
+
+  {
+    TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:AudioMan");
+    audio_manager_.reset(media::AudioManager::CreateWithHangTimer(
+        MediaInternals::GetInstance(), io_thread_->task_runner()));
+  }
+
+  {
+    TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:MidiManager");
+    midi_manager_.reset(media::MidiManager::Create());
+  }
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
   device_monitor_linux_.reset(new DeviceMonitorLinux());

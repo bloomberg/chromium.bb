@@ -9,12 +9,66 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "media/audio/fake_audio_log_factory.h"
 
 namespace media {
 namespace {
 AudioManager* g_last_created = NULL;
-static base::LazyInstance<FakeAudioLogFactory>::Leaky g_fake_log_factory =
+
+// Helper class for managing global AudioManager data and hang timers. If the
+// audio thread is unresponsive for more than a minute we want to crash the
+// process so we can catch offenders quickly in the field.
+class AudioManagerHelper {
+ public:
+  AudioManagerHelper() : max_hung_task_time_(base::TimeDelta::FromMinutes(1)) {}
+  ~AudioManagerHelper() {}
+
+  void StartHangTimer(
+      const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner) {
+    CHECK(!monitor_task_runner_);
+    monitor_task_runner_ = monitor_task_runner;
+    UpdateLastAudioThreadTimeTick();
+    CrashOnAudioThreadHang();
+  }
+
+  // Runs on |monitor_task_runner| typically, but may be started on any thread.
+  void CrashOnAudioThreadHang() {
+    base::AutoLock lock(hang_lock_);
+    CHECK(base::TimeTicks::Now() - last_audio_thread_timer_tick_ <=
+          max_hung_task_time_);
+    monitor_task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&AudioManagerHelper::CrashOnAudioThreadHang,
+                              base::Unretained(this)),
+        max_hung_task_time_);
+  }
+
+  // Runs on the audio thread typically, but may be started on any thread.
+  void UpdateLastAudioThreadTimeTick() {
+    base::AutoLock lock(hang_lock_);
+    last_audio_thread_timer_tick_ = base::TimeTicks::Now();
+    g_last_created->GetTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&AudioManagerHelper::UpdateLastAudioThreadTimeTick,
+                   base::Unretained(this)),
+        max_hung_task_time_ / 2);
+  }
+
+  AudioLogFactory* fake_log_factory() { return &fake_log_factory_; }
+
+ private:
+  FakeAudioLogFactory fake_log_factory_;
+
+  const base::TimeDelta max_hung_task_time_;
+  scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner_;
+
+  base::Lock hang_lock_;
+  base::TimeTicks last_audio_thread_timer_tick_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioManagerHelper);
+};
+
+static base::LazyInstance<AudioManagerHelper>::Leaky g_helper =
     LAZY_INSTANCE_INITIALIZER;
 }
 
@@ -36,8 +90,21 @@ AudioManager* AudioManager::Create(AudioLogFactory* audio_log_factory) {
 }
 
 // static
+AudioManager* AudioManager::CreateWithHangTimer(
+    AudioLogFactory* audio_log_factory,
+    const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner) {
+  AudioManager* manager = Create(audio_log_factory);
+  // On OSX the audio thread is the UI thread, for which a hang monitor is not
+  // necessary.
+#if !defined(OS_MACOSX)
+  g_helper.Pointer()->StartHangTimer(monitor_task_runner);
+#endif
+  return manager;
+}
+
+// static
 AudioManager* AudioManager::CreateForTesting() {
-  return Create(g_fake_log_factory.Pointer());
+  return Create(g_helper.Pointer()->fake_log_factory());
 }
 
 // static
