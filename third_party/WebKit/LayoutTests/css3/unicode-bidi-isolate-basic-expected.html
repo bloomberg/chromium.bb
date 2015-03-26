@@ -34,7 +34,6 @@ var strongLTR = function() { return strongLTRs[seed++ % strongLTRs.length]; }
 var charClassExamples = [neutral, strongRTL, strongLTR];
 var possibleDirs = ['ltr', 'rtl'];
 
-var testStyle = "unicode-bidi: -webkit-isolate";
 var controlStyle = "display: inline-block";
 
 for (outerDirIndex in possibleDirs) {
@@ -61,7 +60,7 @@ for (outerDirIndex in possibleDirs) {
                         return outerDiv;
                     }
                     expected.appendChild(caseWithStyle(controlStyle));
-                    actual.appendChild(caseWithStyle(testStyle));
+                    actual.appendChild(caseWithStyle(controlStyle));
                 }
             }
         }
