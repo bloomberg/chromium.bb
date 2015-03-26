@@ -146,13 +146,19 @@ static bool IsSupportedContentType(
     return false;
   }
 
-  if (codec_vector.empty())
-    return true;
+  // Check that |container_mime_type| is supported by Chrome. This can only
+  // happen if the CDM declares support for a container that Chrome does not.
+  if (!net::IsSupportedMediaMimeType(container_lower)) {
+    NOTREACHED();
+    return false;
+  }
 
   // Check that |codecs| are supported by Chrome. This is done primarily to
   // validate extended codecs, but it also ensures that the CDM cannot support
   // codecs that Chrome does not (which could complicate the robustness
   // algorithm).
+  if (codec_vector.empty())
+    return true;
   codec_vector.clear();
   net::ParseCodecString(codecs, &codec_vector, false);
   return (net::IsSupportedStrictMediaMimeType(container_lower, codec_vector) ==
