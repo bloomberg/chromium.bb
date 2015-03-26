@@ -1134,7 +1134,10 @@ void QuicStreamFactory::ProcessGoingAwaySession(
     return;
 
   const QuicConnectionStats& stats = session->connection()->GetStats();
+  const AlternativeService alternative_service(QUIC,
+                                               server_id.host_port_pair());
   if (session->IsCryptoHandshakeConfirmed()) {
+    http_server_properties_->ConfirmAlternativeService(alternative_service);
     ServerNetworkStats network_stats;
     network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
@@ -1161,9 +1164,8 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // job also fails. So to avoid not using QUIC when we otherwise could, we mark
   // it as recently broken, which means that 0-RTT will be disabled but we'll
   // still race.
-  const HostPortPair& server = server_id.host_port_pair();
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
-      AlternativeService(QUIC, server.host(), server.port()));
+      alternative_service);
 }
 
 }  // namespace net

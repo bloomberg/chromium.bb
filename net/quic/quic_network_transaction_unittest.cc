@@ -527,6 +527,53 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
+TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kQuicAlternateProtocolHttpHeader),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "http", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
+
+  mock_quic_data.AddDelayedSocketDataToFactory(&socket_factory_, 1);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSessionWithNextProtos();
+
+  AlternativeService alternative_service(QUIC,
+                                         HostPortPair::FromURL(request_.url));
+  session_->http_server_properties()->MarkAlternativeServiceRecentlyBroken(
+      alternative_service);
+  EXPECT_TRUE(
+      session_->http_server_properties()->WasAlternativeServiceRecentlyBroken(
+          alternative_service));
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+
+  EXPECT_FALSE(
+      session_->http_server_properties()->WasAlternativeServiceRecentlyBroken(
+          alternative_service));
+}
+
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
