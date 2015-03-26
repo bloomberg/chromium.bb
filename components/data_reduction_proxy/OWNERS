@@ -2,6 +2,7 @@ bengr@chromium.org
 bolian@chromium.org
 marq@chromium.org
 sclittle@chromium.org
+jeremyim@chromium.org
 
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
