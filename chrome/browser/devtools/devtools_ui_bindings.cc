@@ -409,7 +409,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       android_bridge_(DevToolsAndroidBridge::Factory::GetForProfile(profile_)),
       web_contents_(web_contents),
       delegate_(new DefaultBindingsDelegate(web_contents_)),
-      device_count_updates_enabled_(false),
       devices_updates_enabled_(false),
       frontend_loaded_(false),
       weak_factory_(this) {
@@ -453,7 +452,6 @@ DevToolsUIBindings::~DevToolsUIBindings() {
     jobs_it->second->Stop();
   }
   indexing_jobs_.clear();
-  SetDeviceCountUpdatesEnabled(false);
   SetDevicesUpdatesEnabled(false);
 
   // Remove self from global list.
@@ -723,35 +721,6 @@ void DevToolsUIBindings::ZoomOut() {
 
 void DevToolsUIBindings::ResetZoom() {
   ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
-}
-
-static void InspectTarget(Profile* profile, DevToolsTargetImpl* target) {
-  if (target)
-    target->Inspect(profile);
-}
-
-void DevToolsUIBindings::OpenUrlOnRemoteDeviceAndInspect(
-    const std::string& browser_id,
-    const std::string& url) {
-  if (remote_targets_handler_) {
-    remote_targets_handler_->Open(browser_id, url,
-        base::Bind(&InspectTarget, profile_));
-  }
-}
-
-void DevToolsUIBindings::SetDeviceCountUpdatesEnabled(bool enabled) {
-  if (device_count_updates_enabled_ == enabled)
-    return;
-  DevToolsAndroidBridge* adb_bridge =
-      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
-  if (!adb_bridge)
-    return;
-
-  device_count_updates_enabled_ = enabled;
-  if (enabled)
-    adb_bridge->AddDeviceCountListener(this);
-  else
-    adb_bridge->RemoveDeviceCountListener(this);
 }
 
 void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {

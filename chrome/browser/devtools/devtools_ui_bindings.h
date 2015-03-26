@@ -130,9 +130,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void ZoomIn() override;
   void ZoomOut() override;
   void ResetZoom() override;
-  void OpenUrlOnRemoteDeviceAndInspect(const std::string& browser_id,
-                                       const std::string& url) override;
-  void SetDeviceCountUpdatesEnabled(bool enabled) override;
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void SendMessageToBrowser(const std::string& message) override;
   void RecordActionUMA(const std::string& name, int action) override;
@@ -207,7 +204,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
       IndexingJobsMap;
   IndexingJobsMap indexing_jobs_;
 
-  bool device_count_updates_enabled_;
   bool devices_updates_enabled_;
   bool frontend_loaded_;
   scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;

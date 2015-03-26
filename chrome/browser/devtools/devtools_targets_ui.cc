@@ -269,9 +269,7 @@ class AdbTargetsUIHandler
   AdbTargetsUIHandler(const Callback& callback, Profile* profile);
   ~AdbTargetsUIHandler() override;
 
-  void Open(const std::string& browser_id,
-            const std::string& url,
-            const DevToolsTargetsUIHandler::TargetCallback&) override;
+  void Open(const std::string& browser_id, const std::string& url) override;
 
   scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       const std::string& browser_id) override;
@@ -305,17 +303,11 @@ AdbTargetsUIHandler::~AdbTargetsUIHandler() {
   android_bridge_->RemoveDeviceListListener(this);
 }
 
-static void CallOnTarget(
-    const DevToolsTargetsUIHandler::TargetCallback& callback,
-    DevToolsAndroidBridge* bridge,
-    scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
-  callback.Run(bridge && page.get() ? bridge->CreatePageTarget(page) : nullptr);
+static void NoOp(scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
 }
 
-void AdbTargetsUIHandler::Open(
-    const std::string& browser_id,
-    const std::string& url,
-    const DevToolsTargetsUIHandler::TargetCallback& callback) {
+void AdbTargetsUIHandler::Open(const std::string& browser_id,
+                               const std::string& url) {
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
   if (it == remote_browsers_.end())
     return;
@@ -323,7 +315,7 @@ void AdbTargetsUIHandler::Open(
   android_bridge_->OpenRemotePage(
       it->second,
       url,
-      base::Bind(&CallOnTarget, callback, android_bridge_));
+      base::Bind(&NoOp));
 }
 
 scoped_refptr<content::DevToolsAgentHost>
@@ -440,9 +432,7 @@ DevToolsTargetImpl* DevToolsTargetsUIHandler::GetTarget(
 }
 
 void DevToolsTargetsUIHandler::Open(const std::string& browser_id,
-                                    const std::string& url,
-                                    const TargetCallback& callback) {
-  callback.Run(NULL);
+                                    const std::string& url) {
 }
 
 scoped_refptr<content::DevToolsAgentHost>

@@ -186,10 +186,6 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
   d->RegisterHandler("zoomIn", &Delegate::ZoomIn, delegate);
   d->RegisterHandler("zoomOut", &Delegate::ZoomOut, delegate);
   d->RegisterHandler("resetZoom", &Delegate::ResetZoom, delegate);
-  d->RegisterHandler("openUrlOnRemoteDeviceAndInspect",
-                     &Delegate::OpenUrlOnRemoteDeviceAndInspect, delegate);
-  d->RegisterHandler("setDeviceCountUpdatesEnabled",
-                     &Delegate::SetDeviceCountUpdatesEnabled, delegate);
   d->RegisterHandler("setDevicesUpdatesEnabled",
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
   d->RegisterHandler("sendMessageToBrowser",
