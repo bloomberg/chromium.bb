@@ -35,9 +35,13 @@ static_library("browser") {
     "affiliation_utils.h",
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
+    "export/csv_writer.cc",
+    "export/csv_writer.h",
     "facet_manager.cc",
     "facet_manager.h",
     "facet_manager_host.h",
+    "import/csv_reader.cc",
+    "import/csv_reader.h",
     "log_receiver.h",
     "log_router.cc",
     "log_router.h",
@@ -92,6 +96,7 @@ static_library("browser") {
     "//net",
     "//sql",
     "//third_party/protobuf:protobuf_lite",
+    "//third_party/re2",
     "//url",
   ]
 
