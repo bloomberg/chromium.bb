@@ -234,6 +234,17 @@ void GuestViewBase::InitWithWebContents(
     content::WebContents* guest_web_contents) {
   DCHECK(guest_web_contents);
 
+  // Create a ZoomController to allow the guest's contents to be zoomed.
+  // Do this before adding the GuestView as a WebContents Observer so that
+  // the GuestView and its derived classes can re-configure the ZoomController
+  // after the latter has handled WebContentsObserver events (observers are
+  // notified of events in the same order they are added as observers). For
+  // example, GuestViewBase may wish to put its guest into isolated zoom mode
+  // in DidNavigateMainFrame, but since ZoomController always resets to default
+  // zoom mode on this event, GuestViewBase would need to do so after
+  // ZoomController::DidNavigateMainFrame has completed.
+  ui_zoom::ZoomController::CreateForWebContents(guest_web_contents);
+
   // At this point, we have just created the guest WebContents, we need to add
   // an observer to the owner WebContents. This observer will be responsible
   // for destroying the guest WebContents if the owner goes away.
@@ -246,9 +257,6 @@ void GuestViewBase::InitWithWebContents(
       std::make_pair(guest_web_contents, this));
   GuestViewManager::FromBrowserContext(browser_context_)->
       AddGuest(guest_instance_id_, guest_web_contents);
-
-  // Create a ZoomController to allow the guest's contents to be zoomed.
-  ui_zoom::ZoomController::CreateForWebContents(guest_web_contents);
 
   // Populate the view instance ID if we have it on creation.
   create_params.GetInteger(guestview::kParameterInstanceId,
@@ -577,6 +585,13 @@ void GuestViewBase::WebContentsDestroyed() {
   delete this;
 }
 
+void GuestViewBase::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (attached())
+    SetGuestZoomLevelToMatchEmbedder();
+}
+
 void GuestViewBase::ActivateContents(WebContents* web_contents) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
@@ -826,6 +841,16 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   SetSize(set_size_params);
 }
 
+void GuestViewBase::SetGuestZoomLevelToMatchEmbedder() {
+  auto embedder_zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(owner_web_contents());
+  if (!embedder_zoom_controller)
+    return;
+
+  ui_zoom::ZoomController::FromWebContents(web_contents())
+      ->SetZoomLevel(embedder_zoom_controller->GetZoomLevel());
+}
+
 void GuestViewBase::StartTrackingEmbedderZoomLevel() {
   if (!ZoomPropagatesFromEmbedderToGuest())
     return;
@@ -837,9 +862,9 @@ void GuestViewBase::StartTrackingEmbedderZoomLevel() {
     return;
   // Listen to the embedder's zoom changes.
   embedder_zoom_controller->AddObserver(this);
+
   // Set the guest's initial zoom level to be equal to the embedder's.
-  ui_zoom::ZoomController::FromWebContents(web_contents())
-      ->SetZoomLevel(embedder_zoom_controller->GetZoomLevel());
+  SetGuestZoomLevelToMatchEmbedder();
 }
 
 void GuestViewBase::StopTrackingEmbedderZoomLevel() {

@@ -135,6 +135,9 @@ bool ZoomController::SetZoomLevelByClient(
   } else {
     if (!entry) {
       last_client_ = NULL;
+      // If we exit without triggering an update, we should clear event_data_,
+      // else we may later trigger a DCHECK(event_data_).
+      event_data_.reset();
       return false;
     }
     std::string host =

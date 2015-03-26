@@ -327,6 +327,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DidStopLoading() final;
   void RenderViewReady() final;
   void WebContentsDestroyed() final;
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
 
   // WebContentsDelegate implementation.
   void ActivateContents(content::WebContents* contents) final;
@@ -352,6 +355,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void UpdatePreferredSize(content::WebContents* web_contents,
                            const gfx::Size& pref_size) final;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
+
+  void SetGuestZoomLevelToMatchEmbedder();
 
  private:
   class OwnerContentsObserver;
