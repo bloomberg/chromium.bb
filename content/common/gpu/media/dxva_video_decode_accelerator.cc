@@ -940,9 +940,16 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     codec_ = media::kCodecH264;
   } else if (profile == media::VP8PROFILE_ANY ||
              profile == media::VP9PROFILE_ANY) {
+    int program_files_key = base::DIR_PROGRAM_FILES;
+    if (base::win::OSInfo::GetInstance()->wow64_status() ==
+        base::win::OSInfo::WOW64_ENABLED) {
+      program_files_key = base::DIR_PROGRAM_FILES6432;
+    }
+
     base::FilePath dll_path;
-    RETURN_ON_FAILURE(PathService::Get(base::DIR_PROGRAM_FILES6432, &dll_path),
-        "failed to get path for DIR_PROGRAM_FILES6432", false);
+    RETURN_ON_FAILURE(PathService::Get(program_files_key, &dll_path),
+        "failed to get path for Program Files", false);
+
     dll_path = dll_path.Append(kVPXDecoderDLLPath);
     if (profile == media::VP8PROFILE_ANY) {
       codec_ = media::kCodecVP8;
