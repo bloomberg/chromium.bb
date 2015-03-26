@@ -123,15 +123,57 @@ TEST_F(RealPanWalletClientTest, RetryFailure) {
   EXPECT_EQ("", real_pan_);
 }
 
-// TODO(estade): enable when https://codereview.chromium.org/1028313006/
-// lands.
-TEST_F(RealPanWalletClientTest, DISABLED_PermanentFailure) {
+TEST_F(RealPanWalletClientTest, PermanentFailure) {
   StartUnmasking();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK,
       "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
   EXPECT_EQ("", real_pan_);
+}
+
+TEST_F(RealPanWalletClientTest, MalformedResponse) {
+  StartUnmasking();
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+      "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ("", real_pan_);
+}
+
+TEST_F(RealPanWalletClientTest, ReauthNeeded) {
+  {
+    StartUnmasking();
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
+    // No response yet.
+    EXPECT_EQ(AutofillClient::SUCCESS, result_);
+    EXPECT_EQ("", real_pan_);
+
+    // Second HTTP_UNAUTHORIZED causes permanent failure.
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
+    EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+    EXPECT_EQ("", real_pan_);
+  }
+
+  result_ = AutofillClient::SUCCESS;
+  real_pan_.clear();
+
+  {
+    StartUnmasking();
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
+    // No response yet.
+    EXPECT_EQ(AutofillClient::SUCCESS, result_);
+    EXPECT_EQ("", real_pan_);
+
+    // HTTP_OK after first HTTP_UNAUTHORIZED results in success.
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
+    EXPECT_EQ(AutofillClient::SUCCESS, result_);
+    EXPECT_EQ("1234", real_pan_);
+  }
 }
 
 TEST_F(RealPanWalletClientTest, NetworkError) {
