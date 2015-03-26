@@ -698,6 +698,7 @@ const char kPPPoEUsernameProperty[] = "PPPoE.Username";
 const char kPPPoEPasswordProperty[] = "PPPoE.Password";
 const char kPPPoELCPEchoIntervalProperty[] = "PPPoE.LCPEchoInterval";
 const char kPPPoELCPEchoFailureProperty[] = "PPPoE.LCPEchoFailure";
+const char kPPPoEMaxAuthFailureProperty[] = "PPPoE.MaxAuthFailure";
 
 // FlimFlam technology family options
 const char kTechnologyFamilyCdma[] = "CDMA";
