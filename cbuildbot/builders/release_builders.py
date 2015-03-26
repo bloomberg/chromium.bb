@@ -6,8 +6,11 @@
 
 from __future__ import print_function
 
+from chromite.lib import parallel
+
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import branch_stages
+from chromite.cbuildbot.stages import release_stages
 
 
 class CreateBranchBuilder(simple_builders.SimpleBuilder):
@@ -16,3 +19,17 @@ class CreateBranchBuilder(simple_builders.SimpleBuilder):
   def RunStages(self):
     """Runs through build process."""
     self._RunStage(branch_stages.BranchUtilStage)
+
+
+class GeneratePayloadsBuilder(simple_builders.SimpleBuilder):
+  """Run the PaygenStage once for each board."""
+
+  def RunStages(self):
+    """Runs through build process."""
+    def _RunStageWrapper(board):
+      self._RunStage(release_stages.PaygenStage, board=board,
+                     channels=self._run.options.channels, archive_stage=None)
+
+    with parallel.BackgroundTaskRunner(_RunStageWrapper) as queue:
+      for board in self._run.config.boards:
+        queue.put([board])

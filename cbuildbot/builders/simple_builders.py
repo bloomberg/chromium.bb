@@ -192,16 +192,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(test_stages.BinhostTestStage)
     self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
-  def _RunPayloadsBuild(self):
-    """Run the PaygenStage once for each board."""
-    def _RunStageWrapper(board):
-      self._RunStage(release_stages.PaygenStage, board=board,
-                     channels=self._run.options.channels, archive_stage=None)
-
-    with parallel.BackgroundTaskRunner(_RunStageWrapper) as queue:
-      for board in self._run.config.boards:
-        queue.put([board])
-
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
     self._RunStage(build_stages.InitSDKStage)
@@ -275,8 +265,6 @@ class SimpleBuilder(generic_builders.Builder):
            self._run.config.build_type == constants.CHROME_PFQ_TYPE) and
           self._run.config.master):
       self._RunMasterPaladinOrChromePFQBuild()
-    elif self._run.config.build_type == constants.PAYLOADS_TYPE:
-      self._RunPayloadsBuild()
     else:
       self._RunDefaultTypeBuild()
 

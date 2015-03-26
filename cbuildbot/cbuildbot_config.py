@@ -3252,6 +3252,7 @@ _factory_release.add_config('daisy-factory',
 
 _payloads = internal.derive(
   build_type=constants.PAYLOADS_TYPE,
+  builder_class_name='release_builders.GeneratePayloadsBuilder',
   description='Regenerate release payloads.',
   vm_tests=[],
 

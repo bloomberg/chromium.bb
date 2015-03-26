@@ -1696,6 +1696,7 @@
             "auron"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2360,6 +2361,7 @@
             "auron_paine"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2859,6 +2861,7 @@
             "auron_yuna"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -3461,6 +3464,7 @@
             "banjo"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4063,6 +4067,7 @@
             "bayleybay"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6083,6 +6088,7 @@
             "beltino"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7125,6 +7131,7 @@
             "buranku"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7647,6 +7654,7 @@
             "butterfly"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8146,6 +8154,7 @@
             "butterfly_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8748,6 +8757,7 @@
             "candy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9247,6 +9257,7 @@
             "candy_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9773,6 +9784,7 @@
             "cid"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10375,6 +10387,7 @@
             "clapper"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10874,6 +10887,7 @@
             "clapper_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11389,6 +11403,7 @@
             "cosmos"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11873,6 +11888,7 @@
             "cranky"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12874,6 +12890,7 @@
             "daisy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13577,6 +13594,7 @@
             "daisy_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14207,6 +14225,7 @@
             "daisy_skate-freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14628,6 +14647,7 @@
             "daisy_skate"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15251,6 +15271,7 @@
             "daisy_spring-freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15674,6 +15695,7 @@
             "daisy_spring"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16183,6 +16205,7 @@
             "daisy_winter"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16693,6 +16716,7 @@
             "derwent"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17279,6 +17303,7 @@
             "enguarde"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17778,6 +17803,7 @@
             "enguarde_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18380,6 +18406,7 @@
             "expresso"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18879,6 +18906,7 @@
             "expresso_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19509,6 +19537,7 @@
             "falco"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20008,6 +20037,7 @@
             "falco_li"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20829,6 +20859,7 @@
             "glimmer"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21328,6 +21359,7 @@
             "glimmer_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21930,6 +21962,7 @@
             "gnawty"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22429,6 +22462,7 @@
             "gnawty_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22928,6 +22962,7 @@
             "guado"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23939,6 +23974,7 @@
             "jaguar"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24647,6 +24683,7 @@
             "jecht"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -25913,6 +25950,7 @@
             "kennet"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -26499,6 +26537,7 @@
             "kip"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -26998,6 +27037,7 @@
             "kip_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28075,6 +28115,7 @@
             "leon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28684,6 +28725,7 @@
             "link"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -29206,6 +29248,7 @@
             "lulu"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -29809,6 +29852,7 @@
             "lumpy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -30356,6 +30400,7 @@
             "lumpy_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -30977,6 +31022,7 @@
             "mccloud"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -32329,6 +32375,7 @@
             "mipsel-o32-generic"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -32820,6 +32867,7 @@
             "monroe"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -33422,6 +33470,7 @@
             "ninja"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -34095,6 +34144,7 @@
             "nyan"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -34816,6 +34866,7 @@
             "nyan_big"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -35319,6 +35370,7 @@
             "nyan_blaze"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -35823,6 +35875,7 @@
             "nyan_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -36327,6 +36380,7 @@
             "nyan_kitty"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -36854,6 +36908,7 @@
             "panther"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -37429,6 +37484,7 @@
             "panther_embedded"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -37936,6 +37992,7 @@
             "panther_moblab"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -38489,6 +38546,7 @@
             "parrot"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -39099,6 +39157,7 @@
             "parrot_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -39674,6 +39733,7 @@
             "parrot_ivb-freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -40097,6 +40157,7 @@
             "parrot_ivb"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -40697,6 +40758,7 @@
             "parry"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -41685,6 +41747,7 @@
             "peach_pi-freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -42105,6 +42168,7 @@
             "peach_pi"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -42734,6 +42798,7 @@
             "peach_pit-freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -43159,6 +43224,7 @@
             "peach_pit"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -43691,6 +43757,7 @@
             "peppy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -44857,6 +44924,7 @@
             "purin"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -45443,6 +45511,7 @@
             "quawks"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -45942,6 +46011,7 @@
             "quawks_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -48919,6 +48989,7 @@
             "rambi"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -49418,6 +49489,7 @@
             "rambi_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -50030,6 +50102,7 @@
             "rikku"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -51026,6 +51099,7 @@
             "rush_ryu"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -51614,6 +51688,7 @@
             "samus"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -52982,6 +53057,7 @@
             "slippy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -53765,6 +53841,7 @@
             "space"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -54351,6 +54428,7 @@
             "squawks"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -54850,6 +54928,7 @@
             "squawks_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -55404,6 +55483,7 @@
             "storm"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -55929,6 +56009,7 @@
             "stout"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -56428,6 +56509,7 @@
             "stout_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -57030,6 +57112,7 @@
             "strago"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -57571,6 +57654,7 @@
             "stumpy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -58082,6 +58166,7 @@
             "stumpy_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -58589,6 +58674,7 @@
             "stumpy_moblab"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -59180,6 +59266,7 @@
             "sumo"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -59782,6 +59869,7 @@
             "swanky"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -60281,6 +60369,7 @@
             "swanky_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -60811,6 +60900,7 @@
             "tidus"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -61369,6 +61459,7 @@
             "tricky"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -63709,6 +63800,7 @@
             "veyron_brain"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -64212,6 +64304,7 @@
             "veyron_danger"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -64715,6 +64808,7 @@
             "veyron_gus"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -65218,6 +65312,7 @@
             "veyron_jaq"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -65721,6 +65816,7 @@
             "veyron_jerry"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -66224,6 +66320,7 @@
             "veyron_mighty"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -66727,6 +66824,7 @@
             "veyron_minnie"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -67234,6 +67332,7 @@
             "veyron_pinky"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -67737,6 +67836,7 @@
             "veyron_rialto"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -68240,6 +68340,7 @@
             "veyron_speedy"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -68746,6 +68847,7 @@
             "whirlwind"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -69336,6 +69438,7 @@
             "winky"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -69835,6 +69938,7 @@
             "winky_freon"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -70375,6 +70479,7 @@
             "wolf"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -71100,6 +71205,7 @@
             "x86-alex"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -71703,6 +71809,7 @@
             "x86-alex_he"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -72598,6 +72705,7 @@
             "x86-mario"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -73118,6 +73226,7 @@
             "x86-zgb"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -73721,6 +73830,7 @@
             "x86-zgb_he"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -74316,6 +74426,7 @@
             "zako"
         ],
         "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
         "description": "Regenerate release payloads.",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
