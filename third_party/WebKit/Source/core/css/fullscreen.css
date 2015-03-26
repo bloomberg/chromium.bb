@@ -25,20 +25,11 @@
 }
 
 iframe:-webkit-full-screen {
-    border: none;
-}
-
-/* Anything below are extensions over what the Fullscreen API mandates. */
-
-/* The border and padding of fullscreen iframes are removed, as there are sites
-   that set border or padding on iframes with the apparent expectation that they
-   will be ignored in fullscreen (see crbug.com/468292 and crbug.com/469133).
-   TODO(philipj): Remove this or merge into the above block when the spec bug
-   has been resolved: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28332 */
-iframe:-webkit-full-screen {
     border: none !important;
     padding: 0 !important;
 }
+
+/* Anything below are extensions over what the Fullscreen API mandates. */
 
 /* FIXME: Remove these rules when moving Fullscreen to top layer.
    (see crbug.com/240576) */
