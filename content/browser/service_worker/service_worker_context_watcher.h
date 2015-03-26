@@ -27,10 +27,15 @@ class ServiceWorkerContextWatcher
       WorkerRegistrationUpdatedCallback;
   typedef base::Callback<void(const std::vector<ServiceWorkerVersionInfo>&)>
       WorkerVersionUpdatedCallback;
+  typedef base::Callback<void(int64 /* registration_id */,
+                              int64 /* version_id */,
+                              const ErrorInfo&)> WorkerErrorReportedCallback;
+
   ServiceWorkerContextWatcher(
       scoped_refptr<ServiceWorkerContextWrapper> context,
       const WorkerRegistrationUpdatedCallback& registration_callback,
-      const WorkerVersionUpdatedCallback& version_callback);
+      const WorkerVersionUpdatedCallback& version_callback,
+      const WorkerErrorReportedCallback& error_callback);
   void Start();
   void Stop();
 
@@ -66,6 +71,10 @@ class ServiceWorkerContextWatcher
   void OnVersionStateChanged(
       int64 version_id,
       content::ServiceWorkerVersion::Status status) override;
+  void OnErrorReported(int64 version_id,
+                       int process_id,
+                       int thread_id,
+                       const ErrorInfo& info) override;
   void OnRegistrationStored(int64 registration_id,
                             const GURL& pattern) override;
   void OnRegistrationDeleted(int64 registration_id,
@@ -75,6 +84,7 @@ class ServiceWorkerContextWatcher
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   WorkerRegistrationUpdatedCallback registration_callback_;
   WorkerVersionUpdatedCallback version_callback_;
+  WorkerErrorReportedCallback error_callback_;
 };
 
 }  // namespace content

@@ -280,6 +280,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerScriptCacheMap* script_cache_map() { return &script_cache_map_; }
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
+  // Reports the error message to |listeners_|.
+  void ReportError(ServiceWorkerStatusCode status,
+                   const std::string& status_message);
+
   // Dooms this version to have REDUNDANT status and its resources deleted.  If
   // the version is controlling a page, these changes will happen when the
   // version no longer controls any pages.

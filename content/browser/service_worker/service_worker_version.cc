@@ -784,6 +784,16 @@ void ServiceWorkerVersion::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
+void ServiceWorkerVersion::ReportError(ServiceWorkerStatusCode status,
+                                       const std::string& status_message) {
+  if (status_message.empty()) {
+    OnReportException(base::UTF8ToUTF16(ServiceWorkerStatusToString(status)),
+                      -1, -1, GURL());
+  } else {
+    OnReportException(base::UTF8ToUTF16(status_message), -1, -1, GURL());
+  }
+}
+
 void ServiceWorkerVersion::Doom() {
   if (is_doomed_)
     return;

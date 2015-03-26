@@ -11,6 +11,7 @@
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -72,6 +73,9 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
   void OnWorkerVersionUpdated(
       const std::vector<ServiceWorkerVersionInfo>& registrations);
+  void OnErrorReported(int64 registration_id,
+                       int64 version_id,
+                       const ServiceWorkerContextObserver::ErrorInfo& info);
 
   void OpenNewDevToolsWindow(int process_id, int devtools_agent_route_id);
 

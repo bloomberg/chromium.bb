@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -26,10 +27,12 @@ bool IsStoppedAndRedundant(const ServiceWorkerVersionInfo& version_info) {
 ServiceWorkerContextWatcher::ServiceWorkerContextWatcher(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     const WorkerRegistrationUpdatedCallback& registration_callback,
-    const WorkerVersionUpdatedCallback& version_callback)
+    const WorkerVersionUpdatedCallback& version_callback,
+    const WorkerErrorReportedCallback& error_callback)
     : context_(context),
       registration_callback_(registration_callback),
-      version_callback_(version_callback) {
+      version_callback_(version_callback),
+      error_callback_(error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -193,6 +196,18 @@ void ServiceWorkerContextWatcher::OnVersionStateChanged(
   SendVersionInfo(*version);
   if (IsStoppedAndRedundant(*version))
     version_info_map_.erase(version_id);
+}
+
+void ServiceWorkerContextWatcher::OnErrorReported(int64 version_id,
+                                                  int process_id,
+                                                  int thread_id,
+                                                  const ErrorInfo& info) {
+  int64 registration_id = kInvalidServiceWorkerRegistrationId;
+  if (ServiceWorkerVersionInfo* version = version_info_map_.get(version_id))
+    registration_id = version->registration_id;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(error_callback_, registration_id, version_id, info));
 }
 
 void ServiceWorkerContextWatcher::OnRegistrationStored(int64 registration_id,

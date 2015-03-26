@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -249,6 +250,8 @@ Response ServiceWorkerHandler::Enable() {
       context_, base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated,
                            weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerHandler::OnWorkerVersionUpdated,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ServiceWorkerHandler::OnErrorReported,
                  weak_factory_.GetWeakPtr()));
   context_watcher_->Start();
 
@@ -368,6 +371,21 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
   }
   client_->WorkerVersionUpdated(
       WorkerVersionUpdatedParams::Create()->set_versions(version_values));
+}
+
+void ServiceWorkerHandler::OnErrorReported(
+    int64 registration_id,
+    int64 version_id,
+    const ServiceWorkerContextObserver::ErrorInfo& info) {
+  client_->WorkerErrorReported(
+      WorkerErrorReportedParams::Create()->set_error_message(
+          ServiceWorkerErrorMessage::Create()
+              ->set_error_message(base::UTF16ToUTF8(info.error_message))
+              ->set_registration_id(base::Int64ToString(registration_id))
+              ->set_version_id(base::Int64ToString(version_id))
+              ->set_source_url(info.source_url.spec())
+              ->set_line_number(info.line_number)
+              ->set_column_number(info.column_number)));
 }
 
 void ServiceWorkerHandler::DispatchProtocolMessage(
