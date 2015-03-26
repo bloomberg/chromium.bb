@@ -165,8 +165,8 @@
 #include "libm.h"
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#pragma comment(linker, "/include:" EXTERN_PREFIX" avpriv_strtod")
-#pragma comment(linker, "/include:" EXTERN_PREFIX" avpriv_snprintf")
+#pragma comment(linker, "/include:" EXTERN_PREFIX "avpriv_strtod")
+#pragma comment(linker, "/include:" EXTERN_PREFIX "avpriv_snprintf")
 #endif
 
 /**
