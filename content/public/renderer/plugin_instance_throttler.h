@@ -64,7 +64,7 @@ class CONTENT_EXPORT PluginInstanceThrottler {
     virtual void OnThrottlerDestroyed() {}
   };
 
-  static scoped_ptr<PluginInstanceThrottler> Create(bool power_saver_enabled);
+  static scoped_ptr<PluginInstanceThrottler> Create();
 
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
 

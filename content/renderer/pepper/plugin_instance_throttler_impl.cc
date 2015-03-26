@@ -37,9 +37,8 @@ const int kAudioThrottledFrameTimeoutMilliseconds = 500;
 const int PluginInstanceThrottlerImpl::kMaximumFramesToExamine = 150;
 
 // static
-scoped_ptr<PluginInstanceThrottler> PluginInstanceThrottler::Create(
-    bool power_saver_enabled) {
-  return make_scoped_ptr(new PluginInstanceThrottlerImpl(power_saver_enabled));
+scoped_ptr<PluginInstanceThrottler> PluginInstanceThrottler::Create() {
+  return make_scoped_ptr(new PluginInstanceThrottlerImpl);
 }
 
 // static
@@ -50,10 +49,8 @@ void PluginInstanceThrottler::RecordUnthrottleMethodMetric(
       PluginInstanceThrottler::UNTHROTTLE_METHOD_NUM_ITEMS);
 }
 
-PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
-    bool power_saver_enabled)
-    : state_(power_saver_enabled ? THROTTLER_STATE_AWAITING_KEYFRAME
-                                 : THROTTLER_STATE_POWER_SAVER_DISABLED),
+PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl()
+    : state_(THROTTLER_STATE_AWAITING_KEYFRAME),
       is_hidden_for_placeholder_(false),
       web_plugin_(nullptr),
       consecutive_interesting_frames_(0),

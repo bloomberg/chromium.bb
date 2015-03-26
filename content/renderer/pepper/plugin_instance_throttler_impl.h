@@ -26,7 +26,7 @@ class RenderFrameImpl;
 class CONTENT_EXPORT PluginInstanceThrottlerImpl
     : public PluginInstanceThrottler {
  public:
-  PluginInstanceThrottlerImpl(bool power_saver_enabled);
+  PluginInstanceThrottlerImpl();
 
   ~PluginInstanceThrottlerImpl() override;
 
@@ -47,8 +47,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   }
 
   bool power_saver_enabled() const {
-    return state_ == THROTTLER_STATE_AWAITING_KEYFRAME ||
-           state_ == THROTTLER_STATE_PLUGIN_THROTTLED;
+    return state_ != THROTTLER_STATE_MARKED_ESSENTIAL;
   }
 
   // Throttler needs to be initialized with the real plugin's view bounds.
@@ -68,8 +67,6 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   friend class PluginInstanceThrottlerImplTest;
 
   enum ThrottlerState {
-    // Power saver is disabled, but the plugin instance is still peripheral.
-    THROTTLER_STATE_POWER_SAVER_DISABLED,
     // Plugin has been found to be peripheral, Plugin Power Saver is enabled,
     // and throttler is awaiting a representative keyframe.
     THROTTLER_STATE_AWAITING_KEYFRAME,

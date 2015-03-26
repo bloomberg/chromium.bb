@@ -101,13 +101,13 @@ void LoadablePluginPlaceholder::MarkPluginEssential(
     return;
 
   plugin_marked_essential_ = true;
-  if (premade_throttler_) {
+  if (premade_throttler_)
     premade_throttler_->MarkPluginEssential(method);
-  }
+  else
+    PluginInstanceThrottler::RecordUnthrottleMethodMetric(method);
 
   if (is_blocked_for_power_saver_poster_) {
     is_blocked_for_power_saver_poster_ = false;
-    PluginInstanceThrottler::RecordUnthrottleMethodMetric(method);
     if (!LoadingBlocked())
       LoadPlugin();
   }
@@ -299,8 +299,8 @@ void LoadablePluginPlaceholder::LoadPlugin() {
 #if defined(ENABLE_PLUGINS)
     // If the plugin has already been marked essential in its placeholder form,
     // we shouldn't create a new throttler and start the process all over again.
-    if (!plugin_marked_essential_)
-      throttler = PluginInstanceThrottler::Create(power_saver_enabled_);
+    if (!plugin_marked_essential_ && power_saver_enabled_)
+      throttler = PluginInstanceThrottler::Create();
 #endif
     WebPlugin* plugin = render_frame()->CreatePlugin(
         GetFrame(), plugin_info_, GetPluginParams(), throttler.Pass());
