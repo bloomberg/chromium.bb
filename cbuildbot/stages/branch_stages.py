@@ -265,8 +265,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
           # If there isn't a default node we have to add the revision directly.
           node.attrib['revision'] = new_branch_name
       else:
-        # Set this tag to any string to avoid pinning to a SHA1 on branch.
-        if cros_build_lib.BooleanShellValue(node.get('pin'), True):
+        if checkout.IsPinnableProject():
           git_repo = checkout.GetPath(absolute=True)
           repo_head = git.GetGitRepoRevision(git_repo)
           node.attrib['revision'] = repo_head

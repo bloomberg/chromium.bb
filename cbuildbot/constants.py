@@ -312,6 +312,22 @@ BRANCHABLE_PROJECTS = {
     KAYLE_INTERNAL_REMOTE: r'chromeos/(.+)',
 }
 
+# The manifest contains extra attributes in the 'project' nodes to determine our
+# branching strategy for the project.
+#   create: Create a new branch on the project repo for the new CrOS branch.
+#           This is the default.
+#   pin: On the CrOS branch, pin the project to the current revision.
+#   tot: On the CrOS branch, the project still tracks ToT.
+MANIFEST_ATTR_BRANCHING = 'branch-mode'
+MANIFEST_ATTR_BRANCHING_CREATE = 'create'
+MANIFEST_ATTR_BRANCHING_PIN = 'pin'
+MANIFEST_ATTR_BRANCHING_TOT = 'tot'
+MANIFEST_ATTR_BRANCHING_ALL = (
+    MANIFEST_ATTR_BRANCHING_CREATE,
+    MANIFEST_ATTR_BRANCHING_PIN,
+    MANIFEST_ATTR_BRANCHING_TOT,
+)
+
 # TODO(sosa): Move to manifest-versions-external once its created
 MANIFEST_VERSIONS_GOB_URL = EXTERNAL_GOB_URL + '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_GOB_URL_TEST = MANIFEST_VERSIONS_GOB_URL + '-test'

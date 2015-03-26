@@ -294,10 +294,35 @@ class ProjectCheckout(dict):
       raise AssertionError('Remote %s is not pushable.' % (remote,))
 
   def IsBranchableProject(self):
-    """Return whether this project is hosted on ChromeOS git servers."""
+    """Return whether we can create a branch in the repo for this project."""
+    # Backwards compatibility is an issue here. Older manifests used a heuristic
+    # based on where the project is hosted. We must continue supporting it.
+    # (crbug.com/470690)
+    # Prefer explicit tagging.
+    if (self[constants.MANIFEST_ATTR_BRANCHING] ==
+        constants.MANIFEST_ATTR_BRANCHING_CREATE):
+      return True
+    if self[constants.MANIFEST_ATTR_BRANCHING] in (
+        constants.MANIFEST_ATTR_BRANCHING_PIN,
+        constants.MANIFEST_ATTR_BRANCHING_TOT):
+      return False
+
+    # Old heuristic.
     return (
         self['remote'] in constants.CROS_REMOTES and
         re.match(constants.BRANCHABLE_PROJECTS[self['remote']], self['name']))
+
+  def IsPinnableProject(self):
+    """Return whether we should pin to a revision on the CrOS branch."""
+    # Backwards compatibility is an issue here. Older manifests used a different
+    # tag to spcify pinning behaviour. Support both for now. (crbug.com/470690)
+    # Prefer explicit tagging.
+    if self[constants.MANIFEST_ATTR_BRANCHING] != '':
+      return (self[constants.MANIFEST_ATTR_BRANCHING] ==
+              constants.MANIFEST_ATTR_BRANCHING_PIN)
+
+    # Old heuristic.
+    return cros_build_lib.BooleanShellValue(self.get('pin'), True)
 
   def IsPatchable(self):
     """Returns whether this project is patchable.
@@ -461,6 +486,12 @@ class Manifest(object):
     attrs.setdefault('path', attrs['name'])
     for key in ('name', 'path'):
       attrs[key] = os.path.normpath(attrs[key])
+
+    if constants.MANIFEST_ATTR_BRANCHING in attrs:
+      assert (attrs[constants.MANIFEST_ATTR_BRANCHING] in
+              constants.MANIFEST_ATTR_BRANCHING_ALL)
+    else:
+      attrs[constants.MANIFEST_ATTR_BRANCHING] = ''
 
   @staticmethod
   def _GetManifestHash(source, ignore_missing=False):
