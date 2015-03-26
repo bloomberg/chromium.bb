@@ -91,7 +91,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
     case IDBKey::BinaryType:
         return toV8(DOMUint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
     case IDBKey::DateType:
-        return v8::Date::New(isolate, key->date());
+        return v8::Date::New(isolate->GetCurrentContext(), key->date()).ToLocalChecked();
     case IDBKey::ArrayType:
         {
             v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());

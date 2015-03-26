@@ -839,7 +839,7 @@ IdlUnionType.release = False
 
 CPP_VALUE_TO_V8_VALUE = {
     # Built-in types
-    'Date': 'v8DateOrNaN({cpp_value}, {isolate})',
+    'Date': 'v8DateOrNaN({isolate}, {cpp_value})',
     'DOMString': 'v8String({isolate}, {cpp_value})',
     'ByteString': 'v8String({isolate}, {cpp_value})',
     'USVString': 'v8String({isolate}, {cpp_value})',

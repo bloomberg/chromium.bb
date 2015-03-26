@@ -85,6 +85,13 @@ inline void v8SetReturnValue(const CallbackInfo& info, const v8::Handle<S> handl
     info.GetReturnValue().Set(handle);
 }
 
+template<typename CallbackInfo, typename S>
+inline void v8SetReturnValue(const CallbackInfo& info, v8::MaybeLocal<S> maybe)
+{
+    if (LIKELY(!maybe.IsEmpty()))
+        info.GetReturnValue().Set(maybe.ToLocalChecked());
+}
+
 template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& info, bool value)
 {
@@ -494,10 +501,10 @@ inline double toCoreDate(v8::Isolate* isolate, v8::Handle<v8::Value> object)
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-inline v8::Handle<v8::Value> v8DateOrNaN(double value, v8::Isolate* isolate)
+inline v8::MaybeLocal<v8::Value> v8DateOrNaN(v8::Isolate* isolate, double value)
 {
     ASSERT(isolate);
-    return v8::Date::New(isolate, std::isfinite(value) ? value : std::numeric_limits<double>::quiet_NaN());
+    return v8::Date::New(isolate->GetCurrentContext(), std::isfinite(value) ? value : std::numeric_limits<double>::quiet_NaN());
 }
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.

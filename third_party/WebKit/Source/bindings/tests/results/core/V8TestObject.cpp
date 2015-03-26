@@ -205,7 +205,7 @@ static void dateAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Valu
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, v8DateOrNaN(impl->dateAttribute(), info.GetIsolate()));
+    v8SetReturnValue(info, v8DateOrNaN(info.GetIsolate(), impl->dateAttribute()));
 }
 
 static void dateAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -5585,7 +5585,7 @@ static void staticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void dateMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8DateOrNaN(impl->dateMethod(), info.GetIsolate()));
+    v8SetReturnValue(info, v8DateOrNaN(info.GetIsolate(), impl->dateMethod()));
 }
 
 static void dateMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
