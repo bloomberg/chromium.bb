@@ -21,89 +21,109 @@ from chromite.lib import project_sdk
 from chromite.lib import workspace_lib
 
 
+_BRILLO_SDK_NO_UPDATE = 'BRILLO_SDK_NO_UPDATE'
+
+
+def _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version):
+  """Install specified SDK, and associate the workspace with it."""
+  if project_sdk.FindRepoRoot(bootstrap_path):
+    cros_build_lib.Die('brillo sdk must run from a git clone. brbug.com/580')
+
+  sdk_path = bootstrap_lib.ComputeSdkPath(bootstrap_path, version)
+
+  # If this version already exists, no need to reinstall it.
+  if not project_sdk.FindRepoRoot(sdk_path):
+    _UpdateSdk(sdk_path, version)
+
+  # Store the new version in the workspace.
+  workspace_lib.SetActiveSdkVersion(workspace_path, version)
+
+
+def _UpdateSdk(sdk_dir, version):
+  """Install the specified SDK at the specified location.
+
+  Args:
+    sdk_dir: Directory in which to create a repo.
+    version: Project SDK version to sync.
+  """
+  # Create the SDK dir, if it doesn't already exist.
+  osutils.SafeMakedirs(sdk_dir)
+
+  # Figure out what manifest to sync into repo.
+  if version.lower() == 'tot':
+    manifest_url = constants.MANIFEST_URL
+    manifest_path = constants.PROJECT_MANIFEST
+    depth = None
+  else:
+    manifest_url = constants.MANIFEST_VERSIONS_GOB_URL
+    manifest_path = 'project-sdk/%s.xml' % version
+    depth = 1
+
+  # Init new repo.
+  repo = repository.RepoRepository(
+      manifest_url, sdk_dir, manifest=manifest_path, depth=depth)
+
+  # Sync it.
+  repo.Sync()
+
+
+def _HandleUpdate(bootstrap_path, workspace_path, sdk_dir, version):
+  """Handle an update request.
+
+  Args:
+    bootstrap_path: Path to bootstrap location (or None).
+    workspace_path: Path to workspace location (or None).
+    sdk_dir: Directory in which to create a repo (or None).
+    version: Project SDK version to sync.
+  """
+  if sdk_dir:
+    # Install the SDK to an explicit location.
+    _UpdateSdk(sdk_dir, version)
+
+  if workspace_path:
+    # If we are in a workspace, update the SDK for that workspace.
+    _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version)
+
+
+def _FindVersion(workspace_path, sdk_dir):
+  """Find SDK version of an existing specific sdk_dir.
+
+  Args:
+    workspace_path: Path to workspace location (or None).
+    sdk_dir: Directory in which to create a repo (or None).
+  """
+  if sdk_dir:
+    return project_sdk.FindVersion(sdk_dir)
+
+  if workspace_path:
+    return workspace_lib.GetActiveSdkVersion(workspace_path)
+
+  return None
+
+
+def _SelfUpdate(bootstrap_path):
+  """Update the bootstrap repository."""
+  # If our bootstrap is part of a repository, we shouldn't update.
+  if project_sdk.FindRepoRoot(bootstrap_path):
+    return
+
+  # If the 'skip update' variable is set, we shouldn't update.
+  if os.environ.get(_BRILLO_SDK_NO_UPDATE):
+    return
+
+  # Perform the git pull to update our bootstrap.
+  logging.info('Updating SDK bootstrap...')
+  git.RunGit(bootstrap_path, ['pull'])
+
+  # Prevent updating again, after we restart.
+  logging.debug('Re-exec...')
+  os.environ[_BRILLO_SDK_NO_UPDATE] = "1"
+  commandline.ReExec()
+
+
 @command.CommandDecorator('sdk')
 class SdkCommand(command.CliCommand):
   """Manage Project SDK installations."""
-
-  BRILLO_SDK_NO_UPDATE = 'BRILLO_SDK_NO_UPDATE'
-
-  def _UpdateWorkspaceSdk(self, bootstrap_path, workspace_path, version):
-    """Install specified SDK, and associate the workspace with it."""
-    if project_sdk.FindRepoRoot(bootstrap_path):
-      cros_build_lib.Die('brillo sdk must run from a git clone. brbug.com/580')
-
-    sdk_path = bootstrap_lib.ComputeSdkPath(bootstrap_path, version)
-
-    # If this version already exists, no need to reinstall it.
-    if not project_sdk.FindRepoRoot(sdk_path):
-      self._UpdateSdk(sdk_path, version)
-
-    # Store the new version in the workspace.
-    workspace_lib.SetActiveSdkVersion(workspace_path, version)
-
-  def _UpdateSdk(self, sdk_dir, version):
-    """Install the specified SDK at the specified location.
-
-    Args:
-      sdk_dir: Directory in which to create a repo.
-      version: Project SDK version to sync.
-    """
-    # Create the SDK dir, if it doesn't already exist.
-    osutils.SafeMakedirs(sdk_dir)
-
-    # Figure out what manifest to sync into repo.
-    if version.lower() == 'tot':
-      manifest_url = constants.MANIFEST_URL
-      manifest_path = constants.PROJECT_MANIFEST
-      depth = None
-    else:
-      manifest_url = constants.MANIFEST_VERSIONS_GOB_URL
-      manifest_path = 'project-sdk/%s.xml' % version
-      depth = 1
-
-    # Init new repo.
-    repo = repository.RepoRepository(
-        manifest_url, sdk_dir, manifest=manifest_path, depth=depth)
-
-    # Sync it.
-    repo.Sync()
-
-  def _HandleUpdate(self, bootstrap_path, workspace_path, sdk_dir, version):
-    if sdk_dir:
-      # Install the SDK to an explicit location.
-      self._UpdateSdk(sdk_dir, version)
-
-    if workspace_path:
-      # If we are in a workspace, update the SDK for that workspace.
-      self._UpdateWorkspaceSdk(bootstrap_path, workspace_path, version)
-
-  def _FindVersion(self, workspace_path, sdk_dir):
-    if sdk_dir:
-      return project_sdk.FindVersion(sdk_dir)
-
-    if workspace_path:
-      return workspace_lib.GetActiveSdkVersion(workspace_path)
-
-    return None
-
-  def _SelfUpdate(self, bootstrap_path):
-    """Update the bootstrap repository."""
-    # If our bootstrap is part of a repository, we shouldn't update.
-    if project_sdk.FindRepoRoot(bootstrap_path):
-      return
-
-    # If the 'skip update' variable is set, we shouldn't update.
-    if os.environ.get(self.BRILLO_SDK_NO_UPDATE):
-      return
-
-    # Perform the git pull to update our bootstrap.
-    logging.info('Updating SDK bootstrap...')
-    git.RunGit(bootstrap_path, ['pull'])
-
-    # Prevent updating again, after we restart.
-    logging.debug('Re-exec...')
-    os.environ[self.BRILLO_SDK_NO_UPDATE] = "1"
-    commandline.ReExec()
 
   @classmethod
   def AddParser(cls, parser):
@@ -129,15 +149,15 @@ class SdkCommand(command.CliCommand):
       bootstrap_path = bootstrap_lib.FindBootstrapPath()
 
       logging.info('Update bootstrap...')
-      self._SelfUpdate(bootstrap_path)
+      _SelfUpdate(bootstrap_path)
 
       logging.info('Updating SDK...')
-      self._HandleUpdate(
+      _HandleUpdate(
           bootstrap_path, workspace_path, sdk_dir, self.options.update)
 
     # Find the version (possibly post-update). We re-detect as a
     # temp hack for discovering what version 'latest' resolved as.
-    version = self._FindVersion(workspace_path, sdk_dir)
+    version = _FindVersion(workspace_path, sdk_dir)
 
     if version is None:
       cros_build_lib.Die('No valid SDK found.')
