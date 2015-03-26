@@ -52,7 +52,7 @@ base::WeakPtr<DevToolsBridgeClient> DevToolsBridgeClient::Create(
     Profile* profile,
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto instance =
       new DevToolsBridgeClient(profile, signin_manager, token_service);
   return instance->weak_factory_.GetWeakPtr();
@@ -67,7 +67,7 @@ DevToolsBridgeClient::DevToolsBridgeClient(
       identity_provider_(signin_manager, token_service, nullptr),
       worker_is_loaded_(false),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   identity_provider_.AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -78,13 +78,13 @@ DevToolsBridgeClient::DevToolsBridgeClient(
 }
 
 DevToolsBridgeClient::~DevToolsBridgeClient() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   identity_provider_.RemoveObserver(this);
 }
 
 void DevToolsBridgeClient::DeleteSelf() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delete this;
 }
 
@@ -178,7 +178,7 @@ DevToolsBridgeClient::DeviceInfo DevToolsBridgeClient::GetDeviceInfo(
 }
 
 void DevToolsBridgeClient::CreateBackgroundWorker() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   background_worker_.reset(
       WebContents::Create(WebContents::CreateParams(profile_)));
@@ -204,19 +204,19 @@ void DevToolsBridgeClient::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
 
   delete this;
 }
 
 void DevToolsBridgeClient::OnActiveAccountLogin() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateBackgroundWorker();
 }
 
 void DevToolsBridgeClient::OnActiveAccountLogout() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   background_worker_.reset();
   browser_list_request_.reset();
   send_command_request_.reset();

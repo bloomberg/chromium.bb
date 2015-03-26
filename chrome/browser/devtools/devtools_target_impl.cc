@@ -272,7 +272,7 @@ scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForWebContents(
 
 // static
 void DevToolsTargetImpl::EnumerateAllTargets(Callback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::set<WebContents*> tab_web_contents;
   for (TabContentsIterator it; !it.done(); it.Next())

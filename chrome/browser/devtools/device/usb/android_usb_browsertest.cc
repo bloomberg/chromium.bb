@@ -586,7 +586,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   }
 
   void ScheduleDeviceCountRequest(const base::Closure& request) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     scheduler_invoked_++;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, request);
   }
@@ -690,7 +690,7 @@ class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
   };
 
   void ShutdownOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (reposts_left_-- == 0) {
       base::MessageLoop::current()->Quit();
     } else {
@@ -703,7 +703,7 @@ class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
   }
 
   void ShutdownOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&MockCountListener::ShutdownOnUIThread,

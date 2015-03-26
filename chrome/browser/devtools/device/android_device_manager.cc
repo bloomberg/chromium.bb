@@ -433,14 +433,14 @@ AndroidDeviceManager::HandlerThread::instance_ = NULL;
 // static
 scoped_refptr<AndroidDeviceManager::HandlerThread>
 AndroidDeviceManager::HandlerThread::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!instance_)
     new HandlerThread();
   return instance_;
 }
 
 AndroidDeviceManager::HandlerThread::HandlerThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   instance_ = this;
   thread_ = new base::Thread(kDevToolsAdbBridgeThreadName);
   base::Thread::Options options;
@@ -463,7 +463,7 @@ void AndroidDeviceManager::HandlerThread::StopThread(
 }
 
 AndroidDeviceManager::HandlerThread::~HandlerThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   instance_ = NULL;
   if (!thread_)
     return;

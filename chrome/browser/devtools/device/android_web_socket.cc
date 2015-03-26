@@ -140,7 +140,7 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
       socket_impl_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(delegate_);
   DCHECK(device_);
   device_->sockets_.insert(this);
@@ -150,13 +150,13 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
 }
 
 AndroidDeviceManager::AndroidWebSocket::~AndroidWebSocket() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Terminate();
 }
 
 void AndroidDeviceManager::AndroidWebSocket::SendFrame(
     const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(socket_impl_);
   DCHECK(device_);
   device_->message_loop_proxy_->PostTask(
@@ -169,7 +169,7 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
     int result,
     const std::string& extensions,
     scoped_ptr<net::StreamSocket> socket) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result != net::OK || !socket.get()) {
     OnSocketClosed();
     return;
@@ -187,18 +187,18 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
 
 void AndroidDeviceManager::AndroidWebSocket::OnFrameRead(
     const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->OnFrameRead(message);
 }
 
 void AndroidDeviceManager::AndroidWebSocket::OnSocketClosed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Terminate();
   delegate_->OnSocketClosed();
 }
 
 void AndroidDeviceManager::AndroidWebSocket::Terminate() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (socket_impl_) {
     DCHECK(device_);
     device_->message_loop_proxy_->DeleteSoon(FROM_HERE, socket_impl_);

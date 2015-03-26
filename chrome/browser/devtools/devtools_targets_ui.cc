@@ -132,14 +132,14 @@ class WorkerObserver
   }
 
   void NotifyOnIOThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WorkerObserver::NotifyOnUIThread, this));
   }
 
   void NotifyOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (callback_.is_null())
       return;
     callback_.Run();

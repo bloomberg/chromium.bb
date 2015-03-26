@@ -180,7 +180,7 @@ static void RespondOnFileThread(
     const AndroidUsbDevicesCallback& callback,
     AndroidUsbDevices* devices,
     scoped_refptr<base::MessageLoopProxy> caller_message_loop_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   caller_message_loop_proxy->PostTask(
       FROM_HERE,
       base::Bind(&RespondOnCallerThread, callback, devices));
@@ -193,7 +193,7 @@ static void OpenAndroidDeviceOnFileThread(
     scoped_refptr<UsbDevice> device,
     int interface_id,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (success) {
     base::string16 serial;
     if (device->GetSerialNumber(&serial) && !serial.empty()) {
@@ -215,7 +215,7 @@ static void OpenAndroidDeviceOnFileThread(
 }
 
 static int CountOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   UsbService* service = device::DeviceClient::Get()->GetUsbService();
   UsbDevices usb_devices;
   if (service != NULL)
@@ -238,7 +238,7 @@ static void EnumerateOnFileThread(
     crypto::RSAPrivateKey* rsa_key,
     const AndroidUsbDevicesCallback& callback,
     scoped_refptr<base::MessageLoopProxy> caller_message_loop_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   UsbService* service = device::DeviceClient::Get()->GetUsbService();
   UsbDevices usb_devices;
@@ -612,7 +612,7 @@ void AndroidUsbDevice::TransferError(UsbTransferStatus status) {
 
 void AndroidUsbDevice::TerminateIfReleased(
     scoped_refptr<UsbDeviceHandle> usb_handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (usb_handle->GetDevice().get())
     return;
   message_loop_->PostTask(FROM_HERE,

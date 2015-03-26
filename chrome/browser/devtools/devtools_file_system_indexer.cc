@@ -137,7 +137,7 @@ Index::Index() : last_file_id_(0) {
 Index::~Index() {}
 
 Time Index::LastModifiedTimeForFile(const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   Time last_modified_time;
   if (index_times_.find(file_path) != index_times_.end())
     last_modified_time = index_times_[file_path];
@@ -147,7 +147,7 @@ Time Index::LastModifiedTimeForFile(const FilePath& file_path) {
 void Index::SetTrigramsForFile(const FilePath& file_path,
                                const vector<Trigram>& index,
                                const Time& time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   FileId file_id = GetFileId(file_path);
   vector<Trigram>::const_iterator it = index.begin();
   for (; it != index.end(); ++it) {
@@ -159,7 +159,7 @@ void Index::SetTrigramsForFile(const FilePath& file_path,
 }
 
 vector<FilePath> Index::Search(string query) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   const char* data = query.c_str();
   vector<TrigramChar> trigram_chars;
   trigram_chars.reserve(query.size());
@@ -203,7 +203,7 @@ vector<FilePath> Index::Search(string query) {
 }
 
 FileId Index::GetFileId(const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   string file_path_str = file_path.AsUTF8Unsafe();
   if (file_ids_.find(file_path) != file_ids_.end())
     return file_ids_[file_path];
@@ -212,7 +212,7 @@ FileId Index::GetFileId(const FilePath& file_path) {
 }
 
 void Index::NormalizeVectors() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   for (size_t i = 0; i < kTrigramCount; ++i) {
     if (!is_normalized_[i]) {
       std::sort(index_[i].begin(), index_[i].end());
@@ -224,7 +224,7 @@ void Index::NormalizeVectors() {
 }
 
 void Index::PrintStats() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   LOG(ERROR) << "Index stats:";
   size_t size = 0;
   size_t maxSize = 0;
@@ -267,7 +267,7 @@ DevToolsFileSystemIndexer::FileSystemIndexingJob::FileSystemIndexingJob(
 DevToolsFileSystemIndexer::FileSystemIndexingJob::~FileSystemIndexingJob() {}
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -275,7 +275,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::Start() {
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           Bind(&FileSystemIndexingJob::StopOnFileThread, this));
@@ -286,7 +286,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::StopOnFileThread() {
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::CollectFilesToIndex() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (stopped_)
     return;
   if (!file_enumerator_) {
@@ -317,7 +317,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::CollectFilesToIndex() {
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::IndexFiles() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (stopped_)
     return;
   if (indexing_it_ == file_path_times_.end()) {
@@ -393,7 +393,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::OnRead(
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::FinishFileIndexing(
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CloseFile();
   if (success) {
     FilePath file_path = indexing_it_->first;
@@ -441,7 +441,7 @@ DevToolsFileSystemIndexer::IndexPath(
     const TotalWorkCallback& total_work_callback,
     const WorkedCallback& worked_callback,
     const DoneCallback& done_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<FileSystemIndexingJob> indexing_job =
       new FileSystemIndexingJob(FilePath::FromUTF8Unsafe(file_system_path),
                                 total_work_callback,
@@ -454,7 +454,7 @@ DevToolsFileSystemIndexer::IndexPath(
 void DevToolsFileSystemIndexer::SearchInPath(const string& file_system_path,
                                              const string& query,
                                              const SearchCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -469,7 +469,7 @@ void DevToolsFileSystemIndexer::SearchInPathOnFileThread(
     const string& file_system_path,
     const string& query,
     const SearchCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   vector<FilePath> file_paths = g_trigram_index.Get().Search(query);
   vector<string> result;
   FilePath path = FilePath::FromUTF8Unsafe(file_system_path);

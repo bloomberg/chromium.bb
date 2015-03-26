@@ -655,7 +655,7 @@ void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
 
 void DevToolsUIBindings::IndexPath(int index_request_id,
                                    const std::string& file_system_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     IndexingDone(index_request_id, file_system_path);
@@ -682,7 +682,7 @@ void DevToolsUIBindings::IndexPath(int index_request_id,
 }
 
 void DevToolsUIBindings::StopIndexing(int index_request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   IndexingJobsMap::iterator it = indexing_jobs_.find(index_request_id);
   if (it == indexing_jobs_.end())
     return;
@@ -693,7 +693,7 @@ void DevToolsUIBindings::StopIndexing(int index_request_id) {
 void DevToolsUIBindings::SearchInPath(int search_request_id,
                                       const std::string& file_system_path,
                                       const std::string& query) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     SearchCompleted(search_request_id,
@@ -880,7 +880,7 @@ void DevToolsUIBindings::IndexingTotalWorkCalculated(
     int request_id,
     const std::string& file_system_path,
     int total_work) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   base::FundamentalValue total_work_value(total_work);
@@ -892,7 +892,7 @@ void DevToolsUIBindings::IndexingTotalWorkCalculated(
 void DevToolsUIBindings::IndexingWorked(int request_id,
                                         const std::string& file_system_path,
                                         int worked) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   base::FundamentalValue worked_value(worked);
@@ -903,7 +903,7 @@ void DevToolsUIBindings::IndexingWorked(int request_id,
 void DevToolsUIBindings::IndexingDone(int request_id,
                                       const std::string& file_system_path) {
   indexing_jobs_.erase(request_id);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("DevToolsAPI.indexingDone", &request_id_value,
@@ -914,7 +914,7 @@ void DevToolsUIBindings::SearchCompleted(
     int request_id,
     const std::string& file_system_path,
     const std::vector<std::string>& file_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue file_paths_value;
   for (std::vector<std::string>::const_iterator it(file_paths.begin());
        it != file_paths.end(); ++it) {
