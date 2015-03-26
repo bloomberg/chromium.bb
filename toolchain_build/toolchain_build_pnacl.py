@@ -690,7 +690,8 @@ def HostTools(host, options):
                    '--prefix=/',
                    '--program-prefix=',
                    '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
-                   '--with-clang-srcdir=%(abs_clang_src)s'
+                   '--with-clang-srcdir=%(abs_clang_src)s',
+                   'ac_cv_have_decl_strerror_s=no',
                   ] + shared)] +
               CopyHostLibcxxForLLVMBuild(
                   host,
