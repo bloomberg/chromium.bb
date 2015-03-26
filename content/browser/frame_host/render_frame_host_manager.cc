@@ -773,8 +773,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // As SiteInstances are the same, check if the WebUI should be reused.
     const NavigationEntry* current_navigation_entry =
         delegate_->GetLastCommittedNavigationEntryForRenderManager();
-    bool should_reuse_web_ui_ = ShouldReuseWebUI(current_navigation_entry,
-                                                 request.common_params().url);
+    should_reuse_web_ui_ = ShouldReuseWebUI(current_navigation_entry,
+                                            request.common_params().url);
     if (!should_reuse_web_ui_) {
       speculative_web_ui_ = CreateWebUI(request.common_params().url,
                                         request.bindings());
