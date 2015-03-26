@@ -248,26 +248,10 @@ bool FillYearSelectControl(const base::string16& value,
 // given |field|.
 bool FillCreditCardTypeSelectControl(const base::string16& value,
                                      FormFieldData* field) {
-  // Try stripping off spaces.
-  base::string16 value_stripped;
-  base::RemoveChars(base::StringToLowerASCII(value), base::kWhitespaceUTF16,
-                    &value_stripped);
-
-  for (size_t i = 0; i < field->option_values.size(); ++i) {
-    base::string16 option_value_lowercase;
-    base::RemoveChars(base::StringToLowerASCII(field->option_values[i]),
-                      base::kWhitespaceUTF16, &option_value_lowercase);
-    base::string16 option_contents_lowercase;
-    base::RemoveChars(base::StringToLowerASCII(field->option_contents[i]),
-                      base::kWhitespaceUTF16, &option_contents_lowercase);
-
-    // Perform a case-insensitive comparison; but fill the form with the
-    // original text, not the lowercased version.
-    if (value_stripped == option_value_lowercase ||
-        value_stripped == option_contents_lowercase) {
-      field->value = field->option_values[i];
-      return true;
-    }
+  size_t idx;
+  if (AutofillField::FindValueInSelectControl(*field, value, &idx)) {
+    field->value = field->option_values[idx];
+    return true;
   }
 
   // For American Express, also try filling as "AmEx".
@@ -539,6 +523,34 @@ base::string16 AutofillField::GetPhoneNumberValue(
   }
 
   return number;
+}
+
+// static
+bool AutofillField::FindValueInSelectControl(const FormFieldData& field,
+                                             const base::string16& value,
+                                             size_t* index) {
+  // TODO(thestig): Improve this. See http://crbug.com/470726)
+  // Try stripping off spaces.
+  base::string16 value_stripped;
+  base::RemoveChars(base::StringToLowerASCII(value), base::kWhitespaceUTF16,
+                    &value_stripped);
+  for (size_t i = 0; i < field.option_values.size(); ++i) {
+    base::string16 option_value_lowercase;
+    base::RemoveChars(base::StringToLowerASCII(field.option_values[i]),
+                      base::kWhitespaceUTF16, &option_value_lowercase);
+    base::string16 option_contents_lowercase;
+    base::RemoveChars(base::StringToLowerASCII(field.option_contents[i]),
+                      base::kWhitespaceUTF16, &option_contents_lowercase);
+
+    // Perform a case-insensitive comparison.
+    if (value_stripped == option_value_lowercase ||
+        value_stripped == option_contents_lowercase) {
+      if (index)
+        *index = i;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace autofill

@@ -18,6 +18,8 @@
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
@@ -60,7 +62,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
 
   // Credit card fields can appear in many different orders.
   // We loop until no more credit card related fields are found, see |break| at
-  // bottom of the loop.
+  // the bottom of the loop.
   for (int fields = 0; !scanner->IsEnd(); ++fields) {
     // Ignore gift card fields.
     if (ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr))
@@ -89,11 +91,10 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     }
 
     // Check for a credit card type (Visa, MasterCard, etc.) field.
-    if (!credit_card_field->type_ &&
-        ParseFieldSpecifics(scanner,
-                            base::UTF8ToUTF16(kCardTypeRe),
-                            MATCH_DEFAULT | MATCH_SELECT,
-                            &credit_card_field->type_)) {
+    // All CC type fields encountered so far have been of type select.
+    if (!credit_card_field->type_ && LikelyCardTypeSelectField(scanner)) {
+      credit_card_field->type_ = scanner->Cursor();
+      scanner->Advance();
       continue;
     }
 
@@ -149,14 +150,6 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       scanner->RewindTo(saved_cursor);
       return nullptr;
     }
-
-    // Some pages (e.g. ExpediaBilling.html) have a "card description"
-    // field; we parse this field but ignore it.
-    // We also ignore any other fields within a credit card block that
-    // start with "card", under the assumption that they are related to
-    // the credit card section being processed but are uninteresting to us.
-    if (ParseField(scanner, base::UTF8ToUTF16(kCardIgnoredRe), nullptr))
-      continue;
 
     break;
   }
@@ -245,6 +238,23 @@ bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
   }
   return (FindConsecutiveStrings(years_to_check, field->option_values) ||
           FindConsecutiveStrings(years_to_check, field->option_contents));
+}
+
+// static
+bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
+  if (scanner->IsEnd())
+    return false;
+
+  AutofillField* field = scanner->Cursor();
+  if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
+    return false;
+
+  return AutofillField::FindValueInSelectControl(
+             *field, l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA),
+             nullptr) ||
+         AutofillField::FindValueInSelectControl(
+             *field, l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD),
+             nullptr);
 }
 
 CreditCardField::CreditCardField()

@@ -117,10 +117,6 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Card Type");
-  field.name = ASCIIToUTF16("card_type");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("type")));
-
   field.label = ASCIIToUTF16("Name on Card");
   field.name = ASCIIToUTF16("name_on_card");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name")));
@@ -140,6 +136,13 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
   field.label = ASCIIToUTF16("Verification");
   field.name = ASCIIToUTF16("verification");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("cvc")));
+
+  field.form_control_type = "select-one";
+  field.label = ASCIIToUTF16("Card Type");
+  field.name = ASCIIToUTF16("card_type");
+  field.option_contents.push_back(ASCIIToUTF16("visa"));
+  field.option_values.push_back(ASCIIToUTF16("visa"));
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("type")));
 
   Parse();
   ASSERT_NE(nullptr, field_.get());

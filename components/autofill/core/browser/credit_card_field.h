@@ -40,6 +40,10 @@ class CreditCardField : public FormField {
   // the next few years.
   static bool LikelyCardYearSelectField(AutofillScanner* scanner);
 
+  // Returns true if |scanner| points to a <select> field that contains credit
+  // card type options.
+  static bool LikelyCardTypeSelectField(AutofillScanner* scanner);
+
   CreditCardField();
 
   // Parses the expiration month/year/date fields. Returns true if it finds
