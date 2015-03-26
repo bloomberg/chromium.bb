@@ -13,6 +13,7 @@
 #include "sync/internal_api/attachments/proto/attachment_store.pb.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/protocol/attachments.pb.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
@@ -274,6 +275,7 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   scoped_ptr<leveldb::DB> db;
   leveldb::Options options;
   options.create_if_missing = true;
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   // TODO(pavely): crbug/424287 Consider adding info_log, block_cache and
   // filter_policy to options.
   leveldb::Status status =

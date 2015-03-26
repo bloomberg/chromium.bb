@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/value_store_util.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -328,6 +329,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
   leveldb::DB* db = NULL;
   leveldb::Status status =

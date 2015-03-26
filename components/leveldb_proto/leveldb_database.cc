@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -55,6 +56,7 @@ bool LevelDB::Init(const base::FilePath& database_dir) {
   leveldb::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum.
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   return InitWithOptions(database_dir, options);
 }
 

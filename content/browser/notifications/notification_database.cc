@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_database_data.h"
 #include "storage/common/database/database_identifier.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -114,6 +115,7 @@ NotificationDatabase::Status NotificationDatabase::Open(
   leveldb::Options options;
   options.create_if_missing = create_if_missing;
   options.paranoid_checks = true;
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (IsInMemoryDatabase()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();

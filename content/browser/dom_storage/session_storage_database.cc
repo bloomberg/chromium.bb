@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -381,6 +382,7 @@ leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
   // situation gracefully by creating the database now.
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 #if defined(OS_WIN)
   return leveldb::DB::Open(options, base::WideToUTF8(file_path_.value()), db);
 #elif defined(OS_POSIX)

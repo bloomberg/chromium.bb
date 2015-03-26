@@ -47,6 +47,11 @@ enum MethodID {
   kNumEntries
 };
 
+// The default value for leveldb::Options::reuse_logs. Currently log reuse is an
+// experimental feature in leveldb. More info at:
+// https://github.com/google/leveldb/commit/251ebf5dc70129ad3
+const bool kDefaultLogReuseOptionValue = true;
+
 const char* MethodIDToString(MethodID method);
 
 leveldb::Status MakeIOError(leveldb::Slice filename,

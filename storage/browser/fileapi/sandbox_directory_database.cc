@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -727,6 +728,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override_)
     options.env = env_override_;
   leveldb::DB* db;
