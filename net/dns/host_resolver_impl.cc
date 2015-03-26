@@ -144,6 +144,17 @@ enum DnsResolveStatus {
   RESOLVE_STATUS_MAX
 };
 
+// ICANN uses this localhost address to indicate a name collision.
+//
+// The policy in Chromium is to fail host resolving if it resolves to
+// this special address.
+//
+// Not however that IP literals are exempt from this policy, so it is still
+// possible to navigate to http://127.0.53.53/ directly.
+//
+// For more details: https://www.icann.org/news/announcement-2-2014-08-01-en
+const unsigned char kIcanNameCollisionIp[] = {127, 0, 53, 53};
+
 void UmaAsyncDnsResolveStatus(DnsResolveStatus result) {
   UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ResolveStatus",
                             result,
@@ -662,6 +673,17 @@ class HostResolverImpl::ProcTask
                                                key_.host_resolver_flags,
                                                &results,
                                                &os_error);
+
+    // Fail the resolution if the result contains 127.0.53.53. See the comment
+    // block of kIcanNameCollisionIp for details on why.
+    for (const auto& it : results) {
+      const IPAddressNumber& cur = it.address();
+      if (cur.size() == arraysize(kIcanNameCollisionIp) &&
+          0 == memcmp(&cur.front(), kIcanNameCollisionIp, cur.size())) {
+        error = ERR_ICANN_NAME_COLLISION;
+        break;
+      }
+    }
 
     origin_loop_->PostTask(
         FROM_HERE,

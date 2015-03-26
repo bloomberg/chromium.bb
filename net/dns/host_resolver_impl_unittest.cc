@@ -1319,6 +1319,53 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
   EXPECT_EQ(resolver_proc->resolved_attempt_number(), kAttemptNumberToResolve);
 }
 
+// If a host resolves to a list that includes 127.0.53.53, this is treated as
+// an error. 127.0.53.53 is a localhost address, however it has been given a
+// special significance by ICANN to help surfance name collision resulting from
+// the new gTLDs.
+TEST_F(HostResolverImplTest, NameCollision127_0_53_53) {
+  proc_->AddRuleForAllFamilies("single", "127.0.53.53");
+  proc_->AddRuleForAllFamilies("multiple", "127.0.0.1,127.0.53.53");
+  proc_->AddRuleForAllFamilies("ipv6", "::127.0.53.53");
+  proc_->AddRuleForAllFamilies("not_reserved1", "53.53.0.127");
+  proc_->AddRuleForAllFamilies("not_reserved2", "127.0.53.54");
+  proc_->AddRuleForAllFamilies("not_reserved3", "10.0.53.53");
+  proc_->SignalMultiple(6u);
+
+  Request* request;
+
+  request = CreateRequest("single");
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(ERR_ICANN_NAME_COLLISION, request->WaitForResult());
+
+  request = CreateRequest("multiple");
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(ERR_ICANN_NAME_COLLISION, request->WaitForResult());
+
+  // Resolving an IP literal of 127.0.53.53 however is allowed.
+  EXPECT_EQ(OK, CreateRequest("127.0.53.53")->Resolve());
+
+  // Moreover the address should not be recognized when embedded in an IPv6
+  // address.
+  request = CreateRequest("ipv6");
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(OK, request->WaitForResult());
+
+  // Try some other IPs which are similar, but NOT an exact match on
+  // 127.0.53.53.
+  request = CreateRequest("not_reserved1");
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(OK, request->WaitForResult());
+
+  request = CreateRequest("not_reserved2");
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(OK, request->WaitForResult());
+
+  request = CreateRequest("not_reserved3");
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(OK, request->WaitForResult());
+}
+
 DnsConfig CreateValidDnsConfig() {
   IPAddressNumber dns_ip;
   bool rv = ParseIPLiteralToNumber("192.168.1.0", &dns_ip);
