@@ -183,9 +183,13 @@ bool QuicServer::Listen(const IPEndPoint& address) {
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);
   dispatcher_.reset(CreateQuicDispatcher());
-  dispatcher_->Initialize(fd_);
+  dispatcher_->InitializeWithWriter(CreateWriter(fd_));
 
   return true;
+}
+
+QuicDefaultPacketWriter* QuicServer::CreateWriter(int fd) {
+  return new QuicDefaultPacketWriter(fd);
 }
 
 QuicDispatcher* QuicServer::CreateQuicDispatcher() {

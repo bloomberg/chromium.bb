@@ -24,9 +24,9 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
       : crypto_config_("blah", QuicRandom::GetInstance()),
         dispatcher_(config_,
                     crypto_config_,
-                    new QuicDispatcher::DefaultPacketWriterFactory(),
-                    &helper_) {
-    dispatcher_.Initialize(nullptr);
+                    new tools::QuicDispatcher::DefaultPacketWriterFactory(),
+                    new MockHelper) {
+    dispatcher_.InitializeWithWriter(nullptr);
   }
 
   void DispatchPacket(const QuicEncryptedPacket& packet) {
@@ -37,7 +37,6 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
  protected:
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
-  MockHelper helper_;
   MockQuicDispatcher dispatcher_;
 };
 

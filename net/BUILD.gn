@@ -1145,8 +1145,6 @@ if (is_linux) {
       "tools/quic/quic_client.h",
       "tools/quic/quic_default_packet_writer.cc",
       "tools/quic/quic_default_packet_writer.h",
-      "tools/quic/quic_dispatcher.cc",
-      "tools/quic/quic_dispatcher.h",
       "tools/quic/quic_epoll_clock.cc",
       "tools/quic/quic_epoll_clock.h",
       "tools/quic/quic_epoll_connection_helper.cc",
@@ -1155,8 +1153,6 @@ if (is_linux) {
       "tools/quic/quic_packet_reader.h",
       "tools/quic/quic_packet_writer_wrapper.cc",
       "tools/quic/quic_packet_writer_wrapper.h",
-      "tools/quic/quic_per_connection_packet_writer.cc",
-      "tools/quic/quic_per_connection_packet_writer.h",
       "tools/quic/quic_server.cc",
       "tools/quic/quic_server.h",
       "tools/quic/quic_socket_utils.cc",
@@ -1229,8 +1225,6 @@ if (is_android || is_linux) {
 # such as when all dependees are not buildable for the chosen OS.
 source_set("quic_tools") {
   sources = [
-    "quic/quic_dispatcher.cc",
-    "quic/quic_dispatcher.h",
     "quic/quic_per_connection_packet_writer.cc",
     "quic/quic_per_connection_packet_writer.h",
     "quic/quic_server.cc",
@@ -1250,8 +1244,12 @@ source_set("simple_quic_tools") {
   sources = [
     "tools/quic/quic_client_session.cc",
     "tools/quic/quic_client_session.h",
+    "tools/quic/quic_dispatcher.cc",
+    "tools/quic/quic_dispatcher.h",
     "tools/quic/quic_in_memory_cache.cc",
     "tools/quic/quic_in_memory_cache.h",
+    "tools/quic/quic_per_connection_packet_writer.cc",
+    "tools/quic/quic_per_connection_packet_writer.h",
     "tools/quic/quic_server_session.cc",
     "tools/quic/quic_server_session.h",
     "tools/quic/quic_simple_client.cc",

@@ -11,11 +11,7 @@
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
-#include "net/tools/epoll_server/epoll_server.h"
-#include "net/tools/quic/quic_default_packet_writer.h"
-#include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
-#include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
 namespace net {
@@ -193,9 +189,9 @@ QuicDispatcher::~QuicDispatcher() {
   STLDeleteElements(&closed_session_list_);
 }
 
-void QuicDispatcher::Initialize(int fd) {
+void QuicDispatcher::InitializeWithWriter(QuicPacketWriter* writer) {
   DCHECK(writer_ == nullptr);
-  writer_.reset(CreateWriter(fd));
+  writer_.reset(writer);
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
 }
 
@@ -399,10 +395,6 @@ void QuicDispatcher::OnConnectionAddedToTimeWaitList(
 void QuicDispatcher::OnConnectionRemovedFromTimeWaitList(
     QuicConnectionId connection_id) {
   DVLOG(1) << "Connection " << connection_id << " removed from time wait list.";
-}
-
-QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
-  return new QuicDefaultPacketWriter(fd);
 }
 
 QuicServerSession* QuicDispatcher::CreateQuicSession(

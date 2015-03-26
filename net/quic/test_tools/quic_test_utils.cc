@@ -19,6 +19,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/spdy/spdy_frame_builder.h"
+#include "net/tools/quic/quic_per_connection_packet_writer.h"
 
 using base::StringPiece;
 using std::max;
@@ -667,7 +668,7 @@ QuicVersionVector SupportedVersions(QuicVersion version) {
 TestWriterFactory::TestWriterFactory() : current_writer_(nullptr) {}
 TestWriterFactory::~TestWriterFactory() {}
 
-QuicPacketWriter* TestWriterFactory::Create(QuicServerPacketWriter* writer,
+QuicPacketWriter* TestWriterFactory::Create(QuicPacketWriter* writer,
                                             QuicConnection* connection) {
   return new PerConnectionPacketWriter(this, writer, connection);
 }
@@ -687,7 +688,7 @@ void TestWriterFactory::Unregister(PerConnectionPacketWriter* writer) {
 
 TestWriterFactory::PerConnectionPacketWriter::PerConnectionPacketWriter(
     TestWriterFactory* factory,
-    QuicServerPacketWriter* writer,
+    QuicPacketWriter* writer,
     QuicConnection* connection)
     : QuicPerConnectionPacketWriter(writer, connection),
       factory_(factory) {
@@ -707,7 +708,7 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
   // in a different way, so TestWriterFactory::OnPacketSent might never be
   // called.
   factory_->current_writer_ = this;
-  return QuicPerConnectionPacketWriter::WritePacket(buffer,
+  return tools::QuicPerConnectionPacketWriter::WritePacket(buffer,
                                                     buf_len,
                                                     self_address,
                                                     peer_address);

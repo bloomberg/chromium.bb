@@ -25,7 +25,10 @@ namespace test {
 class QuicServerPeer;
 }  // namespace test
 
+namespace tools {
 class QuicDispatcher;
+}  // namespace tools
+
 class UDPServerSocket;
 
 class QuicServer {
@@ -59,7 +62,7 @@ class QuicServer {
     crypto_config_.SetProofSource(source);
   }
 
-  QuicDispatcher* dispatcher() { return dispatcher_.get(); }
+  tools::QuicDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
   friend class net::test::QuicServerPeer;
@@ -68,7 +71,7 @@ class QuicServer {
   void Initialize();
 
   // Accepts data from the framer and demuxes clients to sessions.
-  scoped_ptr<QuicDispatcher> dispatcher_;
+  scoped_ptr<tools::QuicDispatcher> dispatcher_;
 
   // Used by the helper_ to time alarms.
   QuicClock clock_;

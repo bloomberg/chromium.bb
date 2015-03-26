@@ -41,7 +41,8 @@ class ProcessPacketInterface {
 };
 
 class QuicDispatcher : public QuicServerSessionVisitor,
-                       public ProcessPacketInterface {
+                       public ProcessPacketInterface,
+                       public QuicBlockedWriterInterface {
  public:
   // Creates per-connection packet writers out of the QuicDispatcher's shared
   // QuicPacketWriter. The per-connection writers' IsWriteBlocked() state must
@@ -80,7 +81,8 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   ~QuicDispatcher() override;
 
-  virtual void Initialize(int fd);
+  // Takes ownership of |writer|.
+  void InitializeWithWriter(QuicPacketWriter* writer);
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the TimeWaitListManager.
@@ -89,7 +91,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                      const QuicEncryptedPacket& packet) override;
 
   // Called when the socket becomes writable to allow queued writes to happen.
-  virtual void OnCanWrite();
+  void OnCanWrite() override;
 
   // Returns true if there's anything in the blocked writer list.
   virtual bool HasPendingWrites() const;
@@ -122,10 +124,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   void DeleteSessions();
 
  protected:
-  // Instantiates a new low-level packet writer. Caller takes ownership of the
-  // returned object.
-  virtual QuicPacketWriter* CreateWriter(int fd);
-
   virtual QuicServerSession* CreateQuicSession(
       QuicConnectionId connection_id,
       const IPEndPoint& server_address,

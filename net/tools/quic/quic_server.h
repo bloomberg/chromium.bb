@@ -16,6 +16,7 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_framer.h"
 #include "net/tools/epoll_server/epoll_server.h"
+#include "net/tools/quic/quic_default_packet_writer.h"
 
 namespace net {
 
@@ -81,6 +82,8 @@ class QuicServer : public EpollCallbackInterface {
   int port() { return port_; }
 
  protected:
+  virtual QuicDefaultPacketWriter* CreateWriter(int fd);
+
   virtual QuicDispatcher* CreateQuicDispatcher();
 
   const QuicConfig& config() const { return config_; }

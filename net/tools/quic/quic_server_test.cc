@@ -26,7 +26,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
                     crypto_config_,
                     new QuicDispatcher::DefaultPacketWriterFactory(),
                     new QuicEpollConnectionHelper(&eps_)) {
-    dispatcher_.Initialize(1234);
+    dispatcher_.InitializeWithWriter(new QuicDefaultPacketWriter(1234));
   }
 
   void DispatchPacket(const QuicEncryptedPacket& packet) {

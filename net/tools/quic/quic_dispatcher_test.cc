@@ -125,7 +125,7 @@ class QuicDispatcherTest : public ::testing::Test {
         time_wait_list_manager_(nullptr),
         session1_(nullptr),
         session2_(nullptr) {
-    dispatcher_.Initialize(1);
+    dispatcher_.InitializeWithWriter(new QuicDefaultPacketWriter(1));
   }
 
   ~QuicDispatcherTest() override {}

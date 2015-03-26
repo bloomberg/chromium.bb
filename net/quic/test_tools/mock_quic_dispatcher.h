@@ -8,14 +8,14 @@
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/quic_config.h"
-#include "net/quic/quic_dispatcher.h"
 #include "net/quic/quic_protocol.h"
+#include "net/tools/quic/quic_dispatcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
 namespace test {
 
-class MockQuicDispatcher : public QuicDispatcher {
+class MockQuicDispatcher : public tools::QuicDispatcher {
  public:
   MockQuicDispatcher(const QuicConfig& config,
                      const QuicCryptoServerConfig& crypto_config,

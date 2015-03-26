@@ -17,15 +17,15 @@
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_dispatcher.h"
 #include "net/quic/quic_framer.h"
-#include "net/quic/quic_per_connection_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/spdy/spdy_framer.h"
+#include "net/tools/quic/quic_dispatcher.h"
+#include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -586,12 +586,12 @@ class MockNetworkChangeVisitor :
 // Creates per-connection packet writers that register themselves with the
 // TestWriterFactory on each write so that TestWriterFactory::OnPacketSent can
 // be routed to the appropriate QuicConnection.
-class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
+class TestWriterFactory : public tools::QuicDispatcher::PacketWriterFactory {
  public:
   TestWriterFactory();
   ~TestWriterFactory() override;
 
-  QuicPacketWriter* Create(QuicServerPacketWriter* writer,
+  QuicPacketWriter* Create(QuicPacketWriter* writer,
                            QuicConnection* connection) override;
 
   // Calls OnPacketSent on the last QuicConnection to write through one of the
@@ -599,10 +599,11 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
   void OnPacketSent(WriteResult result);
 
  private:
-  class PerConnectionPacketWriter : public QuicPerConnectionPacketWriter {
+  class PerConnectionPacketWriter
+      : public tools::QuicPerConnectionPacketWriter {
    public:
     PerConnectionPacketWriter(TestWriterFactory* factory,
-                              QuicServerPacketWriter* writer,
+                              QuicPacketWriter* writer,
                               QuicConnection* connection);
     ~PerConnectionPacketWriter() override;
 

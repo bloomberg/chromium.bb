@@ -12,12 +12,15 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_reader.h"
-#include "net/quic/quic_dispatcher.h"
+#include "net/quic/quic_per_connection_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_packet_writer.h"
+#include "net/tools/quic/quic_dispatcher.h"
 #include "net/udp/udp_server_socket.h"
 
 namespace net {
+
+using tools::QuicDispatcher;
 
 namespace {
 
@@ -26,6 +29,35 @@ const char kSourceAddressTokenSecret[] = "secret";
 // Allocate some extra space so we can send an error if the client goes over
 // the limit.
 const int kReadBufferSize = 2 * kMaxPacketSize;
+
+// A packet writer factory which wraps a shared QuicServerPacketWriter
+// inside of a QuicPerConnectionPacketWriter. Instead of checking that
+// the shared_writer is the expected writer, this could instead cast
+// from QuicPacketWriter to QuicServerPacketWriter.
+class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
+ public:
+  ~CustomPacketWriterFactory() override {}
+
+  QuicPacketWriter* Create(QuicPacketWriter* writer,
+                           QuicConnection* connection) override {
+    if (writer == nullptr) {
+      LOG(DFATAL) << "shared_writer not initialized";
+      return nullptr;
+    }
+    if (writer != shared_writer_) {
+      LOG(DFATAL) << "writer mismatch";
+      return nullptr;
+    }
+    return new QuicPerConnectionPacketWriter(shared_writer_, connection);
+  }
+
+  void set_shared_writer(QuicServerPacketWriter* shared_writer) {
+    shared_writer_ = shared_writer;
+  }
+
+ private:
+  QuicServerPacketWriter* shared_writer_;  // Not owned.
+};
 
 } // namespace
 
@@ -111,16 +143,18 @@ int QuicServer::Listen(const IPEndPoint& address) {
 
   socket_.swap(socket);
 
+  CustomPacketWriterFactory* factory = new CustomPacketWriterFactory();
   dispatcher_.reset(
       new QuicDispatcher(config_,
                          crypto_config_,
                          supported_versions_,
-                         new QuicDispatcher::DefaultPacketWriterFactory(),
+                         factory,
                          &helper_));
   QuicServerPacketWriter* writer = new QuicServerPacketWriter(
       socket_.get(),
       dispatcher_.get());
-  dispatcher_->Initialize(writer);
+  factory->set_shared_writer(writer);
+  dispatcher_->InitializeWithWriter(writer);
 
   StartReading();
 
