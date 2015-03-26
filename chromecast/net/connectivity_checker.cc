@@ -105,6 +105,11 @@ void ConnectivityChecker::Check() {
   }
   DCHECK(url_request_context_.get());
 
+  // Don't check connectivity if network is offline, because internet could be
+  // accessible via netifs ignored.
+  if (net::NetworkChangeNotifier::IsOffline())
+    return;
+
   // If url_request_ is non-null, there is already a check going on. Don't
   // start another.
   if (url_request_.get())
