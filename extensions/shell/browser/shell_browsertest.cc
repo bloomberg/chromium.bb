@@ -17,8 +17,14 @@
 
 namespace extensions {
 
+// Flaky on linux. See http://crbug.com/470873.
+#if defined(OS_LINUX)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
 // Test that we can open an app window and wait for it to load.
-IN_PROC_BROWSER_TEST_F(ShellApiTest, Basic) {
+IN_PROC_BROWSER_TEST_F(ShellApiTest, MAYBE_Basic) {
   ASSERT_TRUE(RunAppTest("platform_app")) << message_;
 
   // A window was created.
