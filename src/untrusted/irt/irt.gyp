@@ -43,6 +43,18 @@
       '../nacl/sys_private.c',
       '../valgrind/dynamic_annotations.c',
     ],
+    # On x86-64 we build the IRT with sandbox base-address hiding. This means
+    # that all of its components must be built with LLVM's assembler. Currently
+    # the unwinder library is built with nacl-gcc and so does not use base
+    # address hiding. The IRT does not use exceptions, so we do not actually
+    # need the unwinder at all. To prevent it from being linked into the IRT, we
+    # provide stub implementations of its functions that are referenced from
+    # libc++abi (which is built with exception handling enabled) and from
+    # crtbegin.c.
+    'stub_sources': [
+      '../../../pnacl/support/bitcode/unwind_stubs.c',
+      'frame_info_stubs.c',
+    ],
     'irt_nonbrowser': [
       'irt_core_resource.c',
       'irt_entry_core.c',
@@ -89,7 +101,16 @@
         'build_newlib': 1,
         'build_irt': 1,
       },
-      'sources': ['<@(irt_sources)'],
+      'sources': ['<@(irt_sources)', '<@(stub_sources)'],
+      'conditions': [
+        # Disable stub sources on ARM
+        # TODO(dschuff): remove this when we switch to arm-nacl-clang
+        ['target_arch=="arm"', {
+          'variables': {
+            'stub_sources' : []
+          }
+        }],
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
