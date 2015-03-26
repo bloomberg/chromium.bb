@@ -75,7 +75,6 @@
 #include "xf86drmHash.h"
 
 #define HASH_MAGIC 0xdeadbeef
-#define HASH_DEBUG 0
 
 static unsigned long HashHash(unsigned long key)
 {
@@ -99,7 +98,7 @@ static unsigned long HashHash(unsigned long key)
     }
 
     hash %= HASH_SIZE;
-#if HASH_DEBUG
+#if DEBUG
     printf( "Hash(%d) = %d\n", key, hash);
 #endif
     return hash;
@@ -202,7 +201,7 @@ int drmHashInsert(void *t, unsigned long key, void *value)
     bucket->value        = value;
     bucket->next         = table->buckets[hash];
     table->buckets[hash] = bucket;
-#if HASH_DEBUG
+#if DEBUG
     printf("Inserted %d at %d/%p\n", key, hash, bucket);
 #endif
     return 0;			/* Added to table */

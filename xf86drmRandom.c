@@ -78,7 +78,6 @@
 #include "xf86drmRandom.h"
 
 #define RANDOM_MAGIC 0xfeedbeef
-#define RANDOM_DEBUG 0
 
 void *drmRandomCreate(unsigned long seed)
 {

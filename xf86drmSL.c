@@ -47,7 +47,6 @@
 #define SL_ENTRY_MAGIC 0x00fab1edLU
 #define SL_FREED_MAGIC 0xdecea5edLU
 #define SL_MAX_LEVEL   16
-#define SL_DEBUG       0
 #define SL_RANDOM_SEED 0xc01055a1LU
 
 #define SL_RANDOM_DECL        static void *state = NULL
