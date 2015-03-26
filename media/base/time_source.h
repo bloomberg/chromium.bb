@@ -33,24 +33,24 @@ class MEDIA_EXPORT TimeSource {
   // time source is not ticking.
   virtual void SetMediaTime(base::TimeDelta time) = 0;
 
-  // Returns the current media time.
+  // Returns the current media timestamp relative to the timestamp set by
+  // SetMediaTime().
   //
   // Values returned are intended for informational purposes, such as displaying
   // UI with the current minute and second count. While it is guaranteed values
   // will never go backwards, the frequency at which they update may be low.
   virtual base::TimeDelta CurrentMediaTime() = 0;
 
-  // Returns the current media time for use with synchronizing video.
+  // Converts a media timestamp into a wall clock time. If the media time is
+  // stopped, returns a null TimeTicks.
   //
-  // Differences from CurrentMediaTime():
-  //   - Values returned update at a much higher frequency (e.g., suitable for
-  //     playback of 60 FPS content).
-  //   - As a result, values may go slightly backwards depending on the
-  //     implementation (e.g., uses interpolation).
+  // |media_time| values too far ahead of the current media time will return an
+  // estimated value; as such, these values may go backwards in time slightly.
   //
-  // TODO(scherkus): Replace with a method that returns wall clock time for a
-  // given media time for use with VideoFrameScheduler http://crbug.com/110814
-  virtual base::TimeDelta CurrentMediaTimeForSyncingVideo() = 0;
+  // |media_time| values behind the current media time may be significantly
+  // incorrect if the playback rate has changed recently. The only guarantee is
+  // that the returned time will be less than the current wall clock time.
+  virtual base::TimeTicks GetWallClockTime(base::TimeDelta media_time) = 0;
 };
 
 }  // namespace media

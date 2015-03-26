@@ -77,13 +77,6 @@ class MEDIA_EXPORT AudioClock {
   base::TimeDelta front_timestamp() const { return front_timestamp_; }
   base::TimeDelta back_timestamp() const { return back_timestamp_; }
 
-  // Clients can provide |time_since_writing| to simulate the passage of time
-  // since last writing audio to get a more accurate current media timestamp.
-  //
-  // The value will be bounded between front_timestamp() and back_timestamp().
-  base::TimeDelta TimestampSinceWriting(
-      base::TimeDelta time_since_writing) const;
-
   // Returns the amount of wall time until |timestamp| will be played by the
   // audio hardware.
   //

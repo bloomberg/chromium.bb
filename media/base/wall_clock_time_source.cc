@@ -60,8 +60,15 @@ base::TimeDelta WallClockTimeSource::CurrentMediaTime() {
   return CurrentMediaTime_Locked();
 }
 
-base::TimeDelta WallClockTimeSource::CurrentMediaTimeForSyncingVideo() {
-  return CurrentMediaTime();
+base::TimeTicks WallClockTimeSource::GetWallClockTime(base::TimeDelta time) {
+  base::AutoLock auto_lock(lock_);
+  if (!ticking_ || playback_rate_ == 0.0)
+    return base::TimeTicks();
+
+  // See notes about |time| values less than |base_time_| in TimeSource header.
+  return reference_wall_ticks_ +
+         base::TimeDelta::FromMicroseconds(
+             (time - base_time_).InMicroseconds() * playback_rate_);
 }
 
 void WallClockTimeSource::SetTickClockForTesting(
@@ -71,7 +78,7 @@ void WallClockTimeSource::SetTickClockForTesting(
 
 base::TimeDelta WallClockTimeSource::CurrentMediaTime_Locked() {
   lock_.AssertAcquired();
-  if (!ticking_)
+  if (!ticking_ || playback_rate_ == 0.0)
     return base_time_;
 
   base::TimeTicks now = tick_clock_->NowTicks();

@@ -28,7 +28,7 @@ class MEDIA_EXPORT WallClockTimeSource : public TimeSource {
   void SetPlaybackRate(float playback_rate) override;
   void SetMediaTime(base::TimeDelta time) override;
   base::TimeDelta CurrentMediaTime() override;
-  base::TimeDelta CurrentMediaTimeForSyncingVideo() override;
+  base::TimeTicks GetWallClockTime(base::TimeDelta time) override;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 

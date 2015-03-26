@@ -71,7 +71,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void SetPlaybackRate(float rate) override;
   void SetMediaTime(base::TimeDelta time) override;
   base::TimeDelta CurrentMediaTime() override;
-  base::TimeDelta CurrentMediaTimeForSyncingVideo() override;
+  base::TimeTicks GetWallClockTime(base::TimeDelta time) override;
 
   // AudioRenderer implementation.
   void Initialize(DemuxerStream* stream,

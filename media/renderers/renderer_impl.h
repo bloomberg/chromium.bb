@@ -74,7 +74,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
     STATE_ERROR
   };
 
-  base::TimeDelta GetMediaTimeForSyncingVideo();
+  base::TimeTicks GetWallClockTime(base::TimeDelta time);
 
   // Requests that this object notifies when a decryptor is ready through the
   // |decryptor_ready_cb| provided.

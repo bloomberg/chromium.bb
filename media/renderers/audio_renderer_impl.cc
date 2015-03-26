@@ -166,15 +166,27 @@ base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
   return current_media_time;
 }
 
-base::TimeDelta AudioRendererImpl::CurrentMediaTimeForSyncingVideo() {
-  DVLOG(3) << __FUNCTION__;
-
+base::TimeTicks AudioRendererImpl::GetWallClockTime(base::TimeDelta time) {
   base::AutoLock auto_lock(lock_);
-  if (last_render_ticks_.is_null())
-    return audio_clock_->front_timestamp();
+  if (last_render_ticks_.is_null() || playback_rate_ == 0.0)
+    return base::TimeTicks();
 
-  return audio_clock_->TimestampSinceWriting(base::TimeTicks::Now() -
-                                             last_render_ticks_);
+  base::TimeDelta base_time;
+  if (time < audio_clock_->front_timestamp()) {
+    // See notes about |time| values less than |base_time| in TimeSource header.
+    base_time = audio_clock_->front_timestamp();
+  } else if (time > audio_clock_->back_timestamp()) {
+    base_time = audio_clock_->back_timestamp();
+  } else {
+    // No need to estimate time, so return the actual wallclock time.
+    return last_render_ticks_ + audio_clock_->TimeUntilPlayback(time);
+  }
+
+  // In practice, most calls will be estimates given the relatively small window
+  // in which clients can get the actual time.
+  return last_render_ticks_ + audio_clock_->TimeUntilPlayback(base_time) +
+         base::TimeDelta::FromMicroseconds((time - base_time).InMicroseconds() /
+                                           playback_rate_);
 }
 
 TimeSource* AudioRendererImpl::GetTimeSource() {

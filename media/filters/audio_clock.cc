@@ -80,15 +80,6 @@ void AudioClock::WroteAudio(int frames_written,
                                         microseconds_per_frame_);
 }
 
-base::TimeDelta AudioClock::TimestampSinceWriting(
-    base::TimeDelta time_since_writing) const {
-  int64_t frames_played_since_writing = std::min(
-      total_buffered_frames_,
-      static_cast<int64_t>(time_since_writing.InSecondsF() * sample_rate_));
-  return front_timestamp_ +
-         ComputeBufferedMediaTime(frames_played_since_writing);
-}
-
 base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
   DCHECK(timestamp >= front_timestamp_);
   DCHECK(timestamp <= back_timestamp_);

@@ -25,6 +25,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }
 
 namespace media {
@@ -60,13 +61,15 @@ class MEDIA_EXPORT VideoRendererImpl
                   const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb,
-                  const TimeDeltaCB& get_time_cb,
+                  const WallClockTimeCB& wall_clock_time_cb,
                   const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& callback) override;
   void StartPlayingFrom(base::TimeDelta timestamp) override;
 
   // PlatformThread::Delegate implementation.
   void ThreadMain() override;
+
+  void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 
  private:
   // Creates a dedicated |thread_| for video rendering.
@@ -182,21 +185,21 @@ class MEDIA_EXPORT VideoRendererImpl
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
-  TimeDeltaCB get_time_cb_;
+  WallClockTimeCB wall_clock_time_cb_;
 
   base::TimeDelta start_timestamp_;
 
   // Embedder callback for notifying a new frame is available for painting.
   PaintCB paint_cb_;
 
-  // The timestamp of the last frame removed from the |ready_frames_| queue,
-  // either for calling |paint_cb_| or for dropping. Set to kNoTimestamp()
-  // during flushing.
-  base::TimeDelta last_timestamp_;
+  // The wallclock times of the last frame removed from the |ready_frames_|
+  // queue, either for calling |paint_cb_| or for dropping. Set to null during
+  // flushing.
+  base::TimeTicks last_media_time_;
 
-  // The timestamp of the last successfully painted frame. Set to kNoTimestamp()
+  // The wallclock time of the last successfully painted frame. Set to null
   // during flushing.
-  base::TimeDelta last_painted_timestamp_;
+  base::TimeTicks last_painted_time_;
 
   // Keeps track of the number of frames decoded and dropped since the
   // last call to |statistics_cb_|. These must be accessed under lock.
@@ -204,6 +207,8 @@ class MEDIA_EXPORT VideoRendererImpl
   int frames_dropped_;
 
   bool is_shutting_down_;
+
+  scoped_ptr<base::TickClock> tick_clock_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;

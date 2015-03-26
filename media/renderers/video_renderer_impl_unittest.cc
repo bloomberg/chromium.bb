@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "media/base/data_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
@@ -45,7 +46,8 @@ MATCHER_P(HasTimestamp, ms, "") {
 class VideoRendererImplTest : public ::testing::Test {
  public:
   VideoRendererImplTest()
-      : decoder_(new MockVideoDecoder()),
+      : tick_clock_(new base::SimpleTestTickClock()),
+        decoder_(new MockVideoDecoder()),
         demuxer_stream_(DemuxerStream::VIDEO) {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
@@ -53,6 +55,10 @@ class VideoRendererImplTest : public ::testing::Test {
     renderer_.reset(new VideoRendererImpl(message_loop_.message_loop_proxy(),
                                           decoders.Pass(), true,
                                           new MediaLog()));
+    renderer_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));
+
+    // Start wallclock time at a non-zero value.
+    AdvanceWallclockTimeInMs(12345);
 
     demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
 
@@ -103,7 +109,8 @@ class VideoRendererImplTest : public ::testing::Test {
                    base::Unretained(&mock_cb_)),
         base::Bind(&StrictMock<MockCB>::Display, base::Unretained(&mock_cb_)),
         ended_event_.GetClosure(), error_event_.GetPipelineStatusCB(),
-        base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)),
+        base::Bind(&VideoRendererImplTest::GetWallClockTime,
+                   base::Unretained(this)),
         base::Bind(&VideoRendererImplTest::OnWaitingForDecryptionKey,
                    base::Unretained(this)));
   }
@@ -237,6 +244,12 @@ class VideoRendererImplTest : public ::testing::Test {
         base::Bind(base::ResetAndReturn(&decode_cb_), VideoDecoder::kOk));
   }
 
+  void AdvanceWallclockTimeInMs(int time_ms) {
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    base::AutoLock l(lock_);
+    tick_clock_->Advance(base::TimeDelta::FromMilliseconds(time_ms));
+  }
+
   void AdvanceTimeInMs(int time_ms) {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     base::AutoLock l(lock_);
@@ -246,6 +259,7 @@ class VideoRendererImplTest : public ::testing::Test {
  protected:
   // Fixture members.
   scoped_ptr<VideoRendererImpl> renderer_;
+  base::SimpleTestTickClock* tick_clock_;  // Owned by |renderer_|.
   MockVideoDecoder* decoder_;  // Owned by |renderer_|.
   NiceMock<MockDemuxerStream> demuxer_stream_;
 
@@ -258,9 +272,9 @@ class VideoRendererImplTest : public ::testing::Test {
   StrictMock<MockCB> mock_cb_;
 
  private:
-  base::TimeDelta GetTime() {
+  base::TimeTicks GetWallClockTime(base::TimeDelta time) {
     base::AutoLock l(lock_);
-    return time_;
+    return tick_clock_->NowTicks() + (time - time_);
   }
 
   void DecodeRequested(const scoped_refptr<DecoderBuffer>& buffer,

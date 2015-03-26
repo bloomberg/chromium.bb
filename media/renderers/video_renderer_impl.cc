@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
@@ -36,11 +37,10 @@ VideoRendererImpl::VideoRendererImpl(
       pending_read_(false),
       drop_frames_(drop_frames),
       buffering_state_(BUFFERING_HAVE_NOTHING),
-      last_timestamp_(kNoTimestamp()),
-      last_painted_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
       frames_dropped_(0),
       is_shutting_down_(false),
+      tick_clock_(new base::DefaultTickClock()),
       weak_factory_(this) {
 }
 
@@ -109,7 +109,7 @@ void VideoRendererImpl::Initialize(
     const PaintCB& paint_cb,
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
-    const TimeDeltaCB& get_time_cb,
+    const WallClockTimeCB& wall_clock_time_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
@@ -120,7 +120,7 @@ void VideoRendererImpl::Initialize(
   DCHECK(!buffering_state_cb.is_null());
   DCHECK(!paint_cb.is_null());
   DCHECK(!ended_cb.is_null());
-  DCHECK(!get_time_cb.is_null());
+  DCHECK(!wall_clock_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
 
   low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
@@ -134,7 +134,7 @@ void VideoRendererImpl::Initialize(
   paint_cb_ = paint_cb,
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
-  get_time_cb_ = get_time_cb;
+  wall_clock_time_cb_ = wall_clock_time_cb;
   state_ = kInitializing;
 
   video_frame_stream_->Initialize(
@@ -208,7 +208,7 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
-    base::TimeDelta now = get_time_cb_.Run();
+    base::TimeTicks now = tick_clock_->NowTicks();
 
     // Remain idle until we have the next frame ready for rendering.
     if (ready_frames_.empty()) {
@@ -217,8 +217,8 @@ void VideoRendererImpl::ThreadMain() {
           rendered_end_of_stream_ = true;
           task_runner_->PostTask(FROM_HERE, ended_cb_);
         }
-      } else if (last_painted_timestamp_ != kNoTimestamp() &&
-                 now - last_painted_timestamp_ >= kTimeToDeclareHaveNothing) {
+      } else if (!last_painted_time_.is_null() &&
+                 now - last_painted_time_ >= kTimeToDeclareHaveNothing) {
         buffering_state_ = BUFFERING_HAVE_NOTHING;
         task_runner_->PostTask(
             FROM_HERE, base::Bind(buffering_state_cb_, BUFFERING_HAVE_NOTHING));
@@ -228,8 +228,16 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
-    base::TimeDelta target_paint_timestamp = ready_frames_.front()->timestamp();
-    base::TimeDelta latest_paint_timestamp;
+    base::TimeTicks target_paint_time =
+        wall_clock_time_cb_.Run(ready_frames_.front()->timestamp());
+
+    // If media time has stopped, don't attempt to paint any more frames.
+    if (target_paint_time.is_null()) {
+      UpdateStatsAndWait_Locked(kIdleTimeDelta);
+      continue;
+    }
+
+    base::TimeTicks latest_possible_paint_time;
 
     // Deadline is defined as the duration between this frame and the next
     // frame, using the delta between this frame and the previous frame as the
@@ -237,21 +245,21 @@ void VideoRendererImpl::ThreadMain() {
     //
     // TODO(scherkus): This can be vastly improved. Use a histogram to measure
     // the accuracy of our frame timing code. http://crbug.com/149829
-    if (last_timestamp_ == kNoTimestamp()) {
-      latest_paint_timestamp = base::TimeDelta::Max();
+    if (last_media_time_.is_null()) {
+      latest_possible_paint_time = now;
     } else {
-      base::TimeDelta duration = target_paint_timestamp - last_timestamp_;
-      latest_paint_timestamp = target_paint_timestamp + duration;
+      base::TimeDelta duration = target_paint_time - last_media_time_;
+      latest_possible_paint_time = target_paint_time + duration;
     }
 
     // Remain idle until we've reached our target paint window.
-    if (now < target_paint_timestamp) {
+    if (now < target_paint_time) {
       UpdateStatsAndWait_Locked(
-          std::min(target_paint_timestamp - now, kIdleTimeDelta));
+          std::min(target_paint_time - now, kIdleTimeDelta));
       continue;
     }
 
-    if (ready_frames_.size() > 1 && now > latest_paint_timestamp &&
+    if (ready_frames_.size() > 1 && now > latest_possible_paint_time &&
         drop_frames_) {
       DropNextReadyFrame_Locked();
       continue;
@@ -265,6 +273,11 @@ void VideoRendererImpl::ThreadMain() {
   }
 }
 
+void VideoRendererImpl::SetTickClockForTesting(
+    scoped_ptr<base::TickClock> tick_clock) {
+  tick_clock_.swap(tick_clock);
+}
+
 void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   lock_.AssertAcquired();
 
@@ -272,8 +285,8 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   ready_frames_.pop_front();
   frames_decoded_++;
 
-  last_timestamp_ = next_frame->timestamp();
-  last_painted_timestamp_ = next_frame->timestamp();
+  last_media_time_ = last_painted_time_ =
+      wall_clock_time_cb_.Run(next_frame->timestamp());
 
   paint_cb_.Run(next_frame);
 
@@ -287,7 +300,9 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
 
   lock_.AssertAcquired();
 
-  last_timestamp_ = ready_frames_.front()->timestamp();
+  last_media_time_ =
+      wall_clock_time_cb_.Run(ready_frames_.front()->timestamp());
+
   ready_frames_.pop_front();
   frames_decoded_++;
   frames_dropped_++;
@@ -428,8 +443,7 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kFlushed;
-  last_timestamp_ = kNoTimestamp();
-  last_painted_timestamp_ = kNoTimestamp();
+  last_media_time_ = last_painted_time_ = base::TimeTicks();
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
