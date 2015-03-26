@@ -53,6 +53,7 @@
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/WebURL.h"
@@ -106,8 +107,11 @@ void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
 
 CacheStorage* ServiceWorkerGlobalScope::caches(ExecutionContext* context)
 {
-    if (!m_caches)
-        m_caches = CacheStorage::create(ServiceWorkerGlobalScopeClient::from(context)->cacheStorage());
+    if (!m_caches) {
+        String identifier = createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin());
+        ASSERT(!identifier.isEmpty());
+        m_caches = CacheStorage::create(Platform::current()->cacheStorage(identifier));
+    }
     return m_caches;
 }
 

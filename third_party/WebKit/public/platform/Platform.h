@@ -101,6 +101,7 @@ class WebSandboxSupport;
 class WebScheduler;
 class WebSecurityOrigin;
 class WebScrollbarBehavior;
+class WebServiceWorkerCacheStorage;
 class WebSocketHandle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
@@ -218,6 +219,11 @@ public:
     // Must return non-null.
     virtual WebIDBFactory* idbFactory() { return 0; }
 
+
+    // Cache Storage ----------------------------------------------------------
+
+    // The caller is responsible for deleting the returned object.
+    virtual WebServiceWorkerCacheStorage* cacheStorage(const WebString& originIdentifier) { return nullptr; }
 
     // Gamepad -------------------------------------------------------------
 

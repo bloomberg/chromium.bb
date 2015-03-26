@@ -64,7 +64,6 @@ public:
     virtual void clearCachedMetadata(const WebURL&) = 0;
 
     virtual WebURL scope() const = 0;
-    virtual WebServiceWorkerCacheStorage* cacheStorage() const = 0;
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) = 0;
     // Calling didHandleFetchEvent without response means no response was

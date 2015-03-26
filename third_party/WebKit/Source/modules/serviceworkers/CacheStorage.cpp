@@ -174,7 +174,7 @@ private:
 
 CacheStorage* CacheStorage::create(WebServiceWorkerCacheStorage* webCacheStorage)
 {
-    return new CacheStorage(webCacheStorage);
+    return new CacheStorage(adoptPtr(webCacheStorage));
 }
 
 ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheName)
@@ -273,7 +273,7 @@ DEFINE_TRACE(CacheStorage)
     visitor->trace(m_nameToCacheMap);
 }
 
-CacheStorage::CacheStorage(WebServiceWorkerCacheStorage* webCacheStorage)
+CacheStorage::CacheStorage(PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
     : m_webCacheStorage(webCacheStorage)
 {
 }

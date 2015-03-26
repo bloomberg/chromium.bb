@@ -54,7 +54,6 @@ public:
     virtual void clearCachedMetadata(const WebURL&) override;
 
     virtual WebURL scope() const override;
-    virtual WebServiceWorkerCacheStorage* cacheStorage() const override;
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) override;
     virtual void didHandleFetchEvent(int fetchEventID) override;
