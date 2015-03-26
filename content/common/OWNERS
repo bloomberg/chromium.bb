@@ -72,3 +72,7 @@ per-file websocket.*=yhirano@chromium.org
 # Compositor
 per-file cc_messages_unittest.cc=danakj@chromium.org
 per-file cc_messages_perftest.cc=danakj@chromium.org
+
+# DirectWrite
+per-file dwrite_font_platform_win*=shrikant@chromium.org
+per-file dwrite_font_platform_win*=scottmg@chromium.org
