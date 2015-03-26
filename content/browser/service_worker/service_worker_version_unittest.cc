@@ -411,7 +411,11 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   ASSERT_EQ(ServiceWorkerVersion::REDUNDANT, statuses[4]);
 }
 
-TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
+TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
+  // Used to reliably test when the idle time gets reset regardless of clock
+  // granularity.
+  const base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
+
   // Verify the timer is not running when version initializes its status.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   EXPECT_FALSE(version_->timeout_timer_.IsRunning());
@@ -422,9 +426,13 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_FALSE(version_->idle_time_.is_null());
 
-  // The timer should be running if the worker is restarted without controllee.
+  // The idle time should be reset if the worker is restarted without
+  // controllee.
   status = SERVICE_WORKER_ERROR_FAILED;
+  version_->idle_time_ -= kOneSecond;
+  base::TimeTicks idle_time = version_->idle_time_;
   version_->StopWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
@@ -433,8 +441,11 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_LT(idle_time, version_->idle_time_);
 
-  // Adding controllee doesn't stop the stop-worker-timer.
+  // Adding a controllee resets the idle time.
+  version_->idle_time_ -= kOneSecond;
+  idle_time = version_->idle_time_;
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
                                     MSG_ROUTING_NONE /* render_frame_id */,
@@ -444,6 +455,19 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
                                     NULL));
   version_->AddControllee(host.get());
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_LT(idle_time, version_->idle_time_);
+
+  // Completing an event resets the idle time.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->idle_time_ -= kOneSecond;
+  idle_time = version_->idle_time_;
+  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
+                               base::Bind(&base::DoNothing),
+                               base::Bind(&ReceiveFetchResult, &status));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_LT(idle_time, version_->idle_time_);
 }
 
 

@@ -1693,6 +1693,7 @@ template <typename IDMAP>
 void ServiceWorkerVersion::RemoveCallbackAndStopIfDoomed(
     IDMAP* callbacks,
     int request_id) {
+  RestartTick(&idle_time_);
   callbacks->Remove(request_id);
   if (is_doomed_) {
     // The stop should be already scheduled, but try to stop immediately, in
