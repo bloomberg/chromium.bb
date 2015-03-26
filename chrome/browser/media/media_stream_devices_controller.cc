@@ -500,8 +500,12 @@ void MediaStreamDevicesController::RequestFinished() {
 
 bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
   // The request from internal objects like chrome://URLs is always allowed.
-  if (CheckAllowAllMediaStreamContentForOrigin(profile_,
-                                               request_.security_origin)) {
+  if (CheckAllowAllMediaStreamContentForOrigin(
+          profile_, request_.security_origin,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
+      CheckAllowAllMediaStreamContentForOrigin(
+          profile_, request_.security_origin,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
     return true;
   }
 
@@ -586,13 +590,12 @@ int MediaStreamDevicesController::FilterBlockedByDefaultDevices() {
 
 bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // TODO(markusheintz): Replace CONTENT_SETTINGS_TYPE_MEDIA_STREAM with the
-  // appropriate new CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC and
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
-  ContentSetting current_setting =
-      profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
-  return (current_setting == CONTENT_SETTING_BLOCK);
+  return (profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, NULL)
+          == CONTENT_SETTING_BLOCK &&
+          profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, NULL)
+          == CONTENT_SETTING_BLOCK);
 }
 
 bool MediaStreamDevicesController::IsSchemeSecure() const {

@@ -68,7 +68,9 @@ TEST(PepperFlashContentSettingsUtilsTest, AreMediaExceptionsEqual) {
     // true when they are different.
     EXPECT_TRUE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_BLOCK,
+        CONTENT_SETTING_ASK,
         MediaExceptions(),
+        CONTENT_SETTING_BLOCK,
         CONTENT_SETTING_ASK,
         MediaExceptions(),
         false,
@@ -92,14 +94,18 @@ TEST(PepperFlashContentSettingsUtilsTest, AreMediaExceptionsEqual) {
     // the result, because it has the same settings as |default_setting_2|.
     EXPECT_TRUE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ALLOW,
+        CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ASK,
         CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,
         false));
     EXPECT_TRUE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ASK,
+        CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
+        CONTENT_SETTING_ALLOW,
         CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
         false,
@@ -107,7 +113,9 @@ TEST(PepperFlashContentSettingsUtilsTest, AreMediaExceptionsEqual) {
     // Changing |default_setting_2| should change the result.
     EXPECT_FALSE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ALLOW,
+        CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ALLOW,
         CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,
@@ -131,14 +139,18 @@ TEST(PepperFlashContentSettingsUtilsTest, AreMediaExceptionsEqual) {
 
     EXPECT_TRUE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ALLOW,
+        CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ASK,
         CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,
         false));
     EXPECT_FALSE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ALLOW,
+        CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ALLOW,
         CONTENT_SETTING_ALLOW,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,
@@ -159,14 +171,18 @@ TEST(PepperFlashContentSettingsUtilsTest, AreMediaExceptionsEqual) {
     // Test that |ignore_video_setting| works.
     EXPECT_TRUE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ASK,
+        CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
         CONTENT_SETTING_ASK,
+        CONTENT_SETTING_BLOCK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,
         true));
     EXPECT_FALSE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ASK,
+        CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ASK,
         CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,
@@ -186,15 +202,19 @@ TEST(PepperFlashContentSettingsUtilsTest, AreMediaExceptionsEqual) {
 
     // Test that |ignore_audio_setting| works.
     EXPECT_TRUE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
+        CONTENT_SETTING_BLOCK,
         CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ASK,
         CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         true,
         false));
     EXPECT_FALSE(PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
         CONTENT_SETTING_ASK,
+        CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_1, arraysize(exceptions_1)),
+        CONTENT_SETTING_ASK,
         CONTENT_SETTING_ASK,
         ConvertAndSort(exceptions_2, arraysize(exceptions_2)),
         false,

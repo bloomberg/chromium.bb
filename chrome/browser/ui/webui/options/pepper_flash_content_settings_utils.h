@@ -53,9 +53,11 @@ class PepperFlashContentSettingsUtils {
   // |ignore_audio_setting| and |ignore_video_setting| specify whether to skip
   // comparison of the |audio_setting| and |video_setting| field of
   // MediaException, respectively.
-  static bool AreMediaExceptionsEqual(ContentSetting default_setting_1,
+  static bool AreMediaExceptionsEqual(ContentSetting default_audio_setting_1,
+                                      ContentSetting default_video_setting_1,
                                       const MediaExceptions& exceptions_1,
-                                      ContentSetting default_setting_2,
+                                      ContentSetting default_audio_setting_2,
+                                      ContentSetting default_video_setting_2,
                                       const MediaExceptions& exceptions_2,
                                       bool ignore_audio_setting,
                                       bool ignore_video_setting);

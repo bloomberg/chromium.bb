@@ -109,9 +109,12 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
   {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
+  // The MEDIASTREAM content setting is deprecated, but the settings for
+  // microphone and camera still live in the part of UI labeled "media-stream".
+  // TODO(msramek): Clean this up once we have a new UI for media.
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream"},
   {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
   {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
   {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
@@ -255,10 +258,11 @@ ContentSettingsHandler::MediaSettingsInfo::MediaSettingsInfo()
       last_flash_refresh_request_id(0),
       show_flash_default_link(false),
       show_flash_exceptions_link(false),
-      default_setting(CONTENT_SETTING_DEFAULT),
+      default_audio_setting(CONTENT_SETTING_DEFAULT),
+      default_video_setting(CONTENT_SETTING_DEFAULT),
       policy_disable_audio(false),
       policy_disable_video(false),
-      default_setting_initialized(false),
+      default_settings_initialized(false),
       exceptions_initialized(false) {
 }
 
@@ -598,11 +602,9 @@ void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
-  Profile* profile = Profile::FromWebUI(web_ui());
   std::string provider_id;
   ContentSetting default_setting =
-      profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          type, &provider_id);
+      GetContentSettingsMap()->GetDefaultContentSetting(type, &provider_id);
 
   // For Plugins, display the obsolete ASK setting as BLOCK.
   if (type == ContentSettingsType::CONTENT_SETTINGS_TYPE_PLUGINS &&
@@ -629,10 +631,13 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
 
   media_settings_.policy_disable_audio = audio_disabled;
   media_settings_.policy_disable_video = video_disabled;
-  media_settings_.default_setting =
+  media_settings_.default_audio_setting =
       GetContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
-  media_settings_.default_setting_initialized = true;
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, NULL);
+  media_settings_.default_video_setting =
+      GetContentSettingsMap()->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, NULL);
+  media_settings_.default_settings_initialized = true;
   UpdateFlashMediaLinksVisibility();
 
   base::DictionaryValue media_ui_settings;
@@ -722,10 +727,12 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       UpdateNotificationExceptionsView();
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      UpdateMediaSettingsView();
+      // The content settings type CONTENT_SETTINGS_TYPE_MEDIASSTREAM
+      // is deprecated.
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      UpdateMediaSettingsView();
       UpdateMediaExceptionsView();
       break;
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
@@ -981,7 +988,11 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
                                    type_string, media_exceptions);
 
-  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+  // TODO(msramek): We currently don't have a UI to show separate default
+  // settings for microphone and camera. However, SetContentFilter always sets
+  // both defaults to the same value, so it doesn't matter which one we pick
+  // to show in the UI. Makes sure to update both when we have the new media UI.
+  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
 }
 
 void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
@@ -1339,9 +1350,20 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
     profile = profile->GetOriginalProfile();
 #endif
 
-
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-  map->SetDefaultContentSetting(content_type, default_setting);
+
+  // MEDIASTREAM is deprecated and the two separate settings MEDIASTREAM_CAMERA
+  // and MEDIASTREAM_MIC should be used instead. However, we still only have
+  // one pair of radio buttons that sets both settings.
+  // TODO(msramek): Clean this up once we have the new UI for media.
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    map->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, default_setting);
+    map->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, default_setting);
+  } else {
+    map->SetDefaultContentSetting(content_type, default_setting);
+  }
 
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
@@ -1542,7 +1564,7 @@ void ContentSettingsHandler::ShowFlashMediaLink(LinkType link_type, bool show) {
 
 void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
   if (!media_settings_.flash_settings_initialized ||
-      !media_settings_.default_setting_initialized ||
+      !media_settings_.default_settings_initialized ||
       !media_settings_.exceptions_initialized) {
     return;
   }
@@ -1565,8 +1587,10 @@ void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
     // settings.
     if (!(media_settings_.policy_disable_audio &&
           media_settings_.policy_disable_video) &&
-        media_settings_.flash_default_setting !=
-            media_settings_.default_setting) {
+        ((media_settings_.flash_default_setting !=
+          media_settings_.default_audio_setting) ||
+         (media_settings_.flash_default_setting !=
+          media_settings_.default_video_setting))) {
       ShowFlashMediaLink(DEFAULT_SETTING, true);
     }
   }
@@ -1574,8 +1598,10 @@ void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
     // If audio or video capture is disabled by policy, we skip comparison of
     // exceptions for audio or video capture, respectively.
     if (!PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
-            media_settings_.default_setting,
+            media_settings_.default_audio_setting,
+            media_settings_.default_video_setting,
             media_settings_.exceptions,
+            media_settings_.flash_default_setting,
             media_settings_.flash_default_setting,
             media_settings_.flash_exceptions,
             media_settings_.policy_disable_audio,

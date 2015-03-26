@@ -961,6 +961,16 @@ TEST_F(HostContentSettingsMapTest, IsSettingAllowedForType) {
                   prefs, CONTENT_SETTING_ASK,
                   CONTENT_SETTINGS_TYPE_FULLSCREEN));
 
+  EXPECT_FALSE(HostContentSettingsMap::IsSettingAllowedForType(
+                   prefs, CONTENT_SETTING_ALLOW,
+                   CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+  EXPECT_FALSE(HostContentSettingsMap::IsSettingAllowedForType(
+                   prefs, CONTENT_SETTING_ASK,
+                   CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+  EXPECT_FALSE(HostContentSettingsMap::IsSettingAllowedForType(
+                   prefs, CONTENT_SETTING_BLOCK,
+                   CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+
   // TODO(msramek): Add more checks for setting type - setting pairs where
   // it is not obvious whether or not they are allowed.
 }

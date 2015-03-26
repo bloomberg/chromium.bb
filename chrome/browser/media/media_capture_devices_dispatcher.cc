@@ -395,8 +395,15 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
   }
 #endif
 
-  if (CheckAllowAllMediaStreamContentForOrigin(profile, security_origin))
+  ContentSettingsType contentSettingsType =
+      type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+          ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+          : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+
+  if (CheckAllowAllMediaStreamContentForOrigin(
+          profile, security_origin, contentSettingsType)) {
     return true;
+  }
 
   const char* policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
                                 ? prefs::kAudioCaptureAllowed
@@ -415,9 +422,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
   if (profile->GetHostContentSettingsMap()->GetContentSetting(
           security_origin,
           security_origin,
-          type == content::MEDIA_DEVICE_AUDIO_CAPTURE
-              ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-              : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          contentSettingsType,
           NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
     return true;
   }
@@ -436,8 +441,15 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  if (CheckAllowAllMediaStreamContentForOrigin(profile, security_origin))
+  ContentSettingsType contentSettingsType =
+      type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+          ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+          : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+
+  if (CheckAllowAllMediaStreamContentForOrigin(
+          profile, security_origin, contentSettingsType)) {
     return true;
+  }
 
   const char* policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
                                 ? prefs::kAudioCaptureAllowed
@@ -456,9 +468,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
   if (profile->GetHostContentSettingsMap()->GetContentSetting(
           security_origin,
           security_origin,
-          type == content::MEDIA_DEVICE_AUDIO_CAPTURE
-              ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-              : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          contentSettingsType,
           NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
     return true;
   }

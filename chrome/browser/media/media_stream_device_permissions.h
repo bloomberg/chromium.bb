@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_STREAM_DEVICE_PERMISSIONS_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_DEVICE_PERMISSIONS_H_
 
+#include "components/content_settings/core/common/content_settings_types.h"
+
 class GURL;
 class Profile;
 
@@ -17,7 +19,8 @@ enum MediaStreamDevicePolicy {
 // Returns true if security origin is from internal objects like
 // chrome://URLs, otherwise returns false.
 bool CheckAllowAllMediaStreamContentForOrigin(Profile* profile,
-                                              const GURL& security_origin);
+                                              const GURL& security_origin,
+                                              ContentSettingsType type);
 
 // Get the device policy for |security_origin| and |profile|.
 MediaStreamDevicePolicy GetDevicePolicy(Profile* profile,

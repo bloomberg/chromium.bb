@@ -133,6 +133,13 @@ void DefaultProvider::RegisterProfilePrefs(
       prefs::kMigratedDefaultContentSettings,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // Whether the deprecated mediastream default setting has already been
+  // migrated into microphone and camera default settings.
+  registry->RegisterBooleanPref(
+      prefs::kMigratedDefaultMediaStreamSetting,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -144,6 +151,10 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
   // Migrate the dictionary of default content settings to the new individual
   // preferences.
   MigrateDefaultSettings();
+
+  // Migrate the obsolete media stream default setting into the new microphone
+  // and camera settings.
+  MigrateObsoleteMediaContentSetting();
 
   // Read global defaults.
   ReadDefaultSettings();
@@ -503,6 +514,20 @@ void DefaultProvider::MigrateDefaultSettings() {
 #endif
 
   prefs_->SetBoolean(prefs::kMigratedDefaultContentSettings, true);
+}
+
+void DefaultProvider::MigrateObsoleteMediaContentSetting() {
+  // We only do the migration once.
+  if (prefs_->GetBoolean(prefs::kMigratedDefaultMediaStreamSetting))
+    return;
+
+  scoped_ptr<base::Value> value = ReadIndividualPref(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+  WriteIndividualPref(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, value.get());
+  WriteIndividualPref(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, value.get());
+  WriteIndividualPref(CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
+
+  prefs_->SetBoolean(prefs::kMigratedDefaultMediaStreamSetting, true);
 }
 
 }  // namespace content_settings

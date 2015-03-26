@@ -36,12 +36,12 @@ bool IsInKioskMode() {
 }  // namespace
 
 bool CheckAllowAllMediaStreamContentForOrigin(Profile* profile,
-                                              const GURL& security_origin) {
-  // TODO(markusheintz): Replace CONTENT_SETTINGS_TYPE_MEDIA_STREAM with the
-  // appropriate new CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC and
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
+                                              const GURL& security_origin,
+                                              ContentSettingsType type) {
+  DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+         type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   return profile->GetHostContentSettingsMap()->ShouldAllowAllContent(
-      security_origin, security_origin, CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+      security_origin, security_origin, type);
 }
 
 MediaStreamDevicePolicy GetDevicePolicy(Profile* profile,

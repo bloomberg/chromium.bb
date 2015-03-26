@@ -85,6 +85,11 @@ const char kDefaultAppBannerSetting[] =
 // If a value is not set, it means the setting is allowed.
 const char kOverrideContentSettings[] = "profile.override_content_settings";
 
+// Boolean indicating whether the media stream default setting had been
+// migrated into two separate microphone and camera settings.
+const char kMigratedDefaultMediaStreamSetting[] =
+    "profile.migrated_default_media_stream_content_settings";
+
 // Preferences that are exclusively used to store managed values for default
 // content settings.
 const char kManagedDefaultCookiesSetting[] =

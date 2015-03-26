@@ -245,6 +245,10 @@ void HostContentSettingsMap::SetWebsiteSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
+  // TODO(msramek): MEDIASTREAM is deprecated. Remove this check when all
+  // references to MEDIASTREAM are removed from the code.
+  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+
   DCHECK(IsValueAllowedForType(prefs_, value, content_type));
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
@@ -496,9 +500,8 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     return false;
   }
 
-  // We don't support ALLOW for media default setting.
-  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
-      setting == CONTENT_SETTING_ALLOW) {
+  // We don't support the mediastream setting.
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     return false;
   }
 
@@ -713,6 +716,10 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     const std::string& resource_identifier,
     content_settings::SettingInfo* info,
     bool get_override) const {
+  // TODO(msramek): MEDIASTREAM is deprecated. Remove this check when all
+  // references to MEDIASTREAM are removed from the code.
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type);
+
   UsedContentSettingsProviders();
   ContentSettingsPattern* primary_pattern = NULL;
   ContentSettingsPattern* secondary_pattern = NULL;

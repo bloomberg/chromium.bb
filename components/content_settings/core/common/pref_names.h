@@ -43,6 +43,8 @@ extern const char kDefaultProtectedMediaIdentifierSetting[];
 #endif
 extern const char kDefaultAppBannerSetting[];
 
+extern const char kMigratedDefaultMediaStreamSetting[];
+
 extern const char kManagedDefaultCookiesSetting[];
 extern const char kManagedDefaultImagesSetting[];
 extern const char kManagedDefaultJavaScriptSetting[];

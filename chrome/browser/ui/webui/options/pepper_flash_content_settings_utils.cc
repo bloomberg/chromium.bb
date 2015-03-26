@@ -96,9 +96,11 @@ void PepperFlashContentSettingsUtils::SortMediaExceptions(
 
 // static
 bool PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
-    ContentSetting default_setting_1,
+    ContentSetting default_audio_setting_1,
+    ContentSetting default_video_setting_1,
     const MediaExceptions& exceptions_1,
-    ContentSetting default_setting_2,
+    ContentSetting default_audio_setting_2,
+    ContentSetting default_video_setting_2,
     const MediaExceptions& exceptions_2,
     bool ignore_audio_setting,
     bool ignore_video_setting) {
@@ -106,11 +108,11 @@ bool PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
   MediaExceptions::const_iterator iter_2 = exceptions_2.begin();
 
   MediaException default_exception_1(ContentSettingsPattern(),
-                                     default_setting_1,
-                                     default_setting_1);
+                                     default_audio_setting_1,
+                                     default_video_setting_1);
   MediaException default_exception_2(ContentSettingsPattern(),
-                                     default_setting_2,
-                                     default_setting_2);
+                                     default_audio_setting_2,
+                                     default_video_setting_2);
 
   while (iter_1 != exceptions_1.end() && iter_2 != exceptions_2.end()) {
     int compare_result = CompareMediaException(*iter_1, *iter_2);

@@ -97,6 +97,10 @@ class DefaultProvider : public ObservableProvider {
   // once during the first run.
   void MigrateDefaultSettings();
 
+  // Migrates the obsolete media stream default setting to the new microphone
+  // and camera settings.
+  void MigrateObsoleteMediaContentSetting();
+
   // Copies of the pref data, so that we can read it on the IO thread.
   ValueMap default_settings_;
 

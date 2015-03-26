@@ -78,10 +78,11 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
     bool show_flash_exceptions_link;
 
     // Cached Chrome media settings.
-    ContentSetting default_setting;
+    ContentSetting default_audio_setting;
+    ContentSetting default_video_setting;
     bool policy_disable_audio;
     bool policy_disable_video;
-    bool default_setting_initialized;
+    bool default_settings_initialized;
     MediaExceptions exceptions;
     bool exceptions_initialized;
   };
