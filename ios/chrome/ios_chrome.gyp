@@ -37,6 +37,7 @@
         '../../url/url.gyp:url_lib',
         '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
         '../web/ios_web.gyp:ios_web',
+        'injected_js',
         'ios_chrome_resources.gyp:ios_theme_resources_gen',
       ],
       'link_settings': {
@@ -82,6 +83,12 @@
         'browser/dom_distiller/dom_distiller_service_factory.h',
         'browser/experimental_flags.h',
         'browser/experimental_flags.mm',
+        'browser/find_in_page/find_in_page_controller.h',
+        'browser/find_in_page/find_in_page_controller.mm',
+        'browser/find_in_page/find_in_page_model.h',
+        'browser/find_in_page/find_in_page_model.mm',
+        'browser/find_in_page/js_findinpage_manager.h',
+        'browser/find_in_page/js_findinpage_manager.mm',
         'browser/infobars/confirm_infobar_controller.h',
         'browser/infobars/confirm_infobar_controller.mm',
         'browser/infobars/infobar.h',
@@ -160,6 +167,21 @@
         'browser/web_resource/ios_web_resource_service.cc',
         'browser/web_resource/ios_web_resource_service.h',
       ],
+    },
+    {
+      'target_name': 'injected_js',
+      'type': 'none',
+      'sources': [
+        'browser/find_in_page/resources/find_in_page.js',
+      ],
+      'includes': [
+        '../../ios/web/js_compile.gypi',
+      ],
+      'link_settings': {
+        'mac_bundle_resources': [
+          '<(SHARED_INTERMEDIATE_DIR)/find_in_page.js',
+        ],
+      },
     },
   ],
 }
