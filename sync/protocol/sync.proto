@@ -714,7 +714,7 @@ message DataTypeContext {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 42];
+  optional int32 protocol_version = 2 [default = 43];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
