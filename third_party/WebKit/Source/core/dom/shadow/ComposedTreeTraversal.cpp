@@ -64,7 +64,7 @@ Node* ComposedTreeTraversal::traverseNode(const Node& node, TraversalDirection d
     if (!isActiveInsertionPoint(node))
         return const_cast<Node*>(&node);
     const InsertionPoint& insertionPoint = toInsertionPoint(node);
-    if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint.first() : insertionPoint.last(), insertionPoint, direction))
+    if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint.firstDistributedNode() : insertionPoint.lastDistributedNode(), insertionPoint, direction))
         return found;
     ASSERT(isHTMLShadowElement(node) || (isHTMLContentElement(node) && !node.hasChildren()));
     return 0;
@@ -72,7 +72,7 @@ Node* ComposedTreeTraversal::traverseNode(const Node& node, TraversalDirection d
 
 Node* ComposedTreeTraversal::traverseDistributedNodes(const Node* node, const InsertionPoint& insertionPoint, TraversalDirection direction)
 {
-    for (const Node* next = node; next; next = (direction == TraversalDirectionForward ? insertionPoint.nextTo(next) : insertionPoint.previousTo(next))) {
+    for (const Node* next = node; next; next = (direction == TraversalDirectionForward ? insertionPoint.distributedNodeNextTo(next) : insertionPoint.distributedNodePreviousTo(next))) {
         if (Node* found = traverseNode(*next, direction))
             return found;
     }
@@ -88,7 +88,7 @@ Node* ComposedTreeTraversal::traverseSiblingOrBackToInsertionPoint(const Node& n
     if (!insertionPoint)
         return traverseSiblingInCurrentTree(node, direction);
 
-    if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint->nextTo(&node) : insertionPoint->previousTo(&node), *insertionPoint, direction))
+    if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint->distributedNodeNextTo(&node) : insertionPoint->distributedNodePreviousTo(&node), *insertionPoint, direction))
         return found;
     return traverseSiblingOrBackToInsertionPoint(*insertionPoint, direction);
 }

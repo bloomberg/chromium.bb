@@ -60,12 +60,12 @@ public:
 
     bool shouldUseFallbackElements() const;
 
-    size_t size() const { return m_distribution.size(); }
-    Node* at(size_t index)  const { return m_distribution.at(index).get(); }
-    Node* first() const { return m_distribution.isEmpty() ? 0 : m_distribution.first().get(); }
-    Node* last() const { return m_distribution.isEmpty() ? 0 : m_distribution.last().get(); }
-    Node* nextTo(const Node* node) const { return m_distribution.nextTo(node); }
-    Node* previousTo(const Node* node) const { return m_distribution.previousTo(node); }
+    size_t distributedNodesSize() const { return m_distribution.size(); }
+    Node* distributedNodeAt(size_t index)  const { return m_distribution.at(index).get(); }
+    Node* firstDistributedNode() const { return m_distribution.isEmpty() ? 0 : m_distribution.first().get(); }
+    Node* lastDistributedNode() const { return m_distribution.isEmpty() ? 0 : m_distribution.last().get(); }
+    Node* distributedNodeNextTo(const Node* node) const { return m_distribution.nextTo(node); }
+    Node* distributedNodePreviousTo(const Node* node) const { return m_distribution.previousTo(node); }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -72,8 +72,8 @@ inline void DistributionPool::populateChildren(const ContainerNode& parent)
     for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
         if (isActiveInsertionPoint(*child)) {
             InsertionPoint* insertionPoint = toInsertionPoint(child);
-            for (size_t i = 0; i < insertionPoint->size(); ++i)
-                m_nodes.append(insertionPoint->at(i));
+            for (size_t i = 0; i < insertionPoint->distributedNodesSize(); ++i)
+                m_nodes.append(insertionPoint->distributedNodeAt(i));
         } else {
             m_nodes.append(child);
         }
