@@ -5,9 +5,6 @@
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
 #include "base/stl_util.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -16,6 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
@@ -59,9 +57,10 @@ content::WebUIDataSource* CreateUberHTMLSource() {
 }
 
 // Determines whether the user has an active extension of the given type.
-bool HasExtensionType(Profile* profile, const std::string& extension_type) {
+bool HasExtensionType(content::BrowserContext* browser_context,
+                      const std::string& extension_type) {
   const extensions::ExtensionSet& extension_set =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
   for (extensions::ExtensionSet::const_iterator iter = extension_set.begin();
        iter != extension_set.end(); ++iter) {
     const extensions::URLOverrides::URLOverrideMap& map =
@@ -73,7 +72,8 @@ bool HasExtensionType(Profile* profile, const std::string& extension_type) {
   return false;
 }
 
-content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
+content::WebUIDataSource* CreateUberFrameHTMLSource(
+    content::BrowserContext* browser_context) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUberFrameHost);
 
@@ -106,7 +106,7 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
   source->AddString("settingsGroup", settings_group);
   bool overridesHistory =
-      HasExtensionType(profile, chrome::kChromeUIHistoryHost);
+      HasExtensionType(browser_context, chrome::kChromeUIHistoryHost);
   source->AddString("overridesHistory", overridesHistory ? "yes" : "no");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
@@ -114,11 +114,21 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   return source;
 }
 
+void UpdateHistoryNavigation(content::WebUI* web_ui) {
+  bool overrides_history =
+      HasExtensionType(web_ui->GetWebContents()->GetBrowserContext(),
+                       chrome::kChromeUIHistoryHost);
+  web_ui->CallJavascriptFunction(
+      "uber_frame.setNavigationOverride",
+      base::StringValue(chrome::kChromeUIHistoryHost),
+      base::StringValue(overrides_history ? "yes" : "no"));
+}
+
 }  // namespace
 
 UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateUberHTMLSource());
+  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
+                                CreateUberHTMLSource());
 
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL,
                   chrome::kChromeUIExtensionsHost);
@@ -186,44 +196,36 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
 // UberFrameUI
 
-UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateUberFrameHTMLSource(profile));
+UberFrameUI::UberFrameUI(content::WebUI* web_ui)
+    : WebUIController(web_ui),
+      extension_registry_observer_(this) {
+  content::BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  content::WebUIDataSource::Add(browser_context,
+                                CreateUberFrameHTMLSource(browser_context));
 
   // Register as an observer for when extensions are loaded and unloaded.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(browser_context));
 }
 
 UberFrameUI::~UberFrameUI() {
 }
 
-void UberFrameUI::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  switch (type) {
-    // We listen for notifications that indicate an extension has been loaded
-    // (i.e., has been installed and/or enabled) or unloaded (i.e., has been
-    // uninstalled and/or disabled). If one of these events has occurred, then
-    // we must update the behavior of the History navigation element so that
-    // it opens the history extension if one is installed and enabled or
-    // opens the default history page if one is uninstalled or disabled.
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      Profile* profile = Profile::FromWebUI(web_ui());
-      bool overrides_history =
-          HasExtensionType(profile, chrome::kChromeUIHistoryHost);
-      web_ui()->CallJavascriptFunction(
-          "uber_frame.setNavigationOverride",
-          base::StringValue(chrome::kChromeUIHistoryHost),
-          base::StringValue(overrides_history ? "yes" : "no"));
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+void UberFrameUI::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const extensions::Extension* extension) {
+  // We listen for notifications that indicate an extension has been loaded
+  // (i.e., has been installed and/or enabled) or unloaded (i.e., has been
+  // uninstalled and/or disabled). If one of these events has occurred, then
+  // we must update the behavior of the History navigation element so that
+  // it opens the history extension if one is installed and enabled or
+  // opens the default history page if one is uninstalled or disabled.
+  UpdateHistoryNavigation(web_ui());
+}
+
+void UberFrameUI::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  UpdateHistoryNavigation(web_ui());
 }

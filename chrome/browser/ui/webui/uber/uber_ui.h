@@ -7,12 +7,18 @@
 
 #include <string>
 
-#include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "extensions/browser/extension_registry_observer.h"
+
+namespace content {
+class BrowserContext;
+}
+
+namespace extensions {
+class ExtensionRegistry;
+}
 
 // The WebUI class for the uber page (chrome://chrome). It manages the UI for
 // the uber page (navigation bar and so forth) as well as WebUI objects for
@@ -47,19 +53,24 @@ class UberUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(UberUI);
 };
 
-class UberFrameUI : public content::NotificationObserver,
-                    public content::WebUIController {
+class UberFrameUI : public content::WebUIController,
+                    public extensions::ExtensionRegistryObserver {
  public:
   explicit UberFrameUI(content::WebUI* web_ui);
   ~UberFrameUI() override;
 
  private:
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UberFrameUI);
 };
