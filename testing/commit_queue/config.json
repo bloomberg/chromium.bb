@@ -6,9 +6,6 @@
     "git_repo_url": "https://chromium.googlesource.com/chromium/src",
     "hide_ref_in_committed_msg": true,
     "max_commit_burst": 2,
-    "project_bases": [
-        ".*"
-    ],
     "project_bases_legacy": [
         "^svn\\:\\/\\/svn\\.chromium\\.org\\/chrome/trunk/src(|/.*)$",
         "^svn\\:\\/\\/chrome\\-svn\\/chrome/trunk/src(|/.*)$",
