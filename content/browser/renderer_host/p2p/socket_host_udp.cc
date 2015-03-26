@@ -72,13 +72,20 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
                                    int socket_id,
                                    P2PMessageThrottler* throttler)
     : P2PSocketHost(message_sender, socket_id, P2PSocketHost::UDP),
-      socket_(
-          new net::UDPServerSocket(GetContentClient()->browser()->GetNetLog(),
-                                   net::NetLog::Source())),
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
       throttler_(throttler),
       send_buffer_size_(0) {
+  net::UDPServerSocket* socket = new net::UDPServerSocket(
+      GetContentClient()->browser()->GetNetLog(), net::NetLog::Source());
+#if defined(OS_WIN)
+  // If configured for finch experiment, use nonblocking IO.
+  if (base::FieldTrialList::FindFullName("WebRTC-UDPSocketNonBlockingIO") ==
+      "Enabled") {
+    socket->UseNonBlockingIO();
+  }
+#endif
+  socket_.reset(socket);
 }
 
 P2PSocketHostUdp::~P2PSocketHostUdp() {
