@@ -13,7 +13,7 @@
   width: 522px;
 }
 
-.minute-maid #gaia-signin {
+.new-gaia-flow #gaia-signin {
   padding: 0 0 0;
   width: 522px;
 }
@@ -42,7 +42,7 @@
   }
 }
 
-.minute-maid #signin-right,
+.new-gaia-flow #signin-right,
 .no-right-panel #signin-right {
   display: none;
 }
@@ -133,8 +133,8 @@ html[dir=rtl] #back-button-item {
   width: 1px;
 }
 
-.gaia-signin .minute-maid #step-logo,
-.gaia-signin .minute-maid #gaia-signin-divider,
+.gaia-signin .new-gaia-flow #step-logo,
+.gaia-signin .new-gaia-flow #gaia-signin-divider,
 .no-right-panel #gaia-signin-divider {
   display: none;
 }
@@ -177,7 +177,7 @@ webview#signin-frame {
   text-align: center;
 }
 
-.minute-maid #enterprise-info-container {
+.new-gaia-flow #enterprise-info-container {
   display: none;
 }
 

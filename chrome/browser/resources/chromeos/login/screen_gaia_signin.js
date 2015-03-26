@@ -318,7 +318,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         params.localizedStrings = data.localizedStrings;
 
       if (this.isNewGaiaFlow) {
-        $('inner-container').classList.add('minute-maid');
+        $('inner-container').classList.add('new-gaia-flow');
         $('progress-dots').hidden = true;
         if (data.enterpriseDomain)
           params.enterpriseDomain = data.enterpriseDomain;
