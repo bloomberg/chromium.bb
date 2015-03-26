@@ -36,6 +36,8 @@
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                        \
          disable_ext_occlusion_query)                        \
+  GPU_OP(DISABLE_FBO_INVALIDATIONS,                          \
+         disable_fbo_invalidations)                          \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_MULTISAMPLING,                              \

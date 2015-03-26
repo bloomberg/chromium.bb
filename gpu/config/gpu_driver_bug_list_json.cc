@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.17",
+  "version": "7.18",
   "entries": [
     {
       "id": 1,
@@ -1175,6 +1175,19 @@ LONG_STRING_CONST(
       "gl_renderer": ".*420",
       "features": [
         "unbind_attachments_on_bound_render_fbo_delete"
+      ]
+    },
+    {
+      "id": 103,
+      "description": "Adreno 420 driver drops draw calls after FBO invalidation",
+      "cr_bugs": [443060],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*420",
+      "features": [
+        "disable_fbo_invalidations"
       ]
     }
   ]
