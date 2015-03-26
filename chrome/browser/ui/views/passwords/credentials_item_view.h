@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace autofill {

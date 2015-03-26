@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
-#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 
 using password_manager::PasswordFormManager;
 using autofill::PasswordFormMap;

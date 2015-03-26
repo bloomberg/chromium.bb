@@ -2,35 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 
 #include "base/logging.h"
 #include "components/autofill/core/common/password_form.h"
-#include "third_party/WebKit/public/platform/WebCredential.h"
-#include "third_party/WebKit/public/platform/WebFederatedCredential.h"
-#include "third_party/WebKit/public/platform/WebLocalCredential.h"
 
 namespace password_manager {
 
 CredentialInfo::CredentialInfo() : type(CredentialType::CREDENTIAL_TYPE_EMPTY) {
-}
-
-CredentialInfo::CredentialInfo(const blink::WebCredential& credential)
-    : id(credential.id()),
-      name(credential.name()),
-      avatar(credential.avatarURL()) {
-  type = credential.isLocalCredential()
-             ? CredentialType::CREDENTIAL_TYPE_LOCAL
-             : CredentialType::CREDENTIAL_TYPE_FEDERATED;
-  if (type == CredentialType::CREDENTIAL_TYPE_LOCAL) {
-    DCHECK(credential.isLocalCredential());
-    password =
-        static_cast<const blink::WebLocalCredential&>(credential).password();
-  } else {
-    DCHECK(credential.isFederatedCredential());
-    federation = static_cast<const blink::WebFederatedCredential&>(credential)
-                     .federation();
-  }
 }
 
 CredentialInfo::CredentialInfo(const autofill::PasswordForm& form,

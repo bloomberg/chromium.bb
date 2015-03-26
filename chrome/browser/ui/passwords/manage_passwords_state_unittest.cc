@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/passwords/account_chooser_more_combobox_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @implementation CredentialItemCell {

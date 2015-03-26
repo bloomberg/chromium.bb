@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_TYPES_H_
-#define COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_TYPES_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_CREDENTIAL_MANAGER_TYPES_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_CREDENTIAL_MANAGER_TYPES_H_
 
 #include <string>
 
@@ -15,10 +15,6 @@
 namespace autofill {
 struct PasswordForm;
 }
-
-namespace blink {
-class WebCredential;
-};
 
 namespace password_manager {
 
@@ -36,9 +32,7 @@ enum class CredentialType : unsigned int {
 
 struct CredentialInfo {
   CredentialInfo();
-  explicit CredentialInfo(const blink::WebCredential& credential);
-  explicit CredentialInfo(const autofill::PasswordForm& form,
-                          CredentialType form_type);
+  CredentialInfo(const autofill::PasswordForm& form, CredentialType form_type);
   ~CredentialInfo();
 
   CredentialType type;
@@ -71,4 +65,4 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_TYPES_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_CREDENTIAL_MANAGER_TYPES_H_

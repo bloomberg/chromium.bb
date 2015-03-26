@@ -9,7 +9,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

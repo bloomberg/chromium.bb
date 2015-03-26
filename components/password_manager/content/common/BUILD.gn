@@ -4,11 +4,11 @@
 
 static_library("common") {
   sources = [
+    "credential_manager_content_utils.cc",
+    "credential_manager_content_utils.h",
     "credential_manager_message_generator.cc",
     "credential_manager_message_generator.h",
     "credential_manager_messages.h",
-    "credential_manager_types.cc",
-    "credential_manager_types.h",
   ]
 
   deps = [

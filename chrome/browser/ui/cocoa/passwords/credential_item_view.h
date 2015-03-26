@@ -9,7 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 
 @class CredentialItemView;
 class GURL;

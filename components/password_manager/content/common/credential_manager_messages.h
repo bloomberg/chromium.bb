@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"

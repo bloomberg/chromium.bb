@@ -192,6 +192,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/common/credential_manager_types.cc',
+        'password_manager/core/common/credential_manager_types.h',
         'password_manager/core/common/experiments.cc',
         'password_manager/core/common/experiments.h',
         'password_manager/core/common/password_manager_pref_names.cc',
@@ -220,11 +222,11 @@
             '..',
           ],
           'sources': [
+            'password_manager/content/common/credential_manager_content_utils.cc',
+            'password_manager/content/common/credential_manager_content_utils.h',
             'password_manager/content/common/credential_manager_message_generator.cc',
             'password_manager/content/common/credential_manager_message_generator.h',
             'password_manager/content/common/credential_manager_messages.h',
-            'password_manager/content/common/credential_manager_types.cc',
-            'password_manager/content/common/credential_manager_types.h',
           ],
         },
         {

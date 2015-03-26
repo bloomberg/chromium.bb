@@ -18,9 +18,9 @@
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_details.h"
 
 #if defined(OS_ANDROID)

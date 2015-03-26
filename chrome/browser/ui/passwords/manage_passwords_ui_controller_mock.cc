@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 
-#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

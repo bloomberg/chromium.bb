@@ -7,7 +7,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/account_chooser_infobar.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 
 // static
 void AccountChooserInfoBarDelegateAndroid::Create(

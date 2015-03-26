@@ -306,7 +306,6 @@
     ],
     'password_manager_unittest_sources': [
       'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
-      'password_manager/content/common/credential_manager_types_unittest.cc',
       'password_manager/core/browser/affiliated_match_helper_unittest.cc',
       'password_manager/core/browser/affiliation_backend_unittest.cc',
       'password_manager/core/browser/affiliation_database_unittest.cc',
@@ -328,6 +327,7 @@
       'password_manager/core/browser/password_store_unittest.cc',
       'password_manager/core/browser/password_syncable_service_unittest.cc',
       'password_manager/core/browser/psl_matching_helper_unittest.cc',
+      'password_manager/core/common/credential_manager_types_unittest.cc',
     ],
     'policy_unittest_sources': [
       'policy/core/browser/autofill_policy_handler_unittest.cc',

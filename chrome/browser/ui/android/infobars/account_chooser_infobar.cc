@@ -7,7 +7,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/account_chooser_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
-#include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserInfoBar_jni.h"
 
 namespace {
