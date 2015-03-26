@@ -52,6 +52,8 @@ struct NamedCodec {
 // Mapping between containers and their codecs.
 // Only audio codec can belong to a "audio/*" container. Both audio and video
 // codecs can belong to a "video/*" container.
+// TODO(sandersd): This definition only makes sense for prefixed EME. Change it
+// when prefixed EME is removed. http://crbug.com/249976
 static NamedCodec kContainerToCodecMasks[] = {
     {"audio/webm", EME_CODEC_WEBM_AUDIO_ALL},
     {"video/webm", EME_CODEC_WEBM_ALL},
@@ -215,11 +217,6 @@ class KeySystemsImpl : public KeySystems {
       const std::vector<std::string>& codecs,
       const std::string& key_system);
 
-  bool IsSupportedKeySystemWithMediaMimeType(
-      const std::string& mime_type,
-      const std::vector<std::string>& codecs,
-      const std::string& key_system) const;
-
   std::string GetKeySystemNameForUMA(const std::string& key_system) const;
 
   bool UseAesDecryptor(const std::string& concrete_key_system) const;
@@ -229,7 +226,10 @@ class KeySystemsImpl : public KeySystems {
 #endif
 
   void AddContainerMask(const std::string& container, uint32 mask);
-  void AddCodecMask(const std::string& codec, uint32 mask);
+  void AddCodecMask(
+      EmeMediaType media_type,
+      const std::string& codec,
+      uint32 mask);
 
   // Implementation of KeySystems interface.
   bool IsSupportedKeySystem(const std::string& key_system) const override;
@@ -317,6 +317,9 @@ class KeySystemsImpl : public KeySystems {
   CodecsMap codec_string_map_;
   KeySystemNameForUMAMap key_system_name_for_uma_map_;
 
+  SupportedCodecs audio_codec_mask_;
+  SupportedCodecs video_codec_mask_;
+
   // Makes sure all methods are called from the same thread.
   base::ThreadChecker thread_checker_;
 
@@ -334,7 +337,9 @@ KeySystemsImpl& KeySystemsImpl::GetInstance() {
 
 // Because we use a LazyInstance, the key systems info must be populated when
 // the instance is lazily initiated.
-KeySystemsImpl::KeySystemsImpl() {
+KeySystemsImpl::KeySystemsImpl() :
+    audio_codec_mask_(EME_CODEC_AUDIO_ALL),
+    video_codec_mask_(EME_CODEC_VIDEO_ALL) {
   for (size_t i = 0; i < arraysize(kInitDataTypeNames); ++i) {
     const std::string& name = kInitDataTypeNames[i].name;
     DCHECK(!init_data_type_name_map_.count(name));
@@ -558,8 +563,6 @@ bool KeySystemsImpl::IsSupportedContainerAndCodecs(
       GetCodecMaskForContainer(container);
 
   for (size_t i = 0; i < codecs.size(); ++i) {
-    // TODO(sandersd): This should fail for isTypeSupported().
-    // http://crbug.com/417461
     if (codecs[i].empty())
       continue;
 
@@ -637,37 +640,6 @@ bool KeySystemsImpl::PrefixedIsSupportedKeySystemWithMediaMimeType(
   return true;
 }
 
-bool KeySystemsImpl::IsSupportedKeySystemWithMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs,
-    const std::string& key_system) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end())
-    return false;
-
-  if (mime_type.empty()) {
-    DCHECK(codecs.empty());
-    return true;
-  }
-
-  SupportedCodecs key_system_supported_codecs =
-      key_system_iter->second.supported_codecs;
-
-  if (!IsSupportedContainer(mime_type, key_system_supported_codecs))
-    return false;
-
-  if (!codecs.empty() &&
-      !IsSupportedContainerAndCodecs(
-          mime_type, codecs, key_system_supported_codecs)) {
-    return false;
-  }
-
-  return true;
-}
-
 std::string KeySystemsImpl::GetKeySystemNameForUMA(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -712,17 +684,26 @@ std::string KeySystemsImpl::GetPepperType(
 }
 #endif
 
-void KeySystemsImpl::AddContainerMask(const std::string& container,
-                                      uint32 mask) {
+void KeySystemsImpl::AddContainerMask(
+    const std::string& container,
+    uint32 mask) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!container_to_codec_mask_map_.count(container));
   container_to_codec_mask_map_[container] = static_cast<EmeCodec>(mask);
 }
 
-void KeySystemsImpl::AddCodecMask(const std::string& codec, uint32 mask) {
+void KeySystemsImpl::AddCodecMask(
+    EmeMediaType media_type,
+    const std::string& codec,
+    uint32 mask) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!codec_string_map_.count(codec));
   codec_string_map_[codec] = static_cast<EmeCodec>(mask);
+  if (media_type == EmeMediaType::AUDIO) {
+    audio_codec_mask_ |= mask;
+  } else {
+    video_codec_mask_ |= mask;
+  }
 }
 
 bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
@@ -730,26 +711,53 @@ bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
   return concrete_key_system_map_.count(key_system) != 0;
 }
 
-// TODO(sandersd): Make sure that the codecs also match the |media_type|.
-// http://crbug.com/457386
 bool KeySystemsImpl::IsSupportedCodecCombination(
     const std::string& key_system,
     EmeMediaType media_type,
     const std::string& container_mime_type,
     const std::vector<std::string>& codecs) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Make sure the container matches |media_type|.
+  SupportedCodecs media_type_codec_mask = EME_CODEC_NONE;
   switch (media_type) {
     case EmeMediaType::AUDIO:
       if (!StartsWithASCII(container_mime_type, "audio/", true))
         return false;
+      media_type_codec_mask = audio_codec_mask_;
       break;
     case EmeMediaType::VIDEO:
       if (!StartsWithASCII(container_mime_type, "video/", true))
         return false;
+      media_type_codec_mask = video_codec_mask_;
       break;
   }
-  return IsSupportedKeySystemWithMediaMimeType(
-      container_mime_type, codecs, key_system);
+
+  // Look up the key system's supported codecs.
+  KeySystemInfoMap::const_iterator key_system_iter =
+      concrete_key_system_map_.find(key_system);
+  if (key_system_iter == concrete_key_system_map_.end()) {
+    NOTREACHED();
+    return false;
+  }
+  SupportedCodecs key_system_codec_mask =
+      key_system_iter->second.supported_codecs;
+
+  // Check that the container is supported by the key system. (This check is
+  // necessary because |codecs| may be empty.)
+  SupportedCodecs container_codec_mask =
+      GetCodecMaskForContainer(container_mime_type) & media_type_codec_mask;
+  if ((key_system_codec_mask & container_codec_mask) == 0)
+    return false;
+
+  // Check that the codecs are supported by the key system and container.
+  for (size_t i = 0; i < codecs.size(); i++) {
+    SupportedCodecs codec = GetCodecForString(codecs[i]);
+    if ((codec & key_system_codec_mask & container_codec_mask) == 0)
+      return false;
+  }
+
+  return true;
 }
 
 EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
@@ -984,14 +992,6 @@ bool IsSupportedKeySystemWithInitDataType(
       key_system, init_data_type);
 }
 
-bool IsSupportedKeySystemWithMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs,
-    const std::string& key_system) {
-  return KeySystemsImpl::GetInstance().IsSupportedKeySystemWithMediaMimeType(
-      mime_type, codecs, key_system);
-}
-
 bool PrefixedIsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
@@ -1025,8 +1025,11 @@ MEDIA_EXPORT void AddContainerMask(const std::string& container, uint32 mask) {
   KeySystemsImpl::GetInstance().AddContainerMask(container, mask);
 }
 
-MEDIA_EXPORT void AddCodecMask(const std::string& codec, uint32 mask) {
-  KeySystemsImpl::GetInstance().AddCodecMask(codec, mask);
+MEDIA_EXPORT void AddCodecMask(
+    EmeMediaType media_type,
+    const std::string& codec,
+    uint32 mask) {
+  KeySystemsImpl::GetInstance().AddCodecMask(media_type, codec, mask);
 }
 
 }  // namespace media
