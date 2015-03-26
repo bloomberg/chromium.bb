@@ -1441,9 +1441,6 @@ crbug.com/446744 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scr
 
 crbug.com/401902  virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
 
-crbug.com/321237 svg/text/text-rect-precision.html [ NeedsRebaseline ]
-crbug.com/321237 virtual/slimmingpaint/svg/text/text-rect-precision.html [ NeedsRebaseline ]
-
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
