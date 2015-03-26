@@ -48,6 +48,8 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   static std::string EventTypeToString(MediaLogEvent::Type type);
   static std::string PipelineStatusToString(PipelineStatus status);
 
+  static std::string MediaEventToLogString(const MediaLogEvent& event);
+
   MediaLog();
 
   // Add an event to this log. Overriden by inheritors to actually do something

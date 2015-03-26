@@ -27,6 +27,16 @@ void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
     return;
   }
 
+  if (event->type == media::MediaLogEvent::PIPELINE_ERROR) {
+    LOG(ERROR) << "MediaEvent: "
+               << media::MediaLog::MediaEventToLogString(*event.get());
+  } else if (event->type != media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED &&
+             event->type != media::MediaLogEvent::PROPERTY_CHANGE &&
+             event->type != media::MediaLogEvent::NETWORK_ACTIVITY_SET) {
+    DVLOG(1) << "MediaEvent: "
+             << media::MediaLog::MediaEventToLogString(*event.get());
+  }
+
   // Keep track of the latest buffered extents properties to avoid sending
   // thousands of events over IPC. See http://crbug.com/352585 for details.
   //

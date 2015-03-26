@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
 
@@ -96,6 +97,22 @@ std::string MediaLog::PipelineStatusToString(PipelineStatus status) {
   }
   NOTREACHED();
   return NULL;
+}
+
+std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
+  // Special case for PIPELINE_ERROR, since that's by far the most useful
+  // event for figuring out media pipeline failures, and just reporting
+  // pipeline status as numeric code is not very helpful/user-friendly.
+  int error_code = 0;
+  if (event.type == MediaLogEvent::PIPELINE_ERROR &&
+      event.params.GetInteger("pipeline_error", &error_code)) {
+    PipelineStatus status = static_cast<PipelineStatus>(error_code);
+    return EventTypeToString(event.type) + " " +
+        media::MediaLog::PipelineStatusToString(status);
+  }
+  std::string params_json;
+  base::JSONWriter::Write(&event.params, &params_json);
+  return EventTypeToString(event.type) + " " + params_json;
 }
 
 LogHelper::LogHelper(const LogCB& log_cb) : log_cb_(log_cb) {}
