@@ -1365,16 +1365,6 @@ int32_t PepperPluginInstanceImpl::RegisterMessageHandler(
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperPluginInstanceImpl::RegisterMessageHandler_1_1_Deprecated(
-    PP_Instance instance,
-    void* user_data,
-    const PPP_MessageHandler_0_1_Deprecated* handler,
-    PP_Resource message_loop) {
-  // Not supported in-process.
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
-}
-
 void PepperPluginInstanceImpl::UnregisterMessageHandler(PP_Instance instance) {
   // Not supported in-process.
   NOTIMPLEMENTED();

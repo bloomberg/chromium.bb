@@ -85,11 +85,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                  void* user_data,
                                  const PPP_MessageHandler_0_2* handler,
                                  PP_Resource message_loop) override;
-  int32_t RegisterMessageHandler_1_1_Deprecated(
-      PP_Instance instance,
-      void* user_data,
-      const PPP_MessageHandler_0_1_Deprecated* handler,
-      PP_Resource message_loop) override;
   void UnregisterMessageHandler(PP_Instance instance) override;
   PP_Bool SetCursor(PP_Instance instance,
                     PP_MouseCursor_Type type,

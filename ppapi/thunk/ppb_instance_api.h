@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ppapi/c/dev/ppb_messaging_deprecated.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -121,11 +120,6 @@ class PPB_Instance_API {
                                          void* user_data,
                                          const PPP_MessageHandler_0_2* handler,
                                          PP_Resource message_loop) = 0;
-  virtual int32_t RegisterMessageHandler_1_1_Deprecated(
-      PP_Instance instance,
-      void* user_data,
-      const PPP_MessageHandler_0_1_Deprecated* handler,
-      PP_Resource message_loop) = 0;
   virtual void UnregisterMessageHandler(PP_Instance instance) = 0;
 
   // Mouse cursor.

@@ -813,25 +813,6 @@ int32_t PPB_Instance_Proxy::RegisterMessageHandler(
   return result;
 }
 
-// TODO(dmichael): Remove this. crbug.com/414398
-int32_t PPB_Instance_Proxy::RegisterMessageHandler_1_1_Deprecated(
-    PP_Instance instance,
-    void* user_data,
-    const PPP_MessageHandler_0_1_Deprecated* handler,
-    PP_Resource message_loop) {
-  InstanceData* data =
-      static_cast<PluginDispatcher*>(dispatcher())->GetInstanceData(instance);
-  if (!data)
-    return PP_ERROR_BADARGUMENT;
-
-  int32_t result = PP_ERROR_FAILED;
-  scoped_ptr<MessageHandler> message_handler = MessageHandler::CreateDeprecated(
-      instance, handler, user_data, message_loop, &result);
-  if (message_handler)
-    data->message_handler = message_handler.Pass();
-  return result;
-}
-
 void PPB_Instance_Proxy::UnregisterMessageHandler(PP_Instance instance) {
   InstanceData* data =
       static_cast<PluginDispatcher*>(dispatcher())->GetInstanceData(instance);

@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ppapi/c/dev/ppb_messaging_deprecated.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppp_message_handler.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -48,15 +47,6 @@ class PPAPI_PROXY_EXPORT MessageHandler {
       void* user_data,
       PP_Resource message_loop,
       int32_t* error);
-  // Provide temporary backwards compatibility. TODO(dmichael): Remove all
-  // references to PPB_Messaging_1_1 and PPP_MessageHandler_0_1.
-  // crbug.com/414398
-  static scoped_ptr<MessageHandler> CreateDeprecated(
-      PP_Instance instance,
-      const PPP_MessageHandler_0_1_Deprecated* handler_if,
-      void* user_data,
-      PP_Resource message_loop,
-      int32_t* error);
   ~MessageHandler();
 
   bool LoopIsValid() const;
@@ -70,15 +60,8 @@ class PPAPI_PROXY_EXPORT MessageHandler {
                  const PPP_MessageHandler_0_2* handler_if,
                  void* user_data,
                  scoped_refptr<MessageLoopResource> message_loop);
-  MessageHandler(PP_Instance instance,
-                 const PPP_MessageHandler_0_1_Deprecated* handler_if,
-                 void* user_data,
-                 scoped_refptr<MessageLoopResource> message_loop);
-
-
   PP_Instance instance_;
   const PPP_MessageHandler_0_2* handler_if_;
-  const PPP_MessageHandler_0_1_Deprecated* handler_if_0_1_;
   void* user_data_;
   scoped_refptr<MessageLoopResource> message_loop_;
 
