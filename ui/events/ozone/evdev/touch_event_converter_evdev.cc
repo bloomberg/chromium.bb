@@ -29,8 +29,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
-#include "ui/events/ozone/evdev/touch_evdev_types.h"
-#include "ui/events/ozone/evdev/touch_noise/touch_noise_finder.h"
 
 namespace {
 
@@ -61,6 +59,18 @@ void GetTouchCalibration(TouchCalibration* cal) {
 
 namespace ui {
 
+TouchEventConverterEvdev::InProgressEvents::InProgressEvents()
+    : altered_(false),
+      x_(0),
+      y_(0),
+      id_(-1),
+      finger_(-1),
+      type_(ET_UNKNOWN),
+      radius_x_(0),
+      radius_y_(0),
+      pressure_(0) {
+}
+
 TouchEventConverterEvdev::TouchEventConverterEvdev(
     int fd,
     base::FilePath path,
@@ -70,12 +80,9 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     : EventConverterEvdev(fd, path, id, type),
       dispatcher_(dispatcher),
       syn_dropped_(false),
+      is_type_a_(false),
       touch_points_(0),
       current_slot_(0) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExtraTouchNoiseFiltering)) {
-    touch_noise_finder_.reset(new TouchNoiseFinder);
-  }
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
@@ -91,7 +98,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   y_min_tuxels_ = info.GetAbsMinimum(ABS_MT_POSITION_Y);
   y_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1;
   touch_points_ =
-      std::min<int>(info.GetAbsMaximum(ABS_MT_SLOT) + 1, kNumTouchEvdevSlots);
+      std::min<int>(info.GetAbsMaximum(ABS_MT_SLOT) + 1, MAX_FINGERS);
 
   // Apply --touch-calibration.
   if (type() == INPUT_DEVICE_INTERNAL) {
@@ -110,14 +117,14 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
   events_.resize(touch_points_);
   for (size_t i = 0; i < events_.size(); ++i) {
-    events_[i].x = info.GetSlotValue(ABS_MT_POSITION_X, i);
-    events_[i].y = info.GetSlotValue(ABS_MT_POSITION_Y, i);
-    events_[i].tracking_id = info.GetSlotValue(ABS_MT_TRACKING_ID, i);
-    events_[i].touching = (events_[i].tracking_id >= 0);
-    events_[i].slot = i;
-    events_[i].radius_x = info.GetSlotValue(ABS_MT_TOUCH_MAJOR, i);
-    events_[i].radius_y = info.GetSlotValue(ABS_MT_TOUCH_MINOR, i);
-    events_[i].pressure = info.GetSlotValue(ABS_MT_PRESSURE, i);
+    events_[i].finger_ = info.GetSlotValue(ABS_MT_TRACKING_ID, i);
+    events_[i].type_ =
+        events_[i].finger_ < 0 ? ET_TOUCH_RELEASED : ET_TOUCH_PRESSED;
+    events_[i].x_ = info.GetSlotValue(ABS_MT_POSITION_X, i);
+    events_[i].y_ = info.GetSlotValue(ABS_MT_POSITION_Y, i);
+    events_[i].radius_x_ = info.GetSlotValue(ABS_MT_TOUCH_MAJOR, i);
+    events_[i].radius_y_ = info.GetSlotValue(ABS_MT_TOUCH_MINOR, i);
+    events_[i].pressure_ = info.GetSlotValue(ABS_MT_PRESSURE, i);
   }
 }
 
@@ -143,7 +150,7 @@ int TouchEventConverterEvdev::GetTouchPoints() const {
 }
 
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
-  input_event inputs[kNumTouchEvdevSlots * 6 + 1];
+  input_event inputs[MAX_FINGERS * 6 + 1];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
   if (read_size < 0) {
     if (errno == EINTR || errno == EAGAIN)
@@ -165,7 +172,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
 void TouchEventConverterEvdev::ProcessInputEvent(const input_event& input) {
   if (input.type == EV_SYN) {
     ProcessSyn(input);
-  } else if (syn_dropped_) {
+  } else if(syn_dropped_) {
     // Do nothing. This branch indicates we have lost sync with the driver.
   } else if (input.type == EV_ABS) {
     if (events_.size() <= current_slot_) {
@@ -192,29 +199,28 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       // TODO(spang): If we have all of major, minor, and orientation,
       // we can scale the ellipse correctly. However on the Pixel we get
       // neither minor nor orientation, so this is all we can do.
-      events_[current_slot_].radius_x = input.value / 2.0f;
+      events_[current_slot_].radius_x_ = input.value / 2.0f;
       break;
     case ABS_MT_TOUCH_MINOR:
-      events_[current_slot_].radius_y = input.value / 2.0f;
+      events_[current_slot_].radius_y_ = input.value / 2.0f;
       break;
     case ABS_MT_POSITION_X:
-      events_[current_slot_].x = input.value;
+      events_[current_slot_].x_ = input.value;
       break;
     case ABS_MT_POSITION_Y:
-      events_[current_slot_].y = input.value;
+      events_[current_slot_].y_ = input.value;
       break;
     case ABS_MT_TRACKING_ID:
       if (input.value < 0) {
-        events_[current_slot_].touching = false;
+        events_[current_slot_].type_ = ET_TOUCH_RELEASED;
       } else {
-        events_[current_slot_].touching = true;
-        events_[current_slot_].cancelled = false;
+        events_[current_slot_].finger_ = input.value;
+        events_[current_slot_].type_ = ET_TOUCH_PRESSED;
       }
-      events_[current_slot_].tracking_id = input.value;
       break;
     case ABS_MT_PRESSURE:
-      events_[current_slot_].pressure = input.value - pressure_min_;
-      events_[current_slot_].pressure /= pressure_max_ - pressure_min_;
+      events_[current_slot_].pressure_ = input.value - pressure_min_;
+      events_[current_slot_].pressure_ /= pressure_max_ - pressure_min_;
       break;
     case ABS_MT_SLOT:
       if (input.value >= 0 &&
@@ -229,7 +235,7 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       DVLOG(5) << "unhandled code for EV_ABS: " << input.code;
       return;
   }
-  events_[current_slot_].altered = true;
+  events_[current_slot_].altered_ = true;
 }
 
 void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
@@ -239,14 +245,24 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
         // Have to re-initialize.
         if (Reinitialize()) {
           syn_dropped_ = false;
-          for(InProgressTouchEvdev& event : events_)
-            event.altered = false;
+          for(InProgressEvents& event: events_)
+            event.altered_ = false;
         } else {
           LOG(ERROR) << "failed to re-initialize device info";
         }
       } else {
         ReportEvents(EventConverterEvdev::TimeDeltaFromInputEvent(input));
       }
+      if (is_type_a_)
+        current_slot_ = 0;
+      break;
+    case SYN_MT_REPORT:
+      // For type A devices, we just get a stream of all current contacts,
+      // in some arbitrary order.
+      events_[current_slot_].type_ = ET_TOUCH_PRESSED;
+      if (events_.size() - 1 > current_slot_)
+        current_slot_++;
+      is_type_a_ = true;
       break;
     case SYN_DROPPED:
       // Some buffer has overrun. We ignore all events up to and
@@ -258,49 +274,25 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
   }
 }
 
-EventType TouchEventConverterEvdev::GetEventTypeForTouch(
-    const InProgressTouchEvdev& touch) {
-  if (touch.cancelled)
-    return ET_UNKNOWN;
-
-  if (touch_noise_finder_ && touch_noise_finder_->SlotHasNoise(touch.slot)) {
-    if (touch.touching && !touch.was_touching)
-      return ET_UNKNOWN;
-    return ET_TOUCH_CANCELLED;
-  }
-
-  if (touch.touching)
-    return touch.was_touching ? ET_TOUCH_MOVED : ET_TOUCH_PRESSED;
-  return touch.was_touching ? ET_TOUCH_RELEASED : ET_UNKNOWN;
-}
-
-void TouchEventConverterEvdev::ReportEvent(const InProgressTouchEvdev& event,
-                                           EventType event_type,
+void TouchEventConverterEvdev::ReportEvent(int touch_id,
+                                           const InProgressEvents& event,
                                            const base::TimeDelta& timestamp) {
   dispatcher_->DispatchTouchEvent(TouchEventParams(
-      id_, event.slot, event_type, gfx::PointF(event.x, event.y),
-      gfx::Vector2dF(event.radius_x, event.radius_y), event.pressure,
+      id_, touch_id, event.type_, gfx::PointF(event.x_, event.y_),
+      gfx::Vector2dF(event.radius_x_, event.radius_y_), event.pressure_,
       timestamp));
 }
 
 void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
-  if (touch_noise_finder_)
-    touch_noise_finder_->HandleTouches(events_, delta);
-
   for (size_t i = 0; i < events_.size(); i++) {
-    InProgressTouchEvdev* event = &events_[i];
-    if (!event->altered)
-      continue;
+    if (events_[i].altered_) {
+      ReportEvent(i, events_[i], delta);
 
-    EventType event_type = GetEventTypeForTouch(*event);
-    if (event_type == ET_UNKNOWN || event_type == ET_TOUCH_CANCELLED)
-      event->cancelled = true;
-
-    if (event_type != ET_UNKNOWN)
-      ReportEvent(*event, event_type, delta);
-
-    event->was_touching = event->touching;
-    event->altered = false;
+      // Subsequent events for this finger will be touch-move until it
+      // is released.
+      events_[i].type_ = ET_TOUCH_MOVED;
+      events_[i].altered_ = false;
+    }
   }
 }
 

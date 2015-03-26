@@ -362,7 +362,6 @@
             'ozone/evdev/input_injector_evdev_unittest.cc',
             'ozone/evdev/tablet_event_converter_evdev_unittest.cc',
             'ozone/evdev/touch_event_converter_evdev_unittest.cc',
-            'ozone/evdev/touch_noise/touch_noise_finder_unittest.cc',
           ],
           'dependencies': [
             'ozone/events_ozone.gyp:events_ozone',

@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
@@ -18,14 +17,14 @@
 
 namespace ui {
 
-class DeviceEventDispatcherEvdev;
 class TouchEvent;
-class TouchNoiseFinder;
-struct InProgressTouchEvdev;
+
+class DeviceEventDispatcherEvdev;
 
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
+  enum { MAX_FINGERS = 20 };
   TouchEventConverterEvdev(int fd,
                            base::FilePath path,
                            int id,
@@ -44,6 +43,21 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
  private:
   friend class MockTouchEventConverterEvdev;
 
+  struct InProgressEvents {
+    InProgressEvents();
+
+    bool altered_;
+    float x_;
+    float y_;
+    int id_;  // Device reported "unique" touch point id; -1 means not active
+    int finger_;  // "Finger" id starting from 0; -1 means not active
+
+    EventType type_;
+    float radius_x_;
+    float radius_y_;
+    float pressure_;
+  };
+
   // Overidden from base::MessagePumpLibevent::Watcher.
   void OnFileCanReadWithoutBlocking(int fd) override;
 
@@ -53,13 +67,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void ProcessAbs(const input_event& input);
   void ProcessSyn(const input_event& input);
 
-  // Returns an EventType to dispatch for |touch|. Returns ET_UNKNOWN if an
-  // event should not be dispatched.
-  EventType GetEventTypeForTouch(const InProgressTouchEvdev& touch);
-
-  void ReportEvent(const InProgressTouchEvdev& event,
-                   EventType event_type,
-                   const base::TimeDelta& delta);
+  void ReportEvent(int touch_id,
+      const InProgressEvents& event, const base::TimeDelta& delta);
   void ReportEvents(base::TimeDelta delta);
 
   // Dispatcher for events.
@@ -67,6 +76,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;
+
+  // Set if this is a type A device (uses SYN_MT_REPORT).
+  bool is_type_a_;
 
   // Pressure values.
   int pressure_min_;
@@ -87,10 +99,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   size_t current_slot_;
 
   // In-progress touch points.
-  std::vector<InProgressTouchEvdev> events_;
-
-  // Finds touch noise.
-  scoped_ptr<TouchNoiseFinder> touch_noise_finder_;
+  std::vector<InProgressEvents> events_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
