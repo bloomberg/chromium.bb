@@ -890,27 +890,6 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(NSEvent* event)
     return result;
 }
 
-WebKeyboardEvent WebInputEventFactory::keyboardEvent(wchar_t character,
-                                                     int modifiers,
-                                                     double timeStampSeconds)
-{
-    // keyboardEvent(NSEvent*) depends on the NSEvent object and
-    // it is hard to use it from methods of the NSTextInput protocol. For
-    // such methods, this function creates a WebInputEvent::Char event without
-    // using a NSEvent object.
-    WebKeyboardEvent result;
-    result.type = blink::WebInputEvent::Char;
-    result.timeStampSeconds = timeStampSeconds;
-    result.modifiers = modifiers;
-    result.windowsKeyCode = character;
-    result.nativeKeyCode = character;
-    result.text[0] = character;
-    result.unmodifiedText[0] = character;
-    result.isSystemKey = isSystemKeyEvent(result);
-
-    return result;
-}
-
 // WebMouseEvent --------------------------------------------------------------
 
 WebMouseEvent WebInputEventFactory::mouseEvent(NSEvent* event, NSView* view)
