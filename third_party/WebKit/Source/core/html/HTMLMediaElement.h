@@ -112,7 +112,7 @@ public:
     NetworkState networkState() const;
 
     String preload() const;
-    MediaPlayer::Preload preloadType() const { return m_preload; }
+    MediaPlayer::Preload effectivePreloadType() const;
     void setPreload(const AtomicString&);
 
     PassRefPtrWillBeRawPtr<TimeRanges> buffered() const;

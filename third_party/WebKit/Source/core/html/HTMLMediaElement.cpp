@@ -548,7 +548,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
         }
 
         // The attribute must be ignored if the autoplay attribute is present
-        if (!autoplay() && m_player)
+        if (m_player)
             setPlayerPreload();
 
     } else if (name == mediagroupAttr && RuntimeEnabledFeatures::mediaControllerEnabled()) {
@@ -958,8 +958,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     // Reset display mode to force a recalculation of what to show because we are resetting the player.
     setDisplayMode(Unknown);
 
-    if (!autoplay())
-        setPlayerPreload();
+    setPlayerPreload();
 
     if (fastHasAttribute(mutedAttr))
         m_muted = true;
@@ -1033,7 +1032,7 @@ void HTMLMediaElement::startPlayerLoad()
 
 void HTMLMediaElement::setPlayerPreload()
 {
-    m_player->setPreload(m_preload);
+    m_player->setPreload(effectivePreloadType());
 
     if (loadIsDeferred() && m_preload != MediaPlayer::None)
         startDeferredLoad();
@@ -1894,6 +1893,11 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
 {
     WTF_LOG(Media, "HTMLMediaElement::setPreload(%p, %s)", this, preload.utf8().data());
     setAttribute(preloadAttr, preload);
+}
+
+MediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
+{
+    return autoplay() ? MediaPlayer::Auto : m_preload;
 }
 
 void HTMLMediaElement::play()
