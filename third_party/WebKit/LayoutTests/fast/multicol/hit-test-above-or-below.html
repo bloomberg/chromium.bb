@@ -3,6 +3,8 @@
     123<div style="background-color: blue; height: 70px;"></div>abc<br>def<div style="background-color: blue; height: 60px;"></div>ghi<br>jkl<div style="background-color: blue; height: 110px;"></div>mno</div>
 <pre id="console" style="display: none;"></pre>
 <script>
+    if (window.internals)
+        internals.settings.setEditingBehavior("mac");
     function characterAtPoint(x, y)
     {
         var range = document.caretRangeFromPoint(x, y);
