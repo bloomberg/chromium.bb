@@ -139,9 +139,5 @@ grit("resources") {
     "blink_resources.rc",
     "blink_resources_100_percent.pak",
     "blink_resources_200_percent.pak",
-
-    # TODO(erg): Remove blink_resources.pak. This will be removed in the fourth
-    # and final part of this patch.
-    "blink_resources.pak",
   ]
 }

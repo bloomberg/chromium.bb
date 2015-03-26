@@ -5,11 +5,6 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="blink_resources.rc" type="rc_all" context="default_100_percent" />
-
-    <!-- TODO(erg): Remove the old package. This will be removed in the fourth
-         and final part of this patch. -->
-    <output filename="blink_resources.pak" type="data_package" context="default_100_percent" />
-
     <output filename="blink_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="blink_resources_200_percent.pak" type="data_package" context="default_200_percent" />
   </outputs>
