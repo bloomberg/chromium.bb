@@ -1695,8 +1695,6 @@
       'tools/dump_cache/url_utilities.cc',
       'tools/dump_cache/url_utilities.h',
       'tools/dump_cache/url_utilities_unittest.cc',
-      'tools/quic/quic_simple_client_session_test.cc',
-      'tools/quic/quic_simple_client_stream_test.cc',
       'tools/quic/quic_simple_client_test.cc',
       'tools/tld_cleanup/tld_cleanup_util_unittest.cc',
       'udp/udp_socket_unittest.cc',

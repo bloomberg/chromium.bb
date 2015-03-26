@@ -23,8 +23,8 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_reader.h"
-#include "net/tools/quic/quic_simple_client_session.h"
-#include "net/tools/quic/quic_simple_client_stream.h"
+#include "net/tools/quic/quic_client_session.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 
 namespace net {
 
@@ -101,9 +101,9 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   void SendRequestsAndWaitForResponse(
       const base::CommandLine::StringVector& url_list);
 
-  // Returns a newly created QuicSimpleClientStream, owned by the
+  // Returns a newly created QuicSpdyClientStream, owned by the
   // QuicSimpleClient.
-  QuicSimpleClientStream* CreateReliableClientStream();
+  QuicSpdyClientStream* CreateReliableClientStream();
 
   // Wait for events until the stream with the given ID is closed.
   void WaitForStreamToClose(QuicStreamId id);
@@ -124,7 +124,7 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   // QuicDataStream::Visitor
   void OnClose(QuicDataStream* stream) override;
 
-  QuicSimpleClientSession* session() { return session_.get(); }
+  QuicClientSession* session() { return session_.get(); }
 
   bool connected() const;
   bool goaway_received() const;
@@ -238,7 +238,7 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   scoped_ptr<QuicPacketWriter> writer_;
 
   // Session which manages streams.
-  scoped_ptr<QuicSimpleClientSession> session_;
+  scoped_ptr<QuicClientSession> session_;
 
   // UDP socket connected to the server.
   scoped_ptr<UDPClientSocket> socket_;

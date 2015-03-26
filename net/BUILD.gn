@@ -1143,8 +1143,6 @@ if (is_linux) {
     sources = [
       "tools/quic/quic_client.cc",
       "tools/quic/quic_client.h",
-      "tools/quic/quic_client_session.cc",
-      "tools/quic/quic_client_session.h",
       "tools/quic/quic_default_packet_writer.cc",
       "tools/quic/quic_default_packet_writer.h",
       "tools/quic/quic_dispatcher.cc",
@@ -1167,8 +1165,6 @@ if (is_linux) {
       "tools/quic/quic_server_session.h",
       "tools/quic/quic_socket_utils.cc",
       "tools/quic/quic_socket_utils.h",
-      "tools/quic/quic_spdy_client_stream.cc",
-      "tools/quic/quic_spdy_client_stream.h",
       "tools/quic/quic_spdy_server_stream.cc",
       "tools/quic/quic_spdy_server_stream.h",
       "tools/quic/quic_time_wait_list_manager.cc",
@@ -1267,12 +1263,12 @@ source_set("quic_tools") {
 }
 source_set("simple_quic_tools") {
   sources = [
+    "tools/quic/quic_client_session.cc",
+    "tools/quic/quic_client_session.h",
     "tools/quic/quic_simple_client.cc",
     "tools/quic/quic_simple_client.h",
-    "tools/quic/quic_simple_client_session.cc",
-    "tools/quic/quic_simple_client_session.h",
-    "tools/quic/quic_simple_client_stream.cc",
-    "tools/quic/quic_simple_client_stream.h",
+    "tools/quic/quic_spdy_client_stream.cc",
+    "tools/quic/quic_spdy_client_stream.h",
     "tools/quic/synchronous_host_resolver.cc",
     "tools/quic/synchronous_host_resolver.h",
   ]

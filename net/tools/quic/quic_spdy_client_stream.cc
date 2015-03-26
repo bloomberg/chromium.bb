@@ -100,9 +100,9 @@ bool QuicSpdyClientStream::ParseResponseHeaders(const char* data,
   return true;
 }
 
-ssize_t QuicSpdyClientStream::SendRequest(const SpdyHeaderBlock& headers,
-                                          StringPiece body,
-                                          bool fin) {
+size_t QuicSpdyClientStream::SendRequest(const SpdyHeaderBlock& headers,
+                                         StringPiece body,
+                                         bool fin) {
   bool send_fin_with_headers = fin && body.empty();
   size_t bytes_sent = body.size();
   header_bytes_written_ =

@@ -8,12 +8,14 @@
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_info.h"
+#include "net/http/http_response_info.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/udp/udp_client_socket.h"
 
 using std::string;
@@ -154,7 +156,7 @@ void QuicSimpleClient::StartConnect() {
                                    Perspective::IS_CLIENT,
                                    server_id_.is_https(),
                                    supported_versions_);
-  session_.reset(new QuicSimpleClientSession(config_, connection_));
+  session_.reset(new QuicClientSession(config_, connection_));
   session_->InitializeSession(server_id_, &crypto_config_);
   session_->CryptoConnect();
 }
@@ -180,12 +182,15 @@ void QuicSimpleClient::Disconnect() {
 void QuicSimpleClient::SendRequest(const HttpRequestInfo& headers,
                                    base::StringPiece body,
                                    bool fin) {
-  QuicSimpleClientStream* stream = CreateReliableClientStream();
+  QuicSpdyClientStream* stream = CreateReliableClientStream();
   if (stream == nullptr) {
     LOG(DFATAL) << "stream creation failed!";
     return;
   }
-  stream->SendRequest(headers, body, fin);
+  SpdyHeaderBlock header_block;
+  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, SPDY3, true,
+                                   &header_block);
+  stream->SendRequest(header_block, body, fin);
   stream->set_visitor(this);
 }
 
@@ -209,7 +214,7 @@ void QuicSimpleClient::SendRequestsAndWaitForResponse(
   while (WaitForEvents()) {}
 }
 
-QuicSimpleClientStream* QuicSimpleClient::CreateReliableClientStream() {
+QuicSpdyClientStream* QuicSimpleClient::CreateReliableClientStream() {
   if (!connected()) {
     return nullptr;
   }
@@ -241,17 +246,19 @@ bool QuicSimpleClient::WaitForEvents() {
 }
 
 void QuicSimpleClient::OnClose(QuicDataStream* stream) {
-  QuicSimpleClientStream* client_stream =
-      static_cast<QuicSimpleClientStream*>(stream);
+  QuicSpdyClientStream* client_stream =
+      static_cast<QuicSpdyClientStream*>(stream);
+  HttpResponseInfo response;
+  SpdyHeadersToHttpResponse(client_stream->headers(), SPDY3, &response);
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(
-        stream->id(), *client_stream->headers(), client_stream->data());
+        stream->id(), *response.headers, client_stream->data());
   }
 
   // Store response headers and body.
   if (store_response_) {
-    latest_response_code_ = client_stream->headers()->response_code();
-    client_stream->headers()->GetNormalizedHeaders(&latest_response_headers_);
+    latest_response_code_ = client_stream->response_code();
+    response.headers->GetNormalizedHeaders(&latest_response_headers_);
     latest_response_body_ = client_stream->data();
   }
 }
