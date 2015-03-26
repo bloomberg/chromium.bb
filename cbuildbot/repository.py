@@ -132,6 +132,36 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
     CreateTrybotMarker(buildroot)
 
 
+def PrepManifestForRepo(git_repo, manifest):
+  """Use this to store a local manifest in a git repo suitable for repo.
+
+  The repo tool can only fetch manifests from git repositories. So, to use
+  a local manifest file as the basis for a checkout, it must be checked into
+  a local git repository.
+
+  Common Usage:
+    manifest = CreateOrFetchWondrousManifest()
+    with osutils.TempDir() as manifest_git_dir:
+      PrepManifestForRepo(manifest_git_dir, manifest)
+      repo = RepoRepository(manifest_git_dir, repo_dir)
+      repo.Sync()
+
+  Args:
+    git_repo: Path at which to create the git repository (directory created, if
+              needed). If a tempdir, then cleanup is owned by the caller.
+    manifest: Path to existing manifest file to copy into the new git
+              repository.
+  """
+  git.Init(git_repo)
+
+  new_manifest = os.path.join(git_repo, constants.DEFAULT_MANIFEST)
+
+  shutil.copyfile(manifest, new_manifest)
+  git.AddPath(new_manifest)
+  message = 'Local repository holding: %s' % manifest
+  git.Commit(git_repo, message)
+
+
 class RepoRepository(object):
   """A Class that encapsulates a repo repository."""
   # Use our own repo, in case android.kernel.org (the default location) is down.

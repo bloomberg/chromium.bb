@@ -816,6 +816,17 @@ def RunGit(git_repo, cmd, retry=True, **kwargs):
       ['git'] + cmd, **kwargs)
 
 
+def Init(git_repo):
+  """Create a new git repository, in the given location.
+
+  Args:
+    git_repo: Path for where to create a git repo. Directory will be created if
+              it doesnt exist.
+  """
+  osutils.SafeMakedirs(git_repo)
+  RunGit(git_repo, ['init'])
+
+
 def GetProjectUserEmail(git_repo):
   """Get the email configured for the project."""
   output = RunGit(git_repo, ['var', 'GIT_COMMITTER_IDENT']).output

@@ -103,7 +103,7 @@ class NormalizeRefTest(cros_test_lib.TestCase):
     self._TestNormalize(functor, tests)
 
 
-class GitWrappersTest(cros_build_lib_unittest.RunCommandTestCase):
+class GitWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Tests for small git wrappers"""
 
   CHANGE_ID = 'I0da12ef6d2c670305f0281641bc53db22faf5c1a'
@@ -118,9 +118,16 @@ class GitWrappersTest(cros_build_lib_unittest.RunCommandTestCase):
   PUSH_LOCAL = 'fake_local_branch'
 
   def setUp(self):
-    self.fake_git_dir = '/foo/bar'
+    self.fake_git_dir = os.path.join(self.tempdir, 'foo/bar')
     self.fake_file = 'baz'
     self.fake_path = os.path.join(self.fake_git_dir, self.fake_file)
+
+  def testInit(self):
+    git.Init(self.fake_path)
+
+    # Should have created the git repo directory, if it didn't exist.
+    os.path.exists(self.fake_git_dir)
+    self.assertCommandContains(['init'])
 
   def testAddPath(self):
     git.AddPath(self.fake_path)

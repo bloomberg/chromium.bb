@@ -12,6 +12,8 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import git
+from chromite.lib import osutils
 
 
 class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
@@ -73,3 +75,23 @@ class RepoInitChromeBotTests(RepoInitTests):
   def setUp(self):
     os.putenv('GIT_COMMITTER_EMAIL', 'chrome-bot@chromium.org')
     os.putenv('GIT_AUTHOR_EMAIL', 'chrome-bot@chromium.org')
+
+
+class PrepManifestForRepoTests(cros_test_lib.TempDirTestCase):
+  """Tests for our ability to init from a local repository."""
+
+  def testCreateManifestRepo(self):
+    """Test we can create a local git repository with a local manifest."""
+    CONTENTS = 'manifest contents'
+
+    src_manifest = os.path.join(self.tempdir, 'src_manifest')
+    git_repo = os.path.join(self.tempdir, 'git_repo')
+    dst_manifest = os.path.join(git_repo, 'default.xml')
+
+    osutils.WriteFile(src_manifest, CONTENTS)
+    repository.PrepManifestForRepo(git_repo, src_manifest)
+
+    self.assertEqual(CONTENTS, osutils.ReadFile(dst_manifest))
+
+    # This should fail if we don't have a valid Git repo. Not a perfect test.
+    git.GetGitRepoRevision(git_repo)
