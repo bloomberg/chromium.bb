@@ -1398,22 +1398,33 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Adds a {@link ContentViewCore} to this {@link Tab} as an overlay object.  This
-     * {@link ContentViewCore} will be attached to the CC layer hierarchy and have all layout events
-     * propagated to it.  This {@link ContentViewCore} can be removed via
+     * Adds a {@link ContentViewCore} to this {@link Tab} as an overlay object.
+     * If attachLayer is set, the {@link ContentViewCore} will be attached to CC layer hierarchy.
+     * This {@link ContentViewCore} will have all layout events propagated to it.
+     * This {@link ContentViewCore} can be removed via
      * {@link #detachOverlayContentViewCore(ContentViewCore)}.
      * @param content The {@link ContentViewCore} to attach.
      * @param visible Whether or not to make the content visible.
+     * @param attachLayer Whether or not to attach the content view to the CC layer hierarchy.
      */
-    public void attachOverlayContentViewCore(ContentViewCore content, boolean visible) {
+    public void attachOverlayContentViewCore(
+            ContentViewCore content, boolean visible, boolean attachLayer) {
         if (content == null) return;
 
         assert !mOverlayContentViewCores.contains(content);
         mOverlayContentViewCores.add(content);
-        nativeAttachOverlayContentViewCore(mNativeTabAndroid, content, visible);
+        if (attachLayer) nativeAttachOverlayContentViewCore(mNativeTabAndroid, content, visible);
         for (TabObserver observer : mObservers) {
             observer.onOverlayContentViewCoreAdded(this, content);
         }
+    }
+
+    /**
+     * TODO(aruslan): remove this.
+     * Temporary overload to avoid 2-way commit.
+     */
+    public void attachOverlayContentViewCore(ContentViewCore content, boolean visible) {
+        attachOverlayContentViewCore(content, visible, true);
     }
 
     /**

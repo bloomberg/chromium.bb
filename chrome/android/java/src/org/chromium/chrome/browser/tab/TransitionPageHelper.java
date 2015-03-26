@@ -612,7 +612,7 @@ public class TransitionPageHelper extends EmptyTabObserver {
 
         mTransitionObserver = createTransitionObserver();
 
-        if (mTab != null) mTab.attachOverlayContentViewCore(mTransitionContentViewCore, true);
+        if (mTab != null) mTab.attachOverlayContentViewCore(mTransitionContentViewCore, true, true);
 
         nativeSetWebContents(mNativeTransitionPageHelperPtr, mTransitionContentViewCore);
         setTransitionOpacity(0.0f);

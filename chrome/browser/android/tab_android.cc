@@ -844,7 +844,8 @@ void TabAndroid::DetachOverlayContentViewCore(JNIEnv* env,
                                                          jcontent_view_core);
   DCHECK(content_view_core);
 
-  content_view_core->GetLayer()->RemoveFromParent();
+  if (content_view_core->GetLayer()->parent() == content_layer_)
+    content_view_core->GetLayer()->RemoveFromParent();
 }
 
 static void Init(JNIEnv* env, jobject obj) {
