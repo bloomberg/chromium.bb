@@ -14,6 +14,7 @@ a zip archive for all of the above is produced.
 # Python 2.5 compatibility
 from __future__ import with_statement
 
+import argparse
 import io
 import os
 import platform
@@ -62,6 +63,36 @@ def replaceString(destination, placeholder, value):
                  "'" + placeholder + "'", "'" + value + "'")
 
 
+def replaceBool(destination, placeholder, value):
+  # Look for a "!!" in the source code so the expession we're
+  # replacing looks like a boolean to the compiler.  A single "!"
+  # would satisfy the compiler but might confused human readers.
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "!!'" + placeholder + "'", 'true' if value else 'false')
+
+
+def parseBool(boolStr):
+  """Tries to parse a string as a boolean value.
+
+  Returns a bool on success; raises ValueError on failure.
+  """
+  lower = boolStr.tolower()
+  if lower in ['0', 'false']: return False
+  if lower in ['1', 'true']: return True
+  raise ValueError('not a boolean string {!r}'.format(boolStr))
+
+
+def getenvBool(name, defaultValue):
+  """Gets an environment value as a boolean."""
+  rawValue = os.environ.get(name)
+  if rawValue is None:
+    return defaultValue
+  try:
+    return parseBool(rawValue)
+  except ValueError:
+    raise Exception('Value of ${} must be boolean!'.format(name))
+
+
 def processJinjaTemplate(input_file, include_paths, output_file, context):
   jinja2_path = os.path.normpath(
       os.path.join(os.path.abspath(__file__),
@@ -76,9 +107,9 @@ def processJinjaTemplate(input_file, include_paths, output_file, context):
   io.open(output_file, 'w', encoding='utf-8').write(rendered)
 
 def buildWebApp(buildtype, version, destination, zip_path,
-                manifest_template, webapp_type, app_id, app_name,
-                app_description, app_capabilities, files, locales, jinja_paths,
-                service_environment):
+                manifest_template, webapp_type, appid, app_name,
+                app_description, app_capabilities, files, locales_listfile,
+                jinja_paths, service_environment, use_gcd):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
@@ -89,7 +120,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
              contents of |destination|.
     manifest_template: jinja2 template file for manifest.
     webapp_type: webapp type ("v1", "v2", "v2_pnacl" or "app_remoting").
-    app_id: A string with the Remoting Application Id (only used for app
+    appid: A string with the Remoting Application Id (only used for app
              remoting webapps). If supplied, it defaults to using the
              test API server.
     app_name: A string with the name of the application.
@@ -98,13 +129,24 @@ def buildWebApp(buildtype, version, destination, zip_path,
                       enabled for this application.
     files: An array of strings listing the paths for resources to include
            in this webapp.
-    locales: An array of strings listing locales, which are copied, along
-             with their directory structure from the _locales directory down.
+    locales_listfile: The name of a file containing a list of locales, one per
+             line, which are copied, along with their directory structure, from
+             the _locales directory down.
     jinja_paths: An array of paths to search for {%include} directives in
                  addition to the directory containing the manifest template.
     service_environment: Used to point the webApp to one of the
                          dev/test/staging/prod environments
+    use_gcd: True if GCD support should be enabled.
   """
+
+  # Load the locales files from the locales_listfile.
+  if not locales_listfile:
+    raise Exception('You must specify a locales_listfile')
+  locales = []
+  with open(locales_listfile) as input:
+    for s in input:
+      locales.append(s.rstrip())
+
   # Ensure a fresh directory.
   try:
     shutil.rmtree(destination)
@@ -190,8 +232,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
                         + buildtype + ': ' + service_environment)
       if 'out/Release' not in destination and 'out\Release' not in destination:
         raise Exception('Prod builds must be placed in the out/Release folder')
-      if app_id != None:
-        raise Exception('Cannot pass in an app_id for '
+      if appid != None:
+        raise Exception('Cannot pass in an appid for '
                         + buildtype + ' builds: ' + service_environment)
       if appRemotingApiHost != None:
         raise Exception('Cannot set APP_REMOTING_API_HOST env var for '
@@ -202,7 +244,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
 
     # If an Application ID was set (either from service_environment variable or
     # from a command line argument), hardcode it, otherwise get it at runtime.
-    effectiveAppId = appRemotingApplicationId or app_id
+    effectiveAppId = appRemotingApplicationId or appid
     if effectiveAppId:
       appRemotingApplicationId = "'" + effectiveAppId + "'"
     else:
@@ -236,6 +278,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   else:
     appRemotingApiBaseUrl = ''
 
+  replaceBool(destination, 'USE_GCD', use_gcd)
   replaceString(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
   replaceString(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
   replaceString(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
@@ -284,10 +327,9 @@ def buildWebApp(buildtype, version, destination, zip_path,
                  "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
 
   # Configure xmpp server and directory bot settings in the plugin.
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "Boolean('XMPP_SERVER_USE_TLS')",
-                  os.environ.get('XMPP_SERVER_USE_TLS', 'true'))
-
+  replaceBool(
+      destination, 'XMPP_SERVER_USE_TLS',
+      getenvBool('XMPP_SERVER_USE_TLS', True))
   xmppServer = os.environ.get('XMPP_SERVER',
                                'talk.google.com:443')
   replaceString(destination, 'XMPP_SERVER', xmppServer)
@@ -339,6 +381,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'APP_NAME': app_name,
         'APP_DESCRIPTION': app_description,
         'OAUTH_GDRIVE_SCOPE': '',
+        'USE_GCD': use_gcd,
         'XMPP_SERVER': xmppServer,
     }
     if 'GOOGLE_DRIVE' in app_capabilities:
@@ -356,72 +399,28 @@ def buildWebApp(buildtype, version, destination, zip_path,
 
 
 def main():
-  if len(sys.argv) < 6:
-    print ('Usage: build-webapp.py '
-           '<build-type> <version> <dst> <zip-path> <manifest_template> '
-           '<webapp_type> <other files...> '
-           '--app_name <name> '
-           '--app_description <description> '
-           '--app_capabilities <capabilities...> '
-           '[--appid <appid>] '
-           '[--locales_listfile <locales-listfile-name>] '
-           '[--jinja_paths <paths...>] '
-           '[--service_environment <service_environment>]')
-    return 1
+  parser = argparse.ArgumentParser()
+  parser.add_argument('buildtype')
+  parser.add_argument('version')
+  parser.add_argument('destination')
+  parser.add_argument('zip_path')
+  parser.add_argument('manifest_template')
+  parser.add_argument('webapp_type')
+  parser.add_argument('files', nargs='*', metavar='file', default=[])
+  parser.add_argument('--app_name', metavar='NAME')
+  parser.add_argument('--app_description', metavar='TEXT')
+  parser.add_argument('--app_capabilities',
+                      nargs='*', default=[], metavar='CAPABILITY')
+  parser.add_argument('--appid')
+  parser.add_argument('--locales_listfile', default='', metavar='PATH')
+  parser.add_argument('--jinja_paths', nargs='*', default=[], metavar='PATH')
+  parser.add_argument('--service_environment', default='', metavar='ENV')
+  parser.add_argument('--use_gcd', choices=['0', '1'], default='0')
 
-  arg_type = ''
-  files = []
-  locales_listfile = ''
-  jinja_paths = []
-  app_id = None
-  app_name = None
-  app_description = None
-  app_capabilities = set([])
-  service_environment = ''
-
-  for arg in sys.argv[7:]:
-    if arg in ['--locales_listfile',
-               '--jinja_paths',
-               '--appid',
-               '--app_name',
-               '--app_description',
-               '--app_capabilities',
-               '--service_environment']:
-      arg_type = arg
-    elif arg_type == '--locales_listfile':
-      locales_listfile = arg
-      arg_type = ''
-    elif arg_type == '--jinja_paths':
-      jinja_paths.append(arg)
-    elif arg_type == '--appid':
-      app_id = arg
-      arg_type = ''
-    elif arg_type == '--app_name':
-      app_name = arg
-      arg_type = ''
-    elif arg_type == '--app_description':
-      app_description = arg
-      arg_type = ''
-    elif arg_type == '--app_capabilities':
-      app_capabilities.add(arg)
-    elif arg_type == '--service_environment':
-      service_environment = arg
-      arg_type = ''
-    else:
-      files.append(arg)
-
-  # Load the locales files from the locales_listfile.
-  if not locales_listfile:
-    raise Exception('You must specify a locales_listfile')
-  locales = []
-  with open(locales_listfile) as input:
-    for s in input:
-      locales.append(s.rstrip())
-
-  return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-                     sys.argv[5], sys.argv[6], app_id, app_name,
-                     app_description, app_capabilities, files, locales,
-                     jinja_paths, service_environment)
+  args = parser.parse_args()
+  args.use_gcd = (args.use_gcd != '0')
+  args.app_capabilities = set(args.app_capabilities)
+  return buildWebApp(**vars(args))
 
 
 if __name__ == '__main__':

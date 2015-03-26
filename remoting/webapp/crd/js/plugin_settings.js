@@ -41,7 +41,7 @@ remoting.Settings.prototype.TALK_GADGET_URL = 'TALK_GADGET_URL';
  */
 remoting.Settings.prototype.OAUTH2_REDIRECT_URL = function() {
   return 'OAUTH2_REDIRECT_URL';
-}
+};
 
 /** @type {string} Base URL for the App Remoting API. */
 remoting.Settings.prototype.APP_REMOTING_API_BASE_URL =
@@ -67,7 +67,7 @@ remoting.Settings.prototype.DIRECTORY_BOT_JID = 'DIRECTORY_BOT_JID';
 remoting.Settings.prototype.XMPP_SERVER = 'XMPP_SERVER';
 /** @type {boolean} Whether to use TLS on connections to the XMPP server. */
 remoting.Settings.prototype.XMPP_SERVER_USE_TLS =
-    Boolean('XMPP_SERVER_USE_TLS');
+    !!'XMPP_SERVER_USE_TLS';
 
 // Third party authentication settings.
 /** @type {string} The third party auth redirect URI. */
@@ -76,3 +76,6 @@ remoting.Settings.prototype.THIRD_PARTY_AUTH_REDIRECT_URI =
 
 // 'native', 'nacl' or 'pnacl'.
 remoting.Settings.prototype.CLIENT_PLUGIN_TYPE = 'CLIENT_PLUGIN_TYPE';
+
+/** @const {boolean} If true, use GCD instead of Chromoting registry. */
+remoting.Settings.prototype.USE_GCD = !!'USE_GCD';

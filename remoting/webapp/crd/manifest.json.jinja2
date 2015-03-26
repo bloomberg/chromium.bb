@@ -53,7 +53,12 @@
   "oauth2": {
     "client_id": "{{ REMOTING_IDENTITY_API_CLIENT_ID }}",
     "scopes": [
-      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
+      {% if USE_GCD %}
+      "https://www.googleapis.com/auth/clouddevices",
+      {% endif %}
+      "https://www.googleapis.com/auth/chromoting",
+      "https://www.googleapis.com/auth/googletalk",
+      "https://www.googleapis.com/auth/userinfo#email"
     ]
   },
   "sandbox": {

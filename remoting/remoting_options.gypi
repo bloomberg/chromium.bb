@@ -11,6 +11,9 @@
 
     # Set this to enable cast mode on the android client.
     'enable_cast%': 0,
+ 
+    # Set this to use GCD instead of the remoting directory service.
+    'remoting_use_gcd%': 0,
 
     'variables': {
       'conditions': [

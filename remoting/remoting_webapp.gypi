@@ -73,6 +73,8 @@
         '<@(extra_files)',
         '--locales_listfile',
         '<(dr_webapp_locales_listfile)',
+        '--use_gcd',
+        '<(remoting_use_gcd)',
       ],
     },
   ],
