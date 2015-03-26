@@ -20,6 +20,7 @@ source_set("nacl_trusted_plugin") {
   ]
 
   deps = [
+    "//base",
     "//media:shared_memory_support",
     "//native_client/src/shared/gio",
     "//native_client/src/shared/imc",
@@ -29,6 +30,7 @@ source_set("nacl_trusted_plugin") {
     "//native_client/src/trusted/platform_qualify:platform_qual_lib",
     "//native_client/src/trusted/simple_service",
     "//native_client/src/trusted/weak_ref",
+    "//ppapi/c",
     "//ppapi/cpp:objects",
     "//ppapi/cpp/private:internal_module",
   ]
