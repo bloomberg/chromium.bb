@@ -29,9 +29,8 @@ bool WebSchedulerImpl::canExceedIdleDeadlineIfRequired() {
   return renderer_scheduler_->CanExceedIdleDeadlineIfRequired();
 }
 
-void WebSchedulerImpl::runIdleTask(
-    scoped_ptr<blink::WebScheduler::IdleTask> task,
-    base::TimeTicks deadline) {
+void WebSchedulerImpl::runIdleTask(scoped_ptr<blink::WebThread::IdleTask> task,
+                                   base::TimeTicks deadline) {
   task->run((deadline - base::TimeTicks()).InSecondsF());
 }
 
@@ -40,9 +39,9 @@ void WebSchedulerImpl::runTask(scoped_ptr<blink::WebThread::Task> task) {
 }
 
 void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
-                                    blink::WebScheduler::IdleTask* task) {
+                                    blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  scoped_ptr<blink::WebScheduler::IdleTask> scoped_task(task);
+  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostIdleTask(
@@ -52,9 +51,9 @@ void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
 
 void WebSchedulerImpl::postNonNestableIdleTask(
     const blink::WebTraceLocation& web_location,
-    blink::WebScheduler::IdleTask* task) {
+    blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  scoped_ptr<blink::WebScheduler::IdleTask> scoped_task(task);
+  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostNonNestableIdleTask(
@@ -64,9 +63,9 @@ void WebSchedulerImpl::postNonNestableIdleTask(
 
 void WebSchedulerImpl::postIdleTaskAfterWakeup(
     const blink::WebTraceLocation& web_location,
-    blink::WebScheduler::IdleTask* task) {
+    blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  scoped_ptr<blink::WebScheduler::IdleTask> scoped_task(task);
+  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostIdleTaskAfterWakeup(

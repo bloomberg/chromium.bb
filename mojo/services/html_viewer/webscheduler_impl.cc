@@ -21,8 +21,8 @@ WebSchedulerImpl::~WebSchedulerImpl() {
 }
 
 void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
-                                    blink::WebScheduler::IdleTask* task) {
-  scoped_ptr<blink::WebScheduler::IdleTask> scoped_task(task);
+                                    blink::WebThread::IdleTask* task) {
+  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   task_runner_->PostTask(location, base::Bind(&WebSchedulerImpl::RunIdleTask,
@@ -54,7 +54,7 @@ void WebSchedulerImpl::postTimerTask(
 
 // static
 void WebSchedulerImpl::RunIdleTask(
-    scoped_ptr<blink::WebScheduler::IdleTask> task) {
+    scoped_ptr<blink::WebThread::IdleTask> task) {
   // TODO(davemoore) Implement idle scheduling.
   task->run(0);
 }
