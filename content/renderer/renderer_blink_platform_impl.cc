@@ -54,6 +54,7 @@
 #include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/renderer/scheduler/webthread_impl_for_scheduler.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
+#include "content/renderer/service_worker/webserviceworkercachestorage_impl.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -66,6 +67,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
@@ -387,6 +389,16 @@ WebStorageNamespace* RendererBlinkPlatformImpl::createLocalStorageNamespace() {
 
 WebIDBFactory* RendererBlinkPlatformImpl::idbFactory() {
   return web_idb_factory_.get();
+}
+
+//------------------------------------------------------------------------------
+
+blink::WebServiceWorkerCacheStorage* RendererBlinkPlatformImpl::cacheStorage(
+    const WebString& origin_identifier) {
+  const GURL origin =
+      storage::GetOriginFromIdentifier(origin_identifier.utf8());
+  return new WebServiceWorkerCacheStorageImpl(thread_safe_sender_.get(),
+                                              origin);
 }
 
 //------------------------------------------------------------------------------

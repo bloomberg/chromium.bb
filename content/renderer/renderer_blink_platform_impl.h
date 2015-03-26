@@ -34,6 +34,7 @@ class WebBatteryStatus;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
+class WebServiceWorkerCacheStorage;
 }
 
 namespace content {
@@ -101,6 +102,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual void screenColorProfile(blink::WebVector<char>* to_profile);
   virtual blink::WebScrollbarBehavior* scrollbarBehavior();
   virtual blink::WebIDBFactory* idbFactory();
+  virtual blink::WebServiceWorkerCacheStorage* cacheStorage(
+      const blink::WebString& origin_identifier);
   virtual blink::WebFileSystem* fileSystem();
   virtual bool canAccelerate2dCanvas();
   virtual bool isThreadedCompositingEnabled();

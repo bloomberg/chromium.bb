@@ -62,6 +62,7 @@ class EmbeddedWorkerContextClient
   // WebServiceWorkerContextClient overrides, some of them are just dispatched
   // on to script_context_.
   virtual blink::WebURL scope() const;
+  // TODO(jsbell): Remove this once Blink is updated. http://crbug.com/439389
   virtual blink::WebServiceWorkerCacheStorage* cacheStorage();
   virtual void didPauseAfterDownload();
   virtual void getClients(const blink::WebServiceWorkerClientQueryOptions&,
