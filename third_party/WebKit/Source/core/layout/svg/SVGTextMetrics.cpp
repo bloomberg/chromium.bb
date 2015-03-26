@@ -56,12 +56,6 @@ SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textRenderer, const TextRun&
     m_length = static_cast<unsigned>(run.length());
 }
 
-TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned position, unsigned length)
-{
-    ASSERT(text->style());
-    return constructTextRun(text, position, length, text->style()->direction());
-}
-
 TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
 {
     const LayoutStyle& style = text->styleRef();
@@ -94,12 +88,6 @@ SVGTextMetrics SVGTextMetrics::measureCharacterRange(LayoutSVGInlineText* text, 
 {
     ASSERT(text);
     return SVGTextMetrics(text, constructTextRun(text, position, length, textDirection));
-}
-
-SVGTextMetrics SVGTextMetrics::measureCharacterRange(LayoutSVGInlineText* text, unsigned position, unsigned length)
-{
-    ASSERT(text);
-    return SVGTextMetrics(text, constructTextRun(text, position, length));
 }
 
 SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* text, unsigned position, unsigned length, float width)

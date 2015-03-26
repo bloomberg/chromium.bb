@@ -37,10 +37,6 @@ public:
     SVGTextMetrics(MetricsType);
     SVGTextMetrics(LayoutSVGInlineText*, unsigned position, unsigned length, float width);
 
-    // FIXME: Migrate away from these to the two below.
-    static SVGTextMetrics measureCharacterRange(LayoutSVGInlineText*, unsigned position, unsigned length);
-    static TextRun constructTextRun(LayoutSVGInlineText*, unsigned position, unsigned length);
-
     static SVGTextMetrics measureCharacterRange(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
     static TextRun constructTextRun(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
 
