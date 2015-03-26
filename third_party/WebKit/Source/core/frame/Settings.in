@@ -323,3 +323,12 @@ logDnsPrefetchAndPreconnect initial=false
 # If true, the UA styles will include viewportAndroid.css. It is used for
 # Android, and dynamically set by the inspector for mobile emulation.
 useMobileViewportStyle initial=false, invalidate=ViewportRule
+
+# User style overrides for captions and subtitles
+textTrackBackgroundColor type=String
+textTrackFontFamily type=String
+textTrackFontStyle type=String
+textTrackFontVariant type=String
+textTrackTextColor type=String
+textTrackTextShadow type=String
+textTrackTextSize type=String

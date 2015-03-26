@@ -38,6 +38,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/Event.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrack.h"
@@ -134,6 +135,14 @@ static bool isInvalidPercentage(double value, ExceptionState& exceptionState)
         return true;
     }
     return false;
+}
+
+// Sets inline CSS properties on passed in element if value is not an empty string
+static void setInlineStylePropertyIfNotEmpty(Element& element,
+    CSSPropertyID propertyID, const String& value)
+{
+    if (!value.isEmpty())
+        element.setInlineStyleProperty(propertyID, value);
 }
 
 VTTCueBox::VTTCueBox(Document& document, VTTCue* cue)
@@ -797,8 +806,13 @@ PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
 
     ASSERT(m_displayTree->firstChild() == m_cueBackgroundBox);
 
-    if (!m_displayTreeShouldChange)
+    if (!m_displayTreeShouldChange) {
+        // Apply updated user style overrides for text tracks when display tree doesn't change.
+        // This ensures that the track settings are refreshed when the video is
+        // replayed or when the user slides back to an already rendered track.
+        applyUserOverrideCSSProperties();
         return m_displayTree;
+    }
 
     createVTTNodeTree();
 
@@ -807,6 +821,9 @@ PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
 
     VTTDisplayParameters displayParameters = calculateDisplayParameters();
     m_displayTree->applyCSSProperties(displayParameters);
+
+    // Apply user override settings for text tracks
+    applyUserOverrideCSSProperties();
 
     m_displayTreeShouldChange = false;
 
@@ -1078,6 +1095,28 @@ void VTTCue::parseSettings(const String& inputString)
 
     if (!lineIsAuto() || m_cueSize != 100 || m_writingDirection != Horizontal)
         m_regionId = emptyString();
+}
+
+void VTTCue::applyUserOverrideCSSProperties()
+{
+    Settings* settings = document().settings();
+    if (!settings)
+        return;
+
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyBackgroundColor, settings->textTrackBackgroundColor());
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyFontFamily, settings->textTrackFontFamily());
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyFontStyle, settings->textTrackFontStyle());
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyFontVariant, settings->textTrackFontVariant());
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyColor, settings->textTrackTextColor());
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyTextShadow, settings->textTrackTextShadow());
+    setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
+        CSSPropertyFontSize, settings->textTrackTextSize());
 }
 
 ExecutionContext* VTTCue::executionContext() const

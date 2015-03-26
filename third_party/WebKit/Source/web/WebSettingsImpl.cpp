@@ -376,6 +376,41 @@ void WebSettingsImpl::setXSSAuditorEnabled(bool enabled)
     m_settings->setXSSAuditorEnabled(enabled);
 }
 
+void WebSettingsImpl::setTextTrackBackgroundColor(const WebString& color)
+{
+    m_settings->setTextTrackBackgroundColor(color);
+}
+
+void WebSettingsImpl::setTextTrackFontFamily(const WebString& fontFamily)
+{
+    m_settings->setTextTrackFontFamily(fontFamily);
+}
+
+void WebSettingsImpl::setTextTrackFontStyle(const WebString& fontStyle)
+{
+    m_settings->setTextTrackFontStyle(fontStyle);
+}
+
+void WebSettingsImpl::setTextTrackFontVariant(const WebString& fontVariant)
+{
+    m_settings->setTextTrackFontVariant(fontVariant);
+}
+
+void WebSettingsImpl::setTextTrackTextColor(const WebString& color)
+{
+    m_settings->setTextTrackTextColor(color);
+}
+
+void WebSettingsImpl::setTextTrackTextShadow(const WebString& shadow)
+{
+    m_settings->setTextTrackTextShadow(shadow);
+}
+
+void WebSettingsImpl::setTextTrackTextSize(const WebString& size)
+{
+    m_settings->setTextTrackTextSize(size);
+}
+
 void WebSettingsImpl::setUnsafePluginPastingEnabled(bool enabled)
 {
     m_settings->setUnsafePluginPastingEnabled(enabled);

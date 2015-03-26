@@ -77,6 +77,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"
@@ -1188,6 +1189,23 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     }
 }
 
+static bool shouldIgnoreTextTrackAuthorStyle(Document& document)
+{
+    Settings* settings = document.settings();
+    if (!settings)
+        return false;
+    // Ignore author specified settings for text tracks when any of the user settings are present.
+    if (!settings->textTrackBackgroundColor().isEmpty()
+        || !settings->textTrackFontFamily().isEmpty()
+        || !settings->textTrackFontStyle().isEmpty()
+        || !settings->textTrackFontVariant().isEmpty()
+        || !settings->textTrackTextColor().isEmpty()
+        || !settings->textTrackTextShadow().isEmpty()
+        || !settings->textTrackTextSize().isEmpty())
+        return true;
+    return false;
+}
+
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
 template <CSSPropertyPriority priority>
@@ -1246,8 +1264,9 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
             continue;
         }
 
-        if (propertyWhitelistType == PropertyWhitelistCue && !isValidCueStyleProperty(property))
+        if (propertyWhitelistType == PropertyWhitelistCue && (!isValidCueStyleProperty(property) || shouldIgnoreTextTrackAuthorStyle(document())))
             continue;
+
         if (propertyWhitelistType == PropertyWhitelistFirstLetter && !isValidFirstLetterStyleProperty(property))
             continue;
 

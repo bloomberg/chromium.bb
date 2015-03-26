@@ -157,6 +157,13 @@ public:
     virtual void setTextAreasAreResizable(bool) override;
     virtual void setTextAutosizingEnabled(bool) override;
     virtual void setAccessibilityFontScaleFactor(float) override;
+    virtual void setTextTrackBackgroundColor(const WebString&);
+    virtual void setTextTrackFontFamily(const WebString&);
+    virtual void setTextTrackFontStyle(const WebString&);
+    virtual void setTextTrackFontVariant(const WebString&);
+    virtual void setTextTrackTextColor(const WebString&);
+    virtual void setTextTrackTextShadow(const WebString&);
+    virtual void setTextTrackTextSize(const WebString&);
     virtual void setThreadedScrollingEnabled(bool) override;
     virtual void setTouchDragDropEnabled(bool) override;
     virtual void setTouchEditingEnabled(bool) override;

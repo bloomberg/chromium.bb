@@ -103,6 +103,9 @@ public:
 
     void parseSettings(const String&);
 
+    // Applies CSS override style from user settings.
+    void applyUserOverrideCSSProperties();
+
     PassRefPtrWillBeRawPtr<DocumentFragment> getCueAsHTML();
 
     const String& regionId() const { return m_regionId; }
