@@ -84,6 +84,9 @@ crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Pas
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 
+# Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
+crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
+
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
 
 # Text::inDocument() returns false but should not.
