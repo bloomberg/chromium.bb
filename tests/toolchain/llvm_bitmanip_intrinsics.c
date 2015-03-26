@@ -36,6 +36,14 @@ volatile uint32_t i32[] = {0, 0x01234567, 0x12345670, 0xffffffff};
 volatile uint64_t i64[] = {0, 0x0123456789abcdefll,
                            0x0123456789abcdef0ll, 0xffffffffffffffffll};
 
+/*
+ * LLVM had a bug generating ARM code with large array offsets. The function
+ * needs a constant offset > 255 to trigger the bug.
+ */
+volatile uint16_t i16l[257] = {[256] = 0xabcd};
+volatile uint32_t i32l[257] = {[256] = 0x01234567};
+volatile uint64_t i64l[257] = {[256] = 0x0123456789abcdefll};
+
 #define print_op(op, x)                                                 \
   printf("%30s: %u\n", #op " (llvm)", (unsigned) llvm_intrinsic_ ## op(x))
 
@@ -101,6 +109,16 @@ int main(int argc, char* argv[]) {
     printf("%30s: 0x%016llx\n", "bswapll (builtin)",
            __builtin_bswap64(i64[i]));
   }
+
+  printf("\nLarge offset tests:\n");
+  printf("%30s: 0x%04hx\n", "bswap (llvm)", llvm_intrinsic_bswap16(i16l[256]));
+  printf("%30s: 0x%04hx\n", "bswap (builtin)", __builtin_bswap16(i16l[256]));
+  printf("%30s: 0x%08x\n", "bswap (llvm)", llvm_intrinsic_bswap32(i32l[256]));
+  printf("%30s: 0x%08x\n", "bswap (builtin)", __builtin_bswap32(i32l[256]));
+  printf("%30s: 0x%016llx\n", "bswapll (llvm)",
+         llvm_intrinsic_bswap64(i64l[256]));
+  printf("%30s: 0x%016llx\n", "bswapll (builtin)",
+         __builtin_bswap64(i64l[256]));
 
   return 0;
 }

@@ -94,3 +94,11 @@
                ctzll (builtin): 0
                 bswapll (llvm): 0xffffffffffffffff
              bswapll (builtin): 0xffffffffffffffff
+
+Large offset tests:
+                  bswap (llvm): 0xcdab
+               bswap (builtin): 0xcdab
+                  bswap (llvm): 0x67452301
+               bswap (builtin): 0x67452301
+                bswapll (llvm): 0xefcdab8967452301
+             bswapll (builtin): 0xefcdab8967452301
