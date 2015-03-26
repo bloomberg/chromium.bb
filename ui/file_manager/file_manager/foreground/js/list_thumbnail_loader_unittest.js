@@ -45,7 +45,9 @@ var listThumbnailLoader;
 var getCallbacks;
 var thumbnailLoadedEvents;
 var fileListModel;
+var directoryModel;
 var currentVolumeType;
+var isScanningForTest = false;
 var fileSystem = new MockFileSystem('volume-id');
 var directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
 var entry1 = new MockEntry(fileSystem, '/Test1.jpg');
@@ -75,8 +77,18 @@ function setUp() {
 
   fileListModel = new FileListModel(thumbnailModel);
 
+  directoryModel = {
+    __proto__: cr.EventTarget.prototype,
+    getFileList: function() {
+      return fileListModel;
+    },
+    isScanning: function() {
+      return isScanningForTest;
+    }
+  };
+
   listThumbnailLoader = new ListThumbnailLoader(
-      fileListModel,
+      directoryModel,
       thumbnailModel,
       // Mocking volume manager
       {
@@ -336,4 +348,23 @@ function testMTPVolume() {
 
   // Only one request should be enqueued on MTP volume.
   assertEquals(1, Object.keys(getCallbacks).length);
+}
+
+/**
+ * Test case that directory scan is running.
+ */
+function testDirectoryScanIsRunning() {
+  // Items are added during directory scan.
+  isScanningForTest = true;
+
+  listThumbnailLoader.setHighPriorityRange(0,2);
+  fileListModel.push(directory1, entry1, entry2);
+  assertEquals(0, Object.keys(getCallbacks).length);
+
+  // Scan completed after adding the last item.
+  fileListModel.push(entry3);
+  isScanningForTest = false;
+  directoryModel.dispatchEvent(new Event('scan-completed'));
+
+  assertEquals(2, Object.keys(getCallbacks).length);
 }

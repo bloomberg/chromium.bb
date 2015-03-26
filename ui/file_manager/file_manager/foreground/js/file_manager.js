@@ -867,7 +867,7 @@ FileManager.prototype = /** @struct */ {
     this.initDirectoryTree_();
 
     this.ui_.listContainer.listThumbnailLoader = new ListThumbnailLoader(
-        assert(this.directoryModel_.getFileList()),
+        this.directoryModel_,
         assert(this.thumbnailModel_),
         this.volumeManager_);
     this.ui_.listContainer.dataModel = this.directoryModel_.getFileList();

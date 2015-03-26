@@ -10,7 +10,7 @@
  * is responsible to return dataUrls of thumbnails and fetch them with proper
  * priority.
  *
- * @param {!FileListModel} dataModel A file list model.
+ * @param {!DirectoryModel} directoryModel A directory model.
  * @param {!ThumbnailModel} thumbnailModel Thumbnail metadata model.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {Function=} opt_thumbnailLoaderConstructor A constructor of thumbnail
@@ -21,11 +21,12 @@
  * @suppress {checkStructDictInheritance}
  */
 function ListThumbnailLoader(
-    dataModel, thumbnailModel, volumeManager, opt_thumbnailLoaderConstructor) {
+    directoryModel, thumbnailModel, volumeManager,
+    opt_thumbnailLoaderConstructor) {
   /**
-   * @private {!FileListModel}
+   * @private {!DirectoryModel}
    */
-  this.dataModel_ = dataModel;
+  this.directoryModel_ = directoryModel;
 
   /**
    * @private {!ThumbnailModel}
@@ -76,6 +77,13 @@ function ListThumbnailLoader(
    */
   this.currentVolumeType_ = null;
 
+  /**
+   * @private {!FileListModel}
+   */
+  this.dataModel_ = assert(this.directoryModel_.getFileList());
+
+  this.directoryModel_.addEventListener(
+      'scan-completed', this.onScanCompleted_.bind(this));
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
   this.dataModel_.addEventListener('sorted', this.onSorted_.bind(this));
   this.dataModel_.addEventListener('change', this.onChange_.bind(this));
@@ -141,6 +149,19 @@ ListThumbnailLoader.prototype.getNumOfMaxActiveTasks_ = function() {
     default:
       return 10;
   }
+};
+
+/**
+ * An event handler for scan-completed event of directory model. When directory
+ * scan is running, we don't fetch thumbnail in order not to block IO for
+ * directory scan. i.e. modification events during directory scan is ignored.
+ * We need to check thumbnail loadings after directory scan is completed.
+ *
+ * @param {!Event} event Event
+ */
+ListThumbnailLoader.prototype.onScanCompleted_ = function(event) {
+  this.cursor_ = this.beginIndex_;
+  this.continue_();
 };
 
 /**
@@ -216,8 +237,9 @@ ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
  * Enqueues tasks if available.
  */
 ListThumbnailLoader.prototype.continue_ = function() {
-  // If all items are scanned, do nothing.
-  if (!(this.cursor_ < this.dataModel_.length))
+  // If directory scan is running or all items are scanned, do nothing.
+  if (this.directoryModel_.isScanning() ||
+      !(this.cursor_ < this.dataModel_.length))
     return;
 
   var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_));
