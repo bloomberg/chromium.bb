@@ -906,33 +906,9 @@ class SyncMessageSchema {
     return ok;
   }
 
-  template<typename TA>
-  static void WriteReplyParams(Message* reply, TA a) {
-    ReplyParam p(a);
-    WriteParam(reply, p);
-  }
-
-  template<typename TA, typename TB>
-  static void WriteReplyParams(Message* reply, TA a, TB b) {
-    ReplyParam p(a, b);
-    WriteParam(reply, p);
-  }
-
-  template<typename TA, typename TB, typename TC>
-  static void WriteReplyParams(Message* reply, TA a, TB b, TC c) {
-    ReplyParam p(a, b, c);
-    WriteParam(reply, p);
-  }
-
-  template<typename TA, typename TB, typename TC, typename TD>
-  static void WriteReplyParams(Message* reply, TA a, TB b, TC c, TD d) {
-    ReplyParam p(a, b, c, d);
-    WriteParam(reply, p);
-  }
-
-  template<typename TA, typename TB, typename TC, typename TD, typename TE>
-  static void WriteReplyParams(Message* reply, TA a, TB b, TC c, TD d, TE e) {
-    ReplyParam p(a, b, c, d, e);
+  template <typename... Ts>
+  static void WriteReplyParams(Message* reply, Ts... args) {
+    ReplyParam p(args...);
     WriteParam(reply, p);
   }
 };
