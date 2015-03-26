@@ -32,6 +32,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
+#include "core/layout/LayoutState.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/style/ShadowList.h"
@@ -386,6 +387,7 @@ void LayoutSVGText::layout()
     LayoutUnit afterEdge = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
     setLogicalHeight(beforeEdge);
 
+    LayoutState state(*this, locationOffset());
     LayoutUnit paintInvalidationLogicalTop = 0;
     LayoutUnit paintInvalidationLogicalBottom = 0;
     layoutInlineChildren(true, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, afterEdge);

@@ -140,6 +140,9 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 # crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
+crbug.com/399603 svg/text/columns-do-not-apply.html [ NeedsRebaseline ]
+crbug.com/399603 virtual/slimmingpaint/svg/text/columns-do-not-apply.html [ NeedsRebaseline ]
+
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
