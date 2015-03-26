@@ -327,7 +327,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolverState& stat
 
 static Length mmLength(double mm) { return Length(mm * cssPixelsPerMillimeter, Fixed); }
 static Length inchLength(double inch) { return Length(inch * cssPixelsPerInch, Fixed); }
-static bool getPageSizeFromName(CSSPrimitiveValue* pageSizeName, CSSPrimitiveValue* pageOrientation, Length& width, Length& height)
+static void getPageSizeFromName(CSSPrimitiveValue* pageSizeName, Length& width, Length& height)
 {
     DEFINE_STATIC_LOCAL(Length, a5Width, (mmLength(148)));
     DEFINE_STATIC_LOCAL(Length, a5Height, (mmLength(210)));
@@ -345,9 +345,6 @@ static bool getPageSizeFromName(CSSPrimitiveValue* pageSizeName, CSSPrimitiveVal
     DEFINE_STATIC_LOCAL(Length, legalHeight, (inchLength(14)));
     DEFINE_STATIC_LOCAL(Length, ledgerWidth, (inchLength(11)));
     DEFINE_STATIC_LOCAL(Length, ledgerHeight, (inchLength(17)));
-
-    if (!pageSizeName)
-        return false;
 
     switch (pageSizeName->getValueID()) {
     case CSSValueA5:
@@ -383,22 +380,9 @@ static bool getPageSizeFromName(CSSPrimitiveValue* pageSizeName, CSSPrimitiveVal
         height = ledgerHeight;
         break;
     default:
-        return false;
+        ASSERT_NOT_REACHED();
+        break;
     }
-
-    if (pageOrientation) {
-        switch (pageOrientation->getValueID()) {
-        case CSSValueLandscape:
-            std::swap(width, height);
-            break;
-        case CSSValuePortrait:
-            // Nothing to do.
-            break;
-        default:
-            return false;
-        }
-    }
-    return true;
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertySize(StyleResolverState&) { }
@@ -410,27 +394,25 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
     Length height;
     PageSizeType pageSizeType = PAGE_SIZE_AUTO;
     CSSValueList* list = toCSSValueList(value);
-    switch (list->length()) {
-    case 2: {
+    if (list->length() == 2) {
         // <length>{2} | <page-size> <orientation>
         CSSPrimitiveValue* first = toCSSPrimitiveValue(list->item(0));
         CSSPrimitiveValue* second = toCSSPrimitiveValue(list->item(1));
         if (first->isLength()) {
             // <length>{2}
-            if (!second->isLength())
-                return;
             width = first->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
             height = second->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
         } else {
             // <page-size> <orientation>
-            // The value order is guaranteed. See BisonCSSParser::parseSizeParameter.
-            if (!getPageSizeFromName(first, second, width, height))
-                return;
+            getPageSizeFromName(first, width, height);
+
+            ASSERT(second->getValueID() == CSSValueLandscape || second->getValueID() == CSSValuePortrait);
+            if (second->getValueID() == CSSValueLandscape)
+                std::swap(width, height);
         }
         pageSizeType = PAGE_SIZE_RESOLVED;
-        break;
-    }
-    case 1: {
+    } else {
+        ASSERT(list->length() == 1);
         // <length> | auto | <page-size> | [ portrait | landscape]
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
         if (primitiveValue->isLength()) {
@@ -439,8 +421,6 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
             width = height = primitiveValue->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
         } else {
             switch (primitiveValue->getValueID()) {
-            case 0:
-                return;
             case CSSValueAuto:
                 pageSizeType = PAGE_SIZE_AUTO;
                 break;
@@ -453,14 +433,9 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
             default:
                 // <page-size>
                 pageSizeType = PAGE_SIZE_RESOLVED;
-                if (!getPageSizeFromName(primitiveValue, 0, width, height))
-                    return;
+                getPageSizeFromName(primitiveValue, width, height);
             }
         }
-        break;
-    }
-    default:
-        return;
     }
     state.style()->setPageSizeType(pageSizeType);
     state.style()->setPageSize(LengthSize(width, height));
@@ -468,15 +443,7 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    // FIXME : Per http://www.w3.org/TR/css3-text/#text-align0 can now take <string> but this is not implemented in the
-    // rendering code.
-    if (primitiveValue->isString())
-        return;
-
     if (primitiveValue->isValueID() && primitiveValue->getValueID() != CSSValueWebkitMatchParent)
         state.style()->setTextAlign(*primitiveValue);
     else if (state.parentStyle()->textAlign() == TASTART)
@@ -503,9 +470,6 @@ void StyleBuilderFunctions::applyInitialCSSPropertyTextIndent(StyleResolverState
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isValueList())
-        return;
-
     Length lengthOrPercentageValue;
     TextIndentLine textIndentLineValue = LayoutStyle::initialTextIndentLine();
     TextIndentType textIndentTypeValue = LayoutStyle::initialTextIndentType();
@@ -608,17 +572,12 @@ void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(StyleResolverSt
 
 void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
-    if (primitiveValue->getValueID()) {
+    if (primitiveValue->getValueID())
         state.style()->setVerticalAlign(*primitiveValue);
-        return;
-    }
-
-    state.style()->setVerticalAlignLength(primitiveValue->convertToLength(state.cssToLengthConversionData()));
+    else
+        state.style()->setVerticalAlignLength(primitiveValue->convertToLength(state.cssToLengthConversionData()));
 }
 
 static void resetEffectiveZoom(StyleResolverState& state)
@@ -715,14 +674,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
     if (value->isValueList()) {
         CSSValueList* list = toCSSValueList(value);
         ASSERT(list->length() == 2);
-        if (list->length() != 2)
-            return;
         for (unsigned i = 0; i < 2; ++i) {
-            CSSValue* item = list->item(i);
-            if (!item->isPrimitiveValue())
-                continue;
-
-            CSSPrimitiveValue* value = toCSSPrimitiveValue(item);
+            CSSPrimitiveValue* value = toCSSPrimitiveValue(list->item(i));
             if (value->getValueID() == CSSValueFilled || value->getValueID() == CSSValueOpen)
                 state.style()->setTextEmphasisFill(*value);
             else
@@ -732,8 +685,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
         return;
     }
 
-    if (!value->isPrimitiveValue())
-        return;
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->isString()) {
@@ -809,9 +760,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
 {
     // list of string, uri, counter, attr, i
 
-    if (!value->isValueList())
-        return;
-
     bool didSet = false;
     for (auto& item : toCSSValueList(*value)) {
         if (item->isImageGeneratorValue()) {
@@ -885,8 +833,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
     const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == CSSValueAuto)
         state.style()->setLocale(nullAtom);
@@ -905,25 +851,19 @@ void StyleBuilderFunctions::applyInheritCSSPropertyWebkitAppRegion(StyleResolver
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
     const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (!primitiveValue->getValueID())
-        return;
     state.style()->setDraggableRegionMode(primitiveValue->getValueID() == CSSValueDrag ? DraggableRegionDrag : DraggableRegionNoDrag);
     state.document().setHasAnnotatedRegions(true);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
 {
-    if (value->isPrimitiveValue())
-        state.setWritingMode(*toCSSPrimitiveValue(value));
+    state.setWritingMode(*toCSSPrimitiveValue(value));
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleResolverState& state, CSSValue* value)
 {
-    if (value->isPrimitiveValue())
-        state.setTextOrientation(*toCSSPrimitiveValue(value));
+    state.setTextOrientation(*toCSSPrimitiveValue(value));
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverState& state)
