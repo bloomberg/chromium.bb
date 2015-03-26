@@ -130,7 +130,7 @@
       'type': '<(gtest_target_type)',
       'includes': [
         '../third_party/angle/build/common_defines.gypi',
-        '../third_party/angle/tests/angle_unittests.gypi',
+        '../third_party/angle/src/tests/angle_unittests.gypi',
       ],
       'dependencies': [
         '../base/base.gyp:base',
@@ -140,8 +140,7 @@
         '..',
         '../third_party/angle/include',
       ],
-      'sources':
-      [
+      'sources': [
         'angle_unittest_main.cc',
       ],
     },
@@ -711,13 +710,11 @@
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
           ],
-          'includes':
-          [
+          'includes': [
             '../third_party/angle/build/common_defines.gypi',
-            '../third_party/angle/tests/angle_end2end_tests.gypi',
+            '../third_party/angle/src/tests/angle_end2end_tests.gypi',
           ],
-          'sources':
-          [
+          'sources': [
             'angle_end2end_tests_main.cc',
           ],
         },
@@ -729,13 +726,11 @@
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
           ],
-          'includes':
-          [
+          'includes': [
             '../third_party/angle/build/common_defines.gypi',
             '../third_party/angle/src/tests/angle_perftests.gypi',
           ],
-          'sources':
-          [
+          'sources': [
             'angle_perftests_main.cc',
           ],
         },

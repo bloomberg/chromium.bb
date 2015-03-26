@@ -10,7 +10,7 @@
 #include "base/test/test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/angle/tests/angle_tests/ANGLETest.h"
+#include "third_party/angle/src/tests/end2end_tests/ANGLETest.h"
 
 namespace {
 
