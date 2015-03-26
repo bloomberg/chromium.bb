@@ -343,6 +343,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when theme color is changed to |theme_color|.
   virtual void DidChangeThemeColor(SkColor theme_color) {}
 
+  // Invoked when media is playing.
+  virtual void MediaStartedPlaying() {}
+
+  // Invoked when media is paused.
+  virtual void MediaPaused() {}
+
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host);

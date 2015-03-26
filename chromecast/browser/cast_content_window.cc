@@ -119,4 +119,12 @@ void CastContentWindow::DidFirstVisuallyNonEmptyPaint() {
   metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstPaint();
 }
 
+void CastContentWindow::MediaPaused() {
+  metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
+}
+
+void CastContentWindow::MediaStartedPlaying() {
+  metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
+}
+
 }  // namespace chromecast

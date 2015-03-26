@@ -3326,12 +3326,16 @@ void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
     if (!video_power_save_blocker_ && !IsHidden())
       CreateVideoPowerSaveBlocker();
   }
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, MediaStartedPlaying());
 }
 
 void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
   RemoveMediaPlayerEntry(player_cookie, &active_audio_players_);
   RemoveMediaPlayerEntry(player_cookie, &active_video_players_);
   MaybeReleasePowerSaveBlockers();
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, MediaPaused());
 }
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
