@@ -488,11 +488,17 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
           base::SysWideToUTF8(font_info.lfFaceName).c_str(),
                               static_cast<SkTypeface::Style>(skia_style)));
 
-  BOOL antialiasing = TRUE;
-  SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+  gfx::FontRenderParams font_params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), nullptr);
+  SkFontHost::SetSubpixelOrder(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
+          font_params.subpixel_rendering));
+  SkFontHost::SetSubpixelOrientation(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
+          font_params.subpixel_rendering));
 
   SkPaint paint;
-  paint.setAntiAlias(!!antialiasing);
+  paint.setAntiAlias(font_params.antialiasing);
   paint.setTypeface(skia_face.get());
   paint.setTextSize(-font_info.lfHeight);
   SkPaint::FontMetrics skia_metrics;

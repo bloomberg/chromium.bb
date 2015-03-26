@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "third_party/skia/include/core/SkFontHost.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -57,6 +58,11 @@ struct GFX_EXPORT FontRenderParams {
   // Whether subpixel rendering should be used or not, and if so, the display's
   // subpixel order.
   SubpixelRendering subpixel_rendering;
+
+  static SkFontHost::LCDOrder SubpixelRenderingToSkiaLCDOrder(
+      SubpixelRendering subpixel_rendering);
+  static SkFontHost::LCDOrientation SubpixelRenderingToSkiaLCDOrientation(
+      SubpixelRendering subpixel_rendering);
 };
 
 // A query used to determine the appropriate FontRenderParams.

@@ -5,6 +5,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
+#include "ui/gfx/font_render_params.h"
 
 using blink::WebFontRendering;
 
@@ -23,6 +24,13 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
 
   blink::WebFontRendering::setStatusFontMetrics(
       prefs.status_font_family_name.c_str(), prefs.status_font_height);
+
+  blink::WebFontRendering::setLCDOrder(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
+          prefs.subpixel_rendering));
+  blink::WebFontRendering::setLCDOrientation(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
+          prefs.subpixel_rendering));
 }
 
 }  // namespace content

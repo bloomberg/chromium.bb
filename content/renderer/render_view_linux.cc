@@ -6,6 +6,7 @@
 
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
+#include "ui/gfx/font_render_params.h"
 
 using blink::WebFontRendering;
 
@@ -43,38 +44,6 @@ SkPaint::Hinting RendererPreferencesToSkiaHinting(
     }
 }
 
-SkFontHost::LCDOrder RendererPreferencesToSkiaLCDOrder(
-    const RendererPreferences& prefs) {
-  switch (prefs.subpixel_rendering) {
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
-      return SkFontHost::kRGB_LCDOrder;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
-      return SkFontHost::kBGR_LCDOrder;
-    default:
-      NOTREACHED();
-      return SkFontHost::kRGB_LCDOrder;
-  }
-}
-
-SkFontHost::LCDOrientation RendererPreferencesToSkiaLCDOrientation(
-    const RendererPreferences& prefs) {
-  switch (prefs.subpixel_rendering) {
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
-      return SkFontHost::kHorizontal_LCDOrientation;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
-      return SkFontHost::kVertical_LCDOrientation;
-    default:
-      NOTREACHED();
-      return SkFontHost::kHorizontal_LCDOrientation;
-  }
-}
-
 }  // namespace
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
@@ -82,9 +51,12 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
   WebFontRendering::setAutoHint(prefs.use_autohinter);
   WebFontRendering::setUseBitmaps(prefs.use_bitmaps);
-  WebFontRendering::setLCDOrder(RendererPreferencesToSkiaLCDOrder(prefs));
+  WebFontRendering::setLCDOrder(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
+          prefs.subpixel_rendering));
   WebFontRendering::setLCDOrientation(
-      RendererPreferencesToSkiaLCDOrientation(prefs));
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
+          prefs.subpixel_rendering));
   WebFontRendering::setAntiAlias(prefs.should_antialias_text);
   WebFontRendering::setSubpixelRendering(
       prefs.subpixel_rendering !=

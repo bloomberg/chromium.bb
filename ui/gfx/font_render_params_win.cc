@@ -2,16 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/font_render_params.h"
-
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/win/registry.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 
 namespace gfx {
 
 namespace {
+
+FontRenderParams::SubpixelRendering GetSubpixelRenderingGeometry() {
+  DISPLAY_DEVICE display_device = {sizeof(DISPLAY_DEVICE), 0};
+  for (int i = 0; EnumDisplayDevices(nullptr, i, &display_device, 0); ++i) {
+    // TODO(scottmg): We only support the primary device currently.
+    if (display_device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+      base::FilePath trimmed =
+          base::FilePath(display_device.DeviceName).BaseName();
+      base::win::RegKey key(
+          HKEY_LOCAL_MACHINE,
+          (L"SOFTWARE\\Microsoft\\Avalon.Graphics\\" + trimmed.value()).c_str(),
+          KEY_READ);
+      DWORD pixel_structure;
+      if (key.ReadValueDW(L"PixelStructure", &pixel_structure) ==
+          ERROR_SUCCESS) {
+        if (pixel_structure == 1)
+          return FontRenderParams::SUBPIXEL_RENDERING_RGB;
+        if (pixel_structure == 2)
+          return FontRenderParams::SUBPIXEL_RENDERING_BGR;
+      }
+      break;
+    }
+  }
+
+  // No explicit ClearType settings, default to RGB.
+  return FontRenderParams::SUBPIXEL_RENDERING_RGB;
+}
 
 // Caches font render params and updates them on system notifications.
 class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
@@ -41,7 +69,7 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
       UINT type = 0;
       if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &type, 0) &&
           type == FE_FONTSMOOTHINGCLEARTYPE) {
-        params_->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
+        params_->subpixel_rendering = GetSubpixelRenderingGeometry();
       }
     }
     gfx::SingletonHwnd::GetInstance()->AddObserver(this);

@@ -54,7 +54,7 @@ struct CONTENT_EXPORT RendererPreferences {
   bool use_bitmaps;
 
   // The type of subpixel rendering to use for text.
-  // Currently only used by Linux.
+  // Currently only used by Linux and Windows.
   gfx::FontRenderParams::SubpixelRendering subpixel_rendering;
 
   // Whether subpixel positioning should be used, permitting fractional X
