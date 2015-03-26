@@ -782,7 +782,7 @@ create_client(void)
 }
 
 struct client *
-client_create(int x, int y, int width, int height)
+create_client_and_test_surface(int x, int y, int width, int height)
 {
 	struct client *client;
 	struct surface *surface;

@@ -31,7 +31,7 @@ TEST(simple_button_test)
 	struct client *client;
 	struct pointer *pointer;
 
-	client = client_create(100, 100, 100, 100);
+	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
 
 	pointer = client->input->pointer;

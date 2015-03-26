@@ -91,7 +91,7 @@ TEST(test_role_conflict_sub_wlshell)
 	struct wl_shell *shell;
 	struct wl_shell_surface *shsurf;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	subco = get_subcompositor(client);
@@ -119,7 +119,7 @@ TEST(test_role_conflict_wlshell_sub)
 	struct wl_shell *shell;
 	struct wl_shell_surface *shsurf;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	subco = get_subcompositor(client);

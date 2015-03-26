@@ -32,7 +32,7 @@ TEST(simple_keyboard_test)
 	uint32_t expect_key = 0;
 	uint32_t expect_state = 0;
 
-	client = client_create(10, 10, 1, 1);
+	client = create_client_and_test_surface(10, 10, 1, 1);
 	assert(client);
 
 	keyboard = client->input->keyboard;

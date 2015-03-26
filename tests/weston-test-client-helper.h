@@ -147,7 +147,7 @@ struct client *
 create_client(void);
 
 struct client *
-client_create(int x, int y, int width, int height);
+create_client_and_test_surface(int x, int y, int width, int height);
 
 struct wl_buffer *
 create_shm_buffer(struct client *client, int width, int height, void **pixels);

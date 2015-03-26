@@ -41,7 +41,7 @@
  * some devices are removed */
 TEST(seat_capabilities_test)
 {
-	struct client *cl = client_create(100, 100, 100, 100);
+	struct client *cl = create_client_and_test_surface(100, 100, 100, 100);
 	assert(cl->input->caps == WL_SEAT_CAPABILITY_ALL);
 
 	assert(cl->input->pointer);
@@ -97,7 +97,7 @@ TEST(seat_capabilities_test)
 TEST(multiple_device_add_and_remove)
 {
 	int i;
-	struct client *cl = client_create(100, 100, 100, 100);
+	struct client *cl = create_client_and_test_surface(100, 100, 100, 100);
 
 	/* add device a lot of times */
 	for (i = 0; i < COUNT; ++i) {
@@ -133,7 +133,7 @@ TEST(multiple_device_add_and_remove)
 
 TEST(device_release_before_destroy)
 {
-	struct client *cl = client_create(100, 100, 100, 100);
+	struct client *cl = create_client_and_test_surface(100, 100, 100, 100);
 
 	/* we can release pointer when we won't be using it anymore.
 	 * Do it and see what happens if the device is destroyed
@@ -188,7 +188,7 @@ TEST(device_release_before_destroy_multiple)
 /* normal work-flow test */
 TEST(device_release_after_destroy)
 {
-	struct client *cl = client_create(100, 100, 100, 100);
+	struct client *cl = create_client_and_test_surface(100, 100, 100, 100);
 
 	weston_test_device_release(cl->test->weston_test, "pointer");
 	wl_pointer_release(cl->input->pointer->wl_pointer);
@@ -240,7 +240,7 @@ TEST(device_release_after_destroy_multiple)
  * suffer from this bug atm, but it is worth of testing. */
 TEST(get_device_after_destroy)
 {
-	struct client *cl = client_create(100, 100, 100, 100);
+	struct client *cl = create_client_and_test_surface(100, 100, 100, 100);
 	struct wl_pointer *wl_pointer;
 	struct wl_keyboard *wl_keyboard;
 	struct wl_touch *wl_touch;

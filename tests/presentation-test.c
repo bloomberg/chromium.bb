@@ -217,7 +217,7 @@ TEST(test_presentation_feedback_simple)
 	struct client *client;
 	struct feedback *fb;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	wl_surface_attach(client->surface->wl_surface,

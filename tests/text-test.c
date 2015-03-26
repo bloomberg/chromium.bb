@@ -169,7 +169,7 @@ TEST(text_test)
 	struct wl_text_input *text_input;
 	struct text_input_state state;
 
-	client = client_create(100, 100, 100, 100);
+	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
 
 	factory = NULL;

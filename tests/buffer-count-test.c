@@ -124,7 +124,7 @@ TEST(test_buffer_count)
 	uint32_t buffer_count;
 	int i;
 
-	test_data.client = client_create(10, 10, 10, 10);
+	test_data.client = create_client_and_test_surface(10, 10, 10, 10);
 	if (!test_data.client->has_wl_drm)
 		skip("compositor has not bound its display to EGL\n");
 

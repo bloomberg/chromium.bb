@@ -89,7 +89,7 @@ TEST(test_subsurface_basic_protocol)
 	struct compound_surface com1;
 	struct compound_surface com2;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com1, client);
@@ -104,7 +104,7 @@ TEST(test_subsurface_position_protocol)
 	struct compound_surface com;
 	int i;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com, client);
@@ -120,7 +120,7 @@ TEST(test_subsurface_placement_protocol)
 	struct client *client;
 	struct compound_surface com;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com, client);
@@ -139,7 +139,7 @@ TEST(test_subsurface_paradox)
 	struct wl_surface *parent;
 	struct wl_subcompositor *subco;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	subco = get_subcompositor(client);
@@ -157,7 +157,7 @@ TEST(test_subsurface_identical_link)
 	struct client *client;
 	struct compound_surface com;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com, client);
@@ -175,7 +175,7 @@ TEST(test_subsurface_change_link)
 	struct compound_surface com;
 	struct wl_surface *stranger;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	stranger = wl_compositor_create_surface(client->wl_compositor);
@@ -194,7 +194,7 @@ TEST(test_subsurface_nesting)
 	struct compound_surface com;
 	struct wl_surface *stranger;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	stranger = wl_compositor_create_surface(client->wl_compositor);
@@ -212,7 +212,7 @@ TEST(test_subsurface_nesting_parent)
 	struct compound_surface com;
 	struct wl_surface *stranger;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	stranger = wl_compositor_create_surface(client->wl_compositor);
@@ -230,7 +230,7 @@ TEST(test_subsurface_loop_paradox)
 	struct wl_surface *surface[3];
 	struct wl_subcompositor *subco;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	subco = get_subcompositor(client);
@@ -253,7 +253,7 @@ TEST(test_subsurface_place_above_stranger)
 	struct compound_surface com;
 	struct wl_surface *stranger;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	stranger = wl_compositor_create_surface(client->wl_compositor);
@@ -272,7 +272,7 @@ TEST(test_subsurface_place_below_stranger)
 	struct compound_surface com;
 	struct wl_surface *stranger;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	stranger = wl_compositor_create_surface(client->wl_compositor);
@@ -291,7 +291,7 @@ TEST(test_subsurface_place_above_foreign)
 	struct compound_surface com1;
 	struct compound_surface com2;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com1, client);
@@ -310,7 +310,7 @@ TEST(test_subsurface_place_below_foreign)
 	struct compound_surface com1;
 	struct compound_surface com2;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com1, client);
@@ -328,7 +328,7 @@ TEST(test_subsurface_destroy_protocol)
 	struct client *client;
 	struct compound_surface com;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	populate_compound_surface(&com, client);
@@ -527,7 +527,7 @@ TEST(test_subsurface_destroy_permutations)
 	int counter = 0;
 	int i;
 
-	client = client_create(100, 50, 123, 77);
+	client = create_client_and_test_surface(100, 50, 123, 77);
 	assert(client);
 
 	permu_init(&per, test_size * 2 - 1);

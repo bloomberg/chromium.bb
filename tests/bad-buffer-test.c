@@ -64,7 +64,7 @@ TEST(test_truncated_shm_file)
 	struct wl_surface *surface;
 	int frame;
 
-	client = client_create(46, 76, 111, 134);
+	client = create_client_and_test_surface(46, 76, 111, 134);
 	assert(client);
 	surface = client->surface->wl_surface;
 

@@ -69,7 +69,7 @@ TEST(test_pointer_top_left)
 	struct client *client;
 	int x, y;
 
-	client = client_create(46, 76, 111, 134);
+	client = create_client_and_test_surface(46, 76, 111, 134);
 	assert(client);
 
 	/* move pointer outside top left */
@@ -94,7 +94,7 @@ TEST(test_pointer_bottom_left)
 	struct client *client;
 	int x, y;
 
-	client = client_create(99, 100, 100, 98);
+	client = create_client_and_test_surface(99, 100, 100, 98);
 	assert(client);
 
 	/* move pointer outside bottom left */
@@ -119,7 +119,7 @@ TEST(test_pointer_top_right)
 	struct client *client;
 	int x, y;
 
-	client = client_create(48, 100, 67, 100);
+	client = create_client_and_test_surface(48, 100, 67, 100);
 	assert(client);
 
 	/* move pointer outside top right */
@@ -144,7 +144,7 @@ TEST(test_pointer_bottom_right)
 	struct client *client;
 	int x, y;
 
-	client = client_create(100, 123, 100, 69);
+	client = create_client_and_test_surface(100, 123, 100, 69);
 	assert(client);
 
 	/* move pointer outside bottom right */
@@ -169,7 +169,7 @@ TEST(test_pointer_top_center)
 	struct client *client;
 	int x, y;
 
-	client = client_create(100, 201, 100, 50);
+	client = create_client_and_test_surface(100, 201, 100, 50);
 	assert(client);
 
 	/* move pointer outside top center */
@@ -194,7 +194,7 @@ TEST(test_pointer_bottom_center)
 	struct client *client;
 	int x, y;
 
-	client = client_create(100, 45, 67, 100);
+	client = create_client_and_test_surface(100, 45, 67, 100);
 	assert(client);
 
 	/* move pointer outside bottom center */
@@ -219,7 +219,7 @@ TEST(test_pointer_left_center)
 	struct client *client;
 	int x, y;
 
-	client = client_create(167, 45, 78, 100);
+	client = create_client_and_test_surface(167, 45, 78, 100);
 	assert(client);
 
 	/* move pointer outside left center */
@@ -244,7 +244,7 @@ TEST(test_pointer_right_center)
 	struct client *client;
 	int x, y;
 
-	client = client_create(110, 37, 100, 46);
+	client = create_client_and_test_surface(110, 37, 100, 46);
 	assert(client);
 
 	/* move pointer outside right center */
@@ -268,7 +268,7 @@ TEST(test_pointer_surface_move)
 {
 	struct client *client;
 
-	client = client_create(100, 100, 100, 100);
+	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
 
 	/* move pointer outside of client */
@@ -310,7 +310,7 @@ TEST(test_surface_output)
 	struct client *client;
 	int x, y;
 
-	client = client_create(100, 100, 100, 100);
+	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
 
 	assert(output_contains_client(client));
@@ -375,7 +375,7 @@ TEST(buffer_release)
 	int buf3_released = 0;
 	int frame;
 
-	client = client_create(100, 100, 100, 100);
+	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
 	surface = client->surface->wl_surface;
 
