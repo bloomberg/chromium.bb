@@ -201,9 +201,6 @@ template("msvc_toolchain") {
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
       current_cpu = invoker.current_cpu
-
-      # TODO(dpranke): cpu_arch is here for backwards compatibility.
-      cpu_arch = current_cpu
     }
   }
 }

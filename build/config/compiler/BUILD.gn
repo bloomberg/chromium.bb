@@ -573,7 +573,7 @@ config("runtime_library") {
 
     # TODO(jdduke) Re-enable on mips after resolving linking
     # issues with libc++ (crbug.com/456380).
-    if (cpu_arch != "mipsel" && cpu_arch != "mips64el") {
+    if (current_cpu != "mipsel" && current_cpu != "mips64el") {
       ldflags += [ "-Wl,--warn-shared-textrel" ]
     }
     ldflags += [ "-nostdlib" ]
@@ -983,7 +983,7 @@ if (is_win) {
 
     # TODO(jdduke) Re-enable on mips after resolving linking
     # issues with libc++ (crbug.com/456380).
-    if (cpu_arch != "mipsel" && cpu_arch != "mips64el") {
+    if (current_cpu != "mipsel" && current_cpu != "mips64el") {
       common_optimize_on_ldflags += [
         # Warn in case of text relocations.
         "-Wl,--warn-shared-textrel",
