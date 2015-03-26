@@ -103,9 +103,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   EXPECT_EQ(1U, list.size());
   EXPECT_EQ(DevToolsAgentHost::TYPE_WEB_CONTENTS, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
-  // TODO(dgozman): we should get closed notification here.
-  // See http://crbug.com/464993.
-  EXPECT_FALSE(client.closed());
+  EXPECT_TRUE(client.closed());
   child_host->DetachClient();
   child_host = nullptr;
 }

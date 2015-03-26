@@ -69,6 +69,10 @@ static RenderFrameDevToolsAgentHost* FindAgentHost(WebContents* web_contents) {
   return NULL;
 }
 
+bool ShouldCreateDevToolsFor(RenderFrameHost* rfh) {
+  return rfh->IsCrossProcessSubframe() || !rfh->GetParent();
+}
+
 }  // namespace
 
 scoped_refptr<DevToolsAgentHost>
@@ -95,7 +99,7 @@ void RenderFrameDevToolsAgentHost::AppendAgentHostForFrameIfApplicable(
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(host);
   if (!rfh->IsRenderFrameLive())
     return;
-  if (rfh->IsCrossProcessSubframe() || !rfh->GetParent())
+  if (ShouldCreateDevToolsFor(rfh))
     result->push_back(RenderFrameDevToolsAgentHost::GetOrCreateFor(rfh));
 }
 
@@ -291,6 +295,12 @@ void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
 
 void
 RenderFrameDevToolsAgentHost::ReattachToRenderFrameHost(RenderFrameHost* rfh) {
+  if (!ShouldCreateDevToolsFor(rfh)) {
+    DestroyOnRenderFrameGone();
+    // |this| may be deleted at this point.
+    return;
+  }
+
   DCHECK(!reattaching_);
   reattaching_ = true;
   DisconnectRenderFrameHost();
@@ -301,7 +311,11 @@ RenderFrameDevToolsAgentHost::ReattachToRenderFrameHost(RenderFrameHost* rfh) {
 void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
   if (rfh != render_frame_host_)
     return;
+  DestroyOnRenderFrameGone();
+  // |this| may be deleted at this point.
+}
 
+void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   DCHECK(render_frame_host_);
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
   HostClosed();
@@ -396,11 +410,9 @@ void RenderFrameDevToolsAgentHost::Observe(int type,
 }
 
 void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
+  DCHECK(ShouldCreateDevToolsFor(rfh));
   DCHECK(!render_frame_host_);
   render_frame_host_ = static_cast<RenderFrameHostImpl*>(rfh);
-  // TODO(dgozman): here we should DCHECK that frame host is either root or
-  // cross process subframe, but this requires handling cross-process
-  // navigation. See http://crbug.com/464993.
 
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(rfh));
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(

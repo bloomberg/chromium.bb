@@ -128,6 +128,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void InnerClientDetachedFromRenderer();
 
   bool IsChildFrame();
+  void DestroyOnRenderFrameGone();
 
   RenderFrameHostImpl* render_frame_host_;
   scoped_ptr<devtools::dom::DOMHandler> dom_handler_;
