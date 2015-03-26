@@ -63,8 +63,6 @@ typedef struct nc_thread_cleanup_handler {
 
 static __thread nc_thread_cleanup_handler *__nc_cleanup_handlers = NULL;
 
-#define TDB_SIZE (sizeof(struct nc_combined_tdb))
-
 static inline char *align(uint32_t offset, uint32_t alignment) {
   return (char *) ((offset + alignment - 1) & ~(alignment - 1));
 }
@@ -94,18 +92,8 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
-static inline nc_thread_descriptor_t *nc_get_tdb(void) {
-  /*
-   * Fetch the thread-specific data pointer.  This is usually just
-   * a wrapper around __libnacl_irt_tls.tls_get() but we don't use
-   * that here so that the IRT build can override the definition.
-   */
-  return (void *) ((char *) __nacl_read_tp_inline()
-                   + __nacl_tp_tdb_offset(TDB_SIZE));
-}
-
 static void nc_thread_starter(void) {
-  nc_thread_descriptor_t *tdb = nc_get_tdb();
+  nc_thread_descriptor_t *tdb = __nc_get_tdb();
   __newlib_thread_init();
 #if defined(NACL_IN_IRT)
   g_is_irt_internal_thread = 1;
@@ -243,6 +231,7 @@ static void nc_tdb_init(nc_thread_descriptor_t *tdb,
   tdb->tls_base = tdb;
   tdb->joinable = PTHREAD_CREATE_JOINABLE;
   tdb->join_waiting = 0;
+  tdb->rdlock_count = 0;
   tdb->stack_node = NULL;
   tdb->tls_node = NULL;
   tdb->start_func = NULL;
@@ -304,7 +293,7 @@ void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb) {
 void __pthread_initialize(void) {
   __pthread_initialize_minimal(TDB_SIZE);
 
-  struct nc_combined_tdb *tdb = (struct nc_combined_tdb *) nc_get_tdb();
+  struct nc_combined_tdb *tdb = (struct nc_combined_tdb *) __nc_get_tdb();
   nc_tdb_init(&tdb->tdb, &tdb->basic_data);
   __nc_initial_thread_id = &tdb->basic_data;
 
@@ -492,7 +481,7 @@ void pthread_cleanup_pop(int execute) {
 
 void pthread_exit(void *retval) {
   /* Get all we need from the tdb before releasing it. */
-  nc_thread_descriptor_t    *tdb = nc_get_tdb();
+  nc_thread_descriptor_t    *tdb = __nc_get_tdb();
   nc_thread_memory_block_t  *stack_node = tdb->stack_node;
   int32_t                   *is_used = &stack_node->is_used;
   nc_basic_thread_data_t    *basic_data = tdb->basic_data;
@@ -630,7 +619,7 @@ int pthread_kill(pthread_t thread_id,
 
 pthread_t pthread_self(void) {
   /* Get the tdb pointer from gs and use it to return the thread handle. */
-  nc_thread_descriptor_t *tdb = nc_get_tdb();
+  nc_thread_descriptor_t *tdb = __nc_get_tdb();
   return tdb->basic_data;
 }
 
