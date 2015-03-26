@@ -12,6 +12,9 @@
 
 .autofill-list-item {
   -webkit-padding-start: 8px;
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .autofill-list-item + .deemphasized {
