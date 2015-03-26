@@ -20,12 +20,15 @@ ConstrainedWindowMac::ConstrainedWindowMac(
     id<ConstrainedWindowSheet> sheet)
     : delegate_(delegate) {
   DCHECK(sheet);
-  extensions::GuestViewBase* guest_view =
-      extensions::GuestViewBase::FromWebContents(web_contents);
-  // For embedded WebContents, use the embedder's WebContents for constrained
-  // window.
-  web_contents = guest_view && guest_view->embedder_web_contents() ?
-                    guest_view->embedder_web_contents() : web_contents;
+
+  // |web_contents| may be embedded within a chain of nested GuestViews. If it
+  // is, follow the chain of embedders to the outermost WebContents and use it.
+  while (extensions::GuestViewBase* guest_view =
+             extensions::GuestViewBase::FromWebContents(web_contents)) {
+    if (!guest_view->embedder_web_contents())
+      break;
+    web_contents = guest_view->embedder_web_contents();
+  }
 
   auto manager = WebContentsModalDialogManager::FromWebContents(web_contents);
   scoped_ptr<SingleWebContentsDialogManagerCocoa> native_manager(
