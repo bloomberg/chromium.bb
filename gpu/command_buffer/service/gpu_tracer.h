@@ -56,6 +56,8 @@ class GPU_EXPORT GPUTracer
   explicit GPUTracer(gles2::GLES2Decoder* decoder);
   virtual ~GPUTracer();
 
+  void Destroy(bool have_context);
+
   // Scheduled processing in decoder begins.
   bool BeginDecoding();
 
@@ -83,13 +85,14 @@ class GPU_EXPORT GPUTracer
 
   void Process();
   void ProcessTraces();
+  void ClearFinishedTraces(bool have_context);
 
   void IssueProcessTask();
 
   scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
   scoped_refptr<Outputter> outputter_;
   std::vector<TraceMarker> markers_[NUM_TRACER_SOURCES];
-  std::deque<scoped_refptr<GPUTrace> > traces_;
+  std::deque<scoped_refptr<GPUTrace> > finished_traces_;
 
   const unsigned char* gpu_trace_srv_category;
   const unsigned char* gpu_trace_dev_category;
@@ -154,6 +157,8 @@ class GPU_EXPORT GPUTrace
            const std::string& category,
            const std::string& name,
            const bool enabled);
+
+  void Destroy(bool have_context);
 
   void Start(bool trace_service);
   void End(bool tracing_service);

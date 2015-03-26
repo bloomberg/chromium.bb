@@ -96,6 +96,9 @@ Measurement MeasurementTimers::GetAsMeasurement(const std::string& name) {
 }
 
 MeasurementTimers::~MeasurementTimers() {
+  if (gpu_timer_.get()) {
+    gpu_timer_->Destroy(true);
+  }
 }
 
 }  // namespace gpu

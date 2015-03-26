@@ -99,6 +99,12 @@ GPUTrace::GPUTrace(scoped_refptr<Outputter> outputter,
 GPUTrace::~GPUTrace() {
 }
 
+void GPUTrace::Destroy(bool have_context) {
+  if (gpu_timer_.get()) {
+    gpu_timer_->Destroy(have_context);
+  }
+}
+
 void GPUTrace::Start(bool trace_service) {
   if (trace_service) {
     outputter_->TraceServiceBegin(category_, name_);
@@ -152,6 +158,20 @@ GPUTracer::GPUTracer(gles2::GLES2Decoder* decoder)
 GPUTracer::~GPUTracer() {
 }
 
+void GPUTracer::Destroy(bool have_context) {
+  for (int n = 0; n < NUM_TRACER_SOURCES; n++) {
+    for (size_t i = 0; i < markers_[n].size(); i++) {
+      TraceMarker& marker = markers_[n][i];
+      if (marker.trace_.get()) {
+        marker.trace_->Destroy(have_context);
+        marker.trace_ = 0;
+      }
+    }
+  }
+
+  ClearFinishedTraces(have_context);
+}
+
 bool GPUTracer::BeginDecoding() {
   if (gpu_executing_)
     return false;
@@ -194,10 +214,9 @@ bool GPUTracer::EndDecoding() {
         TraceMarker& marker = markers_[n][i];
         if (marker.trace_.get()) {
           marker.trace_->End(*gpu_trace_srv_category != 0);
-          if (marker.trace_->IsEnabled())
-            traces_.push_back(marker.trace_);
 
-          markers_[n][i].trace_ = 0;
+          finished_traces_.push_back(marker.trace_);
+          marker.trace_ = 0;
         }
       }
     }
@@ -241,14 +260,14 @@ bool GPUTracer::End(GpuTracerSource source) {
 
   // Pop last marker with matching 'source'
   if (!markers_[source].empty()) {
-    if (IsTracing()) {
-      scoped_refptr<GPUTrace> trace = markers_[source].back().trace_;
-      if (trace.get()) {
+    scoped_refptr<GPUTrace> trace = markers_[source].back().trace_;
+    if (trace.get()) {
+      if (IsTracing()) {
         trace->End(*gpu_trace_srv_category != 0);
-        if (trace->IsEnabled())
-          traces_.push_back(trace);
-        IssueProcessTask();
       }
+
+      finished_traces_.push_back(trace);
+      IssueProcessTask();
     }
 
     markers_[source].pop_back();
@@ -298,7 +317,7 @@ void GPUTracer::Process() {
 
 void GPUTracer::ProcessTraces() {
   if (!gpu_timing_client_->IsAvailable()) {
-    traces_.clear();
+    ClearFinishedTraces(false);
     return;
   }
 
@@ -307,28 +326,42 @@ void GPUTracer::ProcessTraces() {
   // Make owning decoder's GL context current
   if (!decoder_->MakeCurrent()) {
     // Skip subsequent GL calls if MakeCurrent fails
-    traces_.clear();
+    ClearFinishedTraces(false);
     return;
   }
 
   // Check if timers are still valid (e.g: a disjoint operation
   // might have occurred.)
-  if (gpu_timing_client_->CheckAndResetTimerErrors())
-    traces_.clear();
+  if (gpu_timing_client_->CheckAndResetTimerErrors()) {
+    ClearFinishedTraces(true);
+  }
 
-  while (!traces_.empty() && traces_.front()->IsAvailable()) {
-    traces_.front()->Process();
-    traces_.pop_front();
+  while (!finished_traces_.empty()) {
+    scoped_refptr<GPUTrace>& trace = finished_traces_.front();
+    if (trace->IsEnabled()) {
+      if (!finished_traces_.front()->IsAvailable())
+        break;
+      finished_traces_.front()->Process();
+    }
+    finished_traces_.front()->Destroy(true);
+    finished_traces_.pop_front();
   }
 
   // Clear pending traces if there were are any errors
   GLenum err = glGetError();
   if (err != GL_NO_ERROR)
-    traces_.clear();
+    ClearFinishedTraces(true);
+}
+
+void GPUTracer::ClearFinishedTraces(bool have_context) {
+   while (!finished_traces_.empty()) {
+    finished_traces_.front()->Destroy(have_context);
+    finished_traces_.pop_front();
+   }
 }
 
 void GPUTracer::IssueProcessTask() {
-  if (traces_.empty() || process_posted_)
+  if (finished_traces_.empty() || process_posted_)
     return;
 
   process_posted_ = true;

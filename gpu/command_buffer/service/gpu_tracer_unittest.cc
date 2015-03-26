@@ -228,6 +228,7 @@ class BaseGpuTest : public GpuServiceTest {
 
   void TearDown() override {
     outputter_ref_ = NULL;
+    gpu_timing_client_ = NULL;
 
     gl_fake_queries_.Reset();
     GpuServiceTest::TearDown();
@@ -373,6 +374,9 @@ class BaseGpuTraceTest : public BaseGpuTest {
 
     // Proces should output expected Trace results to MockOutputter
     trace->Process();
+
+    // Destroy trace after we are done.
+    trace->Destroy(true);
 
     outputter_ref_ = NULL;
   }

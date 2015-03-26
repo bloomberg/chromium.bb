@@ -76,6 +76,10 @@ class GL_EXPORT GPUTimer {
  public:
   ~GPUTimer();
 
+  // Destroy the timer object. This must be explicitly called before destroying
+  // this object.
+  void Destroy(bool have_context);
+
   void Start();
   void End();
   bool IsAvailable();

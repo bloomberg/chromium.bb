@@ -44,7 +44,16 @@ uint32_t GPUTiming::GetDisjointCount() {
 }
 
 GPUTimer::~GPUTimer() {
-  glDeleteQueries(2, queries_);
+  // Destroy() must be called before the destructor.
+  DCHECK(queries_[0] == 0);
+  DCHECK(queries_[1] == 0);
+}
+
+void GPUTimer::Destroy(bool have_context) {
+  if (have_context) {
+    glDeleteQueries(2, queries_);
+  }
+  memset(queries_, 0, sizeof(queries_));
 }
 
 void GPUTimer::Start() {
