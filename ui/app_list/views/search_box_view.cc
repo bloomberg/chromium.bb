@@ -15,6 +15,7 @@
 #include "ui/app_list/views/app_list_menu_views.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
@@ -163,6 +164,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->SetTextColor(kSearchTextColor);
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->set_controller(this);
+  search_box_->SetTextInputType(ui::TEXT_INPUT_TYPE_SEARCH);
+  search_box_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   content_container_->AddChildView(search_box_);
   layout->SetFlexForView(search_box_, 1);
 

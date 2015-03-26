@@ -268,6 +268,7 @@ Textfield::Textfield()
       selection_background_color_(SK_ColorBLUE),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
+      text_input_flags_(0),
       performing_user_action_(false),
       skip_input_method_cancel_composition_(false),
       cursor_visible_(false),
@@ -306,6 +307,10 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
   SchedulePaint();
+}
+
+void Textfield::SetTextInputFlags(int flags) {
+  text_input_flags_ = flags;
 }
 
 void Textfield::SetText(const base::string16& new_text) {
@@ -1467,7 +1472,7 @@ ui::TextInputMode Textfield::GetTextInputMode() const {
 }
 
 int Textfield::GetTextInputFlags() const {
-  return 0;
+  return text_input_flags_;
 }
 
 bool Textfield::CanComposeInline() const {

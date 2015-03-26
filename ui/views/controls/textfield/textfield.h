@@ -66,6 +66,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Sets the input type; displays only asterisks for TEXT_INPUT_TYPE_PASSWORD.
   void SetTextInputType(ui::TextInputType type);
 
+  // Sets the input flags so that the system input methods can turn on/off some
+  // features. The flags is the bit map of ui::TextInputFlags.
+  void SetTextInputFlags(int flags);
+
   // Gets the text currently displayed in the Textfield.
   const base::string16& text() const { return model_->text(); }
 
@@ -430,6 +434,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // The input type of this text field.
   ui::TextInputType text_input_type_;
+
+  // The input flags of this text field.
+  int text_input_flags_;
 
   // The duration and timer to reveal the last typed password character.
   base::TimeDelta password_reveal_duration_;

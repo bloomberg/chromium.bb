@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -88,6 +89,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
+  find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   // The find bar textfield has a background image instead of a border.
   find_text_->SetBorder(views::Border::NullBorder());
   AddChildView(find_text_);
