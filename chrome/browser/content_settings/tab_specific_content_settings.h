@@ -180,7 +180,9 @@ class TabSpecificContentSettings
   bool IsContentAllowed(ContentSettingsType content_type) const;
 
   // Returns the names of plugins that have been blocked for this tab.
-  const base::string16 GetBlockedPluginNames() const;
+  const std::vector<base::string16>& blocked_plugin_names() const {
+    return blocked_plugin_names_;
+  }
 
   const GURL& media_stream_access_origin() const {
     return media_stream_access_origin_;

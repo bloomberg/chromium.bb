@@ -211,52 +211,38 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
-  if (!bubble_content.plugin_names.empty()) {
-    const int kPluginsColumnSetId = 4;
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    views::ColumnSet* plugins_column_set =
-        layout->AddColumnSet(kPluginsColumnSetId);
-    plugins_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                                  GridLayout::USE_PREF, 0, 0);
-    plugins_column_set->AddPaddingColumn(
+  // Layout for the item list (blocked plugins and popups).
+  if (!bubble_content.list_items.empty()) {
+    const int kItemListColumnSetId = 2;
+    views::ColumnSet* item_list_column_set =
+        layout->AddColumnSet(kItemListColumnSetId);
+    item_list_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
+                                    GridLayout::USE_PREF, 0, 0);
+    item_list_column_set->AddPaddingColumn(
         0, views::kRelatedControlHorizontalSpacing);
-    plugins_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                                  GridLayout::USE_PREF, 0, 0);
+    item_list_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                                    GridLayout::USE_PREF, 0, 0);
 
-    views::Label* plugin_names_label =
-        new views::Label(bubble_content.plugin_names);
-    plugin_names_label->SetMultiLine(true);
-    plugin_names_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->StartRow(0, kPluginsColumnSetId);
-    layout->AddView(plugin_names_label);
-    bubble_content_empty = false;
-  }
-
-  if (content_setting_bubble_model_->content_type() ==
-      CONTENT_SETTINGS_TYPE_POPUPS) {
-    const int kPopupColumnSetId = 2;
-    views::ColumnSet* popup_column_set =
-        layout->AddColumnSet(kPopupColumnSetId);
-    popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                                GridLayout::USE_PREF, 0, 0);
-    popup_column_set->AddPaddingColumn(
-        0, views::kRelatedControlHorizontalSpacing);
-    popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                                GridLayout::USE_PREF, 0, 0);
-
-    for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
-         i(bubble_content.popup_items.begin());
-         i != bubble_content.popup_items.end(); ++i) {
+    int row = 0;
+    for (const ContentSettingBubbleModel::ListItem& list_item :
+         bubble_content.list_items) {
       if (!bubble_content_empty)
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-      layout->StartRow(0, kPopupColumnSetId);
-
-      views::Link* link = new views::Link(base::UTF8ToUTF16(i->title));
-      link->set_listener(this);
-      link->SetElideBehavior(gfx::ELIDE_MIDDLE);
-      popup_links_[link] = i - bubble_content.popup_items.begin();
-      layout->AddView(new Favicon(i->image, this, link));
-      layout->AddView(link);
+      layout->StartRow(0, kItemListColumnSetId);
+      if (list_item.has_link) {
+        views::Link* link = new views::Link(base::UTF8ToUTF16(list_item.title));
+        link->set_listener(this);
+        link->SetElideBehavior(gfx::ELIDE_MIDDLE);
+        list_item_links_[link] = row;
+        layout->AddView(new Favicon(list_item.image, this, link));
+        layout->AddView(link);
+      } else {
+        views::Label* label =
+            new views::Label(base::UTF8ToUTF16(list_item.title));
+        layout->AddView(new Favicon(list_item.image, this, NULL));
+        layout->AddView(label);
+      }
+      row++;
       bubble_content_empty = false;
     }
   }
@@ -295,7 +281,7 @@ void ContentSettingBubbleContents::Init() {
   // Layout code for the media device menus.
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    const int kMediaMenuColumnSetId = 2;
+    const int kMediaMenuColumnSetId = 4;
     views::ColumnSet* menu_column_set =
         layout->AddColumnSet(kMediaMenuColumnSetId);
     menu_column_set->AddPaddingColumn(0, views::kCheckboxIndent);
@@ -463,9 +449,9 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
     return;
   }
 
-  PopupLinks::const_iterator i(popup_links_.find(source));
-  DCHECK(i != popup_links_.end());
-  content_setting_bubble_model_->OnPopupClicked(i->second);
+  ListItemLinks::const_iterator i(list_item_links_.find(source));
+  DCHECK(i != list_item_links_.end());
+  content_setting_bubble_model_->OnListItemClicked(i->second);
 }
 
 void ContentSettingBubbleContents::OnMenuButtonClicked(

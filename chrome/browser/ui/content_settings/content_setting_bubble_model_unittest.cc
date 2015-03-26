@@ -47,7 +47,7 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
         content_setting_bubble_model->bubble_content();
     EXPECT_TRUE(bubble_content.title.empty());
     EXPECT_TRUE(bubble_content.radio_group.radio_items.empty());
-    EXPECT_TRUE(bubble_content.popup_items.empty());
+    EXPECT_TRUE(bubble_content.list_items.empty());
     EXPECT_EQ(expected_domains, bubble_content.domain_lists.size());
     EXPECT_NE(expect_clear_link || expect_reload_hint,
               bubble_content.custom_link.empty());
@@ -96,7 +96,6 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
       content_setting_bubble_model->bubble_content();
   std::string title = bubble_content.title;
   EXPECT_FALSE(title.empty());
-  EXPECT_TRUE(bubble_content.plugin_names.empty());
   ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
   std::string radio1 = bubble_content.radio_group.radio_items[0];
   std::string radio2 = bubble_content.radio_group.radio_items[1];
@@ -742,9 +741,9 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
-  EXPECT_FALSE(bubble_content.plugin_names.empty());
-  EXPECT_NE(base::string16::npos,
-            bubble_content.plugin_names.find(plugin_name));
+  ASSERT_EQ(1U, bubble_content.list_items.size());
+  EXPECT_EQ(plugin_name,
+            base::ASCIIToUTF16(bubble_content.list_items[0].title));
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);
@@ -853,14 +852,13 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
           "mailto", GURL("http://www.toplevel.example/")));
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
-          NULL, web_contents(), profile(), NULL,
-          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS);
+      NULL, web_contents(), profile(), NULL);
 
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model.bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
   EXPECT_FALSE(bubble_content.radio_group.radio_items.empty());
-  EXPECT_TRUE(bubble_content.popup_items.empty());
+  EXPECT_TRUE(bubble_content.list_items.empty());
   EXPECT_TRUE(bubble_content.domain_lists.empty());
   EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.custom_link_enabled);
@@ -907,8 +905,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
-          NULL, web_contents(), profile(), &registry,
-          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS);
+      NULL, web_contents(), profile(), &registry);
 
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");

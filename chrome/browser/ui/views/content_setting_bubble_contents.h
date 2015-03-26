@@ -68,7 +68,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   class Favicon;
   struct MediaMenuParts;
 
-  typedef std::map<views::Link*, int> PopupLinks;
+  typedef std::map<views::Link*, int> ListItemLinks;
   typedef std::map<views::MenuButton*, MediaMenuParts*> MediaMenuPartsMap;
 
   // content::WebContentsObserver:
@@ -97,7 +97,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.
-  PopupLinks popup_links_;
+  ListItemLinks list_item_links_;
   typedef std::vector<views::RadioButton*> RadioGroup;
   RadioGroup radio_group_;
   views::Link* custom_link_;

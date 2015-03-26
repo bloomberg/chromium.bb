@@ -236,10 +236,6 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
     settings->OnFileSystemAccessed(url, blocked_by_policy);
 }
 
-const base::string16 TabSpecificContentSettings::GetBlockedPluginNames() const {
-  return JoinString(blocked_plugin_names_, base::ASCIIToUTF16(", "));
-}
-
 bool TabSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
   DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
