@@ -746,6 +746,12 @@ base::string16 FontCollectionLoader::GetFontNameFromKey(UINT32 idx) {
   return reg_fonts_[idx];
 }
 
+const base::FilePath::CharType* kFontExtensionsToIgnore[] {
+  FILE_PATH_LITERAL(".FON"),  // Bitmap or vector
+  FILE_PATH_LITERAL(".PFM"),  // Adobe Type 1
+  FILE_PATH_LITERAL(".PFB"),  // Adobe Type 1
+};
+
 const wchar_t* kFontsToIgnore[] = {
   // "Gill Sans Ultra Bold" turns into an Ultra Bold weight "Gill Sans" in
   // DirectWrite, but most users don't have any other weights. The regular
@@ -798,6 +804,18 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
             break;
           }
         }
+        // DirectWrite doesn't support bitmap/vector fonts and Adobe type 1
+        // fonts, we will ignore those font extensions.
+        // MSDN article: http://goo.gl/TfCOA
+        if (!should_ignore) {
+          for (const auto& ignore : kFontExtensionsToIgnore) {
+            if (path.MatchesExtension(ignore)) {
+              should_ignore = true;
+              break;
+            }
+          }
+        }
+
         if (!should_ignore)
           reg_fonts_.push_back(value.c_str());
       }
