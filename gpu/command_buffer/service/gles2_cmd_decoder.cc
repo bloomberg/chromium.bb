@@ -3756,8 +3756,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   async_pixel_transfer_manager_.reset();
 
   // Destroy the GPU Tracer which may own some in process GPU Timings.
-  gpu_tracer_->Destroy(have_context);
-  gpu_tracer_ = NULL;
+  if (gpu_tracer_) {
+    gpu_tracer_->Destroy(have_context);
+    gpu_tracer_.reset();
+  }
 
   if (group_.get()) {
     framebuffer_manager()->RemoveObserver(this);
