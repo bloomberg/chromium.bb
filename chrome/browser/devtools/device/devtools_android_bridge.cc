@@ -66,6 +66,8 @@ const char kPageNavigateCommand[] = "Page.navigate";
 const int kMinVersionNewWithURL = 32;
 const int kNewPageNavigateDelayMs = 500;
 
+const char kWebViewSocketPrefix[] = "webview_devtools_remote";
+
 bool IsWebRTCDeviceProviderEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDevToolsExperiments);
@@ -193,10 +195,8 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedPages(
   if (value && value->GetAsList(&list_value)) {
     for (const auto& page_value : *list_value) {
       base::DictionaryValue* dict;
-      if (page_value->GetAsDictionary(&dict)) {
-        browser->pages_.push_back(
-            new RemotePage(browser->browser_id_, *dict, browser->IsWebView()));
-      }
+      if (page_value->GetAsDictionary(&dict))
+        browser->pages_.push_back(new RemotePage(browser->browser_id_, *dict));
     }
   }
 }
@@ -308,16 +308,14 @@ class DevToolsAndroidBridge::AgentHostDelegate
       DevToolsAndroidBridge* bridge,
       const std::string& id,
       const BrowserId& browser_id,
-      const std::string& debug_url,
-      bool is_web_view);
+      const std::string& debug_url);
 
  private:
   AgentHostDelegate(
       DevToolsAndroidBridge* bridge,
       const std::string& id,
       const BrowserId& browser_id,
-      const std::string& debug_url,
-      bool is_web_view);
+      const std::string& debug_url);
   ~AgentHostDelegate() override;
   void Attach(content::DevToolsExternalAgentProxy* proxy) override;
   void Detach() override;
@@ -331,7 +329,6 @@ class DevToolsAndroidBridge::AgentHostDelegate
   BrowserId browser_id_;
   std::string debug_url_;
   bool socket_opened_;
-  bool is_web_view_;
   std::vector<std::string> pending_messages_;
   scoped_refptr<AndroidDeviceManager::Device> device_;
   scoped_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
@@ -346,15 +343,14 @@ DevToolsAndroidBridge::AgentHostDelegate::GetOrCreateAgentHost(
     DevToolsAndroidBridge* bridge,
     const std::string& id,
     const BrowserId& browser_id,
-    const std::string& debug_url,
-    bool is_web_view) {
+    const std::string& debug_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AgentHostDelegates::iterator it = bridge->host_delegates_.find(id);
   if (it != bridge->host_delegates_.end())
     return it->second->agent_host_;
 
   AgentHostDelegate* delegate =
-      new AgentHostDelegate(bridge, id, browser_id, debug_url, is_web_view);
+      new AgentHostDelegate(bridge, id, browser_id, debug_url);
   scoped_refptr<content::DevToolsAgentHost> result =
       content::DevToolsAgentHost::Create(delegate);
   delegate->agent_host_ = result.get();
@@ -365,14 +361,12 @@ DevToolsAndroidBridge::AgentHostDelegate::AgentHostDelegate(
     DevToolsAndroidBridge* bridge,
     const std::string& id,
     const BrowserId& browser_id,
-    const std::string& debug_url,
-    bool is_web_view)
+    const std::string& debug_url)
     : id_(id),
       bridge_(bridge->AsWeakPtr()),
       browser_id_(browser_id),
       debug_url_(debug_url),
       socket_opened_(false),
-      is_web_view_(is_web_view),
       agent_host_(NULL),
       proxy_(NULL) {
   bridge_->host_delegates_[id] = this;
@@ -386,7 +380,7 @@ DevToolsAndroidBridge::AgentHostDelegate::~AgentHostDelegate() {
 void DevToolsAndroidBridge::AgentHostDelegate::Attach(
     content::DevToolsExternalAgentProxy* proxy) {
   proxy_ = proxy;
-  content::RecordAction(is_web_view_ ?
+  content::RecordAction(browser_id_.second.find(kWebViewSocketPrefix) == 0 ?
       base::UserMetricsAction("DevTools_InspectAndroidWebView") :
       base::UserMetricsAction("DevTools_InspectAndroidPage"));
 
@@ -439,8 +433,7 @@ class DevToolsAndroidBridge::RemotePageTarget : public DevToolsTargetImpl {
  public:
   RemotePageTarget(DevToolsAndroidBridge* bridge,
                    const BrowserId& browser_id,
-                   const base::DictionaryValue& value,
-                   bool is_web_view_);
+                   const base::DictionaryValue& value);
   ~RemotePageTarget() override;
 
   // DevToolsTargetImpl overrides.
@@ -501,14 +494,12 @@ static std::string GetDebugURL(const base::DictionaryValue& value) {
 DevToolsAndroidBridge::RemotePageTarget::RemotePageTarget(
     DevToolsAndroidBridge* bridge,
     const BrowserId& browser_id,
-    const base::DictionaryValue& value,
-    bool is_web_view)
+    const base::DictionaryValue& value)
     : DevToolsTargetImpl(AgentHostDelegate::GetOrCreateAgentHost(
                              bridge,
                              BuildUniqueTargetId(browser_id, value),
                              browser_id,
-                             GetDebugURL(value),
-                             is_web_view)),
+                             GetDebugURL(value))),
       bridge_(bridge->AsWeakPtr()),
       browser_id_(browser_id),
       debug_url_(GetDebugURL(value)),
@@ -588,13 +579,10 @@ void DevToolsAndroidBridge::RemotePageTarget::Navigate(
 
 // DevToolsAndroidBridge::RemotePage ------------------------------------------
 
-DevToolsAndroidBridge::RemotePage::RemotePage(
-    const BrowserId& browser_id,
-    const base::DictionaryValue& dict,
-    bool is_web_view)
+DevToolsAndroidBridge::RemotePage::RemotePage(const BrowserId& browser_id,
+                                              const base::DictionaryValue& dict)
     : browser_id_(browser_id),
       frontend_url_(GetFrontendURL(dict)),
-      is_web_view_(is_web_view),
       dict_(dict.DeepCopy()) {
 }
 
@@ -616,10 +604,6 @@ bool DevToolsAndroidBridge::RemoteBrowser::IsChrome() {
   return type_ == AndroidDeviceManager::BrowserInfo::kTypeChrome;
 }
 
-bool DevToolsAndroidBridge::RemoteBrowser::IsWebView() {
-  return type_ == AndroidDeviceManager::BrowserInfo::kTypeWebView;
-}
-
 std::string DevToolsAndroidBridge::RemoteBrowser::GetId() {
   return serial() + ":" + socket();
 }
@@ -639,8 +623,7 @@ DevToolsAndroidBridge::RemoteBrowser::GetParsedVersion() {
 
 DevToolsTargetImpl*
 DevToolsAndroidBridge::CreatePageTarget(scoped_refptr<RemotePage> page) {
-  return new RemotePageTarget(this, page->browser_id_, *page->dict_,
-                              page->is_web_view_);
+  return new RemotePageTarget(this, page->browser_id_, *page->dict_);
 }
 
 void DevToolsAndroidBridge::SendJsonRequest(
@@ -684,8 +667,7 @@ DevToolsAndroidBridge::GetBrowserAgentHost(
       this,
       "adb:" + browser->serial() + ":" + browser->socket(),
       browser->browser_id_,
-      kBrowserTargetSocket,
-      browser->IsWebView());
+      kBrowserTargetSocket);
 }
 
 void DevToolsAndroidBridge::SendJsonRequest(
@@ -718,11 +700,8 @@ void DevToolsAndroidBridge::RespondToOpenOnUIThread(
   }
   scoped_ptr<base::Value> value(base::JSONReader::Read(response));
   base::DictionaryValue* dict;
-  if (value && value->GetAsDictionary(&dict)) {
-    scoped_refptr<RemotePage> new_page(
-        new RemotePage(browser->browser_id_, *dict, browser->IsWebView()));
-    callback.Run(new_page);
-  }
+  if (value && value->GetAsDictionary(&dict))
+    callback.Run(new RemotePage(browser->browser_id_, *dict));
 }
 
 void DevToolsAndroidBridge::OpenRemotePage(
@@ -785,8 +764,7 @@ void DevToolsAndroidBridge::NavigatePageOnUIThread(
   base::DictionaryValue* dict;
 
   if (value && value->GetAsDictionary(&dict)) {
-    RemotePageTarget new_page(this, browser->browser_id_, *dict,
-                              browser->IsWebView());
+    RemotePageTarget new_page(this, browser->browser_id_, *dict);
     new_page.Navigate(url,
         base::Bind(&DevToolsAndroidBridge::RespondToOpenOnUIThread,
                    AsWeakPtr(), browser, callback, result, response));

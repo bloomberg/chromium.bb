@@ -69,21 +69,17 @@ class DevToolsAndroidBridge : public KeyedService {
     const std::string& serial() { return browser_id_.first; }
     const std::string& socket() { return browser_id_.second; }
     const std::string& frontend_url() { return frontend_url_; }
-    bool is_web_view() { return is_web_view_; }
 
    private:
     friend class base::RefCounted<RemotePage>;
     friend class DevToolsAndroidBridge;
 
-    RemotePage(const BrowserId& browser_id,
-               const base::DictionaryValue& dict,
-               bool is_web_view);
+    RemotePage(const BrowserId& browser_id, const base::DictionaryValue& dict);
 
     virtual ~RemotePage();
 
     BrowserId browser_id_;
     std::string frontend_url_;
-    bool is_web_view_;
     scoped_ptr<base::DictionaryValue> dict_;
 
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
@@ -102,7 +98,6 @@ class DevToolsAndroidBridge : public KeyedService {
     const RemotePages& pages() { return pages_; }
 
     bool IsChrome();
-    bool IsWebView();
     std::string GetId();
 
     typedef std::vector<int> ParsedVersion;
