@@ -148,6 +148,9 @@ class WindowStateManager : public aura::WindowObserver {
   // aura::WindowObserver overrides.
   void OnWindowDestroyed(aura::Window* window) override;
 
+  // aura::WindowObserver overrides.
+  void OnWindowStackingChanged(aura::Window* window) override;
+
   // Map of user id hash and associated list of minimized windows.
   UserIDHashWindowListMap user_id_hash_window_list_map_;
 
@@ -203,7 +206,6 @@ void WindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
     if (*iter == active_window || ash::wm::GetWindowState(*iter)->IsMinimized())
       continue;
 
-    // TODO(bshe): Add WindowStateObserver too. http://crbug.com/323252
     if (!(*iter)->HasObserver(this))
       (*iter)->AddObserver(this);
 
@@ -252,6 +254,16 @@ void WindowStateManager::OnWindowDestroyed(aura::Window* window) {
        ++iter) {
     iter->second.erase(window);
   }
+}
+
+void WindowStateManager::OnWindowStackingChanged(aura::Window* window) {
+  // If user interacted with the |window| while wallpaper picker is opening,
+  // removes the |window| from observed list.
+  for (auto iter = user_id_hash_window_list_map_.begin();
+       iter != user_id_hash_window_list_map_.end(); ++iter) {
+    iter->second.erase(window);
+  }
+  window->RemoveObserver(this);
 }
 
 }  // namespace
