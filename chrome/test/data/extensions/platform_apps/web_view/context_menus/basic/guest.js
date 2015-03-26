@@ -25,4 +25,22 @@ var onPostMessageReceived = function(e) {
     return;
   }
 };
+
+var setup = function() {
+  // Make sure there is always stuff to show in context menu by
+  // inserting an <input> element.
+  // Note that we don't always show "Inspect element", so this is
+  // necessary.
+  var div = document.createElement('div');
+  div.style.position = 'absolute';
+  div.style.top = 0;
+  div.style.left = 0;
+  var input = document.createElement('input');
+  div.appendChild(input);
+  document.body.style.padding = 0;
+  document.body.style.margin = 0;
+  document.body.appendChild(div);
+};
+
+setup();
 window.addEventListener('message', onPostMessageReceived, false);
