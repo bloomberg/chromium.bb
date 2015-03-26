@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/json/string_escape.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -17,6 +16,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -64,8 +64,7 @@ base::string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
 
 // Returns whether we should use large icons on NTP.
 bool IsIconNTPEnabled() {
-  return StartsWithASCII(base::FieldTrialList::FindFullName("IconNTP"),
-                         "Enabled", true);
+  return variations::GetVariationParamValue("IconNTP", "state") == "enabled";
 }
 
 // Converts string16 to V8 String.

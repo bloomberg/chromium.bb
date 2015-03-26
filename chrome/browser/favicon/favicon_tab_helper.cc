@@ -4,7 +4,6 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
@@ -21,6 +20,7 @@
 #include "components/favicon/core/favicon_tab_helper_observer.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -47,8 +47,7 @@ namespace {
 
 // Returns whether icon NTP is enabled.
 bool IsIconNTPEnabled() {
-  return StartsWithASCII(base::FieldTrialList::FindFullName("IconNTP"),
-                         "Enabled", true);
+  return variations::GetVariationParamValue("IconNTP", "state") == "enabled";
 }
 
 }  // namespace
