@@ -100,7 +100,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "net/base/mime_util.h"
 #include "url/gurl.h"
 
 namespace net {
