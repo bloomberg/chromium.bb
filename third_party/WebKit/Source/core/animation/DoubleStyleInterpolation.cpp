@@ -40,7 +40,7 @@ PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDo
         doubleValue = clampTo<float>(doubleValue, 0, 1);
         break;
     case RangeOpacityFIXME:
-        doubleValue = clampTo<float>(doubleValue, 0, nextafter(1, 0));
+        doubleValue = clampTo<float>(doubleValue, 0, nextafterf(1, 0));
         break;
     case RangeFloor:
         doubleValue = floor(doubleValue);

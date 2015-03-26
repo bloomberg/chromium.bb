@@ -834,7 +834,7 @@ public:
     const Length& transformOriginX() const { return transformOrigin().x(); }
     const Length& transformOriginY() const { return transformOrigin().y(); }
     float transformOriginZ() const { return transformOrigin().z(); }
-    bool hasTransform() const { return hasTransformOperations() || hasMotionPath(); }
+    bool hasTransform() const { return hasTransformOperations() || hasMotionPath() || hasCurrentTransformAnimation(); }
     bool transformDataEquivalent(const LayoutStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
     StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
