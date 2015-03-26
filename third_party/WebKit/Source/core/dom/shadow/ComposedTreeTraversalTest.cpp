@@ -306,7 +306,6 @@ TEST_F(ComposedTreeTraversalTest, lastWithin)
     RefPtrWillBeRawPtr<Element> m2 = body->querySelector("#m2", ASSERT_NO_EXCEPTION);
 
     RefPtrWillBeRawPtr<Element> m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
 
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = m1->shadowRoot();
     RefPtrWillBeRawPtr<Element> s11 = shadowRoot->querySelector("#s11", ASSERT_NO_EXCEPTION);
