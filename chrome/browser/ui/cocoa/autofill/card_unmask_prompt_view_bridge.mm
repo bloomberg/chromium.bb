@@ -239,26 +239,16 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 }
 
 - (void)updateVerifyButtonEnabled {
-  autofill::CardUnmaskPromptController* controller = bridge_->GetController();
-  DCHECK(controller);
-
-  BOOL enable =
-      ![inputRowView_ isHidden] &&
-      controller->InputCvcIsValid(
-          base::SysNSStringToUTF16([cvcInput_ stringValue])) &&
-      (!monthPopup_ ||
-       [monthPopup_ indexOfSelectedItem] != monthPopupDefaultIndex_) &&
-      (!yearPopup_ ||
-       [yearPopup_ indexOfSelectedItem] != yearPopupDefaultIndex_);
+  BOOL enable = ![inputRowView_ isHidden] &&
+                bridge_->GetController()->InputCvcIsValid(
+                    base::SysNSStringToUTF16([cvcInput_ stringValue])) &&
+                [self expirationDateIsValid];
 
   [verifyButton_ setEnabled:enable];
 }
 
 - (void)onVerify:(id)sender {
-  autofill::CardUnmaskPromptController* controller = bridge_->GetController();
-  DCHECK(controller);
-
-  controller->OnUnmaskResponse(
+  bridge_->GetController()->OnUnmaskResponse(
       base::SysNSStringToUTF16([cvcInput_ stringValue]),
       base::SysNSStringToUTF16([monthPopup_ titleOfSelectedItem]),
       base::SysNSStringToUTF16([yearPopup_ titleOfSelectedItem]),
@@ -269,7 +259,25 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   bridge_->PerformClose();
 }
 
+- (BOOL)expirationDateIsValid {
+  if (!bridge_->GetController()->ShouldRequestExpirationDate())
+    return true;
+
+  return bridge_->GetController()->InputExpirationIsValid(
+      base::SysNSStringToUTF16([monthPopup_ titleOfSelectedItem]),
+      base::SysNSStringToUTF16([yearPopup_ titleOfSelectedItem]));
+}
+
 - (void)onExpirationDateChanged:(id)sender {
+  if ([self expirationDateIsValid]) {
+    [self setRetriableErrorMessage:base::string16()];
+  } else if ([monthPopup_ indexOfSelectedItem] != monthPopupDefaultIndex_ &&
+             [yearPopup_ indexOfSelectedItem] != yearPopupDefaultIndex_) {
+    [self setRetriableErrorMessage:
+              l10n_util::GetStringUTF16(
+                  IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE)];
+  }
+
   [self updateVerifyButtonEnabled];
 }
 
