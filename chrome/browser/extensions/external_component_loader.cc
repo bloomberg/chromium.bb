@@ -57,10 +57,7 @@ void ExternalComponentLoader::StartLoading() {
                     extension_urls::GetWebstoreUpdateUrl().spec());
 
   if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
-    std::string hotword_id = extension_misc::kHotwordExtensionId;
-    if (HotwordService::IsExperimentalHotwordingEnabled()) {
-      hotword_id = extension_misc::kHotwordSharedModuleId;
-    }
+    std::string hotword_id = extension_misc::kHotwordSharedModuleId;
     prefs_->SetString(hotword_id + ".external_update_url",
                       extension_urls::GetWebstoreUpdateUrl().spec());
   }

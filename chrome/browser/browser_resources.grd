@@ -23,7 +23,6 @@
         <structure name="IDR_APP_LIST_START_PAGE_CSS" file="resources\app_list\start_page.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_APP_LIST_HOTWORD_NACL_NMF" file="resources\app_list\hotword_nacl.nmf" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="is_android">
         <structure name="IDR_CONTEXTUAL_SEARCH_PROMO_CSS" file="resources\contextual_search\promo.css" flattenhtml="true" type="chrome_html" />
@@ -149,7 +148,6 @@
         <!-- Hangout Services extension, included in Google Chrome builds only. -->
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       </if>
-      <include name="IDR_HOTWORD_HELPER_MANIFEST" file="resources\hotword_helper\manifest.json" type="BINDATA" />
       <include name="IDR_HOTWORD_MANIFEST" file="resources\hotword\manifest.json" type="BINDATA" />
       <include name="IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST" file="resources\hotword_audio_verification\manifest.json" type="BINDATA" />
       <if expr="not is_android">

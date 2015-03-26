@@ -44,7 +44,6 @@ const char kIdentityApiUiAppId[] = "ahjaciijnoiaklcomgnblndopackapon";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kHotwordAudioVerificationAppId[] =
     "abjokfonkihficiokmkfboogholifghn";
-const char kHotwordExtensionId[] = "bepbmhgboaologfdajaanbcjmnhjmhfn";
 const char kHotwordNewExtensionId[] = "nbpagnldghgfoolbancepceaanlmhfmd";
 const char kHotwordSharedModuleId[] = "lccekmodgklaepjeofjdjpbminllajkg";
 const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";

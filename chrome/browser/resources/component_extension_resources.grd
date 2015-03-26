@@ -86,11 +86,7 @@
         <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ICON_48" file="hotword_audio_verification/images/icon-48.png" type="BINDATA" />
         <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ICON_128" file="hotword_audio_verification/images/icon-128.png" type="BINDATA" />
 
-        <!-- Hotword Helper extension -->
-        <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />
-
-        <!-- (Experimental) hotword triggering extension -->
+        <!-- Hotword extension -->
         <include name="IDR_HOTWORD_ALWAYS_ON_MANAGER_JS" file="hotword/always_on_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_AUDIO_CLIENT_JS" file="hotword/audio_client.js" type="BINDATA" />
         <include name="IDR_HOTWORD_BASE_SESSION_MANAGER_JS" file="hotword/base_session_manager.js" type="BINDATA" />

@@ -168,12 +168,9 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddHotwordInfo(list.get());
     AddAppListInfo(list.get());
 
-    std::string extension_id = extension_misc::kHotwordExtensionId;
-    HotwordService* hotword_service =
-        HotwordServiceFactory::GetForProfile(profile_);
-    if (hotword_service && hotword_service->IsExperimentalHotwordingEnabled())
-      extension_id = extension_misc::kHotwordNewExtensionId;
-    AddExtensionInfo(extension_id, "Extension", list.get());
+    AddExtensionInfo(extension_misc::kHotwordNewExtensionId,
+                     "Extension",
+                     list.get());
 
     AddExtensionInfo(extension_misc::kHotwordSharedModuleId,
                      "Shared Module",
@@ -325,11 +322,6 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     std::string group = base::FieldTrialList::FindFullName(
         hotword_internal::kHotwordFieldTrialName);
     AddPair(list, "Field trial", group);
-
-    std::string new_hotwording_enabled = "No";
-    if (hotword_service && hotword_service->IsExperimentalHotwordingEnabled())
-      new_hotwording_enabled = "Yes";
-    AddPair(list, "New Hotwording Enabled", new_hotwording_enabled);
 
     AddLineBreak(list);
   }

@@ -76,9 +76,6 @@ extern const char kCroshBuiltinAppId[];
 // The extension id of the hotword audio verification dialogue app.
 extern const char kHotwordAudioVerificationAppId[];
 
-// The extension id of the hotword voice search trigger extension.
-extern const char kHotwordExtensionId[];
-
 // The extension id of the new (experimental) hotword extension.
 extern const char kHotwordNewExtensionId[];
 

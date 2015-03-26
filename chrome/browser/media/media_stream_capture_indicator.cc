@@ -57,7 +57,6 @@ bool IsWhitelistedExtension(const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   static const char* const kExtensionWhitelist[] = {
-    extension_misc::kHotwordExtensionId,
     extension_misc::kHotwordNewExtensionId,
   };
 

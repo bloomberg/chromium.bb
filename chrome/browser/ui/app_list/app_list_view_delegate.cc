@@ -660,8 +660,7 @@ void AppListViewDelegate::ToggleSpeechRecognitionForHotword(
   // should cause a search to happen for 'Ok Google', not two hotword triggers).
   // To get around this, always stop the session when switching to speech
   // recognition.
-  if (HotwordService::IsExperimentalHotwordingEnabled() &&
-      service && service->HotwordEnabled()) {
+  if (service && service->HotwordEnabled()) {
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
     if (hotword_service)
@@ -699,7 +698,6 @@ void AppListViewDelegate::OnSpeechRecognitionStateChanged(
   // speech recognition has stopped. Do not request hotwording after the app
   // list has already closed.
   if (new_state == app_list::SPEECH_RECOGNITION_READY &&
-      HotwordService::IsExperimentalHotwordingEnabled() &&
       service && service->HotwordEnabled() &&
       controller_->GetAppListWindow()) {
     HotwordService* hotword_service =

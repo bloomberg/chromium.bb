@@ -334,8 +334,7 @@ void ComponentLoader::AddHangoutServicesExtension() {
 }
 
 void ComponentLoader::AddHotwordAudioVerificationApp() {
-  if (HotwordService::IsExperimentalHotwordingEnabled() &&
-      HotwordServiceFactory::IsAlwaysOnAvailable()) {
+  if (HotwordServiceFactory::IsAlwaysOnAvailable()) {
     Add(IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword_audio_verification")));
   }
@@ -343,13 +342,8 @@ void ComponentLoader::AddHotwordAudioVerificationApp() {
 
 void ComponentLoader::AddHotwordHelperExtension() {
   if (HotwordServiceFactory::IsHotwordAllowed(browser_context_)) {
-    if (HotwordService::IsExperimentalHotwordingEnabled()) {
-      Add(IDR_HOTWORD_MANIFEST,
-          base::FilePath(FILE_PATH_LITERAL("hotword")));
-    } else {
-      Add(IDR_HOTWORD_HELPER_MANIFEST,
-          base::FilePath(FILE_PATH_LITERAL("hotword_helper")));
-    }
+    Add(IDR_HOTWORD_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("hotword")));
   }
 }
 

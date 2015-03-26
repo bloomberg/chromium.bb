@@ -94,18 +94,16 @@ const content::MediaStreamDevice* FindDeviceWithId(
 // This is a short-term solution to grant camera and/or microphone access to
 // extensions:
 // 1. Virtual keyboard extension.
-// 2. Google Voice Search Hotword extension.
-// 3. Flutter gesture recognition extension.
-// 4. TODO(smus): Airbender experiment 1.
-// 5. TODO(smus): Airbender experiment 2.
-// 6. Hotwording component extension.
-// 7. XKB input method component extension.
-// 8. M17n/T13n/CJK input method component extension.
+// 2. Flutter gesture recognition extension.
+// 3. TODO(smus): Airbender experiment 1.
+// 4. TODO(smus): Airbender experiment 2.
+// 5. Hotwording component extension.
+// 6. XKB input method component extension.
+// 7. M17n/T13n/CJK input method component extension.
 // Once http://crbug.com/292856 is fixed, remove this whitelist.
 bool IsMediaRequestWhitelistedForExtension(
     const extensions::Extension* extension) {
   return extension->id() == "mppnpdlheglhdfmldimlhpnegondlapf" ||
-      extension->id() == "bepbmhgboaologfdajaanbcjmnhjmhfn" ||
       extension->id() == "jokbpnebhdcladagohdnfgjcpejggllo" ||
       extension->id() == "clffjmdilanldobdnedchkdbofoimcgb" ||
       extension->id() == "nnckehldicaciogcbchegobnafnjkcne" ||

@@ -226,8 +226,7 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
       hotword_service->NotifyHotwordTriggered();
     } else if (hotword_service->client()) {
       hotword_service->client()->OnHotwordRecognized(preamble);
-    } else if (HotwordService::IsExperimentalHotwordingEnabled() &&
-               hotword_service->IsAlwaysOnEnabled()) {
+    } else if (hotword_service->IsAlwaysOnEnabled()) {
       Browser* browser = GetCurrentBrowser();
       // If a Browser does not exist, fall back to the universally available,
       // but not recommended, way.

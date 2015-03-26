@@ -60,10 +60,6 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Returns true if the hotword supports the current system language.
   static bool DoesHotwordSupportLanguage(Profile* profile);
 
-  // Always returns true.
-  // TODO(amistry): Remove this.
-  static bool IsExperimentalHotwordingEnabled();
-
   // Returns true if hotwording hardware is available.
   static bool IsHotwordHardwareAvailable();
 
@@ -98,14 +94,6 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
 
   // Returns whether google.com/NTP/launcher hotwording is enabled.
   bool IsSometimesOnEnabled();
-
-  // Control the state of the hotword extension.
-  void EnableHotwordExtension(ExtensionService* extension_service);
-  void DisableHotwordExtension(ExtensionService* extension_service);
-
-  // Handles enabling/disabling the hotword extension when the user
-  // turns it off via the settings menu.
-  void OnHotwordSearchEnabledChanged(const std::string& pref_name);
 
   // Handles enabling/disabling the hotword notification when the user
   // changes the always on search settings.

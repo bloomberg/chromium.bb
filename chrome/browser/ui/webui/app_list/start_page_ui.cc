@@ -22,48 +22,6 @@
 #include "grit/browser_resources.h"
 
 namespace app_list {
-namespace {
-#if defined(OS_CHROMEOS)
-const char* kHotwordFilePrefixes[] = {
-  "hotword_",
-  "_platform_specific/",
-};
-
-void LoadModelData(const base::FilePath& base_dir,
-                   const std::string& path,
-                   const content::WebUIDataSource::GotDataCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  // Will be owned by |callback|.
-  scoped_refptr<base::RefCountedString> data(new base::RefCountedString());
-  base::ReadFileToString(base_dir.AppendASCII(path), &(data->data()));
-  callback.Run(data.get());
-}
-
-bool HandleHotwordFilesResourceFilter(
-    Profile* profile,
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const extensions::Extension* extension =
-      service->GetExtensionById(extension_misc::kHotwordExtensionId, false);
-  if (!extension)
-    return false;
-
-  for (size_t i = 0; i < arraysize(kHotwordFilePrefixes); ++i) {
-    if (path.find(kHotwordFilePrefixes[i]) == 0) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::FILE,
-          FROM_HERE,
-          base::Bind(&LoadModelData, extension->path(), path, callback));
-      return true;
-    }
-  }
-
-  return false;
-}
-#endif  // OS_CHROMEOS
-}  // namespace
 
 StartPageUI::StartPageUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
@@ -81,15 +39,7 @@ void StartPageUI::InitDataSource() {
 
   source->AddResourcePath("start_page.css", IDR_APP_LIST_START_PAGE_CSS);
   source->AddResourcePath("start_page.js", IDR_APP_LIST_START_PAGE_JS);
-  source->AddResourcePath("hotword_nacl.nmf", IDR_APP_LIST_HOTWORD_NACL_NMF);
   source->SetDefaultResource(IDR_APP_LIST_START_PAGE_HTML);
-
-#if defined(OS_CHROMEOS)
-  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self' data:;");
-  if (base::SysInfo::IsRunningOnChromeOS())
-    source->SetRequestFilter(base::Bind(&HandleHotwordFilesResourceFilter,
-                                        Profile::FromWebUI(web_ui())));
-#endif
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui()), source.release());
 }

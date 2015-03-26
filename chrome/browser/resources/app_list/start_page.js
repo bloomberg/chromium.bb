@@ -24,27 +24,9 @@ cr.define('appList.startPage', function() {
   }
 
   /**
-   * Invoked when the hotword plugin availability is changed.
-   *
-   * @param {boolean} enabled Whether the plugin is enabled or not.
-   */
-  function setHotwordEnabled(enabled) {
-  }
-
-  /**
-   * Sets the architecture of NaCl module to be loaded for hotword.
-   * @param {string} arch The architecture.
-   */
-  function setNaclArch(arch) {
-  }
-
-  /**
    * Invoked when the app-list bubble is shown.
-   *
-   * @param {boolean} hotwordEnabled Whether the hotword is enabled or not.
    */
-  function onAppListShown(hotwordEnabled, legacySpeechEnabled) {
-
+  function onAppListShown() {
     chrome.send('appListShown', [this.doodle != null]);
   }
 
@@ -122,27 +104,10 @@ cr.define('appList.startPage', function() {
     $('logo_container').appendChild(this.doodle);
   }
 
-  /**
-   * Invoked when the app-list bubble is hidden.
-   */
-  function onAppListHidden() {
-  }
-
-  /**
-   * Invoked when the user explicitly wants to toggle the speech recognition
-   * state.
-   */
-  function toggleSpeechRecognition() {
-  }
-
   return {
     initialize: initialize,
-    setHotwordEnabled: setHotwordEnabled,
-    setNaclArch: setNaclArch,
     onAppListDoodleUpdated: onAppListDoodleUpdated,
     onAppListShown: onAppListShown,
-    onAppListHidden: onAppListHidden,
-    toggleSpeechRecognition: toggleSpeechRecognition
   };
 });
 

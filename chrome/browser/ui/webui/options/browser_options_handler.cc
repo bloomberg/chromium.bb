@@ -1783,31 +1783,25 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     bool always_on = false;
     SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
     bool authenticated = signin && signin->IsAuthenticated();
-    if (HotwordService::IsExperimentalHotwordingEnabled()) {
-      if (HotwordServiceFactory::IsAlwaysOnAvailable() &&
-          authenticated) {
-        function_name = "BrowserOptions.showHotwordAlwaysOnSection";
-        always_on = true;
-        // Show the retrain link if always-on is enabled.
-        if (profile->GetPrefs()->GetBoolean(
-                prefs::kHotwordAlwaysOnSearchEnabled)) {
-          web_ui()->CallJavascriptFunction(
-              "BrowserOptions.setHotwordRetrainLinkVisible",
-              base::FundamentalValue(true));
-        }
-      } else {
-        function_name = "BrowserOptions.showHotwordNoDspSection";
+    if (HotwordServiceFactory::IsAlwaysOnAvailable() && authenticated) {
+      function_name = "BrowserOptions.showHotwordAlwaysOnSection";
+      always_on = true;
+      // Show the retrain link if always-on is enabled.
+      if (profile->GetPrefs()->GetBoolean(
+              prefs::kHotwordAlwaysOnSearchEnabled)) {
+        web_ui()->CallJavascriptFunction(
+            "BrowserOptions.setHotwordRetrainLinkVisible",
+            base::FundamentalValue(true));
       }
     } else {
-      function_name = "BrowserOptions.showHotwordSection";
+      function_name = "BrowserOptions.showHotwordNoDspSection";
     }
 
     // Audio history should be displayed if it's enabled regardless of the
     // hotword error state if the user is signed in. If the user is not signed
     // in, audio history is meaningless. This is only displayed if always-on
     // hotwording is available.
-    if (HotwordService::IsExperimentalHotwordingEnabled() &&
-        authenticated && always_on) {
+    if (authenticated && always_on) {
       std::string user_display_name = signin->GetAuthenticatedUsername();
       DCHECK(!user_display_name.empty());
       base::string16 audio_history_state =
