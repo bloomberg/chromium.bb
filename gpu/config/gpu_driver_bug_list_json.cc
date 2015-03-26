@@ -601,9 +601,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 52,
-      "description": "ES3 MSAA is broken on Qualcomm",
+      "description": "ES3 MSAA is broken on Qualcomm driver prior to Lollipop",
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.0.0"
+        }
       },
       "gl_vendor": "Qualcomm.*",
       "features": [
