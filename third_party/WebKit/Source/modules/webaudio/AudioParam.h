@@ -42,7 +42,7 @@ namespace blink {
 
 class AudioNodeOutput;
 
-class AudioParamHandler final : public AudioSummingJunction, public ScriptWrappable {
+class AudioParamHandler final : public GarbageCollectedFinalized<AudioParamHandler>, public AudioSummingJunction, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static const double DefaultSmoothingConstant;
@@ -52,6 +52,8 @@ public:
     {
         return new AudioParamHandler(context, defaultValue);
     }
+    DECLARE_TRACE();
+    AudioContext* context() const { return m_context; }
 
     // AudioSummingJunction
     virtual void didUpdate() override { }
@@ -116,10 +118,11 @@ public:
 
 private:
     AudioParamHandler(AudioContext* context, double defaultValue)
-        : AudioSummingJunction(context)
+        : AudioSummingJunction(context->handler())
         , m_value(defaultValue)
         , m_defaultValue(defaultValue)
-        , m_smoothedValue(defaultValue) { }
+        , m_smoothedValue(defaultValue)
+        , m_context(context) { }
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
@@ -132,6 +135,7 @@ private:
     double m_smoothedValue;
 
     AudioParamTimeline m_timeline;
+    Member<AudioContext> m_context;
 };
 
 // TODO(tkent): remove the type alias, and introduce a real AudioParam class to

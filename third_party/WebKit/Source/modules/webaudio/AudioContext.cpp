@@ -192,7 +192,6 @@ void AudioContext::initialize()
 void AudioContext::clear()
 {
     // We need to run disposers before destructing m_contextGraphMutex.
-    m_liveAudioSummingJunctions.clear();
     m_liveNodes.clear();
     m_destinationNode.clear();
     m_isCleared = true;
@@ -1012,18 +1011,6 @@ AudioContext::AudioNodeDisposer::~AudioNodeDisposer()
     m_node.dispose();
 }
 
-void AudioContext::registerLiveAudioSummingJunction(AudioSummingJunction& junction)
-{
-    ASSERT(isMainThread());
-    m_liveAudioSummingJunctions.add(&junction, adoptPtr(new AudioSummingJunctionDisposer(junction)));
-}
-
-AudioContext::AudioSummingJunctionDisposer::~AudioSummingJunctionDisposer()
-{
-    ASSERT(isMainThread());
-    m_junction.dispose();
-}
-
 void DeferredTaskHandler::disposeOutputs(AudioNode& node)
 {
     ASSERT(isGraphOwner());
@@ -1275,7 +1262,6 @@ DEFINE_TRACE(AudioContext)
     visitor->trace(m_resumeResolvers);
     visitor->trace(m_suspendResolvers);
     visitor->trace(m_liveNodes);
-    visitor->trace(m_liveAudioSummingJunctions);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

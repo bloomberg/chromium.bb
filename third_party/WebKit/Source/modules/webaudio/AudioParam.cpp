@@ -41,7 +41,7 @@ const double AudioParamHandler::SnapThreshold = 0.001;
 float AudioParamHandler::value()
 {
     // Update value for timeline.
-    if (context() && context()->isAudioThread()) {
+    if (deferredTaskHandler().isAudioThread()) {
         bool hasValue;
         float timelineValue = m_timeline.valueForContextTime(context(), narrowPrecisionToFloat(m_value), hasValue);
 
@@ -100,7 +100,7 @@ float AudioParamHandler::finalValue()
 
 void AudioParamHandler::calculateSampleAccurateValues(float* values, unsigned numberOfValues)
 {
-    bool isSafe = context() && context()->isAudioThread() && values && numberOfValues;
+    bool isSafe = deferredTaskHandler().isAudioThread() && values && numberOfValues;
     ASSERT(isSafe);
     if (!isSafe)
         return;
@@ -110,7 +110,7 @@ void AudioParamHandler::calculateSampleAccurateValues(float* values, unsigned nu
 
 void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate)
 {
-    bool isGood = context() && context()->isAudioThread() && values && numberOfValues;
+    bool isGood = deferredTaskHandler().isAudioThread() && values && numberOfValues;
     ASSERT(isGood);
     if (!isGood)
         return;
@@ -163,7 +163,7 @@ void AudioParamHandler::calculateTimelineValues(float* values, unsigned numberOf
 
 void AudioParamHandler::connect(AudioNodeOutput& output)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (m_outputs.contains(&output))
         return;
@@ -175,13 +175,24 @@ void AudioParamHandler::connect(AudioNodeOutput& output)
 
 void AudioParamHandler::disconnect(AudioNodeOutput& output)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (m_outputs.contains(&output)) {
         m_outputs.remove(&output);
         changedOutputs();
         output.removeParam(*this);
     }
+}
+
+DEFINE_TRACE(AudioParamHandler)
+{
+    visitor->trace(m_context);
+    // TODO(tkent): Oilpan: m_renderingOutputs should not be strong references.
+    // This is a short-term workaround to avoid crashes, and causes AudioNode
+    // leaks.
+    AudioContext::AutoLocker locker(deferredTaskHandler());
+    for (size_t i = 0; i < m_renderingOutputs.size(); ++i)
+        visitor->trace(m_renderingOutputs[i]);
 }
 
 } // namespace blink

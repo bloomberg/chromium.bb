@@ -32,19 +32,17 @@
 
 namespace blink {
 
-class AudioContext;
 class AudioNodeOutput;
+class DeferredTaskHandler;
 
 // An AudioSummingJunction represents a point where zero, one, or more AudioNodeOutputs connect.
 
-class AudioSummingJunction : public GarbageCollectedFinalized<AudioSummingJunction> {
+class AudioSummingJunction {
 public:
     virtual ~AudioSummingJunction();
-    DECLARE_VIRTUAL_TRACE();
-    void dispose();
 
     // Can be called from any thread.
-    AudioContext* context() { return m_context.get(); }
+    DeferredTaskHandler& deferredTaskHandler() { return *m_deferredTaskHandler; }
 
     // This must be called whenever we modify m_outputs.
     void changedOutputs();
@@ -61,9 +59,9 @@ public:
     virtual void didUpdate() = 0;
 
 protected:
-    explicit AudioSummingJunction(AudioContext*);
+    explicit AudioSummingJunction(DeferredTaskHandler&);
 
-    Member<AudioContext> m_context;
+    RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
 
     // m_outputs contains the AudioNodeOutputs representing current connections which are not disabled.
     // The rendering code should never use this directly, but instead uses m_renderingOutputs.
@@ -83,8 +81,6 @@ protected:
 
     // m_renderingStateNeedUpdating keeps track if m_outputs is modified.
     bool m_renderingStateNeedUpdating;
-
-    bool m_didCallDispose;
 };
 
 } // namespace blink

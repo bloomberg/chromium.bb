@@ -33,7 +33,7 @@
 namespace blink {
 
 inline AudioNodeInput::AudioNodeInput(AudioNode& node)
-    : AudioSummingJunction(node.context())
+    : AudioSummingJunction(node.context()->handler())
     , m_node(node)
 {
     // Set to mono by default.
@@ -47,13 +47,18 @@ AudioNodeInput* AudioNodeInput::create(AudioNode& node)
 
 DEFINE_TRACE(AudioNodeInput)
 {
+    // TODO(tkent): Oilpan: m_renderingOutputs should not be strong references.
+    // This is a short-term workaround to avoid crashes, and causes AudioNode
+    // leaks.
+    AudioContext::AutoLocker locker(deferredTaskHandler());
+    for (size_t i = 0; i < m_renderingOutputs.size(); ++i)
+        visitor->trace(m_renderingOutputs[i]);
     visitor->trace(m_node);
-    AudioSummingJunction::trace(visitor);
 }
 
 void AudioNodeInput::connect(AudioNodeOutput& output)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     // Check if we're already connected to this output.
     if (m_outputs.contains(&output))
@@ -66,7 +71,7 @@ void AudioNodeInput::connect(AudioNodeOutput& output)
 
 void AudioNodeInput::disconnect(AudioNodeOutput& output)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     // First try to disconnect from "active" connections.
     if (m_outputs.contains(&output)) {
@@ -92,7 +97,7 @@ void AudioNodeInput::disconnect(AudioNodeOutput& output)
 
 void AudioNodeInput::disable(AudioNodeOutput& output)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     ASSERT(m_outputs.contains(&output));
 
     m_disabledOutputs.add(&output);
@@ -105,7 +110,7 @@ void AudioNodeInput::disable(AudioNodeOutput& output)
 
 void AudioNodeInput::enable(AudioNodeOutput& output)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     ASSERT(m_disabledOutputs.contains(&output));
 
     // Move output from disabled list to active list.
@@ -124,8 +129,8 @@ void AudioNodeInput::didUpdate()
 
 void AudioNodeInput::updateInternalBus()
 {
-    ASSERT(context()->isAudioThread());
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isAudioThread());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     unsigned numberOfInputChannels = numberOfChannels();
 
@@ -158,7 +163,7 @@ unsigned AudioNodeInput::numberOfChannels() const
 
 AudioBus* AudioNodeInput::bus()
 {
-    ASSERT(context()->isAudioThread());
+    ASSERT(deferredTaskHandler().isAudioThread());
 
     // Handle single connection specially to allow for in-place processing.
     if (numberOfRenderingConnections() == 1 && node().internalChannelCountMode() == AudioNode::Max)
@@ -170,14 +175,14 @@ AudioBus* AudioNodeInput::bus()
 
 AudioBus* AudioNodeInput::internalSummingBus()
 {
-    ASSERT(context()->isAudioThread());
+    ASSERT(deferredTaskHandler().isAudioThread());
 
     return m_internalSummingBus.get();
 }
 
 void AudioNodeInput::sumAllConnections(AudioBus* summingBus, size_t framesToProcess)
 {
-    ASSERT(context()->isAudioThread());
+    ASSERT(deferredTaskHandler().isAudioThread());
 
     // We shouldn't be calling this method if there's only one connection, since it's less efficient.
     ASSERT(numberOfRenderingConnections() > 1 || node().internalChannelCountMode() != AudioNode::Max);
@@ -204,7 +209,7 @@ void AudioNodeInput::sumAllConnections(AudioBus* summingBus, size_t framesToProc
 
 AudioBus* AudioNodeInput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 {
-    ASSERT(context()->isAudioThread());
+    ASSERT(deferredTaskHandler().isAudioThread());
 
     // Handle single connection case.
     if (numberOfRenderingConnections() == 1 && node().internalChannelCountMode() == AudioNode::Max) {

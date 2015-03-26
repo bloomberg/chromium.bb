@@ -39,12 +39,12 @@ class AudioNodeOutput;
 // In the case of multiple connections, the input will act as a unity-gain summing junction, mixing all the outputs.
 // The number of channels of the input's bus is the maximum of the number of channels of all its connections.
 
-class AudioNodeInput final : public AudioSummingJunction {
+class AudioNodeInput final : public GarbageCollectedFinalized<AudioNodeInput>, public AudioSummingJunction {
 public:
     static AudioNodeInput* create(AudioNode&);
+    DECLARE_TRACE();
 
     // AudioSummingJunction
-    DECLARE_VIRTUAL_TRACE();
     virtual void didUpdate() override;
 
     // Can be called from any thread.

@@ -32,48 +32,30 @@
 
 namespace blink {
 
-AudioSummingJunction::AudioSummingJunction(AudioContext* context)
-    : m_context(context)
+AudioSummingJunction::AudioSummingJunction(DeferredTaskHandler& handler)
+    : m_deferredTaskHandler(handler)
     , m_renderingStateNeedUpdating(false)
-    , m_didCallDispose(false)
 {
-    ASSERT(context);
-    m_context->registerLiveAudioSummingJunction(*this);
-}
-
-void AudioSummingJunction::dispose()
-{
-    m_didCallDispose = true;
-    m_context->handler().removeMarkedSummingJunction(this);
 }
 
 AudioSummingJunction::~AudioSummingJunction()
 {
-}
-
-DEFINE_TRACE(AudioSummingJunction)
-{
-    visitor->trace(m_context);
-    // FIXME: Oilpan: m_renderingOutputs should not be strong references.  This
-    // is a short-term workaround to avoid crashes, and causes AudioNode leaks.
-    AudioContext::AutoLocker locker(m_context);
-    for (size_t i = 0; i < m_renderingOutputs.size(); ++i)
-        visitor->trace(m_renderingOutputs[i]);
+    deferredTaskHandler().removeMarkedSummingJunction(this);
 }
 
 void AudioSummingJunction::changedOutputs()
 {
-    ASSERT(context()->isGraphOwner());
-    if (!m_renderingStateNeedUpdating && !m_didCallDispose) {
-        context()->handler().markSummingJunctionDirty(this);
+    ASSERT(deferredTaskHandler().isGraphOwner());
+    if (!m_renderingStateNeedUpdating) {
+        deferredTaskHandler().markSummingJunctionDirty(this);
         m_renderingStateNeedUpdating = true;
     }
 }
 
 void AudioSummingJunction::updateRenderingState()
 {
-    ASSERT(context()->isAudioThread());
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isAudioThread());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     if (m_renderingStateNeedUpdating) {
         // Copy from m_outputs to m_renderingOutputs.
         m_renderingOutputs.resize(m_outputs.size());

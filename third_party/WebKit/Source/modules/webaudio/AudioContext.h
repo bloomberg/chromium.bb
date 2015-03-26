@@ -296,7 +296,6 @@ public:
     // Called periodically at the end of each render quantum to dereference finished source nodes.
     void derefFinishedSourceNodes();
 
-    void registerLiveAudioSummingJunction(AudioSummingJunction&);
     void registerLiveNode(AudioNode&);
 
     // Keeps track of the number of connections made.
@@ -427,20 +426,6 @@ private:
         AudioNode& m_node;
     };
     HeapHashMap<WeakMember<AudioNode>, OwnPtr<AudioNodeDisposer>> m_liveNodes;
-
-    class AudioSummingJunctionDisposer {
-    public:
-        explicit AudioSummingJunctionDisposer(AudioSummingJunction& junction) : m_junction(junction) { }
-        ~AudioSummingJunctionDisposer();
-
-    private:
-        AudioSummingJunction& m_junction;
-    };
-    // The purpose of m_liveAudioSummingJunctions is to remove a dying
-    // AudioSummingJunction from m_dirtySummingJunctions. However we put all of
-    // AudioSummingJunction objects to m_liveAudioSummingJunctions to avoid
-    // concurrent access to m_liveAudioSummingJunctions.
-    HeapHashMap<WeakMember<AudioSummingJunction>, OwnPtr<AudioSummingJunctionDisposer>> m_liveAudioSummingJunctions;
 
     unsigned m_connectionCount;
 
