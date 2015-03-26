@@ -662,11 +662,17 @@ void HTMLDocumentParser::pumpTokenizer()
 
     if (isWaitingForScripts()) {
         ASSERT(m_tokenizer->state() == HTMLTokenizer::DataState);
-        if (!m_preloadScanner) {
-            m_preloadScanner = adoptPtr(new HTMLPreloadScanner(m_options, document()->url(), createMediaValues(document())));
-            m_preloadScanner->appendToEnd(m_input.current());
+
+        ASSERT(m_preloader);
+        // TODO(kouhei): m_preloader should be always available for synchronous parsing case,
+        // adding paranoia if for speculative crash fix for crbug.com/465478
+        if (m_preloader) {
+            if (!m_preloadScanner) {
+                m_preloadScanner = adoptPtr(new HTMLPreloadScanner(m_options, document()->url(), createMediaValues(document())));
+                m_preloadScanner->appendToEnd(m_input.current());
+            }
+            m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
         }
-        m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
     }
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", m_input.current().currentLine().zeroBasedInt());
