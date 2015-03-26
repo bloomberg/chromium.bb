@@ -9,6 +9,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -27,6 +28,7 @@ AboutSigninInternalsFactory::AboutSigninInternalsFactory()
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(SigninErrorControllerFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
 }
 
@@ -82,7 +84,8 @@ KeyedService* AboutSigninInternalsFactory::BuildServiceInstanceFor(
   AboutSigninInternals* service = new AboutSigninInternals(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       AccountTrackerServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile));
+      SigninManagerFactory::GetForProfile(profile),
+      SigninErrorControllerFactory::GetForProfile(profile));
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile));
   return service;
 }

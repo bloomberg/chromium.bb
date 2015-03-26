@@ -134,11 +134,13 @@ void ClearPref(PrefService* prefs, TimedSigninStatusField field) {
 AboutSigninInternals::AboutSigninInternals(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker,
-    SigninManagerBase* signin_manager)
+    SigninManagerBase* signin_manager,
+    SigninErrorController* signin_error_controller)
     : token_service_(token_service),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
-      client_(NULL) {}
+      client_(NULL),
+      signin_error_controller_(signin_error_controller) {}
 
 AboutSigninInternals::~AboutSigninInternals() {}
 
@@ -206,6 +208,7 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
 
   RefreshSigninPrefs();
 
+  signin_error_controller_->AddObserver(this);
   signin_manager_->AddSigninDiagnosticsObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   cookie_changed_subscription_ = client_->AddCookieChangedCallback(
@@ -216,6 +219,7 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
 }
 
 void AboutSigninInternals::Shutdown() {
+  signin_error_controller_->RemoveObserver(this);
   signin_manager_->RemoveSigninDiagnosticsObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   cookie_changed_subscription_.reset();
@@ -240,7 +244,9 @@ void AboutSigninInternals::NotifyObservers() {
           "422460 AboutSigninInternals::NotifyObservers 0.5"));
 
   scoped_ptr<base::DictionaryValue> signin_status_value =
-      signin_status_.ToValue(account_tracker_, signin_manager_,
+      signin_status_.ToValue(account_tracker_,
+                             signin_manager_,
+                             signin_error_controller_,
                              product_version);
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
@@ -255,7 +261,9 @@ void AboutSigninInternals::NotifyObservers() {
 }
 
 scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
-  return signin_status_.ToValue(account_tracker_, signin_manager_,
+  return signin_status_.ToValue(account_tracker_,
+                                signin_manager_,
+                                signin_error_controller_,
                                 client_->GetProductVersion()).Pass();
 }
 
@@ -326,6 +334,10 @@ void AboutSigninInternals::OnCookieChanged(const net::CanonicalCookie& cookie,
   if (cookie.IsSecure() && cookie.IsHttpOnly()) {
     GetCookieAccountsAsync();
   }
+}
+
+void AboutSigninInternals::OnErrorChanged() {
+  NotifyObservers();
 }
 
 void AboutSigninInternals::GetCookieAccountsAsync() {
@@ -479,6 +491,7 @@ AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
 scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
     AccountTrackerService* account_tracker,
     SigninManagerBase* signin_manager,
+    SigninErrorController* signin_error_controller,
     const std::string& product_version) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -524,6 +537,14 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                     SigninStatusFieldToLabel(
                         static_cast<UntimedSigninStatusField>(USERNAME)),
                     signin_manager->GetAuthenticatedUsername());
+    if (signin_error_controller->HasError()) {
+      AddSectionEntry(basic_info, "Auth Error",
+          signin_error_controller->auth_error().ToString());
+      AddSectionEntry(basic_info, "Auth Error Username",
+          signin_error_controller->error_username());
+    } else {
+      AddSectionEntry(basic_info, "Auth Error", "None");
+    }
   }
 
 #if !defined(OS_CHROMEOS)

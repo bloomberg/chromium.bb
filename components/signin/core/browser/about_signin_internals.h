@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -35,7 +36,8 @@ class AboutSigninInternals
       public signin_internals_util::SigninDiagnosticsObserver,
       public OAuth2TokenService::DiagnosticsObserver,
       public GaiaAuthConsumer,
-      SigninManagerBase::Observer {
+      SigninManagerBase::Observer,
+      SigninErrorController::Observer {
  public:
   class Observer {
    public:
@@ -49,7 +51,8 @@ class AboutSigninInternals
 
   AboutSigninInternals(ProfileOAuth2TokenService* token_service,
                        AccountTrackerService* account_tracker,
-                       SigninManagerBase* signin_manager);
+                       SigninManagerBase* signin_manager,
+                       SigninErrorController* signin_error_controller);
   ~AboutSigninInternals() override;
 
   // Each instance of SigninInternalsUI adds itself as an observer to be
@@ -147,6 +150,7 @@ class AboutSigninInternals
     scoped_ptr<base::DictionaryValue> ToValue(
         AccountTrackerService* account_tracker,
         SigninManagerBase* signin_manager,
+        SigninErrorController* signin_error_controller,
         const std::string& product_version);
   };
 
@@ -191,6 +195,9 @@ class AboutSigninInternals
   // then we call ListAccounts and update the UI element.
   void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
 
+  // SigninErrorController::Observer implementation
+  void OnErrorChanged() override;
+
   // Weak pointer to the token service.
   ProfileOAuth2TokenService* token_service_;
 
@@ -202,6 +209,9 @@ class AboutSigninInternals
 
   // Weak pointer to the client.
   SigninClient* client_;
+
+  // Weak pointer to the SigninErrorController
+  SigninErrorController* signin_error_controller_;
 
   // Fetcher for information about accounts in the cookie jar from GAIA.
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
