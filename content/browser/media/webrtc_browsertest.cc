@@ -201,22 +201,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
       kUseLenientAudioChecking));
 }
 
-// Below 2 test will make a complete PeerConnection-based call between pc1 and
-// pc2, and then use the remote stream to setup a call between pc3 and pc4, and
-// then verify that video is received on pc3 and pc4.
-// The stream sent from pc3 to pc4 is the stream received on pc1.
-// The stream sent from pc4 to pc3 is cloned from stream the stream received
-// on pc2.
-#if defined(THREAD_SANITIZER) || defined(OS_WIN)
-// Flaky on TSAN v2. http://crbug.com/373637
-// Flaky on Windows: http://crbug.com/469819
-#define MAYBE_CanForwardRemoteStream DISABLED_CanForwardRemoteStream
-#define MAYBE_CanForwardRemoteStream720p DISABLED_CanForwardRemoteStream720p
-#else
-#define MAYBE_CanForwardRemoteStream CanForwardRemoteStream
-#define MAYBE_CanForwardRemoteStream720p CanForwardRemoteStream720p
-#endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
+// This test makes a call between pc1 and pc2 where a video only stream is sent
+// from pc1 to pc2. The stream sent from pc1 to pc2 is cloned from the stream
+// received on pc2 to test that cloning of remote video tracks works as
+// intended and is sent back to pc1.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanForwardRemoteStream) {
 #if defined (OS_ANDROID)
   // This test fails on Nexus 5 devices.
   // TODO(henrika): see http://crbug.com/362437 and http://crbug.com/359389
@@ -226,20 +215,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
 #endif
   MakeTypicalPeerConnectionCall(
       "callAndForwardRemoteStream({video: true, audio: false});");
-}
-
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanForwardRemoteStream720p) {
-#if defined (OS_ANDROID)
-  // This test fails on Nexus 5 devices.
-  // TODO(henrika): see http://crbug.com/362437 and http://crbug.com/359389
-  // for details.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableWebRtcHWDecoding);
-#endif
-  const std::string javascript = GenerateGetUserMediaCall(
-      "callAndForwardRemoteStream", 1280, 1280, 720, 720, 10, 30);
-  MakeTypicalPeerConnectionCall(javascript);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,

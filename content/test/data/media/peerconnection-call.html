@@ -156,50 +156,28 @@
     });
   }
 
-  // First makes a call between pc1 and pc2, and then makes a call between pc3
-  // and pc4. The stream sent from pc3 to pc4 is the stream received on pc1.
-  // The stream sent from pc4 to pc3 is cloned from the stream received on pc2
-  // to test that cloning of remote video tracks works as intended.
+  // First makes a call between pc1 and pc2 where a stream is sent from pc1 to
+  // pc2. The stream sent from pc1 to pc2 is cloned from the stream received on 
+  // pc2  to test that cloning of remote video tracks works as intended and is 
+  // sent back to pc1.
   function callAndForwardRemoteStream(constraints) {
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
-                                 addStreamToBothConnectionsAndNegotiate,
+                                 addStreamToTheFirstConnectionAndNegotiate,
                                  printGetUserMediaError);
-    var gotRemoteStream1 = false;
-    var gotRemoteStream2 = false;
-
-    var onRemoteStream1 = function() {
-      gotRemoteStream1 = true;
-      maybeCallEstablished();
-    }
-
     var onRemoteStream2 = function() {
-      gotRemoteStream2 = true;
-      maybeCallEstablished();
+      // Video has been detected to be playing in pc2. Clone the received 
+      // stream and send it back to pc1.
+      gSecondConnection.addStream(gRemoteStreams['remote-view-2'].clone());
+      negotiate();
     }
 
-    var maybeCallEstablished = function() {
-      if (gotRemoteStream1 && gotRemoteStream2) {
-        onCallEstablished();
-      }
-    }
-
-    var onCallEstablished = function() {
-      thirdConnection = createConnection(null, 'remote-view-3');
-      thirdConnection.addStream(gRemoteStreams['remote-view-1']);
-
-      fourthConnection = createConnection(null, 'remote-view-4');
-      fourthConnection.addStream(gRemoteStreams['remote-view-2'].clone());
-
-      negotiateBetween(thirdConnection, fourthConnection);
-
-      waitForVideo('remote-view-3');
-      waitForVideo('remote-view-4');
-    }
-
-    // Do the forwarding after we have received video.
-    detectVideoPlaying('remote-view-1', onRemoteStream1);
+    // Wait for remove video to be playing in pc2. Once video is playing,
+    // forward the remove stream from pc2 to pc1.
     detectVideoPlaying('remote-view-2', onRemoteStream2);
+
+    // Wait for video to be forwarded back to connection 1.
+    waitForVideo('remote-view-1');
   }
 
   // First makes a call between pc1 and pc2, and then construct a new media
