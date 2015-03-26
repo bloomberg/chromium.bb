@@ -76,6 +76,8 @@ std::string GetMimeTypeForPath(const std::string& path) {
     return "image/png";
   } else if (EndsWith(filename, ".gif", false)) {
     return "image/gif";
+  } else if (EndsWith(filename, ".svg", false)) {
+    return "image/svg+xml";
   } else if (EndsWith(filename, ".manifest", false)) {
     return "text/cache-manifest";
   }
