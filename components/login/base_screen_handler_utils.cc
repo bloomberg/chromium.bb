@@ -76,11 +76,4 @@ base::StringValue MakeValue(const base::string16& v) {
   return base::StringValue(v);
 }
 
-void CallbackWrapper0(base::Callback<void()> callback,
-                      const base::ListValue* args) {
-  DCHECK(args);
-  DCHECK(args->empty());
-  callback.Run();
-}
-
 }  // namespace login

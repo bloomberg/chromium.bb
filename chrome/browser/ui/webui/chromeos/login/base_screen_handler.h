@@ -129,63 +129,12 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
         base::Bind(method, base::Unretained(static_cast<T*>(this))));
   }
 
-  template<typename T>
-  void AddCallback(const std::string& name, void (T::*method)()) {
-    base::Callback<void()> callback =
+  template<typename T, typename... Args>
+  void AddCallback(const std::string& name, void (T::*method)(Args...)) {
+    base::Callback<void(Args...)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper0, callback));
-  }
-
-  template<typename T, typename A1>
-  void AddCallback(const std::string& name, void (T::*method)(A1 arg1)) {
-    base::Callback<void(A1)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
-    web_ui()->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper1<A1>, callback));
-  }
-
-  template<typename T, typename A1, typename A2>
-  void AddCallback(const std::string& name,
-                   void (T::*method)(A1 arg1, A2 arg2)) {
-    base::Callback<void(A1, A2)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
-    web_ui()->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper2<A1, A2>, callback));
-  }
-
-  template<typename T, typename A1, typename A2, typename A3>
-  void AddCallback(const std::string& name,
-                   void (T::*method)(A1 arg1, A2 arg2, A3 arg3)) {
-    base::Callback<void(A1, A2, A3)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
-    web_ui()->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper3<A1, A2, A3>, callback));
-  }
-
-  template<typename T, typename A1, typename A2, typename A3, typename A4>
-  void AddCallback(const std::string& name,
-                   void (T::*method)(A1 arg1, A2 arg2, A3 arg3, A4 arg4)) {
-    base::Callback<void(A1, A2, A3, A4)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
-    web_ui()->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper4<A1, A2, A3, A4>, callback));
-  }
-
-  template <typename T,
-            typename A1,
-            typename A2,
-            typename A3,
-            typename A4,
-            typename A5>
-  void AddCallback(
-      const std::string& name,
-      void (T::*method)(A1 arg1, A2 arg2, A3 arg3, A4 arg4, A5 arg5)) {
-    base::Callback<void(A1, A2, A3, A4, A5)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
-    web_ui()->RegisterMessageCallback(
-        name,
-        base::Bind(&::login::CallbackWrapper5<A1, A2, A3, A4, A5>, callback));
+        name, base::Bind(&::login::CallbackWrapper<Args...>, callback));
   }
 
   template <typename Method>

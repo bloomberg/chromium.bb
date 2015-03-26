@@ -58,20 +58,12 @@ class WUG_EXPORT WebUIView : public View {
 
   content::WebUI* web_ui() { return web_ui_; }
 
-  template <typename T>
-  void AddCallback(const std::string& name, void (T::*method)()) {
-    base::Callback<void()> callback =
+  template <typename T, typename... Args>
+  void AddCallback(const std::string& name, void (T::*method)(Args...)) {
+    base::Callback<void(Args...)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui_->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper0, callback));
-  }
-
-  template <typename T, typename A1>
-  void AddCallback(const std::string& name, void (T::*method)(A1 arg1)) {
-    base::Callback<void(A1)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
-    web_ui_->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper1<A1>, callback));
+        name, base::Bind(&::login::CallbackWrapper<Args...>, callback));
   }
 
   // Overridden from View:
