@@ -8,14 +8,15 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
-#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -27,6 +28,8 @@ namespace {
 const CGFloat kButtonGap = 6.0f;
 const CGFloat kDialogContentMinWidth = 210.0f;
 const CGFloat kCvcInputWidth = 64.0f;
+const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
+const SkColor kPermanentErrorBackgroundColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
 const ui::ResourceBundle::FontStyle kProgressFontStyle =
     chrome_style::kTitleFontStyle;
 const ui::ResourceBundle::FontStyle kErrorFontStyle =
@@ -88,9 +91,14 @@ void CardUnmaskPromptViewBridge::GotVerificationResult(
         base::TimeDelta::FromSeconds(1));
   } else {
     [view_controller_ setProgressOverlayText:base::string16()];
-    // TODO(bondd): Views version never hides |errorLabel_|. When Views decides
-    // when to hide it then do the same thing here.
-    [view_controller_ setRetriableErrorMessage:error_message];
+
+    if (allow_retry) {
+      // TODO(bondd): Views version never hides |errorLabel_|. When Views
+      // decides when to hide it then do the same thing here.
+      [view_controller_ setRetriableErrorMessage:error_message];
+    } else {
+      [view_controller_ setPermanentErrorMessage:error_message];
+    }
   }
 }
 
@@ -114,10 +122,12 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 #pragma mark CardUnmaskPromptViewCocoa
 
 @implementation CardUnmaskPromptViewCocoa {
+  base::scoped_nsobject<NSBox> permanentErrorBox_;
   base::scoped_nsobject<NSView> inputRowView_;
   base::scoped_nsobject<NSView> storageView_;
 
   base::scoped_nsobject<NSTextField> titleLabel_;
+  base::scoped_nsobject<NSTextField> permanentErrorLabel_;
   base::scoped_nsobject<NSTextField> instructionsLabel_;
   base::scoped_nsobject<NSTextField> cvcInput_;
   base::scoped_nsobject<NSPopUpButton> monthPopup_;
@@ -145,16 +155,6 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   }
   [popup sizeToFit];
   return popup;
-}
-
-// Sets |textField|'s frame size to minimum dimensions needed to display its
-// text without exceeding |width|. Text will wrap onto multiple lines if
-// necessary. Frame width may end up being less than |width| if the text fits
-// in a smaller area.
-+ (void)sizeTextField:(NSTextField*)textField toFitWidth:(CGFloat)width {
-  NSSize frameSize =
-      [[textField cell] cellSizeForBounds:NSMakeRect(0, 0, width, CGFLOAT_MAX)];
-  [textField setFrameSize:frameSize];
 }
 
 // Set |view|'s frame to the minimum dimensions required to contain all of its
@@ -206,6 +206,36 @@ void CardUnmaskPromptViewBridge::PerformClose() {
           NSLineBreakByWordWrapping);
   [errorLabel_ setAttributedStringValue:attributedString];
   [self performLayoutAndDisplay:YES];
+}
+
+- (void)setPermanentErrorMessage:(const base::string16&)text {
+  if (!text.empty()) {
+    if (!permanentErrorBox_) {
+      permanentErrorBox_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
+      [permanentErrorBox_ setBoxType:NSBoxCustom];
+      [permanentErrorBox_ setBorderType:NSNoBorder];
+      [permanentErrorBox_ setTitlePosition:NSNoTitle];
+      [permanentErrorBox_ setFillColor:gfx::SkColorToCalibratedNSColor(
+                                           kPermanentErrorBackgroundColor)];
+
+      permanentErrorLabel_.reset([constrained_window::CreateLabel() retain]);
+      [permanentErrorLabel_ setAutoresizingMask:NSViewWidthSizable];
+      [permanentErrorLabel_ setTextColor:gfx::SkColorToCalibratedNSColor(
+                                             kPermanentErrorTextColor)];
+
+      [permanentErrorBox_ addSubview:permanentErrorLabel_];
+      [[self view] addSubview:permanentErrorBox_];
+    }
+
+    NSAttributedString* attributedString =
+        constrained_window::GetAttributedLabelString(
+            SysUTF16ToNSString(text), kErrorFontStyle, NSNaturalTextAlignment,
+            NSLineBreakByWordWrapping);
+    [permanentErrorLabel_ setAttributedStringValue:attributedString];
+  }
+
+  [permanentErrorBox_ setHidden:text.empty()];
+  [self setRetriableErrorMessage:base::string16()];
 }
 
 - (void)updateVerifyButtonEnabled {
@@ -282,7 +312,25 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   return view;
 }
 
-// TODO(bondd): Add an ASCII diagram of the layout.
+// +------------------------------------------------+
+// | titleLabel_        (Single line.)              |
+// |------------------------------------------------|
+// | permanentErrorBox_ (Multiline, may be hidden.) |
+// |------------------------------------------------|
+// | instructionsLabel_ (Multiline.)                |
+// |------------------------------------------------|
+// | monthPopup_ yearPopup_ cvcInput_ cvcImage      |
+// |     (All enclosed in inputRowView_. Month and  |
+// |         year may be hidden.)                   |
+// |------------------------------------------------|
+// | errorLabel_ (Multiline. Always takes up space  |
+// |                 for one line even if empty.)   |
+// |------------------------------------------------|
+// |                              [Cancel] [Verify] |
+// |------------------------------------------------|
+// | storageCheckbox_ storageTooltip_               |
+// |     (Both enclosed in storageView_.)           |
+// +------------------------------------------------+
 - (void)performLayoutAndDisplay:(BOOL)display {
   // Calculate dialog content width.
   CGFloat contentWidth =
@@ -302,22 +350,29 @@ void CardUnmaskPromptViewBridge::PerformClose() {
                                      NSWidth([cancelButton_ frame]),
                                  NSMinY([verifyButton_ frame]))];
 
-  [errorLabel_ setFrameOrigin:NSMakePoint(0, NSMaxY([cancelButton_ frame]) +
-                                                 chrome_style::kRowPadding)];
-  [CardUnmaskPromptViewCocoa sizeTextField:errorLabel_ toFitWidth:contentWidth];
+  [errorLabel_ setFrame:NSMakeRect(0, NSMaxY([cancelButton_ frame]) +
+                                          chrome_style::kRowPadding,
+                                   contentWidth, 0)];
+  cocoa_l10n_util::WrapOrSizeToFit(errorLabel_);
 
   [inputRowView_ setFrameOrigin:NSMakePoint(0, NSMaxY([errorLabel_ frame]) +
                                                    chrome_style::kRowPadding)];
 
-  [instructionsLabel_
-      setFrameOrigin:NSMakePoint(0, NSMaxY([inputRowView_ frame]) +
-                                        chrome_style::kRowPadding)];
-  [CardUnmaskPromptViewCocoa sizeTextField:instructionsLabel_
-                                toFitWidth:contentWidth];
+  [instructionsLabel_ setFrame:NSMakeRect(0, NSMaxY([inputRowView_ frame]) +
+                                                 chrome_style::kRowPadding,
+                                          contentWidth, 0)];
+  cocoa_l10n_util::WrapOrSizeToFit(instructionsLabel_);
 
-  [titleLabel_
-      setFrameOrigin:NSMakePoint(0, NSMaxY([instructionsLabel_ frame]) +
-                                        chrome_style::kRowPadding)];
+  // Layout permanent error box.
+  CGFloat minY = NSMaxY([instructionsLabel_ frame]) + chrome_style::kRowPadding;
+  if (permanentErrorBox_ && ![permanentErrorBox_ isHidden]) {
+    [permanentErrorBox_ setFrame:NSMakeRect(0, minY, contentWidth, 0)];
+    cocoa_l10n_util::WrapOrSizeToFit(permanentErrorLabel_);
+    [permanentErrorBox_ sizeToFit];
+    minY = NSMaxY([permanentErrorBox_ frame]) + chrome_style::kRowPadding;
+  }
+
+  [titleLabel_ setFrameOrigin:NSMakePoint(0, minY)];
 
   // Center progressOverlayLabel_ vertically within inputRowView_ frame.
   CGFloat progressHeight = ui::ResourceBundle::GetSharedInstance()
