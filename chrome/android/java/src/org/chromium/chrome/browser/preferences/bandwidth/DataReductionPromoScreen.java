@@ -11,10 +11,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
@@ -22,6 +27,8 @@ import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.metrics.UmaBridge;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 /**
  * The promo screen encouraging users to enable Data Saver.
@@ -87,6 +94,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         addListenerOnButton();
+        addClickableSpan();
 
         mState = ACTION_DISMISSED_FIRST_SCREEN;
         UmaBridge.dataReductionProxyPromoDisplayed();
@@ -102,6 +110,32 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         for (int interactiveViewId : interactiveViewIds) {
             findViewById(interactiveViewId).setOnClickListener(this);
         }
+    }
+
+    private void addClickableSpan() {
+        TextView settings_link = (TextView) findViewById(R.id.data_reduction_title_2_link);
+        ClickableSpan clickableSettingsSpan = new ClickableSpan() {
+            @Override
+            public void onClick(View view) {
+                Context context = getContext();
+                if (context == null) return;
+                Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                        context, BandwidthReductionPreferences.class.getName());
+                intent.putExtra(FROM_PROMO, true);
+                context.startActivity(intent);
+                dismiss();
+            }
+
+            @Override
+            public void updateDrawState(TextPaint textPaint) {
+                textPaint.setColor(textPaint.linkColor);
+                textPaint.setUnderlineText(false);
+            }
+        };
+        settings_link.setMovementMethod(LinkMovementMethod.getInstance());
+        settings_link.setText(SpanApplier.applySpans(
+                getContext().getString(R.string.data_reduction_title_2),
+                new SpanInfo("<link>", "</link>", clickableSettingsSpan)));
     }
 
     @Override
@@ -126,13 +160,12 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
     }
 
     private void handleEnableButtonPressed() {
-        Context context = getContext();
-        if (context == null) return;
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(context,
-                BandwidthReductionPreferences.class.getName());
-        intent.putExtra(FROM_PROMO, true);
-        context.startActivity(intent);
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                getContext(), true);
+        UmaBridge.dataReductionProxyTurnedOnFromPromo();
         dismiss();
+        Toast.makeText(getContext(), getContext().getString(R.string.data_reduction_enabled_toast),
+                Toast.LENGTH_LONG).show();
     }
 
     private void handleCloseButtonPressed() {
