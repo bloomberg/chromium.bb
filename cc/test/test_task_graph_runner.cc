@@ -7,7 +7,7 @@
 namespace cc {
 
 TestTaskGraphRunner::TestTaskGraphRunner()
-    : worker_thread_(this, "CompositorWorker") {
+    : worker_thread_(this, "CompositorTileWorker1") {
   worker_thread_.Start();
 }
 

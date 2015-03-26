@@ -72,7 +72,7 @@ namespace {
 class RasterThread : public base::SimpleThread {
  public:
   RasterThread(cc::TaskGraphRunner* task_graph_runner)
-      : base::SimpleThread("UICompositorWorker"),
+      : base::SimpleThread("CompositorTileWorker1"),
         task_graph_runner_(task_graph_runner) {}
 
   // Overridden from base::SimpleThread:

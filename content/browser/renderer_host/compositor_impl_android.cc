@@ -143,7 +143,8 @@ class SingleThreadTaskGraphRunner
     : public cc::TaskGraphRunner,
       public base::DelegateSimpleThread::Delegate {
  public:
-  SingleThreadTaskGraphRunner() : worker_thread_(this, "CompositorWorker") {
+  SingleThreadTaskGraphRunner()
+      : worker_thread_(this, "CompositorTileWorker1") {
     worker_thread_.Start();
     worker_thread_.SetThreadPriority(base::kThreadPriority_Background);
   }

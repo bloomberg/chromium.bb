@@ -668,7 +668,7 @@ void RenderThreadImpl::Init() {
           new CompositorRasterThread(
               compositor_task_graph_runner_.get(),
               base::StringPrintf(
-                  "CompositorWorker%u",
+                  "CompositorTileWorker%u",
                   static_cast<unsigned>(compositor_raster_threads_.size() + 1))
                   .c_str()));
       raster_thread->Start();
