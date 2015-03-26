@@ -189,7 +189,7 @@ cr.define('options.contentSettings', function() {
       // icon of the app.
       if (controlledBy == 'HostedApp') {
         this.title =
-            loadTimeData.getString('set_by') + ' ' + this.dataItem.appName;
+            loadTimeData.getString('setBy') + ' ' + this.dataItem.appName;
         var button = this.querySelector('.row-delete-button');
         // Use the host app's favicon (16px, match bigger size).
         // See c/b/ui/webui/extensions/extension_icon_source.h
@@ -621,7 +621,10 @@ cr.define('options.contentSettings', function() {
       this.title = loadTimeData.getString(type + 'TabTitle');
 
       var header = this.pageDiv.querySelector('h1');
-      header.textContent = loadTimeData.getString(type + '_header');
+      var camelCasedType = type.replace(/-([a-z])/g, function(g) {
+        return g[1].toUpperCase();
+      });
+      header.textContent = loadTimeData.getString(camelCasedType + 'Header');
 
       var divs = this.pageDiv.querySelectorAll('div[contentType]');
       for (var i = 0; i < divs.length; i++) {
