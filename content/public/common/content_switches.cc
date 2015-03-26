@@ -916,6 +916,9 @@ const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 // Disable the pull-to-refresh effect when vertically overscrolling content.
 const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 
+// Disable the locking feature of the screen orientation API.
+const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
+
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";
 

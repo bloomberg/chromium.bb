@@ -243,4 +243,30 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
   // here.
 }
 
+#if defined(OS_ANDROID)
+class ScreenOrientationLockDisabledBrowserTest : public ContentBrowserTest  {
+ public:
+  ScreenOrientationLockDisabledBrowserTest() {}
+  ~ScreenOrientationLockDisabledBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableScreenOrientationLock);
+  }
+};
+
+// Check that when --disable-screen-orientation-lock is passed to the command
+// line, screen.orientation.lock() correctly reports to not be supported.
+IN_PROC_BROWSER_TEST_F(ScreenOrientationLockDisabledBrowserTest, NotSupported) {
+  GURL test_url = GetTestUrl("screen_orientation",
+                             "screen_orientation_lock_disabled.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+  shell()->LoadURL(test_url);
+  navigation_observer.Wait();
+
+  EXPECT_EQ("NotSupportedError",
+            shell()->web_contents()->GetLastCommittedURL().ref());
+}
+#endif // defined(OS_ANDROID)
+
 } // namespace content

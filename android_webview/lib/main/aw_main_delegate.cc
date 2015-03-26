@@ -90,6 +90,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
 
+  // WebView does not yet support screen orientation locking.
+  cl->AppendSwitch(switches::kDisableScreenOrientationLock);
+
   // This is needed to be able to mmap the V8 snapshot and ICU data file
   // directly from the WebView .apk.
   // This needs to be here so that it gets to run before the code in

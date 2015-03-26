@@ -557,7 +557,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
     SurfaceTextureManager::InitInstance(new BrowserSurfaceTextureManager);
   }
 
-  {
+  if (!parsed_command_line_.HasSwitch(
+      switches::kDisableScreenOrientationLock)) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:ScreenOrientationProvider");
     screen_orientation_delegate_.reset(
