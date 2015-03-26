@@ -11,6 +11,7 @@ from file_system import FileNotFoundError
 from future import Future, All
 from jsc_view import CreateJSCView, GetEventByNameFromEvents
 from platform_util import GetPlatforms
+from third_party.json_schema_compiler.model import UnixName
 
 
 class APIDataSource(DataSource):
@@ -87,7 +88,7 @@ class APIDataSource(DataSource):
   def GetRefreshPaths(self):
     tasks = []
     for platform in GetPlatforms():
-      tasks += ['%s/%s' % (platform, api)
+      tasks += ['%s/%s' % (platform, UnixName(api))
                 for api in
                     self._platform_bundle.GetAPIModels(platform).GetNames()]
     return tasks
