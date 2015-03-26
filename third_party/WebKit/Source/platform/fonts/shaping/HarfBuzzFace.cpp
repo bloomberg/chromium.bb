@@ -123,11 +123,14 @@ static hb_script_t findScriptForVerticalGlyphSubstitution(hb_face_t* face)
         unsigned languageCount = maxCount;
         hb_tag_t languageTags[maxCount];
         hb_ot_layout_script_get_language_tags(face, HB_OT_TAG_GSUB, scriptIndex, 0, &languageCount, languageTags);
+        unsigned featureIndex;
         for (unsigned languageIndex = 0; languageIndex < languageCount; ++languageIndex) {
-            unsigned featureIndex;
             if (hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, languageIndex, HarfBuzzFace::vertTag, &featureIndex))
                 return hb_ot_tag_to_script(scriptTags[scriptIndex]);
         }
+        // Try DefaultLangSys if all LangSys failed.
+        if (hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX, HarfBuzzFace::vertTag, &featureIndex))
+            return hb_ot_tag_to_script(scriptTags[scriptIndex]);
     }
     return HB_SCRIPT_INVALID;
 }
