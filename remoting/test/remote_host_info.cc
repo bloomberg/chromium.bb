@@ -9,10 +9,12 @@
 namespace remoting {
 namespace test {
 
-RemoteHostInfo::RemoteHostInfo() :
-    remote_host_status(kRemoteHostStatusUnknown) {}
+RemoteHostInfo::RemoteHostInfo()
+    : remote_host_status(kRemoteHostStatusUnknown) {
+}
 
-RemoteHostInfo::~RemoteHostInfo() {}
+RemoteHostInfo::~RemoteHostInfo() {
+}
 
 bool RemoteHostInfo::IsReadyForConnection() const {
   return (remote_host_status == kRemoteHostStatusReady);

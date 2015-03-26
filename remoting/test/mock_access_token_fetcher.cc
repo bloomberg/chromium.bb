@@ -20,12 +20,13 @@ void MockAccessTokenFetcher::SetAccessTokenFetcher(
     scoped_ptr<AccessTokenFetcher> fetcher) {
   internal_access_token_fetcher_ = fetcher.Pass();
 
-  ON_CALL(*this, GetAccessTokenFromAuthCode(_, _)).WillByDefault(
-      Invoke(internal_access_token_fetcher_.get(),
-             &AccessTokenFetcher::GetAccessTokenFromAuthCode));
-  ON_CALL(*this, GetAccessTokenFromRefreshToken(_, _)).WillByDefault(
-      Invoke(internal_access_token_fetcher_.get(),
-             &AccessTokenFetcher::GetAccessTokenFromRefreshToken));
+  ON_CALL(*this, GetAccessTokenFromAuthCode(_, _))
+      .WillByDefault(Invoke(internal_access_token_fetcher_.get(),
+                            &AccessTokenFetcher::GetAccessTokenFromAuthCode));
+  ON_CALL(*this, GetAccessTokenFromRefreshToken(_, _))
+      .WillByDefault(
+          Invoke(internal_access_token_fetcher_.get(),
+                 &AccessTokenFetcher::GetAccessTokenFromRefreshToken));
 }
 
 }  // namespace test

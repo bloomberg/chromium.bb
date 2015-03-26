@@ -142,8 +142,8 @@ void AppRemotingTestDriverEnvironment::ShowHostAvailability() {
   while (it != application_names_.end()) {
     std::string application_name = *it;
 
-    const RemoteApplicationDetails& application_details = GetDetailsFromAppName(
-        application_name);
+    const RemoteApplicationDetails& application_details =
+        GetDetailsFromAppName(application_name);
 
     RemoteHostInfo remote_host_info;
     GetRemoteHostInfoForApplicationId(application_details.application_id,

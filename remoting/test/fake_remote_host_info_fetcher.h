@@ -21,11 +21,10 @@ class FakeRemoteHostInfoFetcher : public RemoteHostInfoFetcher {
   ~FakeRemoteHostInfoFetcher() override;
 
   // RemoteHostInfoFetcher interface.
-  bool RetrieveRemoteHostInfo(
-      const std::string& application_id,
-      const std::string& access_token,
-      ServiceEnvironment service_environment,
-      const RemoteHostInfoCallback& callback) override;
+  bool RetrieveRemoteHostInfo(const std::string& application_id,
+                              const std::string& access_token,
+                              ServiceEnvironment service_environment,
+                              const RemoteHostInfoCallback& callback) override;
 
   void set_fail_retrieve_remote_host_info(bool fail) {
     fail_retrieve_remote_host_info_ = fail;

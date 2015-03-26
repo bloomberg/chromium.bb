@@ -11,9 +11,9 @@ namespace remoting {
 namespace test {
 
 enum RemoteHostStatus {
-    kRemoteHostStatusReady,
-    kRemoteHostStatusPending,
-    kRemoteHostStatusUnknown
+  kRemoteHostStatusReady,
+  kRemoteHostStatusPending,
+  kRemoteHostStatusUnknown
 };
 
 // Holds the information needed to establish a connection with a remote host.

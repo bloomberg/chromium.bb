@@ -7,10 +7,12 @@
 namespace remoting {
 namespace test {
 
-FakeRemoteHostInfoFetcher::FakeRemoteHostInfoFetcher() :
-    fail_retrieve_remote_host_info_(false) {}
+FakeRemoteHostInfoFetcher::FakeRemoteHostInfoFetcher()
+    : fail_retrieve_remote_host_info_(false) {
+}
 
-FakeRemoteHostInfoFetcher::~FakeRemoteHostInfoFetcher() {}
+FakeRemoteHostInfoFetcher::~FakeRemoteHostInfoFetcher() {
+}
 
 bool FakeRemoteHostInfoFetcher::RetrieveRemoteHostInfo(
     const std::string& application_id,

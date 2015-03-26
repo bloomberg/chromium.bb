@@ -125,7 +125,7 @@ void AppRemotingConnectedClientFixture::StartConnection() {
   // main application window to become visible.
   DCHECK(!timer_->IsRunning());
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
-                      run_loop_->QuitClosure());
+                run_loop_->QuitClosure());
 
   client_->StartConnection(AppRemotingSharedData->user_name(),
                            AppRemotingSharedData->access_token(),
@@ -248,7 +248,7 @@ void AppRemotingConnectedClientFixture::HandleOnWindowAddedMessage(
     // Now that the main window is visible, give the app some time to settle
     // before signaling that it is ready to run tests.
     timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
-                        run_loop_->QuitClosure());
+                  run_loop_->QuitClosure());
   }
 }
 

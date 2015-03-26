@@ -24,9 +24,8 @@ class FakeAccessTokenFetcher : public AccessTokenFetcher {
   ~FakeAccessTokenFetcher() override;
 
   // AccessTokenFetcher interface.
-  void GetAccessTokenFromAuthCode(
-    const std::string& auth_code,
-    const AccessTokenCallback& callback) override;
+  void GetAccessTokenFromAuthCode(const std::string& auth_code,
+                                  const AccessTokenCallback& callback) override;
   void GetAccessTokenFromRefreshToken(
       const std::string& refresh_token,
       const AccessTokenCallback& callback) override;

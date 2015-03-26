@@ -40,16 +40,17 @@ std::string GetAuthorizationCodeUri() {
   bool use_plus = true;
   return base::StringPrintf(
       "https://accounts.google.com/o/oauth2/auth"
-          "?scope=%s"
-          "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
-              "talkgadget/oauth/chrome-remote-desktop/dev"
-          "&response_type=code"
-          "&client_id=%s"
-          "&access_type=offline"
-          "&approval_prompt=force",
+      "?scope=%s"
+      "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
+      "talkgadget/oauth/chrome-remote-desktop/dev"
+      "&response_type=code"
+      "&client_id=%s"
+      "&access_type=offline"
+      "&approval_prompt=force",
       net::EscapeUrlEncodedData(kAppRemotingAuthScopeValues, use_plus).c_str(),
-      net::EscapeUrlEncodedData(google_apis::GetOAuth2ClientID(
-          google_apis::CLIENT_REMOTING), use_plus).c_str());
+      net::EscapeUrlEncodedData(
+          google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
+          use_plus).c_str());
 }
 
 void PrintUsage() {
@@ -69,12 +70,14 @@ void PrintUsage() {
          switches::kHelpSwitchName);
   printf("  %s: Specifies the service api to use (dev|test) [default: dev]\n",
          switches::kServiceEnvironmentSwitchName);
-  printf("  %s: Retrieves and displays the connection status for all known "
-         "hosts, no tests will be run\n",
-         switches::kShowHostAvailabilitySwitchName);
-  printf("  %s: Specifies the optional logging level of the tool (0-3)."
-         " [default: off]\n",
-         switches::kLoggingLevelSwitchName);
+  printf(
+      "  %s: Retrieves and displays the connection status for all known "
+      "hosts, no tests will be run\n",
+      switches::kShowHostAvailabilitySwitchName);
+  printf(
+      "  %s: Specifies the optional logging level of the tool (0-3)."
+      " [default: off]\n",
+      switches::kLoggingLevelSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -93,18 +96,20 @@ void PrintAuthCodeInfo() {
   printf("\n      has been revoked or expired.\n");
   printf("      Passing in the same auth code twice will result in an error\n");
 
-  printf("\nFollow these steps to produce an auth code:\n"
-         " - Open the Authorization URL link shown below in your browser\n"
-         " - Approve the requested permissions for the tool\n"
-         " - Copy the 'code' value in the redirected URL\n"
-         " - Run the tool and pass in copied auth code as a parameter\n");
+  printf(
+      "\nFollow these steps to produce an auth code:\n"
+      " - Open the Authorization URL link shown below in your browser\n"
+      " - Approve the requested permissions for the tool\n"
+      " - Copy the 'code' value in the redirected URL\n"
+      " - Run the tool and pass in copied auth code as a parameter\n");
 
   printf("\nAuthorization URL:\n");
   printf("%s\n", GetAuthorizationCodeUri().c_str());
 
   printf("\nRedirected URL Example:\n");
-  printf("https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
-         "chrome-remote-desktop/dev?code=4/AKtf...\n");
+  printf(
+      "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
+      "chrome-remote-desktop/dev?code=4/AKtf...\n");
 
   printf("\nTool usage example with the newly created auth code:\n");
   printf("ar_test_driver --%s=example@gmail.com --%s=4/AKtf...\n\n",

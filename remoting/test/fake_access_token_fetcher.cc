@@ -7,12 +7,13 @@
 namespace remoting {
 namespace test {
 
-FakeAccessTokenFetcher::FakeAccessTokenFetcher() :
-    fail_access_token_from_auth_code_(false),
-    fail_access_token_from_refresh_token_(false) {}
+FakeAccessTokenFetcher::FakeAccessTokenFetcher()
+    : fail_access_token_from_auth_code_(false),
+      fail_access_token_from_refresh_token_(false) {
+}
 
-FakeAccessTokenFetcher::~FakeAccessTokenFetcher() {}
-
+FakeAccessTokenFetcher::~FakeAccessTokenFetcher() {
+}
 
 void FakeAccessTokenFetcher::GetAccessTokenFromAuthCode(
     const std::string& auth_code,

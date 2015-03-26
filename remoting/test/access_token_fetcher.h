@@ -17,9 +17,9 @@ namespace test {
 
 // Supplied by the client for each request to GAIA and returns valid tokens on
 // success or empty tokens on failure.
-typedef base::Callback<void(
-    const std::string& access_token,
-    const std::string& refresh_token)> AccessTokenCallback;
+typedef base::Callback<void(const std::string& access_token,
+                            const std::string& refresh_token)>
+    AccessTokenCallback;
 
 // Retrieves an access token from either an authorization code or a refresh
 // token.  Destroying the AccessTokenFetcher while a request is outstanding will

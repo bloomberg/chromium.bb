@@ -33,7 +33,8 @@ AccessTokenFetcher::AccessTokenFetcher() {
       kOauthRedirectUrl};
 }
 
-AccessTokenFetcher::~AccessTokenFetcher() {}
+AccessTokenFetcher::~AccessTokenFetcher() {
+}
 
 void AccessTokenFetcher::GetAccessTokenFromAuthCode(
     const std::string& auth_code,
@@ -70,12 +71,10 @@ void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
 
   // Create a new GaiaOAuthClient for each request to GAIA.
   CreateNewGaiaOAuthClientInstance();
-  auth_client_->RefreshToken(
-      oauth_client_info_,
-      refresh_token_,
-      std::vector<std::string>(),  // scopes
-      kMaxGetTokensRetries,
-      this);  // GaiaOAuthClient::Delegate* delegate
+  auth_client_->RefreshToken(oauth_client_info_, refresh_token_,
+                             std::vector<std::string>(),  // scopes
+                             kMaxGetTokensRetries,
+                             this);  // GaiaOAuthClient::Delegate* delegate
 }
 
 void AccessTokenFetcher::CreateNewGaiaOAuthClientInstance() {
@@ -180,10 +179,8 @@ void AccessTokenFetcher::ValidateAccessToken() {
 
   // Create a new GaiaOAuthClient for each request to GAIA.
   CreateNewGaiaOAuthClientInstance();
-  auth_client_->GetTokenInfo(
-      access_token_,
-      kMaxGetTokensRetries,
-      this);  // GaiaOAuthClient::Delegate* delegate
+  auth_client_->GetTokenInfo(access_token_, kMaxGetTokensRetries,
+                             this);  // GaiaOAuthClient::Delegate* delegate
 }
 
 }  // namespace test

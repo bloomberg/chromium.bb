@@ -24,8 +24,8 @@ base::FilePath GetRefreshTokenDirPath(const std::string& user_name) {
   }
 
   refresh_token_dir_path = refresh_token_dir_path.Append(kRemotingFolder);
-  refresh_token_dir_path = refresh_token_dir_path.Append(
-      kRefreshTokenStoreFolder);
+  refresh_token_dir_path =
+      refresh_token_dir_path.Append(kRefreshTokenStoreFolder);
 
   // We call AppendASCII here our user_name is a std::string but wide strings
   // are used on WIN platforms.  ApendASCII will convert our std::string into
@@ -58,10 +58,12 @@ class RefreshTokenStoreOnDisk : public RefreshTokenStore {
   DISALLOW_COPY_AND_ASSIGN(RefreshTokenStoreOnDisk);
 };
 
-RefreshTokenStoreOnDisk::RefreshTokenStoreOnDisk(const std::string user_name) :
-    user_name_(user_name) {}
+RefreshTokenStoreOnDisk::RefreshTokenStoreOnDisk(const std::string user_name)
+    : user_name_(user_name) {
+}
 
-RefreshTokenStoreOnDisk::~RefreshTokenStoreOnDisk() {}
+RefreshTokenStoreOnDisk::~RefreshTokenStoreOnDisk() {
+}
 
 std::string RefreshTokenStoreOnDisk::FetchRefreshToken() {
   base::FilePath token_dir_path(GetRefreshTokenDirPath(user_name_));
@@ -131,8 +133,8 @@ bool RefreshTokenStoreOnDisk::StoreRefreshToken(
 
 scoped_ptr<RefreshTokenStore> RefreshTokenStore::OnDisk(
     const std::string& user_name) {
-  return make_scoped_ptr<RefreshTokenStore>(new RefreshTokenStoreOnDisk(
-      user_name));
+  return make_scoped_ptr<RefreshTokenStore>(
+      new RefreshTokenStoreOnDisk(user_name));
 }
 
 }  // namespace test
