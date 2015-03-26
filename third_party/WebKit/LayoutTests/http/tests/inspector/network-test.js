@@ -103,7 +103,10 @@ function makeSimpleXHRWithPayload(method, url, async, payload, callback)
 function makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, callback)
 {
     var xhr = new XMLHttpRequest();
-    xhr.responseType = type;
+    if (type == undefined)
+        xhr.responseType = "";
+    else
+        xhr.responseType = type;
     xhr.onreadystatechange = function()
     {
         if (xhr.readyState === XMLHttpRequest.DONE) {

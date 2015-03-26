@@ -269,8 +269,10 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {# Setter ignores invalid enum values:
        http://www.w3.org/TR/WebIDL/#idl-enums #}
     String string = cppValue;
-    if (!({{attribute.enum_validation_expression}}))
+    if (!({{attribute.enum_validation_expression}})) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type '{{attribute.idl_type}}'."));
         return;
+    }
     {% endif %}
     {# Pre-set context #}
     {% if attribute.is_custom_element_callbacks or

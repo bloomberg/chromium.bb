@@ -63,6 +63,7 @@
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLTableRowsCollection.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -1723,8 +1724,10 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     if (!cppValue.prepare())
         return;
     String string = cppValue;
-    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3"))
+    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type 'TestEnum'."));
         return;
+    }
     impl->setTestEnumAttribute(cppValue);
 }
 
@@ -1757,8 +1760,10 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     if (!cppValue.prepare())
         return;
     String string = cppValue;
-    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3"))
+    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type 'TestEnum'."));
         return;
+    }
     impl->setTestEnumOrNullAttribute(cppValue);
 }
 
@@ -5529,8 +5534,10 @@ static void enumForPrivateScriptAttributeSetter(v8::Local<v8::Value> v8Value, co
     if (!cppValue.prepare())
         return;
     String string = cppValue;
-    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3"))
+    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type 'TestEnum'."));
         return;
+    }
     V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 

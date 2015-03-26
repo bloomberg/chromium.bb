@@ -50,6 +50,8 @@ def attribute_context(interface, attribute):
     extended_attributes = attribute.extended_attributes
 
     idl_type.add_includes_for_type()
+    if idl_type.enum_validation_expression:
+        includes.add('core/inspector/ConsoleMessage.h')
 
     # [CheckSecurity]
     is_check_security_for_node = 'CheckSecurity' in extended_attributes

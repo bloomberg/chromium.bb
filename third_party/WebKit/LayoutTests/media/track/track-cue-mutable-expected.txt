@@ -1,3 +1,5 @@
+CONSOLE WARNING: The provided value 'RL' is not a valid value of type 'DirectionSetting'.
+CONSOLE WARNING: The provided value 'End' is not a valid value of type 'AlignSetting'.
 Tests modifying attributes of a VTTCue
 
 ** Test initial values.

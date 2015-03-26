@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -281,8 +282,10 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     if (!cppValue.prepare())
         return;
     String string = cppValue;
-    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3"))
+    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type 'TestEnum'."));
         return;
+    }
     impl->setTestEnumAttribute(cppValue);
 }
 
@@ -960,8 +963,10 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
     if (!cppValue.prepare())
         return;
     String string = cppValue;
-    if (!(string == "foo" || string == "bar"))
+    if (!(string == "foo" || string == "bar")) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type 'PartialEnumType'."));
         return;
+    }
     TestPartialInterface::setPartialPartialEnumTypeAttribute(*impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)

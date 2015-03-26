@@ -1,3 +1,4 @@
+CONSOLE WARNING: The provided value '99' is not a valid value of type 'BiquadFilterType'.
 Basic tests for BiquadFilterNode.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
