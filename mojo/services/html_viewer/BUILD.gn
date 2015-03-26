@@ -10,7 +10,8 @@ action("generate_blink_resource_map") {
   script = "//mojo/services/html_viewer/generate_blink_resource_map.py"
   args = [
     "--pak-file",
-    rebase_path("$root_out_dir/gen/blink/public/resources/blink_resources.pak"),
+    rebase_path(
+        "$root_out_dir/gen/blink/public/resources/blink_resources_100_percent.pak"),
     "--header",
     rebase_path("$target_gen_dir/blink_resource_map.h"),
     "--cpp",

@@ -484,7 +484,6 @@ repack("packed_extra_resources") {
   }
   if (!is_ios) {
     sources += [
-      "$root_gen_dir/blink/public/resources/blink_resources.pak",
       "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
       "$root_gen_dir/content/content_resources.pak",
     ]
@@ -587,7 +586,10 @@ template("chrome_repack_percent") {
     ]
 
     if (!is_ios) {
-      sources += [ "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak" ]
+      sources += [
+        "$root_gen_dir/blink/public/resources/blink_resources_${percent}_percent.pak",
+        "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak",
+      ]
       deps += [ "//content:resources" ]
     }
     if (use_ash) {

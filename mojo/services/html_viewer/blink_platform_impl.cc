@@ -157,10 +157,10 @@ blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (!strcmp(resource, kDataResources[i].name)) {
       int length;
-      const char* data =
+      const unsigned char* data =
           blink_resource_map_.GetResource(kDataResources[i].id, &length);
       CHECK(data != nullptr && length > 0);
-      return blink::WebData(data, length);
+      return blink::WebData(reinterpret_cast<const char*>(data), length);
     }
   }
   NOTREACHED() << "Requested resource is unavailable: " << resource;

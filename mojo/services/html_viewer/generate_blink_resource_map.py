@@ -17,9 +17,6 @@ except ImportError, e:
   print 'ImportError: ', e
   sys.exit(-1)
 
-def is_ascii(s):
-  return all(ord(c) < 128 for c in s)
-
 header_template = \
 """// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -35,11 +32,11 @@ namespace html_viewer {
 class BlinkResourceMap {
  public:
   BlinkResourceMap();
-  const char* GetResource(int id, int* length);
+  const unsigned char* GetResource(int id, int* length);
 
  private:
   struct ResourceEntry {
-    const char* data;
+    const unsigned char* data;
     int length;
 
     ResourceEntry()
@@ -47,7 +44,7 @@ class BlinkResourceMap {
       , length(0) {
     }
 
-    ResourceEntry(const char* data, int length)
+    ResourceEntry(const unsigned char* data, int length)
       : data(data)
       , length(length) {
     }
@@ -77,7 +74,7 @@ BlinkResourceMap::BlinkResourceMap()
   $map_initializer
 }
 
-const char* BlinkResourceMap::GetResource(int id, int* length)
+const unsigned char* BlinkResourceMap::GetResource(int id, int* length)
 {
   ResourceMap::iterator it = resources_.find(id);
   if (it == resources_.end()) {
@@ -117,14 +114,12 @@ def main():
   definitions = []
 
   for (resId, data) in pak_contents.resources.iteritems():
-    if not is_ascii(data):
-      continue
     resourceIds.append(resId)
     hex_values = ['0x{0:02x}'.format(ord(char)) for char in data]
     f = lambda A, n=12: [A[i:i+n] for i in range(0, len(A), n)]
     hex_values_string = ',\n    '.join(', '.join(x) for x in f(hex_values))
     cpp_definition = \
-        'const char kResource%s[%d] = {\n    %s \n};' % \
+        'const unsigned char kResource%s[%d] = {\n    %s \n};' % \
         (str(resId), len(hex_values), hex_values_string)
     definitions.append(cpp_definition)
 
