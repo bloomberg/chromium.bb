@@ -6,21 +6,15 @@ Here we change cell border width, expect that cache is invalidated and paint pro
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
-        <script src="../../../resources/run-after-display.js"></script>
+        <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
         <script type="text/javascript">
-            function test() {
-                if (window.testRunner)
-                    testRunner.waitUntilDone();
-                runAfterDisplay(function() {
-                    document.getElementById("foo").style.borderWidth = "4px";
-                    document.getElementById("foo").style.borderColor = "lime";
-                    if (window.testRunner)
-                        testRunner.notifyDone();
-                });
+            function repaintTest() {
+                document.getElementById("foo").style.borderWidth = "4px";
+                document.getElementById("foo").style.borderColor = "lime";
             }
         </script>
     </head>
-    <body onload="test()">
+    <body onload="runRepaintTest()">
         <table style="border-collapse:collapse; border:2px solid blue">
             <tr>
                 <td style="border:1px solid lime" id="foo"/>

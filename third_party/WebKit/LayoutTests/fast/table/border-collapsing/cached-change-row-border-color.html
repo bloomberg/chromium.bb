@@ -6,20 +6,14 @@ Here we change row border color, expect that cache is invalidated and paint prod
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
-        <script src="../../../resources/run-after-display.js"></script>
+        <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
         <script type="text/javascript">
-            function test() {
-                if (window.testRunner)
-                    testRunner.waitUntilDone();
-                runAfterDisplay(function() {
-                    document.getElementById("row").style.borderColor = "yellow";
-                    if (window.testRunner)
-                        testRunner.notifyDone();
-                });
+            function repaintTest() {
+                document.getElementById("row").style.borderColor = "yellow";
             }
         </script>
     </head>
-    <body onload="test()">
+    <body onload="runRepainttest()">
         <table style="border-collapse:collapse; border:1px solid blue">
             <tr style="border:4px solid pink" id="row">
                 <td style="border:2px solid lime"/>

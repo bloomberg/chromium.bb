@@ -6,20 +6,14 @@ Here we change colgroup border width, expect that cache is invalidated and paint
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
-        <script src="../../../resources/run-after-display.js"></script>
+        <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
         <script type="text/javascript">
-            function test() {
-                if (window.testRunner)
-                    testRunner.waitUntilDone();
-                runAfterDisplay(function() {
-                    document.getElementById("colgroup").style.borderWidth = "4px";
-                    if (window.testRunner)
-                        testRunner.notifyDone();
-                });
+            function repaintTest() {
+                document.getElementById("colgroup").style.borderWidth = "4px";
             }
         </script>
     </head>
-    <body onload="test()">
+    <body onload="runRepaintTest()">
         <table style="border-collapse:collapse; border:1px solid blue">
             <colgroup style="border:1px solid yellow" id="colgroup">
                 <col>

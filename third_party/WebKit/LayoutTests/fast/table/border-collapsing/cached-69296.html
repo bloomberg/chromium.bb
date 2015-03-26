@@ -4,7 +4,7 @@ Collapsed borders should not disappear.
 -->
 <html>
     <head>
-        <script src="../../../resources/run-after-display.js"></script>
+        <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
         <style>
             BODY {
                 margin: 20px;
@@ -24,24 +24,20 @@ Collapsed borders should not disappear.
         </style>
     <head>
         <script type="text/javascript">
-            function test() {
-                if (window.eventSender && window.testRunner) {
-                    testRunner.waitUntilDone();
-                    runAfterDisplay(function() {
-                        row = document.getElementById('row1');
-                        rowRect = row.getBoundingClientRect();
-                        x = rowRect.left + 75;
-                        y = rowRect.top;
-                        eventSender.mouseMoveTo(x, y + 1);
-                        eventSender.mouseMoveTo(x, y - 1);
-                        document.body.offsetTop;
-                        testRunner.notifyDone();
-                    });
+            function repaintTest() {
+                row = document.getElementById('row1');
+                rowRect = row.getBoundingClientRect();
+                x = rowRect.left + 75;
+                y = rowRect.top;
+                document.body.offsetTop;
+                if (window.eventSender) {
+                    eventSender.mouseMoveTo(x, y + 1);
+                    eventSender.mouseMoveTo(x, y - 1);
                 }
             }
         </script>
     </head>
-    <body onload="test()">
+    <body onload="runRepaintTest()">
         <table>
             <tr id="row1">
                 <td valign="top"/>
