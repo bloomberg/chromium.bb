@@ -47,7 +47,6 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   // The following trials are used from renderer process.
   // Mark here so they will be sync-ed.
   base::FieldTrialList::FindValue("CLD1VsCLD2");
-  base::FieldTrialList::FindValue("MouseEventPreconnect");
   base::FieldTrialList::FindValue("DisplayList2dCanvas");
   // Activate the autocomplete dynamic field trials.
   OmniboxFieldTrial::ActivateDynamicTrials();
