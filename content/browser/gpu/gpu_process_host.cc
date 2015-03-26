@@ -504,7 +504,7 @@ bool GpuProcessHost::Init() {
     return false;
 
   if (in_process_) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(g_gpu_main_thread_factory);
     in_process_gpu_thread_.reset(
         g_gpu_main_thread_factory(InProcessChildThreadParams(

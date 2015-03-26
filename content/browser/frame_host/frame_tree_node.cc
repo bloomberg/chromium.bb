@@ -32,7 +32,7 @@ int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
 
 // static
 FrameTreeNode* FrameTreeNode::GloballyFindByID(int64 frame_tree_node_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FrameTreeNodeIDMap* nodes = g_frame_tree_node_id_map.Pointer();
   FrameTreeNodeIDMap::iterator it = nodes->find(frame_tree_node_id);
   return it == nodes->end() ? nullptr : it->second;

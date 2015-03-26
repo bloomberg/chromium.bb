@@ -514,7 +514,7 @@ void BrowserCdmManager::CheckPermissionStatusOnUIThread(
     int render_frame_id,
     const GURL& security_origin,
     const base::Callback<void(bool)>& permission_status_cb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHost* rfh =
       RenderFrameHost::FromID(render_process_id_, render_frame_id);

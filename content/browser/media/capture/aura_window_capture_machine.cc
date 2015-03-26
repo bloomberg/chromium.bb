@@ -120,7 +120,7 @@ AuraWindowCaptureMachine::~AuraWindowCaptureMachine() {}
 bool AuraWindowCaptureMachine::Start(
     const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
     const media::VideoCaptureParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The window might be destroyed between SetWindow() and Start().
   if (!desktop_window_)
@@ -157,7 +157,7 @@ bool AuraWindowCaptureMachine::Start(
 }
 
 void AuraWindowCaptureMachine::Stop(const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   power_save_blocker_.reset();
 
   // Stop observing compositor and window events.
@@ -177,7 +177,7 @@ void AuraWindowCaptureMachine::Stop(const base::Closure& callback) {
 }
 
 void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK(!desktop_window_);
   desktop_window_ = window;
@@ -193,7 +193,7 @@ void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
 }
 
 void AuraWindowCaptureMachine::UpdateCaptureSize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (oracle_proxy_.get() && desktop_window_) {
      ui::Layer* layer = desktop_window_->layer();
      oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
@@ -203,7 +203,7 @@ void AuraWindowCaptureMachine::UpdateCaptureSize() {
 }
 
 void AuraWindowCaptureMachine::Capture(bool dirty) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Do not capture if the desktop window is already destroyed.
   if (!desktop_window_)
@@ -267,7 +267,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     base::TimeTicks start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
     return false;
@@ -421,7 +421,7 @@ void AuraWindowCaptureMachine::OnWindowBoundsChanged(
 }
 
 void AuraWindowCaptureMachine::OnWindowDestroyed(aura::Window* window) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Stop(base::Bind(&base::DoNothing));
 
