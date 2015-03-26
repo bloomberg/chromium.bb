@@ -3885,8 +3885,22 @@ bool LayoutBlock::tryLayoutDoingPositionedMovementOnly()
     setMarginEnd(computedValues.m_margins.m_end);
 
     LayoutUnit oldHeight = logicalHeight();
-    updateLogicalHeight();
-    return !hasPercentHeightDescendants() || oldHeight == logicalHeight();
+    LayoutUnit oldIntrinsicContentLogicalHeight = intrinsicContentLogicalHeight();
+
+    setIntrinsicContentLogicalHeight(contentLogicalHeight());
+    computeLogicalHeight(oldHeight, logicalTop(), computedValues);
+
+    if (hasPercentHeightDescendants() && oldHeight != computedValues.m_extent) {
+        setIntrinsicContentLogicalHeight(oldIntrinsicContentLogicalHeight);
+        return false;
+    }
+
+    setLogicalHeight(computedValues.m_extent);
+    setLogicalTop(computedValues.m_position);
+    setMarginBefore(computedValues.m_margins.m_before);
+    setMarginAfter(computedValues.m_margins.m_after);
+
+    return true;
 }
 
 #if ENABLE(ASSERT)
