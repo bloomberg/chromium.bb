@@ -313,13 +313,6 @@ PDFViewer.prototype = {
           e.preventDefault();
         }
         return;
-      case 80:  // p key.
-        if (e.ctrlKey || e.metaKey) {
-          this.print_();
-          // Since we do the printing of the page.
-          e.preventDefault();
-        }
-        return;
       case 219:  // left bracket.
         if (e.ctrlKey)
           this.rotateCounterClockwise_();
