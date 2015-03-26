@@ -124,6 +124,16 @@ const char kSIMLockStatus[] = "SIMLockStatus";
 const char kSIMPresent[] = "SIMPresent";
 const char kSupportedCarriers[] = "SupportedCarriers";
 const char kSupportNetworkScan[] = "SupportNetworkScan";
+const char kTechnologyCdma1Xrtt[] = "CDMA1XRTT";
+const char kTechnologyEdge[] = "EDGE";
+const char kTechnologyEvdo[] = "EVDO";
+const char kTechnologyGprs[] = "GPRS";
+const char kTechnologyGsm[] = "GSM";
+const char kTechnologyHspa[] = "HSPA";
+const char kTechnologyHspaPlus[] = "HSPAPlus";
+const char kTechnologyLte[] = "LTE";
+const char kTechnologyLteAdvanced[] = "LTEAdvanced";
+const char kTechnologyUmts[] = "UMTS";
 }  // namespace cellular
 
 namespace cellular_provider {

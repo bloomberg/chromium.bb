@@ -11,6 +11,7 @@
       "Country": "us",
       "Name": "cellular_provider"
     },
+    "NetworkTechnology": "LTEAdvanced",
     "RoamingState": "Home",
     "ServingOperator": {
       "Code": "test-code",

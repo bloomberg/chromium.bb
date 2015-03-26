@@ -167,7 +167,9 @@ const FieldTranslationEntry cellular_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
     {::onc::vpn::kAutoConnect, shill::kAutoConnectProperty},
-    {::onc::cellular::kNetworkTechnology, shill::kNetworkTechnologyProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kNetworkTechnology,
+    //   shill::kNetworkTechnologyProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},
     {::onc::cellular::kSignalStrength, shill::kSignalStrengthProperty},
@@ -312,6 +314,20 @@ const StringTranslationEntry kActivationStateTable[] = {
     {::onc::cellular::kNotActivated, shill::kActivationStateNotActivated},
     {::onc::cellular::kPartiallyActivated,
      shill::kActivationStatePartiallyActivated},
+    {NULL}};
+
+const StringTranslationEntry kNetworkTechnologyTable[] = {
+    {::onc::cellular::kTechnologyCdma1Xrtt, shill::kNetworkTechnology1Xrtt},
+    {::onc::cellular::kTechnologyGsm, shill::kNetworkTechnologyGsm},
+    {::onc::cellular::kTechnologyEdge, shill::kNetworkTechnologyEdge},
+    {::onc::cellular::kTechnologyEvdo, shill::kNetworkTechnologyEvdo},
+    {::onc::cellular::kTechnologyGprs, shill::kNetworkTechnologyGprs},
+    {::onc::cellular::kTechnologyHspa, shill::kNetworkTechnologyHspa},
+    {::onc::cellular::kTechnologyHspaPlus, shill::kNetworkTechnologyHspaPlus},
+    {::onc::cellular::kTechnologyLte, shill::kNetworkTechnologyLte},
+    {::onc::cellular::kTechnologyLteAdvanced,
+     shill::kNetworkTechnologyLteAdvanced},
+    {::onc::cellular::kTechnologyUmts, shill::kNetworkTechnologyUmts},
     {NULL}};
 
 const StringTranslationEntry kRoamingStateTable[] = {

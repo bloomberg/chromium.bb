@@ -4,6 +4,7 @@
   "Name": "Test Network",
   "Cellular.ActivationState": "activated",
   "Cellular.ActivationType": "OTASP",
+  "Cellular.NetworkTechnology": "LTE Advanced",
   "Cellular.RoamingState": "home",
   "Cellular.ServingOperator": {
     "code": "test-code",

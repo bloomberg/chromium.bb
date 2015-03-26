@@ -20,7 +20,7 @@
   <h1>Objective</h1>
   <p>
     We would like to create a simple, open, but complete format to describe
-    multiple network configurations for Wi-Fi, Ethernet, Cellular,
+    multiple network configurations for WiFi, Ethernet, Cellular,
     Bluetooth/WiFi-Direct, and VPN connections in a single file format, in order
     to simplify and automate network configuration for users.
   </p>
@@ -33,7 +33,7 @@
     is a problem shared across desktop, laptop, tablet, and phone users of all
     operating system types. It is exacerbated in business and schools which
     often have complex network configurations (VPNs and 802.1X networking) that
-    change often and have many connected devices. Configuration of Wi-Fi is
+    change often and have many connected devices. Configuration of WiFi is
     still done manually, often by administrators physically standing next to
     users working on devices. Certificate distribution is particularly painful
     which often results in admins instead using passphrases to protect networks
@@ -202,7 +202,7 @@
         (optional)
         <span class="type">array of NetworkConfiguration</span>
       </span>
-      Describes Wi-Fi, Ethernet, VPN, and wireless connections.
+      Describes WiFi, Ethernet, VPN, and wireless connections.
     </dd>
 
     <dt class="field">Certificates</dt>
@@ -374,7 +374,7 @@
         <span class="value">WiFi</span>, otherwise ignored)
         <span class="type">WiFi</span>
       </span>
-      Wi-Fi settings.
+      WiFi settings.
     </dd>
 
     <dt class="field">WiMAX</dt>
@@ -649,9 +649,9 @@
 </section>
 
 <section>
-  <h1>Wi-Fi networks</h1>
+  <h1>WiFi networks</h1>
   <p>
-    For Wi-Fi connections, <span class="field">Type</span> must be set to
+    For WiFi connections, <span class="field">Type</span> must be set to
     <span class="value">WiFi</span> and the
     field <span class="field">WiFi</span> must be set to an object of
     type <span class="type">WiFi</span> containing the following fields:
@@ -2304,11 +2304,16 @@
       network technology currently in use.
       <span class="rule"><span class="rule_id"></span>
         Allowed values are
-        <span class="value">1xRTT</span>, <span class="value">EVDO</span>,
-        <span class="value">GPRS</span>, <span class="value">EDGE</span>,
+        <span class="value">CDMA1XRTT</span>,
+        <span class="value">EDGE</span>,
+        <span class="value">EVDO</span>,
+        <span class="value">GPRS</span>,
+        <span class="value">GSM</span>,
+        <span class="value">HSPA</span>,
+        <span class="value">HSPAPlus</span>,
+        <span class="value">LTE</span>,
+        <span class="value">LTEAdvanced</span>
         <span class="value">UMTS</span>,
-        <span class="value">HSPA</span>, <span class="value">HSPA+</span>,
-        <span class="value">LTE</span>, <span class="value">LTE Advanced</span>
       </span>
     </dd>
 
@@ -2547,7 +2552,7 @@
 <section>
   <h1>Bluetooth / WiFi Direct Networks</h1>
   <p>
-    This format will eventually also cover configuration of Bluetooth and Wi-Fi
+    This format will eventually also cover configuration of Bluetooth and WiFi
     Direct network technologies, however they are currently not supported.
   </p>
 </section>

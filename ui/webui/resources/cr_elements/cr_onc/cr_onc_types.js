@@ -29,14 +29,15 @@ CrOnc.ConnectionState = {
 
 /** @enum {string} */
 CrOnc.NetworkTechnology = {
+  CDMA1XRTT: 'CDMA1XRTT',
   EDGE: 'EDGE',
   EVDO: 'EVDO',
   GPRS: 'GPRS',
   GSM: 'GSM',
   HSPA: 'HSPA',
-  HSPA_PLUS: 'HSPA+',
+  HSPA_PLUS: 'HSPAPlus',
   LTE: 'LTE',
-  LTE_ADVANCED: 'LTE Advanced',
+  LTE_ADVANCED: 'LTEAdvanced',
   UMTS: 'UMTS',
   UNKNOWN: 'Unknown',
 };

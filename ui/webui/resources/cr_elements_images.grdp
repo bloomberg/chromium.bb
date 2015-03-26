@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_BADGE_CDMA1XRTT"
+           file="cr_elements/cr_network_icon/badge_1x.png" 
+           type="BINDATA" />
   <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_BADGE_3G"
            file="cr_elements/cr_network_icon/badge_3g.png" 
            type="BINDATA" />

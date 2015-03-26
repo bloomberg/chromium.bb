@@ -354,6 +354,9 @@ void ShillToONCTranslator::TranslateCellularWithState() {
   TranslateWithTableAndSet(shill::kActivationStateProperty,
                            kActivationStateTable,
                            ::onc::cellular::kActivationState);
+  TranslateWithTableAndSet(shill::kNetworkTechnologyProperty,
+                           kNetworkTechnologyTable,
+                           ::onc::cellular::kNetworkTechnology);
   const base::DictionaryValue* dictionary = NULL;
   if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
           shill::kServingOperatorProperty, &dictionary)) {

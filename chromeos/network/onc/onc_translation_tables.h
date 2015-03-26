@@ -33,6 +33,7 @@ CHROMEOS_EXPORT extern const StringTranslationEntry kEAPOuterTable[];
 CHROMEOS_EXPORT extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
 CHROMEOS_EXPORT extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
 CHROMEOS_EXPORT extern const StringTranslationEntry kActivationStateTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kNetworkTechnologyTable[];
 CHROMEOS_EXPORT extern const StringTranslationEntry kRoamingStateTable[];
 
 // A separate translation table for cellular properties that are stored in a

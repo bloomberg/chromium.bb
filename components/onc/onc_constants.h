@@ -142,6 +142,16 @@ ONC_EXPORT extern const char kSIMLockStatus[];
 ONC_EXPORT extern const char kSIMPresent[];
 ONC_EXPORT extern const char kSupportedCarriers[];
 ONC_EXPORT extern const char kSupportNetworkScan[];
+ONC_EXPORT extern const char kTechnologyCdma1Xrtt[];
+ONC_EXPORT extern const char kTechnologyEdge[];
+ONC_EXPORT extern const char kTechnologyEvdo[];
+ONC_EXPORT extern const char kTechnologyGprs[];
+ONC_EXPORT extern const char kTechnologyGsm[];
+ONC_EXPORT extern const char kTechnologyHspa[];
+ONC_EXPORT extern const char kTechnologyHspaPlus[];
+ONC_EXPORT extern const char kTechnologyLte[];
+ONC_EXPORT extern const char kTechnologyLteAdvanced[];
+ONC_EXPORT extern const char kTechnologyUmts[];
 }  // namespace cellular
 
 namespace cellular_provider {

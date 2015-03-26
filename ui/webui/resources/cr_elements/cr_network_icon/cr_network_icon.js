@@ -40,7 +40,7 @@ function getIconTypeFromNetworkType(networkType) {
   else if (networkType == CrOnc.Type.VPN)
     return 'vpn';
 
-  console.error('Unrecognized network type: ' + networkType);
+  console.error('Unrecognized network type for icon: ' + networkType);
   return 'ethernet';
 }
 
@@ -232,6 +232,9 @@ Polymer('cr-network-icon', {
       this.secure = false;
       var oncTechnology = networkState.getCellularTechnology();
       switch (oncTechnology) {
+        case CrOnc.NetworkTechnology.CDMA1XRTT:
+          this.technology = '1x';
+          break;
         case CrOnc.NetworkTechnology.EDGE:
           this.technology = 'edge';
           break;
