@@ -1244,10 +1244,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // new bounds.
   void SchedulePaintBoundsChanged(SchedulePaintType type);
 
-  // Common Paint() code shared by accelerated and non-accelerated code paths to
-  // invoke OnPaint() on the View.
-  void PaintCommon(gfx::Canvas* canvas, const CullSet& cull_set);
-
   // Tree operations -----------------------------------------------------------
 
   // Removes |view| from the hierarchy tree.  If |update_focus_cycle| is true,
