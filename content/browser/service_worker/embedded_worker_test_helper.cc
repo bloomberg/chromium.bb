@@ -18,7 +18,9 @@
 
 namespace content {
 
-EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
+EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
+    const base::FilePath& user_data_directory,
+    int mock_render_process_id)
     : wrapper_(new ServiceWorkerContextWrapper(NULL)),
       next_thread_id_(0),
       mock_render_process_id_(mock_render_process_id),
@@ -26,11 +28,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
   scoped_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
       new MockServiceWorkerDatabaseTaskManager(
           base::MessageLoopProxy::current()));
-  wrapper_->InitInternal(base::FilePath(),
-                         database_task_manager.Pass(),
-                         base::MessageLoopProxy::current(),
-                         NULL,
-                         NULL);
+  wrapper_->InitInternal(user_data_directory, database_task_manager.Pass(),
+                         base::MessageLoopProxy::current(), NULL, NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
   registry()->AddChildProcessSender(mock_render_process_id, this, nullptr);
 }

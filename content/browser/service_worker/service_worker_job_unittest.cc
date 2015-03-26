@@ -106,7 +106,8 @@ class ServiceWorkerJobTest : public testing::Test {
         render_process_id_(kMockRenderProcessId) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(render_process_id_));
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), render_process_id_));
   }
 
   void TearDown() override { helper_.reset(); }
@@ -359,7 +360,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
 class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   explicit FailToStartWorkerTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(mock_render_process_id) {}
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
 
   void OnStartWorker(int embedded_worker_id,
                      int64 service_worker_version_id,
@@ -783,7 +784,7 @@ class UpdateJobTestHelper
   };
 
   UpdateJobTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(mock_render_process_id),
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id),
         update_found_(false) {}
   ~UpdateJobTestHelper() override {
     if (registration_.get())
@@ -1257,7 +1258,7 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
 class EventCallbackHelper : public EmbeddedWorkerTestHelper {
  public:
   explicit EventCallbackHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(mock_render_process_id),
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id),
         install_event_result_(blink::WebServiceWorkerEventResultCompleted),
         activate_event_result_(blink::WebServiceWorkerEventResultCompleted) {}
 

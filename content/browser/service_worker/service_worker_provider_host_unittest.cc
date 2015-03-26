@@ -25,7 +25,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ~ServiceWorkerProviderHostTest() override {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
     context_ = helper_->context();
     script_url_ = GURL("http://www.example.com/service_worker.js");
     registration1_ = new ServiceWorkerRegistration(

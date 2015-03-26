@@ -123,7 +123,8 @@ class GeofencingManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
     service_ = new TestGeofencingService();
     manager_ = new GeofencingManager(helper_->context_wrapper());
     manager_->SetServiceForTesting(service_);

@@ -35,7 +35,7 @@ static const int kRenderProcessId = 1;
 class MessageReceiver : public EmbeddedWorkerTestHelper {
  public:
   MessageReceiver()
-      : EmbeddedWorkerTestHelper(kRenderProcessId),
+      : EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId),
         current_embedded_worker_id_(0) {}
   ~MessageReceiver() override {}
 

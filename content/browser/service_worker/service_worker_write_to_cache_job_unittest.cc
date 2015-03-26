@@ -174,7 +174,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   ~ServiceWorkerWriteToCacheJobTest() override {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(kMockRenderProcessId));
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), kMockRenderProcessId));
 
     // A new unstored registration/version.
     scope_ = GURL("https://host/scope/");

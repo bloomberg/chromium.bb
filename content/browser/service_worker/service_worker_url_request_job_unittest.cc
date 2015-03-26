@@ -113,7 +113,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
     InitializeResourceContext(browser_context_.get());
-    SetUpWithHelper(new EmbeddedWorkerTestHelper(kProcessID));
+    SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath(), kProcessID));
   }
 
   void SetUpWithHelper(EmbeddedWorkerTestHelper* helper) {
@@ -243,7 +243,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
   BlobResponder(int mock_render_process_id,
                 const std::string& blob_uuid,
                 uint64 blob_size)
-      : EmbeddedWorkerTestHelper(mock_render_process_id),
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id),
         blob_uuid_(blob_uuid),
         blob_size_(blob_size) {}
   ~BlobResponder() override {}
@@ -300,9 +300,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
 // Responds to fetch events with a stream.
 class StreamResponder : public EmbeddedWorkerTestHelper {
  public:
-  StreamResponder(int mock_render_process_id,
-                  const GURL& stream_url)
-      : EmbeddedWorkerTestHelper(mock_render_process_id),
+  StreamResponder(int mock_render_process_id, const GURL& stream_url)
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id),
         stream_url_(stream_url) {}
   ~StreamResponder() override {}
 

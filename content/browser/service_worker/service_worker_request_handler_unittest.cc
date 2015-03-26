@@ -38,7 +38,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(kMockRenderProcessId));
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), kMockRenderProcessId));
 
     // A new unstored registration/version.
     registration_ = new ServiceWorkerRegistration(

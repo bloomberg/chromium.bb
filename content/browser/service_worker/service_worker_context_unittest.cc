@@ -79,7 +79,7 @@ void ExpectRegisteredWorkers(
 class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
  public:
   explicit RejectInstallTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(mock_render_process_id) {}
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
 
   void OnInstallEvent(int embedded_worker_id,
                       int request_id) override {
@@ -93,7 +93,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
 class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
  public:
   explicit RejectActivateTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(mock_render_process_id) {}
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
 
   void OnActivateEvent(int embedded_worker_id, int request_id) override {
     SimulateSend(
@@ -125,7 +125,8 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
         render_process_id_(99) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(render_process_id_));
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), render_process_id_));
     helper_->context_wrapper()->AddObserver(this);
   }
 
@@ -519,10 +520,16 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_registration_id, notifications_[1].registration_id);
 }
 
-// TODO(nhiroki): Test this for on-disk storage.
 TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
+
+  // Reinitialize the helper to test on-disk storage.
+  base::ScopedTempDir user_data_directory;
+  ASSERT_TRUE(user_data_directory.CreateUniqueTempDir());
+  helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.path(),
+                                             render_process_id_));
+  helper_->context_wrapper()->AddObserver(this);
 
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
