@@ -213,7 +213,7 @@ void RemoveShaderInfo(int32 id) {
 
 scoped_ptr<IPC::Message> SendAudioHardwareConfig() {
   media::AudioManager* am = media::AudioManager::Get();
-  DCHECK(am->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(am->GetWorkerTaskRunner()->BelongsToCurrentThread());
   return make_scoped_ptr(new ViewMsg_SetAudioHardwareConfig(
       am->GetDefaultOutputStreamParameters(),
       am->GetInputStreamParameters(media::AudioManagerBase::kDefaultDeviceId)));
@@ -2338,7 +2338,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   }
 
   base::PostTaskAndReplyWithResult(
-      media::AudioManager::Get()->GetTaskRunner().get(), FROM_HERE,
+      media::AudioManager::Get()->GetWorkerTaskRunner().get(), FROM_HERE,
       base::Bind(&SendAudioHardwareConfig),
       base::Bind(base::IgnoreResult(&RenderProcessHostImpl::SendHelper),
                  weak_factory_.GetWeakPtr()));
