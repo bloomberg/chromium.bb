@@ -157,9 +157,17 @@ GuestViewContainer.prototype.onElementResize = function(oldWidth, oldHeight,
 GuestViewContainer.prototype.buildParams = function() {
   var params = this.buildContainerParams();
   params['instanceId'] = this.viewInstanceId;
+  // When the GuestViewContainer is not participating in layout (display:none)
+  // then getBoundingClientRect() would report a width and height of 0.
+  // However, in the case where the GuestViewContainer has a fixed size we can
+  // use that value to initially size the guest so as to avoid a relayout of the
+  // on display:block.
+  var css = window.getComputedStyle(this.element, null);
   var elementRect = this.element.getBoundingClientRect();
-  params['elementWidth'] = parseInt(elementRect.width);
-  params['elementHeight'] = parseInt(elementRect.height);
+  params['elementWidth'] = parseInt(elementRect.width) ||
+      parseInt(css.getPropertyValue('width'));
+  params['elementHeight'] = parseInt(elementRect.height) ||
+      parseInt(css.getPropertyValue('height'));
   return params;
 };
 
