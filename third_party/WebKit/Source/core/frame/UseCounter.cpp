@@ -866,6 +866,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case AttrChildChange:
         return "Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.";
 
+    case CSSKeyframesRuleInsertRule:
+        return "'CSSKeyframesRule.insertRule()' is deprecated and will be removed in M45, around August 2015. Please use 'CSSKeyframesRule.appendRule()' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

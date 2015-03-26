@@ -32,7 +32,7 @@ interface CSSKeyframesRule : CSSRule {
     readonly attribute CSSRuleList cssRules;
 
     [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule (unsigned long index);
-    [MeasureAs=CSSKeyframesRuleInsertRule] void insertRule(DOMString rule);
+    [DeprecateAs=CSSKeyframesRuleInsertRule] void insertRule(DOMString rule);
     [ImplementedAs=insertRule, MeasureAs=CSSKeyframesRuleAppendRule] void appendRule(DOMString rule);
     void deleteRule(DOMString key);
     CSSKeyframeRule? findRule(DOMString key);

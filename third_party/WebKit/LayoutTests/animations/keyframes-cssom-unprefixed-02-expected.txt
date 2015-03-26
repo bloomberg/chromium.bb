@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'CSSKeyframesRule.insertRule()' is deprecated and will be removed in M45, around August 2015. Please use 'CSSKeyframesRule.appendRule()' instead.
 Test the CSSOM of @keyframes.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

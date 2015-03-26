@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'CSSKeyframesRule.insertRule()' is deprecated and will be removed in M45, around August 2015. Please use 'CSSKeyframesRule.appendRule()' instead.
 PASS keyframes is an instance of CSSKeyframesRule
 PASS keyframes.insertRule() threw exception TypeError: Failed to execute 'insertRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present..
 PASS keyframes.appendRule() threw exception TypeError: Failed to execute 'appendRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present..

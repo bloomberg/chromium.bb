@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'CSSKeyframesRule.insertRule()' is deprecated and will be removed in M45, around August 2015. Please use 'CSSKeyframesRule.appendRule()' instead.
 Warning this test is running in real-time and may be flaky.
 PASS - "left" property for "box" element at 0.5s saw something close to: 200
 PASS - "top" property for "box" element at 1s saw something close to: 100
