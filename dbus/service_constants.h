@@ -1817,6 +1817,7 @@ const char kPermissionBrokerServicePath[] = "/org/chromium/PermissionBroker";
 const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
 
 // Methods
+const char kCheckPathAccess[] = "CheckPathAccess";
 const char kRequestPathAccess[] = "RequestPathAccess";
 const char kRequestTcpPortAccess[] = "RequestTcpPortAccess";
 const char kRequestUdpPortAccess[] = "RequestUdpPortAccess";
