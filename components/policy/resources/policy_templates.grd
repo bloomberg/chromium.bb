@@ -6,7 +6,60 @@ templates and will be translated for each locale. -->
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
   <outputs>
-    <output filename="app/policy/linux/examples/chrome.json" type="json" lang="en" />
+    <output filename="app/policy/common/html/am/chrome_policy_list.html" type="doc" lang="am" />
+    <output filename="app/policy/common/html/ar/chrome_policy_list.html" type="doc" lang="ar" />
+    <output filename="app/policy/common/html/bg/chrome_policy_list.html" type="doc" lang="bg" />
+    <output filename="app/policy/common/html/bn/chrome_policy_list.html" type="doc" lang="bn" />
+    <output filename="app/policy/common/html/ca/chrome_policy_list.html" type="doc" lang="ca" />
+    <output filename="app/policy/common/html/cs/chrome_policy_list.html" type="doc" lang="cs" />
+    <output filename="app/policy/common/html/da/chrome_policy_list.html" type="doc" lang="da" />
+    <output filename="app/policy/common/html/de/chrome_policy_list.html" type="doc" lang="de" />
+    <output filename="app/policy/common/html/el/chrome_policy_list.html" type="doc" lang="el" />
+    <output filename="app/policy/common/html/en-GB/chrome_policy_list.html" type="doc" lang="en-GB" />
+    <output filename="app/policy/common/html/en-US/chrome_policy_list.html" type="doc" lang="en" />
+    <output filename="app/policy/common/html/es/chrome_policy_list.html" type="doc" lang="es" />
+    <output filename="app/policy/common/html/es-419/chrome_policy_list.html" type="doc" lang="es-419" />
+    <output filename="app/policy/common/html/et/chrome_policy_list.html" type="doc" lang="et" />
+    <output filename="app/policy/common/html/fa/chrome_policy_list.html" type="doc" lang="fa" />
+    <output filename="app/policy/common/html/fi/chrome_policy_list.html" type="doc" lang="fi" />
+    <output filename="app/policy/common/html/fil/chrome_policy_list.html" type="doc" lang="fil" />
+    <output filename="app/policy/common/html/fr/chrome_policy_list.html" type="doc" lang="fr" />
+    <output filename="app/policy/common/html/gu/chrome_policy_list.html" type="doc" lang="gu" />
+    <output filename="app/policy/common/html/he/chrome_policy_list.html" type="doc" lang="he" />
+    <output filename="app/policy/common/html/hi/chrome_policy_list.html" type="doc" lang="hi" />
+    <output filename="app/policy/common/html/hr/chrome_policy_list.html" type="doc" lang="hr" />
+    <output filename="app/policy/common/html/hu/chrome_policy_list.html" type="doc" lang="hu" />
+    <output filename="app/policy/common/html/id/chrome_policy_list.html" type="doc" lang="id" />
+    <output filename="app/policy/common/html/it/chrome_policy_list.html" type="doc" lang="it" />
+    <output filename="app/policy/common/html/ja/chrome_policy_list.html" type="doc" lang="ja" />
+    <output filename="app/policy/common/html/kn/chrome_policy_list.html" type="doc" lang="kn" />
+    <output filename="app/policy/common/html/ko/chrome_policy_list.html" type="doc" lang="ko" />
+    <output filename="app/policy/common/html/lt/chrome_policy_list.html" type="doc" lang="lt" />
+    <output filename="app/policy/common/html/lv/chrome_policy_list.html" type="doc" lang="lv" />
+    <output filename="app/policy/common/html/ml/chrome_policy_list.html" type="doc" lang="ml" />
+    <output filename="app/policy/common/html/mr/chrome_policy_list.html" type="doc" lang="mr" />
+    <output filename="app/policy/common/html/ms/chrome_policy_list.html" type="doc" lang="ms" />
+    <output filename="app/policy/common/html/nl/chrome_policy_list.html" type="doc" lang="nl" />
+    <output filename="app/policy/common/html/nb/chrome_policy_list.html" type="doc" lang="no" />
+    <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
+    <output filename="app/policy/common/html/pl/chrome_policy_list.html" type="doc" lang="pl" />
+    <output filename="app/policy/common/html/pt-BR/chrome_policy_list.html" type="doc" lang="pt-BR" />
+    <output filename="app/policy/common/html/pt-PT/chrome_policy_list.html" type="doc" lang="pt-PT" />
+    <output filename="app/policy/common/html/ro/chrome_policy_list.html" type="doc" lang="ro" />
+    <output filename="app/policy/common/html/ru/chrome_policy_list.html" type="doc" lang="ru" />
+    <output filename="app/policy/common/html/sk/chrome_policy_list.html" type="doc" lang="sk" />
+    <output filename="app/policy/common/html/sl/chrome_policy_list.html" type="doc" lang="sl" />
+    <output filename="app/policy/common/html/sr/chrome_policy_list.html" type="doc" lang="sr" />
+    <output filename="app/policy/common/html/sv/chrome_policy_list.html" type="doc" lang="sv" />
+    <output filename="app/policy/common/html/sw/chrome_policy_list.html" type="doc" lang="sw" />
+    <output filename="app/policy/common/html/ta/chrome_policy_list.html" type="doc" lang="ta" />
+    <output filename="app/policy/common/html/te/chrome_policy_list.html" type="doc" lang="te" />
+    <output filename="app/policy/common/html/th/chrome_policy_list.html" type="doc" lang="th" />
+    <output filename="app/policy/common/html/tr/chrome_policy_list.html" type="doc" lang="tr" />
+    <output filename="app/policy/common/html/uk/chrome_policy_list.html" type="doc" lang="uk" />
+    <output filename="app/policy/common/html/vi/chrome_policy_list.html" type="doc" lang="vi" />
+    <output filename="app/policy/common/html/zh-CN/chrome_policy_list.html" type="doc" lang="zh-CN" />
+    <output filename="app/policy/common/html/zh-TW/chrome_policy_list.html" type="doc" lang="zh-TW" />
     <if expr="is_win">
       <output filename="app/policy/windows/examples/chrome.reg" type="reg" lang="en" />
       <output filename="app/policy/windows/admx/chrome.admx" type="admx" lang="en" />
@@ -121,62 +174,65 @@ templates and will be translated for each locale. -->
       <output filename="app/policy/windows/adm/zh-CN/chrome.adm" type="adm" lang="zh-CN" />
       <output filename="app/policy/windows/adm/zh-TW/chrome.adm" type="adm" lang="zh-TW" />
     </if>
-
-    <output filename="app/policy/common/html/am/chrome_policy_list.html" type="doc" lang="am" />
-    <output filename="app/policy/common/html/ar/chrome_policy_list.html" type="doc" lang="ar" />
-    <output filename="app/policy/common/html/bg/chrome_policy_list.html" type="doc" lang="bg" />
-    <output filename="app/policy/common/html/bn/chrome_policy_list.html" type="doc" lang="bn" />
-    <output filename="app/policy/common/html/ca/chrome_policy_list.html" type="doc" lang="ca" />
-    <output filename="app/policy/common/html/cs/chrome_policy_list.html" type="doc" lang="cs" />
-    <output filename="app/policy/common/html/da/chrome_policy_list.html" type="doc" lang="da" />
-    <output filename="app/policy/common/html/de/chrome_policy_list.html" type="doc" lang="de" />
-    <output filename="app/policy/common/html/el/chrome_policy_list.html" type="doc" lang="el" />
-    <output filename="app/policy/common/html/en-GB/chrome_policy_list.html" type="doc" lang="en-GB" />
-    <output filename="app/policy/common/html/en-US/chrome_policy_list.html" type="doc" lang="en" />
-    <output filename="app/policy/common/html/es/chrome_policy_list.html" type="doc" lang="es" />
-    <output filename="app/policy/common/html/es-419/chrome_policy_list.html" type="doc" lang="es-419" />
-    <output filename="app/policy/common/html/et/chrome_policy_list.html" type="doc" lang="et" />
-    <output filename="app/policy/common/html/fa/chrome_policy_list.html" type="doc" lang="fa" />
-    <output filename="app/policy/common/html/fi/chrome_policy_list.html" type="doc" lang="fi" />
-    <output filename="app/policy/common/html/fil/chrome_policy_list.html" type="doc" lang="fil" />
-    <output filename="app/policy/common/html/fr/chrome_policy_list.html" type="doc" lang="fr" />
-    <output filename="app/policy/common/html/gu/chrome_policy_list.html" type="doc" lang="gu" />
-    <output filename="app/policy/common/html/he/chrome_policy_list.html" type="doc" lang="he" />
-    <output filename="app/policy/common/html/hi/chrome_policy_list.html" type="doc" lang="hi" />
-    <output filename="app/policy/common/html/hr/chrome_policy_list.html" type="doc" lang="hr" />
-    <output filename="app/policy/common/html/hu/chrome_policy_list.html" type="doc" lang="hu" />
-    <output filename="app/policy/common/html/id/chrome_policy_list.html" type="doc" lang="id" />
-    <output filename="app/policy/common/html/it/chrome_policy_list.html" type="doc" lang="it" />
-    <output filename="app/policy/common/html/ja/chrome_policy_list.html" type="doc" lang="ja" />
-    <output filename="app/policy/common/html/kn/chrome_policy_list.html" type="doc" lang="kn" />
-    <output filename="app/policy/common/html/ko/chrome_policy_list.html" type="doc" lang="ko" />
-    <output filename="app/policy/common/html/lt/chrome_policy_list.html" type="doc" lang="lt" />
-    <output filename="app/policy/common/html/lv/chrome_policy_list.html" type="doc" lang="lv" />
-    <output filename="app/policy/common/html/ml/chrome_policy_list.html" type="doc" lang="ml" />
-    <output filename="app/policy/common/html/mr/chrome_policy_list.html" type="doc" lang="mr" />
-    <output filename="app/policy/common/html/ms/chrome_policy_list.html" type="doc" lang="ms" />
-    <output filename="app/policy/common/html/nl/chrome_policy_list.html" type="doc" lang="nl" />
-    <output filename="app/policy/common/html/nb/chrome_policy_list.html" type="doc" lang="no" />
-    <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
-    <output filename="app/policy/common/html/pl/chrome_policy_list.html" type="doc" lang="pl" />
-    <output filename="app/policy/common/html/pt-BR/chrome_policy_list.html" type="doc" lang="pt-BR" />
-    <output filename="app/policy/common/html/pt-PT/chrome_policy_list.html" type="doc" lang="pt-PT" />
-    <output filename="app/policy/common/html/ro/chrome_policy_list.html" type="doc" lang="ro" />
-    <output filename="app/policy/common/html/ru/chrome_policy_list.html" type="doc" lang="ru" />
-    <output filename="app/policy/common/html/sk/chrome_policy_list.html" type="doc" lang="sk" />
-    <output filename="app/policy/common/html/sl/chrome_policy_list.html" type="doc" lang="sl" />
-    <output filename="app/policy/common/html/sr/chrome_policy_list.html" type="doc" lang="sr" />
-    <output filename="app/policy/common/html/sv/chrome_policy_list.html" type="doc" lang="sv" />
-    <output filename="app/policy/common/html/sw/chrome_policy_list.html" type="doc" lang="sw" />
-    <output filename="app/policy/common/html/ta/chrome_policy_list.html" type="doc" lang="ta" />
-    <output filename="app/policy/common/html/te/chrome_policy_list.html" type="doc" lang="te" />
-    <output filename="app/policy/common/html/th/chrome_policy_list.html" type="doc" lang="th" />
-    <output filename="app/policy/common/html/tr/chrome_policy_list.html" type="doc" lang="tr" />
-    <output filename="app/policy/common/html/uk/chrome_policy_list.html" type="doc" lang="uk" />
-    <output filename="app/policy/common/html/vi/chrome_policy_list.html" type="doc" lang="vi" />
-    <output filename="app/policy/common/html/zh-CN/chrome_policy_list.html" type="doc" lang="zh-CN" />
-    <output filename="app/policy/common/html/zh-TW/chrome_policy_list.html" type="doc" lang="zh-TW" />
-
+    <if expr="is_linux">
+      <output filename="app/policy/linux/examples/chrome.json" type="json" lang="en" />
+    </if>
+    <if expr="is_android">
+      <output filename="app/policy/android/values-am-v21/restriction_values.xml" type="android_policy" lang="am" />
+      <output filename="app/policy/android/values-ar-v21/restriction_values.xml" type="android_policy" lang="ar" />
+      <output filename="app/policy/android/values-bg-v21/restriction_values.xml" type="android_policy" lang="bg" />
+      <output filename="app/policy/android/values-bn-v21/restriction_values.xml" type="android_policy" lang="bn" />
+      <output filename="app/policy/android/values-ca-v21/restriction_values.xml" type="android_policy" lang="ca" />
+      <output filename="app/policy/android/values-cs-v21/restriction_values.xml" type="android_policy" lang="cs" />
+      <output filename="app/policy/android/values-da-v21/restriction_values.xml" type="android_policy" lang="da" />
+      <output filename="app/policy/android/values-de-v21/restriction_values.xml" type="android_policy" lang="de" />
+      <output filename="app/policy/android/values-el-v21/restriction_values.xml" type="android_policy" lang="el" />
+      <output filename="app/policy/android/values-en-rGB-v21/restriction_values.xml" type="android_policy" lang="en-GB" />
+      <output filename="app/policy/android/values-v21/restriction_values.xml" type="android_policy" lang="en" />
+      <output filename="app/policy/android/values-es-rES-v21/restriction_values.xml" type="android_policy" lang="es" />
+      <output filename="app/policy/android/values-es-v21/restriction_values.xml" type="android_policy" lang="es-419" />
+      <output filename="app/policy/android/values-et-v21/restriction_values.xml" type="android_policy" lang="et" />
+      <output filename="app/policy/android/values-fa-v21/restriction_values.xml" type="android_policy" lang="fa" />
+      <output filename="app/policy/android/values-fi-v21/restriction_values.xml" type="android_policy" lang="fi" />
+      <output filename="app/policy/android/values-fil-v21/restriction_values.xml" type="android_policy" lang="fil" />
+      <output filename="app/policy/android/values-fr-v21/restriction_values.xml" type="android_policy" lang="fr" />
+      <output filename="app/policy/android/values-gu-v21/restriction_values.xml" type="android_policy" lang="gu" />
+      <output filename="app/policy/android/values-he-v21/restriction_values.xml" type="android_policy" lang="he" />
+      <output filename="app/policy/android/values-hi-v21/restriction_values.xml" type="android_policy" lang="hi" />
+      <output filename="app/policy/android/values-hr-v21/restriction_values.xml" type="android_policy" lang="hr" />
+      <output filename="app/policy/android/values-hu-v21/restriction_values.xml" type="android_policy" lang="hu" />
+      <output filename="app/policy/android/values-id-v21/restriction_values.xml" type="android_policy" lang="id" />
+      <output filename="app/policy/android/values-it-v21/restriction_values.xml" type="android_policy" lang="it" />
+      <output filename="app/policy/android/values-ja-v21/restriction_values.xml" type="android_policy" lang="ja" />
+      <output filename="app/policy/android/values-kn-v21/restriction_values.xml" type="android_policy" lang="kn" />
+      <output filename="app/policy/android/values-ko-v21/restriction_values.xml" type="android_policy" lang="ko" />
+      <output filename="app/policy/android/values-lt-v21/restriction_values.xml" type="android_policy" lang="lt" />
+      <output filename="app/policy/android/values-lv-v21/restriction_values.xml" type="android_policy" lang="lv" />
+      <output filename="app/policy/android/values-ml-v21/restriction_values.xml" type="android_policy" lang="ml" />
+      <output filename="app/policy/android/values-mr-v21/restriction_values.xml" type="android_policy" lang="mr" />
+      <output filename="app/policy/android/values-ms-v21/restriction_values.xml" type="android_policy" lang="ms" />
+      <output filename="app/policy/android/values-nl-v21/restriction_values.xml" type="android_policy" lang="nl" />
+      <output filename="app/policy/android/values-nb-v21/restriction_values.xml" type="android_policy" lang="no" />
+      <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
+      <output filename="app/policy/android/values-pl-v21/restriction_values.xml" type="android_policy" lang="pl" />
+      <output filename="app/policy/android/values-pt-rBR-v21/restriction_values.xml" type="android_policy" lang="pt-BR" />
+      <output filename="app/policy/android/values-pt-rPT-v21/restriction_values.xml" type="android_policy" lang="pt-PT" />
+      <output filename="app/policy/android/values-ro-v21/restriction_values.xml" type="android_policy" lang="ro" />
+      <output filename="app/policy/android/values-ru-v21/restriction_values.xml" type="android_policy" lang="ru" />
+      <output filename="app/policy/android/values-sk-v21/restriction_values.xml" type="android_policy" lang="sk" />
+      <output filename="app/policy/android/values-sl-v21/restriction_values.xml" type="android_policy" lang="sl" />
+      <output filename="app/policy/android/values-sr-v21/restriction_values.xml" type="android_policy" lang="sr" />
+      <output filename="app/policy/android/values-sv-v21/restriction_values.xml" type="android_policy" lang="sv" />
+      <output filename="app/policy/android/values-sw-v21/restriction_values.xml" type="android_policy" lang="sw" />
+      <output filename="app/policy/android/values-ta-v21/restriction_values.xml" type="android_policy" lang="ta" />
+      <output filename="app/policy/android/values-te-v21/restriction_values.xml" type="android_policy" lang="te" />
+      <output filename="app/policy/android/values-th-v21/restriction_values.xml" type="android_policy" lang="th" />
+      <output filename="app/policy/android/values-tr-v21/restriction_values.xml" type="android_policy" lang="tr" />
+      <output filename="app/policy/android/values-uk-v21/restriction_values.xml" type="android_policy" lang="uk" />
+      <output filename="app/policy/android/values-vi-v21/restriction_values.xml" type="android_policy" lang="vi" />
+      <output filename="app/policy/android/values-zh-rCN-v21/restriction_values.xml" type="android_policy" lang="zh-CN" />
+      <output filename="app/policy/android/values-zh-rTW-v21/restriction_values.xml" type="android_policy" lang="zh-TW" />
+    </if>
     <if expr="is_macosx">
       <output filename="app/policy/mac/app-Manifest.plist" type="plist" lang="en" />
 
@@ -239,8 +295,7 @@ templates and will be translated for each locale. -->
 
       <!-- Generate the sample iOS plist when building the templates for the Mac. -->
       <output filename="app/policy/ios/chrome_policy.plist" type="ios_plist" lang="en" />
-   </if>
-
+    </if>
   </outputs>
   <translations>
     <file path="policy_templates_am.xtb" lang="am" />

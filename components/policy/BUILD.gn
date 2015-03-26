@@ -47,9 +47,6 @@ if (enable_configuration_policy) {
   # build puts everything into the following directory. We do the same for now.
   policy_gen_dir = "$root_gen_dir/policy"
 
-  # Directory for generating Android App Restrictions resources
-  android_resources_gen_dir = "$policy_gen_dir/android_resources"
-
   # This protobuf is equivalent to chrome_settings.proto but shares messages
   # for policies of the same type, so that less classes have to be generated
   # and compiled.
@@ -62,10 +59,7 @@ if (enable_configuration_policy) {
   constants_header_path = "$policy_gen_dir/policy_constants.h"
   constants_source_path = "$policy_gen_dir/policy_constants.cc"
   protobuf_decoder_path = "$policy_gen_dir/cloud_policy_generated.cc"
-  app_restrictions_path =
-      "$android_resources_gen_dir/xml-v21/app_restrictions.xml"
-  app_resources_path =
-      "$android_resources_gen_dir/values-v21/restriction_values.xml"
+  app_restrictions_path = "$policy_gen_dir/app_restrictions.xml"
 
   action("cloud_policy_code_generate") {
     script = "tools/generate_policy_source.py"
@@ -86,14 +80,10 @@ if (enable_configuration_policy) {
       chrome_settings_proto_path,
       cloud_policy_proto_path,
       app_restrictions_path,
-      app_resources_path,
     ]
 
-    if (current_os != "android") {
-      outputs -= [
-        app_restrictions_path,
-        app_resources_path,
-      ]
+    if (target_os != "android") {
+      outputs -= [ app_restrictions_path ]
     }
 
     args = [
@@ -109,12 +99,39 @@ if (enable_configuration_policy) {
           rebase_path(protobuf_decoder_path, root_build_dir),
       "--app-restrictions-definition=" +
           rebase_path(app_restrictions_path, root_build_dir),
-      "--app-restrictions-resources=" +
-          rebase_path(app_resources_path, root_build_dir),
-      current_os,
+      target_os,
       chromeos_flag,
       rebase_path("resources/policy_templates.json", root_build_dir),
     ]
+  }
+
+  grit("policy_templates") {
+    import("resources/policy_templates.gni")
+    source = "resources/policy_templates.grd"
+    use_qualified_include = true
+    depend_on_stamp = true
+    output_dir = "$root_gen_dir/chrome"
+    outputs = policy_templates_doc_outputs
+    if (is_android) {
+      outputs += policy_templates_android_outputs
+    }
+    if (is_linux) {
+      outputs += policy_templates_linux_outputs
+    }
+    if (is_mac) {
+      outputs += policy_templates_mac_outputs
+
+      # TODO(knn) : Move this out once more targets use this.
+      if (is_chrome_branded) {
+        mac_bundle_id = "com.google.Chrome"
+      } else {
+        mac_bundle_id = "org.chromium.Chromium"
+      }
+      defines = [ "mac_bundle_id=$mac_bundle_id" ]
+    }
+    if (is_win) {
+      outputs += policy_templates_windows_outputs
+    }
   }
 
   proto_library("cloud_policy_proto_generated_compile") {
@@ -220,4 +237,4 @@ if (enable_configuration_policy) {
     ]
   }
 }
-#TODO(GYP) policy templates, chrome_manifest_bundle
+#TODO(GYP) chrome_manifest_bundle
