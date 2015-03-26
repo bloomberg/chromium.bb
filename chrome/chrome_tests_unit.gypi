@@ -59,6 +59,7 @@
       'browser/chrome_elf_init_unittest_win.cc',
       'browser/chrome_process_singleton_win_unittest.cc',
       'browser/command_updater_unittest.cc',
+      'browser/component_updater/test/chrome_component_updater_configurator_unittest.cc',
       'browser/component_updater/test/cld_component_installer_unittest.cc',
       'browser/component_updater/test/component_updater_service_unittest.cc',
       'browser/component_updater/test/supervised_user_whitelist_installer_unittest.cc',
