@@ -736,10 +736,9 @@ client_set_input(struct client *cl)
 }
 
 struct client *
-client_create(int x, int y, int width, int height)
+create_client(void)
 {
 	struct client *client;
-	struct surface *surface;
 
 	wl_log_set_handler_client(log_handler);
 
@@ -752,7 +751,8 @@ client_create(int x, int y, int width, int height)
 
 	/* setup registry so we can bind to interfaces */
 	client->wl_registry = wl_display_get_registry(client->wl_display);
-	wl_registry_add_listener(client->wl_registry, &registry_listener, client);
+	wl_registry_add_listener(client->wl_registry, &registry_listener,
+				 client);
 
 	/* this roundtrip makes sure we have all globals and we bound to them */
 	client_roundtrip(client);
@@ -777,6 +777,17 @@ client_create(int x, int y, int width, int height)
 
 	/* must have seat set */
 	assert(client->input);
+
+	return client;
+}
+
+struct client *
+client_create(int x, int y, int width, int height)
+{
+	struct client *client;
+	struct surface *surface;
+
+	client = create_client();
 
 	/* initialize the client surface */
 	surface = xzalloc(sizeof *surface);

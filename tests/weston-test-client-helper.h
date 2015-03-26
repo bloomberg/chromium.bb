@@ -144,6 +144,9 @@ xzalloc(size_t size)
 }
 
 struct client *
+create_client(void);
+
+struct client *
 client_create(int x, int y, int width, int height);
 
 struct wl_buffer *
