@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string16.h"
 
 namespace extensions {
 
@@ -29,6 +30,9 @@ struct PrinterProviderPrintJob {
   // the the printer's id within the extension (as reported via
   // chrome.printerProvider.onGetPrintersRequested event callback).
   std::string printer_id;
+
+  // The print job title.
+  base::string16 job_title;
 
   // The print job ticket.
   std::string ticket_json;

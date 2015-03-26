@@ -43,6 +43,9 @@ namespace printerProvider {
     // ID of the printer which should handle the job.
     DOMString printerId;
 
+    // The print job title.
+    DOMString title;
+
     // Print ticket in
     // <a href="https://developers.google.com/cloud-print/docs/cdd#cjt">
     // CJT format</a>.

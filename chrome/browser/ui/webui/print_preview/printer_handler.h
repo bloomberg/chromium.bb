@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class DictionaryValue;
@@ -61,6 +62,7 @@ class PrinterHandler {
   // Starts a print request.
   // |destination_id|: The printer to which print job should be sent.
   // |capability|: Capability reported by the printer.
+  // |job_title|: The  title used for print job.
   // |ticket_json|: The print job ticket as JSON string.
   // |page_size|: The document page size.
   // |print_data|: The document bytes to print.
@@ -69,6 +71,7 @@ class PrinterHandler {
   virtual void StartPrint(
       const std::string& destination_id,
       const std::string& capability,
+      const base::string16& job_title,
       const std::string& ticket_json,
       const gfx::Size& page_size,
       const scoped_refptr<base::RefCountedMemory>& print_data,

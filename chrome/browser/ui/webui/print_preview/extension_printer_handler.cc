@@ -108,6 +108,7 @@ void ExtensionPrinterHandler::StartGetCapability(
 void ExtensionPrinterHandler::StartPrint(
     const std::string& destination_id,
     const std::string& capability,
+    const base::string16& job_title,
     const std::string& ticket_json,
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedMemory>& print_data,
@@ -115,6 +116,7 @@ void ExtensionPrinterHandler::StartPrint(
   scoped_ptr<extensions::PrinterProviderPrintJob> print_job(
       new extensions::PrinterProviderPrintJob());
   print_job->printer_id = destination_id;
+  print_job->job_title = job_title;
   print_job->ticket_json = ticket_json;
 
   cloud_devices::CloudDeviceDescription printer_description;

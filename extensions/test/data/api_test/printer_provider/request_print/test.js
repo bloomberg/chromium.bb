@@ -64,6 +64,8 @@ chrome.test.sendMessage('loaded', function(test) {
             if (content)
               chrome.test.assertEq('bytes', content);
 
+            chrome.test.assertEq('Print job', job.title);
+
             chrome.test.succeed();
           });
 

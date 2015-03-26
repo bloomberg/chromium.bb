@@ -915,9 +915,10 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
     EnsureExtensionPrinterHandlerSet();
     extension_printer_handler_->StartPrint(
-        destination_id, capabilities, print_ticket, gfx::Size(width, height),
-        data, base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
-                         base::Unretained(this)));
+        destination_id, capabilities, title, print_ticket,
+        gfx::Size(width, height), data,
+        base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
+                   base::Unretained(this)));
     return;
   }
 

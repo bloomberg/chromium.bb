@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
@@ -106,6 +107,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
       const PrinterProviderAPI::PrintCallback& callback) {
     extensions::PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
+    job.job_title = base::ASCIIToUTF16("Print job");
     job.ticket_json = "{}";
     job.content_type = "application/pdf";
     const unsigned char kDocumentBytes[] = {'b', 'y', 't', 'e', 's'};
@@ -130,6 +132,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     }
 
     job.printer_id = extension_id + ":printer_id";
+    job.job_title = base::ASCIIToUTF16("Print job");
     job.ticket_json = "{}";
     job.content_type = "image/pwg-raster";
 

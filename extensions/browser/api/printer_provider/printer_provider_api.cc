@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
@@ -510,6 +511,7 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   }
 
   print_job.content_type = job.content_type;
+  print_job.title = base::UTF16ToUTF8(job.job_title);
   int request_id = pending_print_requests_[extension_id].Add(job, callback);
 
   scoped_ptr<base::ListValue> internal_args(new base::ListValue);

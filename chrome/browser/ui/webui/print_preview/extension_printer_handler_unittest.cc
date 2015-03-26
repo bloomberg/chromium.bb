@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
@@ -512,10 +514,11 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, kEmptyPrintTicket, gfx::Size(100, 100),
-      print_data,
+      kPrinterId, kPdfSupportedPrinter, title, kEmptyPrintTicket,
+      gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -527,6 +530,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
+  EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   EXPECT_TRUE(print_job->document_path.empty());
@@ -549,10 +553,11 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, kEmptyPrintTicket, gfx::Size(100, 100),
-      print_data,
+      kPrinterId, kPdfSupportedPrinter, title, kEmptyPrintTicket,
+      gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -575,9 +580,10 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kAllContentTypesSupportedPrinter, kEmptyPrintTicket,
+      kPrinterId, kAllContentTypesSupportedPrinter, title, kEmptyPrintTicket,
       gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
@@ -591,6 +597,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
+  EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   EXPECT_TRUE(print_job->document_path.empty());
@@ -613,10 +620,11 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, kEmptyPrintTicket,
-      gfx::Size(100, 50), print_data,
+      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
+      kEmptyPrintTicket, gfx::Size(100, 50), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -642,6 +650,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
+  EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   EXPECT_FALSE(print_job->document_bytes);
@@ -665,9 +674,10 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinter, kPrintTicketWithDuplex,
+      kPrinterId, kPWGRasterOnlyPrinter, title, kPrintTicketWithDuplex,
       gfx::Size(100, 50), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
@@ -694,6 +704,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
+  EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kPrintTicketWithDuplex, print_job->ticket_json);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   EXPECT_FALSE(print_job->document_bytes);
@@ -717,10 +728,11 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, kEmptyPrintTicket,
-      gfx::Size(100, 50), print_data,
+      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
+      kEmptyPrintTicket, gfx::Size(100, 50), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -746,10 +758,11 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, "{}" /* ticket */,
-      gfx::Size(100, 100), print_data,
+      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
+      "{}" /* ticket */, gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
@@ -768,10 +781,11 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
   scoped_refptr<base::RefCountedString> print_data(
       new base::RefCountedString());
   print_data->data() = "print data, PDF";
+  base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
+      kEmptyPrintTicket, gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 
@@ -59,6 +60,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   // TODO(tbarzic): It might make sense to have the strings in a single struct.
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
+                  const base::string16& job_title,
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedMemory>& print_data,
