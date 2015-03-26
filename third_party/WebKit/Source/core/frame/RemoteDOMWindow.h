@@ -80,7 +80,6 @@ public:
     int requestAnimationFrame(RequestAnimationFrameCallback*) override;
     int webkitRequestAnimationFrame(RequestAnimationFrameCallback*) override;
     void cancelAnimationFrame(int id) override;
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&) override;
     String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
     String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
 

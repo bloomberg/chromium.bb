@@ -28,6 +28,7 @@
 #define LocalDOMWindow_h
 
 #include "core/CoreExport.h"
+#include "core/dom/MessagePort.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
@@ -50,6 +51,7 @@ class EventQueue;
 class ExceptionState;
 class FrameConsole;
 class IntRect;
+class MessageEvent;
 class Page;
 class PostMessageTimer;
 class ScriptCallStack;
@@ -144,7 +146,7 @@ public:
     int requestAnimationFrame(RequestAnimationFrameCallback*) override;
     int webkitRequestAnimationFrame(RequestAnimationFrameCallback*) override;
     void cancelAnimationFrame(int id) override;
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&) override;
+    void schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent>, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace);
     String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
     String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
 

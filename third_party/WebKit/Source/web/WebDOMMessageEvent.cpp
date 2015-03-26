@@ -47,13 +47,14 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
 {
     ASSERT(m_private.get());
     ASSERT(isMessageEvent());
-    LocalDOMWindow* window = 0;
-    // FIXME: Figure out if this is the right thing to do.
+    DOMWindow* window = nullptr;
+    // TODO(alexmos): Figure out if this is the right thing to do.
     if (sourceFrame)
-        window = toWebLocalFrameImpl(sourceFrame)->frame()->localDOMWindow();
+        window = toCoreFrame(sourceFrame)->domWindow();
     OwnPtrWillBeRawPtr<MessagePortArray> ports = nullptr;
-    if (sourceFrame)
-        ports = MessagePort::toMessagePortArray(window->document(), webChannels);
+    // TODO(alexmos): make ports work properly with OOPIF.
+    if (sourceFrame && sourceFrame->isWebLocalFrame())
+        ports = MessagePort::toMessagePortArray(toLocalDOMWindow(window)->document(), webChannels);
     unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports.release());
 }
 

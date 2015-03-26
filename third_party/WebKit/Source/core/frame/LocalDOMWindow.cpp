@@ -31,7 +31,6 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
@@ -44,9 +43,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/editing/Editor.h"
@@ -75,12 +72,10 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/MixedContentChecker.h"
 #include "core/loader/SinkDocument.h"
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/page/Chrome.h"
@@ -148,13 +143,10 @@ void LocalDOMWindow::WindowFrameObserver::contextDestroyed()
 class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
-    PostMessageTimer(LocalDOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
+    PostMessageTimer(LocalDOMWindow& window, PassRefPtrWillBeRawPtr<MessageEvent> event, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, SecurityOrigin* targetOrigin, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
+        , m_event(event)
         , m_window(&window)
-        , m_message(message)
-        , m_origin(sourceOrigin)
-        , m_source(source)
-        , m_channels(channels)
         , m_targetOrigin(targetOrigin)
         , m_stackTrace(stackTrace)
         , m_userGestureToken(userGestureToken)
@@ -162,20 +154,15 @@ public:
         m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(executionContext(), "postMessage");
     }
 
-    PassRefPtrWillBeRawPtr<MessageEvent> event()
-    {
-        return MessageEvent::create(m_channels.release(), m_message, m_origin, String(), m_source.get());
-
-    }
+    PassRefPtrWillBeRawPtr<MessageEvent> event() const { return m_event.get(); }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
-    LocalDOMWindow* source() const { return m_source.get(); }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        visitor->trace(m_event);
         visitor->trace(m_window);
-        visitor->trace(m_source);
         visitor->trace(m_stackTrace);
         SuspendableTimer::trace(visitor);
     }
@@ -189,11 +176,8 @@ private:
         InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
+    RefPtrWillBeMember<MessageEvent> m_event;
     RawPtrWillBeMember<LocalDOMWindow> m_window;
-    RefPtr<SerializedScriptValue> m_message;
-    String m_origin;
-    RefPtrWillBeMember<LocalDOMWindow> m_source;
-    OwnPtr<MessagePortChannelArray> m_channels;
     RefPtr<SecurityOrigin> m_targetOrigin;
     RefPtrWillBeMember<ScriptCallStack> m_stackTrace;
     RefPtr<UserGestureToken> m_userGestureToken;
@@ -739,52 +723,10 @@ Navigator* LocalDOMWindow::navigator() const
     return m_navigator.get();
 }
 
-void LocalDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)
+void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> event, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace)
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return;
-
-    Document* sourceDocument = source->document();
-
-    // Compute the target origin.  We need to do this synchronously in order
-    // to generate the SyntaxError exception correctly.
-    RefPtr<SecurityOrigin> target;
-    if (targetOrigin == "/") {
-        if (!sourceDocument)
-            return;
-        target = sourceDocument->securityOrigin();
-    } else if (targetOrigin != "*") {
-        target = SecurityOrigin::createFromString(targetOrigin);
-        // It doesn't make sense target a postMessage at a unique origin
-        // because there's no way to represent a unique origin in a string.
-        if (target->isUnique()) {
-            exceptionState.throwDOMException(SyntaxError, "Invalid target origin '" + targetOrigin + "' in a call to 'postMessage'.");
-            return;
-        }
-    }
-
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
-    if (exceptionState.hadException())
-        return;
-
-    // Capture the source of the message.  We need to do this synchronously
-    // in order to capture the source of the message correctly.
-    if (!sourceDocument)
-        return;
-    String sourceOrigin = sourceDocument->securityOrigin()->toString();
-
-    if (MixedContentChecker::isMixedContent(sourceDocument->securityOrigin(), document()->url()))
-        UseCounter::count(document(), UseCounter::PostMessageFromSecureToInsecure);
-    else if (MixedContentChecker::isMixedContent(document()->securityOrigin(), sourceDocument->url()))
-        UseCounter::count(document(), UseCounter::PostMessageFromInsecureToSecure);
-
-    // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
-    RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = nullptr;
-    if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
-        stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
-
     // Schedule the message.
-    OwnPtrWillBeRawPtr<PostMessageTimer> timer = adoptPtrWillBeNoop(new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release(), UserGestureIndicator::currentToken()));
+    OwnPtrWillBeRawPtr<PostMessageTimer> timer = adoptPtrWillBeNoop(new PostMessageTimer(*this, event, source, target, stackTrace, UserGestureIndicator::currentToken()));
     timer->startOneShot(0, FROM_HERE);
     timer->suspendIfNeeded();
     m_postMessageTimers.add(timer.release());
@@ -798,15 +740,6 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
     }
 
     RefPtrWillBeRawPtr<MessageEvent> event = timer->event();
-
-    // Give the embedder a chance to intercept this postMessage because this
-    // LocalDOMWindow might be a proxy for another in browsers that support
-    // postMessage calls across WebKit instances.
-    LocalFrame* source = timer->source()->document() ? timer->source()->document()->frame() : nullptr;
-    if (frame()->client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get(), source)) {
-        m_postMessageTimers.remove(timer);
-        return;
-    }
 
     UserGestureIndicator gestureIndicator(timer->userGestureToken());
 

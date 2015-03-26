@@ -344,11 +344,6 @@ void RemoteDOMWindow::cancelAnimationFrame(int id)
     ASSERT_NOT_REACHED();
 }
 
-void RemoteDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&)
-{
-    // FIXME: Implement.
-}
-
 String RemoteDOMWindow::sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
 {
     return String();
