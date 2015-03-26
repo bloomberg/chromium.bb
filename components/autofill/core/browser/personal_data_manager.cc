@@ -504,7 +504,7 @@ bool PersonalDataManager::ImportFormData(
 }
 
 void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
-  if (!database_.get())
+  if (is_off_the_record_ || !database_.get())
     return;
 
   CreditCard* credit_card = GetCreditCardByGUID(data_model.guid());
