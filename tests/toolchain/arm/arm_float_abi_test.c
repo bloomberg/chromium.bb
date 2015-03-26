@@ -9,9 +9,8 @@
  * We call some undefined functions (extern), compile this to a .o
  * and disassemble it to check for key assembly instructions.
  *
- * These checks are encoded as "CHECK: regex", and the regexes must be
- * matched in-order in the disassembled .o file.  An external tool
- * "file-check" will do the checks provided this source file and the .o.
+ * This test uses LLVM's FileCheck utility. For more information,
+ * please refer to http://llvm.org/docs/CommandGuide/FileCheck.html
  */
 
 
@@ -20,24 +19,24 @@
 extern void pass_floats(float x);
 
 void call_floats(float a, float b) {
-  /* CHECK: call_floats */
-  /* CHECK: .*vmov\.f32.*s0,.*s1 */
+  // CHECK-LABEL: call_floats
+  // CHECK-NEXT: {{.*}}vmov.f32{{.*}}s0,{{.*}}s1
   pass_floats(b);
 }
 
 extern void pass_doubles(double x);
 
 void call_doubles(double a, double b) {
-  /* CHECK: call_doubles */
-  /* CHECK: .*vmov\.f64.*d0,.*d1 */
+  // CHECK-LABEL: call_doubles
+  // CHECK-NEXT: {{.*}}vmov.f64{{.*}}d0,{{.*}}d1
   pass_doubles(b);
 }
 
 extern void pass_mixed(int x, double y);
 
 void call_mixed(int a, float b, double c, char d) {
-  /* CHECK: call_mixed */
-  /* CHECK: .*vmov\.f64.*d0,.*d1 */
+  // CHECK-LABEL: call_mixed
+  // CHECK-NEXT: {{.*}}vmov.f64{{.*}}d0,{{.*}}d1
   pass_mixed(a, c);
 }
 
@@ -85,13 +84,13 @@ void call_non_homogeneous(non_homogeneous_agg_t s,
 /* Returning. */
 
 float return_float(float a, float b) {
-  /* CHECK: return_float */
-  /* CHECK: .*vmov\.f32.*s0,.*s1 */
+  // CHECK-LABEL: return_float
+  // CHECK-NEXT: {{.*}}vmov.f32{{.*}}s0,{{.*}}s1
   return b;
 }
 
 double return_double(double a, double b) {
-  /* CHECK: return_double */
-  /* CHECK: .*vmov\.f64.*d0,.*d1 */
+  // CHECK-LABEL: return_double
+  // CHECK-NEXT: {{.*}}vmov.f64{{.*}}d0,{{.*}}d1
   return b;
 }

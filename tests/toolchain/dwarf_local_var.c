@@ -6,9 +6,8 @@
 
 /* Test that dwarf info for local variables is preserved after linking.
  *
- * We have checks encoded as "CHECK: regex", and the regexes must be
- * matched in-order in the disassembled file.  An external tool
- * "file-check" will do the checks provided this source file and the binary.
+ * This test uses LLVM's FileCheck utility. For more information,
+ * please refer to http://llvm.org/docs/CommandGuide/FileCheck.html
  */
 
 #include <stdlib.h>
@@ -16,17 +15,17 @@
 extern int bar(int x) __attribute__((noinline));
 
 __attribute__((noinline)) int foo(int dwarf_test_param) {
-  /* CHECK: DW_TAG_formal_parameter */
-  /* CHECK: DW_AT_name.* dwarf_test_param */
-  /* CHECK: DW_AT_decl_line.* 18 */
+  // CHECK-DAG: DW_TAG_formal_parameter
+  // CHECK: DW_AT_name{{.*}} dwarf_test_param
+  // CHECK-DAG: DW_AT_decl_line{{.*}} 17
   return bar(dwarf_test_param);
 }
 
 int main(int argc, char* argv[]) {
   int dwarf_test_local;
-  /* CHECK: DW_TAG_variable */
-  /* CHECK: DW_AT_name.* dwarf_test_local */
-  /* CHECK: DW_AT_decl_line.* 26 */
+  // CHECK-DAG: DW_TAG_variable
+  // CHECK: DW_AT_name{{.*}} dwarf_test_local
+  // CHECK-DAG: DW_AT_decl_line{{.*}} 25
 
   /* Try to trick the optimizer to preserve dwarf_test_local. */
   if (argc != 55) {

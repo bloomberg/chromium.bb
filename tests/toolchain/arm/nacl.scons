@@ -9,7 +9,8 @@ Import('env')
 
 # Only test ARM.  Since we are only generating a .o file, do not run
 # in pexe mode, only run as a nonpexe_test.
-if (not env.Bit('build_arm') or env.Bit('pnacl_generate_pexe')):
+if ((not env.Bit('build_arm') or env.Bit('pnacl_generate_pexe'))
+    or not (env.Bit('bitcode') or env.Bit('nacl_clang'))):
   Return()
 
 # Force native .o generation and optimization (so that checks are cleaner).
@@ -26,10 +27,8 @@ node = env.CommandTestFileDumpCheck('arm_float_abi_test.out',
                                     arm_float_abi_obj,
                                     env.File('arm_float_abi_test.c'),
                                     '-d')
-# Hard-float ABI is used on TOOLCHAIN_FEATURE_VERSION >= 9 for Non-SFI target.
-is_arm_float_abi_test_broken = (env.Bit('nonsfi_nacl')
-                                and env['TOOLCHAIN_FEATURE_VERSION'] < 9)
+
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'nonpexe_tests', 'toolchain_tests'],
                        'run_arm_float_abi_test',
-                       is_broken=is_arm_float_abi_test_broken)
+                       is_broken=env.Bit('nonsfi_nacl'))

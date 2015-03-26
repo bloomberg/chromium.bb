@@ -479,7 +479,8 @@ debug_env.Append(CFLAGS=['-g', '-O0'])
 debug_env.Append(CCFLAGS=['-g', '-O0'])
 debug_env.Append(LINKFLAGS=['-O0'])
 # This requires preserving nonstable bitcode debug metadata.
-if debug_env.AllowNonStableBitcode():
+if ((env.Bit('bitcode') and debug_env.AllowNonStableBitcode())
+    or env.Bit('nacl_clang')):
   dwarf_local_var_nexe = debug_env.ComponentProgram(
       'dwarf_local_var',
       ['dwarf_local_var.c',
@@ -499,29 +500,27 @@ if debug_env.AllowNonStableBitcode():
   debug_env.AddNodeToTestSuite(node,
                                ['small_tests', 'toolchain_tests'],
                                'run_dwarf_local_var_objdump_test')
-  if env.Bit('bitcode') or env.Bit('nacl_clang'):
-    dwarf_method_ptr_nexe = debug_env.ComponentProgram(
-        'dwarf_method_ptr',
-        ['dwarf_method_ptr.cc'],
-        EXTRA_LIBS=['${NONIRT_LIBS}'])
+  dwarf_method_ptr_nexe = debug_env.ComponentProgram(
+      'dwarf_method_ptr',
+      ['dwarf_method_ptr.cc'],
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-    # Sanity-check -- make sure it runs.
-    node = debug_env.CommandSelLdrTestNacl('dwarf_method_ptr_run.out',
-                                           dwarf_method_ptr_nexe,
-                                           exit_status=42)
-    debug_env.AddNodeToTestSuite(node,
-                                 ['toolchain_tests', 'small_tests'],
-                                 'run_dwarf_method_ptr_run_test')
+  # Sanity-check -- make sure it runs.
+  node = debug_env.CommandSelLdrTestNacl('dwarf_method_ptr_run.out',
+                                         dwarf_method_ptr_nexe,
+                                         exit_status=42)
+  debug_env.AddNodeToTestSuite(node,
+                               ['toolchain_tests', 'small_tests'],
+                               'run_dwarf_method_ptr_run_test')
 
-    file = debug_env.File('dwarf_method_ptr.cc')
-    node = debug_env.CommandTestFileDumpCheck('dwarf_method_ptr_objdump.out',
-                                              dwarf_method_ptr_nexe,
-                                              file,
-                                              '-W',
-                                              use_llvm_filecheck=True)
-    debug_env.AddNodeToTestSuite(node,
-                                 ['small_tests', 'toolchain_tests'],
-                                 'run_dwarf_method_ptr_objdump_test')
+  file = debug_env.File('dwarf_method_ptr.cc')
+  node = debug_env.CommandTestFileDumpCheck('dwarf_method_ptr_objdump.out',
+                                            dwarf_method_ptr_nexe,
+                                            file,
+                                            '-W')
+  debug_env.AddNodeToTestSuite(node,
+                               ['small_tests', 'toolchain_tests'],
+                               'run_dwarf_method_ptr_objdump_test')
 
 if env.Bit('nacl_glibc'):
   nexe = env.ComponentProgram('byteswap64', 'byteswap64.c',
