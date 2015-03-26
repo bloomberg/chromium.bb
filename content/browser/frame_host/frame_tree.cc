@@ -46,6 +46,39 @@ bool CreateProxyForSiteInstance(const scoped_refptr<SiteInstance>& instance,
   return true;
 }
 
+// Helper function used with FrameTree::ForEach() for retrieving the total
+// loading progress and number of frames in a frame tree.
+bool CollectLoadProgress(double* progress,
+                         int* frame_count,
+                         FrameTreeNode* node) {
+  // Ignore the current frame if it has not started loading.
+  double frame_progress = node->loading_progress();
+  if (frame_progress == FrameTreeNode::kLoadingProgressNotStarted)
+    return true;
+
+  // Collect progress.
+  *progress += frame_progress;
+  (*frame_count)++;
+  return true;
+}
+
+// Helper function used with FrameTree::ForEach() to reset the load progress.
+bool ResetNodeLoadProgress(FrameTreeNode* node) {
+  node->set_loading_progress(FrameTreeNode::kLoadingProgressNotStarted);
+  return true;
+}
+
+// Helper function used with FrameTree::ForEach() to check if at least one of
+// the nodes is loading.
+bool IsNodeLoading(bool* is_loading, FrameTreeNode* node) {
+  if (node->IsLoading()) {
+    // There is at least one node loading, so abort traversal.
+    *is_loading = true;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 FrameTree::FrameTree(Navigator* navigator,
@@ -310,6 +343,26 @@ void FrameTree::FrameRemoved(FrameTreeNode* frame) {
   // Notify observers of the frame removal.
   if (!on_frame_removed_.is_null())
     on_frame_removed_.Run(frame->current_frame_host());
+}
+
+double FrameTree::GetLoadProgress() {
+  double progress = 0.0;
+  int frame_count = 0;
+
+  ForEach(base::Bind(&CollectLoadProgress, &progress, &frame_count));
+  if (frame_count != 0)
+    progress /= frame_count;
+  return progress;
+}
+
+void FrameTree::ResetLoadProgress() {
+  ForEach(base::Bind(&ResetNodeLoadProgress));
+}
+
+bool FrameTree::IsLoading() {
+  bool is_loading = false;
+  ForEach(base::Bind(&IsNodeLoading, &is_loading));
+  return is_loading;
 }
 
 }  // namespace content

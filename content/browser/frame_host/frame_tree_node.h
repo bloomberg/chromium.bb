@@ -30,6 +30,15 @@ class RenderFrameHostImpl;
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
+  // These values indicate the loading progress status. The minimum progress
+  // value matches what Blink's ProgressTracker has traditionally used for a
+  // minimum progress value.
+  // TODO(fdegans): Move these values to the implementation when the relevant
+  // IPCs are moved from WebContentsImpl to RenderFrameHost.
+  static const double kLoadingProgressNotStarted;
+  static const double kLoadingProgressMinimum;
+  static const double kLoadingProgressDone;
+
   // Returns the FrameTreeNode with the given global |frame_tree_node_id|,
   // regardless of which FrameTree it is in.
   static FrameTreeNode* GloballyFindByID(int64 frame_tree_node_id);
@@ -122,11 +131,16 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool IsDescendantOf(FrameTreeNode* other) const;
 
-  // Returns true if this frame is in a loading state.
+  // Returns true if this node is in a loading state.
   bool IsLoading() const;
 
-  // Returns the loading progress of this frame.
-  double GetLoadingProgress() const;
+  // Sets this node's loading progress (from 0 to 1).
+  void set_loading_progress(double loading_progress) {
+    loading_progress_ = loading_progress;
+  }
+
+  // Returns this node's loading progress.
+  double loading_progress() const { return loading_progress_; }
 
  private:
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
@@ -177,6 +191,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // used.  |effective_sandbox_flags_| is updated with any pending sandbox
   // flags when a navigation for this frame commits.
   SandboxFlags effective_sandbox_flags_;
+
+  // Used to track this node's loading progress (from 0 to 1).
+  double loading_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

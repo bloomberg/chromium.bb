@@ -28,6 +28,10 @@ base::LazyInstance<FrameTreeNodeIDMap> g_frame_tree_node_id_map =
 
 }  // namespace
 
+const double FrameTreeNode::kLoadingProgressNotStarted = 0.0;
+const double FrameTreeNode::kLoadingProgressMinimum = 0.1;
+const double FrameTreeNode::kLoadingProgressDone = 1.0;
+
 int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
 
 // static
@@ -55,7 +59,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(NULL),
       replication_state_(name),
-      effective_sandbox_flags_(SandboxFlags::NONE) {
+      effective_sandbox_flags_(SandboxFlags::NONE),
+      loading_progress_(kLoadingProgressNotStarted) {
   std::pair<FrameTreeNodeIDMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(
           std::make_pair(frame_tree_node_id_, this));
@@ -152,14 +157,6 @@ bool FrameTreeNode::IsLoading() const {
   if (pending_frame_host && pending_frame_host->is_loading())
     return true;
   return current_frame_host->is_loading();
-}
-
-double FrameTreeNode::GetLoadingProgress() const {
-  RenderFrameHostImpl* current_frame_host =
-      render_manager_.current_frame_host();
-
-  DCHECK(current_frame_host);
-  return current_frame_host->loading_progress();
 }
 
 bool FrameTreeNode::CommitPendingSandboxFlags() {

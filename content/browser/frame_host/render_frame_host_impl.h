@@ -90,15 +90,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public BrowserAccessibilityDelegate {
  public:
-  // These values indicate the loading progress status. The minimum progress
-  // value matches what Blink's ProgressTracker has traditionally used for a
-  // minimum progress value.
-  // TODO(fdegans): Move these values to the implementation when the relevant
-  // IPCs are moved from WebContentsImpl to RenderFrameHost.
-  static const double kLoadingProgressNotStarted;
-  static const double kLoadingProgressMinimum;
-  static const double kLoadingProgressDone;
-
   // Keeps track of the state of the RenderFrameHostImpl, particularly with
   // respect to swap out.
   enum RenderFrameHostImplState {
@@ -217,16 +208,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // FrameTreeNode. The proper way to check whether a frame is loading is to
   // call FrameTreeNode::IsLoading.
   bool is_loading() const { return is_loading_; }
-
-  // Sets this RenderFrameHost's loading progress (from 0 to 1).
-  void set_loading_progress(double loading_progress) {
-    loading_progress_ = loading_progress;
-  }
-
-  // Returns this RenderFrameHost's loading progress. This is only used by
-  // FrameTreeNode. The proper way to check a frame loading progress is to call
-  // FrameTreeNode::GetLoadingProgress.
-  double loading_progress() const { return loading_progress_; }
 
   // This returns the RenderFrameHost's owned RenderWidgetHost if it has one,
   // or else it returns nullptr.
@@ -672,9 +653,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
   bool is_loading_;
-
-  // Used to track this RenderFrameHost's loading progress (from 0 to 1).
-  double loading_progress_;
 
   // Used to swap out or shut down this RFH when the unload event is taking too
   // long to execute, depending on the number of active frames in the

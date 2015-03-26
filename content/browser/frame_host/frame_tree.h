@@ -130,6 +130,15 @@ class CONTENT_EXPORT FrameTree {
   // the listener installed by SetFrameRemoveListener.
   void FrameRemoved(FrameTreeNode* frame);
 
+  // Returns this FrameTree's total load progress.
+  double GetLoadProgress();
+
+  // Resets the load progress on all nodes in this FrameTree.
+  void ResetLoadProgress();
+
+  // Returns true if at least one of the nodes in this FrameTree is loading.
+  bool IsLoading();
+
  private:
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
   typedef std::multimap<int, RenderViewHostImpl*> RenderViewHostMultiMap;

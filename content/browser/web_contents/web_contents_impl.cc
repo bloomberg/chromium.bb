@@ -165,40 +165,6 @@ bool CollectSites(BrowserContext* context,
   return true;
 }
 
-// Helper function used with FrameTree::ForEach() for retrieving the total
-// loading progress and number of frames in a frame tree.
-bool CollectLoadProgress(double* progress,
-                         int* frame_count,
-                         FrameTreeNode* node) {
-  // Ignore the current frame if it has not started loading.
-  double frame_progress = node->GetLoadingProgress();
-  if (frame_progress == RenderFrameHostImpl::kLoadingProgressNotStarted)
-    return true;
-
-  // Collect progress.
-  *progress += node->GetLoadingProgress();
-  (*frame_count)++;
-  return true;
-}
-
-// Helper function used with FrameTree::ForEach() to check if at least one of
-// the nodes is loading.
-bool IsNodeLoading(bool* is_loading, FrameTreeNode* node) {
-  if (node->IsLoading()) {
-    // There is at least one node loading, so abort traversal.
-    *is_loading = true;
-    return false;
-  }
-  return true;
-}
-
-// Helper function used with FrameTree::ForEach() to reset the load progress.
-bool ResetLoadProgress(FrameTreeNode* node) {
-  node->current_frame_host()->set_loading_progress(
-      RenderFrameHostImpl::kLoadingProgressNotStarted);
-  return true;
-}
-
 bool ForEachFrameInternal(
     const base::Callback<void(RenderFrameHost*)>& on_frame,
     FrameTreeNode* node) {
@@ -236,12 +202,6 @@ void SetAccessibilityModeOnFrame(AccessibilityMode mode,
   static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
 }
 
-// Returns true if at least one of the nodes in the |frame_tree| is loading.
-bool IsFrameTreeLoading(FrameTree& frame_tree) {
-  bool is_loading = false;
-  frame_tree.ForEach(base::Bind(&IsNodeLoading, &is_loading));
-  return is_loading;
-}
 
 }  // namespace
 
@@ -2937,14 +2897,16 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
     return;
   }
 
-  if (!IsFrameTreeLoading(frame_tree_))
+  if (!frame_tree_.IsLoading())
     DidStartLoading(rfh, to_different_document);
 
   rfh->set_is_loading(true);
-  rfh->set_loading_progress(RenderFrameHostImpl::kLoadingProgressMinimum);
+
+  FrameTreeNode* ftn = rfh->frame_tree_node();
+  ftn->set_loading_progress(FrameTreeNode::kLoadingProgressMinimum);
 
   // Notify the RenderFrameHostManager of the event.
-  rfh->frame_tree_node()->render_manager()->OnDidStartLoading();
+  ftn->render_manager()->OnDidStartLoading();
 
   SendLoadProgressChanged();
 }
@@ -2973,7 +2935,9 @@ void WebContentsImpl::OnDidStopLoading() {
   }
 
   rfh->set_is_loading(false);
-  rfh->set_loading_progress(RenderFrameHostImpl::kLoadingProgressDone);
+
+  FrameTreeNode* ftn = rfh->frame_tree_node();
+  ftn->set_loading_progress(FrameTreeNode::kLoadingProgressDone);
 
   // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
   // fixed.
@@ -2995,9 +2959,9 @@ void WebContentsImpl::OnDidStopLoading() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "465796 WebContentsImpl::OnDidStopLoading::NotifyRenderManager"));
   // Notify the RenderFrameHostManager of the event.
-  rfh->frame_tree_node()->render_manager()->OnDidStopLoading();
+  ftn->render_manager()->OnDidStopLoading();
 
-  if (!IsFrameTreeLoading(frame_tree_)) {
+  if (!frame_tree_.IsLoading()) {
     // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
     // fixed.
     tracked_objects::ScopedTracker tracking_profile4(
@@ -3019,8 +2983,9 @@ void WebContentsImpl::OnDidChangeLoadProgress(double load_progress) {
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  FrameTreeNode* ftn = rfh->frame_tree_node();
 
-  rfh->set_loading_progress(load_progress);
+  ftn->set_loading_progress(load_progress);
 
   // We notify progress change immediately for the first and last updates.
   // Also, since the message loop may be pretty busy when a page is loaded, it
@@ -3498,13 +3463,8 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
 
 void WebContentsImpl::SendLoadProgressChanged() {
   loading_last_progress_update_ = base::TimeTicks::Now();
-  double progress = 0.0;
-  int frame_count = 0;
+  double progress = frame_tree_.GetLoadProgress();
 
-  frame_tree_.ForEach(
-      base::Bind(&CollectLoadProgress, &progress, &frame_count));
-  if (frame_count != 0)
-    progress /= frame_count;
   DCHECK_LE(progress, 1.0);
 
   if (progress <= loading_total_progress_)
@@ -3516,7 +3476,7 @@ void WebContentsImpl::SendLoadProgressChanged() {
 }
 
 void WebContentsImpl::ResetLoadProgressState() {
-  frame_tree_.ForEach(base::Bind(&ResetLoadProgress));
+  frame_tree_.ResetLoadProgress();
   loading_total_progress_ = 0.0;
   loading_weak_factory_.InvalidateWeakPtrs();
   loading_last_progress_update_ = base::TimeTicks();
