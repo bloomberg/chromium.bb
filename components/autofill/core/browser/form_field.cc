@@ -106,6 +106,40 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 }
 
 // static
+FormField::ParseNameLabelResult FormField::ParseNameAndLabelSeparately(
+    AutofillScanner* scanner,
+    const base::string16& pattern,
+    int match_type,
+    AutofillField** match) {
+  if (scanner->IsEnd())
+    return RESULT_MATCH_NONE;
+
+  AutofillField* cur_match = nullptr;
+  size_t saved_cursor = scanner->SaveCursor();
+  bool parsed_name = ParseFieldSpecifics(scanner,
+                                         pattern,
+                                         match_type & ~MATCH_LABEL,
+                                         &cur_match);
+  scanner->RewindTo(saved_cursor);
+  bool parsed_label = ParseFieldSpecifics(scanner,
+                                          pattern,
+                                          match_type & ~MATCH_NAME,
+                                          &cur_match);
+  if (parsed_name && parsed_label) {
+    if (match)
+      *match = cur_match;
+    return RESULT_MATCH_NAME_LABEL;
+  }
+
+  scanner->RewindTo(saved_cursor);
+  if (parsed_name)
+    return RESULT_MATCH_NAME;
+  if (parsed_label)
+    return RESULT_MATCH_LABEL;
+  return RESULT_MATCH_NONE;
+}
+
+// static
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
                                 AutofillField** match) {
   return ParseFieldSpecifics(scanner,

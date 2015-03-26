@@ -55,6 +55,14 @@ class FormField {
     MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_TEXT,
   };
 
+  // When parsing a field's label and name separately with a given pattern:
+  enum ParseNameLabelResult {
+    RESULT_MATCH_NONE,       // No match with the label or name.
+    RESULT_MATCH_LABEL,      // Only the label matches the pattern.
+    RESULT_MATCH_NAME,       // Only the name matches the pattern.
+    RESULT_MATCH_NAME_LABEL  // Name and label both match the pattern.
+  };
+
   // Only derived classes may instantiate.
   FormField() {}
 
@@ -73,6 +81,17 @@ class FormField {
                                   const base::string16& pattern,
                                   int match_type,
                                   AutofillField** match);
+
+  // Like ParseFieldSpecifics(), but applies |pattern| against the name and
+  // label of the current field separately. If the return value is
+  // RESULT_MATCH_NAME_LABEL, then |scanner| advances and |match| is filled if
+  // it is non-NULL. Otherwise |scanner| does not advance and |match| does not
+  // change.
+  static ParseNameLabelResult ParseNameAndLabelSeparately(
+      AutofillScanner* scanner,
+      const base::string16& pattern,
+      int match_type,
+      AutofillField** match);
 
   // Attempts to parse a field with an empty label.  Returns true
   // on success and fills |match| with a pointer to the field.

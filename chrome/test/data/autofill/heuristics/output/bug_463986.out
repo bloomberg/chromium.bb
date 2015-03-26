@@ -3,8 +3,8 @@ NAME_FIRST | givenName | Salutation and Given Name |  | salutation_1-default
 NAME_LAST | familyName | Family Name |  | salutation_1-default
 COMPANY_NAME | company | Company * |  | salutation_1-default
 ADDRESS_HOME_LINE1 | street | Street |  | salutation_1-default
-ADDRESS_HOME_CITY | zip | Zip and City |  | salutation_1-default
-ADDRESS_HOME_ZIP | city | Zip and City |  | salutation_1-default
+ADDRESS_HOME_ZIP | zip | Zip and City |  | salutation_1-default
+ADDRESS_HOME_CITY | city | Zip and City |  | salutation_1-default
 ADDRESS_HOME_COUNTRY | country | Country | US | salutation_1-default
 ADDRESS_HOME_STATE | state | State | CA | salutation_1-default
 EMAIL_ADDRESS | email | Email |  | salutation_1-default

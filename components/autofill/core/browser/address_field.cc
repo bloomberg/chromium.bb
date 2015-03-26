@@ -20,6 +20,26 @@ using base::UTF8ToUTF16;
 
 namespace autofill {
 
+namespace {
+
+bool SetFieldAndAdvanceCursor(AutofillScanner* scanner, AutofillField** field) {
+  *field = scanner->Cursor();
+  scanner->Advance();
+  return true;
+}
+
+}  // namespace
+
+// Some sites use type="tel" for zip fields (to get a numerical input).
+// http://crbug.com/426958
+const int AddressField::kZipCodeMatchType =
+    MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER;
+
+// Select fields are allowed here.  This occurs on top-100 site rediff.com.
+const int AddressField::kCityMatchType = MATCH_DEFAULT | MATCH_SELECT;
+
+const int AddressField::kStateMatchType = MATCH_DEFAULT | MATCH_SELECT;
+
 scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
@@ -37,9 +57,7 @@ scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   while (!scanner->IsEnd()) {
     const size_t cursor = scanner->SaveCursor();
     if (address_field->ParseAddressLines(scanner) ||
-        address_field->ParseCity(scanner) ||
-        address_field->ParseState(scanner) ||
-        address_field->ParseZipCode(scanner) ||
+        address_field->ParseCityStateZipCode(scanner) ||
         address_field->ParseCountry(scanner) ||
         address_field->ParseCompany(scanner)) {
       has_trailing_non_labeled_fields = false;
@@ -216,39 +234,29 @@ bool AddressField::ParseCountry(AutofillScanner* scanner) {
 }
 
 bool AddressField::ParseZipCode(AutofillScanner* scanner) {
-  // Parse a zip code.  On some UK pages (e.g. The China Shop2.html) this
-  // is called a "post code".
   if (zip_)
     return false;
 
-  // Some sites use type="tel" for zip fields (to get a numerical input).
-  // http://crbug.com/426958
   if (!ParseFieldSpecifics(scanner,
                            UTF8ToUTF16(kZipCodeRe),
-                           MATCH_DEFAULT | MATCH_TELEPHONE,
+                           kZipCodeMatchType,
                            &zip_)) {
     return false;
   }
 
   // Look for a zip+4, whose field name will also often contain
   // the substring "zip".
-  ParseFieldSpecifics(scanner,
-                      UTF8ToUTF16(kZip4Re),
-                      MATCH_DEFAULT | MATCH_TELEPHONE,
-                      &zip4_);
+  ParseFieldSpecifics(scanner, UTF8ToUTF16(kZip4Re), kZipCodeMatchType, &zip4_);
   return true;
 }
 
 bool AddressField::ParseCity(AutofillScanner* scanner) {
-  // Parse a city name.  Some UK pages (e.g. The China Shop2.html) use
-  // the term "town".
   if (city_)
     return false;
 
-  // Select fields are allowed here.  This occurs on top-100 site rediff.com.
   return ParseFieldSpecifics(scanner,
                              UTF8ToUTF16(kCityRe),
-                             MATCH_DEFAULT | MATCH_SELECT,
+                             kCityMatchType,
                              &city_);
 }
 
@@ -258,8 +266,113 @@ bool AddressField::ParseState(AutofillScanner* scanner) {
 
   return ParseFieldSpecifics(scanner,
                              UTF8ToUTF16(kStateRe),
-                             MATCH_DEFAULT | MATCH_SELECT,
+                             kStateMatchType,
                              &state_);
+}
+
+bool AddressField::ParseCityStateZipCode(AutofillScanner* scanner) {
+  // Simple cases.
+  if (scanner->IsEnd())
+    return false;
+  if (city_ && state_ && zip_)
+    return false;
+  if (state_ && zip_)
+    return ParseCity(scanner);
+  if (city_ && zip_)
+    return ParseState(scanner);
+  if (city_ && state_)
+    return ParseZipCode(scanner);
+
+  // Check for matches to both name and label.
+  ParseNameLabelResult city_result = ParseNameAndLabelForCity(scanner);
+  if (city_result == RESULT_MATCH_NAME_LABEL)
+    return true;
+  ParseNameLabelResult state_result = ParseNameAndLabelForState(scanner);
+  if (state_result == RESULT_MATCH_NAME_LABEL)
+    return true;
+  ParseNameLabelResult zip_result = ParseNameAndLabelForZipCode(scanner);
+  if (zip_result == RESULT_MATCH_NAME_LABEL)
+    return true;
+
+  // Check if there is only one potential match.
+  bool maybe_city = city_result != RESULT_MATCH_NONE;
+  bool maybe_state = state_result != RESULT_MATCH_NONE;
+  bool maybe_zip = zip_result != RESULT_MATCH_NONE;
+  if (maybe_city && !maybe_state && !maybe_zip)
+    return SetFieldAndAdvanceCursor(scanner, &city_);
+  if (maybe_state && !maybe_city && !maybe_zip)
+    return SetFieldAndAdvanceCursor(scanner, &state_);
+  if (maybe_zip && !maybe_city && !maybe_state)
+    return ParseZipCode(scanner);
+
+  // Otherwise give name priority over label.
+  if (city_result == RESULT_MATCH_NAME)
+    return SetFieldAndAdvanceCursor(scanner, &city_);
+  if (state_result == RESULT_MATCH_NAME)
+    return SetFieldAndAdvanceCursor(scanner, &state_);
+  if (zip_result == RESULT_MATCH_NAME)
+    return ParseZipCode(scanner);
+
+  if (city_result == RESULT_MATCH_LABEL)
+    return SetFieldAndAdvanceCursor(scanner, &city_);
+  if (state_result == RESULT_MATCH_LABEL)
+    return SetFieldAndAdvanceCursor(scanner, &state_);
+  if (zip_result == RESULT_MATCH_LABEL)
+    return ParseZipCode(scanner);
+
+  return false;
+}
+
+AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForZipCode(
+    AutofillScanner* scanner) {
+  if (zip_)
+    return RESULT_MATCH_NONE;
+
+  ParseNameLabelResult result = ParseNameAndLabelSeparately(
+      scanner, UTF8ToUTF16(kZipCodeRe), kZipCodeMatchType, &zip_);
+
+  if (result != RESULT_MATCH_NAME_LABEL || scanner->IsEnd())
+    return result;
+
+  size_t saved_cursor = scanner->SaveCursor();
+  bool found_non_zip4 = ParseCity(scanner);
+  if (found_non_zip4)
+    city_ = nullptr;
+  scanner->RewindTo(saved_cursor);
+  if (!found_non_zip4) {
+    found_non_zip4 = ParseState(scanner);
+    if (found_non_zip4)
+      state_ = nullptr;
+    scanner->RewindTo(saved_cursor);
+  }
+
+  if (!found_non_zip4) {
+    // Look for a zip+4, whose field name will also often contain
+    // the substring "zip".
+    ParseFieldSpecifics(scanner,
+                        UTF8ToUTF16(kZip4Re),
+                        kZipCodeMatchType,
+                        &zip4_);
+  }
+  return result;
+}
+
+AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForCity(
+    AutofillScanner* scanner) {
+  if (city_)
+    return RESULT_MATCH_NONE;
+
+  return ParseNameAndLabelSeparately(
+      scanner, UTF8ToUTF16(kCityRe), kCityMatchType, &city_);
+}
+
+AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForState(
+    AutofillScanner* scanner) {
+  if (state_)
+    return RESULT_MATCH_NONE;
+
+  return ParseNameAndLabelSeparately(
+      scanner, UTF8ToUTF16(kStateRe), kStateMatchType, &state_);
 }
 
 }  // namespace autofill
