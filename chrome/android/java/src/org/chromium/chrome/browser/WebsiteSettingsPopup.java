@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -164,6 +165,10 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
 
     private static final int MAX_TABLET_DIALOG_WIDTH_DP = 400;
 
+    private static final char FIRST_UNICODE_WHITESPACE = '\u2000';
+    private static final char FINAL_UNICODE_WHITESPACE = '\u200F';
+    private static final char UNICODE_NBSP = '\u00A0';
+
     private final Context mContext;
     private final Profile mProfile;
     private final WebContents mWebContents;
@@ -289,7 +294,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         }
         mSecurityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
 
-        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
+        String displayUrl = prepareUrlForDisplay(mFullUrl);
+        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(displayUrl);
         OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
                 mSecurityLevel, mIsInternalPage, true);
         mUrlTitle.setText(urlBuilder);
@@ -297,6 +303,26 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // Set the URL connection message now, and the URL after layout (so it
         // can calculate its ideal height).
         mUrlConnectionMessage.setText(getUrlConnectionMessage());
+    }
+
+    /**
+     * Percent-encodes suspicious Unicode whitespace characters in a URL so that it can be safely
+     * displayed.
+     */
+    public static String prepareUrlForDisplay(String urlStr) {
+        StringBuilder urlBuilder = new StringBuilder();
+        for (int i = 0; i < urlStr.length(); i++) {
+            char c = urlStr.charAt(i);
+            if ((c >= FIRST_UNICODE_WHITESPACE
+                        && c <= FINAL_UNICODE_WHITESPACE)
+                    || c == ' '
+                    || c == UNICODE_NBSP) {
+                urlBuilder.append(Uri.encode(Character.toString(c)));
+            } else {
+                urlBuilder.append(c);
+            }
+        }
+        return urlBuilder.toString();
     }
 
     /**
