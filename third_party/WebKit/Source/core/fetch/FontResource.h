@@ -62,7 +62,7 @@ public:
     bool isCORSFailed() const { return m_corsFailed; }
 
     bool ensureCustomFontData();
-    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal);
+    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = FontOrientation::Horizontal);
 
 protected:
     virtual bool isSafeToUnlock() const override;

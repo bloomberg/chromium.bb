@@ -449,7 +449,7 @@ FontBaseline InlineFlowBox::dominantBaseline() const
 {
     // Use "central" (Ideographic) baseline if writing-mode is vertical-* and text-orientation is not sideways-*.
     // http://dev.w3.org/csswg/css-writing-modes-3/#text-baselines
-    if (!isHorizontal() && layoutObject().style(isFirstLineStyle())->fontDescription().orientation() == Vertical)
+    if (!isHorizontal() && layoutObject().style(isFirstLineStyle())->fontDescription().isVerticalAnyUpright())
         return IdeographicBaseline;
     return AlphabeticBaseline;
 }

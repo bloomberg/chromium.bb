@@ -120,7 +120,7 @@ void LayoutTextCombine::updateFont()
     if (!(style()->textDecorationsInEffect() & (TextDecorationUnderline | TextDecorationOverline)))
         emWidth *= textCombineMargin;
 
-    description.setOrientation(Horizontal); // We are going to draw combined text horizontally.
+    description.setOrientation(FontOrientation::Horizontal); // We are going to draw combined text horizontally.
     m_combinedTextWidth = originalFont().width(run);
 
     FontSelector* fontSelector = style()->font().fontSelector();

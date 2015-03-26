@@ -28,7 +28,25 @@
 
 namespace blink {
 
-enum FontOrientation { Horizontal, Vertical };
+enum class FontOrientation {
+    // Horizontal; i.e., writing-mode: horizontal-tb
+    Horizontal = 0,
+    // Baseline is vertical but use rotated horizontal typography; i.e., writing-mode: vertical-*; text-orientation: sideways-*
+    VerticalRotated = 1,
+    // Vertical with upright CJK and rotated non-CJK; i.e., writing-mode: vertical-*, text-orientation: mixed
+    VerticalMixed = 2,
+    // Vertical with all upright; i.e., writing-mode: vertical-*, text-orientation: upright
+    VerticalUpright = 3,
+
+    BitCount = 2,
+
+    AnyUprightMask = 2,
+};
+
+inline bool operator&(FontOrientation value, FontOrientation mask) { return static_cast<unsigned>(value) & static_cast<unsigned>(mask); }
+inline bool isVerticalAnyUpright(FontOrientation orientation) { return orientation & FontOrientation::AnyUprightMask; }
+inline bool isVerticalNonCJKUpright(FontOrientation orientation) { return orientation == FontOrientation::VerticalUpright; }
+inline bool isVerticalBaseline(FontOrientation orientation) { return orientation != FontOrientation::Horizontal; }
 
 } // namespace blink
 

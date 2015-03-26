@@ -450,7 +450,7 @@ void HarfBuzzShaper::setFontFeatures()
         // kern/vkrn are enabled by default
         break;
     case FontDescription::NoneKerning:
-        m_features.append(description.orientation() == Vertical ? noVkrn : noKern);
+        m_features.append(description.isVerticalAnyUpright() ? noVkrn : noKern);
         break;
     case FontDescription::AutoKerning:
         break;
@@ -783,7 +783,7 @@ static inline hb_script_t ICUScriptToHBScript(UScriptCode script)
 
 static inline hb_direction_t TextDirectionToHBDirection(TextDirection dir, FontOrientation orientation, const SimpleFontData* fontData)
 {
-    hb_direction_t harfBuzzDirection = orientation == Vertical && !fontData->isTextOrientationFallback() ? HB_DIRECTION_TTB : HB_DIRECTION_LTR;
+    hb_direction_t harfBuzzDirection = isVerticalAnyUpright(orientation) && !fontData->isTextOrientationFallback() ? HB_DIRECTION_TTB : HB_DIRECTION_LTR;
     return dir == RTL ? HB_DIRECTION_REVERSE(harfBuzzDirection) : harfBuzzDirection;
 }
 
@@ -891,7 +891,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
             fontDescription, m_normalizedBuffer.get(), currentRun->startIndex(),
             currentRun->numCharacters());
 
-        if (fontDescription.orientation() == Vertical)
+        if (fontDescription.isVerticalAnyUpright())
             face->setScriptForVerticalGlyphSubstitution(harfBuzzBuffer.get());
 
         HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(), hb_font_destroy);

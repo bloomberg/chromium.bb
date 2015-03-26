@@ -36,7 +36,6 @@
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
-#include "platform/text/NonCJKGlyphOrientation.h"
 #include "wtf/MathExtras.h"
 
 #include "wtf/RefPtr.h"
@@ -63,8 +62,7 @@ public:
         , m_sizeAdjust(FontSizeAdjustNone)
         , m_letterSpacing(0)
         , m_wordSpacing(0)
-        , m_orientation(Horizontal)
-        , m_nonCJKGlyphOrientation(NonCJKGlyphOrientationVerticalRight)
+        , m_orientation(static_cast<unsigned>(FontOrientation::Horizontal))
         , m_widthVariant(RegularWidth)
         , m_style(FontStyleNormal)
         , m_variant(FontVariantNormal)
@@ -176,7 +174,9 @@ public:
     float wordSpacing() const { return m_wordSpacing; }
     float letterSpacing() const { return m_letterSpacing; }
     FontOrientation orientation() const { return static_cast<FontOrientation>(m_orientation); }
-    NonCJKGlyphOrientation nonCJKGlyphOrientation() const { return static_cast<NonCJKGlyphOrientation>(m_nonCJKGlyphOrientation); }
+    bool isVerticalAnyUpright() const { return blink::isVerticalAnyUpright(orientation()); }
+    bool isVerticalNonCJKUpright() const { return blink::isVerticalNonCJKUpright(orientation()); }
+    bool isVerticalBaseline() const { return blink::isVerticalBaseline(orientation()); }
     FontWidthVariant widthVariant() const { return static_cast<FontWidthVariant>(m_widthVariant); }
     FontFeatureSettings* featureSettings() const { return m_featureSettings.get(); }
 
@@ -199,8 +199,7 @@ public:
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
     void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
     void setTextRendering(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }
-    void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
-    void setNonCJKGlyphOrientation(NonCJKGlyphOrientation orientation) { m_nonCJKGlyphOrientation = orientation; }
+    void setOrientation(FontOrientation orientation) { m_orientation = static_cast<unsigned>(orientation); }
     void setWidthVariant(FontWidthVariant widthVariant) { m_widthVariant = widthVariant; }
     void setScript(UScriptCode s) { m_script = s; }
     void setLocale(const AtomicString& locale) { m_locale = locale; }
@@ -241,8 +240,7 @@ private:
     float m_letterSpacing;
     float m_wordSpacing;
 
-    unsigned m_orientation : 1; // FontOrientation - Whether the font is rendering on a horizontal line or a vertical line.
-    unsigned m_nonCJKGlyphOrientation : 1; // NonCJKGlyphOrientation - Only used by vertical text. Determines the default orientation for non-ideograph glyphs.
+    unsigned m_orientation : static_cast<unsigned>(FontOrientation::BitCount);
 
     unsigned m_widthVariant : 2; // FontWidthVariant
 
@@ -303,7 +301,6 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_fontSmoothing == other.m_fontSmoothing
         && m_textRendering == other.m_textRendering
         && m_orientation == other.m_orientation
-        && m_nonCJKGlyphOrientation == other.m_nonCJKGlyphOrientation
         && m_widthVariant == other.m_widthVariant
         && m_script == other.m_script
         && m_syntheticBold == other.m_syntheticBold

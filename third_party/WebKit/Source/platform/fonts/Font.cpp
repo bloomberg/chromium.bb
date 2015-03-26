@@ -288,7 +288,7 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer) const
         const SimpleFontData* fontData = glyphBuffer.fontDataAt(i);
 
         // FIXME: Handle vertical text.
-        if (fontData->platformData().orientation() == Vertical)
+        if (fontData->platformData().isVerticalAnyUpright())
             return nullptr;
 
         SkPaint paint;
@@ -360,7 +360,7 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0 && m_fontDescription.letterSpacing() == 0)
         return ComplexPath;
 
-    if (m_fontDescription.orientation() == Vertical)
+    if (m_fontDescription.isVerticalBaseline())
         return ComplexPath;
 
     if (m_fontDescription.widthVariant() != RegularWidth)
@@ -395,9 +395,9 @@ void Font::willUseFontData(UChar32 character) const
         m_fontFallbackList->fontSelector()->willUseFontData(fontDescription(), family.family(), character);
 }
 
-static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 character, NonCJKGlyphOrientation orientation, GlyphData& data, unsigned pageNumber)
+static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 character, FontOrientation orientation, GlyphData& data, unsigned pageNumber)
 {
-    if (orientation == NonCJKGlyphOrientationUpright || Character::shouldIgnoreRotation(character)) {
+    if (isVerticalNonCJKUpright(orientation) || Character::shouldIgnoreRotation(character)) {
         RefPtr<SimpleFontData> uprightFontData = data.fontData->uprightOrientationFontData();
         GlyphPageTreeNode* uprightNode = GlyphPageTreeNode::getNormalRootChild(uprightFontData.get(), pageNumber);
         GlyphPage* uprightPage = uprightNode->page();
@@ -411,7 +411,7 @@ static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 
             if (uprightData.fontData)
                 return uprightData;
         }
-    } else if (orientation == NonCJKGlyphOrientationVerticalRight) {
+    } else {
         RefPtr<SimpleFontData> verticalRightFontData = data.fontData->verticalRightOrientationFontData();
         GlyphPageTreeNode* verticalRightNode = GlyphPageTreeNode::getNormalRootChild(verticalRightFontData.get(), pageNumber);
         GlyphPage* verticalRightPage = verticalRightNode->page();
@@ -468,7 +468,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
             page = node->page(m_fontDescription.script());
             if (page) {
                 GlyphData data = page->glyphDataForCharacter(c);
-                if (data.fontData && (data.fontData->platformData().orientation() == Horizontal || data.fontData->isTextOrientationFallback()))
+                if (data.fontData && (!data.fontData->platformData().isVerticalAnyUpright() || data.fontData->isTextOrientationFallback()))
                     return data;
 
                 if (data.fontData) {
@@ -480,7 +480,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
                             break;
                         }
                     } else {
-                        return glyphDataForNonCJKCharacterWithGlyphOrientation(c, m_fontDescription.nonCJKGlyphOrientation(), data, pageNumber);
+                        return glyphDataForNonCJKCharacterWithGlyphOrientation(c, m_fontDescription.orientation(), data, pageNumber);
                     }
 
                     return data;
@@ -548,7 +548,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
         const SimpleFontData* fontDataToSubstitute = fontData->fontDataForCharacter(characterToRender);
         RefPtr<SimpleFontData> characterFontData = FontCache::fontCache()->fallbackFontForCharacter(m_fontDescription, characterToRender, fontDataToSubstitute);
         if (characterFontData) {
-            if (characterFontData->platformData().orientation() == Vertical && !characterFontData->hasVerticalGlyphs() && Character::isCJKIdeographOrSymbol(c))
+            if (characterFontData->platformData().isVerticalAnyUpright() && !characterFontData->hasVerticalGlyphs() && Character::isCJKIdeographOrSymbol(c))
                 variant = BrokenIdeographVariant;
             if (variant != NormalVariant)
                 characterFontData = characterFontData->variantFontData(m_fontDescription, variant);
@@ -561,8 +561,8 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
             if (variant == NormalVariant) {
                 page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
                 data.fontData->setMaxGlyphPageTreeLevel(std::max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
-                if (!Character::isCJKIdeographOrSymbol(c) && data.fontData->platformData().orientation() != Horizontal && !data.fontData->isTextOrientationFallback())
-                    return glyphDataForNonCJKCharacterWithGlyphOrientation(c, m_fontDescription.nonCJKGlyphOrientation(), data, pageNumber);
+                if (!Character::isCJKIdeographOrSymbol(c) && data.fontData->platformData().isVerticalAnyUpright() && !data.fontData->isTextOrientationFallback())
+                    return glyphDataForNonCJKCharacterWithGlyphOrientation(c, m_fontDescription.orientation(), data, pageNumber);
             }
             return data;
         }
@@ -746,7 +746,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         return;
     }
 
-    bool drawVertically = font->platformData().orientation() == Vertical && font->verticalData();
+    bool drawVertically = font->platformData().isVerticalAnyUpright() && font->verticalData();
 
     GraphicsContextStateSaver stateSaver(*gc, false);
     if (drawVertically) {

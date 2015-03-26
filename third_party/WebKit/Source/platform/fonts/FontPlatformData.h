@@ -75,12 +75,12 @@ public:
     FontPlatformData(WTF::HashTableDeletedValueType);
     FontPlatformData();
     FontPlatformData(const FontPlatformData&);
-    FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal);
+    FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation = FontOrientation::Horizontal);
     FontPlatformData(const FontPlatformData& src, float textSize);
 #if OS(MACOSX)
-    FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false, FontOrientation = Horizontal);
+    FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false, FontOrientation = FontOrientation::Horizontal);
 #endif
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = FontOrientation::Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
     ~FontPlatformData();
 
 #if OS(MACOSX)
@@ -100,6 +100,7 @@ public:
     unsigned hash() const;
 
     FontOrientation orientation() const { return m_orientation; }
+    bool isVerticalAnyUpright() const { return blink::isVerticalAnyUpright(m_orientation); }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
     void setSyntheticBold(bool syntheticBold) { m_syntheticBold = syntheticBold; }
     void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }

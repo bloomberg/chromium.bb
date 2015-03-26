@@ -62,7 +62,7 @@ void Shaper::addEmphasisMark(GlyphBuffer* buffer, float midGlyphOffset) const
     const SimpleFontData* emphasisFontData = m_emphasisSubstitutionData->fontData;
     ASSERT(emphasisFontData);
 
-    bool isVertical = emphasisFontData->platformData().orientation() == Vertical
+    bool isVertical = emphasisFontData->platformData().isVerticalAnyUpright()
         && emphasisFontData->verticalData();
 
     if (!isVertical) {

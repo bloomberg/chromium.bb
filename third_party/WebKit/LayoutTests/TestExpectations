@@ -904,6 +904,9 @@ crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
 crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
 
+crbug.com/469025 [ Linux ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/469025 [ Linux ] virtual/slimmingpaint/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+
 # Failing Reftests from CoreText shaper removal
 crbug.com/334269 [ Mac ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]

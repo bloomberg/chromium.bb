@@ -66,7 +66,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
 {
     platformInit();
     platformGlyphInit();
-    if (platformData.orientation() == Vertical && !isTextOrientationFallback) {
+    if (platformData.isVerticalAnyUpright() && !isTextOrientationFallback) {
         m_verticalData = platformData.verticalData();
         m_hasVerticalGlyphs = m_verticalData.get() && m_verticalData->hasVerticalMetrics();
     }
@@ -184,7 +184,7 @@ void SimpleFontData::platformInit()
     m_fontMetrics.setLineGap(lineGap);
     m_fontMetrics.setLineSpacing(lroundf(ascent) + lroundf(descent) + lroundf(lineGap));
 
-    if (platformData().orientation() == Vertical && !isTextOrientationFallback()) {
+    if (platformData().isVerticalAnyUpright() && !isTextOrientationFallback()) {
         static const uint32_t vheaTag = SkSetFourByteTag('v', 'h', 'e', 'a');
         static const uint32_t vorgTag = SkSetFourByteTag('V', 'O', 'R', 'G');
         size_t vheaSize = face->getTableSize(vheaTag);
@@ -318,7 +318,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::verticalRightOrientationFontData() co
         m_derivedFontData = DerivedFontData::create(isCustomFont());
     if (!m_derivedFontData->verticalRightOrientation) {
         FontPlatformData verticalRightPlatformData(m_platformData);
-        verticalRightPlatformData.setOrientation(Horizontal);
+        verticalRightPlatformData.setOrientation(FontOrientation::Horizontal);
         m_derivedFontData->verticalRightOrientation = create(verticalRightPlatformData, isCustomFont() ? CustomFontData::create(): nullptr, true);
     }
     return m_derivedFontData->verticalRightOrientation;

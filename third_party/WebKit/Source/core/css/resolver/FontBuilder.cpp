@@ -233,53 +233,33 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
     return FontSize::getComputedSizeFromSpecifiedSize(&m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }
 
-static void getFontAndGlyphOrientation(const LayoutStyle& style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
+static FontOrientation fontOrientation(const LayoutStyle& style)
 {
-    if (style.isHorizontalWritingMode()) {
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
-    }
+    if (style.isHorizontalWritingMode())
+        return FontOrientation::Horizontal;
 
     switch (style.textOrientation()) {
     case TextOrientationVerticalRight:
-        fontOrientation = Vertical;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
+        return FontOrientation::VerticalMixed;
     case TextOrientationUpright:
-        fontOrientation = Vertical;
-        glyphOrientation = NonCJKGlyphOrientationUpright;
-        return;
+        return FontOrientation::VerticalUpright;
     case TextOrientationSideways:
         if (style.writingMode() == LeftToRightWritingMode) {
             // FIXME: This should map to sideways-left, which is not supported yet.
-            fontOrientation = Horizontal;
-            glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-            return;
+            return FontOrientation::VerticalRotated;
         }
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
+        return FontOrientation::VerticalRotated;
     case TextOrientationSidewaysRight:
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
+        return FontOrientation::VerticalRotated;
     default:
         ASSERT_NOT_REACHED();
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
+        return FontOrientation::VerticalMixed;
     }
 }
 
 void FontBuilder::updateOrientation(FontDescription& description, const LayoutStyle& style)
 {
-    FontOrientation fontOrientation;
-    NonCJKGlyphOrientation glyphOrientation;
-    getFontAndGlyphOrientation(style, fontOrientation, glyphOrientation);
-
-    description.setNonCJKGlyphOrientation(glyphOrientation);
-    description.setOrientation(fontOrientation);
+    description.setOrientation(fontOrientation(style));
 }
 
 void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescription, FontDescription& newDescription)
@@ -426,11 +406,7 @@ void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fon
     updateSpecifiedSize(fontDescription, documentStyle);
     updateComputedSize(fontDescription, documentStyle);
 
-    FontOrientation fontOrientation;
-    NonCJKGlyphOrientation glyphOrientation;
-    getFontAndGlyphOrientation(documentStyle, fontOrientation, glyphOrientation);
-    fontDescription.setOrientation(fontOrientation);
-    fontDescription.setNonCJKGlyphOrientation(glyphOrientation);
+    updateOrientation(fontDescription, documentStyle);
     documentStyle.setFontDescription(fontDescription);
     documentStyle.font().update(fontSelector);
 }
