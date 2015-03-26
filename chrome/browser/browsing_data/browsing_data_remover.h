@@ -23,7 +23,6 @@
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
-class ExtensionSpecialStoragePolicy;
 class IOThread;
 class Profile;
 
@@ -36,22 +35,8 @@ class PluginDataRemover;
 class StoragePartition;
 }
 
-namespace disk_cache {
-class Backend;
-}
-
 namespace net {
 class URLRequestContextGetter;
-}
-
-namespace storage {
-class QuotaManager;
-}
-
-namespace content {
-class DOMStorageContext;
-struct LocalStorageUsageInfo;
-struct SessionStorageUsageInfo;
 }
 
 // BrowsingDataRemover is responsible for removing data related to browsing:
@@ -237,15 +222,6 @@ class BrowsingDataRemover
   // TODO(mkwst): See http://crbug.com/113621
   friend class BrowsingDataRemoverTest;
 
-  enum CacheState {
-    STATE_NONE,
-    STATE_CREATE_MAIN,
-    STATE_CREATE_MEDIA,
-    STATE_DELETE_MAIN,
-    STATE_DELETE_MEDIA,
-    STATE_DONE
-  };
-
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
   // not already removing, and vice-versa.
   static void set_removing(bool is_removing);
@@ -332,13 +308,6 @@ class BrowsingDataRemover
   // Callback for when the cache has been deleted. Invokes
   // NotifyAndDeleteIfDone.
   void ClearedCache();
-
-  // Invoked on the IO thread to delete from the cache.
-  void ClearCacheOnIOThread();
-
-  // Performs the actual work to delete the cache.
-  void DoClearCache(int rv);
-
 #if !defined(DISABLE_NACL)
   // Callback for when the NaCl cache has been deleted. Invokes
   // NotifyAndDeleteIfDone.
@@ -416,9 +385,6 @@ class BrowsingDataRemover
   // is about to complete a browsing data removal process, and has the ability
   // to artificially delay completion. Used for testing.
   static CompletionInhibitor* completion_inhibitor_;
-
-  CacheState next_cache_state_;
-  disk_cache::Backend* cache_;
 
   // Used to delete data from HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
