@@ -142,9 +142,15 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
     return;
   }
 
-  if (network->type() == shill::kTypeWimax ||
-      network->type() == shill::kTypeVPN) {
+  if (network->type() == shill::kTypeWimax) {
     delegate_->ShowNetworkConfigure(service_path);
+    return;
+  }
+
+  if (network->type() == shill::kTypeVPN) {
+    // Third-party VPNs handle configuration UI themselves.
+    if (network->vpn_provider_type() != shill::kProviderThirdPartyVpn)
+      delegate_->ShowNetworkConfigure(service_path);
     return;
   }
 
