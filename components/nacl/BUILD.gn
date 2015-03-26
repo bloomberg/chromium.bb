@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 
 if (enable_nacl) {
   source_set("nacl") {
@@ -126,8 +127,7 @@ if (enable_nacl) {
     ]
   }
 
-  executable("nacl_loader_unittests") {
-    testonly = true
+  test("nacl_loader_unittests") {
     sources = [
       "loader/run_all_unittests.cc",
     ]
