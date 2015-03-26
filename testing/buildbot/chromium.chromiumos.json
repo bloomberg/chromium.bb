@@ -65,6 +65,7 @@
         "test": "sandbox_linux_unittests",
         "args": ["--test-launcher-print-test-stdio=always"]
       },
+      "gfx_unittests",
       "ui_base_unittests",
       "ui_chromeos_unittests",
       "ui_touch_selection_unittests",
@@ -171,6 +172,7 @@
       "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
+      "gfx_unittests",
       "ui_base_unittests",
       "ui_chromeos_unittests",
       "ui_touch_selection_unittests",
@@ -225,6 +227,7 @@
         "test": "sandbox_linux_unittests",
         "args": ["--test-launcher-print-test-stdio=always"]
       },
+      "gfx_unittests",
       "ui_base_unittests",
       "ui_chromeos_unittests",
       "ui_touch_selection_unittests",
