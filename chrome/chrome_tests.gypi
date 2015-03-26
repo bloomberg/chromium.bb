@@ -2913,7 +2913,6 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
             '../components/components.gyp:invalidation_javatests',
-            '../components/components.gyp:precache_javatests',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
             '../ui/android/ui_android.gyp:ui_javatests',

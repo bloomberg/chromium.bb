@@ -619,7 +619,6 @@
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:navigation_interception_java',
-            '../components/components.gyp:precache_java',
             '../components/components.gyp:variations_java',
             '../components/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',

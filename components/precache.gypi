@@ -70,31 +70,4 @@
       'includes': [ '../build/protoc.gypi', ],
     },
   ],
-  'conditions': [
-    ['OS=="android"', {
-      'targets': [{
-        'target_name': 'precache_java',
-        'type': 'none',
-        'dependencies': [
-          '../base/base.gyp:base',
-          '../content/content.gyp:content_java',
-        ],
-        'variables': {
-          'java_in_dir': 'precache/android/java',
-        },
-        'includes': [ '../build/java.gypi' ],
-      }, {
-        'target_name': 'precache_javatests',
-        'type': 'none',
-        'dependencies': [
-          'precache_java',
-          '../base/base.gyp:base_java_test_support',
-        ],
-        'variables': {
-          'java_in_dir': 'precache/android/javatests',
-        },
-        'includes': [ '../build/java.gypi' ],
-      }],
-    }],
-  ],
 }
