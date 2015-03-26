@@ -45,7 +45,7 @@
 
 namespace {
 
-const int kMaxSelfSignedCertLifetimeInDays = 2;
+const int kMaxSelfSignedCertLifetimeInDays = 4;
 
 std::string FormatTimeForLogging(base::Time time) {
   base::Time::Exploded exploded_time;
@@ -197,7 +197,7 @@ bool CastSocketImpl::ExtractPeerCert(std::string* cert) {
   logger_->LogSocketEvent(channel_id_, proto::SSL_INFO_OBTAINED);
 
   // Ensure that the peer cert (which is self-signed) doesn't have an excessive
-  // life-time (i.e. no more than 2 days).
+  // remaining life-time.
   base::Time expiry = ssl_info.cert->valid_expiry();
   base::Time lifetimeLimit =
       base::Time::Now() +
