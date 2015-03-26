@@ -106,6 +106,7 @@ class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
   // Object is ref counted.
   virtual ~MockAckNotifierDelegate();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockAckNotifierDelegate);
 };
 

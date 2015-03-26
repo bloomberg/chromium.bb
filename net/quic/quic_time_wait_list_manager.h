@@ -174,8 +174,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   const QuicTime::Delta time_wait_period_;
 
   // Alarm registered with the connection helper to clean up connection_ids that
-  // have
-  // out lived their duration in time wait state.
+  // have out lived their duration in time wait state.
   scoped_ptr<QuicAlarm> connection_id_clean_up_alarm_;
 
   // Interface that writes given buffer to the socket.
