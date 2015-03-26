@@ -105,6 +105,26 @@ ContextMenuTester.prototype.testRemoveAllItems = function() {
   });
 };
 
+ContextMenuTester.prototype.registerPreventDefault = function() {
+  this.preventDefaultLister_ = function(e) {
+    e.preventDefault();
+    this.proceedTest_('DEFAULT_PREVENTED');
+  }.bind(this);
+
+  this.webview_.contextMenus.onShow.addListener(this.preventDefaultLister_);
+};
+
+ContextMenuTester.prototype.removePreventDefault = function() {
+  if (!this.preventDefaultLister_) {
+    LOG('Error: A listener is expected to setup prior to calling ' +
+        'contextMenus.onShow');
+    return;
+  }
+  this.webview_.contextMenus.onShow.removeListener(this.preventDefaultLister_);
+
+  this.proceedTest_('PREVENT_DEFAULT_LISTENER_REMOVED');
+};
+
 ContextMenuTester.prototype.onClick_ = function(type) {
   if (type == 'global') {
     this.globalClickCalled_ = true;
@@ -145,6 +165,12 @@ ContextMenuTester.prototype.proceedTest_ = function(step) {
       break;
     case 'ITEM_ALL_REMOVED':
       document.title = 'ITEM_ALL_REMOVED';
+      break;
+    case 'DEFAULT_PREVENTED':
+      chrome.test.sendMessage('WebViewTest.CONTEXT_MENU_DEFAULT_PREVENTED');
+      break;
+    case 'PREVENT_DEFAULT_LISTENER_REMOVED':
+      document.title = 'PREVENT_DEFAULT_LISTENER_REMOVED';
       break;
     default:
       break;
@@ -187,8 +213,13 @@ window.createThreeMenuItems = function() {
   tester.createThreeMenuItems();
 };
 window.removeAllItems = function() {
-  LOG('window.testRemoveAllItems');
   tester.testRemoveAllItems();
+};
+window.registerPreventDefault = function() {
+  tester.registerPreventDefault();
+};
+window.removePreventDefault = function() {
+  tester.removePreventDefault();
 };
 // window.* exported functions end.
 

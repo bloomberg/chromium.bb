@@ -54,7 +54,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
   web_view_guest()->DispatchEventToView(
-      new GuestViewBase::Event(webview::kEventContextMenu, args.Pass()));
+      new GuestViewBase::Event(webview::kEventContextMenuShow, args.Pass()));
   return true;
 }
 

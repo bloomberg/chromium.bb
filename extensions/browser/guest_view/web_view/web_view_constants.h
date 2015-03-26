@@ -28,7 +28,7 @@ extern const char kAPILoadDataInvalidVirtualURL[];
 extern const char kEventClose[];
 extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
-extern const char kEventContextMenu[];
+extern const char kEventContextMenuShow[];
 extern const char kEventDialog[];
 extern const char kEventDropLink[];
 extern const char kEventExit[];

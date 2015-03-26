@@ -130,6 +130,39 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
 };
 
+// Watches for context menu to be shown, records count of how many times
+// context menu was shown.
+class ContextMenuCallCountObserver {
+ public:
+  ContextMenuCallCountObserver ()
+      : num_times_shown_(0),
+        menu_observer_(chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
+                       base::Bind(&ContextMenuCallCountObserver::OnMenuShown,
+                                  base::Unretained(this))) {
+  }
+  ~ContextMenuCallCountObserver() {}
+
+  bool OnMenuShown(const content::NotificationSource& source,
+                   const content::NotificationDetails& details) {
+    ++num_times_shown_;
+    auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
+                              base::Unretained(context_menu)));
+    return true;
+  }
+
+  void Wait() { menu_observer_.Wait(); }
+
+  int num_times_shown() { return num_times_shown_; }
+
+ private:
+  int num_times_shown_;
+  content::WindowedNotificationObserver menu_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuCallCountObserver);
+};
+
 class EmbedderWebContentsObserver : public content::WebContentsObserver {
  public:
   explicit EmbedderWebContentsObserver(content::WebContents* web_contents)
@@ -697,6 +730,17 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     if (listener) {
       ASSERT_TRUE(listener->WaitUntilSatisfied());
     }
+  }
+
+  void OpenContextMenu(content::WebContents* web_contents) {
+    blink::WebMouseEvent mouse_event;
+    mouse_event.type = blink::WebInputEvent::MouseDown;
+    mouse_event.button = blink::WebMouseEvent::ButtonRight;
+    mouse_event.x = 1;
+    mouse_event.y = 1;
+    web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+    mouse_event.type = blink::WebInputEvent::MouseUp;
+    web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
   }
 
   content::WebContents* GetGuestWebContents() {
@@ -1973,6 +2017,36 @@ static bool ContextMenuNotificationCallback(
   return true;
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_PreventDefault) {
+  LoadAppWithGuest("web_view/context_menus/basic");
+
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  content::WebContents* embedder = GetEmbedderWebContents();
+  ASSERT_TRUE(embedder);
+
+  // Add a preventDefault() call on context menu event so context menu
+  // does not show up.
+  ExtensionTestMessageListener prevent_default_listener(
+      "WebViewTest.CONTEXT_MENU_DEFAULT_PREVENTED", false);
+  EXPECT_TRUE(content::ExecuteScript(embedder, "registerPreventDefault()"));
+  ContextMenuCallCountObserver context_menu_shown_observer;
+
+  OpenContextMenu(guest_web_contents);
+
+  EXPECT_TRUE(prevent_default_listener.WaitUntilSatisfied());
+  // Expect the menu to not show up.
+  EXPECT_EQ(0, context_menu_shown_observer.num_times_shown());
+
+  // Now remove the preventDefault() and expect context menu to be shown.
+  ExecuteScriptWaitForTitle(
+      embedder, "removePreventDefault()", "PREVENT_DEFAULT_LISTENER_REMOVED");
+  OpenContextMenu(guest_web_contents);
+
+  // We expect to see a context menu for the second call to |OpenContextMenu|.
+  context_menu_shown_observer.Wait();
+  EXPECT_EQ(1, context_menu_shown_observer.num_times_shown());
+}
+
 // Tests that a context menu is created when right-clicking in the webview. This
 // also tests that the 'contextmenu' event is handled correctly.
 IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
@@ -1984,15 +2058,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
       chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
       base::Bind(ContextMenuNotificationCallback));
 
-  // Open a context menu.
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebMouseEvent::ButtonRight;
-  mouse_event.x = 1;
-  mouse_event.y = 1;
-  guest_web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
-  mouse_event.type = blink::WebInputEvent::MouseUp;
-  guest_web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  OpenContextMenu(guest_web_contents);
 
   // Wait for the context menu to be visible.
   menu_observer.Wait();

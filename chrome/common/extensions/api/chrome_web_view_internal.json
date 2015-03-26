@@ -288,6 +288,25 @@
         "type": "function",
         "nodoc": true,
         "$ref": "contextMenusInternal.onClicked"
+      },
+      {
+        "name": "onShow",
+        "type": "function",
+        "description": "Fired when context menu is about to be shown. Provides the ability to cancel the context menu by calling <code>event.preventDefault()</code> from this handler.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "name": "event",
+            "type": "object",
+            "properties": {
+              "preventDefault": {
+                "type": "function",
+                "parameters": [
+                ]
+              }
+            }
+          }
+        ]
       }
     ]
   }
