@@ -88,7 +88,7 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
     scoped_refptr<extensions::Extension> extension(
         extensions::Extension::Create(
             base::FilePath(), extensions::Manifest::UNPACKED, manifest,
-            extensions::Extension::NO_FLAGS, "abc", &error));
+            extensions::Extension::FROM_BOOKMARK, "abc", &error));
 
     ASSERT_TRUE(extension.get()) << error;
 

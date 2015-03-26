@@ -477,6 +477,7 @@
       'browser/ui/cocoa/view_id_util_browsertest.mm',
       'browser/ui/content_settings/content_setting_bubble_model_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_browsertest.cc',
+      'browser/ui/extensions/bookmark_app_browsertest.cc',
       'browser/ui/find_bar/find_bar_host_browsertest.cc',
       'browser/ui/global_error/global_error_service_browsertest.cc',
       'browser/ui/location_bar/location_bar_browsertest.cc',

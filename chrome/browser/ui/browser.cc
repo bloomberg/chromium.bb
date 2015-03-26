@@ -2446,7 +2446,7 @@ bool Browser::ShouldUseWebAppFrame() const {
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
           extension_id, extensions::ExtensionRegistry::EVERYTHING);
-  return extension && extension->is_hosted_app();
+  return extension && extension->from_bookmark();
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
