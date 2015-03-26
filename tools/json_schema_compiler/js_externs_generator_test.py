@@ -46,10 +46,17 @@ namespace fakeApi {
 
   callback VoidCallback = void();
 
+  callback BazGreekCallback = void(Baz baz, Greek greek);
+
   interface Functions {
-    // Does something exciting!
+    // Does something exciting! And what's more, this is a multiline function
+    // comment! It goes onto multiple lines!
     // |baz| : The baz to use.
-    static void doSomething(Baz baz, optional VoidCallback callback);
+    static void doSomething(Baz baz, VoidCallback callback);
+
+    static void bazGreek(optional BazGreekCallback callback);
+
+    [deprecated="Use a new method."] static DOMString returnString();
   };
 };
 """
@@ -102,11 +109,23 @@ var Bar;
 var Baz;
 
 /**
- * Does something exciting!
+ * Does something exciting! And what's more, this is a multiline function
+ * comment! It goes onto multiple lines!
  * @param {Baz} baz The baz to use.
- * @param {Function=} callback
+ * @param {function():void} callback
  */
 chrome.fakeApi.doSomething = function(baz, callback) {};
+
+/**
+ * @param {function(Baz, !chrome.fakeApi.Greek):void=} callback
+ */
+chrome.fakeApi.bazGreek = function(callback) {};
+
+/**
+ * @return {string}
+ * @deprecated Use a new method.
+ */
+chrome.fakeApi.returnString = function() {};
 """ % datetime.now().year
 
 

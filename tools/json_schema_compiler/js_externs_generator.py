@@ -139,39 +139,45 @@ class _Generator(object):
     c = Code()
     c.Append('/**')
 
+    lines = []
     if function.description:
-      for line in function.description.split('\n'):
-        c.Comment(line, comment_prefix=' * ')
+      lines.extend(function.description.splitlines())
 
     for param in function.params:
       js_type = self._TypeToJsType(param.type_)
-
       if param.optional:
         js_type += '='
-
-      param_doc = '@param {%s} %s %s' % (js_type,
-                                         param.name,
-                                         param.description or '')
-      c.Comment(param_doc, comment_prefix=' * ')
+      lines.append('@param {%s} %s %s' % (js_type,
+                                          param.name,
+                                          param.description or ''))
 
     if function.callback:
-      # TODO(tbreisacher): Convert Function to function() for better
-      # typechecking.
-      js_type = 'Function'
-      if function.callback.optional:
-        js_type += '='
-      param_doc = '@param {%s} %s %s' % (js_type,
-                                         function.callback.name,
-                                         function.callback.description or '')
-      c.Comment(param_doc, comment_prefix=' * ')
+      lines.append('@param {%s} %s %s' % (
+          self._FunctionToJsFunction(function.callback),
+          function.callback.name,
+          function.callback.description or ''))
 
     if function.returns:
-      return_doc = '@return {%s} %s' % (self._TypeToJsType(function.returns),
-                                        function.returns.description)
-      c.Comment(return_doc, comment_prefix=' * ')
+      lines.append('@return {%s} %s' % (self._TypeToJsType(function.returns),
+                                        function.returns.description or ''))
+
+    if function.deprecated:
+      lines.append('@deprecated %s' % function.deprecated)
+
+    for line in lines:
+      c.Comment(line, comment_prefix=' * ');
 
     c.Append(' */')
     return c
+
+  def _FunctionToJsFunction(self, function):
+    """Converts a model.Function to a JS type (i.e., function([params])...)"""
+    params = ', '.join(
+        [self._TypeToJsType(param.type_) for param in function.params])
+    return_type = (
+        self._TypeToJsType(function.returns) if function.returns else 'void')
+    optional = '=' if function.optional else ''
+    return 'function(%s):%s%s' % (params, return_type, optional)
 
   def _TypeToJsType(self, js_type):
     """Converts a model.Type to a JS type (number, Array, etc.)"""
@@ -191,6 +197,8 @@ class _Generator(object):
     elif js_type.property_type is PropertyType.CHOICES:
       return '(%s)' % '|'.join(
           [self._TypeToJsType(choice) for choice in js_type.choices])
+    elif js_type.property_type is PropertyType.FUNCTION:
+      return self._FunctionToJsFunction(js_type.function)
     elif js_type.property_type is PropertyType.ANY:
       return '*'
     elif js_type.property_type.is_fundamental:
