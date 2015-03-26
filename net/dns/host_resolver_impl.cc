@@ -72,6 +72,8 @@ const unsigned kNegativeCacheEntryTTLSeconds = 0;
 // Minimum TTL for successful resolutions with DnsTask.
 const unsigned kMinimumTTLSeconds = kCacheEntryTTLSeconds;
 
+const char kLocalhost[] = "localhost.";
+
 // We use a separate histogram name for each platform to facilitate the
 // display of error codes by their symbolic name (since each platform has
 // different mappings).
@@ -1291,7 +1293,13 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   void AddRequest(scoped_ptr<Request> req) {
-    DCHECK_EQ(key_.hostname, req->info().hostname());
+    // .localhost queries are redirected to "localhost." to make sure
+    // that they are never sent out on the network, per RFC 6761.
+    if (IsLocalhostTLD(req->info().hostname())) {
+      DCHECK_EQ(key_.hostname, kLocalhost);
+    } else {
+      DCHECK_EQ(key_.hostname, req->info().hostname());
+    }
 
     req->set_job(this);
     priority_tracker_.Add(req->priority());
@@ -2214,7 +2222,13 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     }
   }
 
-  return Key(info.hostname(), effective_address_family, effective_flags);
+  std::string hostname = info.hostname();
+  // Redirect .localhost queries to "localhost." to make sure that they
+  // are never sent out on the network, per RFC 6761.
+  if (IsLocalhostTLD(info.hostname()))
+    hostname = kLocalhost;
+
+  return Key(hostname, effective_address_family, effective_flags);
 }
 
 void HostResolverImpl::AbortAllInProgressJobs() {

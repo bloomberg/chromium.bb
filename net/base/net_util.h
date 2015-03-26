@@ -441,6 +441,8 @@ NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
 // machine.
 NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 
+NET_EXPORT_PRIVATE bool IsLocalhostTLD(const std::string& host);
+
 // A subset of IP address attributes which are actionable by the
 // application layer. Currently unimplemented for all hosts;
 // IP_ADDRESS_ATTRIBUTE_NONE is always returned.

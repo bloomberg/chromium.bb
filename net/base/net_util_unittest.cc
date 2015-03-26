@@ -803,6 +803,7 @@ TEST(NetUtilTest, IsLocalhost) {
   EXPECT_TRUE(net::IsLocalhost("127.255.0.0"));
   EXPECT_TRUE(net::IsLocalhost("::1"));
   EXPECT_TRUE(net::IsLocalhost("0:0:0:0:0:0:0:1"));
+  EXPECT_TRUE(net::IsLocalhost("foo.localhost"));
 
   EXPECT_FALSE(net::IsLocalhost("localhostx"));
   EXPECT_FALSE(net::IsLocalhost("foo.localdomain"));
@@ -816,6 +817,16 @@ TEST(NetUtilTest, IsLocalhost) {
   EXPECT_FALSE(net::IsLocalhost("0:0:0:0:1:0:0:1"));
   EXPECT_FALSE(net::IsLocalhost("::1:1"));
   EXPECT_FALSE(net::IsLocalhost("0:0:0:0:0:0:0:0:1"));
+  EXPECT_FALSE(net::IsLocalhost("foo.localhost.com"));
+  EXPECT_FALSE(net::IsLocalhost("foo.localhoste"));
+}
+
+TEST(NetUtilTest, IsLocalhostTLD) {
+  EXPECT_TRUE(net::IsLocalhostTLD("foo.localhost"));
+  EXPECT_TRUE(net::IsLocalhostTLD("foo.localhost."));
+  EXPECT_FALSE(net::IsLocalhostTLD("foo.localhos"));
+  EXPECT_FALSE(net::IsLocalhostTLD("foo.localhost.com"));
+  EXPECT_FALSE(net::IsLocalhost("foo.localhoste"));
 }
 
 // Verify GetNetworkList().

@@ -550,6 +550,17 @@ TEST_F(HostResolverImplTest, AsynchronousLookup) {
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
 
+TEST_F(HostResolverImplTest, LocalhostLookup) {
+  proc_->SignalMultiple(1u);
+  Request* req = CreateRequest("foo.localhost", 80);
+  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_EQ(OK, req->WaitForResult());
+
+  EXPECT_TRUE(req->HasOneAddress("127.0.0.1", 80));
+
+  EXPECT_EQ("localhost.", proc_->GetCaptureList()[0].hostname);
+}
+
 TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
   proc_->AddRuleForAllFamilies("just.testing", "");
   proc_->SignalMultiple(1u);

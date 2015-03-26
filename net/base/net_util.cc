@@ -981,10 +981,9 @@ int GetPortFromSockaddr(const struct sockaddr* address, socklen_t address_len) {
 }
 
 bool IsLocalhost(const std::string& host) {
-  if (host == "localhost" ||
-      host == "localhost.localdomain" ||
-      host == "localhost6" ||
-      host == "localhost6.localdomain6")
+  if (host == "localhost" || host == "localhost.localdomain" ||
+      host == "localhost6" || host == "localhost6.localdomain6" ||
+      IsLocalhostTLD(host))
     return true;
 
   IPAddressNumber ip_number;
@@ -1012,6 +1011,24 @@ bool IsLocalhost(const std::string& host) {
   }
 
   return false;
+}
+
+bool IsLocalhostTLD(const std::string& host) {
+  const char kLocalhostTLD[] = ".localhost";
+  const size_t kLocalhostTLDLength = arraysize(kLocalhostTLD) - 1;
+
+  if (host.empty())
+    return false;
+
+  size_t host_len = host.size();
+  if (*host.rbegin() == '.')
+    --host_len;
+  if (host_len < kLocalhostTLDLength)
+    return false;
+
+  const char* host_suffix = host.data() + host_len - kLocalhostTLDLength;
+  return base::strncasecmp(host_suffix, kLocalhostTLD, kLocalhostTLDLength) ==
+         0;
 }
 
 NetworkInterface::NetworkInterface()
