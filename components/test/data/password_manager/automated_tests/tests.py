@@ -6,21 +6,9 @@
 """Automated tests for many websites"""
 
 import argparse
-import logging
 
 from environment import Environment
 from websitetest import WebsiteTest
-
-
-class TypeOfTestedWebsites:
-  """An enum to specify which groups of tests to run."""
-  # Runs all the tests.
-  ALL_TESTS = 0
-  # Runs a specified list of tests.
-  LIST_OF_TESTS = 1
-
-  def __init__(self):
-    pass
 
 
 class Alexa(WebsiteTest):
@@ -445,53 +433,46 @@ class Ziddu(WebsiteTest):
     self.Click(".login input")
 
 
-def Tests(environment, tests_to_run=None):
-
-  all_tests = {
-    "163": One63("163"), # http://crbug.com/368690
-    "adobe": Adobe("adobe"), # Password saving not offered.
-    "alexa": Alexa("alexa"),
-    "aliexpress": Aliexpress("aliexpress"), # Fails due to test framework issue.
-    "amazon": Amazon("amazon"), # Bug not reproducible without test.
-    "ask": Ask("ask"), # Password not saved.
-    "baidu": Baidu("baidu"), # Password not saved.
-    "cnn": Cnn("cnn"), # http://crbug.com/368690
-    "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
-    "dailymotion": Dailymotion("dailymotion"), # Crashes.
-    "dropbox": Dropbox("dropbox"),
-    "ebay": Ebay("ebay"), # http://crbug.com/368690
-    "espn": Espn("espn"), # Iframe, password saved but not autofilled.
-    "facebook": Facebook("facebook"),
-    "flipkart": Flipkart("flipkart"), # Fails due to test framework issue.
-    "github": Github("github"),
-    "google": Google("google"),
-    "imgur": Imgur("imgur"),
-    "instagram": Instagram("instagram"), # Iframe, pw saved but not autofilled.
-    "linkedin": Linkedin("linkedin"),
-    "liveinternet": Liveinternet("liveinternet"),
-    "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
-    "mailru": Mailru("mailru"),
-    "nytimes": Nytimes("nytimes"),
-    "odnoklassniki": Odnoklassniki("odnoklassniki"),
-    "pinterest": Pinterest("pinterest"),
-    "reddit": Reddit("reddit", username_not_auto=True),
-    "stackexchange": StackExchange("stackexchange"), # Iframe, not autofilled.
-    "tumblr": Tumblr("tumblr", username_not_auto=True),
-    "twitter": Twitter("twitter"),
-    "vkontakte": Vkontakte("vkontakte"),
-    "vube": Vube("vube"), # http://crbug.com/368690
-    "wikia": Wikia("wikia"),
-    "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
-    "wordpress": Wordpress("wordpress"),
-    "yahoo": Yahoo("yahoo", username_not_auto=True),
-    "yandex": Yandex("yandex"),
-    "ziddu": Ziddu("ziddu"), # Password not saved.
-  }
-
-  tests_to_run = tests_to_run or all_tests.keys()
-  for test_name in tests_to_run:
-    if test_name in all_tests.keys():
-      environment.AddWebsiteTest(all_tests[test_name])
+all_tests = {
+  "163": One63("163"), # http://crbug.com/368690
+  "adobe": Adobe("adobe"), # Password saving not offered.
+  "alexa": Alexa("alexa"),
+  "aliexpress": Aliexpress("aliexpress"), # Fails due to test framework issue.
+  "amazon": Amazon("amazon"), # Bug not reproducible without test.
+  "ask": Ask("ask"), # Password not saved.
+  "baidu": Baidu("baidu"), # Password not saved.
+  "cnn": Cnn("cnn"), # http://crbug.com/368690
+  "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
+  "dailymotion": Dailymotion("dailymotion"), # Crashes.
+  "dropbox": Dropbox("dropbox"),
+  "ebay": Ebay("ebay"), # http://crbug.com/368690
+  "espn": Espn("espn"), # Iframe, password saved but not autofilled.
+  "facebook": Facebook("facebook"),
+  "flipkart": Flipkart("flipkart"), # Fails due to test framework issue.
+  "github": Github("github"),
+  "google": Google("google"),
+  "imgur": Imgur("imgur"),
+  "instagram": Instagram("instagram"), # Iframe, pw saved but not autofilled.
+  "linkedin": Linkedin("linkedin"),
+  "liveinternet": Liveinternet("liveinternet"),
+  "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
+  "mailru": Mailru("mailru"),
+  "nytimes": Nytimes("nytimes"),
+  "odnoklassniki": Odnoklassniki("odnoklassniki"),
+  "pinterest": Pinterest("pinterest"),
+  "reddit": Reddit("reddit", username_not_auto=True),
+  "stackexchange": StackExchange("stackexchange"), # Iframe, not autofilled.
+  "tumblr": Tumblr("tumblr", username_not_auto=True),
+  "twitter": Twitter("twitter"),
+  "vkontakte": Vkontakte("vkontakte"),
+  "vube": Vube("vube"), # http://crbug.com/368690
+  "wikia": Wikia("wikia"),
+  "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
+  "wordpress": Wordpress("wordpress"),
+  "yahoo": Yahoo("yahoo", username_not_auto=True),
+  "yandex": Yandex("yandex"),
+  "ziddu": Ziddu("ziddu"), # Password not saved.
+}
 
 
 def saveResults(environment_tests_results, environment_save_path):
@@ -515,12 +496,10 @@ def saveResults(environment_tests_results, environment_save_path):
     with open(environment_save_path, "w") as save_file:
       save_file.write(xml)
 
-def RunTests(chrome_path, chromedriver_path, profile_path,
-             environment_passwords_path, enable_automatic_password_saving,
-             environment_numeric_level, log_to_console, environment_log_file,
-             environment_tested_websites, tests=None):
-
-  """Runs the the tests
+def RunTest(chrome_path, chromedriver_path, profile_path,
+            environment_passwords_path, enable_automatic_password_saving,
+            website_test_name):
+  """Runs the test for the specified website.
 
   Args:
     chrome_path: The chrome binary file.
@@ -529,42 +508,31 @@ def RunTests(chrome_path, chromedriver_path, profile_path,
     environment_passwords_path: The usernames and passwords file.
     enable_automatic_password_saving: If True, the passwords are going to be
         saved without showing the prompt.
-    environment_numeric_level: The log verbosity.
-    log_to_console: If True, the debug logs will be shown on the console.
-    environment_log_file: The file where to store the log. If it's empty, the
-        log is not stored.
-    environment_tested_websites: One of the TypeOfTestedWebsites values,
-        indicating which group of tests to run.
-    tests: Specifies which tests to run. Ignored unless
-       |environment_tested_websites| is equal to LIST_OF_TESTS.
+    website_test_name: Name of the website to test (refer to keys in
+        all_tests above).
 
   Returns:
-    The results of tests as list of TestResults.
+    The results of the test as list of TestResults.
+
   Raises:
-    Exception: An exception is raised if one of the tests fails.
+    Exception: An exception is raised if one of the tests for the website
+        fails, or if the website name is not known.
   """
 
   environment = Environment(chrome_path, chromedriver_path, profile_path,
                             environment_passwords_path,
-                            enable_automatic_password_saving,
-                            environment_numeric_level,
-                            log_to_console,
-                            environment_log_file)
+                            enable_automatic_password_saving)
 
   # Test which care about the save-password prompt need the prompt
   # to be shown. Automatic password saving results in no prompt.
   run_prompt_tests = not enable_automatic_password_saving
 
-  Tests(environment, tests)
-
-  if environment_tested_websites == TypeOfTestedWebsites.ALL_TESTS:
-    environment.AllTests(run_prompt_tests)
-  elif environment_tested_websites == TypeOfTestedWebsites.LIST_OF_TESTS:
-    environment.Test(tests, run_prompt_tests)
+  if website_test_name in all_tests:
+    environment.AddWebsiteTest(all_tests[website_test_name])
   else:
-    raise Exception("Error: |environment_tested_websites| has to be one of the"
-        "TypeOfTestedWebsites values")
+    raise Exception("Test name {} is unknown.".format(website_test_name))
 
+  environment.AllTests(run_prompt_tests)
 
   environment.Quit()
   return environment.tests_results
@@ -576,77 +544,46 @@ if __name__ == "__main__":
 
   parser.add_argument(
       "--chrome-path", action="store", dest="chrome_path",
-      help="Set the chrome path (required).", nargs=1, required=True)
+      help="Set the chrome path (required).", required=True)
   parser.add_argument(
       "--chromedriver-path", action="store", dest="chromedriver_path",
-      help="Set the chromedriver path (required).", nargs=1, required=True)
+      help="Set the chromedriver path (required).", required=True)
   parser.add_argument(
       "--profile-path", action="store", dest="profile_path",
       help="Set the profile path (required). You just need to choose a "
            "temporary empty folder. If the folder is not empty all its content "
            "is going to be removed.",
-      nargs=1, required=True)
+      required=True)
 
   parser.add_argument(
       "--passwords-path", action="store", dest="passwords_path",
-      help="Set the usernames/passwords path (required).", nargs=1,
-      required=True)
-  parser.add_argument("--log", action="store", nargs=1, dest="log_level",
-                      help="Set log level.")
-  parser.add_argument("--log-screen", action="store_true", dest="log_screen",
-                      help="Show log on the screen.")
-  parser.add_argument("--log-file", action="store", dest="log_file",
-                      help="Write the log in a file.", nargs=1)
-  parser.add_argument("--save-path", action="store", nargs=1, dest="save_path",
+      help="Set the usernames/passwords path (required).", required=True)
+  parser.add_argument("--save-path", action="store", dest="save_path",
                       help="Write the results in a file.")
-  parser.add_argument("tests", help="Tests to be run.",  nargs="*")
+  parser.add_argument("test", help="Test to be run.")
 
   args = parser.parse_args()
 
-  passwords_path = args.passwords_path[0]
-
-  tested_websites = TypeOfTestedWebsites.ALL_TESTS
-  if args.tests:
-    tested_websites = TypeOfTestedWebsites.LIST_OF_TESTS
-
-  numeric_level = None
-  if args.log_level:
-    numeric_level = getattr(logging, args.log_level[0].upper(), None)
-    if not isinstance(numeric_level, int):
-      raise ValueError("Invalid log level: %s" % args.log_level[0])
-
-  log_file = None
-  if args.log_file:
-    log_file = args.log_file[0]
-
   save_path = None
   if args.save_path:
-    save_path = args.save_path[0]
+    save_path = args.save_path
 
   # Run the test without enable-automatic-password-saving to check whether or
   # not the prompt is shown in the way we expected.
-  tests_results = RunTests(args.chrome_path[0],
-                           args.chromedriver_path[0],
-                           args.profile_path[0],
-                           passwords_path,
-                           False,
-                           numeric_level,
-                           args.log_screen,
-                           log_file,
-                           tested_websites,
-                           args.tests)
+  tests_results = RunTest(args.chrome_path,
+                          args.chromedriver_path,
+                          args.profile_path,
+                          args.passwords_path,
+                          False,
+                          args.test)
 
   # Run the test with enable-automatic-password-saving to check whether or not
   # the passwords is stored in the the way we expected.
-  tests_results += RunTests(args.chrome_path[0],
-                            args.chromedriver_path[0],
-                            args.profile_path[0],
-                            passwords_path,
-                            True,
-                            numeric_level,
-                            args.log_screen,
-                            log_file,
-                            tested_websites,
-                            args.tests)
+  tests_results += RunTest(args.chrome_path,
+                           args.chromedriver_path,
+                           args.profile_path,
+                           args.passwords_path,
+                           True,
+                           args.test)
 
   saveResults(tests_results, save_path)

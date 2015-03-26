@@ -4,19 +4,12 @@
 
 """The testing Environment class."""
 
-import logging
+import os
 import shutil
-import sys
 import time
-import traceback
 from xml.etree import ElementTree
-from xml.sax.saxutils import escape
-
-sys.path.insert(0, '../../../../third_party/webdriver/pylib/')
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 
 
@@ -46,8 +39,7 @@ class Environment:
   """Sets up the testing Environment. """
 
   def __init__(self, chrome_path, chromedriver_path, profile_path,
-               passwords_path, enable_automatic_password_saving,
-               numeric_level=None, log_to_console=False, log_file=""):
+               passwords_path, enable_automatic_password_saving):
     """Creates a new testing Environment.
 
     Args:
@@ -57,61 +49,35 @@ class Environment:
       passwords_path: The usernames and passwords file.
       enable_automatic_password_saving: If True, the passwords are going to be
           saved without showing the prompt.
-      numeric_level: The log verbosity.
-      log_to_console: If True, the debug logs will be shown on the console.
-      log_file: The file where to store the log. If it's empty, the log will
-          not be stored.
 
     Raises:
       Exception: An exception is raised if |profile_path| folder could not be
       removed.
     """
-    # Setting up the login.
-    if numeric_level is not None:
-      if log_file:
-        # Set up logging to file.
-        logging.basicConfig(level=numeric_level,
-                            filename=log_file,
-                            filemode='w')
-
-        if log_to_console:
-          console = logging.StreamHandler()
-          console.setLevel(numeric_level)
-          # Add the handler to the root logger.
-          logging.getLogger('').addHandler(console)
-
-      elif log_to_console:
-        logging.basicConfig(level=numeric_level)
 
     # Cleaning the chrome testing profile folder.
-    try:
+    if os.path.exists(profile_path):
       shutil.rmtree(profile_path)
-    except Exception, e:
-      pass
-    # If |chrome_path| is not defined, this means that we are in the dashboard
-    # website, and we just need to get the list of all websites. In this case,
-    # we don't need to initilize the webdriver.
-    if chrome_path:
-      options = Options()
-      self.enable_automatic_password_saving = enable_automatic_password_saving
-      if enable_automatic_password_saving:
-        options.add_argument("enable-automatic-password-saving")
-      # Chrome path.
-      options.binary_location = chrome_path
-      # Chrome testing profile path.
-      options.add_argument("user-data-dir=%s" % profile_path)
+    options = Options()
+    self.enable_automatic_password_saving = enable_automatic_password_saving
+    if enable_automatic_password_saving:
+      options.add_argument("enable-automatic-password-saving")
+    # Chrome path.
+    options.binary_location = chrome_path
+    # Chrome testing profile path.
+    options.add_argument("user-data-dir=%s" % profile_path)
 
-      # The webdriver. It's possible to choose the port the service is going to
-      # run on. If it's left to 0, a free port will be found.
-      self.driver = webdriver.Chrome(chromedriver_path, 0, options)
-      # The password internals window.
-      self.internals_window = self.driver.current_window_handle
-      if passwords_path:
-        # An xml tree filled with logins and passwords.
-        self.passwords_tree = ElementTree.parse(passwords_path).getroot()
-      else:
-        raise Exception("Error: |passwords_path| needs to be provided if"
-            "|chrome_path| is provided, otherwise the tests could not be run")
+    # The webdriver. It's possible to choose the port the service is going to
+    # run on. If it's left to 0, a free port will be found.
+    self.driver = webdriver.Chrome(chromedriver_path, 0, options)
+    # The password internals window.
+    self.internals_window = self.driver.current_window_handle
+    if passwords_path:
+      # An xml tree filled with logins and passwords.
+      self.passwords_tree = ElementTree.parse(passwords_path).getroot()
+    else:
+      raise Exception("Error: |passwords_path| needs to be provided if"
+          "|chrome_path| is provided, otherwise the tests could not be run")
     # Password internals page.
     self.internals_page = "chrome://password-manager-internals/"
     # The Website window.
@@ -119,9 +85,7 @@ class Environment:
     # The WebsiteTests list.
     self.websitetests = []
     # Map messages to the number of their appearance in the log.
-    self.message_count = dict()
-    self.message_count[MESSAGE_ASK] = 0
-    self.message_count[MESSAGE_SAVE] = 0
+    self.message_count = { MESSAGE_ASK: 0, MESSAGE_SAVE: 0 }
     # The tests needs two tabs to work. A new tab is opened with the first
     # GoTo. This is why we store here whether or not it's the first time to
     # execute GoTo.
@@ -132,25 +96,29 @@ class Environment:
   def AddWebsiteTest(self, websitetest):
     """Adds a WebsiteTest to the testing Environment.
 
+    TODO(vabr): Currently, this is only called at most once for each
+    Environment instance. That is because to run all tests efficiently in
+    parallel, each test gets its own process spawned (outside of Python).
+    That makes sense, but then we should flatten the hierarchy of calls
+    and consider making the 1:1 relation of environment to tests more
+    explicit.
+
     Args:
       websitetest: The WebsiteTest instance to be added.
     """
     websitetest.environment = self
-    if hasattr(self, "driver"):
-      websitetest.driver = self.driver
-    if hasattr(self, "passwords_tree") and self.passwords_tree is not None:
-      if not websitetest.username:
-        username_tag = (
-            self.passwords_tree.find(
-                ".//*[@name='%s']/username" % websitetest.name))
-        if username_tag.text:
-          websitetest.username = username_tag.text
-      if not websitetest.password:
-        password_tag = (
-            self.passwords_tree.find(
-                ".//*[@name='%s']/password" % websitetest.name))
-        if password_tag.text:
-          websitetest.password = password_tag.text
+    # TODO(vabr): Make driver a property of WebsiteTest.
+    websitetest.driver = self.driver
+    if not websitetest.username:
+      username_tag = (
+          self.passwords_tree.find(
+              ".//*[@name='%s']/username" % websitetest.name))
+      websitetest.username = username_tag.text
+    if not websitetest.password:
+      password_tag = (
+          self.passwords_tree.find(
+              ".//*[@name='%s']/password" % websitetest.name))
+      websitetest.password = password_tag.text
     self.websitetests.append(websitetest)
 
   def ClearCache(self, clear_passwords):
@@ -160,7 +128,6 @@ class Environment:
     Args:
       clear_passwords : Clear all the passwords if the bool value is true.
     """
-    logging.info("\nClearCache\n")
     self.driver.get("chrome://settings/clearBrowserData")
     self.driver.switch_to_frame("settings")
     script = (
@@ -184,7 +151,6 @@ class Environment:
     self.EnablePasswordsSaving()
 
   def EnablePasswordsSaving(self):
-    logging.info("\nEnablePasswordSaving\n")
     self.driver.get("chrome://settings")
     self.driver.switch_to_frame("settings")
     script = "document.getElementById('advanced-settings-expander').click();"
@@ -293,6 +259,8 @@ class Environment:
 
   def AllTests(self, prompt_test):
     """Runs the tests on all the WebsiteTests.
+
+    TODO(vabr): Currently, "all tests" always means one.
 
     Args:
       prompt_test: If True, tests caring about showing the save-password

@@ -109,8 +109,6 @@ self.ClickIfClickable("css_selector")
 self.GoTo("url")
 * HoverOver: find an element using CSS Selector and hover over it.
 self.HoverOver("css_selector")
-* SendEnterTo: find an element using CSS Selector and send enter to it.
-self.SendEnterTo("css_selector")
 
 * IsDisplayed: check if an element is displayed.
 self.IsDisplayed("css_selector")

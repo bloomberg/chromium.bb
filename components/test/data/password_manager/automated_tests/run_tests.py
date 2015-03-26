@@ -36,7 +36,6 @@ import subprocess
 import tempfile
 import time
 
-from environment import Environment
 import tests
 
 
@@ -173,7 +172,6 @@ def run_tests(config_path):
       for format description.
   """
 
-  environment = Environment("", "", "", None, False)
   defaults = {("run_options", "tests_in_parallel"): "1"}
   config = ConfigParser.ConfigParser()
   _apply_defaults(config, defaults)
@@ -194,8 +192,7 @@ def run_tests(config_path):
     user_selected_tests = config.get("run_options", "tests_to_run").split(",")
     tests_to_run = user_selected_tests
   else:
-    tests.Tests(environment)
-    tests_to_run = [test.name for test in environment.websitetests]
+    tests_to_run = tests.all_tests.keys()
 
   logger = logging.getLogger("run_tests")
   logger.log(SCRIPT_DEBUG, "%d tests to run: %s", len(tests_to_run),

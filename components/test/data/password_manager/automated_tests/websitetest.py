@@ -5,10 +5,7 @@
 """WebsiteTest testing class."""
 
 import logging
-import sys
 import time
-
-sys.path.insert(0, '../../../../third_party/webdriver/pylib/')
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -134,16 +131,6 @@ class WebsiteTest:
     element = self.driver.find_element_by_css_selector(selector)
     hover = ActionChains(self.driver).move_to_element(element)
     hover.perform()
-
-  def SendEnterTo(self, selector):
-    """Sends an enter key to an element.
-
-    Args:
-      selector: The element CSS selector.
-    """
-    logging.info("action: SendEnterTo %s" % selector)
-    body = self.driver.find_element_by_tag_name("body")
-    body.send_keys(Keys.ENTER)
 
   # Waiting/Displaying actions.
 
