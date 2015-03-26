@@ -1808,6 +1808,24 @@ TopControls& WebViewImpl::topControls()
     return page()->frameHost().topControls();
 }
 
+void WebViewImpl::resizeViewWhileAnchored(FrameView* view)
+{
+    // FIXME: TextAutosizer does not yet support out-of-process frames.
+    if (mainFrameImpl() && mainFrameImpl()->frame()->isLocalFrame()) {
+        // Avoids unnecessary invalidations while various bits of state in TextAutosizer are updated.
+        TextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
+        performResize();
+    } else {
+        performResize();
+    }
+
+    m_fullscreenController->updateSize();
+
+    // Relayout immediately to recalculate the minimum scale limit for rotation anchoring.
+    if (view->needsLayout())
+        view->layout();
+}
+
 void WebViewImpl::resize(const WebSize& newSize)
 {
     if (m_shouldAutoResize || m_size == newSize)
@@ -1828,30 +1846,13 @@ void WebViewImpl::resize(const WebSize& newSize)
     m_size = newSize;
 
     FloatSize viewportAnchorCoords(viewportAnchorCoordX, viewportAnchorCoordY);
-    OwnPtr<ViewportAnchor> viewportAnchor = isRotation
-        ? adoptPtr<ViewportAnchor>(new RotationViewportAnchor(*view, pinchViewport, viewportAnchorCoords, m_pageScaleConstraintsSet))
-        : adoptPtr<ViewportAnchor>(new ResizeViewportAnchor(*view, pinchViewport));
-
-    viewportAnchor->setAnchor();
-
-    // FIXME: TextAutosizer does not yet support out-of-process frames.
-    if (mainFrameImpl() && mainFrameImpl()->frame()->isLocalFrame())
-    {
-        // Avoids unnecessary invalidations while various bits of state in TextAutosizer are updated.
-        TextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
-        performResize();
+    if (isRotation) {
+        RotationViewportAnchor anchor(*view, pinchViewport, viewportAnchorCoords, m_pageScaleConstraintsSet);
+        resizeViewWhileAnchored(view);
     } else {
-        performResize();
+        ResizeViewportAnchor anchor(*view, pinchViewport);
+        resizeViewWhileAnchored(view);
     }
-
-    m_fullscreenController->updateSize();
-
-    // Relayout immediately to recalculate the minimum scale limit for rotation anchoring.
-    if (view->needsLayout())
-        view->layout();
-
-    viewportAnchor->restoreToAnchor();
-
     sendResizeEventAndRepaint();
 }
 

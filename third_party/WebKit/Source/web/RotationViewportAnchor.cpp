@@ -86,20 +86,28 @@ RotationViewportAnchor::RotationViewportAnchor(
     PageScaleConstraintsSet& pageScaleConstraintsSet)
     : ViewportAnchor(rootFrameView, pinchViewport)
     , m_anchorInInnerViewCoords(anchorInInnerViewCoords)
-    , m_pageScaleConstraintsSet(pageScaleConstraintsSet) { }
+    , m_pageScaleConstraintsSet(pageScaleConstraintsSet)
+{
+    setAnchor();
+}
+
+RotationViewportAnchor::~RotationViewportAnchor()
+{
+    restoreToAnchor();
+}
 
 void RotationViewportAnchor::setAnchor()
 {
     // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and PinchViewport
     //        respectively. This path should be rewritten without pixel snapping.
-    IntRect outerViewRect = m_rootFrameView.visibleContentRect();
-    IntRect innerViewRect = enclosedIntRect(m_pinchViewport.visibleRectInDocument());
+    IntRect outerViewRect = m_rootFrameView->visibleContentRect();
+    IntRect innerViewRect = enclosedIntRect(m_pinchViewport->visibleRectInDocument());
 
-    m_oldPageScaleFactor = m_pinchViewport.scale();
+    m_oldPageScaleFactor = m_pinchViewport->scale();
     m_oldMinimumPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().minimumScale;
 
     // Save the absolute location in case we won't find the anchor node, we'll fall back to that.
-    m_pinchViewportInDocument = m_pinchViewport.visibleRectInDocument().location();
+    m_pinchViewportInDocument = m_pinchViewport->visibleRectInDocument().location();
 
     m_anchorNode.clear();
     m_anchorNodeBounds = LayoutRect();
@@ -128,7 +136,7 @@ void RotationViewportAnchor::setAnchor()
     anchorOffset.scale(m_anchorInInnerViewCoords.width(), m_anchorInInnerViewCoords.height());
     const FloatPoint anchorPoint = FloatPoint(innerViewRect.location()) + anchorOffset;
 
-    Node* node = findNonEmptyAnchorNode(flooredIntPoint(anchorPoint), innerViewRect, m_rootFrameView.frame().eventHandler());
+    Node* node = findNonEmptyAnchorNode(flooredIntPoint(anchorPoint), innerViewRect, m_rootFrameView->frame().eventHandler());
     if (!node)
         return;
 
@@ -143,7 +151,7 @@ void RotationViewportAnchor::restoreToAnchor()
     float newPageScaleFactor = m_oldPageScaleFactor / m_oldMinimumPageScaleFactor * m_pageScaleConstraintsSet.finalConstraints().minimumScale;
     newPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().clampToConstraints(newPageScaleFactor);
 
-    FloatSize pinchViewportSize = m_pinchViewport.size();
+    FloatSize pinchViewportSize = m_pinchViewport->size();
     pinchViewportSize.scale(1 / newPageScaleFactor);
 
     IntPoint mainFrameOrigin;
@@ -151,17 +159,16 @@ void RotationViewportAnchor::restoreToAnchor()
 
     computeOrigins(pinchViewportSize, mainFrameOrigin, pinchViewportOrigin);
 
-    m_rootFrameView.setScrollOffset(mainFrameOrigin);
+    m_rootFrameView->setScrollOffset(mainFrameOrigin);
 
     // Set scale before location, since location can be clamped on setting scale.
-    m_pinchViewport.setScale(newPageScaleFactor);
-    m_pinchViewport.setLocation(pinchViewportOrigin);
+    m_pinchViewport->setScale(newPageScaleFactor);
+    m_pinchViewport->setLocation(pinchViewportOrigin);
 }
 
-void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize,
-    IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const
+void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const
 {
-    IntSize outerSize = m_rootFrameView.visibleContentRect().size();
+    IntSize outerSize = m_rootFrameView->visibleContentRect().size();
 
     // Compute the viewport origins in CSS pixels relative to the document.
     FloatSize absPinchViewportOffset = m_normalizedPinchViewportOffset;
@@ -175,7 +182,7 @@ void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize,
 
     moveToEncloseRect(outerRect, innerRect);
 
-    outerRect.setLocation(m_rootFrameView.adjustScrollPositionWithinRange(outerRect.location()));
+    outerRect.setLocation(m_rootFrameView->adjustScrollPositionWithinRange(outerRect.location()));
 
     moveIntoRect(innerRect, outerRect);
 

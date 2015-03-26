@@ -11,7 +11,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "web/ViewportAnchor.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -29,22 +28,18 @@ class PinchViewport;
 // no node or it is lost during the resize, we fall back to the resize anchor
 // logic.
 class RotationViewportAnchor : public ViewportAnchor {
+    STACK_ALLOCATED();
 public:
-    RotationViewportAnchor(
-        FrameView& rootFrameView,
-        PinchViewport&,
-        const FloatSize& anchorInInnerViewCoords,
-        PageScaleConstraintsSet&);
-    virtual ~RotationViewportAnchor() { }
-
-    virtual void setAnchor();
-    virtual void restoreToAnchor();
+    RotationViewportAnchor(FrameView& rootFrameView, PinchViewport&, const FloatSize& anchorInInnerViewCoords, PageScaleConstraintsSet&);
+    ~RotationViewportAnchor();
 
 private:
+    void setAnchor();
+    void restoreToAnchor();
+
     FloatPoint getInnerOrigin(const FloatSize& innerSize) const;
 
-    void computeOrigins(const FloatSize& innerSize,
-        IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const;
+    void computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const;
 
     float m_oldPageScaleFactor;
     float m_oldMinimumPageScaleFactor;
@@ -56,7 +51,7 @@ private:
     // normalized to the outer viewport size.
     FloatSize m_normalizedPinchViewportOffset;
 
-    RefPtrWillBePersistent<Node> m_anchorNode;
+    RefPtrWillBeMember<Node> m_anchorNode;
     LayoutRect m_anchorNodeBounds;
 
     FloatSize m_anchorInInnerViewCoords;
@@ -67,4 +62,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // RotationViewportAnchor_h

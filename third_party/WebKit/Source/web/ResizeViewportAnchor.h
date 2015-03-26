@@ -18,12 +18,10 @@ class PinchViewport;
 // restores to that scroll offset so that document location appears exactly
 // unchanged to the user.
 class ResizeViewportAnchor : public ViewportAnchor {
+    STACK_ALLOCATED();
 public:
     ResizeViewportAnchor(FrameView& rootFrameView, PinchViewport&);
-    virtual ~ResizeViewportAnchor() { }
-
-    virtual void setAnchor();
-    virtual void restoreToAnchor();
+    ~ResizeViewportAnchor();
 
 private:
     // Inner viewport origin in the reference frame of the root document, in CSS
@@ -33,4 +31,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // ResizeViewportAnchor_h

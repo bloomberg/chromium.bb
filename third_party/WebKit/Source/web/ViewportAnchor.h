@@ -31,28 +31,30 @@
 #ifndef ViewportAnchor_h
 #define ViewportAnchor_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class FrameView;
 class PinchViewport;
 
-// Use this class to "anchor" the viewport to a location, perform some operation
-// that may move the viewport around, then restore the viewport to the original
-// location. We support two kinds of anchors, a rotation anchor and a resize
-// anchor.
+// Use derived ViewportAnchor classes to "anchor" the viewport to a location,
+// perform some operation that may move the viewport around, then restore
+// the viewport to the original location.
+// We support two kinds of anchors, a rotation anchor and a resize anchor.
 class ViewportAnchor {
-public:
-    ViewportAnchor(FrameView& rootFrameView, PinchViewport&);
-    virtual ~ViewportAnchor() { }
-
-    virtual void setAnchor() = 0;
-    virtual void restoreToAnchor() = 0;
-
+    STACK_ALLOCATED();
 protected:
-    FrameView& m_rootFrameView;
-    PinchViewport& m_pinchViewport;
+    ViewportAnchor(FrameView& rootFrameView, PinchViewport& pinchViewport)
+        : m_rootFrameView(&rootFrameView)
+        , m_pinchViewport(&pinchViewport)
+    {
+    }
+
+    RawPtrWillBeMember<FrameView> m_rootFrameView;
+    RawPtrWillBeMember<PinchViewport> m_pinchViewport;
 };
 
 } // namespace blink
 
-#endif
+#endif // ViewportAnchor_h

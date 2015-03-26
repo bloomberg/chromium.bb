@@ -14,23 +14,20 @@
 namespace blink {
 
 ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, PinchViewport& pinchViewport)
-    : ViewportAnchor(rootFrameView, pinchViewport) { }
-
-
-void ResizeViewportAnchor::setAnchor()
+    : ViewportAnchor(rootFrameView, pinchViewport)
+    , m_pinchViewportInDocument(m_pinchViewport->visibleRectInDocument().location())
 {
-    m_pinchViewportInDocument = m_pinchViewport.visibleRectInDocument().location();
 }
 
-void ResizeViewportAnchor::restoreToAnchor()
+ResizeViewportAnchor::~ResizeViewportAnchor()
 {
-    FloatSize delta = m_pinchViewportInDocument - m_pinchViewport.visibleRectInDocument().location();
+    FloatSize delta = m_pinchViewportInDocument - m_pinchViewport->visibleRectInDocument().location();
 
-    DoublePoint targetFrameViewPosition = m_rootFrameView.scrollPositionDouble() + DoubleSize(delta);
-    m_rootFrameView.setScrollPosition(targetFrameViewPosition);
+    DoublePoint targetFrameViewPosition = m_rootFrameView->scrollPositionDouble() + DoubleSize(delta);
+    m_rootFrameView->setScrollPosition(targetFrameViewPosition);
 
-    DoubleSize remainder = targetFrameViewPosition - m_rootFrameView.scrollPositionDouble();
-    m_pinchViewport.move(toFloatSize(remainder));
+    DoubleSize remainder = targetFrameViewPosition - m_rootFrameView->scrollPositionDouble();
+    m_pinchViewport->move(toFloatSize(remainder));
 }
 
 } // namespace blink

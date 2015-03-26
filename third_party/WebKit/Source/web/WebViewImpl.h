@@ -545,6 +545,7 @@ private:
     void updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);
 
     void performResize();
+    void resizeViewWhileAnchored(FrameView*);
 
     friend class WebView;  // So WebView::Create can call our constructor
     friend class WTF::RefCounted<WebViewImpl>;

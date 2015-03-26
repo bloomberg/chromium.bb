@@ -116,7 +116,6 @@
       'UserMediaClientImpl.h',
       'ValidationMessageClientImpl.cpp',
       'ValidationMessageClientImpl.h',
-      'ViewportAnchor.cpp',
       'ViewportAnchor.h',
       'WebAXObject.cpp',
       'WebArrayBuffer.cpp',
