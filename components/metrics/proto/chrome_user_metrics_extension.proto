@@ -60,8 +60,8 @@ message ChromeUserMetricsExtension {
   repeated HistogramEventProto histogram_event = 6;
   repeated ProfilerEventProto profiler_event = 7;
 
-  // TODO(sque): Deprecate this field and use |sampled_profile| instead.
-  repeated PerfDataProto perf_data = 8;
+  // This field is no longer used. Use |sampled_profile| instead.
+  repeated PerfDataProto perf_data = 8 [deprecated=true];
 
   // A list of all collected sample-based profiles since the last UMA upload.
   repeated SampledProfile sampled_profile = 11;
