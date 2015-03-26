@@ -2610,6 +2610,23 @@ TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
   EXPECT_EQ(Range(0, 0), glyphs);
 }
 
+// Ensure the line breaker doesn't compute the word's width bigger than the
+// actual size. See http://crbug.com/470073
+TEST_F(RenderTextTest, HarfBuzz_WordWidthWithDiacritics) {
+  RenderTextHarfBuzz render_text;
+  const base::string16 kWord = WideToUTF16(L"\u0906\u092A\u0915\u0947 ");
+  render_text.SetText(kWord);
+  const gfx::SizeF text_size = render_text.GetStringSizeF();
+
+  render_text.SetText(kWord + kWord);
+  render_text.SetMultiline(true);
+  EXPECT_EQ(text_size.width() * 2, render_text.GetStringSizeF().width());
+  EXPECT_EQ(text_size.height(), render_text.GetStringSizeF().height());
+  render_text.SetDisplayRect(gfx::Rect(0, 0, std::ceil(text_size.width()), 0));
+  EXPECT_NEAR(text_size.width(), render_text.GetStringSizeF().width(), 1.0f);
+  EXPECT_EQ(text_size.height() * 2, render_text.GetStringSizeF().height());
+}
+
 // Ensure a string fits in a display rect with a width equal to the string's.
 TEST_F(RenderTextTest, StringFitsOwnWidth) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());

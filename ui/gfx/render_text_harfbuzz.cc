@@ -299,7 +299,6 @@ class HarfBuzzLineBreaker {
   // |*next_char| will be greater than |start_char| (to avoid constructing empty
   // lines).
   // Returns whether to skip the line before |*next_char|.
-  // TODO(ckocagil): Check clusters to avoid breaking ligatures and diacritics.
   // TODO(ckocagil): We might have to reshape after breaking at ligatures.
   //                 See whether resolving the TODO above resolves this too.
   // TODO(ckocagil): Do not reserve width for whitespace at the end of lines.
@@ -316,7 +315,8 @@ class HarfBuzzLineBreaker {
     SkScalar word_width = 0;
     *width = 0;
 
-    for (size_t i = start_char; i < run.range.end(); ++i) {
+    Range char_range;
+    for (size_t i = start_char; i < run.range.end(); i += char_range.length()) {
       // |word| holds the word boundary at or before |i|, and |next_word| holds
       // the word boundary right after |i|. Advance both |word| and |next_word|
       // when |i| reaches |next_word|.
@@ -325,7 +325,10 @@ class HarfBuzzLineBreaker {
         word_width = 0;
       }
 
-      Range glyph_range = run.CharRangeToGlyphRange(Range(i, i + 1));
+      Range glyph_range;
+      run.GetClusterAt(i, &char_range, &glyph_range);
+      DCHECK_LT(0U, char_range.length());
+
       SkScalar char_width = ((glyph_range.end() >= run.glyph_count)
                                  ? SkFloatToScalar(run.width)
                                  : run.positions[glyph_range.end()].x()) -
@@ -345,7 +348,7 @@ class HarfBuzzLineBreaker {
           *next_char = i;
         } else {
           // Continue from the next character.
-          *next_char = i + 1;
+          *next_char = i + char_range.length();
         }
         return true;
       }
