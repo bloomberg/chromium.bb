@@ -345,7 +345,7 @@ EventRouter::EventRouter(Profile* profile)
           base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
                      base::Unretained(this))),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ObserveEvents();
 }
 
@@ -353,7 +353,7 @@ EventRouter::~EventRouter() {
 }
 
 void EventRouter::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DLOG_IF(WARNING, !file_watchers_.empty())
       << "Not all file watchers are "
@@ -446,7 +446,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
                                const base::FilePath& virtual_path,
                                const std::string& extension_id,
                                const BoolCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   base::FilePath watch_path = local_path;
@@ -486,7 +486,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
 
 void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
                                   const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath watch_path = local_path;
   // Tweak watch path for remote sources - we need to drop leading /special
@@ -510,7 +510,7 @@ void EventRouter::OnCopyCompleted(int copy_id,
                                   const GURL& source_url,
                                   const GURL& destination_url,
                                   base::File::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager_private::CopyProgressStatus status;
   if (error == base::File::FILE_OK) {
@@ -536,7 +536,7 @@ void EventRouter::OnCopyProgress(
     const GURL& source_url,
     const GURL& destination_url,
     int64 size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager_private::CopyProgressStatus status;
   status.type = CopyProgressTypeToCopyProgressStatusType(type);
@@ -684,7 +684,7 @@ void EventRouter::OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
 }
 
 void EventRouter::OnRefreshTokenInvalid() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Raise a DriveConnectionStatusChanged event to notify the status offline.
   BroadcastEvent(
@@ -694,7 +694,7 @@ void EventRouter::OnRefreshTokenInvalid() {
 }
 
 void EventRouter::OnReadyToSendRequests() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Raise a DriveConnectionStatusChanged event to notify the status online.
   BroadcastEvent(
@@ -706,7 +706,7 @@ void EventRouter::OnReadyToSendRequests() {
 void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
                                               const base::FilePath& local_path,
                                               bool got_error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WatcherMap::const_iterator iter = file_watchers_.find(local_path);
   if (iter == file_watchers_.end()) {
@@ -837,28 +837,28 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
 
 void EventRouter::OnDiskAdded(
     const DiskMountManager::Disk& disk, bool mounting) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Do nothing.
 }
 
 void EventRouter::OnDiskRemoved(const DiskMountManager::Disk& disk) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Do nothing.
 }
 
 void EventRouter::OnDeviceAdded(const std::string& device_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Do nothing.
 }
 
 void EventRouter::OnDeviceRemoved(const std::string& device_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Do nothing.
 }
 
 void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
                                   const VolumeInfo& volume_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
   // happen at shutdown. This should be removed after removing Drive mounting
   // code in addMount. (addMount -> OnFileSystemMounted -> OnVolumeMounted is
@@ -874,7 +874,7 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
 
 void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
                                     const VolumeInfo& volume_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DispatchMountCompletedEvent(
       file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT,
       error_code,
@@ -900,13 +900,13 @@ void EventRouter::DispatchMountCompletedEvent(
 
 void EventRouter::OnFormatStarted(const std::string& device_path,
                                   bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Do nothing.
 }
 
 void EventRouter::OnFormatCompleted(const std::string& device_path,
                                     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Do nothing.
 }
 

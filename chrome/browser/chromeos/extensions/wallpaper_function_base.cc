@@ -50,7 +50,7 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
         function_(function) {}
 
   void Start(const std::vector<char>& image_data) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // This function can only be called after user login. It is fine to use
     // unsafe image decoder here. Before user login, a robust jpeg decoder will
@@ -104,7 +104,7 @@ WallpaperFunctionBase::~WallpaperFunctionBase() {
 }
 
 void WallpaperFunctionBase::StartDecode(const std::vector<char>& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (unsafe_wallpaper_decoder_)
     unsafe_wallpaper_decoder_->Cancel();
   unsafe_wallpaper_decoder_ = new UnsafeWallpaperDecoder(this);

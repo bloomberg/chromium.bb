@@ -103,7 +103,7 @@ void PolicyOAuth2TokenFetcher::OnGetTokenFailure(
 
 void PolicyOAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
                                             const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
        error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
        error.state() == GoogleServiceAuthError::REQUEST_CANCELED) &&

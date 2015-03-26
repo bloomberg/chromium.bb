@@ -72,7 +72,7 @@ ResourceMetadata::ResourceMetadata(
     : blocking_task_runner_(blocking_task_runner),
       storage_(storage),
       cache_(cache) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 FileError ResourceMetadata::Initialize() {
@@ -81,7 +81,7 @@ FileError ResourceMetadata::Initialize() {
 }
 
 void ResourceMetadata::Destroy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   blocking_task_runner_->PostTask(
       FROM_HERE,

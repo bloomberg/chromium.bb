@@ -90,7 +90,7 @@ FileError GetLocallyStoredResourceEntry(
 void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
                                  scoped_ptr<ResourceEntry> entry,
                                  FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK)
@@ -160,7 +160,7 @@ void OnGetLargestChangestamp(
     const GetFilesystemMetadataCallback& callback,
     const int64* largest_changestamp,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   metadata.largest_changestamp = *largest_changestamp;
@@ -205,7 +205,7 @@ FileError GetPathFromResourceIdOnBlockingPool(
 void GetPathFromResourceIdAfterGetPath(base::FilePath* file_path,
                                        const GetFilePathCallback& callback,
                                        FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(error, *file_path);
 }
 
@@ -218,7 +218,7 @@ bool FreeDiskSpaceIfNeededForOnBlockingPool(internal::FileCache* cache,
 // Used to implement ReadDirectory().
 void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
                            scoped_ptr<ResourceEntryVector> entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (entries) {
@@ -294,13 +294,13 @@ FileSystem::FileSystem(
       blocking_task_runner_(blocking_task_runner),
       temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ResetComponents();
 }
 
 FileSystem::~FileSystem() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   directory_loader_->RemoveObserver(this);
   change_list_loader_->RemoveObserver(this);
@@ -411,7 +411,7 @@ void FileSystem::ResetComponents() {
 }
 
 void FileSystem::CheckForUpdates() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "CheckForUpdates";
 
   change_list_loader_->CheckForUpdates(
@@ -419,19 +419,19 @@ void FileSystem::CheckForUpdates() {
 }
 
 void FileSystem::OnUpdateChecked(FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "CheckForUpdates finished: " << FileErrorToString(error);
   last_update_check_time_ = base::Time::Now();
   last_update_check_error_ = error;
 }
 
 void FileSystem::AddObserver(FileSystemObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
 void FileSystem::RemoveObserver(FileSystemObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
@@ -439,7 +439,7 @@ void FileSystem::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   copy_operation_->TransferFileFromLocalToRemote(local_src_file_path,
                                                  remote_dest_file_path,
@@ -450,7 +450,7 @@ void FileSystem::Copy(const base::FilePath& src_file_path,
                       const base::FilePath& dest_file_path,
                       bool preserve_last_modified,
                       const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   copy_operation_->Copy(
       src_file_path, dest_file_path, preserve_last_modified, callback);
@@ -459,7 +459,7 @@ void FileSystem::Copy(const base::FilePath& src_file_path,
 void FileSystem::Move(const base::FilePath& src_file_path,
                       const base::FilePath& dest_file_path,
                       const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   move_operation_->Move(src_file_path, dest_file_path, callback);
 }
@@ -467,7 +467,7 @@ void FileSystem::Move(const base::FilePath& src_file_path,
 void FileSystem::Remove(const base::FilePath& file_path,
                         bool is_recursive,
                         const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   remove_operation_->Remove(file_path, is_recursive, callback);
 }
@@ -477,7 +477,7 @@ void FileSystem::CreateDirectory(
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   CreateDirectoryParams params;
@@ -495,7 +495,7 @@ void FileSystem::CreateDirectory(
 
 void FileSystem::CreateDirectoryAfterRead(const CreateDirectoryParams& params,
                                           FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!params.callback.is_null());
 
   DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
@@ -510,7 +510,7 @@ void FileSystem::CreateFile(const base::FilePath& file_path,
                             bool is_exclusive,
                             const std::string& mime_type,
                             const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   create_file_operation_->CreateFile(
       file_path, is_exclusive, mime_type, callback);
@@ -520,7 +520,7 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
                            const base::Time& last_access_time,
                            const base::Time& last_modified_time,
                            const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   touch_operation_->TouchFile(
       file_path, last_access_time, last_modified_time, callback);
@@ -529,14 +529,14 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
 void FileSystem::TruncateFile(const base::FilePath& file_path,
                               int64 length,
                               const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   truncate_operation_->Truncate(file_path, length, callback);
 }
 
 void FileSystem::Pin(const base::FilePath& file_path,
                      const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::string* local_id = new std::string;
@@ -553,7 +553,7 @@ void FileSystem::Pin(const base::FilePath& file_path,
 void FileSystem::FinishPin(const FileOperationCallback& callback,
                            const std::string* local_id,
                            FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
@@ -563,7 +563,7 @@ void FileSystem::FinishPin(const FileOperationCallback& callback,
 
 void FileSystem::Unpin(const base::FilePath& file_path,
                        const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::string* local_id = new std::string;
@@ -581,7 +581,7 @@ void FileSystem::Unpin(const base::FilePath& file_path,
 void FileSystem::FinishUnpin(const FileOperationCallback& callback,
                              const std::string* local_id,
                              FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
@@ -591,7 +591,7 @@ void FileSystem::FinishUnpin(const FileOperationCallback& callback,
 
 void FileSystem::GetFile(const base::FilePath& file_path,
                          const GetFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   download_operation_->EnsureFileDownloadedByPath(
@@ -604,7 +604,7 @@ void FileSystem::GetFile(const base::FilePath& file_path,
 
 void FileSystem::GetFileForSaving(const base::FilePath& file_path,
                                   const GetFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   get_file_for_saving_operation_->GetFileForSaving(file_path, callback);
@@ -615,7 +615,7 @@ base::Closure FileSystem::GetFileContent(
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!initialized_callback.is_null());
   DCHECK(!get_content_callback.is_null());
   DCHECK(!completion_callback.is_null());
@@ -632,7 +632,7 @@ base::Closure FileSystem::GetFileContent(
 void FileSystem::GetResourceEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   ReadDirectory(file_path.DirName(),
@@ -647,7 +647,7 @@ void FileSystem::GetResourceEntryAfterRead(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
@@ -670,7 +670,7 @@ void FileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const ReadDirectoryEntriesCallback& entries_callback_in,
     const FileOperationCallback& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!completion_callback.is_null());
 
   const bool hide_hosted_docs =
@@ -689,7 +689,7 @@ void FileSystem::ReadDirectory(
 
 void FileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   about_resource_loader_->GetAboutResource(
@@ -702,7 +702,7 @@ void FileSystem::OnGetAboutResource(
     const GetAvailableSpaceCallback& callback,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(status);
@@ -720,7 +720,7 @@ void FileSystem::OnGetAboutResource(
 void FileSystem::GetShareUrl(const base::FilePath& file_path,
                              const GURL& embed_origin,
                              const GetShareUrlCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // Resolve the resource id.
@@ -746,7 +746,7 @@ void FileSystem::GetShareUrlAfterGetResourceEntry(
     const GetShareUrlCallback& callback,
     ResourceEntry* entry,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -772,7 +772,7 @@ void FileSystem::OnGetResourceEntryForGetShareUrl(
     const GetShareUrlCallback& callback,
     google_apis::DriveApiErrorCode status,
     const GURL& share_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(status);
@@ -792,7 +792,7 @@ void FileSystem::OnGetResourceEntryForGetShareUrl(
 void FileSystem::Search(const std::string& search_query,
                         const GURL& next_link,
                         const SearchCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   search_operation_->Search(search_query, next_link, callback);
 }
@@ -801,7 +801,7 @@ void FileSystem::SearchMetadata(const std::string& query,
                                 int options,
                                 int at_most_num_matches,
                                 const SearchMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(satorux): Stop handling hide_hosted_docs here. crbug.com/256520.
   if (pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles))
@@ -815,7 +815,7 @@ void FileSystem::SearchMetadata(const std::string& query,
 
 void FileSystem::SearchByHashes(const std::set<std::string>& hashes,
                                 const SearchByHashesCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   drive::internal::SearchMetadata(
       blocking_task_runner_, resource_metadata_,
       /* any file name */ "", base::Bind(&CheckHashes, hashes),
@@ -824,7 +824,7 @@ void FileSystem::SearchByHashes(const std::set<std::string>& hashes,
 }
 
 void FileSystem::OnFileChangedByOperation(const FileChange& changed_files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FOR_EACH_OBSERVER(
       FileSystemObserver, observers_, OnFileChanged(changed_files));
@@ -868,27 +868,27 @@ bool FileSystem::WaitForSyncComplete(const std::string& local_id,
 }
 
 void FileSystem::OnDirectoryReloaded(const base::FilePath& directory_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FOR_EACH_OBSERVER(
       FileSystemObserver, observers_, OnDirectoryChanged(directory_path));
 }
 
 void FileSystem::OnFileChanged(const FileChange& changed_files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FOR_EACH_OBSERVER(
       FileSystemObserver, observers_, OnFileChanged(changed_files));
 }
 
 void FileSystem::OnLoadFromServerComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   sync_client_->StartCheckingExistingPinnedFiles();
 }
 
 void FileSystem::OnInitialLoadComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   blocking_task_runner_->PostTask(FROM_HERE,
                                   base::Bind(&internal::RemoveStaleCacheFiles,
@@ -899,7 +899,7 @@ void FileSystem::OnInitialLoadComplete() {
 
 void FileSystem::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileSystemMetadata metadata;
@@ -925,7 +925,7 @@ void FileSystem::GetMetadata(
 void FileSystem::MarkCacheFileAsMounted(
     const base::FilePath& drive_file_path,
     const MarkMountedCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   base::FilePath* cache_file_path = new base::FilePath;
@@ -944,7 +944,7 @@ void FileSystem::MarkCacheFileAsMounted(
 void FileSystem::MarkCacheFileAsUnmounted(
     const base::FilePath& cache_file_path,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (!cache_->IsUnderFileCacheDirectory(cache_file_path)) {
@@ -965,7 +965,7 @@ void FileSystem::AddPermission(const base::FilePath& drive_file_path,
                                const std::string& email,
                                google_apis::drive::PermissionRole role,
                                const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // Resolve the resource id.
@@ -991,7 +991,7 @@ void FileSystem::AddPermissionAfterGetResourceEntry(
     const FileOperationCallback& callback,
     ResourceEntry* entry,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
@@ -1011,7 +1011,7 @@ void FileSystem::SetProperty(
     const std::string& key,
     const std::string& value,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   set_property_operation_->SetProperty(drive_file_path, visibility, key, value,
@@ -1022,7 +1022,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
                           OpenMode open_mode,
                           const std::string& mime_type,
                           const OpenFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   open_file_operation_->OpenFile(file_path, open_mode, mime_type, callback);
@@ -1030,7 +1030,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
 
 void FileSystem::GetPathFromResourceId(const std::string& resource_id,
                                        const GetFilePathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   base::FilePath* const file_path = new base::FilePath();
@@ -1049,7 +1049,7 @@ void FileSystem::GetPathFromResourceId(const std::string& resource_id,
 void FileSystem::FreeDiskSpaceIfNeededFor(
     int64 num_bytes,
     const FreeDiskSpaceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,

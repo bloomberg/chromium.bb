@@ -63,7 +63,7 @@ HelpAppLauncher::~HelpAppLauncher() {}
 
 void HelpAppLauncher::ShowHelpTopicDialog(Profile* profile,
                                           const GURL& topic_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LoginWebDialog* dialog = new LoginWebDialog(
       profile,
       NULL,

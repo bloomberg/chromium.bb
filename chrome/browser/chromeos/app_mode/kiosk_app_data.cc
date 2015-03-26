@@ -167,7 +167,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
   }
 
   void NotifyFinishedOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (client_)
       client_->OnCrxLoadFinished(this);
@@ -282,7 +282,7 @@ class KioskAppData::IconLoader {
   }
 
   void ReportResultOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     NotifyClient();
     delete this;
@@ -543,7 +543,7 @@ void KioskAppData::OnExtensionIconLoaded(const gfx::Image& icon) {
 }
 
 void KioskAppData::OnIconLoadSuccess(const gfx::ImageSkia& icon) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   icon_ = icon;
   SetStatus(STATUS_LOADED);
 }

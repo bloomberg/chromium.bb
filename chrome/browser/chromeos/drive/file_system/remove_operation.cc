@@ -70,17 +70,17 @@ RemoveOperation::RemoveOperation(
       metadata_(metadata),
       cache_(cache),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 RemoveOperation::~RemoveOperation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void RemoveOperation::Remove(const base::FilePath& path,
                              bool is_recursive,
                              const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::string* local_id = new std::string;
@@ -111,7 +111,7 @@ void RemoveOperation::RemoveAfterUpdateLocalState(
     const ResourceEntry* entry,
     const base::FilePath* changed_path,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (!changed_path->empty()) {

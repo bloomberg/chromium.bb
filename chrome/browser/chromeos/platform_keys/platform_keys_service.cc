@@ -651,7 +651,7 @@ void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
                                          unsigned int modulus_length,
                                          const std::string& extension_id,
                                          const GenerateKeyCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   platform_keys::subtle::GenerateRSAKey(
       token_id, modulus_length,
@@ -667,7 +667,7 @@ void PlatformKeysService::SignRSAPKCS1Digest(
     platform_keys::HashAlgorithm hash_algorithm,
     const std::string& extension_id,
     const SignCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(make_scoped_ptr(new SignTask(
       token_id, data, public_key, false /* digest before signing */,
       hash_algorithm, extension_id, callback, this)));
@@ -678,7 +678,7 @@ void PlatformKeysService::SignRSAPKCS1Raw(const std::string& token_id,
                                           const std::string& public_key,
                                           const std::string& extension_id,
                                           const SignCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(make_scoped_ptr(new SignTask(
       token_id, data, public_key, true /* sign directly without hashing */,
       platform_keys::HASH_ALGORITHM_NONE, extension_id, callback, this)));
@@ -690,7 +690,7 @@ void PlatformKeysService::SelectClientCertificates(
     const std::string& extension_id,
     const SelectCertificatesCallback& callback,
     content::WebContents* web_contents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(make_scoped_ptr(new SelectTask(
       request, interactive, extension_id, callback, web_contents, this)));
 }

@@ -49,7 +49,7 @@ FileCache::FileCache(ResourceMetadataStorage* storage,
       free_disk_space_getter_(free_disk_space_getter),
       weak_ptr_factory_(this) {
   DCHECK(blocking_task_runner_.get());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 FileCache::~FileCache() {
@@ -414,7 +414,7 @@ bool FileCache::Initialize() {
 }
 
 void FileCache::Destroy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Destroy myself on the blocking pool.
   // Note that base::DeletePointer<> cannot be used as the destructor of this

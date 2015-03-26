@@ -355,7 +355,7 @@ void MobileConfig::ProcessConfig(const std::string& global_config,
 void MobileConfig::ReadConfigInBackground(
     const base::FilePath& global_config_file,
     const base::FilePath& local_config_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::string global_config;
   std::string local_config;
   if (!base::ReadFileToString(global_config_file, &global_config)) {

@@ -72,7 +72,7 @@ bool SupervisedUserLoginFlow::HandlePasswordChangeDetected() {
 
 void SupervisedUserLoginFlow::OnSyncSetupDataLoaded(
     const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ConfigureSync(token);
 }
 

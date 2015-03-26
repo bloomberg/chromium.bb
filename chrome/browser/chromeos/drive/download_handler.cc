@@ -246,7 +246,7 @@ void DownloadHandler::RemoveDownload(void* manager_id, int id) {
 
 void DownloadHandler::OnDownloadUpdated(
     DownloadManager* manager, DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Only accept downloads that have the Drive meta data associated with them.
   DriveUserData* data = GetDriveUserData(download);

@@ -188,7 +188,7 @@ bool FileSelectorImpl::StartSelectFile(
     const base::FilePath& suggested_name,
     const std::vector<std::string>& allowed_extensions,
     Browser* browser) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!dialog_.get());
   DCHECK(browser);
 
@@ -240,7 +240,7 @@ void FileSelectorImpl::FileSelectionCanceled(
 
 void FileSelectorImpl::SendResponse(bool success,
                                     const base::FilePath& selected_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We don't want to send multiple responses.
   if (function_.get())
@@ -308,7 +308,7 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
 void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
     bool success,
     const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!success) {
     Respond(EntryDefinition(), false);

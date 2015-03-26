@@ -101,7 +101,7 @@ std::string CellularConfigDocument::GetErrorMessage(const std::string& code) {
 }
 
 void CellularConfigDocument::LoadCellularConfigFile() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Load partner customization startup manifest if it is available.
   base::FilePath config_path(kCellularConfigPath);
   if (!base::PathExists(config_path))

@@ -50,7 +50,7 @@ bool CheckLinearValues(const std::string& name, int maximum) {
 
 // Establishes field trial for wifi scanning in chromeos.  crbug.com/242733.
 void SetupProgressiveScanFieldTrial() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   const char name_of_experiment[] = "ProgressiveScan";
   const base::FilePath group_file_path(
       "/home/chronos/.progressive_scan_variation");
@@ -251,7 +251,7 @@ void ExternalMetrics::ScheduleCollector() {
 }
 
 void ExternalMetrics::SetupFieldTrialsOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Field trials that do not read from files can be initialized in
   // ExternalMetrics::Start() above.
   SetupProgressiveScanFieldTrial();

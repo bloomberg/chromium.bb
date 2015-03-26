@@ -80,7 +80,7 @@ TruncateOperation::~TruncateOperation() {
 void TruncateOperation::Truncate(const base::FilePath& file_path,
                                  int64 length,
                                  const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (length < 0) {
@@ -107,7 +107,7 @@ void TruncateOperation::TruncateAfterEnsureFileDownloadedByPath(
     FileError error,
     const base::FilePath& local_file_path,
     scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -136,7 +136,7 @@ void TruncateOperation::TruncateAfterTruncateOnBlockingPool(
     const std::string& local_id,
     const FileOperationCallback& callback,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED), local_id);

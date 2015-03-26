@@ -310,7 +310,7 @@ void BootTimesRecorder::WriteTimes(const std::string base_name,
 }
 
 void BootTimesRecorder::LoginDone(bool is_user_new) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (login_done_)
     return;
 
@@ -417,7 +417,7 @@ void BootTimesRecorder::RecordChromeMainStats() {
 }
 
 void BootTimesRecorder::RecordLoginAttempted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (login_done_)
     return;
 

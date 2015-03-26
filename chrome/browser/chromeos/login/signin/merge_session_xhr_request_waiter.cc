@@ -59,7 +59,7 @@ void MergeSessionXHRRequestWaiter::StartWaiting() {
 void MergeSessionXHRRequestWaiter::OnSessionRestoreStateChanged(
     Profile* user_profile,
     OAuth2LoginManager::SessionRestoreState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   OAuth2LoginManager* manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile_);
@@ -81,7 +81,7 @@ void MergeSessionXHRRequestWaiter::OnTimeout() {
 }
 
 void MergeSessionXHRRequestWaiter::NotifyBlockingDone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!callback_.is_null()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, callback_);

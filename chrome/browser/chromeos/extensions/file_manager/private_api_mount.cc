@@ -145,7 +145,7 @@ void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
     const base::FilePath& display_name,
     drive::FileError error,
     const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);

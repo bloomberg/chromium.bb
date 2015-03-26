@@ -265,7 +265,7 @@ void SearchMetadata(
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
     const SearchMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   const base::TimeTicks start_time = base::TimeTicks::Now();

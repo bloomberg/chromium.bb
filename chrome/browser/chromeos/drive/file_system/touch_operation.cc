@@ -60,7 +60,7 @@ void TouchOperation::TouchFile(const base::FilePath& file_path,
                                const base::Time& last_access_time,
                                const base::Time& last_modified_time,
                                const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   ResourceEntry* entry = new ResourceEntry;
@@ -78,7 +78,7 @@ void TouchOperation::TouchFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileChange changed_files;

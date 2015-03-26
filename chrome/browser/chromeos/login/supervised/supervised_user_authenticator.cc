@@ -30,7 +30,7 @@ void TriggerResolve(SupervisedUserAuthenticator::AuthAttempt* attempt,
                     scoped_refptr<SupervisedUserAuthenticator> resolver,
                     bool success,
                     cryptohome::MountError return_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   attempt->RecordCryptohomeStatus(success, return_code);
   resolver->Resolve();
 }
@@ -40,7 +40,7 @@ void TriggerResolveResult(SupervisedUserAuthenticator::AuthAttempt* attempt,
                           scoped_refptr<SupervisedUserAuthenticator> resolver,
                           bool success,
                           const std::string& result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   attempt->RecordHash(result);
   resolver->Resolve();
 }
@@ -61,7 +61,7 @@ void Mount(SupervisedUserAuthenticator::AuthAttempt* attempt,
            scoped_refptr<SupervisedUserAuthenticator> resolver,
            int flags,
            const std::string& system_salt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeMount-LMU-Start", false);
 
@@ -86,7 +86,7 @@ void AddKey(SupervisedUserAuthenticator::AuthAttempt* attempt,
             scoped_refptr<SupervisedUserAuthenticator> resolver,
             const std::string& plain_text_master_key,
             const std::string& system_salt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeAddKey-LMU-Start", false);
 
@@ -159,7 +159,7 @@ void SupervisedUserAuthenticator::AddMasterKey(
 void SupervisedUserAuthenticator::OnAuthenticationSuccess(
     const std::string& mount_hash,
     bool add_key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "Supervised user authentication success";
   if (consumer_) {
     if (add_key)
@@ -171,14 +171,14 @@ void SupervisedUserAuthenticator::OnAuthenticationSuccess(
 
 void SupervisedUserAuthenticator::OnAuthenticationFailure(
     SupervisedUserAuthenticator::AuthState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LOG(WARNING) << "Supervised user authentication failure";
   if (consumer_)
     consumer_->OnAuthenticationFailure(state);
 }
 
 void SupervisedUserAuthenticator::Resolve() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SupervisedUserAuthenticator::AuthState state = ResolveState();
   VLOG(1) << "Resolved state to: " << state;
   switch (state) {
@@ -239,7 +239,7 @@ SupervisedUserAuthenticator::~SupervisedUserAuthenticator() {}
 
 SupervisedUserAuthenticator::AuthState
 SupervisedUserAuthenticator::ResolveState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If we haven't mounted the user's home dir yet, we can't be done.
   // We never get past here if a cryptohome op is still pending.
   // This is an important invariant.
@@ -262,7 +262,7 @@ SupervisedUserAuthenticator::ResolveState() {
 
 SupervisedUserAuthenticator::AuthState
     SupervisedUserAuthenticator::ResolveCryptohomeFailureState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LOG(ERROR) << "Failed to authenticate supervised user, code: "
              << current_state_->cryptohome_code();
   if (current_state_->cryptohome_code() ==
@@ -283,7 +283,7 @@ SupervisedUserAuthenticator::AuthState
 
 SupervisedUserAuthenticator::AuthState
     SupervisedUserAuthenticator::ResolveCryptohomeSuccessState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return SUCCESS;
 }
 
@@ -304,7 +304,7 @@ SupervisedUserAuthenticator::AuthAttempt::~AuthAttempt() {}
 void SupervisedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
     bool cryptohome_outcome,
     cryptohome::MountError cryptohome_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cryptohome_complete_ = true;
   cryptohome_outcome_ = cryptohome_outcome;
   cryptohome_code_ = cryptohome_code;
@@ -312,34 +312,34 @@ void SupervisedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
 
 void SupervisedUserAuthenticator::AuthAttempt::RecordHash(
     const std::string& hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   hash_obtained_ = true;
   hash_ = hash;
 }
 
 bool SupervisedUserAuthenticator::AuthAttempt::cryptohome_complete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return cryptohome_complete_;
 }
 
 bool SupervisedUserAuthenticator::AuthAttempt::cryptohome_outcome() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return cryptohome_outcome_;
 }
 
 cryptohome::MountError
     SupervisedUserAuthenticator::AuthAttempt::cryptohome_code() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return cryptohome_code_;
 }
 
 bool SupervisedUserAuthenticator::AuthAttempt::hash_obtained() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return hash_obtained_;
 }
 
 std::string SupervisedUserAuthenticator::AuthAttempt::hash() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return hash_;
 }
 

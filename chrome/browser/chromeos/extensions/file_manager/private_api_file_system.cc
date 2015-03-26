@@ -85,7 +85,7 @@ size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
 
 // Returns EventRouter for the |profile_id| if available.
 file_manager::EventRouter* GetEventRouterByProfileId(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // |profile_id| needs to be checked with ProfileManager::IsValidProfile
   // before using it.
@@ -104,7 +104,7 @@ void NotifyCopyProgress(
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
     int64 size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager::EventRouter* event_router =
       GetEventRouterByProfileId(profile_id);
@@ -123,7 +123,7 @@ void OnCopyProgress(
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
     int64 size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -139,7 +139,7 @@ void NotifyCopyCompletion(
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
     base::File::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager::EventRouter* event_router =
       GetEventRouterByProfileId(profile_id);
@@ -157,7 +157,7 @@ void OnCopyCompleted(
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
     base::File::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -172,7 +172,7 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Note: |operation_id| is owned by the callback for
   // FileSystemOperationRunner::Copy(). It is always called in the next message
@@ -193,7 +193,7 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
 }
 
 void OnCopyCancelled(base::File::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // We just ignore the status if the copy is actually cancelled or not,
   // because failing cancellation means the operation is not running now.
@@ -205,7 +205,7 @@ void OnCopyCancelled(base::File::Error error) {
 void CancelCopyOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     storage::FileSystemOperationRunner::OperationID operation_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   file_system_context->operation_runner()->Cancel(
       operation_id, base::Bind(&OnCopyCancelled));
@@ -223,7 +223,7 @@ void StatusCallbackToResponseCallback(
 void ComputeChecksumRespondOnUIThread(
     const base::Callback<void(const std::string&)>& callback,
     const std::string& hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, hash));
 }
@@ -233,7 +233,7 @@ void GetFileMetadataRespondOnUIThread(
     const storage::FileSystemOperation::GetMetadataCallback& callback,
     base::File::Error result,
     const base::File::Info& file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, result, file_info));
 }
@@ -293,14 +293,14 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
 }
 
 void FileWatchFunctionBase::Respond(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SetResult(new base::FundamentalValue(success));
   SendResponse(success);
 }
 
 bool FileWatchFunctionBase::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
@@ -330,7 +330,7 @@ void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const storage::FileSystemURL& file_system_url,
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager::EventRouter* const event_router =
       file_manager::EventRouterFactory::GetForProfile(GetProfile());
@@ -358,7 +358,7 @@ void FileManagerPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const storage::FileSystemURL& file_system_url,
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager::EventRouter* const event_router =
       file_manager::EventRouterFactory::GetForProfile(GetProfile());
@@ -518,20 +518,20 @@ void GetFileMetadataOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const FileSystemURL& url,
     const storage::FileSystemOperation::GetMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   file_system_context->operation_runner()->GetMetadata(
       url, base::Bind(&GetFileMetadataRespondOnUIThread, callback));
 }
 
 // Checks if the available space of the |path| is enough for required |bytes|.
 bool CheckLocalDiskSpaceOnIOThread(const base::FilePath& path, int64 bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return bytes <= base::SysInfo::AmountOfFreeDiskSpace(path) -
                       cryptohome::kMinFreeSpaceInBytes;
 }
 
 bool FileManagerPrivateStartCopyFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   using  extensions::api::file_manager_private::StartCopy::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -586,7 +586,7 @@ bool FileManagerPrivateStartCopyFunction::RunAsync() {
 void FileManagerPrivateStartCopyFunction::RunAfterGetFileMetadata(
     base::File::Error result,
     const base::File::Info& file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (result != base::File::FILE_OK) {
     SetError("NotFoundError");
@@ -617,7 +617,7 @@ void FileManagerPrivateStartCopyFunction::RunAfterGetFileMetadata(
 
 void FileManagerPrivateStartCopyFunction::RunAfterFreeDiskSpace(
     bool available) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!available) {
     SetError("QuotaExceededError");
@@ -640,14 +640,14 @@ void FileManagerPrivateStartCopyFunction::RunAfterFreeDiskSpace(
 
 void FileManagerPrivateStartCopyFunction::RunAfterStartCopy(
     int operation_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SetResult(new base::FundamentalValue(operation_id));
   SendResponse(true);
 }
 
 bool FileManagerPrivateCancelCopyFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   using extensions::api::file_manager_private::CancelCopy::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -780,7 +780,7 @@ bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
 
 void FileManagerPrivateComputeChecksumFunction::Respond(
     const std::string& hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SetResult(new base::StringValue(hash));
   SendResponse(true);
 }

@@ -41,7 +41,7 @@ bool CameraDetector::presence_check_in_progress_ = false;
 
 // static
 void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (presence_check_in_progress_)
     return;
   DVLOG(1) << "Starting camera presence check";
@@ -57,7 +57,7 @@ void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
 // static
 void CameraDetector::OnPresenceCheckDone(const base::Closure& callback,
                                          bool present) {
-  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   camera_presence_ = present ? kCameraPresent : kCameraAbsent;
   presence_check_in_progress_ = false;
   callback.Run();

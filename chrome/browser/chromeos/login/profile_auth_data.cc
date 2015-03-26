@@ -137,7 +137,7 @@ ProfileAuthDataTransferer::ProfileAuthDataTransferer(
 }
 
 void ProfileAuthDataTransferer::BeginTransfer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If we aren't transferring auth cookies or channel IDs, post the completion
   // callback immediately. Otherwise, it will be called when the transfer
   // finishes.
@@ -155,7 +155,7 @@ void ProfileAuthDataTransferer::BeginTransfer() {
 }
 
 void ProfileAuthDataTransferer::BeginTransferOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TransferProxyAuthCache();
   if (transfer_auth_cookies_and_channel_ids_on_first_login_ ||
       transfer_saml_auth_cookies_on_subsequent_login_) {
@@ -173,7 +173,7 @@ void ProfileAuthDataTransferer::BeginTransferOnIOThread() {
 }
 
 void ProfileAuthDataTransferer::TransferProxyAuthCache() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::HttpAuthCache* new_cache = to_context_->GetURLRequestContext()->
       http_transaction_factory()->GetSession()->http_auth_cache();
   new_cache->UpdateAllFrom(*from_context_->GetURLRequestContext()->
@@ -182,7 +182,7 @@ void ProfileAuthDataTransferer::TransferProxyAuthCache() {
 
 void ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved(
     const net::CookieList& target_cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   first_login_ = target_cookies.empty();
   if (first_login_) {
     // On first login, transfer all auth cookies and channel IDs if
@@ -209,7 +209,7 @@ void ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved(
 }
 
 void ProfileAuthDataTransferer::RetrieveCookiesToTransfer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* from_store =
       from_context_->GetURLRequestContext()->cookie_store();
   net::CookieMonster* from_monster = from_store->GetCookieMonster();
@@ -221,7 +221,7 @@ void ProfileAuthDataTransferer::RetrieveCookiesToTransfer() {
 
 void ProfileAuthDataTransferer::OnCookiesToTransferRetrieved(
     const net::CookieList& cookies_to_transfer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   waiting_for_auth_cookies_ = false;
   cookies_to_transfer_ = cookies_to_transfer;
 
@@ -247,7 +247,7 @@ void ProfileAuthDataTransferer::OnCookiesToTransferRetrieved(
 }
 
 void ProfileAuthDataTransferer::RetrieveChannelIDsToTransfer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::ChannelIDService* from_service =
       from_context_->GetURLRequestContext()->channel_id_service();
   from_service->GetChannelIDStore()->GetAllChannelIDs(
@@ -258,7 +258,7 @@ void ProfileAuthDataTransferer::RetrieveChannelIDsToTransfer() {
 
 void ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved(
     const net::ChannelIDStore::ChannelIDList& channel_ids_to_transfer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   channel_ids_to_transfer_ = channel_ids_to_transfer;
   waiting_for_channel_ids_ = false;
   MaybeTransferCookiesAndChannelIDs();
@@ -278,7 +278,7 @@ bool ProfileAuthDataTransferer::IsGAIACookie(
 }
 
 void ProfileAuthDataTransferer::MaybeTransferCookiesAndChannelIDs() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (waiting_for_auth_cookies_ || waiting_for_channel_ids_)
     return;
 
@@ -305,7 +305,7 @@ void ProfileAuthDataTransferer::MaybeTransferCookiesAndChannelIDs() {
 }
 
 void ProfileAuthDataTransferer::Finish() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!completion_callback_.is_null())
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion_callback_);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -319,7 +319,7 @@ void ProfileAuthData::Transfer(
     bool transfer_auth_cookies_and_channel_ids_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (new ProfileAuthDataTransferer(
        from_context,
        to_context,

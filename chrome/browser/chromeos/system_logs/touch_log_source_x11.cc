@@ -55,7 +55,7 @@ void GetTouchLogsX11(system_logs::SystemLogsResponse* response) {
 namespace system_logs {
 
 void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   SystemLogsResponse* response = new SystemLogsResponse;

@@ -42,7 +42,7 @@ WebkitFileStreamReaderImpl::~WebkitFileStreamReaderImpl() {
 int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
                                      int buffer_length,
                                      const net::CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
   DCHECK(buffer);
   DCHECK(!callback.is_null());
@@ -67,7 +67,7 @@ int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
 
 int64 WebkitFileStreamReaderImpl::GetLength(
     const net::Int64CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
   DCHECK(!callback.is_null());
 
@@ -94,7 +94,7 @@ void WebkitFileStreamReaderImpl::OnStreamReaderInitialized(
     const net::CompletionCallback& callback,
     int error,
     scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
   DCHECK(!callback.is_null());
 
@@ -117,7 +117,7 @@ void WebkitFileStreamReaderImpl::ReadAfterStreamReaderInitialized(
     int buffer_length,
     const net::CompletionCallback& callback,
     int initialization_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
   if (initialization_result != net::OK) {
@@ -134,7 +134,7 @@ void WebkitFileStreamReaderImpl::ReadAfterStreamReaderInitialized(
 void WebkitFileStreamReaderImpl::GetLengthAfterStreamReaderInitialized(
     const net::Int64CompletionCallback& callback,
     int initialization_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
   if (initialization_result != net::OK) {

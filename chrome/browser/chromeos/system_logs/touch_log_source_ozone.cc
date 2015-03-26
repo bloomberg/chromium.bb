@@ -119,7 +119,7 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
 void OnEventLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
                          const system_logs::SysLogsSourceCallback& callback,
                          scoped_ptr<std::vector<base::FilePath>> log_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We cannot eliminate these temporaries and inline these closures because the
   // compiler may call release() before get().
@@ -139,7 +139,7 @@ void OnEventLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
 void OnStatusLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
                           const system_logs::SysLogsSourceCallback& callback,
                           scoped_ptr<std::string> log) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (*response)[kDeviceStatusLogDataKey] = *log;
 
   // Collect touch event logs.
@@ -167,7 +167,7 @@ void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
 namespace system_logs {
 
 void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);

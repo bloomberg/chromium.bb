@@ -63,11 +63,11 @@ RemovePerformer::RemovePerformer(
                                                        scheduler,
                                                        metadata)),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 RemovePerformer::~RemovePerformer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 // Returns |entry| corresponding to |local_id|.
@@ -84,7 +84,7 @@ FileError TryToRemoveLocally(ResourceMetadata* metadata,
 void RemovePerformer::Remove(const std::string& local_id,
                              const ClientContext& context,
                              const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   ResourceEntry* entry = new ResourceEntry;
@@ -104,7 +104,7 @@ void RemovePerformer::RemoveAfterGetResourceEntry(
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK || entry->resource_id().empty()) {
@@ -132,7 +132,7 @@ void RemovePerformer::TrashResource(const ClientContext& context,
                                     const FileOperationCallback& callback,
                                     const std::string& resource_id,
                                     const std::string& local_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scheduler_->TrashResource(
@@ -147,7 +147,7 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::DriveApiErrorCode status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (status == google_apis::HTTP_FORBIDDEN) {
@@ -174,7 +174,7 @@ void RemovePerformer::UnparentResource(const ClientContext& context,
                                        const FileOperationCallback& callback,
                                        const std::string& resource_id,
                                        const std::string& local_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scheduler_->GetFileResource(
@@ -190,7 +190,7 @@ void RemovePerformer::UnparentResourceAfterGetFileResource(
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> file_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(status);
@@ -239,7 +239,7 @@ void RemovePerformer::UnparentResourceAfterUpdateRemoteState(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::DriveApiErrorCode status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(status);

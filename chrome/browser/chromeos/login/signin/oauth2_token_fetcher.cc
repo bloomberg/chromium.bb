@@ -42,7 +42,7 @@ OAuth2TokenFetcher::~OAuth2TokenFetcher() {
 void OAuth2TokenFetcher::StartExchangeFromCookies(
     const std::string& session_index,
     const std::string& signin_scoped_device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   session_index_ = session_index;
   signin_scoped_device_id_ = signin_scoped_device_id;
   // Delay the verification if the network is not connected or on a captive
@@ -69,7 +69,7 @@ void OAuth2TokenFetcher::StartExchangeFromCookies(
 
 void OAuth2TokenFetcher::StartExchangeFromAuthCode(
     const std::string& auth_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auth_code_ = auth_code;
   // Delay the verification if the network is not connected or on a captive
   // portal.
@@ -92,7 +92,7 @@ void OAuth2TokenFetcher::StartExchangeFromAuthCode(
 
 void OAuth2TokenFetcher::OnClientOAuthSuccess(
     const GaiaAuthConsumer::ClientOAuthResult& oauth_tokens) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "Got OAuth2 tokens!";
   retry_count_ = 0;
   oauth_tokens_ = oauth_tokens;
@@ -101,7 +101,7 @@ void OAuth2TokenFetcher::OnClientOAuthSuccess(
 
 void OAuth2TokenFetcher::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RetryOnError(error,
                auth_code_.empty()
                    ? base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
@@ -118,7 +118,7 @@ void OAuth2TokenFetcher::OnClientOAuthFailure(
 void OAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
                                       const base::Closure& task,
                                       const base::Closure& error_handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
        error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
        error.state() == GoogleServiceAuthError::REQUEST_CANCELED) &&

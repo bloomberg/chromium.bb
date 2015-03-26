@@ -50,7 +50,7 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
                                  OpenMode open_mode,
                                  const std::string& mime_type,
                                  const OpenFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   switch (open_mode) {
@@ -83,7 +83,7 @@ void OpenFileOperation::OpenFileAfterCreateFile(
     const base::FilePath& file_path,
     const OpenFileCallback& callback,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -106,7 +106,7 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     FileError error,
     const base::FilePath& local_file_path,
     scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK) {
@@ -145,7 +145,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
     const OpenFileCallback& callback,
     scoped_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -164,7 +164,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
 void OpenFileOperation::CloseFile(
     const std::string& local_id,
     scoped_ptr<base::ScopedClosureRunner> file_closer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(open_files_[local_id], 0);
 
   if (--open_files_[local_id] == 0) {

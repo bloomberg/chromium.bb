@@ -326,7 +326,7 @@ void ChromeRestartRequest::Start() {
 }
 
 void ChromeRestartRequest::RestartJob() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(
       pid_, command_line_);
@@ -364,7 +364,7 @@ std::string GetOffTheRecordCommandLine(
 }
 
 void RestartChrome(const std::string& command_line) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BootTimesRecorder::Get()->set_restart_requested();
 
   static bool restart_requested = false;

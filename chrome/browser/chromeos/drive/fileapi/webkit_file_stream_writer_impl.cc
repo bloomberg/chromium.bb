@@ -25,7 +25,7 @@ void CreateWritableSnapshotFile(
     const WebkitFileStreamWriterImpl::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_path,
     const fileapi_internal::CreateWritableSnapshotFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
       BrowserThread::UI,

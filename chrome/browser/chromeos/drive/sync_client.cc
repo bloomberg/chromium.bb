@@ -165,15 +165,15 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
       long_delay_(base::TimeDelta::FromSeconds(kLongDelaySeconds)),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 SyncClient::~SyncClient() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void SyncClient::StartProcessingBacklog() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
   std::vector<std::string>* to_update = new std::vector<std::string>;
@@ -187,7 +187,7 @@ void SyncClient::StartProcessingBacklog() {
 }
 
 void SyncClient::StartCheckingExistingPinnedFiles() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<std::string>* local_ids = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
@@ -202,12 +202,12 @@ void SyncClient::StartCheckingExistingPinnedFiles() {
 }
 
 void SyncClient::AddFetchTask(const std::string& local_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddFetchTaskInternal(local_id, delay_);
 }
 
 void SyncClient::RemoveFetchTask(const std::string& local_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SyncTasks::iterator it = tasks_.find(SyncTasks::key_type(FETCH, local_id));
   if (it == tasks_.end())
@@ -228,14 +228,14 @@ void SyncClient::RemoveFetchTask(const std::string& local_id) {
 
 void SyncClient::AddUpdateTask(const ClientContext& context,
                                const std::string& local_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddUpdateTaskInternal(context, local_id, delay_);
 }
 
 bool SyncClient:: WaitForUpdateTaskToComplete(
     const std::string& local_id,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SyncTasks::iterator it = tasks_.find(SyncTasks::key_type(UPDATE, local_id));
   if (it == tasks_.end())
@@ -248,7 +248,7 @@ bool SyncClient:: WaitForUpdateTaskToComplete(
 
 base::Closure SyncClient::PerformFetchTask(const std::string& local_id,
                                            const ClientContext& context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return download_operation_->EnsureFileDownloadedByLocalId(
       local_id,
       context,
@@ -261,7 +261,7 @@ base::Closure SyncClient::PerformFetchTask(const std::string& local_id,
 
 void SyncClient::AddFetchTaskInternal(const std::string& local_id,
                                       const base::TimeDelta& delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SyncTask task;
   task.state = PENDING;
@@ -274,7 +274,7 @@ void SyncClient::AddFetchTaskInternal(const std::string& local_id,
 
 base::Closure SyncClient::PerformUpdateTask(const std::string& local_id,
                                             const ClientContext& context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   entry_update_performer_->UpdateEntry(
       local_id,
       context,
@@ -288,7 +288,7 @@ base::Closure SyncClient::PerformUpdateTask(const std::string& local_id,
 void SyncClient::AddUpdateTaskInternal(const ClientContext& context,
                                        const std::string& local_id,
                                        const base::TimeDelta& delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SyncTask task;
   task.state = PENDING;
@@ -302,7 +302,7 @@ void SyncClient::AddUpdateTaskInternal(const ClientContext& context,
 void SyncClient::AddTask(const SyncTasks::key_type& key,
                          const SyncTask& task,
                          const base::TimeDelta& delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SyncTasks::iterator it = tasks_.find(key);
   if (it != tasks_.end()) {
@@ -391,7 +391,7 @@ void SyncClient::StartTaskAfterGetParentResourceEntry(
 void SyncClient::OnGetLocalIdsOfBacklog(
     const std::vector<std::string>* to_fetch,
     const std::vector<std::string>* to_update) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Give priority to upload tasks over fetch tasks, so that dirty files are
   // uploaded as soon as possible.
@@ -409,7 +409,7 @@ void SyncClient::OnGetLocalIdsOfBacklog(
 }
 
 void SyncClient::AddFetchTasks(const std::vector<std::string>* local_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < local_ids->size(); ++i)
     AddFetchTask((*local_ids)[i]);
@@ -418,7 +418,7 @@ void SyncClient::AddFetchTasks(const std::vector<std::string>* local_ids) {
 void SyncClient::OnTaskComplete(SyncType type,
                                 const std::string& local_id,
                                 FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const SyncTasks::key_type key(type, local_id);
   SyncTasks::iterator it = tasks_.find(key);
@@ -478,7 +478,7 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
                                      FileError error,
                                      const base::FilePath& local_path,
                                      scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnTaskComplete(FETCH, local_id, error);
   if (error == FILE_ERROR_ABORT) {
     // If user cancels download, unpin the file so that we do not sync the file

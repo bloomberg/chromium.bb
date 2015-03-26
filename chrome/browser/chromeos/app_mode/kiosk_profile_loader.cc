@@ -127,7 +127,7 @@ KioskProfileLoader::KioskProfileLoader(const std::string& app_user_id,
 KioskProfileLoader::~KioskProfileLoader() {}
 
 void KioskProfileLoader::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   login_performer_.reset();
   cryptohomed_checker_.reset(new CryptohomedChecker(this));
   cryptohomed_checker_->StartCheck();
@@ -139,7 +139,7 @@ void KioskProfileLoader::LoginAsKioskAccount() {
 }
 
 void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != KioskAppLaunchError::NONE) {
     delegate_->OnProfileLoadFailed(error);

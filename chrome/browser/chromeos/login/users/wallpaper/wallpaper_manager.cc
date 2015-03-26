@@ -192,7 +192,7 @@ class WallpaperManager::PendingWallpaper :
 
   // This method is usually triggered by timer to actually load request.
   void ProcessRequest() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     timer.Stop();  // Erase reference to self.
 
@@ -231,7 +231,7 @@ class WallpaperManager::PendingWallpaper :
 
   // This method is called by callback, when load request is finished.
   void OnWallpaperSet() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // The only known case for this check to fail is global destruction during
     // wallpaper load. It should never happen.
@@ -302,7 +302,7 @@ void WallpaperManager::Shutdown() {
 
 WallpaperManager::WallpaperResolution
 WallpaperManager::GetAppropriateResolution() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   gfx::Size size =
       ash::DesktopBackgroundController::GetMaxDisplaySizeInNative();
   return (size.width() > wallpaper::kSmallWallpaperMaxWidth ||
@@ -338,7 +338,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
 }
 
 void WallpaperManager::InitializeWallpaper() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Apply device customization.
@@ -383,7 +383,7 @@ void WallpaperManager::InitializeWallpaper() {
 void WallpaperManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       ClearDisposableWallpaperCache();
@@ -456,7 +456,7 @@ void WallpaperManager::SetCustomWallpaper(
     user_manager::User::WallpaperType type,
     const gfx::ImageSkia& image,
     bool update_wallpaper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // There is no visible background in kiosk mode.
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
@@ -595,7 +595,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
 void WallpaperManager::SetUserWallpaperInfo(const std::string& user_id,
                                             const WallpaperInfo& info,
                                             bool is_persistent) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   current_user_wallpaper_info_ = info;
   if (!is_persistent)
     return;
@@ -615,7 +615,7 @@ void WallpaperManager::SetUserWallpaperInfo(const std::string& user_id,
 
 void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
                                                 bool delayed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Some unit tests come here without a UserManager or without a pref system.q
   if (!user_manager::UserManager::IsInitialized() ||
       !g_browser_process->local_state()) {
@@ -805,7 +805,7 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
 
 bool WallpaperManager::GetUserWallpaperInfo(const std::string& user_id,
                                             WallpaperInfo* info) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
           user_id)) {
@@ -854,7 +854,7 @@ void WallpaperManager::OnWallpaperDecoded(
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
     const user_manager::UserImage& user_image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT_ASYNC_END0("ui", "LoadAndDecodeWallpaper", this);
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
@@ -887,7 +887,7 @@ void WallpaperManager::StartLoad(const std::string& user_id,
                                  bool update_wallpaper,
                                  const base::FilePath& wallpaper_path,
                                  MovableOnDestroyCallbackHolder on_finish) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT_ASYNC_BEGIN0("ui", "LoadAndDecodeWallpaper", this);
   if (update_wallpaper) {
     // We are now about to change the wallpaper, so update the path and remove
@@ -939,7 +939,7 @@ void WallpaperManager::OnCustomizedDefaultWallpaperResized(
     scoped_ptr<bool> success,
     scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
     scoped_ptr<gfx::ImageSkia> large_wallpaper_image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(rescaled_files);
   DCHECK(success.get());
   if (!*success) {

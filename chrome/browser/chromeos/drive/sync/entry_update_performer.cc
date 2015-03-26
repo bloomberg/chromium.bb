@@ -240,17 +240,17 @@ EntryUpdatePerformer::EntryUpdatePerformer(
                                                        scheduler,
                                                        metadata)),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 EntryUpdatePerformer::~EntryUpdatePerformer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
                                        const ClientContext& context,
                                        const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_ptr<LocalState> local_state(new LocalState);
@@ -269,7 +269,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     const FileOperationCallback& callback,
     scoped_ptr<LocalState> local_state,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -407,7 +407,7 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     scoped_ptr<base::ScopedClosureRunner> loader_lock,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (status == google_apis::HTTP_FORBIDDEN) {
@@ -437,7 +437,7 @@ void EntryUpdatePerformer::UpdateEntryAfterFinish(
     const FileOperationCallback& callback,
     const FileChange* changed_files,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   delegate_->OnFileChangedByOperation(*changed_files);

@@ -273,7 +273,7 @@ std::vector<base::string16> OomPriorityManager::GetTabTitles() {
 // such as tabs created with JavaScript window.open().  We might want to
 // discard the entire set together, or use that in the priority computation.
 bool OomPriorityManager::DiscardTab() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats = GetTabStatsOnUIThread();
   if (stats.empty())
     return false;
@@ -289,7 +289,7 @@ bool OomPriorityManager::DiscardTab() {
 }
 
 void OomPriorityManager::LogMemoryAndDiscardTab() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Deletes itself upon completion.
   OomMemoryDetails* details = new OomMemoryDetails();
   details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
@@ -416,7 +416,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
 }
 
 void OomPriorityManager::RecordRecentTabDiscard() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If we change the interval we need to change the histogram name.
   UMA_HISTOGRAM_BOOLEAN("Tabs.Discard.DiscardInLastMinute",
                         recent_tab_discard_);
@@ -484,7 +484,7 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
 }
 
 void OomPriorityManager::AdjustFocusedTabScoreOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::AutoLock oom_score_autolock(oom_score_lock_);
   base::ProcessHandle pid = focused_tab_process_info_.second;
   content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
@@ -596,7 +596,7 @@ void OomPriorityManager::AdjustOomPriorities() {
 }
 
 OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open
   bool browser_active = true;
@@ -664,7 +664,7 @@ std::vector<OomPriorityManager::ProcessInfo>
 
 void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
     TabStatsList stats_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::AutoLock oom_score_autolock(oom_score_lock_);
 
   // Remove any duplicate PIDs. Order of the list is maintained, so each

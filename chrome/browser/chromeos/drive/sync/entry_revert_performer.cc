@@ -93,17 +93,17 @@ EntryRevertPerformer::EntryRevertPerformer(
       scheduler_(scheduler),
       metadata_(metadata),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 EntryRevertPerformer::~EntryRevertPerformer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void EntryRevertPerformer::RevertEntry(const std::string& local_id,
                                        const ClientContext& context,
                                        const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
@@ -123,7 +123,7 @@ void EntryRevertPerformer::RevertEntryAfterPrepare(
     const FileOperationCallback& callback,
     scoped_ptr<ResourceEntry> entry,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK && entry->resource_id().empty())
@@ -146,7 +146,7 @@ void EntryRevertPerformer::RevertEntryAfterGetFileResource(
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileChange* changed_files = new FileChange;
@@ -169,7 +169,7 @@ void EntryRevertPerformer::RevertEntryAfterFinishRevert(
     const FileOperationCallback& callback,
     const FileChange* changed_files,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   delegate_->OnFileChangedByOperation(*changed_files);

@@ -48,7 +48,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   ~FullFeedFetcher() override {}
 
   void Run(const FeedFetcherCallback& callback) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback.is_null());
 
     // Remember the time stamp for usage stats.
@@ -64,7 +64,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   void OnFileListFetched(const FeedFetcherCallback& callback,
                          google_apis::DriveApiErrorCode status,
                          scoped_ptr<google_apis::FileList> file_list) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback.is_null());
 
     FileError error = GDataToFileError(status);
@@ -113,7 +113,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   ~DeltaFeedFetcher() override {}
 
   void Run(const FeedFetcherCallback& callback) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback.is_null());
 
     scheduler_->GetChangeList(
@@ -126,7 +126,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   void OnChangeListFetched(const FeedFetcherCallback& callback,
                            google_apis::DriveApiErrorCode status,
                            scoped_ptr<google_apis::ChangeList> change_list) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback.is_null());
 
     FileError error = GDataToFileError(status);
@@ -165,15 +165,15 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 LoaderController::LoaderController()
     : lock_count_(0),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 LoaderController::~LoaderController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 scoped_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ++lock_count_;
   return make_scoped_ptr(new base::ScopedClosureRunner(
@@ -182,7 +182,7 @@ scoped_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
 }
 
 void LoaderController::ScheduleRun(const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!task.is_null());
 
   if (lock_count_ > 0) {
@@ -193,7 +193,7 @@ void LoaderController::ScheduleRun(const base::Closure& task) {
 }
 
 void LoaderController::Unlock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_LT(0, lock_count_);
 
   if (--lock_count_ > 0)
@@ -215,7 +215,7 @@ AboutResourceLoader::~AboutResourceLoader() {}
 
 void AboutResourceLoader::GetAboutResource(
     const google_apis::AboutResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // If the latest UpdateAboutResource task is still running. Wait for it,
@@ -239,7 +239,7 @@ void AboutResourceLoader::GetAboutResource(
 
 void AboutResourceLoader::UpdateAboutResource(
     const google_apis::AboutResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   ++current_update_task_id_;
@@ -255,7 +255,7 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
     int task_id,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FileError error = GDataToFileError(status);
 
   const std::vector<google_apis::AboutResourceCallback> callbacks =
@@ -312,17 +312,17 @@ bool ChangeListLoader::IsRefreshing() const {
 }
 
 void ChangeListLoader::AddObserver(ChangeListLoaderObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
 void ChangeListLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
 void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // We only start to check for updates iff the load is done.
@@ -349,7 +349,7 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
 }
 
 void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // If the metadata is not yet loaded, start loading.
@@ -358,7 +358,7 @@ void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
 }
 
 void ChangeListLoader::Load(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // Check if this is the first time this ChangeListLoader do loading.
@@ -390,7 +390,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
     bool is_initial_load,
     const int64* local_changestamp,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != FILE_ERROR_OK) {
     OnChangeListLoadComplete(error);
@@ -417,7 +417,7 @@ void ChangeListLoader::LoadAfterGetAboutResource(
     int64 local_changestamp,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
@@ -445,7 +445,7 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 }
 
 void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!loaded_ && error == FILE_ERROR_OK) {
     loaded_ = true;
@@ -471,7 +471,7 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
 void ChangeListLoader::OnAboutResourceUpdated(
     google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::AboutResource> resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (drive::GDataToFileError(error) != drive::FILE_ERROR_OK) {
     logger_->Log(logging::LOG_ERROR,
@@ -485,7 +485,7 @@ void ChangeListLoader::OnAboutResourceUpdated(
 }
 
 void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!change_feed_fetcher_);
   DCHECK(about_resource_loader_->cached_about_resource());
 
@@ -514,7 +514,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     bool is_delta_update,
     FileError error,
     ScopedVector<ChangeList> change_lists) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(about_resource);
 
   // Delete the fetcher first.
@@ -556,7 +556,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
     bool should_notify_changed_directories,
     const base::Time& start_time,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const base::TimeDelta elapsed = base::Time::Now() - start_time;
   logger_->Log(logging::LOG_INFO,

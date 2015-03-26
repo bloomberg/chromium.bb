@@ -172,7 +172,7 @@ class SingleEntryPropertiesGetterForDrive {
                     const std::set<EntryPropertyName>& names,
                     Profile* const profile,
                     const ResultCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SingleEntryPropertiesGetterForDrive* instance =
         new SingleEntryPropertiesGetterForDrive(local_path, names, profile,
@@ -201,7 +201,7 @@ class SingleEntryPropertiesGetterForDrive {
   }
 
   void StartProcess() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     file_path_ = drive::util::ExtractDrivePath(local_path_);
     file_owner_profile_ = drive::util::ExtractProfileFromPath(local_path_);
@@ -230,7 +230,7 @@ class SingleEntryPropertiesGetterForDrive {
 
   void OnGetFileInfo(drive::FileError error,
                      scoped_ptr<drive::ResourceEntry> entry) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (error != drive::FILE_ERROR_OK) {
       CompleteGetEntryProperties(error);
@@ -261,7 +261,7 @@ class SingleEntryPropertiesGetterForDrive {
 
   void OnGetRunningPath(drive::FileError error,
                         const base::FilePath& file_path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (error != drive::FILE_ERROR_OK) {
       // The running profile does not know the file.
@@ -285,7 +285,7 @@ class SingleEntryPropertiesGetterForDrive {
 
   void OnGetShareInfo(drive::FileError error,
                       scoped_ptr<drive::ResourceEntry> entry) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (error != drive::FILE_ERROR_OK) {
       CompleteGetEntryProperties(error);
@@ -297,7 +297,7 @@ class SingleEntryPropertiesGetterForDrive {
   }
 
   void StartParseFileInfo(bool shared_with_me) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     FillEntryPropertiesValueForDrive(
         *owner_resource_entry_, shared_with_me, properties_.get());
@@ -352,7 +352,7 @@ class SingleEntryPropertiesGetterForDrive {
   }
 
   void CompleteGetEntryProperties(drive::FileError error) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback_.is_null());
 
     callback_.Run(properties_.Pass(), drive::FileErrorToBaseFileError(error));
@@ -382,7 +382,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
   static void Start(const storage::FileSystemURL file_system_url,
                     const std::set<EntryPropertyName>& names,
                     const ResultCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SingleEntryPropertiesGetterForFileSystemProvider* instance =
         new SingleEntryPropertiesGetterForFileSystemProvider(file_system_url,
@@ -408,7 +408,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
   }
 
   void StartProcess() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     FileSystemURLParser parser(file_system_url_);
     if (!parser.Parse()) {
@@ -434,7 +434,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
   void OnGetMetadataCompleted(scoped_ptr<EntryMetadata> metadata,
                               base::File::Error result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (result != base::File::FILE_OK) {
       CompleteGetEntryProperties(result);
@@ -452,7 +452,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
   }
 
   void CompleteGetEntryProperties(base::File::Error result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback_.is_null());
 
     callback_.Run(properties_.Pass(), result);
@@ -483,7 +483,7 @@ FileManagerPrivateGetEntryPropertiesFunction::
 }
 
 bool FileManagerPrivateGetEntryPropertiesFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   using api::file_manager_private::GetEntryProperties::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -533,7 +533,7 @@ void FileManagerPrivateGetEntryPropertiesFunction::CompleteGetEntryProperties(
     const storage::FileSystemURL& url,
     scoped_ptr<EntryProperties> properties,
     base::File::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(0 <= processed_count_ && processed_count_ < properties_list_.size());
 
   properties_list_[index] = make_linked_ptr(properties.release());
@@ -552,7 +552,7 @@ void FileManagerPrivateGetEntryPropertiesFunction::CompleteGetEntryProperties(
 }
 
 bool FileManagerPrivatePinDriveFileFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   using extensions::api::file_manager_private::PinDriveFile::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -580,7 +580,7 @@ bool FileManagerPrivatePinDriveFileFunction::RunAsync() {
 
 void FileManagerPrivatePinDriveFileFunction::
     OnPinStateSet(drive::FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error == drive::FILE_ERROR_OK) {
     SendResponse(true);
@@ -1025,7 +1025,7 @@ bool FileManagerPrivateGetDownloadUrlFunction::RunAsync() {
 void FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry(
     drive::FileError error,
     scoped_ptr<drive::ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != drive::FILE_ERROR_OK) {
     SetError("Download Url for this item is not available.");

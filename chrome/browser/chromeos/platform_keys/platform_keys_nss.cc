@@ -94,7 +94,7 @@ void DidGetCertDBOnIOThread(const std::string& token_id,
                             const GetCertDBCallback& callback,
                             NSSOperationState* state,
                             net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!cert_db) {
     LOG(ERROR) << "Couldn't get NSSCertDatabase.";
     state->OnError(FROM_HERE, kErrorInternal);
@@ -124,7 +124,7 @@ void GetCertDatabaseOnIOThread(const std::string& token_id,
                                const GetCertDBCallback& callback,
                                content::ResourceContext* context,
                                NSSOperationState* state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
       context, base::Bind(&DidGetCertDBOnIOThread, token_id, callback, state));
 
@@ -426,7 +426,7 @@ void GenerateRSAKeyOnWorkerThread(scoped_ptr<GenerateRSAKeyState> state) {
 // GenerateRSAKey().
 void GenerateRSAKeyWithDB(scoped_ptr<GenerateRSAKeyState> state,
                           net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   base::WorkerPool::PostTask(
       FROM_HERE,
@@ -517,7 +517,7 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
 // Continues signing with the obtained NSSCertDatabase. Used by Sign().
 void SignRSAWithDB(scoped_ptr<SignRSAState> state,
                    net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   base::WorkerPool::PostTask(
       FROM_HERE, base::Bind(&SignRSAOnWorkerThread, base::Passed(&state)),
@@ -529,7 +529,7 @@ void SignRSAWithDB(scoped_ptr<SignRSAState> state,
 // SelectCertificatesOnIOThread().
 void DidSelectCertificatesOnIOThread(
     scoped_ptr<SelectCertificatesState> state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->CallBack(FROM_HERE, state->certs_.Pass(),
                   std::string() /* no error */);
 }
@@ -537,7 +537,7 @@ void DidSelectCertificatesOnIOThread(
 // Continues selecting certificates on the IO thread. Used by
 // SelectClientCertificates().
 void SelectCertificatesOnIOThread(scoped_ptr<SelectCertificatesState> state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->cert_store_.reset(new net::ClientCertStoreChromeOS(
       make_scoped_ptr(new chromeos::ClientCertFilterChromeOS(
           state->use_system_key_slot_, state->username_hash_)),
@@ -578,7 +578,7 @@ void FilterCertificatesOnWorkerThread(scoped_ptr<GetCertificatesState> state) {
 // GetCertificatesWithDB().
 void DidGetCertificates(scoped_ptr<GetCertificatesState> state,
                         scoped_ptr<net::CertificateList> all_certs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = all_certs.Pass();
   base::WorkerPool::PostTask(
       FROM_HERE,
@@ -590,7 +590,7 @@ void DidGetCertificates(scoped_ptr<GetCertificatesState> state,
 // GetCertificates().
 void GetCertificatesWithDB(scoped_ptr<GetCertificatesState> state,
                            net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Get the pointer to slot before base::Passed releases |state|.
   PK11SlotInfo* slot = state->slot_.get();
   cert_db->ListCertsInSlot(
@@ -601,7 +601,7 @@ void GetCertificatesWithDB(scoped_ptr<GetCertificatesState> state,
 // ImportCertificate().
 void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
                              net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(pneubeck): Use |state->slot_| to verify that we're really importing to
   // the correct token.
   // |cert_db| is not required, ignore it.
@@ -640,7 +640,7 @@ void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
 void DidRemoveCertificate(scoped_ptr<RemoveCertificateState> state,
                           bool certificate_found,
                           bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // CertificateNotFound error has precedence over an internal error.
   if (!certificate_found) {
     state->OnError(FROM_HERE, kErrorCertificateNotFound);
@@ -658,7 +658,7 @@ void DidRemoveCertificate(scoped_ptr<RemoveCertificateState> state,
 // RemoveCertificate().
 void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
                              net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Get the pointer before base::Passed clears |state|.
   scoped_refptr<net::X509Certificate> certificate = state->certificate_;
   bool certificate_found = certificate->os_cert_handle()->isperm;
@@ -671,7 +671,7 @@ void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
 // Does the actual work to determine which tokens are available.
 void GetTokensWithDB(scoped_ptr<GetTokensState> state,
                      net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<std::vector<std::string> > token_ids(new std::vector<std::string>);
 
   // The user's token is always available.
@@ -690,7 +690,7 @@ void GenerateRSAKey(const std::string& token_id,
                     unsigned int modulus_length_bits,
                     const GenerateKeyCallback& callback,
                     BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<GenerateRSAKeyState> state(
       new GenerateRSAKeyState(modulus_length_bits, callback));
 
@@ -713,7 +713,7 @@ void SignRSAPKCS1Digest(const std::string& token_id,
                         HashAlgorithm hash_algorithm,
                         const SignCallback& callback,
                         content::BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<SignRSAState> state(
       new SignRSAState(data, public_key, false /* digest before signing */,
                        hash_algorithm, callback));
@@ -732,7 +732,7 @@ void SignRSAPKCS1Raw(const std::string& token_id,
                      const std::string& public_key,
                      const SignCallback& callback,
                      content::BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<SignRSAState> state(new SignRSAState(
       data, public_key, true /* sign directly without hashing */,
       HASH_ALGORITHM_NONE, callback));
@@ -749,7 +749,7 @@ void SignRSAPKCS1Raw(const std::string& token_id,
 void SelectClientCertificates(const ClientCertificateRequest& request,
                               const SelectCertificatesCallback& callback,
                               content::BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
       new net::SSLCertRequestInfo);
@@ -821,7 +821,7 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
 void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
                      BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<GetCertificatesState> state(new GetCertificatesState(callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -835,7 +835,7 @@ void ImportCertificate(const std::string& token_id,
                        const scoped_refptr<net::X509Certificate>& certificate,
                        const ImportCertificateCallback& callback,
                        BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<ImportCertificateState> state(
       new ImportCertificateState(certificate, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -854,7 +854,7 @@ void RemoveCertificate(const std::string& token_id,
                        const scoped_refptr<net::X509Certificate>& certificate,
                        const RemoveCertificateCallback& callback,
                        BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<RemoveCertificateState> state(
       new RemoveCertificateState(certificate, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -870,7 +870,7 @@ void RemoveCertificate(const std::string& token_id,
 
 void GetTokens(const GetTokensCallback& callback,
                content::BrowserContext* browser_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<GetTokensState> state(new GetTokensState(callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();

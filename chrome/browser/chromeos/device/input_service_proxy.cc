@@ -20,7 +20,7 @@ BrowserThread::ID InputServiceProxy::thread_identifier_ = BrowserThread::FILE;
 
 class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
  public:
-  ServiceObserver() { DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI)); }
+  ServiceObserver() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
   ~ServiceObserver() override { DCHECK(CalledOnValidThread()); }
 
   void Initialize(const base::WeakPtr<InputServiceProxy>& proxy) {
@@ -89,7 +89,7 @@ InputServiceProxy::InputServiceProxy()
       task_runner_(BrowserThread::GetMessageLoopProxyForThread(
           thread_identifier_)),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&InputServiceProxy::ServiceObserver::Initialize,

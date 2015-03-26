@@ -1175,7 +1175,7 @@ PrefService* WizardController::GetLocalState() {
 void WizardController::OnTimezoneResolved(
     scoped_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(timezone.get());
   // To check that "this" is not destroyed try to access some member
   // (timezone_provider_) in this case. Expect crash here.
@@ -1227,7 +1227,7 @@ TimeZoneProvider* WizardController::GetTimezoneProvider() {
 void WizardController::OnLocationResolved(const Geoposition& position,
                                           bool server_error,
                                           const base::TimeDelta elapsed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const base::TimeDelta timeout =
       base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds);

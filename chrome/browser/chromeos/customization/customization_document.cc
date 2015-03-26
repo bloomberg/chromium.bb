@@ -539,7 +539,7 @@ void ServicesCustomizationDocument::StartFetching() {
 void ServicesCustomizationDocument::ReadFileInBackground(
     base::WeakPtr<ServicesCustomizationDocument> self,
     const base::FilePath& file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::string manifest;
   if (!base::ReadFileToString(file, &manifest)) {
@@ -874,7 +874,7 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
 void ServicesCustomizationDocument::OnCheckedWallpaperCacheExists(
     scoped_ptr<bool> exists,
     scoped_ptr<ServicesCustomizationDocument::ApplyingTask> applying) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(exists);
   DCHECK(applying);
 

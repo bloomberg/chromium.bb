@@ -96,7 +96,7 @@ LocalReaderProxy::LocalReaderProxy(
     : file_reader_(file_reader.Pass()),
       remaining_length_(length),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(file_reader_);
 }
 
@@ -105,7 +105,7 @@ LocalReaderProxy::~LocalReaderProxy() {
 
 int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
                            const net::CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(file_reader_);
 
   if (buffer_length > remaining_length_) {
@@ -135,7 +135,7 @@ void LocalReaderProxy::OnCompleted(FileError error) {
 
 void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
                                        int read_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(file_reader_);
 
   if (read_result >= 0) {
@@ -160,7 +160,7 @@ NetworkReaderProxy::NetworkReaderProxy(
       error_code_(net::OK),
       buffer_length_(0),
       job_canceller_(job_canceller) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 NetworkReaderProxy::~NetworkReaderProxy() {
@@ -171,7 +171,7 @@ NetworkReaderProxy::~NetworkReaderProxy() {
 
 int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
                              const net::CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Check if there is no pending Read operation.
   DCHECK(!buffer_.get());
   DCHECK_EQ(buffer_length_, 0);
@@ -218,7 +218,7 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
 }
 
 void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(data && !data->empty());
 
   if (remaining_offset_ >= static_cast<int64>(data->length())) {
@@ -253,7 +253,7 @@ void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
 }
 
 void NetworkReaderProxy::OnCompleted(FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // The downloading is completed, so we do not need to cancel the job
   // in the destructor.
   job_canceller_.Reset();
@@ -288,7 +288,7 @@ base::Closure GetFileContentOnUIThread(
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
@@ -311,7 +311,7 @@ void GetFileContent(
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     const base::Callback<void(const base::Closure&)>& reply_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI,
@@ -333,14 +333,14 @@ DriveFileStreamReader::DriveFileStreamReader(
     : file_system_getter_(file_system_getter),
       file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 DriveFileStreamReader::~DriveFileStreamReader() {
 }
 
 bool DriveFileStreamReader::IsInitialized() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return reader_proxy_.get() != NULL;
 }
 
@@ -348,7 +348,7 @@ void DriveFileStreamReader::Initialize(
     const base::FilePath& drive_file_path,
     const net::HttpByteRange& byte_range,
     const InitializeCompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
   GetFileContent(
@@ -370,7 +370,7 @@ void DriveFileStreamReader::Initialize(
 
 int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
                                 const net::CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(reader_proxy_);
   DCHECK(buffer);
   DCHECK(!callback.is_null());
@@ -379,7 +379,7 @@ int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
 
 void DriveFileStreamReader::StoreCancelDownloadClosure(
     const base::Closure& cancel_download_closure) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   cancel_download_closure_ = cancel_download_closure;
 }
 
@@ -389,7 +389,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     FileError error,
     const base::FilePath& local_cache_file_path,
     scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // StoreCancelDownloadClosure() should be called before this function.
   DCHECK(!cancel_download_closure_.is_null());
 
@@ -445,7 +445,7 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     scoped_ptr<ResourceEntry> entry,
     scoped_ptr<util::LocalFileReader> file_reader,
     int open_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (open_result != net::OK) {
     callback.Run(net::ERR_FAILED, scoped_ptr<ResourceEntry>());
@@ -460,7 +460,7 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
 void DriveFileStreamReader::OnGetContent(
     google_apis::DriveApiErrorCode error_code,
     scoped_ptr<std::string> data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(reader_proxy_);
   reader_proxy_->OnGetContent(data.Pass());
 }
@@ -468,7 +468,7 @@ void DriveFileStreamReader::OnGetContent(
 void DriveFileStreamReader::OnGetFileContentCompletion(
     const InitializeCompletionCallback& callback,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (reader_proxy_) {
     // If the proxy object available, send the error to it.

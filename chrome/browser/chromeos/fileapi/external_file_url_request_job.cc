@@ -241,7 +241,7 @@ void ExternalFileURLRequestJob::OnHelperResultObtained(
 
 void ExternalFileURLRequestJob::OnRedirectURLObtained(
     const GURL& redirect_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   redirect_url_ = redirect_url;
   if (!redirect_url_.is_empty()) {
     NotifyHeadersComplete();
@@ -258,7 +258,7 @@ void ExternalFileURLRequestJob::OnRedirectURLObtained(
 void ExternalFileURLRequestJob::OnFileInfoObtained(
     base::File::Error result,
     const base::File::Info& file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (result == base::File::FILE_ERROR_NOT_FOUND) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
@@ -298,7 +298,7 @@ void ExternalFileURLRequestJob::OnFileInfoObtained(
 }
 
 void ExternalFileURLRequestJob::Kill() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   stream_reader_.reset();
   isolated_file_system_scope_.reset();
@@ -308,14 +308,14 @@ void ExternalFileURLRequestJob::Kill() {
 }
 
 bool ExternalFileURLRequestJob::GetMimeType(std::string* mime_type) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mime_type->assign(mime_type_);
   return !mime_type->empty();
 }
 
 bool ExternalFileURLRequestJob::IsRedirectResponse(GURL* location,
                                                    int* http_status_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (redirect_url_.is_empty())
     return false;
 
@@ -329,7 +329,7 @@ bool ExternalFileURLRequestJob::IsRedirectResponse(GURL* location,
 bool ExternalFileURLRequestJob::ReadRawData(net::IOBuffer* buf,
                                             int buf_size,
                                             int* bytes_read) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
 
   if (remaining_bytes_ == 0) {
@@ -364,7 +364,7 @@ ExternalFileURLRequestJob::~ExternalFileURLRequestJob() {
 }
 
 void ExternalFileURLRequestJob::OnReadCompleted(int read_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (read_result < 0) {
     DCHECK_NE(read_result, net::ERR_IO_PENDING);

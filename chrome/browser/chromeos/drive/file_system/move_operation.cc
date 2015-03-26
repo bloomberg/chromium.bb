@@ -74,17 +74,17 @@ MoveOperation::MoveOperation(base::SequencedTaskRunner* blocking_task_runner,
       delegate_(delegate),
       metadata_(metadata),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 MoveOperation::~MoveOperation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void MoveOperation::Move(const base::FilePath& src_file_path,
                          const base::FilePath& dest_file_path,
                          const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   FileChange* changed_files = new FileChange;
@@ -110,7 +110,7 @@ void MoveOperation::MoveAfterUpdateLocalState(
     const FileChange* changed_files,
     const std::string* local_id,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error == FILE_ERROR_OK) {
     // Notify the change of directory.
     delegate_->OnFileChangedByOperation(*changed_files);

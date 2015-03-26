@@ -64,7 +64,7 @@ MergeSessionLoadPage::MergeSessionLoadPage(
 }
 
 MergeSessionLoadPage::~MergeSessionLoadPage() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void MergeSessionLoadPage::Show() {
@@ -106,13 +106,13 @@ void MergeSessionLoadPage::OverrideRendererPrefs(
 }
 
 void MergeSessionLoadPage::OnProceed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   proceeded_ = true;
   NotifyBlockingPageComplete();
 }
 
 void MergeSessionLoadPage::OnDontProceed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Ignore if it's already proceeded.
   if (proceeded_)
     return;
@@ -157,7 +157,7 @@ OAuth2LoginManager* MergeSessionLoadPage::GetOAuth2LoginManager() {
 
 void MergeSessionLoadPage::OnSessionRestoreStateChanged(
     Profile* user_profile, OAuth2LoginManager::SessionRestoreState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   OAuth2LoginManager* manager = GetOAuth2LoginManager();
   DVLOG(1) << "Merge session should "

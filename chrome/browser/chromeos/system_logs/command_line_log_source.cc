@@ -105,7 +105,7 @@ CommandLineLogSource::~CommandLineLogSource() {
 }
 
 void CommandLineLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   SystemLogsResponse* response = new SystemLogsResponse;

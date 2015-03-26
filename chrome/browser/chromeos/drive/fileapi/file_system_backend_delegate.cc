@@ -79,7 +79,7 @@ FileSystemBackendDelegate::~FileSystemBackendDelegate() {
 
 storage::AsyncFileUtil* FileSystemBackendDelegate::GetAsyncFileUtil(
     storage::FileSystemType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeDrive, type);
   return async_file_util_.get();
 }
@@ -91,7 +91,7 @@ FileSystemBackendDelegate::CreateFileStreamReader(
     int64 max_bytes_to_read,
     const base::Time& expected_modification_time,
     storage::FileSystemContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeDrive, url.type());
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
@@ -112,7 +112,7 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
     const storage::FileSystemURL& url,
     int64 offset,
     storage::FileSystemContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeDrive, url.type());
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);

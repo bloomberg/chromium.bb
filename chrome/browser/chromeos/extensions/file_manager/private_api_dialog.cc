@@ -63,7 +63,7 @@ bool FileManagerPrivateSelectFileFunction::RunAsync() {
 void FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse(
     int index,
     const std::vector<ui::SelectedFileInfo>& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (files.size() != 1) {
     SendResponse(false);
     return;
@@ -97,7 +97,7 @@ bool FileManagerPrivateSelectFilesFunction::RunAsync() {
 
 void FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (files.empty()) {
     SendResponse(false);
     return;

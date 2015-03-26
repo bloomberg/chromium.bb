@@ -128,11 +128,11 @@ CreateDirectoryOperation::CreateDirectoryOperation(
       delegate_(delegate),
       metadata_(metadata),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 CreateDirectoryOperation::~CreateDirectoryOperation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void CreateDirectoryOperation::CreateDirectory(
@@ -140,7 +140,7 @@ void CreateDirectoryOperation::CreateDirectory(
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::set<std::string>* updated_local_ids = new std::set<std::string>;
@@ -168,7 +168,7 @@ void CreateDirectoryOperation::CreateDirectoryAfterUpdateLocalState(
     const std::set<std::string>* updated_local_ids,
     const FileChange* changed_files,
     FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   for (const auto& id : *updated_local_ids) {

@@ -100,7 +100,7 @@ void UserImageScreen::OnScreenReady() {
 }
 
 void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   user_photo_ = gfx::ImageSkia();
   ImageDecoder::Cancel(this);
   ImageDecoder::Start(this, raw_data);

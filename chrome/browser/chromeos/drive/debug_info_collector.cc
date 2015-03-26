@@ -68,7 +68,7 @@ DebugInfoCollector::~DebugInfoCollector() {
 void DebugInfoCollector::GetResourceEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
@@ -86,7 +86,7 @@ void DebugInfoCollector::GetResourceEntry(
 void DebugInfoCollector::ReadDirectory(
     const base::FilePath& file_path,
     const ReadDirectoryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
@@ -104,7 +104,7 @@ void DebugInfoCollector::ReadDirectory(
 void DebugInfoCollector::IterateFileCache(
     const IterateFileCacheCallback& iteration_callback,
     const base::Closure& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!iteration_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
@@ -118,7 +118,7 @@ void DebugInfoCollector::IterateFileCache(
 
 void DebugInfoCollector::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // Currently, this is just a proxy to the FileSystem.

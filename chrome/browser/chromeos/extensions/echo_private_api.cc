@@ -155,7 +155,7 @@ bool EchoPrivateGetOobeTimestampFunction::RunAsync() {
 // If we can get the timestamp info, return it as yyyy-mm-dd, otherwise, return
 // an empty string.
 bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   const char kOobeTimestampFile[] = "/home/chronos/.oobe_completed";
   std::string timestamp = "";
