@@ -109,7 +109,11 @@ EXTRA_ENV = {
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
                       '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                       '${OPT_LEVEL == 0 ? -disable-fp-elim}',
-  'SZ_FLAGS_EXTRA' : '--filetype=${outfiletype}',
+  # The output type for subzero.
+  'SZ_FLAGS_TARGET': '--filetype=${outfiletype}',
+  # Additional subzero flags that need to be specified to both the
+  # host and the sandboxed pnacl-sz.
+  'SZ_FLAGS_EXTRA' : '',
 
   # Opt level from command line (if any)
   'OPT_LEVEL' : '',
@@ -125,8 +129,8 @@ EXTRA_ENV = {
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
                     '${input} -o ${output} ',
-  'RUN_SZ': '${LLVM_PNACL_SZ} ${SZ_FLAGS_ARCH} ${SZ_FLAGS_EXTRA} '
-            '${input} -o ${output}',
+  'RUN_SZ': '${LLVM_PNACL_SZ} ${SZ_FLAGS_ARCH} ${SZ_FLAGS_TARGET} '
+            '${SZ_FLAGS_EXTRA} ${input} -o ${output}',
   # Whether to stream the bitcode from a single FD in unsandboxed mode
   # (otherwise it will use concurrent file reads when using multithreaded module
   # splitting)
@@ -399,10 +403,15 @@ def main(argv):
   modules = env.getone('SPLIT_MODULE')
   module_sched = env.getone('SPLIT_MODULE_SCHED')
   sz_threads = env.getone('SZ_THREADS')
+  # TODO(dschuff,jvoung): No need to specify -split-module=X since the IPC
+  # already has a parameter for the number of threads and modules.
   env.append('LLC_FLAGS_EXTRA', '-split-module=' + modules)
   env.append('LD_FLAGS', '-split-module=' + ('1' if use_sz else modules))
   env.append('LLC_FLAGS_EXTRA', '-split-module-sched=' + module_sched)
-  env.append('SZ_FLAGS_EXTRA', '--threads=' + sz_threads)
+  # In sandboxed mode, the IPC already has a parameter for the number
+  # of threads, so no need to specify that again via argv[].
+  if not env.getbool('SANDBOXED'):
+    env.append('SZ_FLAGS_EXTRA', '--threads=' + sz_threads)
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
@@ -419,11 +428,11 @@ def main(argv):
       ofile = tng.TempNameForInput(bcfile, 'o')
 
     if sfile:
-      RunLLC(bcfile, sfile, outfiletype='asm', use_sz=use_sz)
+      RunCompiler(bcfile, sfile, outfiletype='asm', use_sz=use_sz)
       if ofile:
         RunAS(sfile, ofile)
     else:
-      RunLLC(bcfile, ofile, outfiletype='obj', use_sz=use_sz)
+      RunCompiler(bcfile, ofile, outfiletype='obj', use_sz=use_sz)
   else:
     ofile = None
 
@@ -495,12 +504,11 @@ def RunHostLD(infile, outfile):
     args.append('-lrt')  # For clock_gettime()
   driver_tools.Run(args)
 
-def RunLLC(infile, outfile, outfiletype, use_sz):
+def RunCompiler(infile, outfile, outfiletype, use_sz):
   env.push()
   env.setmany(input=infile, output=outfile, outfiletype=outfiletype)
   if env.getbool('SANDBOXED'):
-    RunLLCSandboxed()
-    env.pop()
+    RunSandboxedCompiler(use_sz)
   else:
     args = ["${RUN_SZ}" if use_sz else "${RUN_LLC}"]
     if filetype.IsPNaClBitcode(infile):
@@ -510,10 +518,10 @@ def RunLLC(infile, outfile, outfiletype, use_sz):
         Log.Fatal('Translator expects finalized PNaCl bitcode. '
                   'Pass --allow-llvm-bitcode-input to override.')
     driver_tools.Run(' '.join(args))
-    env.pop()
+  env.pop()
   return 0
 
-def RunLLCSandboxed():
+def RunSandboxedCompiler(use_sz):
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
@@ -521,9 +529,13 @@ def RunLLCSandboxed():
   if not is_pnacl and not env.getbool('ALLOW_LLVM_BITCODE_INPUT'):
     Log.Fatal('Translator expects finalized PNaCl bitcode. '
               'Pass --allow-llvm-bitcode-input to override.')
-  script = MakeSelUniversalScriptForLLC(infile, outfile, is_pnacl)
-  command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
-    '-- ${LLC_SB}')
+  script = MakeSelUniversalScriptForCompiler(infile, outfile,
+                                             is_pnacl, use_sz)
+  command = '${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
+  if use_sz:
+    command += '-B ${IRT_BLOB} -- ${PNACL_SZ_SB}'
+  else:
+    command += '-- ${LLC_SB}'
   driver_tools.Run(command,
                    stdin_contents=script,
                    # stdout/stderr will be automatically dumped
@@ -531,12 +543,16 @@ def RunLLCSandboxed():
                    redirect_stderr=subprocess.PIPE,
                    redirect_stdout=subprocess.PIPE)
 
-def BuildOverrideLLCCommandLine(is_pnacl):
-  extra_flags = env.get('LLC_FLAGS_EXTRA')
-  # The mcpu is not part of the default flags, so append that too.
-  mcpu = env.getone('LLC_MCPU')
-  if mcpu:
-    extra_flags.append(mcpu)
+def BuildOverrideCompilerCommandLine(is_pnacl, use_sz):
+  if use_sz:
+    # Subzero doesn't allow -mcpu=X tuning, only -mattr=X.
+    extra_flags = env.get('SZ_FLAGS_EXTRA')
+  else:
+    extra_flags = env.get('LLC_FLAGS_EXTRA')
+    # The mcpu is not part of the default flags, so append that too.
+    mcpu = env.getone('LLC_MCPU')
+    if mcpu:
+      extra_flags.append(mcpu)
   if not is_pnacl:
     extra_flags.append('-bitcode-format=llvm')
   # command_line is a NUL (\x00) terminated sequence.
@@ -545,25 +561,33 @@ def BuildOverrideLLCCommandLine(is_pnacl):
   command_line_escaped = command_line.replace(kTerminator, '\\x00')
   return len(command_line), command_line_escaped
 
-def MakeSelUniversalScriptForLLC(infile, outfile, is_pnacl):
+def MakeSelUniversalScriptForCompiler(infile, outfile, is_pnacl, use_sz):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
-  modules = int(env.getone('SPLIT_MODULE'))
+  if use_sz:
+    modules = 1
+    threads = int(env.getone('SZ_THREADS'))
+    toolname = 'pnacl-sz'
+  else:
+    modules = int(env.getone('SPLIT_MODULE'))
+    threads = modules
+    toolname = 'pnacl-llc'
   if modules > 1:
     script.extend(['readwrite_file objfile%d %s.module%d' % (m, outfile, m)
                    for m in range(1, modules)])
   stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
   assert stream_rate != 0
-  cmdline_len, cmdline_escaped = BuildOverrideLLCCommandLine(is_pnacl)
+  cmdline_len, cmdline_escaped = BuildOverrideCompilerCommandLine(is_pnacl,
+                                                                  use_sz)
   assert modules in range(1, 17)
-  script.append('rpc StreamInitWithSplit i(%d) h(objfile) ' % modules +
+  script.append('rpc StreamInitWithSplit i(%d) h(objfile) ' % threads +
                 ' '.join(['h(objfile%d)' % m for m in range(1, modules)] +
                          ['h(invalid)' for x in range(modules, 16)]) +
                 ' C(%d,%s) * s()' % (cmdline_len, cmdline_escaped))
   # specify filename, chunk size and rate in bits/s
   script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
   script.append('rpc StreamEnd * i() s() s() s()')
-  script.append('echo "pnacl-llc complete"')
+  script.append('echo "%s complete"' % toolname)
   script.append('')
   return '\n'.join(script)
 

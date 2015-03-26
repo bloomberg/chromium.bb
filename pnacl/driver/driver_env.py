@@ -157,10 +157,12 @@ INITIAL_ENV = {
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
   'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',
 
-  # sandboxed llvm backend
+  # sandboxed LLVM backend
   'LLC_SB'      : '${TRANSLATOR_BIN}/pnacl-llc.nexe',
   # sandboxed linker (gold based)
   'LD_SB'       : '${TRANSLATOR_BIN}/ld.nexe',
+  # sandboxed Subzero backend
+  'PNACL_SZ_SB'      : '${TRANSLATOR_BIN}/pnacl-sz.nexe',
 
   # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',

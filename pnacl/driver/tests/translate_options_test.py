@@ -5,8 +5,8 @@
 
 """Tests of the pnacl driver.
 
-This tests that pnacl-translate options pass through to LLC correctly,
-and are overridden correctly.
+This tests that pnacl-translate options pass through to LLC and
+Subzero correctly, and are overridden correctly.
 """
 
 from driver_env import env
@@ -21,9 +21,9 @@ import re
 import sys
 import unittest
 
-class TestLLCOptions(driver_test_utils.DriverTesterCommon):
+class TestTranslateOptions(driver_test_utils.DriverTesterCommon):
   def setUp(self):
-    super(TestLLCOptions, self).setUp()
+    super(TestTranslateOptions, self).setUp()
     driver_test_utils.ApplyTestEnvOverrides(env)
     self.platform = driver_test_utils.GetPlatformToTest()
 
@@ -47,7 +47,7 @@ define i32 @_start() {
         return p
 
 
-  def checkLLCTranslateFlags(self, pexe, arch, flags,
+  def checkCompileTranslateFlags(self, pexe, arch, flags,
                              expected_flags):
     ''' Given a |pexe| the |arch| for translation and additional pnacl-translate
     |flags|, check that the commandline for LLC really contains the
@@ -99,25 +99,55 @@ define i32 @_start() {
       else:
         raise Exception('Unknown platform: "%s"' % self.platform)
       # Test that certain defaults are set, when no flags are given.
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           [],
           expected_triple_cpu + ['-bitcode-format=pnacl'])
-      # Even with a single module StreamInitWithSplit is used.
-      self.checkLLCTranslateFlags(
+      # Even StreamInitWithSplit sets the number of threads
+      # and modules correctly (1 vs 4).
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '-split-module=1'],
-          ['StreamInitWithSplit i\\(1\\).*'])
-      # Test that StreamInitWithSplit is used with module splitting.
-      # In the tests below, we don't care whether StreamInitWithSplit or
-      # StreamInitWithOverrides
-      self.checkLLCTranslateFlags(
+          ['StreamInitWithSplit i\\(1\\) h\\(objfile\\) h\\(invalid\\)'])
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '-split-module=4'],
-          ['StreamInitWithSplit i\\(4\\) h\\(objfile\\).*h\\(invalid\\)'])
+          ['StreamInitWithSplit i\\(4\\) h\\(objfile\\) '
+           'h\\(objfile.*\\) h\\(objfile.*\\) h\\(objfile.*\\) h\\(invalid\\)'
+           '.*h\\(invalid\\)'])
+
+  def test_subzero_flags(self):
+    # Subzero only supports x86-32 for now.
+    if self.platform != 'x86-32':
+      return
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      # Test Subzero's default args. Assume default is threads=0.
+      # In that case modules still = 1, and no special params are need
+      # so the argv[] only has the 1 null byte.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '--use-sz'],
+          ['StreamInitWithSplit i\\(0\\) h\\(objfile\\) '
+           'h\\(invalid\\).*C\\(1,'])
+      # Similar, but with explicitly set split-module=0.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '--use-sz', '-split-module=0'],
+          ['StreamInitWithSplit i\\(0\\) h\\(objfile\\) '
+           'h\\(invalid\\).*C\\(1,'])
+      # Test that we can bump the thread count up (e.g., up to 4).
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '--use-sz', '-split-module=4'],
+          ['StreamInitWithSplit i\\(4\\) h\\(objfile\\) '
+           'h\\(invalid\\).*C\\(1,'])
 
   def test_LLVMFile(self):
     if not driver_test_utils.CanRunHost():
@@ -125,14 +155,14 @@ define i32 @_start() {
     pexe = self.getFakePexe(finalized=False)
     # For non-sandboxed pnacl-llc, the default -bitcode-format=llvm,
     # so there is nothing to really check.
-    self.checkLLCTranslateFlags(
+    self.checkCompileTranslateFlags(
         pexe,
         self.platform,
         ['--allow-llvm-bitcode-input'],
         [])
     # For sandboxed pnacl-llc, the default -bitcode-format=pnacl,
     # so we need to set -bitcode-format=llvm to read LLVM files.
-    self.checkLLCTranslateFlags(
+    self.checkCompileTranslateFlags(
         pexe,
         self.platform,
         ['--pnacl-sb', '--allow-llvm-bitcode-input'],
@@ -143,12 +173,12 @@ define i32 @_start() {
       pexe = self.getFakePexe()
       # Test that you get O0 when you ask for O0.
       # You also get no frame pointer elimination.
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['-O0'],
           ['-O0', '-disable-fp-elim '])
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['-O0', '--pnacl-sb'],
@@ -159,12 +189,12 @@ define i32 @_start() {
       pexe = self.getFakePexe()
       # Test that you get O0 when you ask for -translate-fast.
       # In this case... you don't get no frame pointer elimination.
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['-translate-fast'],
           ['-O0'])
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['-translate-fast', '--pnacl-sb'],
@@ -174,12 +204,12 @@ define i32 @_start() {
     if driver_test_utils.CanRunHost():
       pexe = self.getFakePexe()
       # Test that you -mtls-use-call, etc. when you ask for it.
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['-mtls-use-call', '-fdata-sections', '-ffunction-sections'],
           ['-mtls-use-call', '-data-sections', '-function-sections'])
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['-mtls-use-call', '-fdata-sections', '-ffunction-sections',
@@ -201,12 +231,12 @@ define i32 @_start() {
       else:
         raise Exception('Unknown platform: "%s"' % self.platform)
       # Test that you get the -mcpu that you ask for.
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           [mcpu_pattern],
           [mcpu_pattern])
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           [mcpu_pattern, '--pnacl-sb'],
@@ -224,16 +254,23 @@ define i32 @_start() {
       else:
         raise Exception('Unknown platform: "%s"' % self.platform)
       # Test that you get the -mattr=.* that you ask for.
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           [mattr_flags],
           [mattr_pat])
-      self.checkLLCTranslateFlags(
+      self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           [mattr_flags, '--pnacl-sb'],
-          ['StreamInitWith.*' + mattr_pat + '.*-mcpu=.*'])
+          ['StreamInitWith.*C\\(.*' + mattr_pat + '.*-mcpu=.*'])
+      # Same for subzero (only test supported architectures).
+      if self.platform == 'x86-32':
+        self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          [mattr_flags, '--pnacl-sb', '--use-sz'],
+          ['StreamInitWith.*C\\(.*' + mattr_pat])
 
 
 if __name__ == '__main__':
