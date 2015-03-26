@@ -42,6 +42,11 @@
 #include "net/android/network_change_notifier_factory_android.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/test/test_screen.h"
+#include "ui/gfx/screen.h"
+#endif
+
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -238,6 +243,16 @@ int CastBrowserMainParts::PreCreateThreads() {
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
   if (!base::CreateDirectory(home_dir))
     return 1;
+#endif
+
+#if defined(USE_AURA)
+  // Screen can (and should) exist even with no displays connected. Its presence
+  // is assumed as an interface to access display information, e.g. from metrics
+  // code.  See CastContentWindow::CreateWindowTree for update when resolution
+  // is available.
+  DCHECK(!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
+                                 aura::TestScreen::Create(gfx::Size(0, 0)));
 #endif
   return 0;
 }
