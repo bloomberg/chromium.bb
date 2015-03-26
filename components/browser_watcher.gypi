@@ -18,6 +18,8 @@
               'browser_watcher/exit_code_watcher_win.h',
               'browser_watcher/exit_funnel_win.cc',
               'browser_watcher/exit_funnel_win.h',
+              'browser_watcher/window_hang_monitor_win.cc',
+              'browser_watcher/window_hang_monitor_win.h',
             ],
             'dependencies': [
               '../base/base.gyp:base',

@@ -78,6 +78,7 @@
       'browser_watcher/exit_funnel_win_unittest.cc',
       'browser_watcher/watcher_client_win_unittest.cc',
       'browser_watcher/watcher_metrics_provider_win_unittest.cc',
+      'browser_watcher/window_hang_monitor_win_unittest.cc',
     ],
     'captive_portal_unittest_sources': [
       'captive_portal/captive_portal_detector_unittest.cc',

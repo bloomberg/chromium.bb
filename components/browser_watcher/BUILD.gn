@@ -12,6 +12,8 @@ source_set("browser_watcher") {
     "exit_code_watcher_win.h",
     "exit_funnel_win.cc",
     "exit_funnel_win.h",
+    "window_hang_monitor_win.cc",
+    "window_hang_monitor_win.h",
   ]
   deps = [
     "//base",
@@ -38,6 +40,7 @@ source_set("unit_tests") {
     "exit_funnel_win_unittest.cc",
     "watcher_client_win_unittest.cc",
     "watcher_metrics_provider_win_unittest.cc",
+    "window_hang_monitor_win_unittest.cc",
   ]
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   deps = [
