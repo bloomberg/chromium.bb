@@ -506,6 +506,22 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
 }
 
+// Adding an alternative service for a new host overrides canonical host.
+TEST_F(AlternateProtocolServerPropertiesTest, CanonicalOverride) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair bar_host_port_pair("bar.c.youtube.com", 80);
+  AlternativeService bar_alternative_service(QUIC, "bar.c.youtube.com", 1234);
+  impl_.SetAlternativeService(bar_host_port_pair, bar_alternative_service, 1.0);
+  AlternativeService altsvc = impl_.GetAlternativeService(test_host_port_pair);
+  EXPECT_EQ(1234, altsvc.port);
+
+  HostPortPair qux_host_port_pair("qux.c.youtube.com", 80);
+  AlternativeService qux_alternative_service(QUIC, "qux.c.youtube.com", 443);
+  impl_.SetAlternativeService(qux_host_port_pair, qux_alternative_service, 1.0);
+  altsvc = impl_.GetAlternativeService(test_host_port_pair);
+  EXPECT_EQ(443, altsvc.port);
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
