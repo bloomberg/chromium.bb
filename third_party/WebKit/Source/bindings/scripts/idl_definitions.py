@@ -47,6 +47,7 @@ IdlDefinitions
         IdlLiteral
         IdlOperation < TypedObject
             IdlArgument < TypedObject
+        IdlSerializer
         IdlStringifier
         IdlIterable < IdlIterableOrMaplikeOrSetlike
         IdlMaplike < IdlIterableOrMaplikeOrSetlike
@@ -265,6 +266,7 @@ class IdlInterface(object):
         self.extended_attributes = {}
         self.operations = []
         self.parent = None
+        self.serializer = None
         self.stringifier = None
         self.iterable = None
         self.maplike = None
@@ -299,6 +301,9 @@ class IdlInterface(object):
                 self.operations.append(IdlOperation(idl_name, child))
             elif child_class == 'Inherit':
                 self.parent = child.GetName()
+            elif child_class == 'Serializer':
+                self.serializer = IdlSerializer(idl_name, child)
+                self.process_serializer()
             elif child_class == 'Stringifier':
                 self.stringifier = IdlStringifier(idl_name, child)
                 self.process_stringifier()
@@ -332,6 +337,12 @@ class IdlInterface(object):
             self.maplike.accept(visitor)
         elif self.setlike:
             self.setlike.accept(visitor)
+
+    def process_serializer(self):
+        """Add the serializer's named operation child, if it has one, as a regular
+        operation of this interface."""
+        if self.serializer.operation:
+            self.operations.append(self.serializer.operation)
 
     def process_stringifier(self):
         """Add the stringifier's attribute or named operation child, if it has
@@ -633,6 +644,43 @@ def arguments_node_to_arguments(idl_name, node):
         return []
     return [IdlArgument(idl_name, argument_node)
             for argument_node in node.GetChildren()]
+
+
+################################################################################
+# Serializers
+################################################################################
+
+class IdlSerializer(object):
+    def __init__(self, idl_name, node):
+        self.attribute_name = node.GetProperty('ATTRIBUTE')
+        self.attribute_names = None
+        self.operation = None
+        self.extended_attributes = {}
+        self.is_attribute = False
+        self.is_getter = False
+        self.is_inherit = False
+        self.is_list = False
+        self.is_map = False
+        self.idl_name = idl_name
+
+        for child in node.GetChildren():
+            child_class = child.GetClass()
+            if child_class == 'Operation':
+                self.operation = IdlOperation(idl_name, child)
+            elif child_class == 'List':
+                self.is_list = True
+                self.is_getter = bool(child.GetProperty('GETTER'))
+                self.attributes = child.GetProperty('ATTRIBUTES')
+            elif child_class == 'Map':
+                self.is_map = True
+                self.is_attribute = bool(child.GetProperty('ATTRIBUTE'))
+                self.is_getter = bool(child.GetProperty('GETTER'))
+                self.is_inherit = bool(child.GetProperty('INHERIT'))
+                self.attributes = child.GetProperty('ATTRIBUTES')
+            elif child_class == 'ExtAttributes':
+                self.extended_attributes = ext_attributes_node_to_extended_attributes(idl_name, child)
+            else:
+                raise ValueError('Unrecognized node class: %s' % child_class)
 
 
 ################################################################################

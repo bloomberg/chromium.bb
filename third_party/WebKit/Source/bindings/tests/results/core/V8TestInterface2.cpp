@@ -370,7 +370,7 @@ static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
+    v8SetReturnValueString(info, impl->stringifierMethod(), info.GetIsolate());
 }
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

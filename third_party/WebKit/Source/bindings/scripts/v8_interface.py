@@ -467,19 +467,39 @@ def interface_context(interface):
         # FIXME: maplike<> and setlike<> should also imply the presence of a
         # 'size' attribute.
 
+    # Serializer
+    if interface.serializer:
+        serializer = interface.serializer
+        serializer_ext_attrs = serializer.extended_attributes.copy()
+        if serializer.operation:
+            return_type = serializer.operation.idl_type
+            implemented_as = serializer.operation.name
+        else:
+            return_type = IdlType('any')
+            implemented_as = None
+            if 'CallWith' not in serializer_ext_attrs:
+                serializer_ext_attrs['CallWith'] = 'ScriptState'
+        methods.append(generated_method(
+            return_type=return_type,
+            name='toJSON',
+            extended_attributes=serializer_ext_attrs,
+            implemented_as=implemented_as))
+
     # Stringifier
     if interface.stringifier:
         stringifier = interface.stringifier
         stringifier_ext_attrs = stringifier.extended_attributes.copy()
         if stringifier.attribute:
-            stringifier_ext_attrs['ImplementedAs'] = stringifier.attribute.name
+            implemented_as = stringifier.attribute.name
         elif stringifier.operation:
-            stringifier_ext_attrs['ImplementedAs'] = stringifier.operation.name
+            implemented_as = stringifier.operation.name
+        else:
+            implemented_as = 'toString'
         methods.append(generated_method(
             return_type=IdlType('DOMString'),
             name='toString',
             extended_attributes=stringifier_ext_attrs,
-            implemented_as='toString'))
+            implemented_as=implemented_as))
 
     conditionally_enabled_methods = []
     custom_registration_methods = []

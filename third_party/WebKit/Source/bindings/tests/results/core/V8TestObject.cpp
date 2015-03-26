@@ -11465,6 +11465,19 @@ static void newObjectTestInterfaceMethodMethodCallback(const v8::FunctionCallbac
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void serializerMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    v8SetReturnValueString(info, impl->serializerMethod(), info.GetIsolate());
+}
+
+static void serializerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::serializerMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -11883,10 +11896,23 @@ static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    v8SetReturnValueString(info, impl->serializerMethod(), info.GetIsolate());
+}
+
+static void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::toJSONMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
+    v8SetReturnValueString(info, impl->stringifierAttribute(), info.GetIsolate());
 }
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -12489,6 +12515,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestInterfaceWillBeGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"newObjectTestInterfaceMethod", TestObjectV8Internal::newObjectTestInterfaceMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"serializerMethod", TestObjectV8Internal::serializerMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodImplementedInPrivateScript", TestObjectV8Internal::voidMethodImplementedInPrivateScriptMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"shortMethodImplementedInPrivateScript", TestObjectV8Internal::shortMethodImplementedInPrivateScriptMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"shortMethodWithShortArgumentImplementedInPrivateScript", TestObjectV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
@@ -12505,6 +12532,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"clear", TestObjectV8Internal::clearMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"delete", TestObjectV8Internal::deleteMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"set", TestObjectV8Internal::setMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
+    {"toJSON", TestObjectV8Internal::toJSONMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"toString", TestObjectV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 

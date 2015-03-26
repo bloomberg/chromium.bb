@@ -80,6 +80,7 @@
     deleter boolean (DOMString name);
 
     [NotEnumerable] stringifier;
+    [NotEnumerable, RaisesException] serializer;
 
     // Per-method [Exposed] annotation support.
     void alwaysExposedMethod();

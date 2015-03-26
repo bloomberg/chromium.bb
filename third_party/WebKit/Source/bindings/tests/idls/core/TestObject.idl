@@ -578,6 +578,8 @@ interface TestObject {
     void voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(TestInterfaceWillBeGarbageCollected[] testInterfaceWillBeGarbageCollectedArrayArg);
     [NewObject] TestInterface newObjectTestInterfaceMethod();
 
+    serializer DOMString serializerMethod();
+
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)
     attribute TestInterface testInterfaceAttribute; // [ImplementedAs]
