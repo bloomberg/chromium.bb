@@ -398,7 +398,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     // will be changed when another window becomes main. Otherwise, restore the
     // Chrome menu.
     for (NSWindow* w : [NSApp windows]) {
-      if ([w canBecomeMainWindow] && ![w isEqual:window])
+      if ([w canBecomeMainWindow] && ![w isEqual:window] && [w isOnActiveSpace])
         return;
     }
 
