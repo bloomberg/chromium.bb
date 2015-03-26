@@ -136,8 +136,9 @@ static bool IsSupportedContentType(
   // parameters can be rejected. http://crbug.com/417561
   std::string container_lower = base::StringToLowerASCII(container_mime_type);
 
-  // Check that |codecs| are supported by the CDM. This check does not handle
-  // extended codecs, so extended codec information is stripped.
+  // Check that |container_mime_type| and |codecs| are supported by the CDM.
+  // This check does not handle extended codecs, so extended codec information
+  // is stripped.
   std::vector<std::string> codec_vector;
   net::ParseCodecString(codecs, &codec_vector, true);
   if (!key_systems.IsSupportedCodecCombination(
@@ -145,11 +146,13 @@ static bool IsSupportedContentType(
     return false;
   }
 
+  if (codec_vector.empty())
+    return true;
+
   // Check that |codecs| are supported by Chrome. This is done primarily to
   // validate extended codecs, but it also ensures that the CDM cannot support
-  // codecs that Chrome does not (which would be bad because it would require
-  // considering the accumulated configuration, and could affect whether secure
-  // decode is required).
+  // codecs that Chrome does not (which could complicate the robustness
+  // algorithm).
   codec_vector.clear();
   net::ParseCodecString(codecs, &codec_vector, false);
   return (net::IsSupportedStrictMediaMimeType(container_lower, codec_vector) ==
