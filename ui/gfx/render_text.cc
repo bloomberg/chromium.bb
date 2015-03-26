@@ -1407,7 +1407,7 @@ base::string16 RenderText::Elide(const base::string16& text,
     render_text->styles_ = styles_;
     for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
       RestoreBreakList(render_text.get(), render_text->styles_[style]);
-    RestoreBreakList(render_text.get(), baselines_);
+    RestoreBreakList(render_text.get(), render_text->baselines_);
 
     // We check the width of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.

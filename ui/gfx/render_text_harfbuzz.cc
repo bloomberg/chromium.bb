@@ -1164,6 +1164,9 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // Use an empty color BreakList to avoid breaking runs at color boundaries.
   BreakList<SkColor> empty_colors;
   empty_colors.SetMax(text.length());
+  DCHECK_LE(text.size(), baselines().max());
+  for (const BreakList<bool>& style : styles())
+    DCHECK_LE(text.size(), style.max());
   internal::StyleIterator style(empty_colors, baselines(), styles());
 
   for (size_t run_break = 0; run_break < text.length();) {

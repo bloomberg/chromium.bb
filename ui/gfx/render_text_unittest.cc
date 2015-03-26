@@ -642,6 +642,20 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
 }
 
+TEST_F(RenderTextTest, ElidedEmail) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(ASCIIToUTF16("test@example.com"));
+  const gfx::Size size = render_text->GetStringSize();
+
+  const base::string16 long_email =
+      ASCIIToUTF16("longemailaddresstest@example.com");
+  render_text->SetText(long_email);
+  render_text->SetElideBehavior(ELIDE_EMAIL);
+  render_text->SetDisplayRect(gfx::Rect(size));
+  EXPECT_GE(size.width(), render_text->GetStringSize().width());
+  EXPECT_GT(long_email.size(), render_text->GetDisplayText().size());
+}
+
 TEST_F(RenderTextTest, TruncatedText) {
   struct {
     const wchar_t* text;
