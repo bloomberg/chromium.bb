@@ -61,6 +61,16 @@ function test()
         }
     }
 
+    function dumpPromiseDataGrid(callback)
+    {
+        promisePane._dataGrid._update();
+        var result = InspectorTest.dumpDataGridIntoString(promisePane._dataGrid);
+        result = result.replace(/\|\s+\d+\s+\w*\s*\|/g, "| <number> ms |");
+        InspectorTest.addResult(result);
+        if (callback)
+            callback();
+    }
+
     function step1()
     {
         InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
@@ -75,16 +85,27 @@ function test()
     {
         InspectorTest.addResult("Is drawer visible: " + WebInspector.inspectorView.drawerVisible());
         InspectorTest.addResult("Selected view in drawer: " + WebInspector.inspectorView.selectedViewInDrawer());
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step4));
+        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, dumpPromiseDataGrid.bind(null, step4)));
     }
+
+    var searchValues = [
+        "func3",
+        "func",
+        "promise-pane.html",
+        "promise-pane.html:38",
+    ];
 
     function step4()
     {
-        promisePane._dataGrid._update();
-        var result = InspectorTest.dumpDataGridIntoString(promisePane._dataGrid);
-        result = result.replace(/\|\s+\d+\s+\w*\s*\|/g, "| <number> ms |");
-        InspectorTest.addResult(result);
-        InspectorTest.completeDebuggerTest();
+        var text = searchValues.shift();
+        if (!text) {
+            InspectorTest.completeDebuggerTest();
+            return;
+        }
+        InspectorTest.addResult("\nSetting search value: " + text);
+        promisePane._filter._textFilterUI.setValue(text);
+        promisePane._refresh();
+        dumpPromiseDataGrid(step4);
     }
 }
 
