@@ -79,8 +79,13 @@ class PhoneField : public FormField {
 
   PhoneField();
 
-  // Returns the regular expression string correspoding to |regex_id|
-  static base::string16 GetRegExp(RegexType regex_id);
+  // Returns the regular expression string corresponding to |regex_id|
+  static std::string GetRegExp(RegexType regex_id);
+
+  // Convenient wrapper for ParseFieldSpecifics().
+  static bool ParsePhoneField(AutofillScanner* scanner,
+                              const std::string& regex,
+                              AutofillField** field);
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.
