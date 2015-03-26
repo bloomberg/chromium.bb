@@ -176,7 +176,6 @@
             android:id="@+id/verification_progress_bar"
             android:layout_width="16dp"
             android:layout_height="16dp"
-            style="@android:style/Widget.Material.Light.ProgressBar.Small"
             android:visibility="gone" />
 
         <!--  TODO(estade): add a real content description for this image. -->
