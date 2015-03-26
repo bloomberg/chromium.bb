@@ -33890,6 +33890,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Execution time of ServiceWorkerGlobalScope.onactivate.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.Database.DestroyDatabaseResult"
+    enum="ServiceWorkerDatabaseStatus">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of destroy database operations in ServiceWorkerDatabase.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.Database.OpenResult"
     enum="ServiceWorkerDatabaseStatus">
   <owner>nhiroki@chromium.org</owner>
@@ -34001,6 +34009,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>falken@chromium.org</owner>
   <summary>
     The phase the EmbeddedWorker was in when ServiceWorker startup timed out.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.Storage.DeleteAndStartOverResult"
+    enum="ServiceWorkerDeleteAndStartOverResult">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of storage recovery operations in ServiceWorkerStorage.
   </summary>
 </histogram>
 
@@ -59354,6 +59370,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="IO Error"/>
   <int value="3" label="Corruption Error"/>
   <int value="4" label="Operation Error"/>
+</enum>
+
+<enum name="ServiceWorkerDeleteAndStartOverResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Failed to delete ServiceWorkerDatabase"/>
+  <int value="2" label="Failed to delete ServiceWorkerDiskCache"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">

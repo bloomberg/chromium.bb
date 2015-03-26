@@ -28,6 +28,13 @@ class ServiceWorkerMetrics {
     NUM_WRITE_RESPONSE_RESULT_TYPES,
   };
 
+  enum DeleteAndStartOverResult {
+    DELETE_OK,
+    DELETE_DATABASE_ERROR,
+    DELETE_DISK_CACHE_ERROR,
+    NUM_DELETE_AND_START_OVER_RESULT_TYPES,
+  };
+
   // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);
@@ -37,6 +44,10 @@ class ServiceWorkerMetrics {
   static void CountOpenDatabaseResult(ServiceWorkerDatabase::Status status);
   static void CountReadDatabaseResult(ServiceWorkerDatabase::Status status);
   static void CountWriteDatabaseResult(ServiceWorkerDatabase::Status status);
+  static void RecordDestroyDatabaseResult(ServiceWorkerDatabase::Status status);
+
+  // Used for ServiceWorkerStorage.
+  static void RecordDeleteAndStartOverResult(DeleteAndStartOverResult result);
 
   // Counts the number of page loads controlled by a Service Worker.
   static void CountControlledPageLoad(const GURL& url);

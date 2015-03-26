@@ -969,8 +969,10 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
     }
   }
 
-  return LevelDBStatusToStatus(
-      leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
+  Status status =
+      LevelDBStatusToStatus(leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
+  ServiceWorkerMetrics::RecordDestroyDatabaseResult(status);
+  return status;
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(

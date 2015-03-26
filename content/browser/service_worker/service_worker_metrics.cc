@@ -23,47 +23,52 @@ void RecordURLMetricOnUI(const GURL& url) {
 
 }  // namespace
 
-// static
 void ServiceWorkerMetrics::CountInitDiskCacheResult(bool result) {
   UMA_HISTOGRAM_BOOLEAN("ServiceWorker.DiskCache.InitResult", result);
 }
 
-// static
 void ServiceWorkerMetrics::CountReadResponseResult(
     ServiceWorkerMetrics::ReadResponseResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCache.ReadResponseResult",
                             result, NUM_READ_RESPONSE_RESULT_TYPES);
 }
 
-// static
 void ServiceWorkerMetrics::CountWriteResponseResult(
     ServiceWorkerMetrics::WriteResponseResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCache.WriteResponseResult",
                             result, NUM_WRITE_RESPONSE_RESULT_TYPES);
 }
 
-// static
 void ServiceWorkerMetrics::CountOpenDatabaseResult(
     ServiceWorkerDatabase::Status status) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.OpenResult",
                             status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
-// static
 void ServiceWorkerMetrics::CountReadDatabaseResult(
     ServiceWorkerDatabase::Status status) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.ReadResult",
                             status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
-// static
 void ServiceWorkerMetrics::CountWriteDatabaseResult(
     ServiceWorkerDatabase::Status status) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.WriteResult",
                             status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
-// static
+void ServiceWorkerMetrics::RecordDestroyDatabaseResult(
+    ServiceWorkerDatabase::Status status) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.DestroyDatabase", status,
+                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
+}
+
+void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
+    DeleteAndStartOverResult result) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Storage.DeleteAndStartOverResult",
+                            result, NUM_DELETE_AND_START_OVER_RESULT_TYPES);
+}
+
 void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
   RecordAction(base::UserMetricsAction("ServiceWorker.ControlledPageLoad"));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

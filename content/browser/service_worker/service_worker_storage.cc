@@ -1756,6 +1756,8 @@ void ServiceWorkerStorage::DidDeleteDatabase(
     // Give up the corruption recovery until the browser restarts.
     LOG(ERROR) << "Failed to delete the database: "
                << ServiceWorkerDatabase::StatusToString(status);
+    ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
+        ServiceWorkerMetrics::DELETE_DATABASE_ERROR);
     callback.Run(DatabaseStatusToStatusCode(status));
     return;
   }
@@ -1780,10 +1782,14 @@ void ServiceWorkerStorage::DidDeleteDiskCache(
   if (!result) {
     // Give up the corruption recovery until the browser restarts.
     LOG(ERROR) << "Failed to delete the diskcache.";
+    ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
+        ServiceWorkerMetrics::DELETE_DISK_CACHE_ERROR);
     callback.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   DVLOG(1) << "Deleted ServiceWorkerDiskCache successfully.";
+  ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
+      ServiceWorkerMetrics::DELETE_OK);
   callback.Run(SERVICE_WORKER_OK);
 }
 
