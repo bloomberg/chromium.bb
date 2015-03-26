@@ -5,9 +5,16 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_TEST_UTIL_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_TEST_UTIL_H_
 
+#include <linux/input.h>
+
 namespace ui {
 
 class EventDeviceInfo;
+
+struct DeviceAbsoluteAxis {
+  unsigned int code;
+  input_absinfo absinfo;
+};
 
 struct DeviceCapabilities {
   // Full sysfs path (readlink -f /sys/class/input/event*)
@@ -42,6 +49,10 @@ struct DeviceCapabilities {
   const char* sw;
   const char* led;
   const char* ff;
+
+  // EVIOCGABS.
+  const DeviceAbsoluteAxis* abs_axis;
+  size_t abs_axis_count;
 };
 
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,

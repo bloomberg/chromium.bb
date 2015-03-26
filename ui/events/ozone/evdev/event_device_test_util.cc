@@ -76,30 +76,6 @@ bool ParseBitfield(const std::string& bitfield,
 
 }  // namespace
 
-// # Script to generate DeviceCapabilities literal.
-// cd /sys/class/input/input?
-//
-// test "$(uname -m)" = x86_64 && cat <<EOF
-// const DeviceCapabilities device = {
-//     /* path */ "$(readlink -f .)",
-//     /* name */ "$(cat device/name)",
-//     /* phys */ "$(cat device/phys)",
-//     /* uniq */ "$(cat device/uniq)",
-//     /* bustype */ "$(cat device/id/bustype)",
-//     /* vendor */ "$(cat device/id/vendor)",
-//     /* product */ "$(cat device/id/product)",
-//     /* version */ "$(cat device/id/version)",
-//     /* prop */ "$(cat device/properties)",
-//     /* ev */ "$(cat device/capabilities/ev)",
-//     /* key */ "$(cat device/capabilities/key)",
-//     /* rel */ "$(cat device/capabilities/rel)",
-//     /* abs */ "$(cat device/capabilities/abs)",
-//     /* msc */ "$(cat device/capabilities/msc)",
-//     /* led */ "$(cat device/capabilities/led)",
-//     /* ff */ "$(cat device/capabilities/ff)",
-// };
-// EOF
-
 // Captured from Chromebook Pixel.
 const DeviceCapabilities kLinkKeyboard = {
     /* path */ "/sys/devices/platform/i8042/serio0/input/input6/event6",
@@ -116,11 +92,24 @@ const DeviceCapabilities kLinkKeyboard = {
     /* rel */ "0",
     /* abs */ "0",
     /* msc */ "10",
+    /* sw */ "0",
     /* led */ "7",
     /* ff */ "0",
 };
 
 // Captured from Chromebook Pixel.
+const DeviceAbsoluteAxis kLinkTouchscreenAbsAxes[] = {
+    {ABS_X, {0, 0, 2559, 0, 0, 20}},
+    {ABS_Y, {0, 0, 1699, 0, 0, 20}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 15, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 938, 0, 0, 0}},
+    {ABS_MT_ORIENTATION, {0, -3, 4, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 2559, 0, 0, 20}},
+    {ABS_MT_POSITION_Y, {0, 0, 1699, 0, 0, 20}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
 const DeviceCapabilities kLinkTouchscreen = {
     /* path */ "/sys/devices/pci0000:00/0000:00:02.0/i2c-2/2-004a/"
                "input/input7/event7",
@@ -137,11 +126,26 @@ const DeviceCapabilities kLinkTouchscreen = {
     /* rel */ "0",
     /* abs */ "671800001000003",
     /* msc */ "0",
+    /* sw */ "0",
     /* led */ "0",
     /* ff */ "0",
+    kLinkTouchscreenAbsAxes,
+    arraysize(kLinkTouchscreenAbsAxes),
 };
 
 // Captured from Chromebook Pixel.
+const DeviceAbsoluteAxis kLinkTouchpadAbsAxes[] = {
+    {ABS_X, {0, 0, 2040, 0, 0, 20}},
+    {ABS_Y, {0, 0, 1360, 0, 0, 20}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 1878, 0, 0, 0}},
+    {ABS_MT_ORIENTATION, {0, -3, 4, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 2040, 0, 0, 20}},
+    {ABS_MT_POSITION_Y, {0, 0, 1360, 0, 0, 20}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
 const DeviceCapabilities kLinkTouchpad = {
     /* path */ "/sys/devices/pci0000:00/0000:00:02.0/i2c-1/1-004b/"
                "input/input8/event8",
@@ -158,8 +162,11 @@ const DeviceCapabilities kLinkTouchpad = {
     /* rel */ "0",
     /* abs */ "671800001000003",
     /* msc */ "0",
+    /* sw */ "0",
     /* led */ "0",
     /* ff */ "0",
+    kLinkTouchpadAbsAxes,
+    arraysize(kLinkTouchpadAbsAxes),
 };
 
 // Captured from generic HP KU-1156 USB keyboard.
@@ -180,11 +187,15 @@ const DeviceCapabilities kHpUsbKeyboard = {
     /* rel */ "0",
     /* abs */ "0",
     /* msc */ "10",
+    /* sw */ "0",
     /* led */ "7",
     /* ff */ "0",
 };
 
 // Captured from generic HP KU-1156 USB keyboard (2nd device with media keys).
+const DeviceAbsoluteAxis kHpUsbKeyboard_ExtraAbsAxes[] = {
+    {ABS_VOLUME, {0, 0, 767, 0, 0, 0}},
+};
 const DeviceCapabilities kHpUsbKeyboard_Extra = {
     /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.3/2-1.3:1.1/"
                "input/input18/event16",
@@ -202,8 +213,11 @@ const DeviceCapabilities kHpUsbKeyboard_Extra = {
     /* rel */ "40",
     /* abs */ "100000000",
     /* msc */ "10",
+    /* sw */ "0",
     /* led */ "0",
     /* ff */ "0",
+    kHpUsbKeyboard_ExtraAbsAxes,
+    arraysize(kHpUsbKeyboard_ExtraAbsAxes),
 };
 
 // Captured from Dell MS111-L 3-Button Optical USB Mouse.
@@ -223,11 +237,16 @@ const DeviceCapabilities kLogitechUsbMouse = {
     /* rel */ "143",
     /* abs */ "0",
     /* msc */ "10",
+    /* sw */ "0",
     /* led */ "0",
     /* ff */ "0",
 };
 
 // Captured from "Mimo Touch 2" Universal DisplayLink monitor.
+const DeviceAbsoluteAxis kMimoTouch2TouchscreenAbsAxes[] = {
+    {ABS_X, {0, 0, 2047, 0, 0, 0}},
+    {ABS_Y, {0, 0, 2047, 0, 0, 0}},
+};
 const DeviceCapabilities kMimoTouch2Touchscreen = {
     /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.3/2-1.3.2/"
                "2-1.3.2:1.0/input/input15/event14",
@@ -244,11 +263,20 @@ const DeviceCapabilities kMimoTouch2Touchscreen = {
     /* rel */ "0",
     /* abs */ "3",
     /* msc */ "0",
+    /* sw */ "0",
     /* led */ "0",
     /* ff */ "0",
+    kMimoTouch2TouchscreenAbsAxes,
+    arraysize(kMimoTouch2TouchscreenAbsAxes),
 };
 
 // Captured from Wacom Intuos Pen and Touch Small Tablet.
+const DeviceAbsoluteAxis kWacomIntuosPtS_PenAbsAxes[] = {
+    {ABS_X, {0, 0, 15200, 4, 0, 100}},
+    {ABS_Y, {0, 0, 9500, 4, 0, 100}},
+    {ABS_PRESSURE, {0, 0, 1023, 0, 0, 0}},
+    {ABS_DISTANCE, {0, 0, 31, 0, 0, 0}},
+};
 const DeviceCapabilities kWacomIntuosPtS_Pen = {
     /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.2/2-1.2.3/"
                "2-1.2.3:1.0/input/input9/event9",
@@ -265,11 +293,24 @@ const DeviceCapabilities kWacomIntuosPtS_Pen = {
     /* rel */ "0",
     /* abs */ "3000003",
     /* msc */ "0",
+    /* sw */ "0",
     /* led */ "0",
     /* ff */ "0",
+    kWacomIntuosPtS_PenAbsAxes,
+    arraysize(kWacomIntuosPtS_PenAbsAxes),
 };
 
 // Captured from Wacom Intuos Pen and Touch Small Tablet.
+const DeviceAbsoluteAxis kWacomIntuosPtS_FingerAbsAxes[] = {
+    {ABS_X, {0, 0, 4096, 4, 0, 26}},
+    {ABS_Y, {0, 0, 4096, 4, 0, 43}},
+    {ABS_MT_SLOT, {0, 0, 15, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 4096, 0, 0, 0}},
+    {ABS_MT_TOUCH_MINOR, {0, 0, 4096, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 4096, 4, 0, 26}},
+    {ABS_MT_POSITION_Y, {0, 0, 4096, 4, 0, 43}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+};
 const DeviceCapabilities kWacomIntuosPtS_Finger = {
     /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.2/2-1.2.3/"
                "2-1.2.3:1.1/input/input10/event10",
@@ -286,11 +327,17 @@ const DeviceCapabilities kWacomIntuosPtS_Finger = {
     /* rel */ "0",
     /* abs */ "263800000000003",
     /* msc */ "0",
+    /* sw */ "4000",
     /* led */ "0",
     /* ff */ "0",
+    kWacomIntuosPtS_FingerAbsAxes,
+    arraysize(kWacomIntuosPtS_FingerAbsAxes),
 };
 
 // Captured from Logitech Wireless Touch Keyboard K400.
+const DeviceAbsoluteAxis kLogitechTouchKeyboardK400AbsAxes[] = {
+    {ABS_VOLUME, {0, 1, 652, 0, 0, 0}},
+};
 const DeviceCapabilities kLogitechTouchKeyboardK400 = {
     /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.2/2-1.2.3/"
                "2-1.2.3:1.2/0003:046D:C52B.0006/input/input19/event17",
@@ -309,8 +356,11 @@ const DeviceCapabilities kLogitechTouchKeyboardK400 = {
     /* rel */ "1c3",
     /* abs */ "100000000",
     /* msc */ "10",
+    /* sw */ "0",
     /* led */ "1f",
     /* ff */ "0",
+    kLogitechTouchKeyboardK400AbsAxes,
+    arraysize(kLogitechTouchKeyboardK400AbsAxes),
 };
 
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
@@ -349,6 +399,11 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
   if (!ParseBitfield(capabilities.prop, INPUT_PROP_CNT, &prop_bits))
     return false;
   devinfo->SetProps(&prop_bits[0], prop_bits.size());
+
+  for (size_t i = 0; i < capabilities.abs_axis_count; ++i) {
+    const DeviceAbsoluteAxis& axis = capabilities.abs_axis[i];
+    devinfo->SetAbsInfo(axis.code, axis.absinfo);
+  }
 
   return true;
 }
