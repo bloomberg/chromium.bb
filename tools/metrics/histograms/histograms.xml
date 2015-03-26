@@ -20185,6 +20185,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SpdyHpackEncodedCharacterFrequency" units="ASCII codes">
+  <obsolete>
+    Obsolete as HTTP/2 standard is finalized.
+  </obsolete>
   <owner>bnc@chromium.org</owner>
   <summary>
     Frequencies of characters observed in request and response headers.

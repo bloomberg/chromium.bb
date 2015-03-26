@@ -36,7 +36,6 @@ class ClientSocketFactory;
 class ClientSocketPoolManager;
 class CTVerifier;
 class HostResolver;
-class HpackHuffmanAggregator;
 class HttpAuthHandlerFactory;
 class HttpNetworkSessionPeer;
 class HttpProxyClientSocketPool;
@@ -185,9 +184,6 @@ class NET_EXPORT HttpNetworkSession
   NetLog* net_log() {
     return net_log_;
   }
-  HpackHuffmanAggregator* huffman_aggregator() {
-    return huffman_aggregator_.get();
-  }
 
   // Creates a Value summary of the state of the socket pools. The caller is
   // responsible for deleting the returned value.
@@ -243,9 +239,6 @@ class NET_EXPORT HttpNetworkSession
   scoped_ptr<HttpStreamFactory> http_stream_factory_;
   scoped_ptr<HttpStreamFactory> http_stream_factory_for_websocket_;
   std::set<HttpResponseBodyDrainer*> response_drainers_;
-
-  // TODO(jgraettinger): Remove when Huffman collection is complete.
-  scoped_ptr<HpackHuffmanAggregator> huffman_aggregator_;
 
   NextProtoVector next_protos_;
   bool enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];

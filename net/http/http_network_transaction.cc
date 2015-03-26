@@ -54,7 +54,6 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
-#include "net/spdy/hpack_huffman_aggregator.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -1058,14 +1057,6 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     stream_->GetSSLInfo(&response_.ssl_info);
 
   headers_valid_ = true;
-
-  if (session_->huffman_aggregator()) {
-    session_->huffman_aggregator()->AggregateTransactionCharacterCounts(
-        *request_,
-        request_headers_,
-        proxy_info_.proxy_server(),
-        *response_.headers.get());
-  }
   return OK;
 }
 

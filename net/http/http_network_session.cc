@@ -28,7 +28,6 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/spdy/hpack_huffman_aggregator.h"
 #include "net/spdy/spdy_session_pool.h"
 
 namespace {
@@ -189,10 +188,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
           true;
     }
-  }
-
-  if (HpackHuffmanAggregator::UseAggregator()) {
-    huffman_aggregator_.reset(new HpackHuffmanAggregator());
   }
 
   http_server_properties_->SetAlternateProtocolProbabilityThreshold(
