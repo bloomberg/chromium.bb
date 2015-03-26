@@ -17,13 +17,14 @@ using content::BrowserThread;
 
 namespace app_list {
 
-UrlIconSource::UrlIconSource(
-    const IconLoadedCallback& icon_loaded_callback,
-    net::URLRequestContextGetter* context_getter,
-    const GURL& icon_url,
-    int icon_size,
-    int default_icon_resource_id)
-    : icon_loaded_callback_(icon_loaded_callback),
+UrlIconSource::UrlIconSource(const IconLoadedCallback& icon_loaded_callback,
+                             net::URLRequestContextGetter* context_getter,
+                             const GURL& icon_url,
+                             int icon_size,
+                             int default_icon_resource_id)
+    : ImageRequest(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+      icon_loaded_callback_(icon_loaded_callback),
       context_getter_(context_getter),
       icon_url_(icon_url),
       icon_size_(icon_size),
@@ -33,8 +34,6 @@ UrlIconSource::UrlIconSource(
 }
 
 UrlIconSource::~UrlIconSource() {
-  if (image_decoder_.get())
-    image_decoder_->set_delegate(NULL);
 }
 
 void UrlIconSource::StartIconFetch() {
@@ -72,14 +71,10 @@ void UrlIconSource::OnURLFetchComplete(
   std::string unsafe_icon_data;
   fetcher->GetResponseAsString(&unsafe_icon_data);
 
-  image_decoder_ =
-      new ImageDecoder(this, unsafe_icon_data, ImageDecoder::DEFAULT_CODEC);
-  image_decoder_->Start(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
+  ImageDecoder::Start(this, unsafe_icon_data);
 }
 
-void UrlIconSource::OnImageDecoded(const ImageDecoder* decoder,
-                                   const SkBitmap& decoded_image) {
+void UrlIconSource::OnImageDecoded(const SkBitmap& decoded_image) {
   icon_ = gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::ImageSkia::CreateFrom1xBitmap(decoded_image),
       skia::ImageOperations::RESIZE_BEST,
@@ -88,8 +83,7 @@ void UrlIconSource::OnImageDecoded(const ImageDecoder* decoder,
   icon_loaded_callback_.Run();
 }
 
-void UrlIconSource::OnDecodeImageFailed(
-    const ImageDecoder* decoder) {
+void UrlIconSource::OnDecodeImageFailed() {
   // Failed to decode image. Do nothing and just use the default icon.
 }
 

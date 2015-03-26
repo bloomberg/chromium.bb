@@ -79,11 +79,6 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_UnzipToDir,
                      base::FilePath /* zip_file */,
                      base::FilePath /* dir */)
 
-// Tell the utility process to decode the given image data, which is base64
-// encoded.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_DecodeImageBase64,
-                     std::string)  // base64 encoded image contents
-
 #if defined(OS_WIN)
 // Tell the utility process to parse the iTunes preference XML file contents
 // and return the path to the iTunes directory.

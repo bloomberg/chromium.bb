@@ -42,11 +42,12 @@ wallpaper::WallpaperLayout GetLayoutEnum(const std::string& layout) {
 }  // namespace wallpaper_api_util
 
 class WallpaperFunctionBase::UnsafeWallpaperDecoder
-    : public ImageDecoder::Delegate {
+    : public ImageDecoder::ImageRequest {
  public:
   explicit UnsafeWallpaperDecoder(scoped_refptr<WallpaperFunctionBase> function)
-      : function_(function) {
-  }
+      : ImageRequest(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+        function_(function) {}
 
   void Start(const std::vector<char>& image_data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -55,21 +56,16 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
     // unsafe image decoder here. Before user login, a robust jpeg decoder will
     // be used.
     CHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
-    unsafe_image_decoder_ = new ImageDecoder(this, image_data,
-                                             ImageDecoder::DEFAULT_CODEC);
-    unsafe_image_decoder_->set_shrink_to_fit(true);
-
-    scoped_refptr<base::MessageLoopProxy> task_runner =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-    unsafe_image_decoder_->Start(task_runner);
+    std::string image_data_str(image_data.begin(), image_data.end());
+    ImageDecoder::StartWithOptions(this, image_data_str,
+                                   ImageDecoder::DEFAULT_CODEC, true);
   }
 
   void Cancel() {
     cancel_flag_.Set();
   }
 
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override {
+  void OnImageDecoded(const SkBitmap& decoded_image) override {
     // Make the SkBitmap immutable as we won't modify it. This is important
     // because otherwise it gets duplicated during painting, wasting memory.
     SkBitmap immutable(decoded_image);
@@ -85,7 +81,7 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
     delete this;
   }
 
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
+  void OnDecodeImageFailed() override {
     function_->OnFailure(
         l10n_util::GetStringUTF8(IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER));
     delete this;
@@ -93,7 +89,6 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
 
  private:
   scoped_refptr<WallpaperFunctionBase> function_;
-  scoped_refptr<ImageDecoder> unsafe_image_decoder_;
   base::CancellationFlag cancel_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(UnsafeWallpaperDecoder);

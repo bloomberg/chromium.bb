@@ -80,7 +80,6 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionsHandler, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnzipToDir, OnUnzipToDir)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
@@ -121,23 +120,6 @@ void ExtensionsHandler::OnUnzipToDir(const base::FilePath& zip_path,
   }
 
   ReleaseProcessIfNeeded();
-}
-
-void ExtensionsHandler::OnDecodeImageBase64(
-    const std::string& encoded_string) {
-  std::string decoded_string;
-
-  if (!base::Base64Decode(encoded_string, &decoded_string)) {
-    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
-    return;
-  }
-
-  std::vector<unsigned char> decoded_vector(decoded_string.size());
-  for (size_t i = 0; i < decoded_string.size(); ++i) {
-    decoded_vector[i] = static_cast<unsigned char>(decoded_string[i]);
-  }
-
-  ChromeContentUtilityClient::DecodeImageAndSend(decoded_vector, false);
 }
 
 void ExtensionsHandler::OnCheckMediaFile(

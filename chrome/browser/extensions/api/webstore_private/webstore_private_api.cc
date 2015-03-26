@@ -262,9 +262,6 @@ WebstorePrivateFunctionWithPermissionPrompt<Params>::Run() {
     }
   }
 
-  std::string icon_data = params_->details.icon_data ?
-      *params_->details.icon_data : std::string();
-
   ExtensionFunction::ResponseValue response = RunExtraForResponse();
   if (response)
     return RespondNow(response.Pass());
@@ -274,7 +271,7 @@ WebstorePrivateFunctionWithPermissionPrompt<Params>::Run() {
     context_getter = browser_context()->GetRequestContext();
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
-      this, params_->details.id, params_->details.manifest, icon_data, icon_url,
+      this, params_->details.id, params_->details.manifest, icon_url,
       context_getter);
 
   // The helper will call us back via OnWebstoreParseSuccess or

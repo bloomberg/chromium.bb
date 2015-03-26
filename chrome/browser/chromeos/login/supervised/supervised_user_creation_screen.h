@@ -32,7 +32,7 @@ class SupervisedUserCreationScreen
       public SupervisedUserCreationScreenHandler::Delegate,
       public SupervisedUserCreationController::StatusConsumer,
       public SupervisedUserSyncServiceObserver,
-      public ImageDecoder::Delegate,
+      public ImageDecoder::ImageRequest,
       public NetworkPortalDetector::Observer,
       public CameraPresenceNotifier::Observer {
  public:
@@ -116,10 +116,9 @@ class SupervisedUserCreationScreen
   void OnImageSelected(const std::string& image_url,
                        const std::string& image_type) override;
   void OnImageAccepted() override;
-  // ImageDecoder::Delegate overrides:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override;
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  // ImageDecoder::ImageRequest overrides:
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
 
  private:
   void ApplyPicture();
@@ -137,7 +136,6 @@ class SupervisedUserCreationScreen
   SupervisedUserSyncService* sync_service_;
 
   gfx::ImageSkia user_photo_;
-  scoped_refptr<ImageDecoder> image_decoder_;
   bool apply_photo_after_decoding_;
   int selected_image_;
 

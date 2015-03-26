@@ -29,7 +29,7 @@ class URLFetcher;
 // sandboxed process.
 class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
                           public net::URLFetcherDelegate,
-                          public ImageDecoder::Delegate,
+                          public ImageDecoder::ImageRequest,
                           public OAuth2TokenService::Observer,
                           public OAuth2TokenService::Consumer {
  public:
@@ -94,10 +94,9 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   // Overriden from net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Overriden from ImageDecoder::Delegate:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override;
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  // Overriden from ImageDecoder::ImageRequest:
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
 
   // Overriden from OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;

@@ -44,7 +44,8 @@ bool AreImagesEqual(const gfx::ImageSkia& first, const gfx::ImageSkia& second) {
   return true;
 }
 
-ImageLoader::ImageLoader(const base::FilePath& path) : path_(path) {
+ImageLoader::ImageLoader(const base::FilePath& path)
+    : ImageRequest(base::MessageLoopProxy::current()), path_(path) {
 }
 
 ImageLoader::~ImageLoader() {
@@ -53,23 +54,19 @@ ImageLoader::~ImageLoader() {
 scoped_ptr<gfx::ImageSkia> ImageLoader::Load() {
   std::string image_data;
   ReadFileToString(path_, &image_data);
-  scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
-      this,
-      image_data,
-      ImageDecoder::ROBUST_JPEG_CODEC);
-  image_decoder->Start(base::MessageLoopProxy::current());
+  ImageDecoder::StartWithOptions(this, image_data,
+                                 ImageDecoder::ROBUST_JPEG_CODEC, false);
   run_loop_.Run();
   return decoded_image_.Pass();
 }
 
-void ImageLoader::OnImageDecoded(const ImageDecoder* decoder,
-                                 const SkBitmap& decoded_image) {
+void ImageLoader::OnImageDecoded(const SkBitmap& decoded_image) {
   decoded_image_.reset(
       new gfx::ImageSkia(gfx::ImageSkiaRep(decoded_image, 1.0f)));
   run_loop_.Quit();
 }
 
-void ImageLoader::OnDecodeImageFailed(const ImageDecoder* decoder) {
+void ImageLoader::OnDecodeImageFailed() {
   run_loop_.Quit();
 }
 

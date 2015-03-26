@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_LOADER_H_
 
-#include <map>
 #include <string>
 
 #include "base/callback.h"
@@ -27,8 +26,7 @@ namespace chromeos {
 
 // Helper that reads, decodes and optionally resizes an image on a background
 // thread. Returns the image in the form of an SkBitmap.
-class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
-                        public ImageDecoder::Delegate {
+class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
  public:
   // Callback used to return the result of an image load operation.
   typedef base::Callback<void(const user_manager::UserImage& user_image)>
@@ -67,9 +65,26 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
     const LoadedCallback loaded_cb;
   };
 
-  typedef std::map<const ImageDecoder*, ImageInfo> ImageInfoMap;
+  class UserImageRequest : public ImageDecoder::ImageRequest {
+   public:
+    UserImageRequest(const ImageInfo& image_info,
+                     const std::string& image_data,
+                     UserImageLoader* user_image_loader);
 
-  ~UserImageLoader() override;
+    // ImageDecoder::ImageRequest implementation. These callbacks will only be
+    // invoked via user_image_loader_'s background_task_runner_.
+    void OnImageDecoded(const SkBitmap& decoded_image) override;
+    void OnDecodeImageFailed() override;
+
+   private:
+    ~UserImageRequest() override;
+
+    const ImageInfo image_info_;
+    std::vector<unsigned char> image_data_;
+    UserImageLoader* user_image_loader_;
+  };
+
+  ~UserImageLoader();
 
   // Reads the image from |image_info.file_path| and starts the decoding
   // process. This method may only be invoked via the |background_task_runner_|.
@@ -79,12 +94,6 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // |background_task_runner_|.
   void DecodeImage(const scoped_ptr<std::string> data,
                    const ImageInfo& image_info);
-
-  // ImageDecoder::Delegate implementation. These callbacks will only be invoked
-  // via the |background_task_runner_|.
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override;
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // The foreground task runner on which |this| is instantiated, Start() is
   // called and LoadedCallbacks are invoked.
@@ -96,10 +105,6 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // Specify how the file should be decoded in the utility process.
   const ImageDecoder::ImageCodec image_codec_;
-
-  // Holds information about the images currently being decoded. Accessed via
-  // |background_task_runner_| only.
-  ImageInfoMap image_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageLoader);
 };

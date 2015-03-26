@@ -33,7 +33,6 @@ class SupportedImageTypeValidator : public AVScanningFileValidator {
   void OnFileOpen(scoped_ptr<std::string> data);
 
   base::FilePath path_;
-  scoped_refptr<ImageDecoder> decoder_;
   storage::CopyOrMoveFileValidator::ResultCallback callback_;
   base::WeakPtrFactory<SupportedImageTypeValidator> weak_factory_;
 

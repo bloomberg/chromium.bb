@@ -32,26 +32,27 @@ WebstoreInstallHelper::WebstoreInstallHelper(
     Delegate* delegate,
     const std::string& id,
     const std::string& manifest,
-    const std::string& icon_data,
     const GURL& icon_url,
     net::URLRequestContextGetter* context_getter)
-    : delegate_(delegate),
+    : ImageRequest(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO)),
+      delegate_(delegate),
       id_(id),
       manifest_(manifest),
-      icon_base64_data_(icon_data),
       icon_url_(icon_url),
       context_getter_(context_getter),
       icon_decode_complete_(false),
       manifest_parse_complete_(false),
-      parse_error_(Delegate::UNKNOWN_ERROR) {}
+      parse_error_(Delegate::UNKNOWN_ERROR) {
+}
 
 WebstoreInstallHelper::~WebstoreInstallHelper() {}
 
 void WebstoreInstallHelper::Start() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(icon_base64_data_.empty() || icon_url_.is_empty());
 
-  if (icon_base64_data_.empty() && icon_url_.is_empty())
+  if (icon_url_.is_empty())
     icon_decode_complete_ = true;
 
   BrowserThread::PostTask(
@@ -78,10 +79,6 @@ void WebstoreInstallHelper::StartWorkOnIOThread() {
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
   utility_host_->StartBatchMode();
 
-  if (!icon_base64_data_.empty())
-    utility_host_->Send(
-        new ChromeUtilityMsg_DecodeImageBase64(icon_base64_data_));
-
   utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
 }
 
@@ -94,38 +91,20 @@ void WebstoreInstallHelper::OnURLFetchComplete(
   if (!source->GetStatus().is_success() ||
       response_code / 100 == 4 || response_code / 100 == 5) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(&WebstoreInstallHelper::OnDecodeImageFailed, this));
   } else {
     std::string response_data;
     source->GetResponseAsString(&response_data);
-    fetched_icon_data_.insert(fetched_icon_data_.begin(),
-                              response_data.begin(),
-                              response_data.end());
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&WebstoreInstallHelper::StartFetchedImageDecode, this));
+
+    ImageDecoder::Start(this, response_data);
   }
   url_fetcher_.reset();
 }
 
-void WebstoreInstallHelper::StartFetchedImageDecode() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(utility_host_.get());
-  utility_host_->Send(new ChromeUtilityMsg_DecodeImage(fetched_icon_data_,
-                                                       false));
-}
-
-
 bool WebstoreInstallHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebstoreInstallHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Succeeded,
-                        OnDecodeImageSucceeded)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Failed,
-                        OnDecodeImageFailed)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
                         OnJSONParseSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
@@ -135,9 +114,7 @@ bool WebstoreInstallHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-
-void WebstoreInstallHelper::OnDecodeImageSucceeded(
-    const SkBitmap& decoded_image) {
+void WebstoreInstallHelper::OnImageDecoded(const SkBitmap& decoded_image) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   icon_ = decoded_image;
   icon_decode_complete_ = true;

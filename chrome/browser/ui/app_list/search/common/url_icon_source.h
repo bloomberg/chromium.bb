@@ -26,7 +26,7 @@ namespace app_list {
 // fetched, the default icon (specified by it's resource id) is shown.
 class UrlIconSource : public gfx::ImageSkiaSource,
                       public net::URLFetcherDelegate,
-                      public ImageDecoder::Delegate {
+                      public ImageDecoder::ImageRequest {
  public:
   typedef base::Closure IconLoadedCallback;
 
@@ -50,10 +50,9 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   // net::URLFetcherDelegate overrides:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // ImageDecoder::Delegate overrides:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override;
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  // ImageDecoder::ImageRequest overrides:
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
 
   IconLoadedCallback icon_loaded_callback_;
   net::URLRequestContextGetter* context_getter_;
@@ -63,8 +62,6 @@ class UrlIconSource : public gfx::ImageSkiaSource,
 
   bool icon_fetch_attempted_;
   scoped_ptr<net::URLFetcher> icon_fetcher_;
-
-  scoped_refptr<ImageDecoder> image_decoder_;
 
   gfx::ImageSkia icon_;
 

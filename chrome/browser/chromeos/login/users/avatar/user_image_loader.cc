@@ -31,6 +31,19 @@ UserImageLoader::ImageInfo::ImageInfo(const std::string& file_path,
 UserImageLoader::ImageInfo::~ImageInfo() {
 }
 
+UserImageLoader::UserImageRequest::UserImageRequest(
+    const ImageInfo& image_info,
+    const std::string& image_data,
+    UserImageLoader* user_image_loader)
+    : ImageRequest(user_image_loader->background_task_runner_),
+      image_info_(image_info),
+      image_data_(image_data.begin(), image_data.end()),
+      user_image_loader_(user_image_loader) {
+}
+
+UserImageLoader::UserImageRequest::~UserImageRequest() {
+}
+
 UserImageLoader::UserImageLoader(
     ImageDecoder::ImageCodec image_codec,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
@@ -79,26 +92,16 @@ void UserImageLoader::DecodeImage(const scoped_ptr<std::string> data,
                                   const ImageInfo& image_info) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_refptr<ImageDecoder> image_decoder =
-      new ImageDecoder(this, *data, image_codec_);
-  image_info_map_.insert(std::make_pair(image_decoder.get(), image_info));
-  image_decoder->Start(background_task_runner_);
+  UserImageRequest* image_request =
+      new UserImageRequest(image_info, *data, this);
+  ImageDecoder::StartWithOptions(image_request, *data, image_codec_, false);
 }
 
-void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
-                                     const SkBitmap& decoded_image) {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+void UserImageLoader::UserImageRequest::OnImageDecoded(
+    const SkBitmap& decoded_image) {
+  DCHECK(task_runner()->RunsTasksOnCurrentThread());
 
-  ImageInfoMap::iterator it = image_info_map_.find(decoder);
-  if (it == image_info_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-  const std::string file_path = it->second.file_path;
-  const int target_size = it->second.pixels_per_side;
-  const LoadedCallback loaded_cb = it->second.loaded_cb;
-  image_info_map_.erase(it);
-
+  const int target_size = image_info_.pixels_per_side;
   SkBitmap final_image = decoded_image;
 
   if (target_size > 0) {
@@ -126,28 +129,20 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
   gfx::ImageSkia final_image_skia =
       gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
-  user_manager::UserImage user_image(final_image_skia,
-                                     decoder->get_image_data());
-  user_image.set_file_path(file_path);
-  if (image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)
+  user_manager::UserImage user_image(final_image_skia, image_data_);
+  user_image.set_file_path(image_info_.file_path);
+  if (user_image_loader_->image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)
     user_image.MarkAsSafe();
-  foreground_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(loaded_cb, user_image));
+  user_image_loader_->foreground_task_runner_->PostTask(
+      FROM_HERE, base::Bind(image_info_.loaded_cb, user_image));
+  delete this;
 }
 
-void UserImageLoader::OnDecodeImageFailed(const ImageDecoder* decoder) {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-
-  ImageInfoMap::iterator it = image_info_map_.find(decoder);
-  if (it == image_info_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-  const LoadedCallback loaded_cb = it->second.loaded_cb;
-  image_info_map_.erase(it);
-
-  foreground_task_runner_->PostTask(
-      FROM_HERE, base::Bind(loaded_cb, user_manager::UserImage()));
+void UserImageLoader::UserImageRequest::OnDecodeImageFailed() {
+  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  user_image_loader_->foreground_task_runner_->PostTask(
+      FROM_HERE, base::Bind(image_info_.loaded_cb, user_manager::UserImage()));
+  delete this;
 }
 
 }  // namespace chromeos

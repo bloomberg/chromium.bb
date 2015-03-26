@@ -23,7 +23,7 @@ namespace chrome {
 // Asynchrounously fetches an image from the given URL and returns the
 // decoded Bitmap to the provided BitmapFetcherDelegate.
 class BitmapFetcher : public net::URLFetcherDelegate,
-                      public ImageDecoder::Delegate {
+                      public ImageDecoder::ImageRequest {
  public:
   BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate);
   ~BitmapFetcher() override;
@@ -54,23 +54,21 @@ class BitmapFetcher : public net::URLFetcherDelegate,
                                   int64 current,
                                   int64 total) override;
 
-  // Methods inherited from ImageDecoder::Delegate
+  // Methods inherited from ImageDecoder::ImageRequest
 
   // Called when image is decoded. |decoder| is used to identify the image in
   // case of decoding several images simultaneously.  This will not be called
   // on the UI thread.
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override;
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
 
   // Called when decoding image failed.
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  void OnDecodeImageFailed() override;
 
  private:
   // Alerts the delegate that a failure occurred.
   void ReportFailure();
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_refptr<ImageDecoder> image_decoder_;
   const GURL url_;
   BitmapFetcherDelegate* const delegate_;
 

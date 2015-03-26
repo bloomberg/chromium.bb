@@ -31,7 +31,7 @@ namespace options {
 class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
                                     public ui::SelectFileDialog::Listener,
                                     public content::NotificationObserver,
-                                    public ImageDecoder::Delegate,
+                                    public ImageDecoder::ImageRequest,
                                     public CameraPresenceNotifier::Observer {
  public:
   ChangePictureOptionsHandler();
@@ -113,10 +113,9 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;
 
-  // Overriden from ImageDecoder::Delegate:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override;
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  // Overriden from ImageDecoder::ImageRequest:
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
 
   // Returns user related to current WebUI. If this user doesn't exist,
   // returns active user.
@@ -138,10 +137,6 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   std::string user_photo_data_url_;
 
   content::NotificationRegistrar registrar_;
-
-  // Last ImageDecoder instance used to decode an image blob received by
-  // HandlePhotoTaken.
-  scoped_refptr<ImageDecoder> image_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };

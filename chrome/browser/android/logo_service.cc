@@ -36,41 +36,36 @@ GURL GetGoogleDoodleURL(Profile* profile) {
   return google_base_url.ReplaceComponents(replacements);
 }
 
-class LogoDecoderDelegate : public ImageDecoder::Delegate {
+class LogoDecoderDelegate : public ImageDecoder::ImageRequest {
  public:
   LogoDecoderDelegate(
-      const scoped_refptr<ImageDecoder>& image_decoder,
       const base::Callback<void(const SkBitmap&)>& image_decoded_callback)
-      : image_decoder_(image_decoder),
+      : ImageRequest(base::MessageLoopProxy::current()),
         image_decoded_callback_(image_decoded_callback),
         weak_ptr_factory_(this) {
     // If the ImageDecoder crashes or otherwise never completes, call
     // OnImageDecodeTimedOut() eventually to ensure that image_decoded_callback_
     // is run.
     base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&LogoDecoderDelegate::OnDecodeImageFailed,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   (const ImageDecoder*) NULL),
+        FROM_HERE, base::Bind(&LogoDecoderDelegate::OnDecodeImageFailed,
+                              weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
   }
 
-  ~LogoDecoderDelegate() override { image_decoder_->set_delegate(NULL); }
+  ~LogoDecoderDelegate() override {}
 
-  // ImageDecoder::Delegate:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override {
+  // ImageDecoder::ImageRequest:
+  void OnImageDecoded(const SkBitmap& decoded_image) override {
     image_decoded_callback_.Run(decoded_image);
     delete this;
   }
 
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
+  void OnDecodeImageFailed() override {
     image_decoded_callback_.Run(SkBitmap());
     delete this;
   }
 
  private:
-  scoped_refptr<ImageDecoder> image_decoder_;
   base::Callback<void(const SkBitmap&)> image_decoded_callback_;
   base::WeakPtrFactory<LogoDecoderDelegate> weak_ptr_factory_;
 
@@ -86,14 +81,9 @@ class ChromeLogoDelegate : public search_provider_logos::LogoDelegate {
   void DecodeUntrustedImage(
       const scoped_refptr<base::RefCountedString>& encoded_image,
       base::Callback<void(const SkBitmap&)> image_decoded_callback) override {
-    scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
-        NULL,
-        encoded_image->data(),
-        ImageDecoder::DEFAULT_CODEC);
     LogoDecoderDelegate* delegate =
-        new LogoDecoderDelegate(image_decoder, image_decoded_callback);
-    image_decoder->set_delegate(delegate);
-    image_decoder->Start(base::MessageLoopProxy::current());
+        new LogoDecoderDelegate(image_decoded_callback);
+    ImageDecoder::Start(delegate, encoded_image->data());
   }
 
  private:

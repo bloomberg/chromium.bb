@@ -349,7 +349,6 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
       new WebstoreInstallHelper(this,
                                 id_,
                                 manifest,
-                                std::string(),  // We don't have any icon data.
                                 icon_url,
                                 profile_->GetRequestContext());
   // The helper will call us back via OnWebstoreParseSucces or

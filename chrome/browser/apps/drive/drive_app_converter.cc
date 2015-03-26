@@ -32,18 +32,17 @@ using content::BrowserThread;
 //   https://developers.google.com/drive/v2/reference/apps#resource
 // Each icon url represents a single image associated with a certain size.
 class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
-                                       public ImageDecoder::Delegate {
+                                       public ImageDecoder::ImageRequest {
  public:
   IconFetcher(DriveAppConverter* converter,
               const GURL& icon_url,
               int expected_size)
-      : converter_(converter),
+      : ImageRequest(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+        converter_(converter),
         icon_url_(icon_url),
         expected_size_(expected_size) {}
-  ~IconFetcher() override {
-    if (image_decoder_.get())
-      image_decoder_->set_delegate(NULL);
-  }
+  ~IconFetcher() override {}
 
   void Start() {
     fetcher_.reset(
@@ -71,30 +70,23 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
     std::string unsafe_icon_data;
     fetcher->GetResponseAsString(&unsafe_icon_data);
 
-    image_decoder_ =
-        new ImageDecoder(this, unsafe_icon_data, ImageDecoder::DEFAULT_CODEC);
-    image_decoder_->Start(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
+    ImageDecoder::Start(this, unsafe_icon_data);
   }
 
-  // ImageDecoder::Delegate overrides:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override {
+  // ImageDecoder::ImageRequest overrides:
+  void OnImageDecoded(const SkBitmap& decoded_image) override {
     if (decoded_image.width() == expected_size_)
       icon_ = decoded_image;
     converter_->OnIconFetchComplete(this);
   }
 
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
-    converter_->OnIconFetchComplete(this);
-  }
+  void OnDecodeImageFailed() override { converter_->OnIconFetchComplete(this); }
 
   DriveAppConverter* converter_;
   const GURL icon_url_;
   const int expected_size_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
-  scoped_refptr<ImageDecoder> image_decoder_;
   SkBitmap icon_;
 
   DISALLOW_COPY_AND_ASSIGN(IconFetcher);

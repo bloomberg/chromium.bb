@@ -78,14 +78,13 @@ class BitmapFetcherServiceTest : public testing::Test,
     image.allocN32Pixels(2, 2);
     image.eraseColor(SK_ColorGREEN);
 
-    const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(NULL, image);
+    const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(image);
   }
 
   void FailFetch(const GURL& url) {
     const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
     ASSERT_TRUE(NULL != fetcher);
-    const_cast<chrome::BitmapFetcher*>(fetcher)
-        ->OnImageDecoded(NULL, SkBitmap());
+    const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(SkBitmap());
   }
 
  protected:

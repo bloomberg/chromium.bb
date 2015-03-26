@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/image_decoder.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -36,7 +37,8 @@ namespace extensions {
 // sending work to the utility process for parsing manifests and
 // fetching/decoding icon data. Clients must implement the
 // WebstoreInstallHelper::Delegate interface to receive the parsed data.
-class WebstoreInstallHelper : public content::UtilityProcessHostClient,
+class WebstoreInstallHelper : public ImageDecoder::ImageRequest,
+                              public content::UtilityProcessHostClient,
                               public net::URLFetcherDelegate {
  public:
   class Delegate {
@@ -65,12 +67,10 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
     virtual ~Delegate() {}
   };
 
-  // Only one of |icon_data| (based64-encoded icon data) or |icon_url| can be
-  // specified, but it is legal for both to be empty.
+  // It is legal for |icon_url| to be empty.
   WebstoreInstallHelper(Delegate* delegate,
                         const std::string& id,
                         const std::string& manifest,
-                        const std::string& icon_data,
                         const GURL& icon_url,
                         net::URLRequestContextGetter* context_getter);
   void Start();
@@ -79,7 +79,6 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   ~WebstoreInstallHelper() override;
 
   void StartWorkOnIOThread();
-  void StartFetchedImageDecode();
   void ReportResultsIfComplete();
   void ReportResultFromUIThread();
 
@@ -90,10 +89,12 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
-  void OnDecodeImageSucceeded(const SkBitmap& decoded_image);
-  void OnDecodeImageFailed();
   void OnJSONParseSucceeded(const base::ListValue& wrapper);
   void OnJSONParseFailed(const std::string& error_message);
+
+  // ImageDecoder::ImageRequest implementation.
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
 
   // The client who we'll report results back to.
   Delegate* delegate_;
@@ -104,13 +105,9 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   // The manifest to parse.
   std::string manifest_;
 
-  // Only one of these should be non-empty. If |icon_base64_data_| is non-emtpy,
-  // it's a base64-encoded string that needs to be parsed into an SkBitmap. If
-  // |icon_url_| is non-empty, it needs to be fetched and decoded into an
+  // If |icon_url_| is non-empty, it needs to be fetched and decoded into an
   // SkBitmap.
-  std::string icon_base64_data_;
   GURL icon_url_;
-  std::vector<unsigned char> fetched_icon_data_;
 
   // For fetching the icon, if needed.
   scoped_ptr<net::URLFetcher> url_fetcher_;

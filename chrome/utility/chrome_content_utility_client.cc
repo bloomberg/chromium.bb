@@ -238,20 +238,25 @@ SkBitmap ChromeContentUtilityClient::DecodeImage(
 
 // static
 void ChromeContentUtilityClient::DecodeImageAndSend(
-    const std::vector<unsigned char>& encoded_data, bool shrink_to_fit){
+    const std::vector<unsigned char>& encoded_data,
+    bool shrink_to_fit,
+    int request_id) {
   SkBitmap decoded_image = DecodeImage(encoded_data, shrink_to_fit);
 
   if (decoded_image.empty()) {
-    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));
   } else {
-    Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(decoded_image));
+    Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(decoded_image,
+                                                        request_id));
   }
   ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnDecodeImage(
-    const std::vector<unsigned char>& encoded_data, bool shrink_to_fit) {
-  DecodeImageAndSend(encoded_data, shrink_to_fit);
+    const std::vector<unsigned char>& encoded_data,
+    bool shrink_to_fit,
+    int request_id) {
+  DecodeImageAndSend(encoded_data, shrink_to_fit, request_id);
 }
 
 #if defined(OS_CHROMEOS)
@@ -303,19 +308,21 @@ void ChromeContentUtilityClient::OnDetectSeccompSupport() {
 #endif  // defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
 
 void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
-    const std::vector<unsigned char>& encoded_data) {
+    const std::vector<unsigned char>& encoded_data,
+    int request_id) {
   // Our robust jpeg decoding is using IJG libjpeg.
   if (gfx::JPEGCodec::JpegLibraryVariant() == gfx::JPEGCodec::IJG_LIBJPEG &&
       !encoded_data.empty()) {
     scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodec::Decode(
         &encoded_data[0], encoded_data.size()));
     if (!decoded_image.get() || decoded_image->empty()) {
-      Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
+      Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));
     } else {
-      Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(*decoded_image));
+      Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(*decoded_image,
+                                                          request_id));
     }
   } else {
-    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));
   }
   ReleaseProcessIfNeeded();
 }

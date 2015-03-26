@@ -191,7 +191,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
 // KioskAppData::IconLoader
 // Loads locally stored icon data and decode it.
 
-class KioskAppData::IconLoader : public ImageDecoder::Delegate {
+class KioskAppData::IconLoader {
  public:
   enum LoadResult {
     SUCCESS,
@@ -219,7 +219,31 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
  private:
   friend class base::RefCountedThreadSafe<IconLoader>;
 
-  ~IconLoader() override {}
+  ~IconLoader() {}
+
+  class IconImageRequest : public ImageDecoder::ImageRequest {
+   public:
+    IconImageRequest(
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+        IconLoader* icon_loader)
+        : ImageRequest(task_runner), icon_loader_(icon_loader) {}
+
+    void OnImageDecoded(const SkBitmap& decoded_image) override {
+      icon_loader_->icon_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
+      icon_loader_->icon_.MakeThreadSafe();
+      icon_loader_->ReportResultOnBlockingPool(SUCCESS);
+      delete this;
+    }
+
+    void OnDecodeImageFailed() override {
+      icon_loader_->ReportResultOnBlockingPool(FAILED_TO_DECODE);
+      delete this;
+    }
+
+   private:
+    ~IconImageRequest() override {}
+    IconLoader* icon_loader_;
+  };
 
   // Loads the icon from locally stored |icon_path_| on the blocking pool
   void LoadOnBlockingPool() {
@@ -232,9 +256,8 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
     }
     raw_icon_ = base::RefCountedString::TakeString(&data);
 
-    scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
-        this, raw_icon_->data(), ImageDecoder::DEFAULT_CODEC);
-    image_decoder->Start(task_runner_);
+    IconImageRequest* image_request = new IconImageRequest(task_runner_, this);
+    ImageDecoder::Start(image_request, raw_icon_->data());
   }
 
   void ReportResultOnBlockingPool(LoadResult result) {
@@ -263,18 +286,6 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
 
     NotifyClient();
     delete this;
-  }
-
-  // ImageDecoder::Delegate overrides:
-  void OnImageDecoded(const ImageDecoder* decoder,
-                      const SkBitmap& decoded_image) override {
-    icon_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
-    icon_.MakeThreadSafe();
-    ReportResultOnBlockingPool(SUCCESS);
-  }
-
-  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
-    ReportResultOnBlockingPool(FAILED_TO_DECODE);
   }
 
   base::WeakPtr<KioskAppData> client_;
@@ -307,7 +318,6 @@ class KioskAppData::WebstoreDataParser
         new extensions::WebstoreInstallHelper(this,
                                               app_id,
                                               manifest,
-                                              "",  // No icon data.
                                               icon_url,
                                               context_getter);
     webstore_helper->Start();

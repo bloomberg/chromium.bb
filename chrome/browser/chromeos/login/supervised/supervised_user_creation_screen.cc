@@ -100,12 +100,13 @@ SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     BaseScreenDelegate* base_screen_delegate,
     SupervisedUserCreationScreenHandler* actor)
     : BaseScreen(base_screen_delegate),
+      ImageRequest(content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI)),
       actor_(actor),
       on_error_screen_(false),
       manager_signin_in_progress_(false),
       last_page_(kNameOfIntroScreen),
       sync_service_(NULL),
-      image_decoder_(NULL),
       apply_photo_after_decoding_(false),
       selected_image_(0),
       histogram_helper_(new ErrorScreensHistogramHelper("Supervised")),
@@ -121,8 +122,6 @@ SupervisedUserCreationScreen::~SupervisedUserCreationScreen() {
     sync_service_->RemoveObserver(this);
   if (actor_)
     actor_->SetDelegate(NULL);
-  if (image_decoder_.get())
-    image_decoder_->set_delegate(NULL);
   NetworkPortalDetector::Get()->RemoveObserver(this);
 }
 
@@ -592,27 +591,18 @@ void SupervisedUserCreationScreen::OnPhotoTaken(
     const std::string& raw_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   user_photo_ = gfx::ImageSkia();
-  if (image_decoder_.get())
-    image_decoder_->set_delegate(NULL);
-  image_decoder_ = new ImageDecoder(this, raw_data,
-                                    ImageDecoder::DEFAULT_CODEC);
-  scoped_refptr<base::MessageLoopProxy> task_runner =
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI);
-  image_decoder_->Start(task_runner);
+  ImageDecoder::Cancel(this);
+  ImageDecoder::Start(this, raw_data);
 }
 
 void SupervisedUserCreationScreen::OnImageDecoded(
-    const ImageDecoder* decoder,
     const SkBitmap& decoded_image) {
-  DCHECK_EQ(image_decoder_.get(), decoder);
   user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
   if (apply_photo_after_decoding_)
     ApplyPicture();
 }
 
-void SupervisedUserCreationScreen::OnDecodeImageFailed(
-    const ImageDecoder* decoder) {
+void SupervisedUserCreationScreen::OnDecodeImageFailed() {
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
