@@ -158,7 +158,7 @@ class ImageSkiaTest : public testing::Test {
 };
 
 TEST_F(ImageSkiaTest, FixedSource) {
-  ImageSkiaRep image(Size(100, 200), 1.0f);
+  ImageSkiaRep image(Size(100, 200), 0.0f);
   ImageSkia image_skia(new FixedSource(image), Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
 
@@ -177,10 +177,20 @@ TEST_F(ImageSkiaTest, FixedSource) {
   EXPECT_EQ(1.0f, result_200p.scale());
   EXPECT_EQ(1U, image_skia.image_reps().size());
 
+  const ImageSkiaRep& result_300p = image_skia.GetRepresentation(3.0f);
+
+  EXPECT_EQ(100, result_300p.GetWidth());
+  EXPECT_EQ(200, result_300p.GetHeight());
+  EXPECT_EQ(100, result_300p.pixel_width());
+  EXPECT_EQ(200, result_300p.pixel_height());
+  EXPECT_EQ(1.0f, result_300p.scale());
+  EXPECT_EQ(1U, image_skia.image_reps().size());
+
   // Get the representation again and make sure it doesn't
   // generate new image skia rep.
   image_skia.GetRepresentation(1.0f);
   image_skia.GetRepresentation(2.0f);
+  image_skia.GetRepresentation(3.0f);
   EXPECT_EQ(1U, image_skia.image_reps().size());
 }
 
