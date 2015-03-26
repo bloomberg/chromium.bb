@@ -77,6 +77,56 @@ Output = function() {
 Output.SPACE = ' ';
 
 /**
+ * Metadata about supported automation roles.
+ * @const {Object<string, {msgId: string, earcon: (string|undefined)}>}
+ * @private
+ */
+Output.ROLE_INFO_ = {
+  alert: {
+    msgId: 'aria_role_alert',
+    earcon: 'ALERT_NONMODAL',
+  },
+  button: {
+    msgId: 'tag_button',
+    earcon: 'BUTTON'
+  },
+  checkbox: {
+    msgId: 'input_type_checkbox'
+  },
+  heading: {
+    msgId: 'aria_role_heading',
+  },
+  link: {
+    msgId: 'tag_link',
+    earcon: 'LINK'
+  },
+  listItem: {
+    msgId: 'ARIA_ROLE_LISTITEM',
+    earcon: 'list_item'
+  },
+  menuListOption: {
+    msgId: 'aria_role_menuitem'
+  },
+  popUpButton: {
+    msgId: 'tag_button'
+  },
+  radioButton: {
+    msgId: 'input_type_radio'
+  },
+  textBox: {
+    msgId: 'input_type_text',
+    earcon: 'EDITABLE_TEXT'
+  },
+  textField: {
+    msgId: 'input_type_text',
+    earcon: 'EDITABLE_TEXT'
+  },
+  toolbar: {
+    msgId: 'aria_role_toolbar'
+  }
+};
+
+/**
  * Rules specifying format of AutomationNodes for output.
  * @type {!Object<string, Object<string, Object<string, string>>>}
  */
@@ -89,9 +139,6 @@ Output.RULES = {
     alert: {
       speak: '!doNotInterrupt ' +
           '@aria_role_alert $name $earcon(ALERT_NONMODAL) $descendants'
-    },
-    button: {
-      speak: '$name $earcon(BUTTON, @tag_button)'
     },
     checkBox: {
       speak: '$if($checked, @describe_checkbox_checked($name), ' +
@@ -116,7 +163,7 @@ Output.RULES = {
       speak: '$name= $visited $earcon(LINK, @tag_link)='
     },
     list: {
-      enter: '$role'
+      enter: '@aria_role_list @list_with_items($parentChildCount)'
     },
     listItem: {
       enter: '$role'
@@ -150,14 +197,8 @@ Output.RULES = {
     staticText: {
       speak: '$value'
     },
-    textBox: {
-      speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
-    },
     tab: {
       speak: '@describe_tab($name)'
-    },
-    textField: {
-      speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text) $protected'
     },
     toolbar: {
       enter: '$name $role'
@@ -425,10 +466,7 @@ Output.prototype = {
       // All possible tokens based on prefix.
       if (prefix == '$') {
         options.annotation = token;
-        if (token == 'role') {
-          // Non-localized role and state obtained by default.
-          this.addToSpannable_(buff, node.role, options);
-        } else if (token == 'value') {
+        if (token == 'value') {
           var text = node.attributes.value;
           if (text !== undefined) {
             var offset = buff.getLength();
@@ -478,6 +516,26 @@ Output.prototype = {
               new cursors.Cursor(leftmost, 0),
               new cursors.Cursor(rightmost, 0));
           this.range_(subrange, null, 'navigate', buff);
+        } else if (token == 'role') {
+          var msg = node.role;
+          var earconId = null;
+          var info = Output.ROLE_INFO_[node.role];
+          if (info) {
+            if (this.formatOptions_.braille)
+              msg = cvox.ChromeVox.msgs.getMsg(info.msgId + '_brl');
+            else
+              msg = cvox.ChromeVox.msgs.getMsg(info.msgId);
+            earconId = info.earcon;
+          } else {
+            console.error('Missing role info for ' + node.role);
+          }
+          if (earconId) {
+            options.annotation = new Output.Action(function() {
+              cvox.ChromeVox.earcons.playEarcon(
+                  cvox.AbstractEarcons[earconId]);
+            });
+          }
+          this.addToSpannable_(buff, msg, options);
         } else if (node.attributes[token]) {
           this.addToSpannable_(buff, node.attributes[token], options);
         } else if (node.state[token]) {
