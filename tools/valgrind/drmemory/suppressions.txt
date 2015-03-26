@@ -481,7 +481,6 @@ KERNELBASE.dll!CreateNamedPipeW
 ipc.dll!IPC::Channel::ChannelImpl::CreatePipe
 ipc.dll!IPC::Channel::ChannelImpl::ChannelImpl
 ipc.dll!IPC::Channel::Channel
-ipc.dll!IPC::ChannelProxy::Context::CreateChannel
 
 HANDLE LEAK
 name=http://crbug.com/371942

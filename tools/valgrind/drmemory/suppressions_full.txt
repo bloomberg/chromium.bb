@@ -1922,3 +1922,8 @@ blink_web.dll!blink::*::focused*Frame
 blink_web.dll!blink::WebFrameWidgetImpl::selectionBounds
 content.dll!content::RenderWidget::UpdateSelectionBounds
 content.dll!content::RenderWidget::willBeginCompositorFrame
+
+UNINITIALIZED READ
+name=bug_470848
+blink_platform.dll!blink::Heap::RegionTree::lookup
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
