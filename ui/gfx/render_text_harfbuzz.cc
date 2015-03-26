@@ -5,6 +5,7 @@
 #include "ui/gfx/render_text_harfbuzz.h"
 
 #include <limits>
+#include <set>
 
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
@@ -468,6 +469,13 @@ class HarfBuzzLineBreaker {
   std::vector<SegmentHandle> rtl_segments_;
 
   DISALLOW_COPY_AND_ASSIGN(HarfBuzzLineBreaker);
+};
+
+// Function object for case insensitive string comparison.
+struct CaseInsensitiveCompare {
+  bool operator() (const std::string& a, const std::string& b) const {
+    return base::strncasecmp(a.c_str(), b.c_str(), b.length()) < 0;
+  }
 };
 
 }  // namespace
@@ -1309,18 +1317,8 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   }
 #endif
 
-  // Get rid of duplicate fonts in the fallback list. We use the std::unique
-  // algorithm for this. However for this function to work we need to sort
-  // the font list as the unique algorithm relies on duplicates being adjacent.
-  // TODO(ananta)
-  // Sorting the list changes the order in which fonts are evaluated. This may
-  // cause problems in the way some characters appear. It may be best to do
-  // font fallback on the same lines as blink or skia which do this based on
-  // character glyph mapping.
-  std::sort(fallback_families.begin(), fallback_families.end());
-  fallback_families.erase(std::unique(
-      fallback_families.begin(), fallback_families.end()),
-      fallback_families.end());
+  // Use a set to track the fallback fonts and avoid duplicate entries.
+  std::set<std::string, CaseInsensitiveCompare> fallback_fonts;
 
   // Try shaping with the fallback fonts.
   for (const auto& family : fallback_families) {
@@ -1330,6 +1328,11 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     if (family == uniscribe_family)
       continue;
 #endif
+    if (fallback_fonts.find(family) != fallback_fonts.end())
+      continue;
+
+    fallback_fonts.insert(family);
+
     FontRenderParamsQuery query(false);
     query.families.push_back(family);
     query.pixel_size = run->font_size;
