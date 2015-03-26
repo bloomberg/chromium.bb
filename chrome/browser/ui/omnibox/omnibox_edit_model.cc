@@ -880,17 +880,14 @@ void OmniboxEditModel::ClearKeyword(const base::string16& visible_text) {
   autocomplete_controller()->Stop(false);
   omnibox_controller_->ClearPopupKeywordMode();
 
-  // Add a space after the keyword to allow the user to continue typing without
-  // re-enabling keyword mode.
-  const base::string16 window_text =
-      keyword_ + base::ASCIIToUTF16(" ") + visible_text;
+  const base::string16 window_text(keyword_ + visible_text);
 
   // Only reset the result if the edit text has changed since the
   // keyword was accepted, or if the popup is closed.
   if (just_deleted_text_ || !visible_text.empty() ||
       !(popup_model() && popup_model()->IsOpen())) {
     view_->OnBeforePossibleChange();
-    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length() + 1,
+    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, false);
     keyword_.clear();
     is_keyword_hint_ = false;
@@ -900,7 +897,7 @@ void OmniboxEditModel::ClearKeyword(const base::string16& visible_text) {
                                 // longer.
   } else {
     is_keyword_hint_ = true;
-    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length() + 1,
+    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, true);
   }
 
