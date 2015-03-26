@@ -260,6 +260,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // based on it. Returns true if the credit card exists.
   bool GetCreditCard(int unique_id, const CreditCard** credit_card);
 
+  // Determines whether a fill on |form| initiated from |field| will wind up
+  // filling a credit card number. This is useful to determine if we will need
+  // to unmask a card.
+  bool WillFillCreditCardNumber(const FormData& form,
+                                const FormFieldData& field);
+
   // Fills or previews the credit card form.
   // Assumes the form and field are valid.
   void FillOrPreviewCreditCardForm(

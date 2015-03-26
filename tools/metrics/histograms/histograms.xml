@@ -45156,8 +45156,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="11" label="Submitted with server suggestion filled (once)"/>
   <int value="12"
       label="Submitted with masked server card suggestion filled (once)"/>
-  <int value="13" label="Masked server card suggestion selected"/>
-  <int value="14" label="Masked server card suggestion selected (once)"/>
+  <int value="13" label="Masked server card suggestion selected">
+    The user selected a masked server card that triggered an unmask attempt.
+  </int>
+  <int value="14" label="Masked server card suggestion selected (once)">
+    The user selected a masked server card that triggered an unmask attempt at
+    least once.
+  </int>
   <int value="15"
       label="About to be submitted with no suggestion filled (once)"/>
   <int value="16"

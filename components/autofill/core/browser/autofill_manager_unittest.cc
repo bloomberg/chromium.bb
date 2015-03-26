@@ -711,6 +711,11 @@ class AutofillManagerTest : public testing::Test {
     return autofill_manager_->MakeFrontendID(cc_sid, profile_sid);
   }
 
+  bool WillFillCreditCardNumber(const FormData& form,
+                                const FormFieldData& field) {
+    return autofill_manager_->WillFillCreditCardNumber(form, field);
+  }
+
  protected:
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
@@ -1470,6 +1475,41 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
 
   EXPECT_EQ(1U, profile->use_count());
   EXPECT_NE(base::Time(), profile->use_date());
+}
+
+TEST_F(AutofillManagerTest, WillFillCreditCardNumber) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData* number_field = nullptr;
+  FormFieldData* name_field = nullptr;
+  FormFieldData* month_field = nullptr;
+  for (size_t i = 0; i < form.fields.size(); ++i) {
+    if (form.fields[i].name == ASCIIToUTF16("cardnumber"))
+      number_field = &form.fields[i];
+    else if (form.fields[i].name == ASCIIToUTF16("nameoncard"))
+      name_field = &form.fields[i];
+    else if (form.fields[i].name == ASCIIToUTF16("ccmonth"))
+      month_field = &form.fields[i];
+  }
+
+  // Empty form - whole form is Autofilled.
+  EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
+  EXPECT_TRUE(WillFillCreditCardNumber(form, *name_field));
+  // If the user has entered a value, it won't be overridden.
+  number_field->value = ASCIIToUTF16("gibberish");
+  EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
+  EXPECT_FALSE(WillFillCreditCardNumber(form, *name_field));
+  number_field->value.clear();
+  EXPECT_TRUE(WillFillCreditCardNumber(form, *name_field));
+
+  // When part of the section is Autofilled, only fill the initiating field.
+  month_field->is_autofilled = true;
+  EXPECT_FALSE(WillFillCreditCardNumber(form, *name_field));
+  EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
 }
 
 // Test that we correctly fill an address form from an auxiliary profile.

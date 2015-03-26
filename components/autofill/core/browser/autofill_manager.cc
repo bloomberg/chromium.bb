@@ -554,6 +554,34 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   }
 }
 
+bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
+                                               const FormFieldData& field) {
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return false;
+
+  if (autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER)
+    return true;
+
+  // If the relevant section is already autofilled, the new fill operation will
+  // only fill |autofill_field|.
+  if (SectionIsAutofilled(*form_structure, form, autofill_field->section()))
+    return false;
+
+  DCHECK_EQ(form_structure->field_count(), form.fields.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    if (form_structure->field(i)->section() == autofill_field->section() &&
+        form_structure->field(i)->Type().GetStorableType() ==
+            CREDIT_CARD_NUMBER &&
+        form.fields[i].value.empty()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void AutofillManager::FillOrPreviewCreditCardForm(
     AutofillDriver::RendererFormDataAction action,
     int query_id,
@@ -562,7 +590,8 @@ void AutofillManager::FillOrPreviewCreditCardForm(
     const CreditCard& credit_card,
     size_t variant) {
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL) {
-    if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
+    if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD &&
+        WillFillCreditCardNumber(form, field)) {
       unmasking_card_ = credit_card;
       unmasking_query_id_ = query_id;
       unmasking_form_ = form;
