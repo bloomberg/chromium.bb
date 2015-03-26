@@ -49688,12 +49688,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="17" label="kTtsEngine"/>
   <int value="18" label="kContentSettings"/>
   <int value="19" label="kPrivacy"/>
-  <int value="20" label="kManagedMode"/>
+  <int value="20" label="kSupervisedUser"/>
   <int value="21" label="kInput"/>
   <int value="22" label="kAudioCapture"/>
   <int value="23" label="kVideoCapture"/>
   <int value="24" label="kDownloads"/>
-  <int value="25" label="kFileSystemWrite"/>
+  <int value="25" label="kDeleted_FileSystemWrite"/>
   <int value="26" label="kMediaGalleriesAllGalleriesRead"/>
   <int value="27" label="kSerial"/>
   <int value="28" label="kSocketAnyHost"/>
@@ -49739,7 +49739,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="68" label="kDocumentScan"/>
   <int value="69" label="kNetworkingConfig"/>
   <int value="70" label="kPlatformKeys"/>
-  <int value="71" label="kMdns"/>
+  <int value="71" label="kMDns"/>
+  <int value="72" label="kVpnProvider"/>
+  <int value="73" label="kHosts1ReadOnly"/>
+  <int value="74" label="kHosts2ReadOnly"/>
+  <int value="75" label="kHosts3ReadOnly"/>
+  <int value="76" label="kHosts4OrMoreReadOnly"/>
+  <int value="77" label="kHostsAllReadOnly"/>
+  <int value="78" label="kInterceptAllKeys"/>
+  <int value="79" label="kSettingsPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
