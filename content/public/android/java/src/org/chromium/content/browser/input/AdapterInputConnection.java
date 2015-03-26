@@ -83,7 +83,9 @@ public class AdapterInputConnection extends BaseInputConnection {
             }
         } else if (inputType == TextInputType.TEXT_AREA
                 || inputType == TextInputType.CONTENT_EDITABLE) {
-            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
+            // TextArea or contenteditable.
+            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
+                    | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
             if ((inputFlags & WebTextInputFlags.AutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             }
@@ -120,23 +122,6 @@ public class AdapterInputConnection extends BaseInputConnection {
                     | InputType.TYPE_NUMBER_FLAG_DECIMAL;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NEXT;
         }
-
-        // Handling of autocapitalize. Blink will send the flag taking into account the element's
-        // type. This is not using AutocapitalizeNone because Android does not autocapitalize by
-        // default and there is no way to express no capitalization.
-        // Autocapitalize is meant as a hint to the virtual keyboard.
-        if ((inputFlags & WebTextInputFlags.AutocapitalizeCharacters) != 0) {
-            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
-        } else if ((inputFlags & WebTextInputFlags.AutocapitalizeWords) != 0) {
-            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_CAP_WORDS;
-        } else if ((inputFlags & WebTextInputFlags.AutocapitalizeSentences) != 0) {
-            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
-        }
-        // Content editable doesn't use autocapitalize so we need to set it manually.
-        if (inputType == TextInputType.CONTENT_EDITABLE) {
-            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
-        }
-
         outAttrs.initialSelStart = Selection.getSelectionStart(mEditable);
         outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
         mLastUpdateSelectionStart = outAttrs.initialSelStart;
