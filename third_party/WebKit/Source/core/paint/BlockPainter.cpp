@@ -25,7 +25,6 @@
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
-#include "core/paint/SubtreeRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -34,7 +33,6 @@ namespace blink {
 
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    SubtreeRecorder subtreeRecorder(paintInfo.context, m_layoutBlock, paintInfo.phase);
     PaintInfo localPaintInfo(paintInfo);
 
     ANNOTATE_GRAPHICS_CONTEXT(localPaintInfo, &m_layoutBlock);
@@ -53,8 +51,6 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
         if (!overflowBox.intersects(LayoutRect(localPaintInfo.rect)))
             return;
     }
-
-    subtreeRecorder.begin();
 
     // There are some cases where not all clipped visual overflow is accounted for.
     // FIXME: reduce the number of such cases.

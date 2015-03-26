@@ -69,15 +69,18 @@ public:
 #define TRACE_DISPLAY_ITEMS(i, expected, actual)
 #endif
 
-#define EXPECT_DISPLAY_LIST(actual, expectedSize, ...) { \
-    EXPECT_EQ((size_t)expectedSize, actual.size()); \
-    const TestDisplayItem expected[] = { __VA_ARGS__ }; \
-    for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-        TRACE_DISPLAY_ITEMS(index, expected[index], *actual[index]); \
-        EXPECT_EQ(expected[index].client(), actual[index]->client()); \
-        EXPECT_EQ(expected[index].type(), actual[index]->type()); \
-    } \
-}
+#define EXPECT_DISPLAY_LIST(actual, expectedSize, ...) \
+    do { \
+        EXPECT_EQ((size_t)expectedSize, actual.size()); \
+        if (expectedSize != actual.size()) \
+            break; \
+        const TestDisplayItem expected[] = { __VA_ARGS__ }; \
+        for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
+            TRACE_DISPLAY_ITEMS(index, expected[index], *actual[index]); \
+            EXPECT_EQ(expected[index].client(), actual[index]->client()); \
+            EXPECT_EQ(expected[index].type(), actual[index]->type()); \
+        } \
+    } while (false);
 
 void drawRect(GraphicsContext& context, LayoutObject& layoutObject, PaintPhase phase, const FloatRect& bound)
 {
@@ -424,7 +427,6 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     LayoutView& layoutView = *document().layoutView();
     DeprecatedPaintLayer& rootLayer = *layoutView.layer();
     LayoutObject& htmlLayoutObject = *document().documentElement()->layoutObject();
-    LayoutObject& bodyLayoutObject = *document().body()->layoutObject();
     Element& div = *toElement(document().body()->firstChild());
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
@@ -434,40 +436,22 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
-    EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 10,
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div.focus();
     document().view()->updateLayoutAndStyleForPainting();
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlLayoutObject.displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyLayoutObject.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divLayoutObject.displayItemClient()));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox.displayItemClient()));
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divLayoutObject, DisplayItem::Caret), // New!
-        TestDisplayItem(divLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(htmlLayoutObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
 }
 
 TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
@@ -715,7 +699,6 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
     LayoutView& layoutView = *document().layoutView();
     DeprecatedPaintLayer& rootLayer = *layoutView.layer();
     LayoutObject& htmlObject = *document().documentElement()->layoutObject();
-    LayoutObject& bodyObject = *document().body()->layoutObject();
     Element& div = *toElement(document().body()->firstChild());
     LayoutBlock& divBlock = *toLayoutBlock(document().body()->firstChild()->layoutObject());
     LayoutText& text = *toLayoutText(divBlock.firstChild());
@@ -727,23 +710,13 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
-    EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 10,
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
     document().view()->updateLayoutAndStyleForPainting();
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlObject.displayItemClient()));
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyObject.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
@@ -753,18 +726,10 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
-        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 } // namespace blink
