@@ -8,47 +8,18 @@
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/tools/balsa/balsa_frame.h"
-#include "net/tools/balsa/balsa_headers.h"
-#include "net/tools/balsa/noop_balsa_visitor.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "base/strings/string_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
+#include "net/spdy/spdy_http_utils.h"
 
 using base::FilePath;
+using base::IntToString;
 using base::StringPiece;
 using std::string;
 
 namespace net {
 namespace tools {
-
-namespace {
-
-// BalsaVisitor implementation (glue) which caches response bodies.
-class CachingBalsaVisitor : public NoOpBalsaVisitor {
- public:
-  CachingBalsaVisitor() : done_framing_(false) {}
-  void ProcessBodyData(const char* input, size_t size) override {
-    AppendToBody(input, size);
-  }
-  void MessageDone() override { done_framing_ = true; }
-  void HandleHeaderError(BalsaFrame* framer) override { UnhandledError(); }
-  void HandleHeaderWarning(BalsaFrame* framer) override { UnhandledError(); }
-  void HandleChunkingError(BalsaFrame* framer) override { UnhandledError(); }
-  void HandleBodyError(BalsaFrame* framer) override { UnhandledError(); }
-  void UnhandledError() {
-    LOG(DFATAL) << "Unhandled error framing HTTP.";
-  }
-  void AppendToBody(const char* input, size_t size) {
-    body_.append(input, size);
-  }
-  bool done_framing() const { return done_framing_; }
-  const string& body() const { return body_; }
-
- private:
-  bool done_framing_;
-  string body_;
-};
-
-}  // namespace
 
 QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {}
 
@@ -76,10 +47,11 @@ void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
                                           StringPiece body) {
   SpdyHeaderBlock response_headers;
   response_headers[":version"] = "HTTP/1.1";
-  string status = base::IntToString(response_code) + " ";
+  string status = IntToString(response_code) + " ";
   response_detail.AppendToString(&status);
   response_headers[":status"] = status;
-  response_headers["content-length"] = base::IntToString(body.length());
+  response_headers["content-length"] =
+      IntToString(static_cast<int>(body.length()));
   AddResponse(host, path, response_headers, body);
 }
 
@@ -110,77 +82,66 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
   }
   VLOG(1) << "Attempting to initialize QuicInMemoryCache from directory: "
           << cache_directory;
-  FilePath directory(cache_directory);
+  FilePath directory(FilePath::FromUTF8Unsafe(cache_directory));
   base::FileEnumerator file_list(directory,
                                  true,
                                  base::FileEnumerator::FILES);
 
   for (FilePath file_iter = file_list.Next(); !file_iter.empty();
        file_iter = file_list.Next()) {
-    BalsaHeaders request_headers, response_headers;
     // Need to skip files in .svn directories
-    if (file_iter.value().find("/.svn/") != string::npos) {
+    if (file_iter.value().find(FILE_PATH_LITERAL("/.svn/")) != string::npos) {
       continue;
     }
 
     // Tease apart filename into host and path.
-    StringPiece file(file_iter.value());
-    file.remove_prefix(cache_directory.length());
+    string file = file_iter.AsUTF8Unsafe();
+    file.erase(0, cache_directory.length());
     if (file[0] == '/') {
-      file.remove_prefix(1);
+      file.erase(0, 1);
     }
 
     string file_contents;
     base::ReadFileToString(file_iter, &file_contents);
-
-    // Frame HTTP.
-    CachingBalsaVisitor caching_visitor;
-    BalsaFrame framer;
-    framer.set_balsa_headers(&response_headers);
-    framer.set_balsa_visitor(&caching_visitor);
-    size_t processed = 0;
-    while (processed < file_contents.length() &&
-           !caching_visitor.done_framing()) {
-      processed += framer.ProcessInput(file_contents.c_str() + processed,
-                                       file_contents.length() - processed);
+    int file_len = static_cast<int>(file_contents.length());
+    int headers_end = HttpUtil::LocateEndOfHeaders(file_contents.data(),
+                                                   file_len);
+    if (headers_end < 1) {
+      LOG(DFATAL) << "Headers invalid or empty, ignoring: " << file;
+      continue;
     }
 
-    if (!caching_visitor.done_framing()) {
-      LOG(DFATAL) << "Did not frame entire message from file: " << file
-                  << " (" << processed << " of " << file_contents.length()
-                  << " bytes).";
-    }
-    if (processed < file_contents.length()) {
-      // Didn't frame whole file. Assume remainder is body.
-      // This sometimes happens as a result of incompatibilities between
-      // BalsaFramer and wget's serialization of HTTP sans content-length.
-      caching_visitor.AppendToBody(file_contents.c_str() + processed,
-                                   file_contents.length() - processed);
-      processed += file_contents.length();
-    }
+    string raw_headers =
+        HttpUtil::AssembleRawHeaders(file_contents.data(), headers_end);
 
-    StringPiece base = file;
-    if (response_headers.HasHeader("X-Original-Url")) {
-      base = response_headers.GetHeader("X-Original-Url");
-      response_headers.RemoveAllOfHeader("X-Original-Url");
-      // Remove the protocol so that the string is of the form host + path,
-      // which is parsed properly below.
-      if (StringPieceUtils::StartsWithIgnoreCase(base, "https://")) {
-        base.remove_prefix(8);
-      } else if (StringPieceUtils::StartsWithIgnoreCase(base, "http://")) {
-        base.remove_prefix(7);
+    scoped_refptr<HttpResponseHeaders> response_headers =
+        new HttpResponseHeaders(raw_headers);
+
+    string base;
+    if (response_headers->GetNormalizedHeader("X-Original-Url", &base)) {
+      response_headers->RemoveHeader("X-Original-Url");
+      // Remove the protocol so we can add it below.
+      if (StartsWithASCII(base, "https://", false)) {
+        base = base.substr(8);
+      } else if (StartsWithASCII(base, "http://", false)) {
+        base = base.substr(7);
       }
+    } else {
+      base = file;
     }
-    int path_start = base.find_first_of('/');
-    DCHECK_LT(0, path_start);
-    StringPiece host(base.substr(0, path_start));
-    StringPiece path(base.substr(path_start));
+
+    size_t path_start = base.find_first_of('/');
+    StringPiece host(StringPiece(base).substr(0, path_start));
+    StringPiece path(StringPiece(base).substr(path_start));
     if (path[path.length() - 1] == ',') {
       path.remove_suffix(1);
     }
-    AddResponse(host, path,
-                SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers),
-                caching_visitor.body());
+
+    StringPiece body(file_contents.data() + headers_end,
+                     file_contents.size() - headers_end);
+    SpdyHeaderBlock header_block;
+    CreateSpdyHeadersFromHttpResponse(*response_headers, SPDY3, &header_block);
+    AddResponse(host, path, header_block, body);
   }
 }
 

@@ -40,7 +40,7 @@ class QuicInMemoryCache {
     Response();
     ~Response();
 
-    const SpecialResponseType response_type() const { return response_type_; }
+    SpecialResponseType response_type() const { return response_type_; }
     const SpdyHeaderBlock& headers() const { return headers_; }
     const StringPiece body() const { return StringPiece(body_); }
 

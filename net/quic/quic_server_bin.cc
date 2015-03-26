@@ -14,14 +14,17 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/quic_in_memory_cache.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server.h"
+#include "net/tools/quic/quic_in_memory_cache.h"
 
 // The port the quic server will listen on.
 int32 FLAGS_port = 6121;
 
 int main(int argc, char *argv[]) {
+  base::AtExitManager exit_manager;
+  base::MessageLoopForIO message_loop;
+
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
 
@@ -43,8 +46,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (line->HasSwitch("quic_in_memory_cache_dir")) {
-    net::g_quic_in_memory_cache_dir =
-        line->GetSwitchValueNative("quic_in_memory_cache_dir");
+    net::tools::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
+        line->GetSwitchValueNative("quic_in_memory_cache_dir"));
   }
 
   if (line->HasSwitch("port")) {
@@ -53,9 +56,6 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
-
-  base::AtExitManager exit_manager;
-  base::MessageLoopForIO message_loop;
 
   net::IPAddressNumber ip;
   CHECK(net::ParseIPLiteralToNumber("::", &ip));

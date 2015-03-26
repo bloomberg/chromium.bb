@@ -19,8 +19,8 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_packet_writer.h"
-#include "net/quic/quic_server_session.h"
-#include "net/quic/quic_time_wait_list_manager.h"
+#include "net/tools/quic/quic_server_session.h"
+#include "net/tools/quic/quic_time_wait_list_manager.h"
 
 namespace net {
 namespace test {
@@ -30,7 +30,6 @@ class QuicDispatcherPeer;
 class DeleteSessionsAlarm;
 class QuicConfig;
 class QuicCryptoServerConfig;
-class QuicServerSession;
 
 class ProcessPacketInterface {
  public:
@@ -41,7 +40,7 @@ class ProcessPacketInterface {
 };
 
 class QuicDispatcher : public QuicBlockedWriterInterface,
-                       public QuicServerSessionVisitor,
+                       public tools::QuicServerSessionVisitor,
                        public ProcessPacketInterface {
  public:
   // Creates per-connection packet writers out of the QuicDispatcher's shared
@@ -117,7 +116,8 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   void OnConnectionRemovedFromTimeWaitList(
       QuicConnectionId connection_id) override;
 
-  typedef base::hash_map<QuicConnectionId, QuicServerSession*> SessionMap;
+  typedef base::hash_map<QuicConnectionId,
+                         tools::QuicServerSession*> SessionMap;
 
   // Deletes all sessions on the closed session list and clears the list.
   void DeleteSessions();
@@ -125,7 +125,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   const SessionMap& session_map() const { return session_map_; }
 
  protected:
-  virtual QuicServerSession* CreateQuicSession(
+  virtual tools::QuicServerSession* CreateQuicSession(
       QuicConnectionId connection_id,
       const IPEndPoint& server_address,
       const IPEndPoint& client_address);
@@ -141,15 +141,15 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   // CreateQuicSession to create a new session for the packet.  Returns the
   // QuicServerSession that was created, or nullptr if the packet failed the
   // validity checks.
-  virtual QuicServerSession* AdditionalValidityChecksThenCreateSession(
+  virtual tools::QuicServerSession* AdditionalValidityChecksThenCreateSession(
       const QuicPacketPublicHeader& header,
       QuicConnectionId connection_id);
 
   // Create and return the time wait list manager for this dispatcher, which
   // will be owned by the dispatcher as time_wait_list_manager_
-  virtual QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
+  virtual tools::QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
 
-  QuicTimeWaitListManager* time_wait_list_manager() {
+  tools::QuicTimeWaitListManager* time_wait_list_manager() {
     return time_wait_list_manager_.get();
   }
 
@@ -220,7 +220,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   SessionMap session_map_;
 
   // Entity that manages connection_ids in time wait state.
-  scoped_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
+  scoped_ptr<tools::QuicTimeWaitListManager> time_wait_list_manager_;
 
   // The helper used for all connections. Owned by the server.
   QuicConnectionHelperInterface* helper_;
@@ -229,7 +229,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   scoped_ptr<QuicAlarm> delete_sessions_alarm_;
 
   // The list of closed but not-yet-deleted sessions.
-  std::list<QuicServerSession*> closed_session_list_;
+  std::list<tools::QuicServerSession*> closed_session_list_;
 
   // The writer to write to the socket with.
   scoped_ptr<QuicServerPacketWriter> writer_;

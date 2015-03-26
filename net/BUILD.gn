@@ -1151,8 +1151,6 @@ if (is_linux) {
       "tools/quic/quic_epoll_clock.h",
       "tools/quic/quic_epoll_connection_helper.cc",
       "tools/quic/quic_epoll_connection_helper.h",
-      "tools/quic/quic_in_memory_cache.cc",
-      "tools/quic/quic_in_memory_cache.h",
       "tools/quic/quic_packet_reader.cc",
       "tools/quic/quic_packet_reader.h",
       "tools/quic/quic_packet_writer_wrapper.cc",
@@ -1161,14 +1159,8 @@ if (is_linux) {
       "tools/quic/quic_per_connection_packet_writer.h",
       "tools/quic/quic_server.cc",
       "tools/quic/quic_server.h",
-      "tools/quic/quic_server_session.cc",
-      "tools/quic/quic_server_session.h",
       "tools/quic/quic_socket_utils.cc",
       "tools/quic/quic_socket_utils.h",
-      "tools/quic/quic_spdy_server_stream.cc",
-      "tools/quic/quic_spdy_server_stream.h",
-      "tools/quic/quic_time_wait_list_manager.cc",
-      "tools/quic/quic_time_wait_list_manager.h",
     ]
     deps = [
       ":balsa",
@@ -1239,23 +1231,16 @@ source_set("quic_tools") {
   sources = [
     "quic/quic_dispatcher.cc",
     "quic/quic_dispatcher.h",
-    "quic/quic_in_memory_cache.cc",
-    "quic/quic_in_memory_cache.h",
     "quic/quic_per_connection_packet_writer.cc",
     "quic/quic_per_connection_packet_writer.h",
     "quic/quic_server.cc",
     "quic/quic_server.h",
     "quic/quic_server_packet_writer.cc",
     "quic/quic_server_packet_writer.h",
-    "quic/quic_server_session.cc",
-    "quic/quic_server_session.h",
-    "quic/quic_spdy_server_stream.cc",
-    "quic/quic_spdy_server_stream.h",
-    "quic/quic_time_wait_list_manager.cc",
-    "quic/quic_time_wait_list_manager.h",
   ]
   deps = [
     ":net",
+    ":simple_quic_tools",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//url",
@@ -1265,10 +1250,18 @@ source_set("simple_quic_tools") {
   sources = [
     "tools/quic/quic_client_session.cc",
     "tools/quic/quic_client_session.h",
+    "tools/quic/quic_in_memory_cache.cc",
+    "tools/quic/quic_in_memory_cache.h",
+    "tools/quic/quic_server_session.cc",
+    "tools/quic/quic_server_session.h",
     "tools/quic/quic_simple_client.cc",
     "tools/quic/quic_simple_client.h",
     "tools/quic/quic_spdy_client_stream.cc",
     "tools/quic/quic_spdy_client_stream.h",
+    "tools/quic/quic_spdy_server_stream.cc",
+    "tools/quic/quic_spdy_server_stream.h",
+    "tools/quic/quic_time_wait_list_manager.cc",
+    "tools/quic/quic_time_wait_list_manager.h",
     "tools/quic/synchronous_host_resolver.cc",
     "tools/quic/synchronous_host_resolver.h",
   ]
@@ -1600,8 +1593,9 @@ if (!is_android && !is_win) {
       "quic/quic_server_bin.cc",
     ]
     deps = [
-      ":quic_tools",
       ":net",
+      ":quic_tools",
+      ":simple_quic_tools",
       "//base",
       "//third_party/boringssl",
     ]

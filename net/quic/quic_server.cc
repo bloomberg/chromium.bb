@@ -13,7 +13,6 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_dispatcher.h"
-#include "net/quic/quic_in_memory_cache.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_packet_writer.h"
 #include "net/udp/udp_server_socket.h"
@@ -64,9 +63,6 @@ void QuicServer::Initialize() {
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindow);
   }
-
-  // Initialize the in memory cache now.
-  QuicInMemoryCache::GetInstance();
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
       crypto_config_.AddDefaultConfig(

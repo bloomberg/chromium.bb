@@ -13,7 +13,6 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_per_connection_packet_writer.h"
-#include "net/quic/quic_time_wait_list_manager.h"
 #include "net/quic/quic_utils.h"
 
 namespace net {
@@ -21,6 +20,8 @@ namespace net {
 using base::StringPiece;
 using std::make_pair;
 using std::find;
+using tools::QuicServerSession;
+using tools::QuicTimeWaitListManager;
 
 class DeleteSessionsAlarm : public QuicAlarm::Delegate {
  public:
