@@ -371,8 +371,8 @@ public:
     virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
     bool isFocusable() const;
-    bool isTabStop() const;
-    void setIsTabStop(bool);
+    bool tabStop() const;
+    void setTabStop(bool);
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType);

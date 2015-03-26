@@ -527,7 +527,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScopesBackward(const FocusNav
         if (!owner)
             break;
         currentScope = FocusNavigationScope::focusNavigationScopeOf(*owner);
-        if (isKeyboardFocusableShadowHost(*owner) && toElement(owner)->isTabStop()) {
+        if (isKeyboardFocusableShadowHost(*owner) && toElement(owner)->tabStop()) {
             found = owner;
             break;
         }
@@ -549,7 +549,7 @@ Node* FocusController::findFocusableNodeRecursivelyForward(const FocusNavigation
     Node* found = findFocusableNode(WebFocusTypeForward, scope, start);
     if (!found)
         return nullptr;
-    if (found->isElementNode() && !toElement(found)->isTabStop()) {
+    if (found->isElementNode() && !toElement(found)->tabStop()) {
         if (isShadowHostWithoutCustomFocusLogic(*found)) {
             FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*found);
             Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
@@ -585,7 +585,7 @@ Node* FocusController::findFocusableNodeRecursivelyBackward(const FocusNavigatio
         Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(innerScope, nullptr);
         if (foundInInnerFocusScope)
             return foundInInnerFocusScope;
-        if (found->isElementNode() && !toElement(found)->isTabStop())
+        if (found->isElementNode() && !toElement(found)->tabStop())
             found = findFocusableNodeRecursivelyBackward(scope, found);
         return found;
     }
@@ -599,7 +599,7 @@ Node* FocusController::findFocusableNodeRecursivelyBackward(const FocusNavigatio
         return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyBackward(scope, found);
     }
 
-    return found->isElementNode() && toElement(found)->isTabStop() ? found : findFocusableNodeRecursivelyBackward(scope, found);
+    return found->isElementNode() && toElement(found)->tabStop() ? found : findFocusableNodeRecursivelyBackward(scope, found);
 }
 
 static Node* findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)

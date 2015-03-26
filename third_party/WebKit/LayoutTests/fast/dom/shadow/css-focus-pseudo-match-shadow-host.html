@@ -49,14 +49,14 @@ function testSingleShadow() {
     input.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
-    // The following 4 cases cover tabIndex(0 or none)/isTabStop(true or false) combination.
-    // Only when tabindex>=0 and isTabStop=false should change the appearance.
+    // The following 4 cases cover tabIndex(0 or none)/tabStop(true or false) combination.
+    // Only when tabindex>=0 and tabStop=false should change the appearance.
     host.tabIndex = 0;
-    host.isTabStop = false;
+    host.tabStop = false;
     input.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(0, 128, 0)');
 
-    host.isTabStop = true;
+    host.tabStop = true;
     input.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
@@ -64,7 +64,7 @@ function testSingleShadow() {
     input.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
-    host.isTabStop = false;
+    host.tabStop = false;
     input.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
@@ -113,7 +113,7 @@ function testShadowTreeOfTrees() {
 
     // Only first-level shadow host should be affected.
     host.tabIndex = 0;
-    host.isTabStop = false;
+    host.tabStop = false;
 
     input2.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(0, 128, 0)');
@@ -121,7 +121,7 @@ function testShadowTreeOfTrees() {
 
     // Both first-level and second-level shadow hosts should be affected.
     innerHost.tabIndex = 0;
-    innerHost.isTabStop = false;
+    innerHost.tabStop = false;
     backgroundColorShouldBe('shadow-host', 'rgb(0, 128, 0)');
     backgroundColorShouldBe('shadow-host/inner-shadow-host', 'rgb(0, 0, 255)');
 
@@ -171,7 +171,7 @@ function testDistributedNodes() {
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
     host.tabIndex = 0;
-    host.isTabStop = false;
+    host.tabStop = false;
 
     outerInput.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');

@@ -1,8 +1,8 @@
-This tests TAB focus navigation with isTabStop property on elements
+This tests TAB focus navigation with tabStop property on elements
 
-Testing shadow host with possible combinations of tabindex and isTabStop
+Testing shadow host with possible combinations of tabindex and tabStop
 Normal tab order without tabindex
-PASS host_div.isTabStop is false
+PASS host_div.tabStop is false
 Should move from input-before to host-div/inner-input in forward
 PASS
 Should move from host-div/inner-input to input-after in forward
@@ -11,7 +11,7 @@ Should move from input-after to host-div/inner-input in backward
 PASS
 Should move from host-div/inner-input to input-before in backward
 PASS
-Normal tab order without tabindex but isTabStop=true
+Normal tab order without tabindex but tabStop=true
 Should move from input-before to host-div/inner-input in forward
 PASS
 Should move from host-div/inner-input to input-after in forward
@@ -22,7 +22,7 @@ Should move from host-div/inner-input to input-before in backward
 PASS
 Normal tab order with tabindex=0 on host
 PASS host_div.getAttribute("tabindex") is "0"
-PASS host_div.isTabStop is true
+PASS host_div.tabStop is true
 Should move from input-before to host-div in forward
 PASS
 Should move from host-div to host-div/inner-input in forward
@@ -35,7 +35,7 @@ Should move from host-div/inner-input to host-div in backward
 PASS
 Should move from host-div to input-before in backward
 PASS
-Normal tab order with tabindex=0 but isTabStop = false on host
+Normal tab order with tabindex=0 but tabStop = false on host
 Should move from input-before to host-div/inner-input in forward
 PASS
 Should move from host-div/inner-input to input-after in forward
@@ -46,7 +46,7 @@ Should move from host-div/inner-input to input-before in backward
 PASS
 Normal tab order with tabindex=-1 on host
 PASS host_div.getAttribute("tabindex") is "-1"
-PASS host_div.isTabStop is false
+PASS host_div.tabStop is false
 Should move from input-before to host-div/inner-input in forward
 PASS
 Should move from host-div/inner-input to input-after in forward
@@ -55,7 +55,7 @@ Should move from input-after to host-div/inner-input in backward
 PASS
 Should move from host-div/inner-input to input-before in backward
 PASS
-Normal tab order with tabindex=-1 but isTabStop=true on host
+Normal tab order with tabindex=-1 but tabStop=true on host
 Should move from input-before to host-div/inner-input in forward
 PASS
 Should move from host-div/inner-input to input-after in forward
@@ -66,7 +66,7 @@ Should move from host-div/inner-input to input-before in backward
 PASS
 Normal tab order with tabindex=1 on host
 PASS host_div.getAttribute("tabindex") is "1"
-PASS host_div.isTabStop is true
+PASS host_div.tabStop is true
 Should move from input-before to input-after in forward
 PASS
 Should move from input-after to host-div in forward
@@ -79,7 +79,7 @@ Should move from host-div to input-after in backward
 PASS
 Should move from input-after to input-before in backward
 PASS
-Normal tab order with tabindex=1 but isTabStop=false on host
+Normal tab order with tabindex=1 but tabStop=false on host
 Should move from input-before to input-after in forward
 PASS
 Should move from input-after to host-div/inner-input in forward

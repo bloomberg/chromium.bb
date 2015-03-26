@@ -124,7 +124,7 @@
     [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors);
 
     // Experimental isTapStop API
-    [RuntimeEnabled=IsTabStopAttribute] attribute boolean isTabStop;
+    [RuntimeEnabled=TabStopAttribute] attribute boolean tabStop;
 
     // Experimental accessibility API
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;

@@ -11,7 +11,7 @@ PASS innermost active element is shadowHost
 PASS innermost active element is shadowHost/inputA
 PASS innermost active element is shadowHost
 PASS innermost active element is shadowHost
-click on inner div should focus inner focusable (with isTabStop = false)
+click on inner div should focus inner focusable (with tabStop = false)
 PASS innermost active element is shadowHost/inputA
 PASS inputA.selectionStart is 0
 PASS inputA.selectionEnd is 9

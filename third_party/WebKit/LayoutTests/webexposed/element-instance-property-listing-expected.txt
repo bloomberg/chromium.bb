@@ -85,7 +85,6 @@ namespace http://www.w3.org/1999/xhtml
     property isDefaultNamespace
     property isEqualNode
     property isSameNode
-    property isTabStop
     property lang
     property lastChild
     property lastElementChild
@@ -217,6 +216,7 @@ namespace http://www.w3.org/1999/xhtml
     property spellcheck
     property style
     property tabIndex
+    property tabStop
     property tagName
     property textContent
     property title
@@ -1180,7 +1180,6 @@ namespace http://www.w3.org/2000/svg
     property isDefaultNamespace
     property isEqualNode
     property isSameNode
-    property isTabStop
     property lang
     property lastChild
     property lastElementChild
@@ -1312,6 +1311,7 @@ namespace http://www.w3.org/2000/svg
     property spellcheck
     property style
     property tabIndex
+    property tabStop
     property tagName
     property textContent
     property title

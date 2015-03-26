@@ -1175,10 +1175,10 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
         return true;
     if (element.focused() && isFrameFocused(element))
         return true;
-    // TODO(kochi): adjustedFocusedElement is slow.  Before isTabStop gets out of experimental state,
-    // investigate performance impact and fix any performance regression.  Unless isTabStop is set
+    // TODO(kochi): adjustedFocusedElement is slow.  Before tabStop gets out of experimental state,
+    // investigate performance impact and fix any performance regression.  Unless tabStop is set
     // explicitly, adjustedFocusedElement() will not be called.
-    return isFrameFocused(element) && isShadowHost(element) && element.tabIndex() >= 0 && !element.isTabStop()
+    return isFrameFocused(element) && isShadowHost(element) && element.tabIndex() >= 0 && !element.tabStop()
         && &element == element.treeScope().adjustedFocusedElement();
 }
 

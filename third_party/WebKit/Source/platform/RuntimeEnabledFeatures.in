@@ -72,7 +72,6 @@ ImageRenderingPixelated status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
-IsTabStopAttribute status=experimental
 KeyboardEventCode status=experimental
 LangAttributeAwareFormControlUI
 LinkPreconnect status=experimental
@@ -147,6 +146,7 @@ SlimmingPaintUnderInvalidationChecking depends_on=SlimmingPaint
 // interface.
 ExperimentalStream status=experimental
 SubresourceIntegrity status=experimental
+TabStopAttribute status=experimental
 TextBlob
 ThreadedParserDataReceiver
 // Many websites disable mouse support when touch APIs are available.  We'd

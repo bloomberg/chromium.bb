@@ -313,7 +313,7 @@ private:
 
     bool shouldTopControlsConsumeScroll(FloatSize) const;
 
-    // If the given element is a shadow host with isTabStop = false, slide focus to its inner
+    // If the given element is a shadow host with tabStop = false, slide focus to its inner
     // element. Returns true if the resulting focus is different from the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 

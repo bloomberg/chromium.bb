@@ -1178,7 +1178,6 @@ interface Element
     getter firstElementChild
     getter id
     getter innerHTML
-    getter isTabStop
     getter lastElementChild
     getter localName
     getter namespaceURI
@@ -1212,6 +1211,7 @@ interface Element
     getter scrollWidth
     getter shadowRoot
     getter style
+    getter tabStop
     getter tagName
     method animate
     method blur
@@ -1260,7 +1260,6 @@ interface Element
     setter className
     setter id
     setter innerHTML
-    setter isTabStop
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -1279,6 +1278,7 @@ interface Element
     setter outerHTML
     setter scrollLeft
     setter scrollTop
+    setter tabStop
 interface Error
     attribute message
     attribute name

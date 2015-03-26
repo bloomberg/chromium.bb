@@ -2260,15 +2260,15 @@ bool Element::isMouseFocusable() const
     return isFocusable();
 }
 
-bool Element::isTabStop() const
+bool Element::tabStop() const
 {
     // Any element which never supports focus will always return false.
-    return supportsFocus() && (hasRareData() ? elementRareData()->isTabStop() : true);
+    return supportsFocus() && (hasRareData() ? elementRareData()->tabStop() : true);
 }
 
-void Element::setIsTabStop(bool flag)
+void Element::setTabStop(bool flag)
 {
-    ensureElementRareData().setIsTabStop(flag);
+    ensureElementRareData().setTabStop(flag);
     focusStateChanged();
 }
 

@@ -1961,7 +1961,7 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
 
 bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
 {
-    if (element.shadowRoot() && !element.isTabStop()) {
+    if (element.shadowRoot() && !element.tabStop()) {
         Document* doc = m_frame->document();
         if (element.containsIncludingShadowDOM(doc->focusedElement())) {
             // If the inner element is already focused, do nothing.

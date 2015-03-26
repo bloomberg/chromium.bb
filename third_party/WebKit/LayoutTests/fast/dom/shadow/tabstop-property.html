@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<p>This is basic behavior test for tabStop attribute.</p>
+<pre id="console"></pre>
+<script>
+var div;
+
+function test() {
+    debug("Testing tabStop property and attribute");
+
+    debug("Test tabStop normal assignment behavior");
+    div = document.createElement("div");
+    var flag = div.tabStop;
+    shouldBe("div.tabStop", "false");
+
+    div.tabStop = flag;
+    shouldBe("div.tabStop", "false");
+
+    div.removeAttribute('isTabstop');
+    shouldBe("div.tabStop", "false");
+
+    debug("Test tabStop override by tabindex property");
+    div.tabIndex = 0;
+    shouldBe("div.tabStop", "true");
+
+    div.tabIndex = -1;
+    shouldBe("div.tabStop", "false");
+
+    div.tabIndex = 1;
+    shouldBe("div.tabStop", "true");
+
+    debug("Test tabStop override by tabindex attribute");
+    div.tabStop = false;
+    div.setAttribute("tabindex", "0");
+    shouldBe("div.tabStop", "true");
+
+    div.tabStop = true;
+    div.setAttribute("tabindex", "-1");
+    shouldBe("div.tabStop", "false");
+
+    div.tabStop = false;
+    div.setAttribute("tabIndex", "1");
+    shouldBe("div.tabStop", "true");
+
+    debug("Test tabStop change after tabindex change");
+    div.tabIndex = 0;
+    div.tabStop = false;
+    shouldBe("div.tabStop", "false");
+
+    div.tabIndex = -1;
+    div.tabStop = true;
+    shouldBe("div.tabStop", "true");
+
+    debug("Test tabStop change before tabindex change which will be overridden");
+    div.tabStop = false;
+    div.tabIndex = 0;
+    shouldBe("div.tabStop", "true");
+
+    div.tabStop = true;
+    div.tabIndex = -1;
+    shouldBe("div.tabStop", "false");
+}
+
+function run_test() {
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    test();
+
+    debug('Test finished.');
+}
+
+run_test();
+</script>
+</body>
+</html>

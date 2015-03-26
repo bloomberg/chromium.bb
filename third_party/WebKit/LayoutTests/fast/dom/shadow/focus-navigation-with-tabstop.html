@@ -5,7 +5,7 @@
 <script src="resources/shadow-dom.js"></script>
 </head>
 <body>
-<p>This tests TAB focus navigation with isTabStop property on elements</p>
+<p>This tests TAB focus navigation with tabStop property on elements</p>
 <pre id="console"></pre>
 <script>
 
@@ -23,12 +23,12 @@ function prepareDOMTree(parent) {
 var host_div;
 
 function test() {
-    debug("Testing shadow host with possible combinations of tabindex and isTabStop");
+    debug("Testing shadow host with possible combinations of tabindex and tabStop");
 
     debug("Normal tab order without tabindex");
 
     host_div = document.getElementById("host-div");
-    shouldBe('host_div.isTabStop', 'false');
+    shouldBe('host_div.tabStop', 'false');
 
     var expectedOrder = [
       'input-before',
@@ -40,8 +40,8 @@ function test() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Normal tab order without tabindex but isTabStop=true");
-    host_div.isTabStop = true;
+    debug("Normal tab order without tabindex but tabStop=true");
+    host_div.tabStop = true;
 
     expectedOrder = [
       'input-before',
@@ -57,7 +57,7 @@ function test() {
 
     host_div.tabIndex = 0;
     shouldBeEqualToString('host_div.getAttribute("tabindex")', '0');
-    shouldBe('host_div.isTabStop', 'true');
+    shouldBe('host_div.tabStop', 'true');
 
     expectedOrder = [
       'input-before',
@@ -70,12 +70,12 @@ function test() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Normal tab order with tabindex=0 but isTabStop = false on host");
-    host_div.isTabStop = false;
+    debug("Normal tab order with tabindex=0 but tabStop = false on host");
+    host_div.tabStop = false;
 
     expectedOrder = [
       'input-before',
-      // 'host-div', // should skip host when isTabStop = false
+      // 'host-div', // should skip host when tabStop = false
       'host-div/inner-input',
       'input-after'
     ];
@@ -88,7 +88,7 @@ function test() {
 
     host_div.tabIndex = -1;
     shouldBeEqualToString('host_div.getAttribute("tabindex")', '-1');
-    shouldBe('host_div.isTabStop', 'false');
+    shouldBe('host_div.tabStop', 'false');
 
     expectedOrder = [
       'input-before',
@@ -100,8 +100,8 @@ function test() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Normal tab order with tabindex=-1 but isTabStop=true on host");
-    host_div.isTabStop = true;
+    debug("Normal tab order with tabindex=-1 but tabStop=true on host");
+    host_div.tabStop = true;
 
     expectedOrder = [
       'input-before',
@@ -117,7 +117,7 @@ function test() {
 
     host_div.tabIndex = 1;
     shouldBeEqualToString('host_div.getAttribute("tabindex")', '1');
-    shouldBe('host_div.isTabStop', 'true');
+    shouldBe('host_div.tabStop', 'true');
 
     expectedOrder = [
       'input-before',
@@ -130,13 +130,13 @@ function test() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Normal tab order with tabindex=1 but isTabStop=false on host");
-    host_div.isTabStop = false;
+    debug("Normal tab order with tabindex=1 but tabStop=false on host");
+    host_div.tabStop = false;
 
     expectedOrder = [
       'input-before',
       'input-after',
-      // 'host-div', // should skip host when isTabStop = false
+      // 'host-div', // should skip host when tabStop = false
       'host-div/inner-input'
     ];
 

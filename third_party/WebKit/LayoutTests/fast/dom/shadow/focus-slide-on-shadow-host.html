@@ -65,8 +65,8 @@ function runTest() {
     clickOn(innerDiv);
     checkInnermostActiveElement('shadowHost');
 
-    debug('click on inner div should focus inner focusable (with isTabStop = false)');
-    host.isTabStop = false;
+    debug('click on inner div should focus inner focusable (with tabStop = false)');
+    host.tabStop = false;
     resetFocus();
 
     inputA.value = 'wonderful';  // len = 9

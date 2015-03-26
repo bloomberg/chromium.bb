@@ -5,7 +5,7 @@
 <script src="resources/shadow-dom.js"></script>
 </head>
 <body>
-<p>This tests TAB focus navigation with isTabStop property on focusable elements</p>
+<p>This tests TAB focus navigation with tabStop property on focusable elements</p>
 <pre id="console"></pre>
 <div id="sandbox"></div>
 <script>
@@ -50,7 +50,7 @@ function testFocusableElementsWithIsTabStop() {
 
     prepareFocusableElements(sandbox);
 
-    debug("Normal tab order without isTabStop");
+    debug("Normal tab order without tabStop");
 
     var expectedOrder = [
       'input-before',
@@ -63,16 +63,16 @@ function testFocusableElementsWithIsTabStop() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Normal tab order with isTabStop=false");
+    debug("Normal tab order with tabStop=false");
 
     button_focusable = document.getElementById("button-focusable");
-    button_focusable.isTabStop = false;
+    button_focusable.tabStop = false;
     input_focusable = document.getElementById("input-focusable");
-    input_focusable.isTabStop = false;
+    input_focusable.tabStop = false;
 
     expectedOrder = [
       'input-before',
-      // These will be skipped with isTabStop = false.
+      // These will be skipped with tabStop = false.
       // 'button-focusable',
       // 'input-focusable',
       'input-after'
@@ -84,14 +84,14 @@ function testFocusableElementsWithIsTabStop() {
 }
 
 function testButton() {
-    debug("Testing isTabStop property on button");
+    debug("Testing tabStop property on button");
 
     prepareButtonWithShadow(sandbox);
 
     debug("Normal tab order without tabindex");
 
     button_host = document.getElementById("button-host");
-    shouldBe('button_host.isTabStop', 'true');
+    shouldBe('button_host.tabStop', 'true');
 
     var expectedOrder = [
       'button-before',
@@ -104,12 +104,12 @@ function testButton() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Testing isTabStop property on button with isTabStop = false");
-    button_host.isTabStop = false;
+    debug("Testing tabStop property on button with tabStop = false");
+    button_host.tabStop = false;
 
     expectedOrder = [
       'button-before',
-      // 'button-host',  // host should be skipped when isTabStop=false
+      // 'button-host',  // host should be skipped when tabStop=false
       'button-host/button-inner',
       'button-after'
     ];
@@ -120,12 +120,12 @@ function testButton() {
 }
 
 function testAnchor() {
-    debug("Testing isTabStop property on anchor without href");
+    debug("Testing tabStop property on anchor without href");
 
     prepareAnchorWithShadow(sandbox);
 
     anchor_host = document.getElementById("anchor-host");
-    shouldBe('anchor_host.isTabStop', 'false');
+    shouldBe('anchor_host.tabStop', 'false');
 
     var expectedOrder = [
       'anchor-before',
@@ -137,11 +137,11 @@ function testAnchor() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Testing isTabStop property on anchor with href");
+    debug("Testing tabStop property on anchor with href");
 
     anchor_host.setAttribute('href', '#');
     anchor_host.offsetTop;
-    shouldBe('anchor_host.isTabStop', 'true');
+    shouldBe('anchor_host.tabStop', 'true');
 
     expectedOrder = [
       'anchor-before',
@@ -154,13 +154,13 @@ function testAnchor() {
     expectedOrder.reverse();
     testFocusNavigationBackward(expectedOrder);
 
-    debug("Testing isTabStop property on anchor with href but isTabStop = false");
+    debug("Testing tabStop property on anchor with href but tabStop = false");
 
-    anchor_host.isTabStop = false;
+    anchor_host.tabStop = false;
 
     expectedOrder = [
       'anchor-before',
-      // 'anchor-host', // host should be skipped when isTabStop=false
+      // 'anchor-host', // host should be skipped when tabStop=false
       'anchor-host/anchor-inner',
       'anchor-after'
     ];
