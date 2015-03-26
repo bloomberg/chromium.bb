@@ -20,13 +20,11 @@
 #ifndef SVGPathByteStreamBuilder_h
 #define SVGPathByteStreamBuilder_h
 
-#include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathConsumer.h"
-#include "platform/geometry/FloatPoint.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class SVGPathByteStream;
 
 class SVGPathByteStreamBuilder final : public SVGPathConsumer {
 public:
@@ -36,19 +34,7 @@ private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
 
-    // Used in UnalteredParsing/NormalizedParsing modes.
-    virtual void moveTo(const FloatPoint&, PathCoordinateMode) override;
-    virtual void lineTo(const FloatPoint&, PathCoordinateMode) override;
-    virtual void curveToCubic(const FloatPoint&, const FloatPoint&, const FloatPoint&, PathCoordinateMode) override;
-    virtual void closePath() override;
-
-    // Only used in UnalteredParsing mode.
-    virtual void lineToHorizontal(float, PathCoordinateMode) override;
-    virtual void lineToVertical(float, PathCoordinateMode) override;
-    virtual void curveToCubicSmooth(const FloatPoint&, const FloatPoint&, PathCoordinateMode) override;
-    virtual void curveToQuadratic(const FloatPoint&, const FloatPoint&, PathCoordinateMode) override;
-    virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) override;
-    virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) override;
+    virtual void emitSegment(const PathSegmentData&) override;
 
     SVGPathByteStream& m_byteStream;
 };

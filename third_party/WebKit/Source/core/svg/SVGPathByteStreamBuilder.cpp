@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPathByteStreamBuilder.h"
 
+#include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathSeg.h"
-#include "wtf/OwnPtr.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace blink {
 
@@ -73,82 +73,57 @@ SVGPathByteStreamBuilder::SVGPathByteStreamBuilder(SVGPathByteStream& byteStream
 {
 }
 
-void SVGPathByteStreamBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
+void SVGPathByteStreamBuilder::emitSegment(const PathSegmentData& segment)
 {
     CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ?  PathSegMoveToRel : PathSegMoveToAbs);
-    buffer.writeFloatPoint(targetPoint);
-}
+    buffer.writeSegmentType(segment.command);
 
-void SVGPathByteStreamBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegLineToRel : PathSegLineToAbs);
-    buffer.writeFloatPoint(targetPoint);
-}
-
-void SVGPathByteStreamBuilder::lineToHorizontal(float x, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegLineToHorizontalRel : PathSegLineToHorizontalAbs);
-    buffer.writeFloat(x);
-}
-
-void SVGPathByteStreamBuilder::lineToVertical(float y, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegLineToVerticalRel : PathSegLineToVerticalAbs);
-    buffer.writeFloat(y);
-}
-
-void SVGPathByteStreamBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToCubicRel : PathSegCurveToCubicAbs);
-    buffer.writeFloatPoint(point1);
-    buffer.writeFloatPoint(point2);
-    buffer.writeFloatPoint(targetPoint);
-}
-
-void SVGPathByteStreamBuilder::curveToCubicSmooth(const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToCubicSmoothRel : PathSegCurveToCubicSmoothAbs);
-    buffer.writeFloatPoint(point2);
-    buffer.writeFloatPoint(targetPoint);
-}
-
-void SVGPathByteStreamBuilder::curveToQuadratic(const FloatPoint& point1, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToQuadraticRel : PathSegCurveToQuadraticAbs);
-    buffer.writeFloatPoint(point1);
-    buffer.writeFloatPoint(targetPoint);
-}
-
-void SVGPathByteStreamBuilder::curveToQuadraticSmooth(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToQuadraticSmoothRel : PathSegCurveToQuadraticSmoothAbs);
-    buffer.writeFloatPoint(targetPoint);
-}
-
-void SVGPathByteStreamBuilder::arcTo(float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegArcRel : PathSegArcAbs);
-    buffer.writeFloat(r1);
-    buffer.writeFloat(r2);
-    buffer.writeFloat(angle);
-    buffer.writeFlag(largeArcFlag);
-    buffer.writeFlag(sweepFlag);
-    buffer.writeFloatPoint(targetPoint);
-}
-
-void SVGPathByteStreamBuilder::closePath()
-{
-    CoalescingBuffer buffer(m_byteStream);
-    buffer.writeSegmentType(PathSegClosePath);
+    switch (segment.command) {
+    case PathSegMoveToRel:
+    case PathSegMoveToAbs:
+    case PathSegLineToRel:
+    case PathSegLineToAbs:
+    case PathSegCurveToQuadraticSmoothRel:
+    case PathSegCurveToQuadraticSmoothAbs:
+        buffer.writeFloatPoint(segment.targetPoint);
+        break;
+    case PathSegLineToHorizontalRel:
+    case PathSegLineToHorizontalAbs:
+        buffer.writeFloat(segment.targetPoint.x());
+        break;
+    case PathSegLineToVerticalRel:
+    case PathSegLineToVerticalAbs:
+        buffer.writeFloat(segment.targetPoint.y());
+        break;
+    case PathSegClosePath:
+        break;
+    case PathSegCurveToCubicRel:
+    case PathSegCurveToCubicAbs:
+        buffer.writeFloatPoint(segment.point1);
+        buffer.writeFloatPoint(segment.point2);
+        buffer.writeFloatPoint(segment.targetPoint);
+        break;
+    case PathSegCurveToCubicSmoothRel:
+    case PathSegCurveToCubicSmoothAbs:
+        buffer.writeFloatPoint(segment.point2);
+        buffer.writeFloatPoint(segment.targetPoint);
+        break;
+    case PathSegCurveToQuadraticRel:
+    case PathSegCurveToQuadraticAbs:
+        buffer.writeFloatPoint(segment.point1);
+        buffer.writeFloatPoint(segment.targetPoint);
+        break;
+    case PathSegArcRel:
+    case PathSegArcAbs:
+        buffer.writeFloatPoint(segment.point1);
+        buffer.writeFloat(segment.point2.x());
+        buffer.writeFlag(segment.arcLarge);
+        buffer.writeFlag(segment.arcSweep);
+        buffer.writeFloatPoint(segment.targetPoint);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 } // namespace blink

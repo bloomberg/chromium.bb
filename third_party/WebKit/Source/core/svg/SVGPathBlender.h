@@ -21,6 +21,7 @@
 #define SVGPathBlender_h
 
 #include "core/svg/SVGPathConsumer.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -44,15 +45,16 @@ public:
     DECLARE_TRACE();
 
 private:
-    void blendMoveToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendLineToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendLineToHorizontalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendLineToVerticalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendCurveToCubicSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendCurveToCubicSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendCurveToQuadraticSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendCurveToQuadraticSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendArcToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendMoveToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendLineToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendLineToHorizontalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendLineToVerticalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendCurveToCubicSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendCurveToCubicSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendCurveToQuadraticSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendCurveToQuadraticSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    PathSegmentData blendArcToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendSegments(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
 
     float blendAnimatedDimensonalFloat(float, float, FloatBlendMode);
     FloatPoint blendAnimatedFloatPoint(const FloatPoint& from, const FloatPoint& to);

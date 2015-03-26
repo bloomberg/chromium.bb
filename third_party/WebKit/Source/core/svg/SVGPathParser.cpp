@@ -47,7 +47,6 @@ bool SVGPathParser::initialCommandIsMoveTo()
     return command == PathSegMoveToAbs || command == PathSegMoveToRel;
 }
 
-
 class NormalizingConsumer {
     STACK_ALLOCATED();
 public:
@@ -197,24 +196,8 @@ void NormalizingConsumer::emitSegment(PathSegmentData& segment)
         ASSERT_NOT_REACHED();
     }
 
-    switch (segment.command) {
-    case PathSegMoveToAbs:
-        m_consumer->moveTo(segment.targetPoint, AbsoluteCoordinates);
-        break;
-    case PathSegLineToAbs:
-        m_consumer->lineTo(segment.targetPoint, AbsoluteCoordinates);
-        break;
-    case PathSegClosePath:
-        m_consumer->closePath();
-        break;
-    case PathSegCurveToCubicAbs:
-        m_consumer->curveToCubic(segment.point1, segment.point2, segment.targetPoint, AbsoluteCoordinates);
-        break;
-    case PathSegArcAbs:
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    if (segment.command != PathSegArcAbs)
+        m_consumer->emitSegment(segment);
 
     m_currentPoint = segment.targetPoint;
 
@@ -242,60 +225,7 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
         if (pathParsingMode == NormalizedParsing) {
             normalizer.emitSegment(segment);
         } else {
-            PathCoordinateMode mode = AbsoluteCoordinates;
-
-            switch (segment.command) {
-            case PathSegMoveToRel:
-                mode = RelativeCoordinates;
-            case PathSegMoveToAbs:
-                m_consumer->moveTo(segment.targetPoint, mode);
-                break;
-            case PathSegLineToRel:
-                mode = RelativeCoordinates;
-            case PathSegLineToAbs:
-                m_consumer->lineTo(segment.targetPoint, mode);
-                break;
-            case PathSegLineToHorizontalRel:
-                mode = RelativeCoordinates;
-            case PathSegLineToHorizontalAbs:
-                m_consumer->lineToHorizontal(segment.targetPoint.x(), mode);
-                break;
-            case PathSegLineToVerticalRel:
-                mode = RelativeCoordinates;
-            case PathSegLineToVerticalAbs:
-                m_consumer->lineToVertical(segment.targetPoint.y(), mode);
-                break;
-            case PathSegClosePath:
-                m_consumer->closePath();
-                break;
-            case PathSegCurveToCubicRel:
-                mode = RelativeCoordinates;
-            case PathSegCurveToCubicAbs:
-                m_consumer->curveToCubic(segment.point1, segment.point2, segment.targetPoint, mode);
-                break;
-            case PathSegCurveToCubicSmoothRel:
-                mode = RelativeCoordinates;
-            case PathSegCurveToCubicSmoothAbs:
-                m_consumer->curveToCubicSmooth(segment.point2, segment.targetPoint, mode);
-                break;
-            case PathSegCurveToQuadraticRel:
-                mode = RelativeCoordinates;
-            case PathSegCurveToQuadraticAbs:
-                m_consumer->curveToQuadratic(segment.point1, segment.targetPoint, mode);
-                break;
-            case PathSegCurveToQuadraticSmoothRel:
-                mode = RelativeCoordinates;
-            case PathSegCurveToQuadraticSmoothAbs:
-                m_consumer->curveToQuadraticSmooth(segment.targetPoint, mode);
-                break;
-            case PathSegArcRel:
-                mode = RelativeCoordinates;
-            case PathSegArcAbs:
-                m_consumer->arcTo(segment.arcRadii().x(), segment.arcRadii().y(), segment.arcAngle(), segment.arcLarge, segment.arcSweep, segment.targetPoint, mode);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
+            m_consumer->emitSegment(segment);
         }
 
         if (!m_consumer->continueConsuming())
@@ -401,8 +331,13 @@ bool NormalizingConsumer::decomposeArcToCubic(const FloatPoint& currentPoint, co
         point2 = targetPoint;
         point2.move(t * sinEndTheta, -t * cosEndTheta);
 
-        m_consumer->curveToCubic(pointTransform.mapPoint(point1), pointTransform.mapPoint(point2),
-                                 pointTransform.mapPoint(targetPoint), AbsoluteCoordinates);
+        PathSegmentData cubicSegment;
+        cubicSegment.command = PathSegCurveToCubicAbs;
+        cubicSegment.point1 = pointTransform.mapPoint(point1);
+        cubicSegment.point2 = pointTransform.mapPoint(point2);
+        cubicSegment.targetPoint = pointTransform.mapPoint(targetPoint);
+
+        m_consumer->emitSegment(cubicSegment);
     }
     return true;
 }

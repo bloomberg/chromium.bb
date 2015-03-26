@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/svg/SVGPathStringBuilder.h"
 
+#include "core/svg/SVGPathSeg.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -53,87 +54,82 @@ static void appendPoint(StringBuilder& stringBuilder, const FloatPoint& point)
     appendFloat(stringBuilder, point.y());
 }
 
-static void emitCommand1Arg(StringBuilder& stringBuilder, char commandChar, float argument)
-{
-    stringBuilder.append(commandChar);
-    appendFloat(stringBuilder, argument);
-    stringBuilder.append(' ');
-}
+// TODO(fs): Centralized location for this (SVGPathSeg.h?)
+static const char pathSegmentCharacter[] = {
+    0, // PathSegUnknown
+    'Z', // PathSegClosePath
+    'M', // PathSegMoveToAbs
+    'm', // PathSegMoveToRel
+    'L', // PathSegLineToAbs
+    'l', // PathSegLineToRel
+    'C', // PathSegCurveToCubicAbs
+    'c', // PathSegCurveToCubicRel
+    'Q', // PathSegCurveToQuadraticAbs
+    'q', // PathSegCurveToQuadraticRel
+    'A', // PathSegArcAbs
+    'a', // PathSegArcRel
+    'H', // PathSegLineToHorizontalAbs
+    'h', // PathSegLineToHorizontalRel
+    'V', // PathSegLineToVerticalAbs
+    'v', // PathSegLineToVerticalRel
+    'S', // PathSegCurveToCubicSmoothAbs
+    's', // PathSegCurveToCubicSmoothRel
+    'T', // PathSegCurveToQuadraticSmoothAbs
+    't', // PathSegCurveToQuadraticSmoothRel
+};
 
-static void emitCommand1Arg(StringBuilder& stringBuilder, char commandChar, const FloatPoint& argumentPoint)
+void SVGPathStringBuilder::emitSegment(const PathSegmentData& segment)
 {
-    stringBuilder.append(commandChar);
-    appendPoint(stringBuilder, argumentPoint);
-    stringBuilder.append(' ');
-}
+    ASSERT(segment.command > PathSegUnknown && segment.command <= PathSegCurveToQuadraticSmoothRel);
+    m_stringBuilder.append(pathSegmentCharacter[segment.command]);
 
-static void emitCommand2Arg(StringBuilder& stringBuilder, char commandChar, const FloatPoint& argument1Point, const FloatPoint& argument2Point)
-{
-    stringBuilder.append(commandChar);
-    appendPoint(stringBuilder, argument1Point);
-    appendPoint(stringBuilder, argument2Point);
-    stringBuilder.append(' ');
-}
-
-void SVGPathStringBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    emitCommand1Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'M' : 'm', targetPoint);
-}
-
-void SVGPathStringBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    emitCommand1Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'L' : 'l', targetPoint);
-}
-
-void SVGPathStringBuilder::lineToHorizontal(float x, PathCoordinateMode mode)
-{
-    emitCommand1Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'H' : 'h', x);
-}
-
-void SVGPathStringBuilder::lineToVertical(float y, PathCoordinateMode mode)
-{
-    emitCommand1Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'V' : 'v', y);
-}
-
-void SVGPathStringBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    m_stringBuilder.append((mode == AbsoluteCoordinates) ? 'C' : 'c');
-    appendPoint(m_stringBuilder, point1);
-    appendPoint(m_stringBuilder, point2);
-    appendPoint(m_stringBuilder, targetPoint);
+    switch (segment.command) {
+    case PathSegMoveToRel:
+    case PathSegMoveToAbs:
+    case PathSegLineToRel:
+    case PathSegLineToAbs:
+    case PathSegCurveToQuadraticSmoothRel:
+    case PathSegCurveToQuadraticSmoothAbs:
+        appendPoint(m_stringBuilder, segment.targetPoint);
+        break;
+    case PathSegLineToHorizontalRel:
+    case PathSegLineToHorizontalAbs:
+        appendFloat(m_stringBuilder, segment.targetPoint.x());
+        break;
+    case PathSegLineToVerticalRel:
+    case PathSegLineToVerticalAbs:
+        appendFloat(m_stringBuilder, segment.targetPoint.y());
+        break;
+    case PathSegClosePath:
+        break;
+    case PathSegCurveToCubicRel:
+    case PathSegCurveToCubicAbs:
+        appendPoint(m_stringBuilder, segment.point1);
+        appendPoint(m_stringBuilder, segment.point2);
+        appendPoint(m_stringBuilder, segment.targetPoint);
+        break;
+    case PathSegCurveToCubicSmoothRel:
+    case PathSegCurveToCubicSmoothAbs:
+        appendPoint(m_stringBuilder, segment.point2);
+        appendPoint(m_stringBuilder, segment.targetPoint);
+        break;
+    case PathSegCurveToQuadraticRel:
+    case PathSegCurveToQuadraticAbs:
+        appendPoint(m_stringBuilder, segment.point1);
+        appendPoint(m_stringBuilder, segment.targetPoint);
+        break;
+    case PathSegArcRel:
+    case PathSegArcAbs:
+        appendPoint(m_stringBuilder, segment.point1);
+        appendFloat(m_stringBuilder, segment.point2.x());
+        appendBool(m_stringBuilder, segment.arcLarge);
+        appendBool(m_stringBuilder, segment.arcSweep);
+        appendPoint(m_stringBuilder, segment.targetPoint);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
     m_stringBuilder.append(' ');
-}
-
-void SVGPathStringBuilder::curveToCubicSmooth(const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    emitCommand2Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'S' : 's', point2, targetPoint);
-}
-
-void SVGPathStringBuilder::curveToQuadratic(const FloatPoint& point1, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    emitCommand2Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'Q' : 'q', point1, targetPoint);
-}
-
-void SVGPathStringBuilder::curveToQuadraticSmooth(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    emitCommand1Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'T' : 't', targetPoint);
-}
-
-void SVGPathStringBuilder::arcTo(float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    m_stringBuilder.append((mode == AbsoluteCoordinates) ? 'A' : 'a');
-    appendFloat(m_stringBuilder, r1);
-    appendFloat(m_stringBuilder, r2);
-    appendFloat(m_stringBuilder, angle);
-    appendBool(m_stringBuilder, largeArcFlag);
-    appendBool(m_stringBuilder, sweepFlag);
-    appendPoint(m_stringBuilder, targetPoint);
-    m_stringBuilder.append(' ');
-}
-
-void SVGPathStringBuilder::closePath()
-{
-    m_stringBuilder.appendLiteral("Z ");
 }
 
 } // namespace blink

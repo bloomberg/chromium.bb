@@ -24,7 +24,6 @@
 #ifndef SVGPathConsumer_h
 #define SVGPathConsumer_h
 
-#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
@@ -41,6 +40,8 @@ enum PathParsingMode {
     UnalteredParsing
 };
 
+struct PathSegmentData;
+
 class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathConsumer> {
     WTF_MAKE_NONCOPYABLE(SVGPathConsumer); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathConsumer);
 public:
@@ -51,19 +52,7 @@ public:
     virtual void incrementPathSegmentCount() = 0;
     virtual bool continueConsuming() = 0;
 
-    // Used in UnalteredParsing/NormalizedParsing modes.
-    virtual void moveTo(const FloatPoint&, PathCoordinateMode) = 0;
-    virtual void lineTo(const FloatPoint&, PathCoordinateMode) = 0;
-    virtual void curveToCubic(const FloatPoint&, const FloatPoint&, const FloatPoint&, PathCoordinateMode) = 0;
-    virtual void closePath() = 0;
-
-    // Only used in UnalteredParsing mode.
-    virtual void lineToHorizontal(float, PathCoordinateMode) = 0;
-    virtual void lineToVertical(float, PathCoordinateMode) = 0;
-    virtual void curveToCubicSmooth(const FloatPoint&, const FloatPoint&, PathCoordinateMode) = 0;
-    virtual void curveToQuadratic(const FloatPoint&, const FloatPoint&, PathCoordinateMode) = 0;
-    virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) = 0;
-    virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) = 0;
+    virtual void emitSegment(const PathSegmentData&) = 0;
 };
 
 } // namespace blink

@@ -52,6 +52,8 @@ SVGPathSegListBuilder::SVGPathSegListBuilder(SVGPathElement* pathElement, PassRe
     : m_pathElement(pathElement)
     , m_pathSegList(pathSegList)
 {
+    ASSERT(m_pathElement);
+    ASSERT(m_pathSegList);
 }
 
 DEFINE_TRACE(SVGPathSegListBuilder)
@@ -61,101 +63,71 @@ DEFINE_TRACE(SVGPathSegListBuilder)
     SVGPathConsumer::trace(visitor);
 }
 
-void SVGPathSegListBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
+void SVGPathSegListBuilder::emitSegment(const PathSegmentData& segment)
 {
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegMovetoAbs::create(m_pathElement, targetPoint.x(), targetPoint.y()));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegMovetoRel::create(m_pathElement, targetPoint.x(), targetPoint.y()));
-}
-
-void SVGPathSegListBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegLinetoAbs::create(m_pathElement, targetPoint.x(), targetPoint.y()));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegLinetoRel::create(m_pathElement, targetPoint.x(), targetPoint.y()));
-}
-
-void SVGPathSegListBuilder::lineToHorizontal(float x, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegLinetoHorizontalAbs::create(m_pathElement, x));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegLinetoHorizontalRel::create(m_pathElement, x));
-}
-
-void SVGPathSegListBuilder::lineToVertical(float y, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegLinetoVerticalAbs::create(m_pathElement, y));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegLinetoVerticalRel::create(m_pathElement, y));
-}
-
-void SVGPathSegListBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoCubicAbs::create(m_pathElement, targetPoint.x(), targetPoint.y(), point1.x(), point1.y(), point2.x(), point2.y()));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoCubicRel::create(m_pathElement, targetPoint.x(), targetPoint.y(), point1.x(), point1.y(), point2.x(), point2.y()));
-}
-
-void SVGPathSegListBuilder::curveToCubicSmooth(const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoCubicSmoothAbs::create(m_pathElement, targetPoint.x(), targetPoint.y(), point2.x(), point2.y()));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoCubicSmoothRel::create(m_pathElement, targetPoint.x(), targetPoint.y(), point2.x(), point2.y()));
-}
-
-void SVGPathSegListBuilder::curveToQuadratic(const FloatPoint& point1, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoQuadraticAbs::create(m_pathElement, targetPoint.x(), targetPoint.y(), point1.x(), point1.y()));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoQuadraticRel::create(m_pathElement, targetPoint.x(), targetPoint.y(), point1.x(), point1.y()));
-}
-
-void SVGPathSegListBuilder::curveToQuadraticSmooth(const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoQuadraticSmoothAbs::create(m_pathElement, targetPoint.x(), targetPoint.y()));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegCurvetoQuadraticSmoothRel::create(m_pathElement, targetPoint.x(), targetPoint.y()));
-}
-
-void SVGPathSegListBuilder::arcTo(float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag, const FloatPoint& targetPoint, PathCoordinateMode mode)
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    if (mode == AbsoluteCoordinates)
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegArcAbs::create(m_pathElement, targetPoint.x(), targetPoint.y(), r1, r2, angle, largeArcFlag, sweepFlag));
-    else
-        m_pathSegList->appendWithoutByteStreamSync(SVGPathSegArcRel::create(m_pathElement, targetPoint.x(), targetPoint.y(), r1, r2, angle, largeArcFlag, sweepFlag));
-}
-
-void SVGPathSegListBuilder::closePath()
-{
-    ASSERT(m_pathElement);
-    ASSERT(m_pathSegList);
-    m_pathSegList->appendWithoutByteStreamSync(SVGPathSegClosePath::create(m_pathElement));
+    RefPtrWillBeRawPtr<SVGPathSeg> newPathSegment;
+    switch (segment.command) {
+    case PathSegMoveToRel:
+        newPathSegment = SVGPathSegMovetoRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y());
+        break;
+    case PathSegMoveToAbs:
+        newPathSegment = SVGPathSegMovetoAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y());
+        break;
+    case PathSegLineToRel:
+        newPathSegment = SVGPathSegLinetoRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y());
+        break;
+    case PathSegLineToAbs:
+        newPathSegment = SVGPathSegLinetoAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y());
+        break;
+    case PathSegLineToHorizontalRel:
+        newPathSegment = SVGPathSegLinetoHorizontalRel::create(m_pathElement, segment.targetPoint.x());
+        break;
+    case PathSegLineToHorizontalAbs:
+        newPathSegment = SVGPathSegLinetoHorizontalAbs::create(m_pathElement, segment.targetPoint.x());
+        break;
+    case PathSegLineToVerticalRel:
+        newPathSegment = SVGPathSegLinetoVerticalRel::create(m_pathElement, segment.targetPoint.y());
+        break;
+    case PathSegLineToVerticalAbs:
+        newPathSegment = SVGPathSegLinetoVerticalAbs::create(m_pathElement, segment.targetPoint.y());
+        break;
+    case PathSegClosePath:
+        newPathSegment = SVGPathSegClosePath::create(m_pathElement);
+        break;
+    case PathSegCurveToCubicRel:
+        newPathSegment = SVGPathSegCurvetoCubicRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.point1.x(), segment.point1.y(), segment.point2.x(), segment.point2.y());
+        break;
+    case PathSegCurveToCubicAbs:
+        newPathSegment = SVGPathSegCurvetoCubicAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.point1.x(), segment.point1.y(), segment.point2.x(), segment.point2.y());
+        break;
+    case PathSegCurveToCubicSmoothRel:
+        newPathSegment = SVGPathSegCurvetoCubicSmoothRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.point2.x(), segment.point2.y());
+        break;
+    case PathSegCurveToCubicSmoothAbs:
+        newPathSegment = SVGPathSegCurvetoCubicSmoothAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.point2.x(), segment.point2.y());
+        break;
+    case PathSegCurveToQuadraticRel:
+        newPathSegment = SVGPathSegCurvetoQuadraticRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.point1.x(), segment.point1.y());
+        break;
+    case PathSegCurveToQuadraticAbs:
+        newPathSegment = SVGPathSegCurvetoQuadraticAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.point1.x(), segment.point1.y());
+        break;
+    case PathSegCurveToQuadraticSmoothRel:
+        newPathSegment = SVGPathSegCurvetoQuadraticSmoothRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y());
+        break;
+    case PathSegCurveToQuadraticSmoothAbs:
+        newPathSegment = SVGPathSegCurvetoQuadraticSmoothAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y());
+        break;
+    case PathSegArcRel:
+        newPathSegment = SVGPathSegArcRel::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.arcRadii().x(), segment.arcRadii().y(), segment.arcAngle(), segment.arcLarge, segment.arcSweep);
+        break;
+    case PathSegArcAbs:
+        newPathSegment = SVGPathSegArcAbs::create(m_pathElement, segment.targetPoint.x(), segment.targetPoint.y(), segment.arcRadii().x(), segment.arcRadii().y(), segment.arcAngle(), segment.arcLarge, segment.arcSweep);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    m_pathSegList->appendWithoutByteStreamSync(newPathSegment);
 }
 
 }

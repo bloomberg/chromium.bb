@@ -23,6 +23,9 @@
 #include "config.h"
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 
+#include "core/svg/SVGPathSeg.h"
+#include "platform/graphics/PathTraversalState.h"
+
 namespace blink {
 
 SVGPathTraversalStateBuilder::SVGPathTraversalStateBuilder(PathTraversalState::PathTraversalAction traversalAction, float desiredLength)
@@ -32,24 +35,24 @@ SVGPathTraversalStateBuilder::SVGPathTraversalStateBuilder(PathTraversalState::P
     m_traversalState.m_desiredLength = desiredLength;
 }
 
-void SVGPathTraversalStateBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode)
+void SVGPathTraversalStateBuilder::emitSegment(const PathSegmentData& segment)
 {
-    m_traversalState.m_totalLength += m_traversalState.moveTo(targetPoint);
-}
-
-void SVGPathTraversalStateBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode)
-{
-    m_traversalState.m_totalLength += m_traversalState.lineTo(targetPoint);
-}
-
-void SVGPathTraversalStateBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode)
-{
-    m_traversalState.m_totalLength += m_traversalState.cubicBezierTo(point1, point2, targetPoint);
-}
-
-void SVGPathTraversalStateBuilder::closePath()
-{
-    m_traversalState.m_totalLength += m_traversalState.closeSubpath();
+    switch (segment.command) {
+    case PathSegMoveToAbs:
+        m_traversalState.m_totalLength += m_traversalState.moveTo(segment.targetPoint);
+        break;
+    case PathSegLineToAbs:
+        m_traversalState.m_totalLength += m_traversalState.lineTo(segment.targetPoint);
+        break;
+    case PathSegClosePath:
+        m_traversalState.m_totalLength += m_traversalState.closeSubpath();
+        break;
+    case PathSegCurveToCubicAbs:
+        m_traversalState.m_totalLength += m_traversalState.cubicBezierTo(segment.point1, segment.point2, segment.targetPoint);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 bool SVGPathTraversalStateBuilder::continueConsuming()
