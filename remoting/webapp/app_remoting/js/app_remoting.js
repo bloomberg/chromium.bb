@@ -14,13 +14,14 @@
 var remoting = remoting || {};
 
 /**
- * @param {remoting.Application} app The main app that owns this delegate.
+ * @param {Array<string>} appCapabilities Array of application capabilities.
  * @constructor
- * @implements {remoting.Application.Delegate}
+ * @implements {remoting.ApplicationInterface}
  * @implements {remoting.ProtocolExtension}
+ * @extends {remoting.Application}
  */
-remoting.AppRemoting = function(app) {
-  app.setDelegate(this);
+remoting.AppRemoting = function(appCapabilities) {
+  base.inherits(this, remoting.Application, appCapabilities);
 
   /** @private {remoting.ApplicationContextMenu} */
   this.contextMenu_ = null;
@@ -60,11 +61,26 @@ remoting.AppRemoting.AppHostResponse = function() {
 };
 
 /**
- * Initialize the application. This is called before an OAuth token is requested
- * and should be used for tasks such as initializing the DOM, registering event
- * handlers, etc.
+ * @return {string} Application product name to be used in UI.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.init = function() {
+remoting.AppRemoting.prototype.getApplicationName = function() {
+  var manifest = chrome.runtime.getManifest();
+  return manifest.name;
+};
+
+/**
+ * @param {!remoting.Error} error The failure reason.
+ * @override {remoting.ApplicationInterface}
+ */
+remoting.AppRemoting.prototype.signInFailed_ = function(error) {
+  this.onError_(error);
+};
+
+/**
+ * @override {remoting.ApplicationInterface}
+ */
+remoting.AppRemoting.prototype.initApplication_ = function() {
   // TODO(jamiewalch): Remove ClientSession's dependency on remoting.fullscreen
   // so that this is no longer required.
   remoting.fullscreen = new remoting.FullscreenAppsV2();
@@ -91,15 +107,10 @@ remoting.AppRemoting.prototype.init = function() {
 };
 
 /**
- * Start the application. Once start() is called, the delegate can assume that
- * the user has consented to all permissions specified in the manifest.
- *
- * @param {remoting.SessionConnector} connector
- * @param {string} token An OAuth access token. The delegate should not cache
- *     this token, but can assume that it will remain valid during application
- *     start-up.
+ * @param {string} token An OAuth access token.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.start = function(connector, token) {
+remoting.AppRemoting.prototype.startApplication_ = function(token) {
   remoting.LoadingWindow.show();
 
   /** @type {remoting.AppRemoting} */
@@ -147,9 +158,9 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
                                    host['sharedSecret']);
         };
 
-        connector.connectMe2App(host, fetchThirdPartyToken);
+        that.sessionConnector_.connectMe2App(host, fetchThirdPartyToken);
       } else if (response && response.status == 'pending') {
-        that.handleError(new remoting.Error(
+        that.onError_(new remoting.Error(
             remoting.Error.Tag.SERVICE_UNAVAILABLE));
       }
     } else {
@@ -158,61 +169,45 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
       // been updated to properly report 'unknown' errors (rather than
       // reporting them as AUTHENTICATION_FAILED).
       if (xhrResponse.status == 0) {
-        that.handleError(new remoting.Error(
+        that.onError_(new remoting.Error(
             remoting.Error.Tag.NETWORK_FAILURE));
       } else if (xhrResponse.status == 401) {
-        that.handleError(new remoting.Error(
+        that.onError_(new remoting.Error(
             remoting.Error.Tag.AUTHENTICATION_FAILED));
       } else if (xhrResponse.status == 403) {
-        that.handleError(new remoting.Error(
+        that.onError_(new remoting.Error(
             remoting.Error.Tag.APP_NOT_AUTHORIZED));
       } else if (xhrResponse.status == 502 || xhrResponse.status == 503) {
-        that.handleError(new remoting.Error(
+        that.onError_(new remoting.Error(
             remoting.Error.Tag.SERVICE_UNAVAILABLE));
       } else {
-        that.handleError(remoting.Error.unexpected());
+        that.onError_(remoting.Error.unexpected());
       }
     }
   };
 
   new remoting.Xhr({
     method: 'POST',
-    url: that.runApplicationUrl(),
+    url: that.runApplicationUrl_(),
     oauthToken: token
   }).start().then(parseAppHostResponse);
 };
 
 /**
- * Report an authentication error to the user. This is called in lieu of start()
- * if the user cannot be authenticated or if they decline the app permissions.
- *
- * @param {!remoting.Error} error The failure reason.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.signInFailed = function(error) {
-  this.handleError(error);
+remoting.AppRemoting.prototype.exitApplication_ = function() {
+  remoting.LoadingWindow.close();
+  this.closeMainWindow_();
 };
 
 /**
- * @return {string} Application product name to be used in UI.
- */
-remoting.AppRemoting.prototype.getApplicationName = function() {
-  var manifest = chrome.runtime.getManifest();
-  return manifest.name;
-};
-
-/** @return {string} */
-remoting.AppRemoting.prototype.runApplicationUrl = function() {
-  return remoting.settings.APP_REMOTING_API_BASE_URL + '/applications/' +
-      remoting.settings.getAppRemotingApplicationId() + '/run';
-};
-
-/**
- * Called when a new session has been connected.
- *
  * @param {remoting.ConnectionInfo} connectionInfo
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
+remoting.AppRemoting.prototype.onConnected_ = function(connectionInfo) {
+  this.initSession_(connectionInfo);
+
   remoting.identity.getUserInfo().then(
       function(userInfo) {
         remoting.clientSession.sendClientMessage(
@@ -220,7 +215,7 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
             JSON.stringify({fullName: userInfo.name}));
       });
 
-  remoting.app.getSessionConnector().registerProtocolExtension(this);
+  this.sessionConnector_.registerProtocolExtension(this);
 
   this.connectedView_ = new remoting.AppConnectedView(
       document.getElementById('client-container'), connectionInfo);
@@ -233,11 +228,9 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
 };
 
 /**
- * Called when the current session has been disconnected.
- *
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.handleDisconnected = function() {
+remoting.AppRemoting.prototype.onDisconnected_ = function() {
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
 
@@ -245,18 +238,30 @@ remoting.AppRemoting.prototype.handleDisconnected = function() {
 };
 
 /**
- * Called when the current session's connection has failed.
- *
- * @param {remoting.SessionConnector} connector
  * @param {!remoting.Error} error
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.handleConnectionFailed = function(
-    connector, error) {
-  this.handleError(error);
+remoting.AppRemoting.prototype.onConnectionFailed_ = function(error) {
+  this.onError_(error);
 };
 
-/** @return {Array<string>} */
+/**
+ * @param {!remoting.Error} error The error to be localized and displayed.
+ * @override {remoting.ApplicationInterface}
+ */
+remoting.AppRemoting.prototype.onError_ = function(error) {
+  console.error('Connection failed: ' + error.toString());
+  remoting.LoadingWindow.close();
+  remoting.MessageWindow.showErrorMessage(
+      chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
+      chrome.i18n.getMessage(error.getTag()));
+};
+
+
+/**
+ * @return {Array<string>}
+ * @override {remoting.ProtocolExtension}
+ */
 remoting.AppRemoting.prototype.getExtensionTypes = function() {
   return ['openURL', 'onWindowRemoved', 'onWindowAdded',
           'onAllWindowsMinimized', 'setKeyboardLayouts', 'pingResponse'];
@@ -265,6 +270,7 @@ remoting.AppRemoting.prototype.getExtensionTypes = function() {
 /**
  * @param {function(string,string)} sendMessageToHost Callback to send a message
  *     to the host.
+ * @override {remoting.ProtocolExtension}
  */
 remoting.AppRemoting.prototype.startExtension = function(sendMessageToHost) {
 };
@@ -272,6 +278,7 @@ remoting.AppRemoting.prototype.startExtension = function(sendMessageToHost) {
 /**
  * @param {string} type The message type.
  * @param {Object} message The parsed extension message data.
+ * @override {remoting.ProtocolExtension}
  */
 remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
   switch (type) {
@@ -321,22 +328,10 @@ remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
 };
 
 /**
- * Called when an error needs to be displayed to the user.
- *
- * @param {!remoting.Error} error The error to be localized and displayed.
- * @return {void} Nothing.
+ * @return {string}
+ * @private
  */
-remoting.AppRemoting.prototype.handleError = function(error) {
-  console.error('Connection failed: ' + error.toString());
-  remoting.LoadingWindow.close();
-  remoting.MessageWindow.showErrorMessage(
-      chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
-      chrome.i18n.getMessage(error.getTag()));
-};
-
-/**
- * Close the loading window before exiting.
- */
-remoting.AppRemoting.prototype.handleExit = function() {
-  remoting.LoadingWindow.close();
+remoting.AppRemoting.prototype.runApplicationUrl_ = function() {
+  return remoting.settings.APP_REMOTING_API_BASE_URL + '/applications/' +
+      remoting.settings.getAppRemotingApplicationId() + '/run';
 };

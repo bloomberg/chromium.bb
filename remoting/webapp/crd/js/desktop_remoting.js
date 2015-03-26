@@ -14,20 +14,13 @@
 var remoting = remoting || {};
 
 /**
- * @param {remoting.Application} app The main app that owns this delegate.
+ * @param {Array<string>} appCapabilities Array of application capabilities.
  * @constructor
- * @implements {remoting.Application.Delegate}
+ * @implements {remoting.ApplicationInterface}
+ * @extends {remoting.Application}
  */
-remoting.DesktopRemoting = function(app) {
-  /**
-   * TODO(garykac): Remove this reference to the Application. It's only
-   * needed to get the current mode when reporting errors. So we should be
-   * able to refactor and remove this reference cycle.
-   *
-   * @private {remoting.Application}
-   */
-  this.app_ = app;
-  app.setDelegate(this);
+remoting.DesktopRemoting = function(appCapabilities) {
+  base.inherits(this, remoting.Application, appCapabilities);
 
   /**
    * Whether to refresh the JID and retry the connection if the current JID
@@ -39,17 +32,28 @@ remoting.DesktopRemoting = function(app) {
 
   /** @private {remoting.DesktopConnectedView} */
   this.connectedView_ = null;
-
-  remoting.desktopDelegateForTesting = this;
 };
 
 /**
- * Initialize the application and register all event handlers. After this
- * is called, the app is running and waiting for user events.
- *
- * @return {void} Nothing.
+ * @return {string} Application product name to be used in UI.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.DesktopRemoting.prototype.init = function() {
+remoting.DesktopRemoting.prototype.getApplicationName = function() {
+  return chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
+};
+
+/**
+ * @param {!remoting.Error} error The failure reason.
+ * @override {remoting.ApplicationInterface}
+ */
+remoting.DesktopRemoting.prototype.signInFailed_ = function(error) {
+  remoting.showErrorMessage(error);
+};
+
+/**
+ * @override {remoting.ApplicationInterface}
+ */
+remoting.DesktopRemoting.prototype.initApplication_ = function() {
   remoting.initElementEventHandlers();
 
   if (base.isAppsV2()) {
@@ -122,15 +126,10 @@ remoting.DesktopRemoting.prototype.init = function() {
 };
 
 /**
- * Start the application. Once start() is called, the delegate can assume that
- * the user has consented to all permissions specified in the manifest.
- *
- * @param {remoting.SessionConnector} connector
- * @param {string} token An OAuth access token. The delegate should not cache
- *     this token, but can assume that it will remain valid during application
- *     start-up.
+ * @param {string} token An OAuth access token.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.DesktopRemoting.prototype.start = function(connector, token) {
+remoting.DesktopRemoting.prototype.startApplication_ = function(token) {
   remoting.identity.getEmail().then(
       function(/** string */ email) {
         document.getElementById('current-email').innerText = email;
@@ -139,35 +138,23 @@ remoting.DesktopRemoting.prototype.start = function(connector, token) {
       });
 };
 
-/**
- * Report an authentication error to the user. This is called in lieu of start()
- * if the user cannot be authenticated or if they decline the app permissions.
- *
- * @param {!remoting.Error} error The failure reason.
- */
-remoting.DesktopRemoting.prototype.signInFailed = function(error) {
-  remoting.showErrorMessage(error);
+/** @override {remoting.ApplicationInterface} */
+remoting.DesktopRemoting.prototype.exitApplication_ = function() {
+  this.closeMainWindow_();
 };
 
 /**
- * @return {string} Application product name to be used in UI.
- */
-remoting.DesktopRemoting.prototype.getApplicationName = function() {
-  return chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
-};
-
-/**
- * Called when a new session has been connected.
- *
  * @param {remoting.ConnectionInfo} connectionInfo
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
+remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
+  this.initSession_(connectionInfo);
+
   // Set the text on the buttons shown under the error message so that they are
   // easy to understand in the case where a successful connection failed, as
   // opposed to the case where a connection never succeeded.
   // TODO(garykac): Investigate to see if these need to be reverted to their
-  // original values in the onDisconnected method.
+  // original values in the onDisconnected_ method.
   var button1 = document.getElementById('client-reconnect-button');
   l10n.localizeElementFromTag(button1, /*i18n-content*/'RECONNECT');
   button1.removeAttribute('autofocus');
@@ -197,10 +184,10 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
   var sessionConnector = remoting.app.getSessionConnector();
   if (connectionInfo.mode() === remoting.DesktopConnectedView.Mode.ME2ME) {
     if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
-      sessionConnector.registerProtocolExtension(
+      this.sessionConnector_.registerProtocolExtension(
           new remoting.CastExtensionHandler());
     }
-    sessionConnector.registerProtocolExtension(
+    this.sessionConnector_.registerProtocolExtension(
         new remoting.GnubbyAuthHandler());
   }
   if (connectionInfo.session().hasCapability(
@@ -211,12 +198,13 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
   }
 
   if (remoting.pairingRequested) {
+    var that = this;
     /**
      * @param {string} clientId
      * @param {string} sharedSecret
      */
     var onPairingComplete = function(clientId, sharedSecret) {
-      var connector = remoting.app.getSessionConnector();
+      var connector = that.sessionConnector_;
       var host = remoting.hostList.getHostForId(connector.getHostId());
       host.options.pairingInfo.clientId = clientId;
       host.options.pairingInfo.sharedSecret = sharedSecret;
@@ -244,11 +232,9 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
 };
 
 /**
- * Called when the current session has been disconnected.
- *
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.DesktopRemoting.prototype.handleDisconnected = function() {
+remoting.DesktopRemoting.prototype.onDisconnected_ = function() {
   var mode = this.connectedView_.getMode();
   if (mode === remoting.DesktopConnectedView.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
@@ -260,27 +246,24 @@ remoting.DesktopRemoting.prototype.handleDisconnected = function() {
 };
 
 /**
- * Called when the current session's connection has failed.
- *
- * @param {remoting.SessionConnector} connector
  * @param {!remoting.Error} error
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
-    connector, error) {
+remoting.DesktopRemoting.prototype.onConnectionFailed_ = function(error) {
   var that = this;
   var onHostListRefresh = function(/** boolean */ success) {
     if (success) {
+      var connector = that.sessionConnector_;
       var host = remoting.hostList.getHostForId(connector.getHostId());
       if (host) {
         connector.retryConnectMe2Me(host);
         return;
       }
     }
-    that.handleError(error);
+    that.onError_(error);
   };
 
-  var mode = this.app_.getSessionConnector().getConnectionMode();
+  var mode = this.sessionConnector_.getConnectionMode();
   if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
       mode === remoting.DesktopConnectedView.Mode.ME2ME &&
       this.refreshHostJidIfOffline_) {
@@ -289,20 +272,18 @@ remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
     // The plugin will be re-created when the host finished refreshing
     remoting.hostList.refresh(onHostListRefresh);
   } else {
-    this.handleError(error);
+    this.onError_(error);
   }
 };
 
 /**
- * Called when an error needs to be displayed to the user.
- *
  * @param {!remoting.Error} error The error to be localized and displayed.
- * @return {void} Nothing.
+ * @override {remoting.ApplicationInterface}
  */
-remoting.DesktopRemoting.prototype.handleError = function(error) {
+remoting.DesktopRemoting.prototype.onError_ = function(error) {
   console.error('Connection failed: ' + error.toString());
   var mode = this.connectedView_ ? this.connectedView_.getMode()
-      : this.app_.getSessionConnector().getConnectionMode();
+      : this.sessionConnector_.getConnectionMode();
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
 
@@ -323,12 +304,6 @@ remoting.DesktopRemoting.prototype.handleError = function(error) {
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
   }
-};
-
-/**
- * No cleanup required for desktop remoting.
- */
-remoting.DesktopRemoting.prototype.handleExit = function() {
 };
 
 /**
@@ -364,7 +339,7 @@ remoting.DesktopRemoting.prototype.isWindowed_ = function(callback) {
  * @private
  */
 remoting.DesktopRemoting.prototype.promptClose_ = function() {
-  var sessionConnector = remoting.app.getSessionConnector();
+  var sessionConnector = this.sessionConnector_;
   if (sessionConnector &&
       sessionConnector.getConnectionMode() ==
           remoting.DesktopConnectedView.Mode.IT2ME) {
@@ -385,9 +360,3 @@ remoting.DesktopRemoting.prototype.promptClose_ = function() {
 remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
   return this.connectedView_;
 };
-
-/**
- * Global instance of remoting.DesktopRemoting used for testing.
- * @type {remoting.DesktopRemoting}
- */
-remoting.desktopDelegateForTesting = null;

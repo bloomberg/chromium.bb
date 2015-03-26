@@ -58,7 +58,8 @@ browserTest.FakeDesktopViewport.prototype.raiseEvent =
 
 /** @return {remoting.DesktopViewport} */
 function getViewportForTesting() {
-  var view = remoting.desktopDelegateForTesting.getConnectedViewForTesting();
+  var desktopApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  var view = desktopApp.getConnectedViewForTesting();
   if (view) {
     return view.getViewportForTesting();
   }

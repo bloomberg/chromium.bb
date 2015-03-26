@@ -11,8 +11,7 @@ var remoting = remoting || {};
  * Entry point ('load' handler) for App Remoting webapp.
  */
 remoting.startAppRemoting = function() {
-  remoting.app = new remoting.Application(remoting.app_capabilities());
-  var app_remoting = new remoting.AppRemoting(remoting.app);
+  remoting.app = new remoting.AppRemoting(remoting.app_capabilities());
   remoting.app.start();
 };
 

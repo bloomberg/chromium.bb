@@ -17,9 +17,12 @@ var GrandChildClass = function() {
   this.name = 'grandChild';
 }
 
-/** @return {string} */
-GrandChildClass.prototype.overrideMethod = function() {
-  return 'overrideMethod - grandChild';
+/**
+ * @param {string} arg
+ * @return {string}
+ */
+GrandChildClass.prototype.overrideMethod = function(arg) {
+  return 'overrideMethod - grandChild - ' + arg;
 }
 
 /**
@@ -32,9 +35,12 @@ var ChildClass = function() {
   this.childOnly = 'childOnly';
 }
 
-/** @return {string} */
-ChildClass.prototype.overrideMethod = function() {
-  return 'overrideMethod - child';
+/**
+ * @param {string} arg
+ * @return {string}
+ */
+ChildClass.prototype.overrideMethod = function(arg) {
+  return 'overrideMethod - child - ' + arg;
 }
 
 /** @return {string} */
@@ -43,8 +49,8 @@ ChildClass.prototype.childMethod = function() {
 }
 
 /**
- * @constructor
  * @param {string} arg
+ * @constructor
  */
 var ParentClass = function(arg) {
   /** @type  {string} */
@@ -60,9 +66,12 @@ ParentClass.prototype.parentMethod = function() {
   return 'parentMethod';
 }
 
-/** @return  {string} */
-ParentClass.prototype.overrideMethod = function() {
-  return 'overrideMethod - parent';
+/**
+ * @param {string} arg
+ * @return {string}
+ */
+ParentClass.prototype.overrideMethod = function(arg) {
+  return 'overrideMethod - parent - ' + arg;
 }
 
 QUnit.test('should invoke parent constructor with the correct arguments',
@@ -90,19 +99,33 @@ QUnit.test('should preserve instanceof', function(assert) {
 QUnit.test('should override parent property and method', function(assert) {
   var child = new ChildClass();
   assert.equal(child.name, 'child');
-  assert.equal(child.overrideMethod(), 'overrideMethod - child');
+  assert.equal(child.overrideMethod('123'), 'overrideMethod - child - 123');
   assert.equal(child.childOnly, 'childOnly');
   assert.equal(child.childMethod(), 'childMethod');
 });
 
-QUnit.test('should works on an inheritance chain', function(assert) {
+QUnit.test('should work on an inheritance chain', function(assert) {
   var grandChild = new GrandChildClass();
   assert.equal(grandChild.name, 'grandChild');
-  assert.equal(grandChild.overrideMethod(), 'overrideMethod - grandChild');
+  assert.equal(grandChild.overrideMethod('246'),
+               'overrideMethod - grandChild - 246');
   assert.equal(grandChild.childOnly, 'childOnly');
   assert.equal(grandChild.childMethod(), 'childMethod');
   assert.equal(grandChild.parentOnly, 'parentOnly');
   assert.equal(grandChild.parentMethod(), 'parentMethod');
+});
+
+QUnit.test('should be able to access parent class methods', function(assert) {
+  var grandChild = new GrandChildClass();
+
+  assert.equal(grandChild.overrideMethod('789'),
+               'overrideMethod - grandChild - 789');
+
+  var childMethod = ChildClass.prototype.overrideMethod.call(grandChild, '81');
+  assert.equal(childMethod, 'overrideMethod - child - 81');
+
+  var parentMethod = ParentClass.prototype.overrideMethod.call(grandChild, '4');
+  assert.equal(parentMethod, 'overrideMethod - parent - 4');
 });
 
 })();
