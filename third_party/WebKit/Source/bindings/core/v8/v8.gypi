@@ -150,6 +150,8 @@
             'V8NPUtils.h',
             'V8NodeFilterCondition.cpp',
             'V8NodeFilterCondition.h',
+            'V8ObjectBuilder.cpp',
+            'V8ObjectBuilder.h',
             'V8ObjectConstructor.cpp',
             'V8ObjectConstructor.h',
             'V8PagePopupControllerBinding.cpp',

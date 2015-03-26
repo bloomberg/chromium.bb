@@ -32,6 +32,7 @@
 #include "modules/crypto/CryptoKey.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/CryptoResult.h"
@@ -99,41 +100,37 @@ WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
 
 class DictionaryBuilder : public blink::WebCryptoKeyAlgorithmDictionary {
 public:
-    explicit DictionaryBuilder(ScriptState* scriptState)
-        : m_scriptState(scriptState)
-        , m_dictionary(Dictionary::createEmpty(scriptState->isolate()))
+    explicit DictionaryBuilder(V8ObjectBuilder& builder)
+        : m_builder(builder)
     {
     }
 
     virtual void setString(const char* propertyName, const char* value)
     {
-        m_dictionary.set(propertyName, value);
+        m_builder.addString(propertyName, value);
     }
 
     virtual void setUint(const char* propertyName, unsigned value)
     {
-        m_dictionary.set(propertyName, value);
+        m_builder.addNumber(propertyName, value);
     }
 
     virtual void setAlgorithm(const char* propertyName, const blink::WebCryptoAlgorithm& algorithm)
     {
         ASSERT(algorithm.paramsType() == blink::WebCryptoAlgorithmParamsTypeNone);
 
-        Dictionary algorithmValue = Dictionary::createEmpty(m_scriptState->isolate());
-        algorithmValue.set("name", blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
-        m_dictionary.set(propertyName, algorithmValue);
+        V8ObjectBuilder algorithmValue(m_builder.scriptState());
+        algorithmValue.addString("name", blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
+        m_builder.add(propertyName, algorithmValue);
     }
 
     virtual void setUint8Array(const char* propertyName, const blink::WebVector<unsigned char>& vector)
     {
-        m_dictionary.set(propertyName, toV8(DOMUint8Array::create(vector.data(), vector.size()), m_scriptState->context()->Global(), m_scriptState->isolate()));
+        m_builder.add(propertyName, DOMUint8Array::create(vector.data(), vector.size()));
     }
 
-    const Dictionary& dictionary() const { return m_dictionary; }
-
 private:
-    RefPtr<ScriptState> m_scriptState;
-    Dictionary m_dictionary;
+    V8ObjectBuilder& m_builder;
 };
 
 } // namespace
@@ -159,9 +156,10 @@ bool CryptoKey::extractable() const
 
 ScriptValue CryptoKey::algorithm(ScriptState* scriptState)
 {
-    DictionaryBuilder builder(scriptState);
-    m_key.algorithm().writeToDictionary(&builder);
-    return ScriptValue(scriptState, builder.dictionary().v8Value());
+    V8ObjectBuilder objectBuilder(scriptState);
+    DictionaryBuilder dictionaryBuilder(objectBuilder);
+    m_key.algorithm().writeToDictionary(&dictionaryBuilder);
+    return objectBuilder.scriptValue();
 }
 
 // FIXME: This creates a new javascript array each time. What should happen

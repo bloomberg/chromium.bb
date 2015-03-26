@@ -93,11 +93,6 @@ Dictionary& Dictionary::operator=(const Dictionary& optionsObject)
     return *this;
 }
 
-Dictionary Dictionary::createEmpty(v8::Isolate* isolate)
-{
-    return Dictionary(v8::Object::New(isolate), isolate, emptyExceptionState());
-}
-
 bool Dictionary::isObject() const
 {
     return !isUndefinedOrNull() && m_options->IsObject();
@@ -159,32 +154,6 @@ bool Dictionary::get(const String& key, Dictionary& value) const
     }
 
     return true;
-}
-
-bool Dictionary::set(const String& key, const v8::Handle<v8::Value>& value)
-{
-    if (isUndefinedOrNull())
-        return false;
-    v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
-    ASSERT(!options.IsEmpty());
-    ASSERT(m_exceptionState);
-
-    return options->Set(v8String(m_isolate, key), value);
-}
-
-bool Dictionary::set(const String& key, const String& value)
-{
-    return set(key, v8String(m_isolate, value));
-}
-
-bool Dictionary::set(const String& key, unsigned value)
-{
-    return set(key, v8::Integer::NewFromUnsigned(m_isolate, value));
-}
-
-bool Dictionary::set(const String& key, const Dictionary& value)
-{
-    return set(key, value.v8Value());
 }
 
 bool Dictionary::convert(ConversionContext& context, const String& key, Dictionary& value) const

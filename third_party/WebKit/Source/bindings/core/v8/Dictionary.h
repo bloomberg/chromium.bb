@@ -54,22 +54,11 @@ public:
 
     Dictionary& operator=(const Dictionary&);
 
-    // This is different from the default constructor:
-    //   * isObject() is true when using createEmpty().
-    //   * isUndefinedOrNull() is true when using default constructor.
-    static Dictionary createEmpty(v8::Isolate*);
-
     bool isObject() const;
     bool isUndefinedOrNull() const;
 
     bool get(const String&, Dictionary&) const;
     bool get(const String&, v8::Local<v8::Value>&) const;
-
-    // Sets properties using default attributes.
-    bool set(const String&, const v8::Handle<v8::Value>&);
-    bool set(const String&, const String&);
-    bool set(const String&, unsigned);
-    bool set(const String&, const Dictionary&);
 
     v8::Handle<v8::Value> v8Value() const { return m_options; }
 
