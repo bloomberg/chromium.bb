@@ -1123,6 +1123,14 @@ const Experiment kExperiments[] = {
         switches::kScrollEndEffect, "0")
   },
   {
+    "enable-icon-ntp",
+    IDS_FLAGS_ENABLE_ICON_NTP_NAME,
+    IDS_FLAGS_ENABLE_ICON_NTP_DESCRIPTION,
+    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableIconNtp,
+                              switches::kDisableIconNtp)
+  },
+  {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,
