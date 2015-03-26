@@ -199,6 +199,13 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [self updateVerifyButtonEnabled];
 }
 
+- (void)setInputsEnabled:(BOOL)enabled {
+  [cvcInput_ setEnabled:enabled];
+  [monthPopup_ setEnabled:enabled];
+  [yearPopup_ setEnabled:enabled];
+  [storageCheckbox_ setEnabled:enabled];
+}
+
 - (void)setRetriableErrorMessage:(const base::string16&)text {
   NSAttributedString* attributedString =
       constrained_window::GetAttributedLabelString(
@@ -235,11 +242,14 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   }
 
   [permanentErrorBox_ setHidden:text.empty()];
+  [self setInputsEnabled:NO];
+  [self updateVerifyButtonEnabled];
   [self setRetriableErrorMessage:base::string16()];
 }
 
 - (void)updateVerifyButtonEnabled {
   BOOL enable = ![inputRowView_ isHidden] &&
+                ![[permanentErrorLabel_ stringValue] length] &&
                 bridge_->GetController()->InputCvcIsValid(
                     base::SysNSStringToUTF16([cvcInput_ stringValue])) &&
                 [self expirationDateIsValid];
