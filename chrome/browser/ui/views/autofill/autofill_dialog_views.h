@@ -263,7 +263,6 @@ class AutofillDialogViews : public AutofillDialogView,
     const char* GetClassName() const override;
     void PaintChildren(gfx::Canvas* canvas,
                        const views::CullSet& cull_set) override;
-    void OnPaint(gfx::Canvas* canvas) override;
 
     void set_arrow_centering_anchor(
         const base::WeakPtr<views::View>& arrow_centering_anchor) {
@@ -345,8 +344,6 @@ class AutofillDialogViews : public AutofillDialogView,
     // views::MenuButton implementation.
     gfx::Size GetPreferredSize() const override;
     const char* GetClassName() const override;
-    void PaintChildren(gfx::Canvas* canvas,
-                       const views::CullSet& cull_set) override;
     void OnPaint(gfx::Canvas* canvas) override;
 
    private:
