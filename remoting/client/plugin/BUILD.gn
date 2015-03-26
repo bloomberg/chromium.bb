@@ -40,3 +40,25 @@ source_set("plugin") {
     "//ui/events:dom4_keycode_converter",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "empty_cursor_filter_unittest.cc",
+    "normalizing_input_filter_mac_unittest.cc",
+    "touch_input_scaler_unittest.cc",
+  ]
+
+  if (is_chromeos) {
+    sources += [ "normalizing_input_filter_cros_unittest.cc" ]
+  }
+
+  deps = [
+    ":plugin",
+    "//remoting/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/webrtc",
+  ]
+}

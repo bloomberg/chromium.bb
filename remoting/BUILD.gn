@@ -113,7 +113,10 @@ if (!is_win && !is_mac) {
     if (is_android) {
       deps += [ "//testing/android:native_test_native_code" ]
     } else {
-      deps += [ "//remoting/client/plugin" ]
+      deps += [
+        "//remoting/client/plugin",
+        "//remoting/client/plugin:unit_tests",
+      ]
     }
 
     if (enable_remoting_host) {
