@@ -773,13 +773,17 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
     const std::string& key,
     const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
         callback) {
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
-  if (IsDisabled() || !context_) {
-    RunSoon(FROM_HERE,
-            base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
-                       SERVICE_WORKER_ERROR_FAILED));
+  if (!LazyInitialize(
+          base::Bind(&ServiceWorkerStorage::GetUserDataForAllRegistrations,
+                     weak_factory_.GetWeakPtr(), key, callback))) {
+    if (state_ != INITIALIZING || !context_) {
+      RunSoon(FROM_HERE,
+              base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
+                         SERVICE_WORKER_ERROR_FAILED));
+    }
     return;
   }
+  DCHECK_EQ(INITIALIZED, state_);
 
   if (key.empty()) {
     RunSoon(FROM_HERE,

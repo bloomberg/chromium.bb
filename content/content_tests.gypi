@@ -333,6 +333,7 @@
       'browser/appcache/mock_appcache_storage.cc',
       'browser/appcache/mock_appcache_storage.h',
       'browser/appcache/mock_appcache_storage_unittest.cc',
+      'browser/background_sync/background_sync_manager_unittest.cc',
       'browser/browser_thread_unittest.cc',
       'browser/browser_url_handler_impl_unittest.cc',
       'browser/byte_stream_unittest.cc',
@@ -973,6 +974,7 @@
       'target_name': 'content_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
+        'browser/background_sync/background_sync_proto.gyp:background_sync_proto',
         'browser/notifications/notification_proto.gyp:notification_proto',
         'browser/service_worker/service_worker_proto.gyp:service_worker_proto',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
