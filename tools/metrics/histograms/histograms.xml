@@ -27572,6 +27572,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The result from an attempt to load a PPAPI plugin.</summary>
 </histogram>
 
+<histogram name="Plugin.PpapiSyncIPCTime" units="ms">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The time it took to complete a synchronous IPC made from the PPAPI process.
+  </summary>
+</histogram>
+
 <histogram name="Power.BacklightLevelOnAC" units="%">
   <owner>derat@chromium.org</owner>
   <summary>
