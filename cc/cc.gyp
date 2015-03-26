@@ -248,6 +248,8 @@
         'layers/video_layer.h',
         'layers/video_layer_impl.cc',
         'layers/video_layer_impl.h',
+        'layers/viewport.cc',
+        'layers/viewport.h',
         'output/begin_frame_args.cc',
         'output/begin_frame_args.h',
         'output/bsp_tree.cc',

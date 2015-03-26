@@ -73,6 +73,7 @@ class TopControlsManager;
 class UIResourceBitmap;
 class UIResourceRequest;
 struct ScrollAndScaleSet;
+class Viewport;
 
 enum class GpuRasterizationStatus {
   ON,
@@ -524,6 +525,11 @@ class CC_EXPORT LayerTreeHostImpl
     return frame_timing_tracker_.get();
   }
 
+  gfx::Vector2dF ScrollLayer(LayerImpl* layer_impl,
+                             const gfx::Vector2dF& delta,
+                             const gfx::Point& viewport_point,
+                             bool is_wheel_scroll);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -546,6 +552,11 @@ class CC_EXPORT LayerTreeHostImpl
   Proxy* proxy_;
 
  private:
+  gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
+      LayerImpl* layer_impl,
+      const gfx::PointF& viewport_point,
+      const gfx::Vector2dF& viewport_delta);
+
   void CreateAndSetRenderer();
   void CreateAndSetTileManager();
   void DestroyTileManager();
@@ -554,6 +565,8 @@ class CC_EXPORT LayerTreeHostImpl
   void EnforceZeroBudget(bool zero_budget);
 
   bool IsSynchronousSingleThreaded() const;
+
+  Viewport* viewport() { return viewport_.get(); }
 
   // Scroll by preferring to move the outer viewport first, only moving the
   // inner if the outer is at its scroll extents.
@@ -564,14 +577,6 @@ class CC_EXPORT LayerTreeHostImpl
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);
-
-  bool ShouldTopControlsConsumeScroll(const gfx::Vector2dF& scroll_delta) const;
-
-  gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
-      LayerImpl* layer_impl,
-      float scale_from_viewport_to_screen_space,
-      const gfx::PointF& viewport_point,
-      const gfx::Vector2dF& viewport_delta);
 
   void TrackDamageForAllSurfaces(
       LayerImpl* root_draw_layer,
@@ -746,6 +751,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool is_likely_to_require_a_draw_;
 
   scoped_ptr<FrameTimingTracker> frame_timing_tracker_;
+
+  scoped_ptr<Viewport> viewport_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

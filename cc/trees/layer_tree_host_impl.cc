@@ -39,6 +39,7 @@
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
+#include "cc/layers/viewport.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/delegating_renderer.h"
@@ -239,6 +240,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   active_tree_ =
       LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>(),
                             new SyncedTopControls, new SyncedElasticOverscroll);
+
+  viewport_ = Viewport::Create(this);
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
@@ -2477,7 +2480,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
     LayerImpl* layer_impl,
-    float scale_from_viewport_to_screen_space,
     const gfx::PointF& viewport_point,
     const gfx::Vector2dF& viewport_delta) {
   // Layers with non-invertible screen space transforms should not have passed
@@ -2491,6 +2493,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   // layers, we may need to explicitly handle uninvertible transforms here.
   DCHECK(did_invert);
 
+  float scale_from_viewport_to_screen_space = device_scale_factor_;
   gfx::PointF screen_space_point =
       gfx::ScalePoint(viewport_point, scale_from_viewport_to_screen_space);
 
@@ -2565,19 +2568,25 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
   return gfx::Vector2dF(scrolled.x(), scrolled.y());
 }
 
-bool LayerTreeHostImpl::ShouldTopControlsConsumeScroll(
-    const gfx::Vector2dF& scroll_delta) const {
-  DCHECK(CurrentlyScrollingLayer());
+gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
+                                              const gfx::Vector2dF& delta,
+                                              const gfx::Point& viewport_point,
+                                              bool is_wheel_scroll) {
+  // Gesture events need to be transformed from viewport coordinates to
+  // local layer coordinates so that the scrolling contents exactly follow
+  // the user's finger. In contrast, wheel events represent a fixed amount
+  // of scrolling so we can just apply them directly, but the page scale
+  // factor is applied to the scroll delta.
+  if (is_wheel_scroll) {
+    float scale_factor = active_tree()->current_page_scale_factor();
+    return ScrollLayerWithLocalDelta(layer_impl,
+                                     delta,
+                                     scale_factor);
+  }
 
-  // Always consume if it's in the direction to show the top controls.
-  if (scroll_delta.y() < 0)
-    return true;
-
-  if (active_tree()->TotalScrollOffset().y() <
-      active_tree()->TotalMaxScrollOffset().y())
-    return true;
-
-  return false;
+  return ScrollLayerWithViewportSpaceDelta(layer_impl,
+                                           viewport_point,
+                                           delta);
 }
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
@@ -2593,127 +2602,68 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   bool did_scroll_y = false;
   bool did_scroll_top_controls = false;
 
-  bool consume_by_top_controls = ShouldTopControlsConsumeScroll(scroll_delta);
-
-  // There's an edge case where the outer viewport isn't scrollable when the
-  // scroll starts, however, as the top controls show the outer viewport becomes
-  // scrollable. Therefore, always try scrolling the outer viewport before the
-  // inner.
-  // TODO(bokan): Move the top controls logic out of the loop since the scroll
-  // that causes the outer viewport to become scrollable will still be applied
-  // to the inner viewport.
-  LayerImpl* start_layer = CurrentlyScrollingLayer();
-  if (start_layer == InnerViewportScrollLayer() && OuterViewportScrollLayer())
-      start_layer = OuterViewportScrollLayer();
-
-  for (LayerImpl* layer_impl = start_layer;
+  for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
        layer_impl = layer_impl->parent()) {
-    if (!layer_impl->scrollable())
+    // Skip the outer viewport scroll layer so that we try to scroll the
+    // viewport only once. i.e. The inner viewport layer represents the
+    // viewport.
+    if (!layer_impl->scrollable() || layer_impl == OuterViewportScrollLayer())
       continue;
 
-    if (layer_impl == InnerViewportScrollLayer() ||
-        layer_impl == OuterViewportScrollLayer()) {
-      if (consume_by_top_controls) {
-        gfx::Vector2dF excess_delta =
-            top_controls_manager_->ScrollBy(pending_delta);
-        gfx::Vector2dF applied_delta = pending_delta - excess_delta;
-        pending_delta = excess_delta;
-        // Force updating of vertical adjust values if needed.
-        if (applied_delta.y() != 0)
-          did_scroll_top_controls = true;
-      }
-      // Track root layer deltas for reporting overscroll.
-      if (layer_impl == InnerViewportScrollLayer())
-        unused_root_delta = pending_delta;
-    }
-
     gfx::Vector2dF applied_delta;
-    // Gesture events need to be transformed from viewport coordinates to local
-    // layer coordinates so that the scrolling contents exactly follow the
-    // user's finger. In contrast, wheel events represent a fixed amount of
-    // scrolling so we can just apply them directly, but the page scale factor
-    // is applied to the scroll delta.
-    if (!wheel_scrolling_) {
-      float scale_from_viewport_to_screen_space = device_scale_factor_;
-      applied_delta =
-          ScrollLayerWithViewportSpaceDelta(layer_impl,
-                                            scale_from_viewport_to_screen_space,
-                                            viewport_point, pending_delta);
-    } else {
-      applied_delta = ScrollLayerWithLocalDelta(
-          layer_impl, pending_delta, active_tree_->current_page_scale_factor());
-    }
-
-    const float kEpsilon = 0.1f;
     if (layer_impl == InnerViewportScrollLayer()) {
-      unused_root_delta.Subtract(applied_delta);
-      if (std::abs(unused_root_delta.x()) < kEpsilon)
-        unused_root_delta.set_x(0.0f);
-      if (std::abs(unused_root_delta.y()) < kEpsilon)
-        unused_root_delta.set_y(0.0f);
-      // Disable overscroll on axes which is impossible to scroll.
-      if (settings_.report_overscroll_only_for_scrollable_axes) {
-        if (std::abs(active_tree_->TotalMaxScrollOffset().x()) <= kEpsilon ||
-            !layer_impl->user_scrollable_horizontal())
-          unused_root_delta.set_x(0.0f);
-        if (std::abs(active_tree_->TotalMaxScrollOffset().y()) <= kEpsilon ||
-            !layer_impl->user_scrollable_vertical())
-          unused_root_delta.set_y(0.0f);
-      }
+      Viewport::ScrollResult result = viewport()->ScrollBy(pending_delta,
+                                                           viewport_point,
+                                                           wheel_scrolling_);
+      applied_delta = result.applied_delta;
+      unused_root_delta = result.unused_scroll_delta;
+      did_scroll_top_controls = result.top_controls_applied_delta.y() != 0;
+    } else {
+      applied_delta = ScrollLayer(layer_impl,
+                                  pending_delta,
+                                  viewport_point,
+                                  wheel_scrolling_);
     }
-
-    // Scrolls should bubble perfectly between the outer and inner viewports.
-    bool allow_unrestricted_bubbling_for_current_layer =
-        layer_impl == OuterViewportScrollLayer();
-    bool allow_bubbling_for_current_layer =
-        allow_unrestricted_bubbling_for_current_layer || should_bubble_scrolls_;
 
     // If the layer wasn't able to move, try the next one in the hierarchy.
+    const float kEpsilon = 0.1f;
     bool did_move_layer_x = std::abs(applied_delta.x()) > kEpsilon;
     bool did_move_layer_y = std::abs(applied_delta.y()) > kEpsilon;
     did_scroll_x |= did_move_layer_x;
     did_scroll_y |= did_move_layer_y;
-    if (!did_move_layer_x && !did_move_layer_y) {
-      if (allow_bubbling_for_current_layer || !did_lock_scrolling_layer_)
-        continue;
-      else
+
+    if (did_move_layer_x || did_move_layer_y) {
+      did_lock_scrolling_layer_ = true;
+
+      // When scrolls are allowed to bubble, it's important that the original
+      // scrolling layer be preserved. This ensures that, after a scroll
+      // bubbles, the user can reverse scroll directions and immediately resume
+      // scrolling the original layer that scrolled.
+      if (!should_bubble_scrolls_) {
+        active_tree_->SetCurrentlyScrollingLayer(layer_impl);
         break;
-    }
+      }
 
-    did_lock_scrolling_layer_ = true;
-
-    // When scrolls are allowed to bubble, it's important that the original
-    // scrolling layer be preserved. This ensures that, after a scroll bubbles,
-    // the user can reverse scroll directions and immediately resume scrolling
-    // the original layer that scrolled.
-    if (!should_bubble_scrolls_)
-      active_tree_->SetCurrentlyScrollingLayer(layer_impl);
-
-    if (!allow_bubbling_for_current_layer)
-      break;
-
-    if (allow_unrestricted_bubbling_for_current_layer) {
-      pending_delta -= applied_delta;
-    } else {
       // If the applied delta is within 45 degrees of the input delta, bail out
       // to make it easier to scroll just one layer in one direction without
       // affecting any of its parents.
       float angle_threshold = 45;
       if (MathUtil::SmallestAngleBetweenVectors(applied_delta, pending_delta) <
-          angle_threshold) {
-        pending_delta = gfx::Vector2dF();
+          angle_threshold)
         break;
-      }
 
       // Allow further movement only on an axis perpendicular to the direction
       // in which the layer moved.
       gfx::Vector2dF perpendicular_axis(-applied_delta.y(), applied_delta.x());
       pending_delta =
           MathUtil::ProjectVector(pending_delta, perpendicular_axis);
+
+      if (gfx::ToRoundedVector2d(pending_delta).IsZero())
+        break;
     }
 
-    if (gfx::ToRoundedVector2d(pending_delta).IsZero())
+    if (!should_bubble_scrolls_ && did_lock_scrolling_layer_)
       break;
   }
 
