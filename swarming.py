@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 import collections
 import json
@@ -938,6 +938,34 @@ def add_collect_options(parser):
            'directory contains per-shard directory with output files produced '
            'by shards: <task-output-dir>/<zero-based-shard-index>/.')
   parser.add_option_group(parser.task_output_group)
+
+
+@subcommand.usage('bots...')
+def CMDbot_delete(parser, args):
+  """Forcibly deletes bots from the Swarming server."""
+  parser.add_option(
+      '-f', '--force', action='store_true',
+      help='Do not prompt for confirmation')
+  options, args = parser.parse_args(args)
+  if not args:
+    parser.error('Please specific bots to delete')
+
+  bots = sorted(args)
+  if not options.force:
+    print('Delete the following bots?')
+    for bot in bots:
+      print('  %s' % bot)
+    if raw_input('Continue? [y/N] ') not in ('y', 'Y'):
+      print('Goodbye.')
+      return 1
+
+  result = 0
+  for bot in bots:
+    url = '%s/swarming/api/v1/client/bot/%s' % (options.swarming, bot)
+    if net.url_read_json(url, method='DELETE') is None:
+      print('Deleting %s failed' % bot)
+      result = 1
+  return result
 
 
 def CMDbots(parser, args):

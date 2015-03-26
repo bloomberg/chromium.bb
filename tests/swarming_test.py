@@ -805,6 +805,20 @@ class TestSwarmingCollection(NetTestCase):
 
 class TestMain(NetTestCase):
   # Tests calling main().
+  def test_bot_delete(self):
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/bot/foo',
+            {'method': 'DELETE'},
+            {},
+          ),
+        ])
+    ret = main(
+        ['bot_delete', '--swarming', 'https://localhost:1', 'foo', '--force'])
+    self._check_output('', '')
+    self.assertEqual(0, ret)
+
   def test_run_raw_cmd(self):
     # Minimalist use.
     request = {

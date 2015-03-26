@@ -385,9 +385,9 @@ class HttpService(object):
     - If both |max_attempts| and |timeout| are None or 0, this functions retries
       indefinitely.
 
-    If |method| is given it can be 'GET', 'POST' or 'PUT' and it will be used
-    when performing the request. By default it's GET if |data| is None and POST
-    if |data| is not None.
+    If |method| is given it can be 'DELETE', 'GET', 'POST' or 'PUT' and it will
+    be used when performing the request. By default it's GET if |data| is None
+    and POST if |data| is not None.
 
     If |headers| is given, it should be a dict with HTTP headers to append
     to request. Caller is responsible for providing headers that make sense.
@@ -410,15 +410,15 @@ class HttpService(object):
     assert urlpath and urlpath[0] == '/', urlpath
 
     if data is not None:
-      assert method in (None, 'POST', 'PUT')
+      assert method in (None, 'DELETE', 'POST', 'PUT')
       method = method or 'POST'
       content_type = content_type or DEFAULT_CONTENT_TYPE
       body = self.encode_request_body(data, content_type)
     else:
-      assert method in (None, 'GET')
+      assert method in (None, 'DELETE', 'GET')
       method = method or 'GET'
       body = None
-      assert not content_type, 'Can\'t use content_type on GET'
+      assert not content_type, 'Can\'t use content_type on %s' % method
 
     # Prepare request info.
     parsed = urlparse.urlparse('/' + urlpath.lstrip('/'))
