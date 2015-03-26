@@ -30,8 +30,6 @@ const char kFailed[] = "org.bluez.Failed";
 const char kNotAvailable[] = "org.bluez.NotAvailable";
 
 const int kInvalidFd = -1;
-const uint16_t kReadMtu = 20;
-const uint16_t kWriteMtu = 25;
 
 ObjectPath GenerateTransportPath() {
   static unsigned int sequence_number = 0;
@@ -56,6 +54,8 @@ const std::vector<uint8_t>
         0x21, 0x15, 0x33, 0x2C};
 const uint16_t FakeBluetoothMediaTransportClient::kTransportDelay = 5;
 const uint16_t FakeBluetoothMediaTransportClient::kTransportVolume = 50;
+const uint16_t FakeBluetoothMediaTransportClient::kDefaultReadMtu = 20;
+const uint16_t FakeBluetoothMediaTransportClient::kDefaultWriteMtu = 25;
 
 FakeBluetoothMediaTransportClient::Properties::Properties(
     const PropertyChangedCallback& callback)
@@ -319,7 +319,7 @@ void FakeBluetoothMediaTransportClient::AcquireInternal(
   transport->input_fd.reset(new base::File(fds[0]));
 
   dbus::FileDescriptor out_fd(fds[1]);
-  callback.Run(&out_fd, kReadMtu, kWriteMtu);
+  callback.Run(&out_fd, kDefaultReadMtu, kDefaultWriteMtu);
   SetState(endpoint_path, "active");
 }
 

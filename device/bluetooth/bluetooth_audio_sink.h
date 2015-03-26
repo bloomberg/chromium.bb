@@ -75,12 +75,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSink
 
     // Called when there is audio data available. |audio_sink| indicates the
     // object being changed. |data| is the pointer to the audio data and |size|
-    // is the number of bytes in |data|. This method provides the raw audio data
-    // which hasn't been processed, so RTP assembling and SBC decoding need to
-    // be handled in order to get PCM data.
+    // is the number of bytes in |data|. |read_mtu| is the max size of the RTP
+    // packet. This method provides the raw audio data which hasn't been
+    // processed, so RTP assembling and SBC decoding need to be handled in order
+    // to get PCM data.
     virtual void BluetoothAudioSinkDataAvailable(BluetoothAudioSink* audio_sink,
                                                  char* data,
-                                                 size_t size) = 0;
+                                                 size_t size,
+                                                 uint16_t read_mtu) = 0;
   };
 
   // The ErrorCallback is used for the methods that can fail in which case it

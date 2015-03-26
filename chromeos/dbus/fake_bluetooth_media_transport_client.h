@@ -45,6 +45,10 @@ class CHROMEOS_EXPORT FakeBluetoothMediaTransportClient
   static const uint16_t kTransportDelay;
   static const uint16_t kTransportVolume;
 
+  // The default MTUs for read and write.
+  static const uint16_t kDefaultReadMtu;
+  static const uint16_t kDefaultWriteMtu;
+
   FakeBluetoothMediaTransportClient();
   ~FakeBluetoothMediaTransportClient() override;
 

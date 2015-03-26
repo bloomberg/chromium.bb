@@ -400,8 +400,9 @@ void BluetoothAudioSinkChromeOS::ReadFromFile() {
   }
 
   VLOG(1) << "ReadFromFile - read " << size << " bytes";
-  FOR_EACH_OBSERVER(BluetoothAudioSink::Observer, observers_,
-                    BluetoothAudioSinkDataAvailable(this, data_.get(), size));
+  FOR_EACH_OBSERVER(
+      BluetoothAudioSink::Observer, observers_,
+      BluetoothAudioSinkDataAvailable(this, data_.get(), size, read_mtu_));
 }
 
 void BluetoothAudioSinkChromeOS::StateChanged(

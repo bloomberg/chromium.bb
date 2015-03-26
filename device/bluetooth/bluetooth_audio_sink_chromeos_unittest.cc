@@ -58,10 +58,12 @@ class TestAudioSinkObserver : public BluetoothAudioSink::Observer {
 
   void BluetoothAudioSinkDataAvailable(BluetoothAudioSink* audio_sink,
                                        char* data,
-                                       size_t size) override {
+                                       size_t size,
+                                       uint16_t read_mtu) override {
     total_read_ += size;
     data_.clear();
     data_.insert(data_.begin(), data, data + size);
+    read_mtu_ = read_mtu;
   }
 
   int state_changed_count_;
@@ -69,6 +71,7 @@ class TestAudioSinkObserver : public BluetoothAudioSink::Observer {
   int data_available_count_;
   size_t total_read_;
   std::vector<char> data_;
+  uint16_t read_mtu_;
   BluetoothAudioSink::State state_;
 
  private:
@@ -838,6 +841,8 @@ TEST_F(BluetoothAudioSinkChromeOSTest, AcquireFD) {
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size());
   EXPECT_EQ(observer_->data_, data_one);
+  EXPECT_EQ(observer_->read_mtu_,
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
 }
 
 // Tests the case where the remote device pauses and resume audio streaming.
@@ -873,6 +878,8 @@ TEST_F(BluetoothAudioSinkChromeOSTest, PauseAndResume) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_one);
+  EXPECT_EQ(observer_->read_mtu_,
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size());
 
@@ -891,6 +898,8 @@ TEST_F(BluetoothAudioSinkChromeOSTest, PauseAndResume) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_two);
+  EXPECT_EQ(observer_->read_mtu_,
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 6);
   EXPECT_EQ(observer_->total_read_, data_two.size());
 }
@@ -927,6 +936,8 @@ TEST_F(BluetoothAudioSinkChromeOSTest, ContinuouslyStreaming) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_one);
+  EXPECT_EQ(observer_->read_mtu_,
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size());
 
@@ -936,6 +947,8 @@ TEST_F(BluetoothAudioSinkChromeOSTest, ContinuouslyStreaming) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_two);
+  EXPECT_EQ(observer_->read_mtu_,
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size() + data_two.size());
 }
