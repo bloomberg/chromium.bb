@@ -125,6 +125,8 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
     CSSParserImpl parser(context, styleSheet);
     CSSTokenizer::Scope scope(string);
     bool firstRuleValid = parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
+        if (rule->isCharsetRule())
+            return;
         styleSheet->parserAppendRule(rule);
     });
     styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
@@ -149,7 +151,7 @@ static CSSParserImpl::AllowedRulesType computeNewAllowedRules(CSSParserImpl::All
     if (!rule || allowedRules == CSSParserImpl::KeyframeRules)
         return allowedRules;
     ASSERT(allowedRules <= CSSParserImpl::RegularRules);
-    if (rule->isImportRule())
+    if (rule->isCharsetRule() || rule->isImportRule())
         return CSSParserImpl::AllowImportRules;
     if (rule->isNamespaceRule())
         return CSSParserImpl::AllowNamespaceRules;
