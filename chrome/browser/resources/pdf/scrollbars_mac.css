@@ -1,0 +1,33 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/*
+ * Imitate mac scrollbars on non-retina displays to workaround crbug.com/466039.
+ */
+@media
+(-webkit-max-device-pixel-ratio: 1) {
+
+::-webkit-scrollbar {
+  height: 14px;
+  width: 14px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background-color: rgb(242,242,242);
+}
+
+::-webkit-scrollbar-thumb:vertical,
+::-webkit-scrollbar-thumb:horizontal {
+  -webkit-border-radius: 7px;
+  background-color: rgb(198,198,198);
+  border: 3px solid rgb(242,242,242);
+}
+
+::-webkit-scrollbar-thumb:vertical:hover,
+::-webkit-scrollbar-thumb:horizontal:hover {
+  background-color: rgb(126,126,126);
+}
+
+}

@@ -42,6 +42,18 @@ var viewer;
 
   function generateStreamDetailsAndInitViewer() {
     var url = window.location.search.substring(1);
+
+    // Hack to enable custom scrollbars for print preview on non-retina mac
+    // displays. Remove after crbug.com/466039 is fixed.
+    if (url.indexOf(IS_MAC_PARAM) === 0) {
+      url = url.substring(IS_MAC_PARAM.length);
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = 'scrollbars_mac.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+
     var streamDetails = {
       streamUrl: url,
       originalUrl: url,
