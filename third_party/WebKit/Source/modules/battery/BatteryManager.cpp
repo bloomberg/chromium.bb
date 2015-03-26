@@ -9,7 +9,6 @@
 #include "core/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
 #include "modules/battery/BatteryStatus.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -79,7 +78,6 @@ double BatteryManager::level()
 
 void BatteryManager::didUpdateData()
 {
-    ASSERT(RuntimeEnabledFeatures::batteryStatusEnabled());
     ASSERT(m_state != NotStarted);
 
     BatteryStatus* oldStatus = m_batteryStatus;
