@@ -19,6 +19,8 @@ typedef scoped_ptr<ParseNode> (Parser::*PrefixFunc)(Token token);
 typedef scoped_ptr<ParseNode> (Parser::*InfixFunc)(scoped_ptr<ParseNode> left,
                                                    Token token);
 
+extern const char kGrammar_Help[];
+
 struct ParserHelper {
   PrefixFunc prefix;
   InfixFunc infix;

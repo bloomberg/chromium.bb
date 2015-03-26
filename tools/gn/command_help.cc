@@ -12,6 +12,7 @@
 #include "tools/gn/functions.h"
 #include "tools/gn/input_conversion.h"
 #include "tools/gn/label_pattern.h"
+#include "tools/gn/parser.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/substitution_writer.h"
@@ -58,6 +59,7 @@ void PrintToplevelHelp() {
   OutputString("\nOther help topics:\n");
   PrintShortHelp("buildargs: How build arguments work.");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
+  PrintShortHelp("grammar: Formal grammar for GN build files.");
   PrintShortHelp("label_pattern: Matching more than one label.");
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
@@ -167,6 +169,10 @@ int RunHelp(const std::vector<std::string>& args) {
   }
   if (what == "dotfile") {
     PrintLongHelp(kDotfile_Help);
+    return 0;
+  }
+  if (what == "grammar") {
+    PrintLongHelp(kGrammar_Help);
     return 0;
   }
   if (what == "input_conversion") {
