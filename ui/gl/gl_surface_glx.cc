@@ -466,6 +466,7 @@ void NativeViewGLSurfaceGLX::Destroy() {
     if (event_source)
       event_source->RemovePlatformEventDispatcher(this);
     XDestroyWindow(g_display, window_);
+    window_ = 0;
     XFlush(g_display);
   }
 }
