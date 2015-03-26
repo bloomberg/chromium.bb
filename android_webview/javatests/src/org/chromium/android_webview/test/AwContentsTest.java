@@ -139,6 +139,14 @@ public class AwContentsTest extends AwTestBase {
                 new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
     }
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
+    private static class StrongRefTestAwContentsClient extends TestAwContentsClient {
+        private AwContents mAwContentsStrongRef;
+        public void setAwContentsStrongRef(AwContents awContents) {
+            mAwContentsStrongRef = awContents;
+        }
+    }
+
     @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView"})
@@ -159,7 +167,13 @@ public class AwContentsTest extends AwTestBase {
         });
         for (int i = 0; i < repetitions; ++i) {
             for (int j = 0; j < concurrentInstances; ++j) {
-                AwTestContainerView view = createAwTestContainerViewOnMainSync(mContentsClient);
+                final StrongRefTestAwContentsClient client = new StrongRefTestAwContentsClient();
+                AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
+                // Embedding app can hold onto a strong ref to the WebView from either WebViewClient
+                // or WebChromeClient. That should not prevent WebView from gc-ed. We simulate that
+                // behavior by making the equivalent change here, have AwContentsClient hold a
+                // strong ref to the AwContents object.
+                client.setAwContentsStrongRef(view.getAwContents());
                 loadUrlAsync(view.getAwContents(), "about:blank");
             }
             assertTrue(AwContents.getNativeInstanceCount() >= concurrentInstances);

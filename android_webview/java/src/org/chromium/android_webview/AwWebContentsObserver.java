@@ -23,14 +23,14 @@ public class AwWebContentsObserver extends WebContentsObserver {
     // reference to an AwWebContentsObserver instance. This is not intentional,
     // and should be found and cleaned up.
     private final WeakReference<AwContents> mAwContents;
-    private final AwContentsClient mAwContentsClient;
+    private final WeakReference<AwContentsClient> mAwContentsClient;
     private boolean mStartedNonApiProvisionalLoadInMainFrame = false;
 
     public AwWebContentsObserver(
             WebContents webContents, AwContents awContents, AwContentsClient awContentsClient) {
         super(webContents);
-        mAwContents = new WeakReference<AwContents>(awContents);
-        mAwContentsClient = awContentsClient;
+        mAwContents = new WeakReference<>(awContents);
+        mAwContentsClient = new WeakReference<>(awContentsClient);
     }
 
     boolean hasStartedNonApiProvisionalLoadInMainFrame() {
@@ -39,24 +39,28 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+        AwContentsClient client = mAwContentsClient.get();
+        if (client == null) return;
         String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
         boolean isErrorUrl =
                 unreachableWebDataUrl != null && unreachableWebDataUrl.equals(validatedUrl);
         if (isMainFrame && !isErrorUrl) {
-            mAwContentsClient.onPageFinished(validatedUrl);
+            client.onPageFinished(validatedUrl);
         }
     }
 
     @Override
     public void didFailLoad(boolean isProvisionalLoad,
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
+        AwContentsClient client = mAwContentsClient.get();
+        if (client == null) return;
         String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
         boolean isErrorUrl =
                 unreachableWebDataUrl != null && unreachableWebDataUrl.equals(failingUrl);
         if (isMainFrame && !isErrorUrl && errorCode == NetError.ERR_ABORTED) {
             // Need to call onPageFinished for backwards compatibility with the classic webview.
             // See also AwContents.IoThreadClientImpl.onReceivedError.
-            mAwContentsClient.onPageFinished(failingUrl);
+            client.onPageFinished(failingUrl);
         }
     }
 
@@ -74,23 +78,30 @@ public class AwWebContentsObserver extends WebContentsObserver {
                         awContents.insertVisualStateCallback(0, new VisualStateCallback() {
                             @Override
                             public void onComplete(long requestId) {
-                                mAwContentsClient.onPageCommitVisible(url);
+                                AwContentsClient client = mAwContentsClient.get();
+                                if (client == null) return;
+                                client.onPageCommitVisible(url);
                             }
                         });
                     }
                 }
             });
         }
+
         // This is here to emulate the Classic WebView firing onPageFinished for main frame
         // navigations where only the hash fragment changes.
         if (isFragmentNavigation) {
-            mAwContentsClient.onPageFinished(url);
+            AwContentsClient client = mAwContentsClient.get();
+            if (client == null) return;
+            client.onPageFinished(url);
         }
     }
 
     @Override
     public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
-        mAwContentsClient.doUpdateVisitedHistory(url, isReload);
+        final AwContentsClient client = mAwContentsClient.get();
+        if (client == null) return;
+        client.doUpdateVisitedHistory(url, isReload);
     }
 
     @Override
