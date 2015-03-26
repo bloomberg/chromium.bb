@@ -229,11 +229,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new AutofillProfileDataTypeController(this, profile_));
   }
 
-  if (profile_->GetPrefs()->GetBoolean(
-           autofill::prefs::kAutofillWalletSyncExperimentEnabled) &&
-      !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
-    // The feature can be enabled by sync experiment *or* command line flag,
-    // and additionally the sync type must be enabled.
+  // Autofill wallet sync is enabled by default, but behind a syncer experiment
+  // enforced by the datatype controller. Register unless explicitly disabled.
+  if (!disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
     pss->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(this, profile_));
   }

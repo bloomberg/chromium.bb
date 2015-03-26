@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
 #include "base/basictypes.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
 class Profile;
@@ -33,11 +34,18 @@ class AutofillWalletDataTypeController
                                const base::Closure& task) override;
   bool StartModels() override;
   void StopModels() override;
+  bool ReadyForStart() const override;
 
   void WebDatabaseLoaded();
 
+  // Callback for changes to kAutofillWalletSyncExperimentEnabled.
+  void OnSyncExperimentPrefChanged();
+
   Profile* const profile_;
   bool callback_registered_;
+
+  // Registrar for listening to kAutofillWalletSyncExperimentEnabled status.
+  PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletDataTypeController);
 };

@@ -64,6 +64,7 @@ enum ModelTypeSelection {
   EXPERIMENTS = 1 << 12,
   SUPERVISED_USER_SETTING = 1 << 13,
   SUPERVISED_USER_WHITELIST = 1 << 14,
+  AUTOFILL_WALLET = 1 << 15,
 };
 
 }  // namespace
@@ -460,6 +461,9 @@ jlong ProfileSyncServiceAndroid::ModelTypeSetToSelection(
   }
   if (types.Has(syncer::AUTOFILL_PROFILE)) {
     model_type_selection |= AUTOFILL_PROFILE;
+  }
+  if (types.Has(syncer::AUTOFILL_WALLET_DATA)) {
+    model_type_selection |= AUTOFILL_WALLET;
   }
   if (types.Has(syncer::PASSWORDS)) {
     model_type_selection |= PASSWORD;

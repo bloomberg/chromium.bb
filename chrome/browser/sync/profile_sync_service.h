@@ -916,14 +916,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // backend to start, one of SYNC, BACKUP or ROLLBACK.
   virtual void StartUpSlowBackendComponents(BackendMode mode);
 
-  // About-flags experiment names for datatypes that aren't enabled by default
-  // yet.
-  static std::string GetExperimentNameForDataType(
-      syncer::ModelType data_type);
-
-  // Create and register a new datatype controller.
-  void RegisterNewDataType(syncer::ModelType data_type);
-
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
 

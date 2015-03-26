@@ -349,6 +349,9 @@ public class ProfileSyncService {
         if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_PROFILE) != 0) {
             syncTypes.add(ModelType.AUTOFILL_PROFILE);
         }
+        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_WALLET) != 0) {
+            syncTypes.add(ModelType.AUTOFILL_WALLET);
+        }
         if ((modelTypeSelection & ModelTypeSelection.BOOKMARK) != 0) {
             syncTypes.add(ModelType.BOOKMARK);
         }

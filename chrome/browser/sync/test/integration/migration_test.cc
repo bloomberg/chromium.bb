@@ -100,6 +100,10 @@ class MigrationTest : public SyncTest  {
     preferred_data_types.Remove(syncer::SUPERVISED_USER_SETTINGS);
     preferred_data_types.Remove(syncer::SUPERVISED_USER_WHITELISTS);
 
+    // Autofill wallet will be unready during this test, so we should not
+    // request that it be migrated.
+    preferred_data_types.Remove(syncer::AUTOFILL_WALLET_DATA);
+
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {
       const syncer::ModelTypeSet other_preferred_data_types =
@@ -296,9 +300,11 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, MAYBE_AllTypesIndividually) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/403778
-#define MAYBE_AllTypesIndividuallyTriggerNotification DISABLED_AllTypesIndividuallyTriggerNotification
+#define MAYBE_AllTypesIndividuallyTriggerNotification \
+    DISABLED_AllTypesIndividuallyTriggerNotification
 #else
-#define MAYBE_AllTypesIndividuallyTriggerNotification AllTypesIndividuallyTriggerNotification
+#define MAYBE_AllTypesIndividuallyTriggerNotification \
+    AllTypesIndividuallyTriggerNotification
 #endif
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
                        MAYBE_AllTypesIndividuallyTriggerNotification) {

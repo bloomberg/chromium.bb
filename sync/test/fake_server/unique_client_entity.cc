@@ -74,7 +74,7 @@ scoped_ptr<FakeServerEntity> UniqueClientEntity::CreateForInjection(
     const string& name,
     const sync_pb::EntitySpecifics& entity_specifics) {
   string client_defined_unique_tag = GenerateSyncableHash(model_type, name);
-  string id = FakeServerEntity::CreateId(model_type, base::GenerateGUID());
+  string id = FakeServerEntity::CreateId(model_type, client_defined_unique_tag);
   return scoped_ptr<FakeServerEntity>(
       new UniqueClientEntity(id,
                              model_type,

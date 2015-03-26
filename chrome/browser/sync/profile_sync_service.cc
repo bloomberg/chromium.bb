@@ -958,12 +958,6 @@ void ProfileSyncService::ClearUnrecoverableError() {
   unrecoverable_error_location_ = tracked_objects::Location();
 }
 
-void ProfileSyncService::RegisterNewDataType(syncer::ModelType data_type) {
-  if (directory_data_type_controllers_.count(data_type) > 0)
-    return;
-  NOTREACHED();
-}
-
 // An invariant has been violated.  Transition to an error state where we try
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError(
@@ -1001,7 +995,8 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
-  DCHECK(backend_initialized_);
+  if (!backend_initialized_)
+    return;
   directory_data_type_manager_->ReenableType(type);
 }
 
@@ -1162,51 +1157,6 @@ void ProfileSyncService::OnExperimentsChanged(
   profile()->GetPrefs()->SetBoolean(
       autofill::prefs::kAutofillWalletSyncExperimentEnabled,
       experiments.wallet_sync_enabled);
-
-  // If this is a first time sync for a client, this will be called before
-  // OnBackendInitialized() to ensure the new datatypes are available at sync
-  // setup. As a result, the migrator won't exist yet. This is fine because for
-  // first time sync cases we're only concerned with making the datatype
-  // available.
-  if (migrator_.get() &&
-      migrator_->state() != browser_sync::BackendMigrator::IDLE) {
-    DVLOG(1) << "Dropping OnExperimentsChanged due to migrator busy.";
-    return;
-  }
-
-  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  syncer::ModelTypeSet to_add;
-  const syncer::ModelTypeSet to_register =
-      Difference(to_add, registered_types);
-  DVLOG(2) << "OnExperimentsChanged called with types: "
-           << syncer::ModelTypeSetToString(to_add);
-  DVLOG(2) << "Enabling types: " << syncer::ModelTypeSetToString(to_register);
-
-  for (syncer::ModelTypeSet::Iterator it = to_register.First();
-       it.Good(); it.Inc()) {
-    // Received notice to enable experimental type. Check if the type is
-    // registered, and if not register a new datatype controller.
-    RegisterNewDataType(it.Get());
-  }
-
-  // Check if the user has "Keep Everything Synced" enabled. If so, we want
-  // to turn on all experimental types if they're not already on. Otherwise we
-  // leave them off.
-  // Note: if any types are already registered, we don't turn them on. This
-  // covers the case where we're already in the process of reconfiguring
-  // to turn an experimental type on.
-  if (sync_prefs_.HasKeepEverythingSynced()) {
-    // Mark all data types as preferred.
-    sync_prefs_.SetPreferredDataTypes(registered_types, registered_types);
-
-    // Only automatically turn on types if we have already finished set up.
-    // Otherwise, just leave the experimental types on by default.
-    if (!to_register.Empty() && HasSyncSetupCompleted() && migrator_) {
-      DVLOG(1) << "Dynamically enabling new datatypes: "
-               << syncer::ModelTypeSetToString(to_register);
-      OnMigrationNeededForTypes(to_register);
-    }
-  }
 }
 
 void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {

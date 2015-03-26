@@ -260,12 +260,17 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
 
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == RETRYING);
 
+  const State old_state = state_;
+  state_ = DOWNLOAD_PENDING;
+
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
-  if (state_ == STOPPED || state_ == CONFIGURED)
+  // Note: NotifyStart() must be called with the updated (non-idle) state,
+  // otherwise logic listening for the configuration start might not be aware
+  // of the fact that the DTM is in a configuration state.
+  if (old_state == STOPPED || old_state == CONFIGURED)
     NotifyStart();
 
-  state_ = DOWNLOAD_PENDING;
   download_types_queue_ = PrioritizeTypes(enabled_types);
   association_types_queue_ = std::queue<AssociationTypesInfo>();
 
