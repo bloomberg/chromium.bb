@@ -114,3 +114,9 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
 #endif
   }
 }
+
+void DownloadDirPolicyHandler::ApplyPolicySettings(
+    const policy::PolicyMap& /* policies */,
+    PrefValueMap* /* prefs */) {
+  NOTREACHED();
+}

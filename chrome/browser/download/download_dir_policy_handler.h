@@ -30,6 +30,10 @@ class DownloadDirPolicyHandler : public policy::TypeCheckingPolicyHandler {
       const policy::PolicyHandlerParameters& parameters,
       PrefValueMap* prefs) override;
 
+ protected:
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadDirPolicyHandler);
 };

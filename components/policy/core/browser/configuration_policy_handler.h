@@ -55,17 +55,20 @@ class POLICY_EXPORT ConfigurationPolicyHandler {
       const PolicyHandlerParameters& parameters,
       PrefValueMap* prefs);
 
-  // This is a convenience version of ApplyPolicySettingsWithParameters()
-  // that leaves out the |parameters|. Anyone extending
-  // ConfigurationPolicyHandler should implement either ApplyPolicySettings or
-  // ApplyPolicySettingsWithParameters.
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs);
-
   // Modifies the values of some of the policies in |policies| so that they
   // are more suitable to display to the user. This can be used to remove
   // sensitive values such as passwords, or to pretty-print values.
   virtual void PrepareForDisplaying(PolicyMap* policies) const;
+
+ protected:
+  // This is a convenience version of ApplyPolicySettingsWithParameters()
+  // for derived classes that leaves out the |parameters|. Anyone extending
+  // ConfigurationPolicyHandler should implement either
+  // ApplyPolicySettingsWithParameters directly and implement
+  // ApplyPolicySettings with a NOTREACHED or implement only
+  // ApplyPolicySettings.
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyHandler);
@@ -339,6 +342,12 @@ class POLICY_EXPORT LegacyPoliciesDeprecatingPolicyHandler
   // ConfigurationPolicyHandler:
   bool CheckPolicySettings(const PolicyMap& policies,
                            PolicyErrorMap* errors) override;
+  void ApplyPolicySettingsWithParameters(
+      const policy::PolicyMap& policies,
+      const policy::PolicyHandlerParameters& parameters,
+      PrefValueMap* prefs) override;
+
+ protected:
   void ApplyPolicySettings(const PolicyMap& policies,
                            PrefValueMap* prefs) override;
 

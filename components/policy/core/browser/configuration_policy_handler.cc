@@ -48,12 +48,6 @@ ConfigurationPolicyHandler::~ConfigurationPolicyHandler() {
 void ConfigurationPolicyHandler::PrepareForDisplaying(
     PolicyMap* policies) const {}
 
-void ConfigurationPolicyHandler::ApplyPolicySettings(
-    const policy::PolicyMap& policies,
-    PrefValueMap* prefs) {
-  NOTREACHED();
-}
-
 void ConfigurationPolicyHandler::ApplyPolicySettingsWithParameters(
     const PolicyMap& policies,
     const PolicyHandlerParameters& parameters,
@@ -466,11 +460,13 @@ bool LegacyPoliciesDeprecatingPolicyHandler::CheckPolicySettings(
   }
 }
 
-void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettings(
-    const PolicyMap& policies,
+void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettingsWithParameters(
+    const policy::PolicyMap& policies,
+    const policy::PolicyHandlerParameters& parameters,
     PrefValueMap* prefs) {
   if (policies.Get(new_policy_handler_->policy_name())) {
-    new_policy_handler_->ApplyPolicySettings(policies, prefs);
+    new_policy_handler_->ApplyPolicySettingsWithParameters(policies, parameters,
+                                                           prefs);
   } else {
     // The new policy is not set, fall back to legacy ones.
     PolicyErrorMap scoped_errors;
@@ -478,10 +474,17 @@ void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettings(
     for (handler = legacy_policy_handlers_.begin();
          handler != legacy_policy_handlers_.end();
          ++handler) {
-      if ((*handler)->CheckPolicySettings(policies, &scoped_errors))
-        (*handler)->ApplyPolicySettings(policies, prefs);
+      if ((*handler)->CheckPolicySettings(policies, &scoped_errors)) {
+        (*handler)
+            ->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
+      }
     }
   }
+}
+void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettings(
+    const policy::PolicyMap& /* policies */,
+    PrefValueMap* /* prefs */) {
+  NOTREACHED();
 }
 
 }  // namespace policy
