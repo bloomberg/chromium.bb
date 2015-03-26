@@ -309,9 +309,8 @@ public class ApplicationStatus {
             if (sCachedApplicationState == null) {
                 sCachedApplicationState = determineApplicationState();
             }
+            return sCachedApplicationState.intValue();
         }
-
-        return sCachedApplicationState.intValue();
     }
 
     /**
