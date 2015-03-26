@@ -6,6 +6,8 @@
 bindings_modules_v8_custom_files = get_path_info(
   [
     "V8ClientCustom.cpp",
+    "V8CompositorWorkerCustom.cpp",
+    "V8CompositorWorkerGlobalScopeCustom.cpp",
     "V8CrossOriginServiceWorkerClientCustom.cpp",
     "V8CustomSQLStatementErrorCallback.cpp",
     "V8DeviceMotionEventCustom.cpp",

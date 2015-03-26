@@ -149,6 +149,8 @@
       'global_objects_file':
         '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
       'global_names_idl_files': [
+        'CompositorWorkerGlobalScope',
+        '<(blink_modules_output_dir)/CompositorWorkerGlobalScopeCoreConstructors.idl',
         'ServiceWorkerGlobalScope',
         '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
       ],
@@ -172,12 +174,14 @@
       'global_names_idl_files': [
         'Window',
         '<(blink_modules_output_dir)/WindowModulesConstructors.idl',
-        'SharedWorkerGlobalScope',
-        '<(blink_modules_output_dir)/SharedWorkerGlobalScopeModulesConstructors.idl',
+        'CompositorWorkerGlobalScope',
+        '<(blink_modules_output_dir)/CompositorWorkerGlobalScopeModulesConstructors.idl',
         'DedicatedWorkerGlobalScope',
         '<(blink_modules_output_dir)/DedicatedWorkerGlobalScopeModulesConstructors.idl',
         'ServiceWorkerGlobalScope',
         '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeModulesConstructors.idl',
+        'SharedWorkerGlobalScope',
+        '<(blink_modules_output_dir)/SharedWorkerGlobalScopeModulesConstructors.idl',
       ],
       'outputs': [
         '<@(modules_global_constructors_generated_idl_files)',

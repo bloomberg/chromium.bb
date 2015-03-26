@@ -32,6 +32,7 @@ BlinkScheduler
 Bluetooth status=experimental
 ClientHints status=experimental
 CompositedSelectionUpdate
+CompositorWorker status=experimental
 ContextMenu status=experimental
 CredentialManager status=test
 CSS3Text status=experimental

@@ -64,8 +64,9 @@ public:
     virtual void start();
     virtual void stop();
 
-    void didStartRunLoop();
-    void didStopRunLoop();
+    virtual PassOwnPtr<WebThreadSupportingGC> createWebThreadSupportingGC();
+    virtual void didStartRunLoop();
+    virtual void didStopRunLoop();
 
     v8::Isolate* isolate() const { return m_isolate; }
 
@@ -116,6 +117,11 @@ protected:
 
     virtual void postInitialize() { }
 
+    virtual v8::Isolate* initializeIsolate();
+    virtual void willDestroyIsolate();
+    virtual void destroyIsolate();
+    virtual void terminateV8Execution();
+
 private:
     friend class WorkerSharedTimer;
     friend class WorkerThreadShutdownFinishTask;
@@ -128,11 +134,6 @@ private:
     void idleHandler();
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
-
-    v8::Isolate* initializeIsolate();
-    void willDestroyIsolate();
-    void destroyIsolate();
-    void terminateV8Execution();
 
     bool m_terminated;
     MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;

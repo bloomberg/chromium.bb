@@ -2,6 +2,8 @@ namespace="EventTarget"
 suffix="Modules"
 
 modules/battery/BatteryManager
+modules/compositorworker/CompositorWorker
+modules/compositorworker/CompositorWorkerGlobalScope
 modules/encryptedmedia/MediaKeySession
 modules/filesystem/FileWriter
 modules/indexeddb/IDBDatabase

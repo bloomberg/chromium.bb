@@ -282,7 +282,7 @@ void WorkerThread::start()
     if (m_thread)
         return;
 
-    m_thread = WebThreadSupportingGC::create("WebCore: Worker");
+    m_thread = createWebThreadSupportingGC();
     m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::initialize, this)));
 }
 
@@ -349,6 +349,11 @@ void WorkerThread::initialize()
     postInitialize();
 
     postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
+}
+
+PassOwnPtr<WebThreadSupportingGC> WorkerThread::createWebThreadSupportingGC()
+{
+    return WebThreadSupportingGC::create("WebCore: Worker");
 }
 
 void WorkerThread::cleanup()

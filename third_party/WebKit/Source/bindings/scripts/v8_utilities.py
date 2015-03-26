@@ -248,6 +248,7 @@ def deprecate_as(member):
 
 # [Exposed]
 EXPOSED_EXECUTION_CONTEXT_METHOD = {
+    'CompositorWorker': 'isCompositorWorkerGlobalScope',
     'DedicatedWorker': 'isDedicatedWorkerGlobalScope',
     'ServiceWorker': 'isServiceWorkerGlobalScope',
     'SharedWorker': 'isSharedWorkerGlobalScope',
@@ -257,6 +258,7 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
 
 
 EXPOSED_WORKERS = set([
+    'CompositorWorker',
     'DedicatedWorker',
     'SharedWorker',
     'ServiceWorker',

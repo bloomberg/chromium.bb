@@ -44,7 +44,7 @@
 
 namespace blink {
 
-inline Worker::Worker(ExecutionContext* context)
+Worker::Worker(ExecutionContext* context)
     : AbstractWorker(context)
     , m_contextProxy(nullptr)
 {
@@ -59,21 +59,10 @@ PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const S
         exceptionState.throwDOMException(InvalidAccessError, "The context provided is invalid.");
         return nullptr;
     }
-    WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(*document->page());
-    ASSERT(proxyProvider);
-
     RefPtrWillBeRawPtr<Worker> worker = adoptRefWillBeNoop(new Worker(context));
-
-    worker->suspendIfNeeded();
-
-    KURL scriptURL = worker->resolveURL(url, exceptionState);
-    if (scriptURL.isEmpty())
-        return nullptr;
-
-    worker->m_scriptLoader = WorkerScriptLoader::create();
-    worker->m_scriptLoader->loadAsynchronously(*context, scriptURL, DenyCrossOriginRequests, worker.get());
-    worker->m_contextProxy = proxyProvider->createWorkerGlobalScopeProxy(worker.get());
-    return worker.release();
+    if (worker->initialize(context, url, exceptionState))
+        return worker.release();
+    return nullptr;
 }
 
 Worker::~Worker()
@@ -97,6 +86,30 @@ void Worker::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> me
     if (exceptionState.hadException())
         return;
     m_contextProxy->postMessageToWorkerGlobalScope(message, channels.release());
+}
+
+bool Worker::initialize(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
+{
+    suspendIfNeeded();
+
+    KURL scriptURL = resolveURL(url, exceptionState);
+    if (scriptURL.isEmpty())
+        return false;
+
+    m_scriptLoader = WorkerScriptLoader::create();
+    m_scriptLoader->loadAsynchronously(*context, scriptURL, DenyCrossOriginRequests, this);
+
+    m_contextProxy = createWorkerGlobalScopeProxy(context);
+
+    return true;
+}
+
+WorkerGlobalScopeProxy* Worker::createWorkerGlobalScopeProxy(ExecutionContext* context)
+{
+    Document* document = toDocument(context);
+    WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(*document->page());
+    ASSERT(proxyProvider);
+    return proxyProvider->createWorkerGlobalScopeProxy(this);
 }
 
 void Worker::terminate()

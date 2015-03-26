@@ -9,14 +9,16 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 bindings_modules_output_dir = "$bindings_output_dir/modules"
 
 modules_core_global_constructors_original_interfaces = [
+  "CompositorWorkerGlobalScope",
   "ServiceWorkerGlobalScope",
 ]
 
 modules_global_constructors_original_interfaces = [
   "Window",
-  "SharedWorkerGlobalScope",
+  "CompositorWorkerGlobalScope",
   "DedicatedWorkerGlobalScope",
   "ServiceWorkerGlobalScope",
+  "SharedWorkerGlobalScope",
 ]
 
 modules_core_global_constructors_generated_idl_files = []

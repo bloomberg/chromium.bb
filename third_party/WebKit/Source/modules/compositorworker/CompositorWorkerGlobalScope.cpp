@@ -1,0 +1,51 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "modules/compositorworker/CompositorWorkerGlobalScope.h"
+
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerThreadStartupData.h"
+#include "modules/EventTargetModules.h"
+#include "modules/compositorworker/CompositorWorkerThread.h"
+
+namespace blink {
+
+PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> CompositorWorkerGlobalScope::create(CompositorWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData, double timeOrigin)
+{
+    RefPtrWillBeRawPtr<CompositorWorkerGlobalScope> context = adoptRefWillBeNoop(new CompositorWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin, startupData->m_starterOrigin, startupData->m_workerClients.release()));
+    context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
+    return context.release();
+}
+
+CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOrigin, workerClients)
+{
+}
+
+CompositorWorkerGlobalScope::~CompositorWorkerGlobalScope()
+{
+}
+
+const AtomicString& CompositorWorkerGlobalScope::interfaceName() const
+{
+    return EventTargetNames::CompositorWorkerGlobalScope;
+}
+
+void CompositorWorkerGlobalScope::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+{
+    // Disentangle the port in preparation for sending it to the remote context.
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
+}
+
+CompositorWorkerThread* CompositorWorkerGlobalScope::thread() const
+{
+    return static_cast<CompositorWorkerThread*>(WorkerGlobalScope::thread());
+}
+
+} // namespace blink

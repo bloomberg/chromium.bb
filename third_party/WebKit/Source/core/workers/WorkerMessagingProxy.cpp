@@ -125,7 +125,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     double originTime = document->loader() ? document->loader()->timing().referenceMonotonicTime() : monotonicallyIncreasingTime();
 
     m_loaderProxy = WorkerLoaderProxy::create(this);
-    RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(m_loaderProxy, *m_workerObjectProxy.get(), originTime, startupData.release());
+    RefPtr<WorkerThread> thread = createWorkerThread(originTime, startupData.release());
     thread->start();
     workerThreadCreated(thread);
     m_workerInspectorProxy->workerThreadCreated(m_executionContext.get(), m_workerThread.get(), scriptURL);
@@ -199,7 +199,7 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
     frame->console().addMessage(consoleMessage.release());
 }
 
-void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<DedicatedWorkerThread> workerThread)
+void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<WorkerThread> workerThread)
 {
     ASSERT(!m_askedToTerminate);
     m_workerThread = workerThread;
@@ -211,6 +211,11 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<DedicatedWorkerThread>
     for (auto& earlyTasks : m_queuedEarlyTasks)
         m_workerThread->postTask(FROM_HERE, earlyTasks.release());
     m_queuedEarlyTasks.clear();
+}
+
+PassRefPtr<WorkerThread> WorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+{
+    return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime, startupData);
 }
 
 void WorkerMessagingProxy::workerObjectDestroyed()

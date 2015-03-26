@@ -40,13 +40,13 @@
 namespace blink {
 
 class WorkerObjectProxy;
-class DedicatedWorkerThread;
+class WorkerThread;
 class ExecutionContext;
 class Worker;
 class WorkerClients;
 class WorkerInspectorProxy;
 
-class WorkerMessagingProxy final
+class WorkerMessagingProxy
     : public WorkerGlobalScopeProxy
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy);
@@ -75,10 +75,15 @@ public:
     void workerGlobalScopeClosed();
     void workerThreadTerminated();
 
-    void workerThreadCreated(PassRefPtr<DedicatedWorkerThread>);
+    void workerThreadCreated(PassRefPtr<WorkerThread>);
 
 protected:
     virtual ~WorkerMessagingProxy();
+
+    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+
+    PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
+    WorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
 
 private:
     static void workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy*);
@@ -94,7 +99,7 @@ private:
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
     Worker* m_workerObject;
     bool m_mayBeDestroyed;
-    RefPtr<DedicatedWorkerThread> m_workerThread;
+    RefPtr<WorkerThread> m_workerThread;
 
     unsigned m_unconfirmedMessageCount; // Unconfirmed messages from worker object to worker thread.
     bool m_workerThreadHadPendingActivity; // The latest confirmation from worker thread reported that it was still active.

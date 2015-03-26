@@ -46,7 +46,7 @@ class ExecutionContext;
 class WorkerGlobalScopeProxy;
 class WorkerScriptLoader;
 
-class Worker final : public AbstractWorker, private WorkerScriptLoaderClient {
+class Worker : public AbstractWorker, private WorkerScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
@@ -56,6 +56,7 @@ public:
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
+    bool initialize(ExecutionContext*, const String&, ExceptionState&);
     void terminate();
 
     virtual void stop() override;
@@ -65,9 +66,12 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-private:
+protected:
     explicit Worker(ExecutionContext*);
 
+    virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(ExecutionContext*);
+
+private:
     // WorkerScriptLoaderClient callbacks
     virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) override;
     virtual void notifyFinished() override;

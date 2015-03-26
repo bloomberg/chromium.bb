@@ -462,7 +462,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     functionTemplate->SetHiddenPrototype(true);
     instanceTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
     {% elif interface_name in [
-           'HTMLDocument', 'DedicatedWorkerGlobalScope',
+           'HTMLDocument', 'DedicatedWorkerGlobalScope', 'CompositorWorkerGlobalScope',
            'SharedWorkerGlobalScope', 'ServiceWorkerGlobalScope'] %}
     functionTemplate->SetHiddenPrototype(true);
     {% endif %}

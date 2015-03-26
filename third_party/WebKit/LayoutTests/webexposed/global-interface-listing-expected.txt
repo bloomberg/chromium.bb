@@ -528,6 +528,14 @@ interface CompositionEvent
     method constructor
     method getSegments
     method initCompositionEvent
+interface CompositorWorker
+    getter onerror
+    getter onmessage
+    method constructor
+    method postMessage
+    method terminate
+    setter onerror
+    setter onmessage
 interface ConvolverNode
     getter buffer
     getter normalize
