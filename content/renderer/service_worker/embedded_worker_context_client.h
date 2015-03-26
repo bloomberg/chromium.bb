@@ -21,7 +21,6 @@ class TaskRunner;
 namespace blink {
 class WebDataSource;
 class WebServiceWorkerProvider;
-class WebServiceWorkerCacheStorage;
 }
 
 namespace content {
@@ -62,8 +61,6 @@ class EmbeddedWorkerContextClient
   // WebServiceWorkerContextClient overrides, some of them are just dispatched
   // on to script_context_.
   virtual blink::WebURL scope() const;
-  // TODO(jsbell): Remove this once Blink is updated. http://crbug.com/439389
-  virtual blink::WebServiceWorkerCacheStorage* cacheStorage();
   virtual void didPauseAfterDownload();
   virtual void getClients(const blink::WebServiceWorkerClientQueryOptions&,
                           blink::WebServiceWorkerClientsCallbacks*);
@@ -137,11 +134,6 @@ class EmbeddedWorkerContextClient
     return main_thread_task_runner_.get();
   }
   ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
-
-  // Only needed by ServiceWorkerScriptContext when creating a
-  // WebServiceWorkerCacheStorageImpl
-  // TODO(jsbell): Remove when no longer needed. crbug.com/439389
-  const GURL origin() const { return service_worker_scope_.GetOrigin(); }
 
  private:
   void OnMessageToWorker(int thread_id,
