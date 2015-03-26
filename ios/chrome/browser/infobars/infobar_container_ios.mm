@@ -22,6 +22,7 @@ InfoBarContainerIOS::InfoBarContainerIOS(
 }
 
 InfoBarContainerIOS::~InfoBarContainerIOS() {
+  delegate_ = nullptr;
   RemoveAllInfoBarsForDestruction();
 }
 
@@ -44,7 +45,7 @@ void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(
   // Otherwise, the infobar is being replaced by another one. Do not call the
   // delegate in this case, as the delegate will be updated when the new infobar
   // is added.
-  if (infobar->total_height() == 0)
+  if (infobar->total_height() == 0 && delegate_)
     delegate_->InfoBarContainerStateChanged(false);
 
   // TODO(rohitrao, jif): [Merge 239355] Upstream InfoBarContainer deletes the
