@@ -96,6 +96,8 @@ public:
     // get from flow thread coordinates to visual coordinates.
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit) const;
 
+    LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
+
     void updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height);
 
     // Add a content run, specified by its end position. A content run is appended at every

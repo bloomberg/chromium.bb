@@ -1185,6 +1185,7 @@ crbug.com/408123 fast/multicol/dynamic/remove-block-from-content-after-spanner.h
 crbug.com/408123 fast/multicol/dynamic/remove-spanner-in-content.html [ Skip ]
 crbug.com/408123 fast/multicol/dynamic/spanner-after-content-becomes-regular-block.html [ Skip ]
 crbug.com/408123 fast/multicol/dynamic/spanner-in-content-becomes-regular-block.html [ Skip ]
+crbug.com/408123 fast/multicol/event-offset-complex-tree.html [ Skip ]
 crbug.com/408123 fast/multicol/hit-test-translate-z.html [ Skip ]
 crbug.com/350853 fast/multicol/inline-children-crash.html [ Skip ]
 crbug.com/350853 fast/multicol/inline-getclientrects.html [ Skip ]

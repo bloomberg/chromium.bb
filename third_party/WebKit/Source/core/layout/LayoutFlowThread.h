@@ -117,6 +117,8 @@ public:
         return flowThreadPoint + columnOffset(flowThreadPoint);
     }
 
+    virtual LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const = 0;
+
     // Used to estimate the maximum height of the flow thread.
     static LayoutUnit maxLogicalHeight() { return LayoutUnit::max() / 2; }
 

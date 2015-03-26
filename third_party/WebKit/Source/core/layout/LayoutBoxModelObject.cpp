@@ -783,14 +783,21 @@ void LayoutBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
     if (!o)
         return;
 
-    if (o->isLayoutFlowThread())
-        transformState.move(o->columnOffset(LayoutPoint(transformState.mappedPoint())));
-
     o->mapAbsoluteToLocalPoint(mode, transformState);
 
     LayoutSize containerOffset = offsetFromContainer(o, LayoutPoint());
 
-    if (!style()->hasOutOfFlowPosition() && o->hasColumns()) {
+    if (o->isLayoutFlowThread()) {
+        // Descending into a flow thread. Convert to the local coordinate space, i.e. flow thread coordinates.
+        const LayoutFlowThread* flowThread = toLayoutFlowThread(o);
+        LayoutPoint visualPoint = LayoutPoint(transformState.mappedPoint());
+        transformState.move(visualPoint - flowThread->visualPointToFlowThreadPoint(visualPoint));
+        // |containerOffset| is also in visual coordinates. Convert to flow thread coordinates.
+        // TODO(mstensho): Wouldn't it be better add a parameter to instruct offsetFromContainer()
+        // to return flowthread coordinates in the first place? We're effectively performing two
+        // conversions here, when in fact none is needed.
+        containerOffset = toLayoutSize(flowThread->visualPointToFlowThreadPoint(toLayoutPoint(containerOffset)));
+    } else if (!style()->hasOutOfFlowPosition() && o->hasColumns()) {
         LayoutBlock* block = toLayoutBlock(o);
         LayoutPoint point(roundedLayoutPoint(transformState.mappedPoint()));
         point -= containerOffset;

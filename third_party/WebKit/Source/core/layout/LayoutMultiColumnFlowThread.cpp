@@ -202,6 +202,18 @@ bool LayoutMultiColumnFlowThread::needsNewWidth() const
     return newWidth != logicalWidth();
 }
 
+LayoutPoint LayoutMultiColumnFlowThread::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const
+{
+    LayoutUnit blockOffset = isHorizontalWritingMode() ? visualPoint.y() : visualPoint.x();
+    const LayoutMultiColumnSet* columnSet = nullptr;
+    for (const LayoutMultiColumnSet* candidate = firstMultiColumnSet(); candidate; candidate = candidate->nextSiblingMultiColumnSet()) {
+        columnSet = candidate;
+        if (candidate->logicalBottom() > blockOffset)
+            break;
+    }
+    return columnSet ? columnSet->visualPointToFlowThreadPoint(toLayoutPoint(visualPoint + location() - columnSet->location())) : visualPoint;
+}
+
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit offset) const
 {
     if (m_lastSetWorkedOn) {

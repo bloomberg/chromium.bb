@@ -167,6 +167,8 @@ public:
     // Do we need to set a new width and lay out?
     virtual bool needsNewWidth() const;
 
+    virtual LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const override;
+
     virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override final;
 
     void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);

@@ -123,6 +123,12 @@ LayoutSize LayoutMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockO
     return row.offsetFromColumnSet() + row.flowThreadTranslationAtOffset(blockOffset);
 }
 
+LayoutPoint LayoutMultiColumnSet::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const
+{
+    const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtVisualPoint(visualPoint);
+    return row.visualPointToFlowThreadPoint(visualPoint - row.offsetFromColumnSet());
+}
+
 void LayoutMultiColumnSet::updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height)
 {
     fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).updateMinimumColumnHeight(height);
