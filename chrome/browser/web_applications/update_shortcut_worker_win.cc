@@ -192,7 +192,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
 
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info_.title);
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
+  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info_.favicon, true);
 
   // Update existing shortcuts' description, icon and app id.
   CheckExistingShortcuts();

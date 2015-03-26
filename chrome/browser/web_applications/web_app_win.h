@@ -37,8 +37,15 @@ void UpdateRelaunchDetailsForApp(Profile* profile,
 
 namespace internals {
 
+// Saves |image| to |icon_file| if the file is outdated. Returns true if
+// icon_file is up to date or successfully updated.
+// If |refresh_shell_icon_cache| is true, the shell's icon cache will be
+// refreshed, ensuring the correct icon is displayed, but causing a flicker.
+// Refreshing the icon cache is not necessary on shortcut creation as the shell
+// will be notified when the shortcut is created.
 bool CheckAndSaveIcon(const base::FilePath& icon_file,
-                      const gfx::ImageFamily& image);
+                      const gfx::ImageFamily& image,
+                      bool refresh_shell_icon_cache);
 
 base::FilePath GetIconFilePath(const base::FilePath& web_app_path,
                                const base::string16& title);
