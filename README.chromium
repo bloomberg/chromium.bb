@@ -262,3 +262,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
    - patches/cmemory.patch
    - upstream bug (fixed in the upstream 55 RC)
      http://www.icu-project.org/trac/ticket/11538
+
+14. Fix a bug found by 'stack' (static analysis tool)
+   - patches/uloc.patch
+   - upstream bug
+     http://www.icu-project.org/trac/ticket/11602
+

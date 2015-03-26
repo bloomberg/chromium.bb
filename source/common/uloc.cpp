@@ -694,7 +694,7 @@ _getKeywords(const char *localeID,
             }
 
             /* Premature end or zero-length value */
-            if (!equalSign || equalSign == semicolon) {
+            if (!*equalSign || equalSign == semicolon) {
                 *status = U_INVALID_FORMAT_ERROR;
                 return 0;
             }
