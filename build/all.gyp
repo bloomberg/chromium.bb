@@ -1161,14 +1161,10 @@
         ['branding=="Chrome"', {
           'targets': [
             {
-              'target_name': 'chrome_official_builder',
+              'target_name': 'chrome_official_builder_no_unittests',
               'type': 'none',
               'dependencies': [
-                '../base/base.gyp:base_unittests',
                 '../chrome/chrome.gyp:app_installer',
-                '../chrome/chrome.gyp:app_installer_unittests',
-                '../chrome/chrome.gyp:browser_tests',
-                '../chrome/chrome.gyp:sync_integration_tests',
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:pack_policy_templates',
@@ -1176,19 +1172,8 @@
                 '../cloud_print/cloud_print.gyp:cloud_print',
                 '../courgette/courgette.gyp:courgette',
                 '../courgette/courgette.gyp:courgette64',
-                '../ipc/ipc.gyp:ipc_tests',
-                '../media/media.gyp:media_unittests',
-                '../net/net.gyp:net_unittests_run',
-                '../printing/printing.gyp:printing_unittests',
                 '../remoting/remoting.gyp:remoting_webapp',
-                '../sql/sql.gyp:sql_unittests',
-                '../sync/sync.gyp:sync_unit_tests',
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
-                '../ui/base/ui_base_tests.gyp:ui_base_unittests',
-                '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-                '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
-                '../ui/views/views.gyp:views_unittests',
-                '../url/url.gyp:url_unittests',
               ],
               'conditions': [
                 ['target_arch=="ia32"', {
@@ -1203,6 +1188,27 @@
                   ],
                 }], # component != "shared_library"
               ]
+            }, {
+              'target_name': 'chrome_official_builder',
+              'type': 'none',
+              'dependencies': [
+	        'chrome_official_builder_no_unittests',
+                '../base/base.gyp:base_unittests',
+		'../chrome/chrome.gyp:app_installer_unittests',
+                '../chrome/chrome.gyp:browser_tests',
+                '../chrome/chrome.gyp:sync_integration_tests',
+                '../ipc/ipc.gyp:ipc_tests',
+                '../media/media.gyp:media_unittests',
+                '../net/net.gyp:net_unittests_run',
+                '../printing/printing.gyp:printing_unittests',
+                '../sql/sql.gyp:sql_unittests',
+                '../sync/sync.gyp:sync_unit_tests',
+                '../ui/base/ui_base_tests.gyp:ui_base_unittests',
+                '../ui/gfx/gfx_tests.gyp:gfx_unittests',
+                '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
+                '../ui/views/views.gyp:views_unittests',
+                '../url/url.gyp:url_unittests',
+              ],
             },
           ], # targets
         }], # branding=="Chrome"
