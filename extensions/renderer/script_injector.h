@@ -49,7 +49,7 @@ class ScriptInjector {
   // Returns true if the script is running inside a user gesture.
   virtual bool IsUserGesture() const = 0;
 
-  // Returns ture if the script expects results.
+  // Returns true if the script expects results.
   virtual bool ExpectsResults() const = 0;
 
   // Returns true if the script should inject JS source at the given

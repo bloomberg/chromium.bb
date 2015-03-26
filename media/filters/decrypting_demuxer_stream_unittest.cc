@@ -29,7 +29,7 @@ static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
 static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 
 // Create a fake non-empty buffer in an encrypted stream. When |is_clear| is
-// ture, the buffer is not encrypted (signaled by an empty IV).
+// true, the buffer is not encrypted (signaled by an empty IV).
 static scoped_refptr<DecoderBuffer> CreateFakeEncryptedStreamBuffer(
     bool is_clear) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kFakeBufferSize));

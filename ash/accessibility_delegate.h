@@ -44,7 +44,7 @@ class ASH_EXPORT AccessibilityDelegate {
   // Invoked to enable Large Cursor.
   virtual void SetLargeCursorEnabled(bool enabled) = 0;
 
-  // Returns ture if Large Cursor is enabled.
+  // Returns true if Large Cursor is enabled.
   virtual bool IsLargeCursorEnabled() const = 0;
 
   // Invoked to enable autoclick.
