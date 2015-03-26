@@ -25,6 +25,7 @@ PresentationServiceImpl::PresentationServiceImpl(
     : WebContentsObserver(web_contents),
       render_frame_host_(render_frame_host),
       delegate_(delegate),
+      next_request_session_id_(0),
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(web_contents);
@@ -133,10 +134,7 @@ void PresentationServiceImpl::StartSession(
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "StartSession";
   if (!delegate_) {
-    callback.Run(
-        presentation::PresentationSessionInfoPtr(),
-        presentation::PresentationError::From(
-            PresentationError(PRESENTATION_ERROR_UNKNOWN, "")));
+    InvokeNewSessionMojoCallbackWithError(callback);
     return;
   }
 
@@ -152,23 +150,20 @@ void PresentationServiceImpl::JoinSession(
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "JoinSession";
   if (!delegate_) {
-    callback.Run(
-        presentation::PresentationSessionInfoPtr(),
-        presentation::PresentationError::From(
-            PresentationError(PRESENTATION_ERROR_UNKNOWN, "")));
+    InvokeNewSessionMojoCallbackWithError(callback);
     return;
   }
 
+  int request_session_id = RegisterNewSessionCallback(callback);
   delegate_->JoinSession(
       render_frame_host_->GetProcess()->GetID(),
       render_frame_host_->GetRoutingID(),
       presentation_url,
       presentation_id,
-      // TODO(imcheng): These callbacks may be dropped. http://crbug.com/468575
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
-                 weak_factory_.GetWeakPtr(), false, callback),
+                 weak_factory_.GetWeakPtr(), false, request_session_id),
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
-                 weak_factory_.GetWeakPtr(), false, callback));
+                 weak_factory_.GetWeakPtr(), false, request_session_id));
 }
 
 void PresentationServiceImpl::HandleQueuedStartSessionRequests() {
@@ -183,27 +178,36 @@ void PresentationServiceImpl::HandleQueuedStartSessionRequests() {
   }
 }
 
+int PresentationServiceImpl::RegisterNewSessionCallback(
+    const NewSessionMojoCallback& callback) {
+  ++next_request_session_id_;
+  pending_session_cbs_[next_request_session_id_].reset(
+      new NewSessionMojoCallback(callback));
+  return next_request_session_id_;
+}
+
 void PresentationServiceImpl::DoStartSession(
     const std::string& presentation_url,
     const std::string& presentation_id,
     const NewSessionMojoCallback& callback) {
+  int request_session_id = RegisterNewSessionCallback(callback);
   delegate_->StartSession(
       render_frame_host_->GetProcess()->GetID(),
       render_frame_host_->GetRoutingID(),
       presentation_url,
       presentation_id,
-      // TODO(imcheng): These callbacks may be dropped. http://crbug.com/468575
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
-                 weak_factory_.GetWeakPtr(), true, callback),
+                 weak_factory_.GetWeakPtr(), true, request_session_id),
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
-                 weak_factory_.GetWeakPtr(), true, callback));
+                 weak_factory_.GetWeakPtr(), true, request_session_id));
 }
 
 void PresentationServiceImpl::OnStartOrJoinSessionSucceeded(
     bool is_start_session,
-    const NewSessionMojoCallback& callback,
+    int request_session_id,
     const PresentationSessionInfo& session_info) {
-  callback.Run(
+  RunAndEraseNewSessionMojoCallback(
+      request_session_id,
       presentation::PresentationSessionInfo::From(session_info),
       presentation::PresentationErrorPtr());
   if (is_start_session)
@@ -212,13 +216,27 @@ void PresentationServiceImpl::OnStartOrJoinSessionSucceeded(
 
 void PresentationServiceImpl::OnStartOrJoinSessionError(
     bool is_start_session,
-    const NewSessionMojoCallback& callback,
+    int request_session_id,
     const PresentationError& error) {
-  callback.Run(
+  RunAndEraseNewSessionMojoCallback(
+      request_session_id,
       presentation::PresentationSessionInfoPtr(),
       presentation::PresentationError::From(error));
   if (is_start_session)
     HandleQueuedStartSessionRequests();
+}
+
+void PresentationServiceImpl::RunAndEraseNewSessionMojoCallback(
+    int request_session_id,
+    presentation::PresentationSessionInfoPtr session,
+    presentation::PresentationErrorPtr error) {
+  auto it = pending_session_cbs_.find(request_session_id);
+  if (it == pending_session_cbs_.end())
+    return;
+
+  DCHECK(it->second.get());
+  it->second->Run(session.Pass(), error.Pass());
+  pending_session_cbs_.erase(it);
 }
 
 void PresentationServiceImpl::DoSetDefaultPresentationUrl(
@@ -332,12 +350,26 @@ void PresentationServiceImpl::Reset() {
 
   default_presentation_url_.clear();
   default_presentation_id_.clear();
-  for (const auto& context : availability_contexts_) {
-    context.second->OnScreenAvailabilityChanged(false);
+  for (const auto& context_entry : availability_contexts_) {
+    context_entry.second->OnScreenAvailabilityChanged(false);
   }
   availability_contexts_.clear();
-  // TODO(imcheng): This may drop callbacks. See http://crbug.com/468575.
+  for (auto& request_ptr : queued_start_session_requests_) {
+    InvokeNewSessionMojoCallbackWithError(request_ptr->callback);
+  }
   queued_start_session_requests_.clear();
+  for (auto& pending_entry : pending_session_cbs_) {
+    InvokeNewSessionMojoCallbackWithError(*pending_entry.second);
+  }
+  pending_session_cbs_.clear();
+}
+
+void PresentationServiceImpl::InvokeNewSessionMojoCallbackWithError(
+    const NewSessionMojoCallback& callback) {
+  callback.Run(
+        presentation::PresentationSessionInfoPtr(),
+        presentation::PresentationError::From(
+            PresentationError(PRESENTATION_ERROR_UNKNOWN, "Internal error")));
 }
 
 void PresentationServiceImpl::OnDelegateDestroyed() {

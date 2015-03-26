@@ -186,6 +186,14 @@ class CONTENT_EXPORT PresentationServiceImpl
   // PresentationServiceDelegate::Observer
   void OnDelegateDestroyed() override;
 
+  // Finds the callback from |pending_session_cbs_| using |request_session_id|.
+  // If it exists, invoke it with |session| and |error|, then erase it from
+  // |pending_session_cbs_|.
+  void RunAndEraseNewSessionMojoCallback(
+      int request_session_id,
+      presentation::PresentationSessionInfoPtr session,
+      presentation::PresentationErrorPtr error);
+
   // Sets |default_presentation_url_| to |presentation_url| and informs the
   // delegate of new default presentation URL and ID.
   void DoSetDefaultPresentationUrl(
@@ -201,11 +209,11 @@ class CONTENT_EXPORT PresentationServiceImpl
   // invocation.
   void OnStartOrJoinSessionSucceeded(
       bool is_start_session,
-      const NewSessionMojoCallback& callback,
+      int request_session_id,
       const PresentationSessionInfo& session_info);
   void OnStartOrJoinSessionError(
       bool is_start_session,
-      const NewSessionMojoCallback& callback,
+      int request_session_id,
       const PresentationError& error);
 
   // Requests delegate to start a session.
@@ -219,6 +227,14 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Checks if there are any queued StartSession requests and if so, executes
   // the first one in the queue.
   void HandleQueuedStartSessionRequests();
+
+  // Associates |callback| with a unique request ID and stores it in a map.
+  int RegisterNewSessionCallback(
+    const NewSessionMojoCallback& callback);
+
+  // Invokes |callback| with an error.
+  void InvokeNewSessionMojoCallbackWithError(
+      const NewSessionMojoCallback& callback);
 
   // Gets the ScreenAvailabilityContext for |presentation_url|, or creates one
   // if it does not exist.
@@ -239,6 +255,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   // StartSession requests are queued here. When a request has been processed,
   // it is removed from head of the queue.
   std::deque<linked_ptr<StartSessionRequest>> queued_start_session_requests_;
+
+  int next_request_session_id_;
+  base::hash_map<int, linked_ptr<NewSessionMojoCallback>> pending_session_cbs_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PresentationServiceImpl> weak_factory_;
