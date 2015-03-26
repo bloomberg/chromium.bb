@@ -33,6 +33,8 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/mediastream/RTCIceCandidateInit.h"
 
@@ -99,6 +101,15 @@ void RTCIceCandidate::setSdpMid(String sdpMid)
 void RTCIceCandidate::setSdpMLineIndex(unsigned short sdpMLineIndex)
 {
     m_webCandidate.setSdpMLineIndex(sdpMLineIndex);
+}
+
+ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* scriptState)
+{
+    V8ObjectBuilder result(scriptState);
+    result.addString("candidate", m_webCandidate.candidate());
+    result.addString("sdpMid", m_webCandidate.sdpMid());
+    result.addNumber("sdpMLineIndex", m_webCandidate.sdpMLineIndex());
+    return result.scriptValue();
 }
 
 } // namespace blink

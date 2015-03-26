@@ -42,5 +42,6 @@ enum RTCSdpType {
 ] interface RTCSessionDescription {
     attribute RTCSdpType? type;
     attribute DOMString? sdp;
+    serializer = {attribute};
 };
 

@@ -36,5 +36,6 @@
     [TreatNullAs=NullString] attribute DOMString candidate;
     [TreatNullAs=NullString] attribute DOMString sdpMid;
     attribute unsigned short sdpMLineIndex;
+    serializer = {attribute};
 };
 

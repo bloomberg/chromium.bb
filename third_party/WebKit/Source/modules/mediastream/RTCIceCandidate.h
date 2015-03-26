@@ -39,6 +39,8 @@ namespace blink {
 
 class RTCIceCandidateInit;
 class ExceptionState;
+class ScriptState;
+class ScriptValue;
 
 class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -52,6 +54,8 @@ public:
     void setSdpMid(String);
     unsigned short sdpMLineIndex() const;
     void setSdpMLineIndex(unsigned short);
+
+    ScriptValue toJSONForBinding(ScriptState*);
 
     WebRTCICECandidate webCandidate() const;
 

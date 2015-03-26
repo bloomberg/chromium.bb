@@ -3657,6 +3657,7 @@ interface RTCIceCandidate
     getter sdpMLineIndex
     getter sdpMid
     method constructor
+    method toJSON
     setter candidate
     setter sdpMLineIndex
     setter sdpMid
@@ -3664,6 +3665,7 @@ interface RTCSessionDescription
     getter sdp
     getter type
     method constructor
+    method toJSON
     setter sdp
     setter type
 interface RadioNodeList

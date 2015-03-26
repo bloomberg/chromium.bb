@@ -16,7 +16,7 @@ shouldBeEqualToString('candidate.candidate', 'foo');
 shouldBeEqualToString('candidate.sdpMid', 'bar');
 shouldBe('candidate.sdpMLineIndex', '6');
 
-shouldNotThrow('initializer = JSON.parse(stringifyDOMObject(candidate));');
+shouldNotThrow('initializer = JSON.parse(JSON.stringify(candidate));');
 
 shouldNotThrow('candidate = new RTCIceCandidate(initializer);');
 shouldBeEqualToString('candidate.candidate', 'foo');

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/mediastream/RTCSessionDescriptionInit.h"
 
 namespace blink {
@@ -76,6 +78,20 @@ String RTCSessionDescription::sdp()
 void RTCSessionDescription::setSdp(const String& sdp)
 {
     m_webSessionDescription.setSDP(sdp);
+}
+
+ScriptValue RTCSessionDescription::toJSONForBinding(ScriptState* scriptState)
+{
+    V8ObjectBuilder result(scriptState);
+    if (type().isNull())
+        result.addNull("type");
+    else
+        result.addString("type", type());
+    if (sdp().isNull())
+        result.addNull("sdp");
+    else
+        result.addString("sdp", sdp());
+    return result.scriptValue();
 }
 
 WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
