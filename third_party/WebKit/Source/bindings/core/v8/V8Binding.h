@@ -400,7 +400,7 @@ inline int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, Intege
 {
     // Fast case. The value is already a 32-bit integer.
     if (value->IsInt32())
-        return value->Int32Value();
+        return value.As<v8::Int32>()->Value();
     return toInt32Slow(isolate, value, configuration, exceptionState);
 }
 
@@ -412,11 +412,11 @@ inline uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, Inte
 {
     // Fast case. The value is already a 32-bit unsigned integer.
     if (value->IsUint32())
-        return value->Uint32Value();
+        return value.As<v8::Uint32>()->Value();
 
     // Fast case. The value is a 32-bit signed integer with NormalConversion configuration.
     if (value->IsInt32() && configuration == NormalConversion)
-        return value->Int32Value();
+        return value.As<v8::Int32>()->Value();
 
     return toUInt32Slow(isolate, value, configuration, exceptionState);
 }
@@ -432,7 +432,7 @@ inline int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, Intege
 
     // Fast case. The value is a 32-bit integer.
     if (value->IsInt32())
-        return value->Int32Value();
+        return value.As<v8::Int32>()->Value();
 
     return toInt64Slow(isolate, value, configuration, exceptionState);
 }
@@ -445,10 +445,10 @@ inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, Inte
 {
     // Fast case. The value is a 32-bit unsigned integer.
     if (value->IsUint32())
-        return value->Uint32Value();
+        return value.As<v8::Uint32>()->Value();
 
     if (value->IsInt32() && configuration == NormalConversion)
-        return value->Int32Value();
+        return value.As<v8::Int32>()->Value();
 
     return toUInt64Slow(isolate, value, configuration, exceptionState);
 }
@@ -458,7 +458,7 @@ CORE_EXPORT double toDoubleSlow(v8::Isolate*, v8::Handle<v8::Value>, ExceptionSt
 inline double toDouble(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     if (value->IsNumber())
-        return value->NumberValue();
+        return value.As<v8::Number>()->Value();
     return toDoubleSlow(isolate, value, exceptionState);
 }
 
@@ -488,9 +488,9 @@ inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 inline double toCoreDate(v8::Isolate* isolate, v8::Handle<v8::Value> object)
 {
     if (object->IsDate())
-        return v8::Handle<v8::Date>::Cast(object)->ValueOf();
+        return object.As<v8::Date>()->ValueOf();
     if (object->IsNumber())
-        return object->NumberValue();
+        return object.As<v8::Number>()->Value();
     return std::numeric_limits<double>::quiet_NaN();
 }
 

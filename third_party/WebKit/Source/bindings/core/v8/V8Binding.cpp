@@ -164,7 +164,7 @@ static inline T toSmallerInt(v8::Isolate* isolate, v8::Handle<v8::Value> value, 
 
     // Fast case. The value is already a 32-bit integer in the right range.
     if (value->IsInt32()) {
-        int32_t result = value->Int32Value();
+        int32_t result = value.As<v8::Int32>()->Value();
         if (result >= LimitsTrait::minValue && result <= LimitsTrait::maxValue)
             return static_cast<T>(result);
         if (configuration == EnforceRange) {
@@ -183,8 +183,7 @@ static inline T toSmallerInt(v8::Isolate* isolate, v8::Handle<v8::Value> value, 
     } else {
         // Can the value be converted to a number?
         v8::TryCatch block(isolate);
-        numberObject = value->ToNumber(isolate);
-        if (block.HasCaught()) {
+        if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject, block)) {
             exceptionState.rethrowV8Exception(block.Exception());
             return 0;
         }
@@ -217,7 +216,7 @@ static inline T toSmallerUInt(v8::Isolate* isolate, v8::Handle<v8::Value> value,
 
     // Fast case. The value is a 32-bit signed integer - possibly positive?
     if (value->IsInt32()) {
-        int32_t result = value->Int32Value();
+        int32_t result = value.As<v8::Int32>()->Value();
         if (result >= 0 && result <= LimitsTrait::maxValue)
             return static_cast<T>(result);
         if (configuration == EnforceRange) {
@@ -235,8 +234,7 @@ static inline T toSmallerUInt(v8::Isolate* isolate, v8::Handle<v8::Value> value,
     } else {
         // Can the value be converted to a number?
         v8::TryCatch block(isolate);
-        numberObject = value->ToNumber(isolate);
-        if (block.HasCaught()) {
+        if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject, block)) {
             exceptionState.rethrowV8Exception(block.Exception());
             return 0;
         }
@@ -286,8 +284,8 @@ int32_t toInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerCo
     ASSERT(!value->IsInt32());
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject = value->ToNumber(isolate);
-    if (block.HasCaught()) {
+    v8::Local<v8::Number> numberObject;
+    if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject, block)) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
@@ -307,7 +305,12 @@ int32_t toInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerCo
     if (std::isinf(numberValue))
         return 0;
 
-    return numberObject->Int32Value();
+    int32_t result;
+    if (!v8Call(numberObject->Int32Value(isolate->GetCurrentContext()), result, block)) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
+    }
+    return result;
 }
 
 uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
@@ -315,7 +318,7 @@ uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
     ASSERT(!value->IsUint32());
     if (value->IsInt32()) {
         ASSERT(configuration != NormalConversion);
-        int32_t result = value->Int32Value();
+        int32_t result = value.As<v8::Int32>()->Value();
         if (result >= 0)
             return result;
         if (configuration == EnforceRange) {
@@ -328,8 +331,8 @@ uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
 
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject = value->ToNumber(isolate);
-    if (block.HasCaught()) {
+    v8::Local<v8::Number> numberObject;
+    if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject, block)) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
@@ -349,7 +352,12 @@ uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
     if (std::isinf(numberValue))
         return 0;
 
-    return numberObject->Uint32Value();
+    uint32_t result;
+    if (!v8Call(numberObject->Uint32Value(isolate->GetCurrentContext()), result, block)) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
+    }
+    return result;
 }
 
 int64_t toInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
@@ -359,8 +367,7 @@ int64_t toInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerCo
     v8::Local<v8::Number> numberObject;
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    numberObject = value->ToNumber(isolate);
-    if (block.HasCaught()) {
+    if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject, block)) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
@@ -385,7 +392,7 @@ uint64_t toUInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
     ASSERT(!value->IsUint32());
     if (value->IsInt32()) {
         ASSERT(configuration != NormalConversion);
-        int32_t result = value->Int32Value();
+        int32_t result = value.As<v8::Int32>()->Value();
         if (result >= 0)
             return result;
         if (configuration == EnforceRange) {
@@ -399,8 +406,7 @@ uint64_t toUInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
     v8::Local<v8::Number> numberObject;
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    numberObject = value->ToNumber(isolate);
-    if (block.HasCaught()) {
+    if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject, block)) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
@@ -442,8 +448,8 @@ double toDoubleSlow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Exception
 {
     ASSERT(!value->IsNumber());
     v8::TryCatch block(isolate);
-    double doubleValue = value->NumberValue();
-    if (block.HasCaught()) {
+    double doubleValue;
+    if (!v8Call(value->NumberValue(isolate->GetCurrentContext()), doubleValue, block)) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
@@ -478,8 +484,7 @@ String toByteString(v8::Isolate* isolate, v8::Handle<v8::Value> value, Exception
         stringObject = value.As<v8::String>();
     } else {
         v8::TryCatch block(isolate);
-        stringObject = value->ToString(isolate);
-        if (block.HasCaught()) {
+        if (!v8Call(value->ToString(isolate->GetCurrentContext()), stringObject, block)) {
             exceptionState.rethrowV8Exception(block.Exception());
             return String();
         }
@@ -613,8 +618,7 @@ String toUSVString(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionS
         stringObject = value.As<v8::String>();
     } else {
         v8::TryCatch block(isolate);
-        stringObject = value->ToString(isolate);
-        if (block.HasCaught()) {
+        if (!v8Call(value->ToString(isolate->GetCurrentContext()), stringObject, block)) {
             exceptionState.rethrowV8Exception(block.Exception());
             return String();
         }

@@ -78,14 +78,6 @@ namespace blink {
         return retVal;
 
 template <typename T>
-inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable, v8::TryCatch& tryCatch)
-{
-    bool success = maybeLocal.ToLocal(&outVariable);
-    ASSERT(success || tryCatch.HasCaught());
-    return success;
-}
-
-template <typename T>
 inline bool getValueFromMaybe(v8::Maybe<T> maybe, T& outVariable)
 {
     if (maybe.IsNothing())
@@ -98,6 +90,22 @@ inline bool v8CallBoolean(v8::Maybe<bool> maybe)
 {
     bool result;
     return getValueFromMaybe(maybe, result) && result;
+}
+
+template <typename T>
+inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch)
+{
+    bool success = getValueFromMaybe(maybe, outVariable);
+    ASSERT(success || tryCatch.HasCaught());
+    return success;
+}
+
+template <typename T>
+inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable, v8::TryCatch& tryCatch)
+{
+    bool success = maybeLocal.ToLocal(&outVariable);
+    ASSERT(success || tryCatch.HasCaught());
+    return success;
 }
 
 // The last "else" is to avoid dangling else problem.
