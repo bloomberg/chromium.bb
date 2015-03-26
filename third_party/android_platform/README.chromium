@@ -15,6 +15,9 @@ glue layer against. The AOSP framework is built from the Android release tag
 after which it is named, and the jar can be built by invoking make on the
 android_system_stubs target.
 
+Also includes a ported copy of the Android relocation packing tool source,
+along with the files required to build it in the chromium tree.
+
 Local Modifications:
 Only picked the few scripts needed by chrome.
 Updated output directories to use environment variable.
@@ -24,3 +27,10 @@ Added support for parsing LOG(FATAL) and DCHECK errors and their
 Added support for finding symbols when library is loaded directly from the APK.
 Changed the toolchain to remove references to 4.6 toolchains.
 Added support for arch=x64 as an alias to arch=x86_64
+
+Android relocation packing tool details:
+    Copy sources from AOSP bionic/tools/relocation_packer
+    Remove scripts that regenerate golden test data (not relevant here)
+    Create a nativehelper/ScopedFd.h to satisfy inclusion from main.cc
+    Create gyp build
+    Create gn build (currently packer only; no unit tests)
