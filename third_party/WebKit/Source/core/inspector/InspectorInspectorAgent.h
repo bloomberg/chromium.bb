@@ -58,11 +58,9 @@ public:
     void enable(ErrorString*) override;
 
     // InspectorAgent overrides.
-    void init() override;
     void disable(ErrorString*) override;
-    void domContentLoadedEventFired(LocalFrame*);
-
-    bool hasFrontend() const { return frontend(); }
+    void didCommitLoadForLocalFrame(LocalFrame*) override;
+    void restore() override;
 
     // Generic code called from custom implementations.
     void evaluateForTestInFrontend(long testCallId, const String& script);

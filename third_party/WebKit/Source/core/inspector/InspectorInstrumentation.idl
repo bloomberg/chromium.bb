@@ -296,7 +296,7 @@ interface InspectorInstrumentation {
     [PageDebugger]
     void didStartProvisionalLoad([Keep] LocalFrame*);
 
-    [Inspector, DOM, Page]
+    [DOM, Page]
     void domContentLoadedEventFired([Keep] LocalFrame*);
 
     [Page]

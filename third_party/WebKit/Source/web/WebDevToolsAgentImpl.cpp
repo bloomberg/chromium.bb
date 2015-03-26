@@ -704,8 +704,7 @@ void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
 
 void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& script)
 {
-    if (InspectorInspectorAgent* inspectorAgent = m_instrumentingAgents->inspectorInspectorAgent())
-        inspectorAgent->evaluateForTestInFrontend(callId, script);
+    m_inspectorAgent->evaluateForTestInFrontend(callId, script);
 }
 
 void WebDevToolsAgentImpl::flushPendingProtocolNotifications()

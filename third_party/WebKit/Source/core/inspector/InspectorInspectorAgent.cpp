@@ -39,7 +39,6 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -59,9 +58,6 @@ InspectorInspectorAgent::InspectorInspectorAgent(InjectedScriptManager* injected
 
 InspectorInspectorAgent::~InspectorInspectorAgent()
 {
-#if !ENABLE(OILPAN)
-    m_instrumentingAgents->setInspectorInspectorAgent(nullptr);
-#endif
 }
 
 DEFINE_TRACE(InspectorInspectorAgent)
@@ -70,15 +66,9 @@ DEFINE_TRACE(InspectorInspectorAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-void InspectorInspectorAgent::init()
-{
-    m_instrumentingAgents->setInspectorInspectorAgent(this);
-}
-
 void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
-
     for (Vector<pair<long, String>>::iterator it = m_pendingEvaluateTestCommands.begin(); frontend() && it != m_pendingEvaluateTestCommands.end(); ++it)
         frontend()->evaluateForTestInFrontend(static_cast<int>((*it).first), (*it).second);
     m_pendingEvaluateTestCommands.clear();
@@ -92,12 +82,20 @@ void InspectorInspectorAgent::disable(ErrorString*)
     m_injectedScriptManager->discardInjectedScripts();
 }
 
-void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)
+void InspectorInspectorAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
     if (frame != frame->localFrameRoot())
         return;
 
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
+}
+
+void InspectorInspectorAgent::restore()
+{
+    if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled)) {
+        ErrorString error;
+        enable(&error);
+    }
 }
 
 void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const String& script)

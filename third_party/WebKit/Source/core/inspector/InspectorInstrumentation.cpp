@@ -37,7 +37,6 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorInspectorAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -109,6 +108,7 @@ void continueWithPolicyIgnoreImpl(LocalFrame* frame, DocumentLoader* loader, uns
 
 void willDestroyResourceImpl(Resource* cachedResource)
 {
+    ASSERT(isMainThread());
     if (!instrumentingAgentsSet)
         return;
     for (InstrumentingAgents* instrumentingAgents: *instrumentingAgentsSet) {
@@ -119,9 +119,10 @@ void willDestroyResourceImpl(Resource* cachedResource)
 
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 {
-    if (InspectorInspectorAgent* inspectorAgent = instrumentingAgents->inspectorInspectorAgent())
-        return inspectorAgent->hasFrontend();
-    return false;
+    ASSERT(isMainThread());
+    if (!instrumentingAgentsSet)
+        return false;
+    return instrumentingAgentsSet->contains(instrumentingAgents);
 }
 
 void appendAsyncCallStack(ExecutionContext* executionContext, ScriptCallStack* callStack)
@@ -148,6 +149,7 @@ bool consoleAgentEnabled(ExecutionContext* executionContext)
 
 void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
 {
+    ASSERT(isMainThread());
     if (!instrumentingAgentsSet)
         instrumentingAgentsSet = new HashSet<InstrumentingAgents*>();
     instrumentingAgentsSet->add(instrumentingAgents);
@@ -155,6 +157,7 @@ void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
 
 void unregisterInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
 {
+    ASSERT(isMainThread());
     if (!instrumentingAgentsSet)
         return;
     instrumentingAgentsSet->remove(instrumentingAgents);
