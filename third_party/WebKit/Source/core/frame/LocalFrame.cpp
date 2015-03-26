@@ -413,16 +413,6 @@ LocalFrame* LocalFrame::localFrameRoot()
     return curFrame;
 }
 
-InstrumentingAgents* LocalFrame::instrumentingAgents()
-{
-    return localFrameRoot()->m_instrumentingAgents.get();
-}
-
-void LocalFrame::setInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
-{
-    m_instrumentingAgents = instrumentingAgents;
-}
-
 bool LocalFrame::inScope(TreeScope* scope) const
 {
     ASSERT(scope);
@@ -786,10 +776,13 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
-    , m_instrumentingAgents(nullptr)
     , m_shouldSendDPRHint(false)
     , m_shouldSendRWHint(false)
 {
+    if (isLocalRoot())
+        m_instrumentingAgents = InstrumentingAgents::create();
+    else
+        m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
 }
 
 void LocalFrame::detachView()

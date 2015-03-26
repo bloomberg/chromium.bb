@@ -123,8 +123,7 @@ namespace blink {
         // should be updated to avoid storing things on the main frame.
         LocalFrame* localFrameRoot();
 
-        InstrumentingAgents* instrumentingAgents();
-        void setInstrumentingAgents(InstrumentingAgents*);
+        InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
