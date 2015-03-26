@@ -293,10 +293,10 @@ void RtcDataChannelHandler::OnMessage(scoped_ptr<webrtc::DataBuffer> buffer) {
 
   if (buffer->binary) {
     webkit_client_->didReceiveRawData(buffer->data.data(),
-                                      buffer->data.length());
+                                      buffer->data.size());
   } else {
     base::string16 utf16;
-    if (!base::UTF8ToUTF16(buffer->data.data(), buffer->data.length(),
+    if (!base::UTF8ToUTF16(buffer->data.data(), buffer->data.size(),
                            &utf16)) {
       LOG(ERROR) << "Failed convert received data to UTF16";
       return;
