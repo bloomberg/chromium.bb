@@ -43,6 +43,7 @@ class CC_EXPORT RenderingStatsInstrumentation {
   void IncrementFrameCount(int64 count);
   void AddVisibleContentArea(int64 area);
   void AddApproximatedVisibleContentArea(int64 area);
+  void AddCheckerboardedVisibleContentArea(int64 area);
   void AddDrawDuration(base::TimeDelta draw_duration,
                        base::TimeDelta draw_duration_estimate);
   void AddBeginMainFrameToCommitDuration(

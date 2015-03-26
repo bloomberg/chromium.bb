@@ -44,6 +44,7 @@ struct CC_EXPORT RenderingStats {
   int64 frame_count;
   int64 visible_content_area;
   int64 approximated_visible_content_area;
+  int64 checkerboarded_visible_content_area;
 
   TimeDeltaList draw_duration;
   TimeDeltaList draw_duration_estimate;

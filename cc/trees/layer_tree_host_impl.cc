@@ -844,6 +844,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         append_quads_data.visible_content_area);
     rendering_stats_instrumentation_->AddApproximatedVisibleContentArea(
         append_quads_data.approximated_visible_content_area);
+    rendering_stats_instrumentation_->AddCheckerboardedVisibleContentArea(
+        append_quads_data.checkerboarded_visible_content_area);
 
     num_missing_tiles += append_quads_data.num_missing_tiles;
     num_incomplete_tiles += append_quads_data.num_incomplete_tiles;

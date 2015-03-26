@@ -37,7 +37,8 @@ base::TimeDelta RenderingStats::TimeDeltaList::GetLastTimeDelta() const {
 RenderingStats::RenderingStats()
     : frame_count(0),
       visible_content_area(0),
-      approximated_visible_content_area(0) {
+      approximated_visible_content_area(0),
+      checkerboarded_visible_content_area(0) {
 }
 
 RenderingStats::~RenderingStats() {
@@ -51,6 +52,8 @@ RenderingStats::AsTraceableData() const {
   record_data->SetInteger("visible_content_area", visible_content_area);
   record_data->SetInteger("approximated_visible_content_area",
                           approximated_visible_content_area);
+  record_data->SetInteger("checkerboarded_visible_content_area",
+                          checkerboarded_visible_content_area);
   draw_duration.AddToTracedValue("draw_duration_ms", record_data.get());
 
   draw_duration_estimate.AddToTracedValue("draw_duration_estimate_ms",
@@ -74,6 +77,8 @@ void RenderingStats::Add(const RenderingStats& other) {
   frame_count += other.frame_count;
   visible_content_area += other.visible_content_area;
   approximated_visible_content_area += other.approximated_visible_content_area;
+  checkerboarded_visible_content_area +=
+      other.checkerboarded_visible_content_area;
 
   draw_duration.Add(other.draw_duration);
   draw_duration_estimate.Add(other.draw_duration_estimate);

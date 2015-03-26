@@ -351,6 +351,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       }
       append_quads_data->approximated_visible_content_area +=
           visible_geometry_rect.width() * visible_geometry_rect.height();
+      append_quads_data->checkerboarded_visible_content_area +=
+          visible_geometry_rect.width() * visible_geometry_rect.height();
       continue;
     }
 
