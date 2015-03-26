@@ -1640,8 +1640,6 @@ crbug.com/446740 virtual/slimmingpaint/fast/canvas/canvas-measure-text-rtl.html 
 
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 
-crbug.com/321237 svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsRebaseline ]
-
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
