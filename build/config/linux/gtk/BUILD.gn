@@ -28,7 +28,7 @@ group("gtk") {
     "//chrome/browser/ui/libgtk2ui",
     "//remoting/host",
   ]
-  direct_dependent_configs = [ ":gtk_internal_config" ]
+  public_configs = [ ":gtk_internal_config" ]
 }
 
 # Depend on "gtkprint" to get this.
@@ -38,5 +38,5 @@ pkg_config("gtkprint_internal_config") {
 
 group("gtkprint") {
   visibility = [ "//chrome/browser/ui/libgtk2ui" ]
-  direct_dependent_configs = [ ":gtkprint_internal_config" ]
+  public_configs = [ ":gtkprint_internal_config" ]
 }
