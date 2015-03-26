@@ -11,20 +11,6 @@
     'app_remoting_webapp_files.gypi',
   ],
 
-  'variables': {
-    # The ar_service_environment variable is used to define the target
-    # environment for the app being built.
-    # The allowed values are dev, test, staging, and prod.
-    'conditions': [
-      ['buildtype == "Dev"', {
-        'ar_service_environment%': 'dev',
-      }, {  # buildtype != 'Dev'
-        # Non-dev build must have this set to 'prod'.
-        'ar_service_environment': 'prod',
-      }],
-    ],  # conditions
-  },  # end of variables
-
   'target_defaults': {
     'type': 'none',
 

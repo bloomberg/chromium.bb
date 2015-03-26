@@ -27,5 +27,18 @@
     'remoting_rdp_session%': 1,
 
     'branding_path': '../remoting/branding_<(branding)',
+
+    # The ar_service_environment variable is used to define the target
+    # environment for the app being built.
+    # The allowed values are dev, test, staging, and prod.
+    'conditions': [
+      ['buildtype == "Dev"', {
+        'ar_service_environment%': 'dev',
+      }, {  # buildtype != 'Dev'
+        # Non-dev build must have this set to 'prod'.
+        'ar_service_environment': 'prod',
+      }],
+    ],  # conditions
+
   },
 }
