@@ -420,6 +420,13 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
         return m_columnHeight;
     }
 
+    if (m_columnHeight >= m_maxColumnHeight) {
+        // We cannot stretch any further. We'll just have to live with the overflowing columns. This
+        // typically happens if the max column height is less than the height of the tallest piece
+        // of unbreakable content (e.g. lines).
+        return m_columnHeight;
+    }
+
     // If the initial guessed column height wasn't enough, stretch it now. Stretch by the lowest
     // amount of space shortage found during layout.
 
