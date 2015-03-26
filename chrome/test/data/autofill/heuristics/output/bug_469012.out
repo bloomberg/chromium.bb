@@ -11,4 +11,4 @@ ADDRESS_HOME_CITY | city | City * |  | cardissuer_1-default
 ADDRESS_HOME_STATE | state | State * |  | cardissuer_1-default
 ADDRESS_HOME_ZIP | zip | State * |  | cardissuer_1-default
 ADDRESS_HOME_COUNTRY | country | Country * | us | cardissuer_1-default
-UNKNOWN_TYPE | phonenumber | Mobile Phone* |  | cardissuer_1-default
+PHONE_HOME_WHOLE_NUMBER | phonenumber | Mobile Phone* |  | cardissuer_1-default

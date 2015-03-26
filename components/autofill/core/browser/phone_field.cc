@@ -278,7 +278,7 @@ bool PhoneField::ParsePhoneField(AutofillScanner* scanner,
                                  AutofillField** field) {
   return ParseFieldSpecifics(scanner,
                              base::UTF8ToUTF16(regex),
-                             MATCH_DEFAULT | MATCH_TELEPHONE,
+                             MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER,
                              field);
 }
 

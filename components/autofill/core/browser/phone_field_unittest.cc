@@ -20,6 +20,7 @@ namespace {
 const char* const kFieldTypes[] = {
   "text",
   "tel",
+  "number",
 };
 
 }  // namespace
