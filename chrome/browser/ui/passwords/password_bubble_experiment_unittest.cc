@@ -16,38 +16,19 @@
 
 namespace {
 
-const int kTimeSpanDays = 2;
-const int kTimeSpanThreshold = 3;
-const int kProbabilityFakeSaves = 0;
-const int kProbabilityHistory = 10;
+const char kGroupName[] = "SomeGroupName";
+const int kNopeThreshold = 10;
 
-void SetupTimeSpanExperiment() {
+void SetupExperiment() {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       password_bubble_experiment::kExperimentName,
-      password_bubble_experiment::kGroupTimeSpanBased));
+      kGroupName));
   std::map<std::string, std::string> params;
-  params[password_bubble_experiment::kParamTimeSpan] =
-      base::IntToString(kTimeSpanDays);
-  params[password_bubble_experiment::kParamTimeSpanNopeThreshold] =
-      base::IntToString(kTimeSpanThreshold);
+  params[password_bubble_experiment::kParamNopeThreshold] =
+      base::IntToString(kNopeThreshold);
   ASSERT_TRUE(variations::AssociateVariationParams(
       password_bubble_experiment::kExperimentName,
-      password_bubble_experiment::kGroupTimeSpanBased,
-      params));
-}
-
-void SetupProbabilityExperiment() {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      password_bubble_experiment::kExperimentName,
-      password_bubble_experiment::kGroupProbabilityBased));
-  std::map<std::string, std::string> params;
-  params[password_bubble_experiment::kParamProbabilityFakeSaves] =
-      base::IntToString(kProbabilityFakeSaves);
-  params[password_bubble_experiment::kParamProbabilityInteractionsCount] =
-      base::IntToString(kProbabilityHistory);
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      password_bubble_experiment::kExperimentName,
-      password_bubble_experiment::kGroupProbabilityBased,
+      kGroupName,
       params));
 }
 
@@ -61,6 +42,9 @@ class PasswordBubbleExperimentTest : public testing::Test {
 
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("foo")));
+  }
+
+  void TearDown() override {
     variations::testing::ClearAllVariationParams();
   }
 
@@ -72,68 +56,61 @@ class PasswordBubbleExperimentTest : public testing::Test {
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
-TEST_F(PasswordBubbleExperimentTest, TimeSpan) {
-  SetupTimeSpanExperiment();
+TEST_F(PasswordBubbleExperimentTest, NoExperiment) {
+  EXPECT_FALSE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
+  for (int i = 0; i <= kNopeThreshold; ++i) {
+    password_bubble_experiment::RecordBubbleClosed(
+        prefs(), password_manager::metrics_util::CLICKED_NOPE);
+    EXPECT_FALSE(
+        password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
+  }
+}
 
-  EXPECT_TRUE(password_bubble_experiment::ShouldShowBubble(prefs()));
-  // Don't save password enough times.
-  for (int i = 0; i < kTimeSpanThreshold; ++i) {
-    password_manager::metrics_util::UIDismissalReason reason = i % 2 ?
-        password_manager::metrics_util::NO_DIRECT_INTERACTION :
+TEST_F(PasswordBubbleExperimentTest, WithExperiment) {
+  SetupExperiment();
+
+  // Repeatedly click "Never". It shouldn't affect the state.
+  for (int i = 0; i < kNopeThreshold; ++i) {
+    password_manager::metrics_util::UIDismissalReason reason =
+        password_manager::metrics_util::CLICKED_NEVER;
+    password_bubble_experiment::RecordBubbleClosed(prefs(), reason);
+  }
+  EXPECT_FALSE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
+  // Repeatedly refuse to save password, for |kNopeThreshold|-1 times.
+  for (int i = 0; i < kNopeThreshold - 1; ++i) {
+    password_manager::metrics_util::UIDismissalReason reason =
         password_manager::metrics_util::CLICKED_NOPE;
     password_bubble_experiment::RecordBubbleClosed(prefs(), reason);
   }
-  EXPECT_FALSE(password_bubble_experiment::ShouldShowBubble(prefs()));
+  EXPECT_FALSE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
 
-  // Save password many times. It doesn't bring the bubble back while the time
-  // span isn't over.
-  for (int i = 0; i < 2*kTimeSpanThreshold; ++i) {
-    password_bubble_experiment::RecordBubbleClosed(
-        prefs(),
-        password_manager::metrics_util::CLICKED_SAVE);
-  }
-  EXPECT_FALSE(password_bubble_experiment::ShouldShowBubble(prefs()));
-}
-
-TEST_F(PasswordBubbleExperimentTest, TimeSpanOver) {
-  SetupTimeSpanExperiment();
-
-  base::Time past_interval =
-      base::Time::Now() - base::TimeDelta::FromDays(kTimeSpanDays + 1);
-  prefs()->SetInt64(prefs::kPasswordBubbleTimeStamp,
-                    past_interval.ToInternalValue());
-  prefs()->SetInteger(prefs::kPasswordBubbleNopesCount, kTimeSpanThreshold);
-  // The time span is over. The bubble should be shown.
-  EXPECT_TRUE(password_bubble_experiment::ShouldShowBubble(prefs()));
-  EXPECT_EQ(0, prefs()->GetInteger(prefs::kPasswordBubbleNopesCount));
-
-  // Set the old time span again and record "Nope". The counter restarts from 0.
-  prefs()->SetInt64(prefs::kPasswordBubbleTimeStamp,
-                    past_interval.ToInternalValue());
+  // Refuse to save once more to make Never the default button.
   password_bubble_experiment::RecordBubbleClosed(
       prefs(), password_manager::metrics_util::CLICKED_NOPE);
-  EXPECT_TRUE(password_bubble_experiment::ShouldShowBubble(prefs()));
-  EXPECT_EQ(1, prefs()->GetInteger(prefs::kPasswordBubbleNopesCount));
-}
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
+  password_bubble_experiment::RecordBubbleClosed(
+      prefs(), password_manager::metrics_util::CLICKED_SAVE);
+  EXPECT_FALSE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
 
-TEST_F(PasswordBubbleExperimentTest, Probability) {
-  SetupProbabilityExperiment();
-
-  EXPECT_TRUE(password_bubble_experiment::ShouldShowBubble(prefs()));
-  // Don't save password enough times.
-  for (int i = 0; i < kProbabilityHistory; ++i) {
-    password_manager::metrics_util::UIDismissalReason reason = i % 2 ?
-        password_manager::metrics_util::NO_DIRECT_INTERACTION :
+  // Repeatedly refuse to save password, for |kNopeThreshold| times.
+  for (int i = 0; i < kNopeThreshold; ++i) {
+    password_manager::metrics_util::UIDismissalReason reason =
         password_manager::metrics_util::CLICKED_NOPE;
     password_bubble_experiment::RecordBubbleClosed(prefs(), reason);
   }
-  EXPECT_FALSE(password_bubble_experiment::ShouldShowBubble(prefs()));
-
-  // Save password enough times.
-  for (int i = 0; i < kProbabilityHistory; ++i) {
-    password_bubble_experiment::RecordBubbleClosed(
-        prefs(),
-        password_manager::metrics_util::CLICKED_SAVE);
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
+  // Repeatedly click "Never". It shouldn't affect the state.
+  for (int i = 0; i < kNopeThreshold; ++i) {
+    password_manager::metrics_util::UIDismissalReason reason =
+        password_manager::metrics_util::CLICKED_NEVER;
+    password_bubble_experiment::RecordBubbleClosed(prefs(), reason);
   }
-  EXPECT_TRUE(password_bubble_experiment::ShouldShowBubble(prefs()));
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(prefs()));
 }

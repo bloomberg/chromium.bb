@@ -273,7 +273,6 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
     const autofill::PasswordForm& password_form,
     password_manager::CredentialType credential_type) {
   dismissal_reason_ = metrics_util::CLICKED_CREDENTIAL;
-  RecordExperimentStatistics(web_contents(), dismissal_reason_);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->ChooseCredential(password_form,

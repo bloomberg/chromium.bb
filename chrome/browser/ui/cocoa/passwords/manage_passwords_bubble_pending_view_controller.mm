@@ -7,9 +7,11 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/grit/generated_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -101,25 +103,24 @@ using namespace password_manager::mac::ui;
                 action:@selector(onSaveClicked:)] retain]);
 
   // Nope combobox.
-  SavePasswordRefusalComboboxModel comboboxModel;
+  SavePasswordRefusalComboboxModel comboboxModel(
+      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(
+          model_->GetProfile()->GetPrefs()));
   nopeButton_.reset([[BubbleCombobox alloc] initWithFrame:NSZeroRect
                                                 pullsDown:YES
                                                     model:&comboboxModel]);
   NSMenuItem* nopeItem =
-      [nopeButton_ itemAtIndex:SavePasswordRefusalComboboxModel::INDEX_NOPE];
+      [nopeButton_ itemAtIndex:comboboxModel.index_nope()];
   [nopeItem setTarget:self];
   [nopeItem setAction:@selector(onNopeClicked:)];
   NSMenuItem* neverItem = [nopeButton_
-      itemAtIndex:SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE];
+      itemAtIndex:comboboxModel.index_never()];
   [neverItem setTarget:self];
   [neverItem setAction:@selector(onNeverForThisSiteClicked:)];
 
-  // Insert a dummy row at the top and set its title to the desired title.
-  // Must be done in two steps to prevent NSPopUpButton from removing
-  // duplicates.
+  // Insert a dummy row at the top and select the right item.
   [nopeButton_ insertItemWithTitle:@"" atIndex:0];
-  [[nopeButton_ itemAtIndex:0]
-      setTitle:l10n_util::GetNSString(IDS_PASSWORD_MANAGER_CANCEL_BUTTON)];
+  [nopeButton_ setTitle:base::SysUTF16ToNSString(comboboxModel.GetItemAt(0))];
 
   [nopeButton_ sizeToFit];
   [view addSubview:nopeButton_.get()];

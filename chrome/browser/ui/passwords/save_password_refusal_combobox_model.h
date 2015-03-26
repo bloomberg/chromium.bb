@@ -12,19 +12,26 @@
 
 class SavePasswordRefusalComboboxModel : public ui::ComboboxModel {
  public:
-  enum { INDEX_NOPE = 0, INDEX_NEVER_FOR_THIS_SITE = 1 };
-
-  SavePasswordRefusalComboboxModel();
+  explicit SavePasswordRefusalComboboxModel(bool never_is_default);
   ~SavePasswordRefusalComboboxModel() override;
 
- private:
+  int index_nope() const {
+    return never_is_default_ ? 1 : 0;
+  }
+
+  int index_never() const {
+    return never_is_default_ ? 0 : 1;
+  }
+
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
   bool IsItemSeparatorAt(int index) override;
   int GetDefaultIndex() const override;
 
+ private:
   std::vector<base::string16> items_;
+  const bool never_is_default_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordRefusalComboboxModel);
 };

@@ -52,7 +52,7 @@ void ClickMenuItem(BubbleCombobox* button, int index) {
 class ManagePasswordsBubblePendingViewControllerTest
     : public ManagePasswordsControllerTest {
  public:
-  ManagePasswordsBubblePendingViewControllerTest() : controller_(nil) {}
+  ManagePasswordsBubblePendingViewControllerTest() : combobox_model_(false) {}
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
@@ -74,9 +74,18 @@ class ManagePasswordsBubblePendingViewControllerTest
     return controller_.get();
   }
 
+  int index_nope() const {
+    return combobox_model_.index_nope();
+  }
+
+  int index_never() const {
+    return combobox_model_.index_never();
+  }
+
  private:
   base::scoped_nsobject<ManagePasswordsBubblePendingViewController> controller_;
   base::scoped_nsobject<ManagePasswordsBubblePendingViewTestDelegate> delegate_;
+  SavePasswordRefusalComboboxModel combobox_model_;
 };
 
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
@@ -91,7 +100,7 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
        ShouldNopeAndDismissWhenNopeClicked) {
   BubbleCombobox* nopeButton = [controller() nopeButton];
-  ClickMenuItem(nopeButton, SavePasswordRefusalComboboxModel::INDEX_NOPE);
+  ClickMenuItem(nopeButton, index_nope());
 
   EXPECT_TRUE([delegate() dismissed]);
   EXPECT_FALSE(ui_controller()->saved_password());
@@ -101,8 +110,7 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
        ShouldNeverSaveAndDismissWhenNeverSaveClickedWithoutAnyBestMatches) {
   BubbleCombobox* nopeButton = [controller() nopeButton];
-  ClickMenuItem(nopeButton,
-                SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE);
+  ClickMenuItem(nopeButton, index_never());
 
   EXPECT_TRUE([delegate() dismissed]);
   EXPECT_FALSE(ui_controller()->saved_password());
@@ -121,8 +129,7 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
   EXPECT_FALSE(model()->local_credentials().empty());
 
   BubbleCombobox* nopeButton = [controller() nopeButton];
-  ClickMenuItem(nopeButton,
-                SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE);
+  ClickMenuItem(nopeButton, index_never());
 
   EXPECT_TRUE([delegate() neverSave]);
   EXPECT_FALSE(ui_controller()->saved_password());

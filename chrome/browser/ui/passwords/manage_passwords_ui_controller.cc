@@ -332,10 +332,7 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->toolbar_model()->input_in_progress())
     return;
-  if (state() == password_manager::ui::PENDING_PASSWORD_STATE &&
-      !password_bubble_experiment::ShouldShowBubble(
-          browser->profile()->GetPrefs()))
-    return;
+
   CommandUpdater* updater = browser->command_controller()->command_updater();
   updater->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
 #endif
