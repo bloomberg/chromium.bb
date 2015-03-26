@@ -110,10 +110,7 @@ remoting.DnsBlackholeChecker.prototype.getJid = function() {
 };
 
 remoting.DnsBlackholeChecker.prototype.dispose = function() {
-  if (this.xhr_) {
-    this.xhr_.abort();
-    this.xhr_ = null;
-  }
+  this.xhr_ = null;
   base.dispose(this.signalStrategy_);
   this.setState_(remoting.SignalStrategy.State.CLOSED);
 };
@@ -157,6 +154,12 @@ remoting.DnsBlackholeChecker.prototype.onWrappedSignalStrategyStateChanged_ =
  * @private
  */
 remoting.DnsBlackholeChecker.prototype.onHttpRequestDone_ = function(response) {
+  if (this.xhr_ == null) {
+    // This happens when the dispose() method is called while a
+    // request is pending.
+    return;
+  }
+
   this.xhr_ = null;
   if (response.status >= 200 && response.status <= 299) {
     console.log("DNS blackhole check succeeded.");

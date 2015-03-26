@@ -10,16 +10,27 @@
 
 'use strict';
 
+/** @type {sinon.FakeXhrCtrl} */
+var fakeXhrCtrl;
+
 /** @type {sinon.FakeXhr} */
 var fakeXhr;
 
 QUnit.module('xhr', {
   beforeEach: function() {
     fakeXhr = null;
-    sinon.useFakeXMLHttpRequest().onCreate =
+    fakeXhrCtrl = sinon.useFakeXMLHttpRequest();
+    fakeXhrCtrl.onCreate =
         function(/** sinon.FakeXhr */ xhr) {
           fakeXhr = xhr;
         };
+    remoting.identity = new remoting.Identity();
+    chromeMocks.activate(['identity']);
+    chromeMocks.identity.mock$setToken('my_token');
+  },
+  afterEach: function() {
+    chromeMocks.restore();
+    remoting.identity = null;
   }
 });
 
@@ -38,14 +49,140 @@ QUnit.test('urlencodeParamHash', function(assert) {
       'k1=v1&k2=v2');
 });
 
-QUnit.test('basic GET', function(assert) {
+//
+// Test for what happens when the parameters are specified
+// incorrectly.
+//
+
+QUnit.test('invalid *content parameters', function(assert) {
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      jsonContent: {},
+      formContent: {}
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      textContent: '',
+      formContent: {}
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      textContent: '',
+      jsonContent: {}
+    });
+  });
+});
+
+
+QUnit.test('invalid URL parameters', function(assert) {
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com?',
+      urlParams: {}
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com#',
+      urlParams: {}
+    });
+  });
+});
+
+QUnit.test('invalid auth parameters', function(assert) {
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      useIdentity: false,
+      oauthToken: '',
+      headers: {
+        'Authorization': ''
+      }
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      useIdentity: true,
+      headers: {
+        'Authorization': ''
+      }
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      useIdentity: true,
+      oauthToken: '',
+      headers: {}
+    });
+  });
+});
+
+QUnit.test('invalid auth parameters', function(assert) {
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      useIdentity: false,
+      oauthToken: '',
+      headers: {
+        'Authorization': ''
+      }
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      useIdentity: true,
+      headers: {
+        'Authorization': ''
+      }
+    });
+  });
+
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      useIdentity: true,
+      oauthToken: '',
+      headers: {}
+    });
+  });
+});
+
+//
+// The typical case.
+//
+
+QUnit.test('successful GET', function(assert) {
   var promise = new remoting.Xhr({
     method: 'GET',
-    url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT
+    url: 'http://foo.com'
   }).start().then(function(response) {
-      assert.equal(response.status, 200);
-      assert.equal(response.getText(), 'body');
+    assert.equal(response.status, 200);
+    assert.equal(response.getText(), 'body');
   });
   assert.equal(fakeXhr.method, 'GET');
   assert.equal(fakeXhr.url, 'http://foo.com');
@@ -56,88 +193,98 @@ QUnit.test('basic GET', function(assert) {
   return promise;
 });
 
-QUnit.test('GET with param string', function(assert) {
+//
+// Tests for the effect of acceptJson.
+//
+
+QUnit.test('acceptJson required', function(assert) {
+  var promise = new remoting.Xhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.throws(response.getJson);
+  });
+  fakeXhr.respond(200, {}, '{}');
+  return promise;
+});
+
+QUnit.test('JSON response', function(assert) {
+  var responseJson = {
+      'myJsonData': [true]
+  };
+  var responseText = JSON.stringify(responseJson);
   var promise = new remoting.Xhr({
     method: 'GET',
     url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT,
-    urlParams: 'the_param_string'
+    acceptJson: true
   }).start().then(function(response) {
-    assert.equal(response.status, 200);
-    assert.equal(response.getText(), 'body');
+    // Calling getText is still OK even when a JSON response is
+    // requested.
+    assert.equal(
+        response.getText(),
+        responseText);
+    // Check that getJson works as advertised.
+    assert.deepEqual(
+        response.getJson(),
+        responseJson);
+    // Calling getJson multiple times doesn't re-parse the response.
+    assert.strictEqual(
+        response.getJson(),
+        response.getJson());
   });
-  assert.equal(fakeXhr.method, 'GET');
-  assert.equal(fakeXhr.url, 'http://foo.com?the_param_string');
-  assert.equal(fakeXhr.withCredentials, false);
-  assert.equal(fakeXhr.requestBody, null);
-  assert.ok(!('Content-type' in fakeXhr.requestHeaders));
-  fakeXhr.respond(200, {}, 'body');
+  fakeXhr.respond(200, {}, responseText);
   return promise;
+});
+
+//
+// Tests for various parameters that modify the HTTP request.
+//
+
+QUnit.test('GET with param string', function(assert) {
+  new remoting.Xhr({
+    method: 'GET',
+    url: 'http://foo.com',
+    urlParams: 'the_param_string'
+  }).start();
+  assert.equal(fakeXhr.url, 'http://foo.com?the_param_string');
 });
 
 QUnit.test('GET with param object', function(assert) {
-  var promise = new remoting.Xhr({
+  new remoting.Xhr({
     method: 'GET',
     url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT,
     urlParams: {'a': 'b', 'c': 'd'}
-  }).start().then(function(response) {
-    assert.equal(response.status, 200);
-    assert.equal(response.getText(), 'body');
-  });
-  assert.equal(fakeXhr.method, 'GET');
+  }).start();
   assert.equal(fakeXhr.url, 'http://foo.com?a=b&c=d');
-  assert.equal(fakeXhr.withCredentials, false);
-  assert.equal(fakeXhr.requestBody, null);
-  assert.ok(!('Content-type' in fakeXhr.requestHeaders));
-  fakeXhr.respond(200, {}, 'body');
-  return promise;
 });
 
 QUnit.test('GET with headers', function(assert) {
-  var promise = new remoting.Xhr({
+  new remoting.Xhr({
     method: 'GET',
     url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT,
     headers: {'Header1': 'headerValue1', 'Header2': 'headerValue2'}
-  }).start().then(function(response) {
-    assert.equal(response.status, 200);
-    assert.equal(response.getText(), 'body');
-  });
-  assert.equal(fakeXhr.method, 'GET');
-  assert.equal(fakeXhr.url, 'http://foo.com');
-  assert.equal(fakeXhr.withCredentials, false);
-  assert.equal(fakeXhr.requestBody, null);
+  }).start();
   assert.equal(
       fakeXhr.requestHeaders['Header1'],
       'headerValue1');
   assert.equal(
       fakeXhr.requestHeaders['Header2'],
       'headerValue2');
-  assert.ok(!('Content-type' in fakeXhr.requestHeaders));
-  fakeXhr.respond(200, {}, 'body');
-  return promise;
 });
 
 
 QUnit.test('GET with credentials', function(assert) {
-  var promise = new remoting.Xhr({
+  new remoting.Xhr({
     method: 'GET',
     url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT,
     withCredentials: true
-  }).start().then(function(response) {
-    assert.equal(response.status, 200);
-    assert.equal(response.getText(), 'body');
-  });
-  assert.equal(fakeXhr.method, 'GET');
-  assert.equal(fakeXhr.url, 'http://foo.com');
+  }).start();
   assert.equal(fakeXhr.withCredentials, true);
-  assert.equal(fakeXhr.requestBody, null);
-  assert.ok(!('Content-type' in fakeXhr.requestHeaders));
-  fakeXhr.respond(200, {}, 'body');
-  return promise;
 });
+
+//
+// Checking that typical POST requests work.
+//
 
 QUnit.test('POST with text content', function(assert) {
   var done = assert.async();
@@ -145,7 +292,6 @@ QUnit.test('POST with text content', function(assert) {
   var promise = new remoting.Xhr({
     method: 'POST',
     url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT,
     textContent: 'the_content_string'
   }).start().then(function(response) {
     assert.equal(response.status, 200);
@@ -156,71 +302,53 @@ QUnit.test('POST with text content', function(assert) {
   assert.equal(fakeXhr.url, 'http://foo.com');
   assert.equal(fakeXhr.withCredentials, false);
   assert.equal(fakeXhr.requestBody, 'the_content_string');
-  assert.ok(!('Content-type' in fakeXhr.requestHeaders));
+  assert.equal(fakeXhr.requestHeaders['Content-type'],
+               'text/plain; charset=UTF-8');
   fakeXhr.respond(200, {}, 'body');
   return promise;
 });
 
 QUnit.test('POST with form content', function(assert) {
-  var promise = new remoting.Xhr({
+  new remoting.Xhr({
     method: 'POST',
     url: 'http://foo.com',
-    responseType: remoting.Xhr.ResponseType.TEXT,
     formContent: {'a': 'b', 'c': 'd'}
-  }).start().then(function(response) {
-    assert.equal(response.status, 200);
-    assert.equal(response.getText(), 'body');
-  });
-  assert.equal(fakeXhr.method, 'POST');
-  assert.equal(fakeXhr.url, 'http://foo.com');
-  assert.equal(fakeXhr.withCredentials, false);
+  }).start();
   assert.equal(fakeXhr.requestBody, 'a=b&c=d');
   assert.equal(
       fakeXhr.requestHeaders['Content-type'],
-      'application/x-www-form-urlencoded');
-  fakeXhr.respond(200, {}, 'body');
-  return promise;
+      'application/x-www-form-urlencoded; charset=UTF-8');
 });
 
-QUnit.test('defaultResponse 200', function(assert) {
-  var done = assert.async();
+//
+// Tests for authentication-related options.
+//
 
-  var onDone = function() {
-    assert.ok(true);
-    done();
-  };
-
-  var onError = function(error) {
-    assert.ok(false);
-    done();
-  };
-
+QUnit.test('GET with auth token', function(assert) {
   new remoting.Xhr({
-    method: 'POST',
-    url: 'http://foo.com'
-  }).start().then(remoting.Xhr.defaultResponse(onDone, onError));
-  fakeXhr.respond(200, {}, '');
+    method: 'GET',
+    url: 'http://foo.com',
+    oauthToken: 'my_token'
+  }).start();
+  assert.equal(fakeXhr.requestHeaders['Authorization'],
+              'Bearer my_token');
 });
 
+QUnit.test('GET with useIdentity', function(assert) {
+  var xhr = new remoting.Xhr({
+    method: 'GET',
+    url: 'http://foo.com',
+    useIdentity: true
+  });
 
-QUnit.test('defaultResponse 404', function(assert) {
+  xhr.start();
+
   var done = assert.async();
-
-  var onDone = function() {
-    assert.ok(false);
+  fakeXhr.addEventListener('loadstart', function() {
+    assert.equal(fakeXhr.requestHeaders['Authorization'],
+                 'Bearer my_token');
     done();
-  };
-
-  var onError = function(error) {
-    assert.ok(true);
-    done();
-  };
-
-  new remoting.Xhr({
-    method: 'POST',
-    url: 'http://foo.com'
-  }).start().then(remoting.Xhr.defaultResponse(onDone, onError));
-  fakeXhr.respond(404, {}, '');
+  });
 });
 
 })();

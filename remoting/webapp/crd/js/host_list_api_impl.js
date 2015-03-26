@@ -53,23 +53,18 @@ remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
  */
 remoting.HostListApiImpl.prototype.put =
     function(hostId, hostName, hostPublicKey, onDone, onError) {
-  /** @param {string} token */
-  var onToken = function(token) {
-    var newHostDetails = {
+  new remoting.Xhr({
+    method: 'PUT',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
+    jsonContent: {
       'data': {
         'hostId': hostId,
         'hostName': hostName,
         'publicKey': hostPublicKey
       }
-    };
-    new remoting.Xhr({
-      method: 'PUT',
-      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-      jsonContent: newHostDetails,
-      oauthToken: token
-    }).start().then(remoting.Xhr.defaultResponse(onDone, onError));
-  };
-  remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
+    },
+    useIdentity: true
+  }).start().then(remoting.HostListApiImpl.defaultResponse_(onDone, onError));
 };
 
 /**
@@ -80,16 +75,12 @@ remoting.HostListApiImpl.prototype.put =
  * @param {string} hostId
  */
 remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
-  /** @param {string} token */
-  var onToken = function(token) {
-    new remoting.Xhr({
-      method: 'DELETE',
-      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-      oauthToken: token
-    }).start().then(remoting.Xhr.defaultResponse(
-        onDone, onError, [remoting.Error.Tag.NOT_FOUND]));
-  };
-  remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
+  new remoting.Xhr({
+    method: 'DELETE',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
+    useIdentity: true
+  }).start().then(remoting.HostListApiImpl.defaultResponse_(
+      onDone, onError, [remoting.Error.Tag.NOT_FOUND]));
 };
 
 /**
@@ -133,6 +124,35 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
   } else {
     onError(remoting.Error.fromHttpStatus(response.status));
   }
+};
+
+/**
+ * Generic success/failure response proxy.
+ *
+ * @param {function():void} onDone
+ * @param {function(!remoting.Error):void} onError
+ * @param {Array<remoting.Error.Tag>=} opt_ignoreErrors
+ * @return {function(!remoting.Xhr.Response):void}
+ * @private
+ */
+remoting.HostListApiImpl.defaultResponse_ = function(
+    onDone, onError, opt_ignoreErrors) {
+  /** @param {!remoting.Xhr.Response} response */
+  var result = function(response) {
+    var error = remoting.Error.fromHttpStatus(response.status);
+    if (error.isNone()) {
+      onDone();
+      return;
+    }
+
+    if (opt_ignoreErrors && error.hasTag.apply(error, opt_ignoreErrors)) {
+      onDone();
+      return;
+    }
+
+    onError(error);
+  };
+  return result;
 };
 
 /** @type {remoting.HostListApi} */

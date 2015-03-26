@@ -27,6 +27,7 @@
       'webapp/app_remoting/js/feedback_consent.js',
       'webapp/base/js/base.js',
       'webapp/crd/js/error.js',
+      'webapp/crd/js/identity.js',
       'webapp/crd/js/oauth2_api.js',
       'webapp/crd/js/oauth2_api_impl.js',
       'webapp/crd/js/plugin_settings.js',

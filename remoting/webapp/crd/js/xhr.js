@@ -17,13 +17,7 @@ var remoting = remoting || {};
  * @param {remoting.Xhr.Params} params
  */
 remoting.Xhr = function(params) {
-  /** @private @const {!XMLHttpRequest} */
-  this.nativeXhr_ = new XMLHttpRequest();
-  this.nativeXhr_.onreadystatechange = this.onReadyStateChange_.bind(this);
-  this.nativeXhr_.withCredentials = params.withCredentials || false;
-
-  /** @private @const */
-  this.responseType_ = params.responseType || remoting.Xhr.ResponseType.TEXT;
+  remoting.Xhr.checkParams_(params);
 
   // Apply URL parameters.
   var url = params.url;
@@ -35,92 +29,83 @@ remoting.Xhr = function(params) {
         remoting.Xhr.removeNullFields_(params.urlParams));
   }
   if (parameterString) {
-    base.debug.assert(url.indexOf('?') == -1);
     url += '?' + parameterString;
   }
 
-  // Check that the content spec is consistent.
-  if ((Number(params.textContent !== undefined) +
-       Number(params.formContent !== undefined) +
-       Number(params.jsonContent !== undefined)) > 1) {
-    throw new Error(
-        'may only specify one of textContent, formContent, and jsonContent');
-  }
-
   // Prepare the build modified headers.
-  var headers = remoting.Xhr.removeNullFields_(params.headers);
+  /** @const */
+  this.headers_ = remoting.Xhr.removeNullFields_(params.headers);
 
   // Convert the content fields to a single text content variable.
   /** @private {?string} */
   this.content_ = null;
   if (params.textContent !== undefined) {
+    this.maybeSetContentType_('text/plain');
     this.content_ = params.textContent;
   } else if (params.formContent !== undefined) {
-    if (!('Content-type' in headers)) {
-      headers['Content-type'] = 'application/x-www-form-urlencoded';
-    }
+    this.maybeSetContentType_('application/x-www-form-urlencoded');
     this.content_ = remoting.Xhr.urlencodeParamHash(params.formContent);
   } else if (params.jsonContent !== undefined) {
-    if (!('Content-type' in headers)) {
-      headers['Content-type'] = 'application/json; charset=UTF-8';
-    }
+    this.maybeSetContentType_('application/json');
     this.content_ = JSON.stringify(params.jsonContent);
   }
 
   // Apply the oauthToken field.
   if (params.oauthToken !== undefined) {
-    base.debug.assert(!('Authorization' in headers));
-    headers['Authorization'] = 'Bearer ' + params.oauthToken;
+    this.setAuthToken_(params.oauthToken);
   }
 
-  this.nativeXhr_.open(params.method, url, true);
-  for (var key in headers) {
-    this.nativeXhr_.setRequestHeader(key, headers[key]);
+  /** @private @const {boolean} */
+  this.acceptJson_ = params.acceptJson || false;
+  if (this.acceptJson_) {
+    this.maybeSetHeader_('Accept', 'application/json');
   }
+
+  // Apply useIdentity field.
+  /** @const {boolean} */
+  this.useIdentity_ = params.useIdentity || false;
+
+  /** @private @const {!XMLHttpRequest} */
+  this.nativeXhr_ = new XMLHttpRequest();
+  this.nativeXhr_.onreadystatechange = this.onReadyStateChange_.bind(this);
+  this.nativeXhr_.withCredentials = params.withCredentials || false;
+  this.nativeXhr_.open(params.method, url, true);
 
   /** @private {base.Deferred<!remoting.Xhr.Response>} */
   this.deferred_ = null;
 };
 
 /**
- * @enum {string}
- */
-remoting.Xhr.ResponseType = {
-  TEXT: 'TEXT',  // Request a plain text response (default).
-  JSON: 'JSON',  // Request a JSON response.
-  NONE: 'NONE'   // Don't request any response.
-};
-
-/**
- * Parameters for the 'start' function.
+ * Parameters for the 'start' function.  Unless otherwise noted, all
+ * parameters are optional.
  *
- * method: The HTTP method to use.
+ * method: (required) The HTTP method to use.
  *
- * url: The URL to request.
+ * url: (required) The URL to request.
  *
- * urlParams: (optional) Parameters to be appended to the URL.
- *     Null-valued parameters are omitted.
+ * urlParams: Parameters to be appended to the URL.  Null-valued
+ *     parameters are omitted.
  *
- * textContent: (optional) Text to be sent as the request body.
+ * textContent: Text to be sent as the request body.
  *
- * formContent: (optional) Data to be URL-encoded and sent as the
- *     request body.  Causes Content-type header to be set
- *     appropriately.
+ * formContent: Data to be URL-encoded and sent as the request body.
+ *     Causes Content-type header to be set appropriately.
  *
- * jsonContent: (optional) Data to be JSON-encoded and sent as the
- *     request body.  Causes Content-type header to be set
- *     appropriately.
+ * jsonContent: Data to be JSON-encoded and sent as the request body.
+ *     Causes Content-type header to be set appropriately.
  *
- * headers: (optional) Additional request headers to be sent.
- *     Null-valued headers are omitted.
+ * headers: Additional request headers to be sent.  Null-valued
+ *     headers are omitted.
  *
- * withCredentials: (optional) Value of the XHR's withCredentials field.
+ * withCredentials: Value of the XHR's withCredentials field.
  *
- * oauthToken: (optional) An OAuth2 token used to construct an
- *     Authentication header.
+ * oauthToken: An OAuth2 token used to construct an Authentication
+ *     header.
  *
- * responseType: (optional) Request a response of a specific
- *    type. Default: TEXT.
+ * useIdentity: Use identity API to get an OAuth2 token.
+ *
+ * acceptJson: If true, send an Accept header indicating that a JSON
+ *     response is expected.
  *
  * @typedef {{
  *   method: string,
@@ -132,25 +117,18 @@ remoting.Xhr.ResponseType = {
  *   headers:(Object<string,?string>|undefined),
  *   withCredentials:(boolean|undefined),
  *   oauthToken:(string|undefined),
- *   responseType:(remoting.Xhr.ResponseType|undefined)
+ *   useIdentity:(boolean|undefined),
+ *   acceptJson:(boolean|undefined)
  * }}
  */
 remoting.Xhr.Params;
 
 /**
- * Aborts the HTTP request.  Does nothing is the request has finished
- * already.
- */
-remoting.Xhr.prototype.abort = function() {
-  this.nativeXhr_.abort();
-};
-
-/**
  * Starts and HTTP request and gets a promise that is resolved when
  * the request completes.
  *
- * Any error that prevents receiving an HTTP status
- * code causes this promise to be rejected.
+ * Any error that prevents sending the request causes the promise to
+ * be rejected.
  *
  * NOTE: Calling this method more than once will return the same
  * promise and not start a new request, despite what the name
@@ -160,12 +138,106 @@ remoting.Xhr.prototype.abort = function() {
  */
 remoting.Xhr.prototype.start = function() {
   if (this.deferred_ == null) {
-    var xhr = this.nativeXhr_;
-    xhr.send(this.content_);
-    this.content_ = null;  // for gc
     this.deferred_ = new base.Deferred();
+
+    // Send the XHR, possibly after getting an OAuth token.
+    var that = this;
+    if (this.useIdentity_) {
+      remoting.identity.getToken().then(function(token) {
+        base.debug.assert(that.nativeXhr_.readyState == 1);
+        that.setAuthToken_(token);
+        that.sendXhr_();
+      }).catch(function(error) {
+        that.deferred_.reject(error);
+      });
+    } else {
+      this.sendXhr_();
+    }
   }
   return this.deferred_.promise();
+};
+
+/**
+ * @param {remoting.Xhr.Params} params
+ * @throws {Error} if params are invalid
+ */
+remoting.Xhr.checkParams_ = function(params) {
+  if (params.urlParams) {
+    if (params.url.indexOf('?') != -1) {
+      throw new Error('URL may not contain "?" when urlParams is set');
+    }
+    if (params.url.indexOf('#') != -1) {
+      throw new Error('URL may not contain "#" when urlParams is set');
+    }
+  }
+
+  if ((Number(params.textContent !== undefined) +
+       Number(params.formContent !== undefined) +
+       Number(params.jsonContent !== undefined)) > 1) {
+    throw new Error(
+        'may only specify one of textContent, formContent, and jsonContent');
+  }
+
+  if (params.useIdentity && params.oauthToken !== undefined) {
+    throw new Error('may not specify both useIdentity and oauthToken');
+  }
+
+  if ((params.useIdentity || params.oauthToken !== undefined) &&
+      params.headers &&
+      params.headers['Authorization'] != null) {
+    throw new Error(
+        'may not specify useIdentity or oauthToken ' +
+        'with an Authorization header');
+  }
+};
+
+/**
+ * @param {string} token
+ * @private
+ */
+remoting.Xhr.prototype.setAuthToken_ = function(token) {
+  this.setHeader_('Authorization', 'Bearer ' + token);
+};
+
+/**
+ * @param {string} type
+ * @private
+ */
+remoting.Xhr.prototype.maybeSetContentType_ = function(type) {
+  this.maybeSetHeader_('Content-type', type + '; charset=UTF-8');
+};
+
+/**
+ * @param {string} key
+ * @param {string} value
+ * @private
+ */
+remoting.Xhr.prototype.setHeader_ = function(key, value) {
+  var wasSet = this.maybeSetHeader_(key, value);
+  base.debug.assert(wasSet);
+};
+
+/**
+ * @param {string} key
+ * @param {string} value
+ * @return {boolean}
+ * @private
+ */
+remoting.Xhr.prototype.maybeSetHeader_ = function(key, value) {
+  if (!(key in this.headers_)) {
+    this.headers_[key] = value;
+    return true;
+  }
+  return false;
+};
+
+/** @private */
+remoting.Xhr.prototype.sendXhr_ = function() {
+  for (var key in this.headers_) {
+    this.nativeXhr_.setRequestHeader(key, this.headers_[key]);
+  }
+  this.nativeXhr_.send(this.content_);
+  this.content_ = null;  // for gc
 };
 
 /**
@@ -175,7 +247,8 @@ remoting.Xhr.prototype.onReadyStateChange_ = function() {
   var xhr = this.nativeXhr_;
   if (xhr.readyState == 4) {
     // See comments at remoting.Xhr.Response.
-    this.deferred_.resolve(new remoting.Xhr.Response(xhr, this.responseType_));
+    this.deferred_.resolve(new remoting.Xhr.Response(
+        xhr, this.acceptJson_));
   }
 };
 
@@ -189,11 +262,11 @@ remoting.Xhr.prototype.onReadyStateChange_ = function() {
  *
  * @constructor
  * @param {!XMLHttpRequest} xhr
- * @param {remoting.Xhr.ResponseType} type
+ * @param {boolean} allowJson
  */
-remoting.Xhr.Response = function(xhr, type) {
+remoting.Xhr.Response = function(xhr, allowJson) {
   /** @private @const */
-  this.type_ = type;
+  this.allowJson_ = allowJson;
 
   /**
    * The HTTP status code.
@@ -215,6 +288,9 @@ remoting.Xhr.Response = function(xhr, type) {
 
   /** @private {string} */
   this.text_ = xhr.responseText || '';
+
+  /** @private {*|undefined}  */
+  this.json_ = undefined;
 };
 
 /**
@@ -225,11 +301,16 @@ remoting.Xhr.Response.prototype.getText = function() {
 };
 
 /**
+ * Get the JSON content of the response.  Requires acceptJson to have
+ * been true in the request.
  * @return {*} The parsed JSON content of the response.
  */
 remoting.Xhr.Response.prototype.getJson = function() {
-  base.debug.assert(this.type_ == remoting.Xhr.ResponseType.JSON);
-  return JSON.parse(this.text_);
+  base.debug.assert(this.allowJson_);
+  if (this.json_ === undefined) {
+    this.json_ = JSON.parse(this.text_);
+  }
+  return this.json_;
 };
 
 /**
@@ -270,34 +351,4 @@ remoting.Xhr.urlencodeParamHash = function(paramHash) {
     return paramArray.join('&');
   }
   return '';
-};
-
-/**
- * Generic success/failure response proxy.
- *
- * TODO(jrw): Stop using this and move default error handling directly
- * into Xhr class.
- *
- * @param {function():void} onDone
- * @param {function(!remoting.Error):void} onError
- * @param {Array<remoting.Error.Tag>=} opt_ignoreErrors
- * @return {function(!remoting.Xhr.Response):void}
- */
-remoting.Xhr.defaultResponse = function(onDone, onError, opt_ignoreErrors) {
-  /** @param {!remoting.Xhr.Response} response */
-  var result = function(response) {
-    var error = remoting.Error.fromHttpStatus(response.status);
-    if (error.isNone()) {
-      onDone();
-      return;
-    }
-
-    if (opt_ignoreErrors && error.hasTag.apply(error, opt_ignoreErrors)) {
-      onDone();
-      return;
-    }
-
-    onError(error);
-  };
-  return result;
 };
