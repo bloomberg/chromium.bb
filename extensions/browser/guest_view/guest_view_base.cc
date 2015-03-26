@@ -12,6 +12,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
@@ -782,26 +783,36 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   params.GetInteger(guestview::kAttributeMinHeight, &min_height);
   params.GetInteger(guestview::kAttributeMinWidth, &min_width);
 
-  // Set the normal size to the element size so that the guestview will fit the
-  // element initially if autosize is disabled.
-  double element_height = 0.0;
-  double element_width = 0.0;
-  params.GetDouble(guestview::kElementHeight, &element_height);
-  params.GetDouble(guestview::kElementWidth, &element_width);
-
-  // If the element size was provided in logical units (versus physical), then
-  // it will be converted to physical units.
-  bool element_size_is_logical = false;
-  params.GetBoolean(guestview::kElementSizeIsLogical, &element_size_is_logical);
   int normal_height = 0;
   int normal_width = 0;
-  if (element_size_is_logical) {
-    // Convert the element size from logical pixels to physical pixels.
-    normal_height = LogicalPixelsToPhysicalPixels(element_height);
-    normal_width = LogicalPixelsToPhysicalPixels(element_width);
+  if (is_full_page_plugin()) {
+    // The initial size of a full page plugin should be set to fill the
+    // owner's visible viewport.
+    auto owner_size = owner_web_contents()->GetRenderWidgetHostView()->
+        GetVisibleViewportSize();
+    normal_height = owner_size.height();
+    normal_width = owner_size.width();
   } else {
-    normal_height = lround(element_height);
-    normal_width = lround(element_width);
+    // Set the normal size to the element size so that the guestview will fit
+    // the element initially if autosize is disabled.
+    double element_height = 0.0;
+    double element_width = 0.0;
+    params.GetDouble(guestview::kElementHeight, &element_height);
+    params.GetDouble(guestview::kElementWidth, &element_width);
+
+    // If the element size was provided in logical units (versus physical), then
+    // it will be converted to physical units.
+    bool element_size_is_logical = false;
+    params.GetBoolean(guestview::kElementSizeIsLogical,
+                      &element_size_is_logical);
+    if (element_size_is_logical) {
+      // Convert the element size from logical pixels to physical pixels.
+      normal_height = LogicalPixelsToPhysicalPixels(element_height);
+      normal_width = LogicalPixelsToPhysicalPixels(element_width);
+    } else {
+      normal_height = lround(element_height);
+      normal_width = lround(element_width);
+    }
   }
 
   SetSizeParams set_size_params;
