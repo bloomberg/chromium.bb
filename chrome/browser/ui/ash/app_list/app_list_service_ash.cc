@@ -61,6 +61,10 @@ void AppListServiceAsh::Init(Profile* initial_profile) {
     service->Init();
 }
 
+void AppListServiceAsh::OnProfileWillBeRemoved(
+    const base::FilePath& profile_path) {
+}
+
 base::FilePath AppListServiceAsh::GetProfilePath(
     const base::FilePath& user_data_dir) {
   return ChromeLauncherController::instance()->profile()->GetPath();
