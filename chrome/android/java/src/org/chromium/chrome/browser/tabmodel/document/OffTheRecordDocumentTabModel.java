@@ -142,9 +142,9 @@ public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implement
     }
 
     @Override
-    public void setLastShownId(int id) {
+    public boolean setLastShownId(int id) {
         ensureTabModelImpl();
-        getDelegateDocumentTabModel().setLastShownId(id);
+        return getDelegateDocumentTabModel().setLastShownId(id);
     }
 
     @Override

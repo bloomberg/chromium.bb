@@ -223,7 +223,10 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    public void setLastShownId(int id) {
+    public boolean setLastShownId(int id) {
+        if (mLastShownTabId == id) return false;
+
+        int previousTabId = mLastShownTabId;
         mLastShownTabId = id;
 
         String prefName =
@@ -232,6 +235,15 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(prefName, id);
         editor.apply();
+
+        // TODO(dfalcantara): Figure out how to fire the correct type of TabSelectionType, which is
+        //                    quite hard to do in Document-mode from where we call this.
+        for (TabModelObserver obs : mObservers) {
+            obs.didSelectTab(
+                    TabModelUtils.getCurrentTab(this), TabSelectionType.FROM_USER, previousTabId);
+        }
+
+        return true;
     }
 
     @Override

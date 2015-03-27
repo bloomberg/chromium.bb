@@ -195,8 +195,9 @@ public interface DocumentTabModel extends TabModel {
     /**
      * Records the ID of the last shown Tab.
      * @param id ID of the last shown Tab.
+     * @return Whether or not the ID had to be updated.
      */
-    void setLastShownId(int id);
+    boolean setLastShownId(int id);
 
     /**
      * Called to begin loading tab state from disk. It will load the prioritized tab first
