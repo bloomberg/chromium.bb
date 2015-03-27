@@ -44,8 +44,17 @@ def main(argv):
 
   # Save the PFQ configs.
   pfq_configs = binhost.PrebuiltMapping.Get(keys, compat_ids)
-  filename = binhost.PrebuiltMapping.GetFilename(opts.buildroot, 'chrome')
-  pfq_configs.Dump(filename)
-  git.AddPath(filename)
-  git.Commit(os.path.dirname(filename), 'Update PFQ config dump',
+  filename_internal = binhost.PrebuiltMapping.GetFilename(opts.buildroot,
+                                                          'chrome')
+  pfq_configs.Dump(filename_internal)
+  git.AddPath(filename_internal)
+  git.Commit(os.path.dirname(filename_internal), 'Update PFQ config dump',
+             allow_empty=True)
+
+  filename_external = binhost.PrebuiltMapping.GetFilename(opts.buildroot,
+                                                          'chromium',
+                                                          internal=False)
+  pfq_configs.Dump(filename_external, internal=False)
+  git.AddPath(filename_external)
+  git.Commit(os.path.dirname(filename_external), 'Update PFQ config dump',
              allow_empty=True)

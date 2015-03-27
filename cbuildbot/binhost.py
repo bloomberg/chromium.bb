@@ -91,18 +91,28 @@ class PrebuiltMapping(_PrebuiltMapping):
   """
 
   # The location in a ChromeOS checkout where we should store our JSON dump.
-  MAP_LOCATION = ('%s/src/private-overlays/chromeos-partner-overlay/chromeos/'
-                  'binhost/%s.json')
+  INTERNAL_MAP_LOCATION = ('%s/src/private-overlays/chromeos-partner-overlay/'
+                           'chromeos/binhost/%s.json')
+
+  # The location in an external Chromium OS checkout where we should store our
+  # JSON dump.
+  EXTERNAL_MAP_LOCATION = ('%s/src/third_party/chromiumos-overlay/chromeos/'
+                           'binhost/%s.json')
 
   @classmethod
-  def GetFilename(cls, buildroot, suffix):
+  def GetFilename(cls, buildroot, suffix, internal=True):
     """Get the filename where we should store our JSON dump.
 
     Args:
       buildroot: The root of the source tree.
       suffix: The base filename used for the dump (e.g. "chrome").
+      internal: If true, use the internal binhost location. Otherwise, use the
+        public one.
     """
-    return cls.MAP_LOCATION % (buildroot, suffix)
+    if internal:
+      return cls.INTERNAL_MAP_LOCATION % (buildroot, suffix)
+
+    return cls.EXTERNAL_MAP_LOCATION % (buildroot, suffix)
 
   @classmethod
   def Get(cls, keys, compat_ids):
@@ -125,15 +135,20 @@ class PrebuiltMapping(_PrebuiltMapping):
       configs.by_arch_useflags[partial_compat_id].add(key)
     return configs
 
-  def Dump(self, filename):
+  def Dump(self, filename, internal=True):
     """Save a mapping of the Chrome PFQ configs to disk (JSON format).
 
     Args:
       filename: A location to write the Chrome PFQ configs.
+      internal: Whether the dump should include internal configurations.
     """
     output = []
     for compat_id, keys in self.by_compat_id.items():
       for key in keys:
+        # Filter internal prebuilts out of external dumps.
+        if not internal and 'chrome_internal' in key.useflags:
+          continue
+
         output.append({'key': key.__dict__, 'compat_id': compat_id.__dict__})
 
     with open(filename, 'w') as f:
