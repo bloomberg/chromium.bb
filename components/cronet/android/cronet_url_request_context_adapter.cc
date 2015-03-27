@@ -265,7 +265,7 @@ CronetURLRequestContextAdapter::GetNetworkTaskRunner() const {
 void CronetURLRequestContextAdapter::StartNetLogToFile(JNIEnv* env,
                                                        jobject jcaller,
                                                        jstring jfile_name) {
-  GetNetworkTaskRunner()->PostTask(
+  PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(
           &CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread,
@@ -274,7 +274,7 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(JNIEnv* env,
 }
 
 void CronetURLRequestContextAdapter::StopNetLog(JNIEnv* env, jobject jcaller) {
-  GetNetworkTaskRunner()->PostTask(
+  PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::StopNetLogOnNetworkThread,
                  base::Unretained(this)));
@@ -283,6 +283,8 @@ void CronetURLRequestContextAdapter::StopNetLog(JNIEnv* env, jobject jcaller) {
 void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
     const std::string& file_name) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  DCHECK(is_context_initialized_);
+  DCHECK(context_);
   // Do nothing if already logging to a file.
   if (net_log_logger_)
     return;

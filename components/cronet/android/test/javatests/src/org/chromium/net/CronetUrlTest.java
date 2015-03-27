@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
@@ -56,15 +57,24 @@ public class CronetUrlTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testNetLog() throws Exception {
-        CronetTestActivity activity = launchCronetTestApp();
-        File directory = new File(PathUtils.getDataDirectory(
-                getInstrumentation().getTargetContext()));
+        Context context = getInstrumentation().getTargetContext();
+        File directory = new File(PathUtils.getDataDirectory(context));
         File file = File.createTempFile("cronet", "json", directory);
-        activity.mRequestFactory.startNetLogToFile(file.getPath());
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
+                context,
+                new UrlRequestContextConfig().setLibraryName("cronet_tests"));
+        // Start NetLog immediately after the request context is created to make
+        // sure that the call won't crash the app even when the native request
+        // context is not fully initialized. See crbug.com/470196.
+        factory.startNetLogToFile(file.getPath());
         // Starts a request.
-        activity.startWithURL(URL);
-        Thread.sleep(5000);
-        activity.mRequestFactory.stopNetLog();
+        HashMap<String, String> headers = new HashMap<String, String>();
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        HttpUrlRequest request = factory.createRequest(
+                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+        request.start();
+        listener.blockForComplete();
+        factory.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertTrue(file.delete());

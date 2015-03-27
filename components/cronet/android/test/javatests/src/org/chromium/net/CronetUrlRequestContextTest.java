@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -293,18 +294,24 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testNetLog() throws Exception {
-        mActivity = launchCronetTestApp();
-        File directory = new File(PathUtils.getDataDirectory(
-                getInstrumentation().getTargetContext()));
+        Context context = getInstrumentation().getTargetContext();
+        File directory = new File(PathUtils.getDataDirectory(context));
         File file = File.createTempFile("cronet", "json", directory);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
+        CronetUrlRequestContext requestContext = new CronetUrlRequestContext(
+                context,
+                new UrlRequestContextConfig().setLibraryName("cronet_tests"));
+        // Start NetLog immediately after the request context is created to make
+        // sure that the call won't crash the app even when the native request
+        // context is not fully initialized. See crbug.com/470196.
+        requestContext.startNetLogToFile(file.getPath());
+
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+        UrlRequest request = requestContext.createRequest(
                 TEST_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        request.start();
         listener.blockForDone();
-        mActivity.mUrlRequestContext.stopNetLog();
+        requestContext.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertTrue(file.delete());
