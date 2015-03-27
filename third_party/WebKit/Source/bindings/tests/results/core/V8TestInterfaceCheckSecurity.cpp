@@ -41,7 +41,7 @@ static void TestInterfaceCheckSecurityForceSetAttributeOnThis(v8::Local<v8::Name
         return;
     }
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
 }
 
 static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

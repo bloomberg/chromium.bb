@@ -361,7 +361,8 @@ void WindowProxy::updateDocumentProperty()
     checkDocumentWrapper(m_document.newLocal(m_isolate), frame->document());
 
     ASSERT(documentWrapper->IsObject());
-    context->Global()->ForceSet(v8AtomicString(m_isolate, "document"), documentWrapper, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+    if (!v8CallBoolean(context->Global()->ForceSet(context, v8AtomicString(m_isolate, "document"), documentWrapper, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete))))
+        return;
 
     // We also stash a reference to the document on the inner global object so that
     // LocalDOMWindow objects we obtain from JavaScript references are guaranteed to have

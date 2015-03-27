@@ -561,7 +561,7 @@ void V8InjectedScriptHost::setNonEnumPropertyMethodCustom(const v8::FunctionCall
         return;
 
     v8::Local<v8::Object> object = info[0]->ToObject(info.GetIsolate());
-    object->ForceSet(info[1], info[2], v8::DontEnum);
+    object->ForceSet(info.GetIsolate()->GetCurrentContext(), info[1], info[2], v8::DontEnum);
 }
 
 void V8InjectedScriptHost::bindMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

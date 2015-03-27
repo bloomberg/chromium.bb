@@ -158,6 +158,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     ASSERT(document);
 
     v8::Isolate* isolate = m_scriptState->isolate();
+    v8::Local<v8::Context> context = m_scriptState->context();
 
     if (!prototypeIsValid(definition->descriptor().type(), exceptionState))
         return false;
@@ -181,7 +182,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
-    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementDocument(isolate), toV8(document, m_scriptState->context()->Global(), isolate));
+    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementDocument(isolate), toV8(document, context->Global(), isolate));
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementNamespaceURI(isolate), v8String(isolate, descriptor.namespaceURI()));
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementTagName(isolate), v8TagName);
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementType(isolate), v8Type);
@@ -196,10 +197,12 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     // This *configures* the property. ForceSet of a function's
     // "prototype" does not affect the value, but can reconfigure the
     // property.
-    m_constructor->ForceSet(prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
+    if (!v8CallBoolean(m_constructor->ForceSet(context, prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete))))
+        return false;
 
     V8HiddenValue::setHiddenValue(isolate, m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(isolate), v8::True(isolate));
-    m_prototype->ForceSet(v8String(isolate, "constructor"), m_constructor, v8::DontEnum);
+    if (!v8CallBoolean(m_prototype->ForceSet(context, v8String(isolate, "constructor"), m_constructor, v8::DontEnum)))
+        return false;
 
     return true;
 }

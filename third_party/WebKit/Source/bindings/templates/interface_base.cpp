@@ -65,7 +65,7 @@ static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::L
     }
     {% endif %}
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
 }
 
 {% if has_constructor_attributes %}
