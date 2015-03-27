@@ -312,11 +312,11 @@ ALWAYS_INLINE void WebFrame::clearWeakFramesImpl(VisitorDispatcher visitor)
         m_opener = nullptr;
 }
 
-#define DEFINE_VISITOR_METHOD(VisitorType)                                                                               \
-    void WebFrame::traceFrame(VisitorType visitor, WebFrame* frame) { traceFrameImpl(visitor, frame); }                  \
-    void WebFrame::traceFrames(VisitorType visitor, WebFrame* frame) { traceFramesImpl(visitor, frame); }                \
-    bool WebFrame::isFrameAlive(VisitorType visitor, const WebFrame* frame) { return isFrameAliveImpl(visitor, frame); } \
-    void WebFrame::clearWeakFrames(VisitorType visitor) { clearWeakFramesImpl(visitor); }
+#define DEFINE_VISITOR_METHOD(VisitorDispatcher)                                                                               \
+    void WebFrame::traceFrame(VisitorDispatcher visitor, WebFrame* frame) { traceFrameImpl(visitor, frame); }                  \
+    void WebFrame::traceFrames(VisitorDispatcher visitor, WebFrame* frame) { traceFramesImpl(visitor, frame); }                \
+    bool WebFrame::isFrameAlive(VisitorDispatcher visitor, const WebFrame* frame) { return isFrameAliveImpl(visitor, frame); } \
+    void WebFrame::clearWeakFrames(VisitorDispatcher visitor) { clearWeakFramesImpl(visitor); }
 
 DEFINE_VISITOR_METHOD(Visitor*)
 DEFINE_VISITOR_METHOD(InlinedGlobalMarkingVisitor)
