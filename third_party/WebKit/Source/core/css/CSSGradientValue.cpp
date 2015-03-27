@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 Apple Inc.  All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1007,83 +1008,78 @@ float CSSRadialGradientValue::resolveRadius(CSSPrimitiveValue* radius, const CSS
     return result;
 }
 
-static float distanceToClosestCorner(const FloatPoint& p, const FloatSize& size, FloatPoint& corner)
+namespace {
+
+enum EndShapeType {
+    CircleEndShape,
+    EllipseEndShape
+};
+
+// Compute the radius to the closest/farthest side (depending on the compare functor).
+FloatSize radiusToSide(const FloatPoint& point, const FloatSize& size, EndShapeType shape,
+    bool (*compare)(float, float))
 {
-    FloatPoint topLeft;
-    float topLeftDistance = FloatSize(p - topLeft).diagonalLength();
+    float dx1 = fabs(point.x());
+    float dy1 = fabs(point.y());
+    float dx2 = fabs(point.x() - size.width());
+    float dy2 = fabs(point.y() - size.height());
 
-    FloatPoint topRight(size.width(), 0);
-    float topRightDistance = FloatSize(p - topRight).diagonalLength();
+    float dx = compare(dx1, dx2) ? dx1 : dx2;
+    float dy = compare(dy1, dy2) ? dy1 : dy2;
 
-    FloatPoint bottomLeft(0, size.height());
-    float bottomLeftDistance = FloatSize(p - bottomLeft).diagonalLength();
+    if (shape == CircleEndShape)
+        return compare(dx, dy) ? FloatSize(dx, dx) : FloatSize(dy, dy);
 
-    FloatPoint bottomRight(size.width(), size.height());
-    float bottomRightDistance = FloatSize(p - bottomRight).diagonalLength();
-
-    corner = topLeft;
-    float minDistance = topLeftDistance;
-    if (topRightDistance < minDistance) {
-        minDistance = topRightDistance;
-        corner = topRight;
-    }
-
-    if (bottomLeftDistance < minDistance) {
-        minDistance = bottomLeftDistance;
-        corner = bottomLeft;
-    }
-
-    if (bottomRightDistance < minDistance) {
-        minDistance = bottomRightDistance;
-        corner = bottomRight;
-    }
-    return minDistance;
+    ASSERT(shape == EllipseEndShape);
+    return FloatSize(dx, dy);
 }
 
-static float distanceToFarthestCorner(const FloatPoint& p, const FloatSize& size, FloatPoint& corner)
-{
-    FloatPoint topLeft;
-    float topLeftDistance = FloatSize(p - topLeft).diagonalLength();
-
-    FloatPoint topRight(size.width(), 0);
-    float topRightDistance = FloatSize(p - topRight).diagonalLength();
-
-    FloatPoint bottomLeft(0, size.height());
-    float bottomLeftDistance = FloatSize(p - bottomLeft).diagonalLength();
-
-    FloatPoint bottomRight(size.width(), size.height());
-    float bottomRightDistance = FloatSize(p - bottomRight).diagonalLength();
-
-    corner = topLeft;
-    float maxDistance = topLeftDistance;
-    if (topRightDistance > maxDistance) {
-        maxDistance = topRightDistance;
-        corner = topRight;
-    }
-
-    if (bottomLeftDistance > maxDistance) {
-        maxDistance = bottomLeftDistance;
-        corner = bottomLeft;
-    }
-
-    if (bottomRightDistance > maxDistance) {
-        maxDistance = bottomRightDistance;
-        corner = bottomRight;
-    }
-    return maxDistance;
-}
-
-// Compute horizontal radius of ellipse with center at 0,0 which passes through p, and has
+// Compute the radius of an ellipse with center at 0,0 which passes through p, and has
 // width/height given by aspectRatio.
-static inline float horizontalEllipseRadius(const FloatSize& p, float aspectRatio)
+inline FloatSize ellipseRadius(const FloatPoint& p, float aspectRatio)
 {
     // x^2/a^2 + y^2/b^2 = 1
     // a/b = aspectRatio, b = a/aspectRatio
     // a = sqrt(x^2 + y^2/(1/r^2))
-    return sqrtf(p.width() * p.width() + (p.height() * p.height()) / (1 / (aspectRatio * aspectRatio)));
+    float a = sqrtf(p.x() * p.x() + p.y() * p.y() * aspectRatio * aspectRatio);
+    return FloatSize(a, a / aspectRatio);
 }
 
-// FIXME: share code with the linear version
+// Compute the radius to the closest/farthest corner (depending on the compare functor).
+FloatSize radiusToCorner(const FloatPoint& point, const FloatSize& size, EndShapeType shape,
+    bool (*compare)(float, float))
+{
+    const FloatRect rect(FloatPoint(), size);
+    const FloatPoint corners[] = {
+        rect.minXMinYCorner(),
+        rect.maxXMinYCorner(),
+        rect.maxXMaxYCorner(),
+        rect.minXMaxYCorner()
+    };
+
+    unsigned cornerIndex = 0;
+    float distance = (point - corners[cornerIndex]).diagonalLength();
+    for (unsigned i = 1; i < WTF_ARRAY_LENGTH(corners); ++i) {
+        float newDistance = (point - corners[i]).diagonalLength();
+        if (compare(newDistance, distance)) {
+            cornerIndex = i;
+            distance = newDistance;
+        }
+    }
+
+    if (shape == CircleEndShape)
+        return FloatSize(distance, distance);
+
+    ASSERT(shape == EllipseEndShape);
+    // If the end shape is an ellipse, the gradient-shape has the same ratio of width to height
+    // that it would if closest-side or farthest-side were specified, as appropriate.
+    const FloatSize sideRadius = radiusToSide(point, size, EllipseEndShape, compare);
+
+    return ellipseRadius(FloatPoint(corners[cornerIndex] - point), sideRadius.aspectRatio());
+}
+
+} // anonymous namespace
+
 PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const LayoutObject& object)
 {
     ASSERT(!size.isEmpty());
@@ -1104,112 +1100,47 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthCon
     if (m_firstRadius)
         firstRadius = resolveRadius(m_firstRadius.get(), conversionData);
 
-    float secondRadius = 0;
-    float aspectRatio = 1; // width / height.
-    if (m_secondRadius)
-        secondRadius = resolveRadius(m_secondRadius.get(), conversionData);
-    else if (m_endHorizontalSize) {
+    FloatSize secondRadius(0, 0);
+    if (m_secondRadius) {
+        secondRadius.setWidth(resolveRadius(m_secondRadius.get(), conversionData));
+        secondRadius.setHeight(secondRadius.width());
+    } else if (m_endHorizontalSize) {
         float width = size.width();
         float height = size.height();
-        secondRadius = resolveRadius(m_endHorizontalSize.get(), conversionData, &width);
-        if (m_endVerticalSize)
-            aspectRatio = secondRadius / resolveRadius(m_endVerticalSize.get(), conversionData, &height);
-        else
-            aspectRatio = 1;
+        secondRadius.setWidth(resolveRadius(m_endHorizontalSize.get(), conversionData, &width));
+        secondRadius.setHeight(m_endVerticalSize
+            ? resolveRadius(m_endVerticalSize.get(), conversionData, &height)
+            : secondRadius.width());
     } else {
-        enum GradientShape { Circle, Ellipse };
-        GradientShape shape = Ellipse;
-        if ((m_shape && m_shape->getValueID() == CSSValueCircle)
-            || (!m_shape && !m_sizingBehavior && m_endHorizontalSize && !m_endVerticalSize))
-            shape = Circle;
-
-        enum GradientFill { ClosestSide, ClosestCorner, FarthestSide, FarthestCorner };
-        GradientFill fill = FarthestCorner;
+        EndShapeType shape = (m_shape && m_shape->getValueID() == CSSValueCircle) ||
+            (!m_shape && !m_sizingBehavior && m_endHorizontalSize && !m_endVerticalSize)
+            ? CircleEndShape
+            : EllipseEndShape;
 
         switch (m_sizingBehavior ? m_sizingBehavior->getValueID() : 0) {
         case CSSValueContain:
         case CSSValueClosestSide:
-            fill = ClosestSide;
-            break;
-        case CSSValueClosestCorner:
-            fill = ClosestCorner;
+            secondRadius = radiusToSide(secondPoint, size, shape,
+                [] (float a, float b) { return a < b; });
             break;
         case CSSValueFarthestSide:
-            fill = FarthestSide;
+            secondRadius = radiusToSide(secondPoint, size, shape,
+                [] (float a, float b) { return a > b; });
             break;
-        case CSSValueCover:
-        case CSSValueFarthestCorner:
-            fill = FarthestCorner;
+        case CSSValueClosestCorner:
+            secondRadius = radiusToCorner(secondPoint, size, shape,
+                [] (float a, float b) { return a < b; });
             break;
         default:
+            secondRadius = radiusToCorner(secondPoint, size, shape,
+                [] (float a, float b) { return a > b; });
             break;
-        }
-
-        // Now compute the end radii based on the second point, shape and fill.
-
-        // Horizontal
-        switch (fill) {
-        case ClosestSide: {
-            float xDist = std::min(secondPoint.x(), size.width() - secondPoint.x());
-            float yDist = std::min(secondPoint.y(), size.height() - secondPoint.y());
-            if (shape == Circle) {
-                float smaller = std::min(xDist, yDist);
-                xDist = smaller;
-                yDist = smaller;
-            }
-            secondRadius = xDist;
-            aspectRatio = xDist / yDist;
-            break;
-        }
-        case FarthestSide: {
-            float xDist = std::max(secondPoint.x(), size.width() - secondPoint.x());
-            float yDist = std::max(secondPoint.y(), size.height() - secondPoint.y());
-            if (shape == Circle) {
-                float larger = std::max(xDist, yDist);
-                xDist = larger;
-                yDist = larger;
-            }
-            secondRadius = xDist;
-            aspectRatio = xDist / yDist;
-            break;
-        }
-        case ClosestCorner: {
-            FloatPoint corner;
-            float distance = distanceToClosestCorner(secondPoint, size, corner);
-            if (shape == Circle)
-                secondRadius = distance;
-            else {
-                // If <shape> is ellipse, the gradient-shape has the same ratio of width to height
-                // that it would if closest-side or farthest-side were specified, as appropriate.
-                float xDist = std::min(secondPoint.x(), size.width() - secondPoint.x());
-                float yDist = std::min(secondPoint.y(), size.height() - secondPoint.y());
-
-                secondRadius = horizontalEllipseRadius(corner - secondPoint, xDist / yDist);
-                aspectRatio = xDist / yDist;
-            }
-            break;
-        }
-
-        case FarthestCorner: {
-            FloatPoint corner;
-            float distance = distanceToFarthestCorner(secondPoint, size, corner);
-            if (shape == Circle)
-                secondRadius = distance;
-            else {
-                // If <shape> is ellipse, the gradient-shape has the same ratio of width to height
-                // that it would if closest-side or farthest-side were specified, as appropriate.
-                float xDist = std::max(secondPoint.x(), size.width() - secondPoint.x());
-                float yDist = std::max(secondPoint.y(), size.height() - secondPoint.y());
-
-                secondRadius = horizontalEllipseRadius(corner - secondPoint, xDist / yDist);
-                aspectRatio = xDist / yDist;
-            }
-            break;
-        }
         }
     }
 
-    RefPtr<Gradient> gradient = Gradient::create(firstPoint, firstRadius, secondPoint, secondRadius, aspectRatio);
+    bool isDegenerate = !secondRadius.width() || !secondRadius.height();
+    RefPtr<Gradient> gradient = Gradient::create(firstPoint, firstRadius, secondPoint,
+        isDegenerate ? 0 : secondRadius.width(), isDegenerate ? 1 : secondRadius.aspectRatio());
 
     gradient->setSpreadMethod(m_repeating ? SpreadMethodRepeat : SpreadMethodPad);
     gradient->setDrawsInPMColorSpace(true);
