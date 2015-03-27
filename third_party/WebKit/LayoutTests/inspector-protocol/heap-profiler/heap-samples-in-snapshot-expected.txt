@@ -5,4 +5,5 @@ Took heap snapshot
 Parsed snapshot
 Last assigned id arrays match: true
 Size arrays length is correct: true
+Sizes non growing: true
 

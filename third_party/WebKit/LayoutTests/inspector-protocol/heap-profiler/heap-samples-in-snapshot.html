@@ -45,14 +45,22 @@ function test()
     {
         var samples = snapshot.getSamples();
         InspectorTest.log("Last assigned id arrays match: " + arraysEqual(lastAssignedIds, samples.lastAssignedIds));
-        InspectorTest.log("Size arrays length is correct: " + (sizes.length === samples.sizes.length));
-        for (var i = 0; i < sizes.length; i++) {
-            if (sizes[i] < samples.sizes[i]) {
+        var sizesMatch = (sizes.length <= samples.sizes.length);
+        InspectorTest.log("Size arrays length is correct: " + sizesMatch);
+        if (!sizesMatch) {
+            // Print mismatch:
+            arraysEqual(sizes, samples.sizes);
+        }
+        var sizesNonGrowing = true;
+        for (var i = 0; i < samples.sizes.length; i++) {
+            if ((sizes[i] === undefined && samples.sizes[i] !== 0) || (sizes[i] < samples.sizes[i])) {
+                sizesNonGrowing = false;
                 InspectorTest.log("FAIL: total size of live objects from interval cannot increase.");
                 // Print mismatch:
                 arraysEqual(sizes, samples.sizes);
             }
         }
+        InspectorTest.log("Sizes non growing: " + sizesNonGrowing);
         InspectorTest.completeTest();
     }
 
