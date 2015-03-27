@@ -36,7 +36,6 @@ import version
 
 # A list of files (or directories) to exclude from the webstore build.
 EXCLUDE_PATHS = [
-    'cvox2/background/',
     'manifest.json',
     'manifest_guest.json',
     ]
