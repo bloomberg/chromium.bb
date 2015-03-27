@@ -47,7 +47,8 @@ class AudioNodeOutput;
 // and it is responsible for all of AudioParam tasks. An AudioParamHandler
 // object is owned by the originator AudioParam object, and some audio
 // processing classes have additional references. An AudioParamHandler can
-// outlive the owner AudioParam, and it never dies before the owner AudioParam.
+// outlive the owner AudioParam, and it never dies before the owner AudioParam
+// dies.
 class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>, public AudioSummingJunction {
 public:
     static const double DefaultSmoothingConstant;

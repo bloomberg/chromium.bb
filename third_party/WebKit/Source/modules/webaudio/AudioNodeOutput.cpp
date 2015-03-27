@@ -66,6 +66,9 @@ void AudioNodeOutput::dispose()
     m_didCallDispose = true;
 #endif
     context()->handler().removeMarkedAudioNodeOutput(this);
+    disconnectAll();
+    ASSERT(m_inputs.isEmpty());
+    ASSERT(m_params.isEmpty());
 }
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)

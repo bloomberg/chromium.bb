@@ -101,8 +101,6 @@ void AudioNode::dispose()
     context()->handler().removeChangedChannelCountMode(this);
     context()->handler().removeAutomaticPullNode(this);
     context()->handler().disposeOutputs(*this);
-    for (unsigned i = 0; i < m_outputs.size(); ++i)
-        output(i)->disconnectAll();
 }
 
 String AudioNode::nodeTypeName() const

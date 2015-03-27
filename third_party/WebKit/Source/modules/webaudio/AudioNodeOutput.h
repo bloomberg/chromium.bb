@@ -159,7 +159,7 @@ private:
     unsigned m_renderingParamFanOutCount;
 
     // This collection of raw pointers is safe because they are retained by
-    // AudioParam objects referred in m_nextParams of the owner AudioNode.
+    // AudioParam objects retained by m_connectedParams of the owner AudioNode.
     HashSet<AudioParamHandler*> m_params;
 };
 
