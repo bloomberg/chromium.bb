@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/mdns.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
@@ -31,8 +32,9 @@ bool IsServiceTypeWhitelisted(const std::string& service_type) {
 
 MDnsAPI::MDnsAPI(content::BrowserContext* context) : browser_context_(context) {
   DCHECK(browser_context_);
-  EventRouter::Get(context)
-      ->RegisterObserver(this, mdns::OnServiceList::kEventName);
+  extensions::EventRouter* event_router = EventRouter::Get(context);
+  DCHECK(event_router);
+  event_router->RegisterObserver(this, mdns::OnServiceList::kEventName);
 }
 
 MDnsAPI::~MDnsAPI() {
@@ -57,6 +59,8 @@ BrowserContextKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
 void MDnsAPI::SetDnsSdRegistryForTesting(
     scoped_ptr<DnsSdRegistry> dns_sd_registry) {
   dns_sd_registry_ = dns_sd_registry.Pass();
+  if (dns_sd_registry_.get())
+    dns_sd_registry_.get()->AddObserver(this);
 }
 
 DnsSdRegistry* MDnsAPI::dns_sd_registry() {
@@ -81,7 +85,7 @@ void MDnsAPI::OnListenerRemoved(const EventListenerInfo& details) {
 void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
   std::set<std::string> new_service_types;
 
-  // Check all listeners for service type filers.
+  // Check all listeners for service type filters.
   const EventListenerMap::ListenerList& listeners =
       extensions::EventRouter::Get(browser_context_)
           ->listeners()
@@ -94,6 +98,19 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
     filter->GetStringASCII(kEventFilterServiceTypeKey, &filter_value);
     if (filter_value.empty())
       continue;
+
+    const Extension* extension = ExtensionRegistry::Get(browser_context_)->
+        enabled_extensions().GetByID((*it)->extension_id());
+    // Don't listen for services associated only with disabled extensions.
+    if (!extension)
+      continue;
+
+    // Platform apps may query for all services; other types of extensions are
+    // restricted to a whitelist.
+    if (!extension->is_platform_app() &&
+        !IsServiceTypeWhitelisted(filter_value))
+      continue;
+
     new_service_types.insert(filter_value);
   }
 
@@ -107,17 +124,12 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
 
   // Update the registry.
   DnsSdRegistry* registry = dns_sd_registry();
-  for (std::set<std::string>::iterator it = added_service_types.begin();
-       it != added_service_types.end(); ++it) {
-    if (IsServiceTypeWhitelisted(*it))
-      registry->RegisterDnsSdListener(*it);
+  for (const auto& srv : added_service_types) {
+    registry->RegisterDnsSdListener(srv);
   }
-  for (std::set<std::string>::iterator it = removed_service_types.begin();
-       it != removed_service_types.end(); ++it) {
-    if (IsServiceTypeWhitelisted(*it))
-      registry->UnregisterDnsSdListener(*it);
+  for (const auto& srv : removed_service_types) {
+    registry->UnregisterDnsSdListener(srv);
   }
-
   service_types_ = new_service_types;
 }
 
@@ -143,10 +155,10 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   event->restrict_to_browser_context = browser_context_;
   event->filter_info.SetServiceType(service_type);
 
-  VLOG(1) << "Broadcasting OnServiceList event: " << event.get();
-
   // TODO(justinlin): To avoid having listeners without filters getting all
   // events, modify API to have this event require filters.
+  // TODO(reddaly): If event isn't on whitelist, ensure it does not get
+  // broadcast to extensions.
   extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 

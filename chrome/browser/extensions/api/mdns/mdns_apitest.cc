@@ -52,6 +52,8 @@ class MDnsAPITest : public ExtensionApiTest {
   void SetUpTestDnsSdRegistry() {
     extensions::MDnsAPI* api = extensions::MDnsAPI::Get(profile());
     dns_sd_registry_ = new MockDnsSdRegistry(api);
+    EXPECT_CALL(*dns_sd_registry_, AddObserver(api))
+        .Times(1);
     // Transfers ownership of the registry instance.
     api->SetDnsSdRegistryForTesting(
         make_scoped_ptr<DnsSdRegistry>(dns_sd_registry_).Pass());

@@ -675,9 +675,9 @@
       "F410C88469990EE7947450311D24B8AF2ADB2595"   // http://crbug.com/456214
     ]
   },
-  "mdns": {
+  "mdns": [{
     "channel": "stable",
-    "extension_types": ["extension", "platform_app"],
+    "extension_types": ["extension"],
     "whitelist": [
       "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Dev
       "FA01E0B81978950F2BC5A50512FD769725F57510",  // Beta
@@ -692,6 +692,10 @@
       "EF2AB692559EA97C3BBDEA018A8C45F92457BD4E"   // http://crbug.com/457908
     ]
   },
+  {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  }],
   "musicManagerPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],

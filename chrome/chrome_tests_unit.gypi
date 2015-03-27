@@ -707,6 +707,7 @@
       'browser/extensions/api/image_writer_private/write_from_url_operation_unittest.cc',
       'browser/extensions/api/management/management_api_unittest.cc',
       'browser/extensions/api/mdns/dns_sd_registry_unittest.cc',
+      'browser/extensions/api/mdns/mdns_api_unittest.cc',
       'browser/extensions/api/omnibox/omnibox_unittest.cc',
       'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
       'browser/extensions/api/preference/preference_api_prefs_unittest.cc',
