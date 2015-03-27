@@ -30,7 +30,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ContentDistribution.h"
+#include "core/dom/shadow/DistributedNodes.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -84,7 +84,7 @@ inline void DistributionPool::populateChildren(const ContainerNode& parent)
 
 void DistributionPool::distributeTo(InsertionPoint* insertionPoint, ElementShadow* elementShadow)
 {
-    ContentDistribution distribution;
+    DistributedNodes distributedNodes;
 
     for (size_t i = 0; i < m_nodes.size(); ++i) {
         if (m_distributed[i])
@@ -94,19 +94,19 @@ void DistributionPool::distributeTo(InsertionPoint* insertionPoint, ElementShado
             continue;
 
         Node* node = m_nodes[i];
-        distribution.append(node);
+        distributedNodes.append(node);
         elementShadow->didDistributeNode(node, insertionPoint);
         m_distributed[i] = true;
     }
 
     // Distributes fallback elements
-    if (insertionPoint->isContentInsertionPoint() && distribution.isEmpty()) {
+    if (insertionPoint->isContentInsertionPoint() && distributedNodes.isEmpty()) {
         for (Node* fallbackNode = insertionPoint->firstChild(); fallbackNode; fallbackNode = fallbackNode->nextSibling()) {
-            distribution.append(fallbackNode);
+            distributedNodes.append(fallbackNode);
             elementShadow->didDistributeNode(fallbackNode, insertionPoint);
         }
     }
-    insertionPoint->setDistribution(distribution);
+    insertionPoint->setDistributedNodes(distributedNodes);
 }
 
 inline DistributionPool::~DistributionPool()

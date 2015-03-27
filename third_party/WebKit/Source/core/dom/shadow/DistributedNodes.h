@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContentDistribution_h
-#define ContentDistribution_h
+#ifndef DistributedNodes_h
+#define DistributedNodes_h
 
 #include "core/dom/Node.h"
 #include "wtf/HashMap.h"
@@ -37,10 +37,10 @@
 
 namespace blink {
 
-class ContentDistribution final {
+class DistributedNodes final {
     DISALLOW_ALLOCATION();
 public:
-    ContentDistribution() { m_nodes.reserveInitialCapacity(32); }
+    DistributedNodes() { m_nodes.reserveInitialCapacity(32); }
 
     PassRefPtrWillBeRawPtr<Node> first() const { return m_nodes.first(); }
     PassRefPtrWillBeRawPtr<Node> last() const { return m_nodes.last(); }
@@ -58,7 +58,7 @@ public:
     Node* nextTo(const Node*) const;
     Node* previousTo(const Node*) const;
 
-    void swap(ContentDistribution& other);
+    void swap(DistributedNodes& other);
 
     const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes() const { return m_nodes; }
 

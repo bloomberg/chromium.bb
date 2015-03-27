@@ -32,7 +32,7 @@
 #define InsertionPoint_h
 
 #include "core/css/CSSSelectorList.h"
-#include "core/dom/shadow/ContentDistribution.h"
+#include "core/dom/shadow/DistributedNodes.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
 
@@ -42,9 +42,9 @@ class InsertionPoint : public HTMLElement {
 public:
     virtual ~InsertionPoint();
 
-    bool hasDistribution() const { return !m_distribution.isEmpty(); }
-    void setDistribution(ContentDistribution&);
-    void clearDistribution() { m_distribution.clear(); }
+    bool hasDistribution() const { return !m_distributedNodes.isEmpty(); }
+    void setDistributedNodes(DistributedNodes&);
+    void clearDistribution() { m_distributedNodes.clear(); }
     bool isActive() const;
     bool canBeActive() const;
 
@@ -60,12 +60,12 @@ public:
 
     bool shouldUseFallbackElements() const;
 
-    size_t distributedNodesSize() const { return m_distribution.size(); }
-    Node* distributedNodeAt(size_t index)  const { return m_distribution.at(index).get(); }
-    Node* firstDistributedNode() const { return m_distribution.isEmpty() ? 0 : m_distribution.first().get(); }
-    Node* lastDistributedNode() const { return m_distribution.isEmpty() ? 0 : m_distribution.last().get(); }
-    Node* distributedNodeNextTo(const Node* node) const { return m_distribution.nextTo(node); }
-    Node* distributedNodePreviousTo(const Node* node) const { return m_distribution.previousTo(node); }
+    size_t distributedNodesSize() const { return m_distributedNodes.size(); }
+    Node* distributedNodeAt(size_t index)  const { return m_distributedNodes.at(index).get(); }
+    Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.first().get(); }
+    Node* lastDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.last().get(); }
+    Node* distributedNodeNextTo(const Node* node) const { return m_distributedNodes.nextTo(node); }
+    Node* distributedNodePreviousTo(const Node* node) const { return m_distributedNodes.previousTo(node); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -80,7 +80,7 @@ protected:
 private:
     bool isInsertionPoint() const = delete; // This will catch anyone doing an unnecessary check.
 
-    ContentDistribution m_distribution;
+    DistributedNodes m_distributedNodes;
     bool m_registeredWithShadowRoot;
 };
 

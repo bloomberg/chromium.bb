@@ -25,19 +25,19 @@
  */
 
 #include "config.h"
-#include "core/dom/shadow/ContentDistribution.h"
+#include "core/dom/shadow/DistributedNodes.h"
 
 #include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
 
-void ContentDistribution::swap(ContentDistribution& other)
+void DistributedNodes::swap(DistributedNodes& other)
 {
     m_nodes.swap(other.m_nodes);
     m_indices.swap(other.m_indices);
 }
 
-void ContentDistribution::append(PassRefPtrWillBeRawPtr<Node> node)
+void DistributedNodes::append(PassRefPtrWillBeRawPtr<Node> node)
 {
     ASSERT(node);
     ASSERT(!isActiveInsertionPoint(*node));
@@ -46,7 +46,7 @@ void ContentDistribution::append(PassRefPtrWillBeRawPtr<Node> node)
     m_nodes.append(node);
 }
 
-size_t ContentDistribution::find(const Node* node) const
+size_t DistributedNodes::find(const Node* node) const
 {
     WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t>::const_iterator it = m_indices.find(node);
     if (it == m_indices.end())
@@ -55,7 +55,7 @@ size_t ContentDistribution::find(const Node* node) const
     return it.get()->value;
 }
 
-Node* ContentDistribution::nextTo(const Node* node) const
+Node* DistributedNodes::nextTo(const Node* node) const
 {
     size_t index = find(node);
     if (index == kNotFound || index + 1 == size())
@@ -63,7 +63,7 @@ Node* ContentDistribution::nextTo(const Node* node) const
     return at(index + 1).get();
 }
 
-Node* ContentDistribution::previousTo(const Node* node) const
+Node* DistributedNodes::previousTo(const Node* node) const
 {
     size_t index = find(node);
     if (index == kNotFound || !index)
@@ -71,7 +71,7 @@ Node* ContentDistribution::previousTo(const Node* node) const
     return at(index - 1).get();
 }
 
-DEFINE_TRACE(ContentDistribution)
+DEFINE_TRACE(DistributedNodes)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_nodes);
