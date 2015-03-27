@@ -958,12 +958,32 @@ void GraphicsContext::drawRect(const IntRect& rect)
     }
 }
 
+template<typename DrawTextFunc>
+void GraphicsContext::drawTextPasses(const DrawTextFunc& drawText)
+{
+    TextDrawingModeFlags modeFlags = textDrawingMode();
+
+    if (modeFlags & TextModeFill) {
+        drawText(immutableState()->fillPaint());
+    }
+
+    if ((modeFlags & TextModeStroke) && hasStroke()) {
+        SkPaint paintForStroking(immutableState()->strokePaint());
+        if (modeFlags & TextModeFill) {
+            paintForStroking.setLooper(0); // shadow was already applied during fill pass
+        }
+        drawText(paintForStroking);
+    }
+}
+
 void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point)
 {
     if (contextDisabled())
         return;
 
-    font.drawText(this, runInfo, point);
+    drawTextPasses([&font, &runInfo, &point, this](const SkPaint& paint) {
+        font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, m_trackTextRegion ? &m_textRegion : nullptr, paint);
+    });
 }
 
 void GraphicsContext::drawEmphasisMarks(const Font& font, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point)
@@ -971,7 +991,9 @@ void GraphicsContext::drawEmphasisMarks(const Font& font, const TextRunPaintInfo
     if (contextDisabled())
         return;
 
-    font.drawEmphasisMarks(this, runInfo, mark, point);
+    drawTextPasses([&font, &runInfo, &mark, &point, this](const SkPaint& paint) {
+        font.drawEmphasisMarks(m_canvas, runInfo, mark, point, m_deviceScaleFactor, m_trackTextRegion ? &m_textRegion : nullptr, paint);
+    });
 }
 
 void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point, Font::CustomFontNotReadyAction customFontNotReadyAction)
@@ -979,7 +1001,9 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
     if (contextDisabled())
         return;
 
-    font.drawBidiText(this, runInfo, point, customFontNotReadyAction);
+    drawTextPasses([&font, &runInfo, &point, customFontNotReadyAction, this](const SkPaint& paint) {
+        font.drawBidiText(m_canvas, runInfo, point, customFontNotReadyAction, m_deviceScaleFactor, m_trackTextRegion ? &m_textRegion : nullptr, paint);
+    });
 }
 
 void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run, const FloatPoint& point, int h, const Color& backgroundColor, int from, int to)
@@ -1127,41 +1151,6 @@ void GraphicsContext::drawRRect(const SkRRect& rrect, const SkPaint& paint)
     ASSERT(m_canvas);
 
     m_canvas->drawRRect(rrect, paint);
-}
-
-void GraphicsContext::drawPosText(const void* text, size_t byteLength,
-    const SkPoint pos[], const SkRect& textRect, const SkPaint& paint)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    m_canvas->drawPosText(text, byteLength, pos, paint);
-    didDrawTextInRect(textRect);
-}
-
-void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
-    const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint& paint)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    m_canvas->drawPosTextH(text, byteLength, xpos, constY, paint);
-    didDrawTextInRect(textRect);
-}
-
-void GraphicsContext::drawTextBlob(const SkTextBlob* blob, const SkPoint& origin, const SkPaint& paint)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    m_canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
-
-    SkRect bounds = blob->bounds();
-    bounds.offset(origin);
-    didDrawTextInRect(bounds);
 }
 
 void GraphicsContext::fillPath(const Path& pathToFill)
@@ -1723,14 +1712,6 @@ SkPMColor GraphicsContext::antiColors2(int index)
     return colors[index];
 }
 #endif
-
-void GraphicsContext::didDrawTextInRect(const SkRect& textRect)
-{
-    if (m_trackTextRegion) {
-        TRACE_EVENT0("skia", "GraphicsContext::didDrawTextInRect");
-        m_textRegion.join(textRect);
-    }
-}
 
 int GraphicsContext::preparePaintForDrawRectToRect(
     SkPaint* paint,

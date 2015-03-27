@@ -346,7 +346,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     textRunPaintInfo.bounds = FloatRect(textOrigin.x(), textOrigin.y() - baseline,
         textSize.width(), textSize.height());
 
-    scaledFont.drawText(context, textRunPaintInfo, textOrigin);
+    context->drawText(scaledFont, textRunPaintInfo, textOrigin);
 }
 
 void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const LayoutStyle& style,

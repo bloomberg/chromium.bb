@@ -385,6 +385,9 @@ private:
         return m_paintState;
     }
 
+    template<typename DrawTextFunc>
+    void drawTextPasses(const DrawTextFunc&);
+
     static void setPathFromPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, FloatSize, FloatSize, FloatSize, FloatSize);
 
@@ -437,8 +440,6 @@ private:
             }
         }
     }
-
-    void didDrawTextInRect(const SkRect& textRect);
 
     void fillRectWithRoundedHole(const FloatRect&, const FloatRoundedRect& roundedHoleRect, const Color&);
 

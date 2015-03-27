@@ -38,11 +38,12 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRun.h"
 #include "platform/text/TextRunIterator.h"
+#include "platform/transforms/AffineTransform.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -122,41 +123,32 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyph
     return width;
 }
 
-void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
-    const FloatPoint& point) const
+void Font::drawText(SkCanvas* canvas, const TextRunPaintInfo& runInfo,
+    const FloatPoint& point, float deviceScaleFactor, SkRect* trackingRect, const SkPaint& paint) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading.
     if (shouldSkipDrawing())
         return;
 
-    TextDrawingModeFlags textMode = context->textDrawingMode();
-    if (!(textMode & TextModeFill) && !((textMode & TextModeStroke) && context->hasStroke()))
-        return;
-
     if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
         ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
         // we have a pre-cached blob -- happy joy!
-        drawTextBlob(context, runInfo.cachedTextBlob->get(), point.data());
+        drawTextBlob(canvas, paint, runInfo.cachedTextBlob->get(), point.data(), trackingRect);
         return;
     }
 
     GlyphBuffer glyphBuffer;
     buildGlyphBuffer(runInfo, glyphBuffer);
 
-    drawGlyphBuffer(context, runInfo, glyphBuffer, point);
+    drawGlyphBuffer(canvas, paint, runInfo, glyphBuffer, point, deviceScaleFactor, trackingRect);
 }
 
-void Font::drawBidiText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
-    const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
+void Font::drawBidiText(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction, float deviceScaleFactor, SkRect* trackingRect, const SkPaint& paint) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
     // font).
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
-        return;
-
-    TextDrawingModeFlags textMode = context->textDrawingMode();
-    if (!(textMode & TextModeFill) && !((textMode & TextModeStroke) && context->hasStroke()))
         return;
 
     // sub-run painting is not supported for Bidi text.
@@ -188,7 +180,7 @@ void Font::drawBidiText(GraphicsContext* context, const TextRunPaintInfo& runInf
         //       all subruns could be part of the same blob).
         GlyphBuffer glyphBuffer;
         float runWidth = buildGlyphBuffer(subrunInfo, glyphBuffer);
-        drawGlyphBuffer(context, subrunInfo, glyphBuffer, point);
+        drawGlyphBuffer(canvas, paint, subrunInfo, glyphBuffer, point, deviceScaleFactor, trackingRect);
 
         bidiRun = bidiRun->next();
         currPoint.move(runWidth, 0);
@@ -197,7 +189,7 @@ void Font::drawBidiText(GraphicsContext* context, const TextRunPaintInfo& runInf
     bidiRuns.deleteRuns();
 }
 
-void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
+void Font::drawEmphasisMarks(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point, float deviceScaleFactor, SkRect* trackingRect, const SkPaint& paint) const
 {
     if (shouldSkipDrawing())
         return;
@@ -218,7 +210,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     if (glyphBuffer.isEmpty())
         return;
 
-    drawGlyphBuffer(context, runInfo, glyphBuffer, point);
+    drawGlyphBuffer(canvas, paint, runInfo, glyphBuffer, point, deviceScaleFactor, trackingRect);
 }
 
 static inline void updateGlyphOverflowFromBounds(const IntRectOutsets& glyphBounds,
@@ -666,72 +658,33 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-SkPaint Font::textFillPaint(GraphicsContext* gc, const SimpleFontData* font) const
-{
-    SkPaint paint = gc->fillPaint();
-    font->platformData().setupPaint(&paint, gc->deviceScaleFactor(), this);
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    return paint;
-}
-
-SkPaint Font::textStrokePaint(GraphicsContext* gc, const SimpleFontData* font, bool isFilling) const
-{
-    SkPaint paint = gc->strokePaint();
-    font->platformData().setupPaint(&paint, gc->deviceScaleFactor(), this);
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    if (isFilling) {
-        // If there is a shadow and we filled above, there will already be
-        // a shadow. We don't want to draw it again or it will be too dark
-        // and it will go on top of the fill.
-        //
-        // Note that this isn't strictly correct, since the stroke could be
-        // very thick and the shadow wouldn't account for this. The "right"
-        // thing would be to draw to a new layer and then draw that layer
-        // with a shadow. But this is a lot of extra work for something
-        // that isn't normally an issue.
-        paint.setLooper(0);
-    }
-    return paint;
-}
-
-void Font::paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
+void Font::paintGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
     const Glyph glyphs[], unsigned numGlyphs,
-    const SkPoint pos[], const FloatRect& textRect) const
+    const SkPoint pos[], const FloatRect& textRect, float deviceScaleFactor, SkRect* trackingRect) const
 {
-    TextDrawingModeFlags textMode = gc->textDrawingMode();
-
-    // We draw text up to two times (once for fill, once for stroke).
-    if (textMode & TextModeFill) {
-        SkPaint paint = textFillPaint(gc, font);
-        gc->drawPosText(glyphs, numGlyphs * sizeof(Glyph), pos, textRect, paint);
-    }
-
-    if ((textMode & TextModeStroke) && gc->hasStroke()) {
-        SkPaint paint = textStrokePaint(gc, font, textMode & TextModeFill);
-        gc->drawPosText(glyphs, numGlyphs * sizeof(Glyph), pos, textRect, paint);
-    }
+    SkPaint fontPaint(paint);
+    font->platformData().setupPaint(&fontPaint, deviceScaleFactor, this);
+    fontPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    canvas->drawPosText(glyphs, numGlyphs * sizeof(Glyph), pos, fontPaint);
+    if (trackingRect)
+        trackingRect->join(textRect);
 }
 
-void Font::paintGlyphsHorizontal(GraphicsContext* gc, const SimpleFontData* font,
+void Font::paintGlyphsHorizontal(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
     const Glyph glyphs[], unsigned numGlyphs,
-    const SkScalar xpos[], SkScalar constY, const FloatRect& textRect) const
+    const SkScalar xpos[], SkScalar constY, const FloatRect& textRect, float deviceScaleFactor, SkRect* trackingRect) const
 {
-    TextDrawingModeFlags textMode = gc->textDrawingMode();
-
-    if (textMode & TextModeFill) {
-        SkPaint paint = textFillPaint(gc, font);
-        gc->drawPosTextH(glyphs, numGlyphs * sizeof(Glyph), xpos, constY, textRect, paint);
-    }
-
-    if ((textMode & TextModeStroke) && gc->hasStroke()) {
-        SkPaint paint = textStrokePaint(gc, font, textMode & TextModeFill);
-        gc->drawPosTextH(glyphs, numGlyphs * sizeof(Glyph), xpos, constY, textRect, paint);
-    }
+    SkPaint fontPaint(paint);
+    font->platformData().setupPaint(&fontPaint, deviceScaleFactor, this);
+    fontPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    canvas->drawPosTextH(glyphs, numGlyphs * sizeof(Glyph), xpos, constY, fontPaint);
+    if (trackingRect)
+        trackingRect->join(textRect);
 }
 
-void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
+void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
     const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs,
-    const FloatPoint& point, const FloatRect& textRect) const
+    const FloatPoint& point, const FloatRect& textRect, float deviceScaleFactor, SkRect* trackingRect) const
 {
     ASSERT(glyphBuffer.size() >= from + numGlyphs);
 
@@ -741,18 +694,18 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         for (unsigned i = 0; i < numGlyphs; i++)
             xpos[i] = SkFloatToScalar(point.x() + glyphBuffer.xOffsetAt(from + i));
 
-        paintGlyphsHorizontal(gc, font, glyphBuffer.glyphs(from), numGlyphs, xpos,
-            SkFloatToScalar(point.y()), textRect);
+        paintGlyphsHorizontal(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, xpos,
+            SkFloatToScalar(point.y()), textRect, deviceScaleFactor, trackingRect);
         return;
     }
 
     bool drawVertically = font->platformData().isVerticalAnyUpright() && font->verticalData();
 
-    GraphicsContextStateSaver stateSaver(*gc, false);
+    int canvasStackLevel = canvas->getSaveCount();
     if (drawVertically) {
-        stateSaver.save();
-        gc->concatCTM(AffineTransform(0, -1, 1, 0, point.x(), point.y()));
-        gc->concatCTM(AffineTransform(1, 0, 0, 1, -point.x(), -point.y()));
+        canvas->save();
+        canvas->concat(affineTransformToSkMatrix(AffineTransform(0, -1, 1, 0, point.x(), point.y())));
+        canvas->concat(affineTransformToSkMatrix(AffineTransform(1, 0, 0, 1, -point.x(), -point.y())));
     }
 
     const float verticalBaselineXOffset = drawVertically ? SkFloatToScalar(font->fontMetrics().floatAscent() - font->fontMetrics().floatAscent(IdeographicBaseline)) : 0;
@@ -766,22 +719,19 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
             SkFloatToScalar(point.y() + glyphBuffer.yOffsetAt(from + i)));
     }
 
-    paintGlyphs(gc, font, glyphBuffer.glyphs(from), numGlyphs, pos, textRect);
+    paintGlyphs(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, pos, textRect, deviceScaleFactor, trackingRect);
+    canvas->restoreToCount(canvasStackLevel);
 }
 
-void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoint& origin) const
+void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob* blob, const SkPoint& origin, SkRect* trackingRect) const
 {
     ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
 
-    TextDrawingModeFlags textMode = gc->textDrawingMode();
-    if (textMode & TextModeFill)
-        gc->drawTextBlob(blob, origin, gc->fillPaint());
-
-    if ((textMode & TextModeStroke) && gc->hasStroke()) {
-        SkPaint paint = gc->strokePaint();
-        if (textMode & TextModeFill)
-            paint.setLooper(0);
-        gc->drawTextBlob(blob, origin, paint);
+    canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
+    if (trackingRect) {
+        SkRect bounds = blob->bounds();
+        bounds.offset(origin);
+        trackingRect->join(bounds);
     }
 }
 
@@ -820,9 +770,7 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     return shaper.selectionRect(point, height, from, to);
 }
 
-void Font::drawGlyphBuffer(GraphicsContext* context,
-    const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer,
-    const FloatPoint& point) const
+void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const FloatPoint& point, float deviceScaleFactor, SkRect* trackingRect) const
 {
     if (glyphBuffer.isEmpty())
         return;
@@ -834,7 +782,7 @@ void Font::drawGlyphBuffer(GraphicsContext* context,
 
         textBlob = buildTextBlob(glyphBuffer);
         if (textBlob) {
-            drawTextBlob(context, textBlob.get(), point.data());
+            drawTextBlob(canvas, paint, textBlob.get(), point.data(), trackingRect);
             return;
         }
     }
@@ -848,16 +796,13 @@ void Font::drawGlyphBuffer(GraphicsContext* context,
         const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
 
         if (nextFontData != fontData) {
-            drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point,
-                runInfo.bounds);
-
+            drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, runInfo.bounds, deviceScaleFactor, trackingRect);
             lastFrom = nextGlyph;
             fontData = nextFontData;
         }
     }
 
-    drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point,
-        runInfo.bounds);
+    drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, runInfo.bounds, deviceScaleFactor, trackingRect);
 }
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const

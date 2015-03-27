@@ -228,6 +228,18 @@ void CanvasRenderingContext2DState::updateFillStyle() const
     m_fillStyleDirty = false;
 }
 
+CanvasStyle* CanvasRenderingContext2DState::style(PaintType paintType) const
+{
+    switch (paintType) {
+    case FillPaintType:
+        return fillStyle();
+    case StrokePaintType:
+        return strokeStyle();
+    }
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
 void CanvasRenderingContext2DState::setGlobalAlpha(float alpha)
 {
     m_globalAlpha = alpha;

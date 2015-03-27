@@ -81,6 +81,7 @@ static const char ltr[] = "ltr";
 static const double TryRestoreContextInterval = 0.5;
 static const unsigned MaxTryRestoreContextAttempts = 4;
 static const unsigned FetchedFontsCacheLimit = 50;
+static const float cDeviceScaleFactor = 1.0f; // Canvas is device independent
 
 static bool contextLostRestoredEventsEnabled()
 {
@@ -1960,22 +1961,22 @@ void CanvasRenderingContext2D::setDirection(const String& directionString)
 
 void CanvasRenderingContext2D::fillText(const String& text, float x, float y)
 {
-    drawTextInternal(text, x, y, true);
+    drawTextInternal(text, x, y, CanvasRenderingContext2DState::FillPaintType);
 }
 
 void CanvasRenderingContext2D::fillText(const String& text, float x, float y, float maxWidth)
 {
-    drawTextInternal(text, x, y, true, maxWidth, true);
+    drawTextInternal(text, x, y, CanvasRenderingContext2DState::FillPaintType, &maxWidth);
 }
 
 void CanvasRenderingContext2D::strokeText(const String& text, float x, float y)
 {
-    drawTextInternal(text, x, y, false);
+    drawTextInternal(text, x, y, CanvasRenderingContext2DState::StrokePaintType);
 }
 
 void CanvasRenderingContext2D::strokeText(const String& text, float x, float y, float maxWidth)
 {
-    drawTextInternal(text, x, y, false, maxWidth, true);
+    drawTextInternal(text, x, y, CanvasRenderingContext2DState::StrokePaintType, &maxWidth);
 }
 
 PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
@@ -2024,7 +2025,14 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     return metrics.release();
 }
 
-void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth, bool useMaxWidth)
+// This wrapper is a workaround for a substitution failure in template resolution when using bind() on a const method.
+// It also re-orders the arguments to put the SkCanvas near the end for partial parameterization.
+static inline void drawBidiTextWrapper(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point, SkCanvas* canvas, const SkPaint* paint)
+{
+    font.drawBidiText(canvas, runInfo, point, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, nullptr, *paint);
+}
+
+void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, float y, CanvasRenderingContext2DState::PaintType paintType, float* maxWidth)
 {
     // The style resolution required for rendering text is not available in frame-less documents.
     if (!canvas()->document().frame())
@@ -2035,23 +2043,18 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     // the GraphicsContext.
     canvas()->document().updateRenderTreeIfNeeded();
 
-    GraphicsContext* c = drawingContext();
+    SkCanvas* c = drawingCanvas();
     if (!c)
         return;
     if (!state().isTransformInvertible())
         return;
     if (!std::isfinite(x) || !std::isfinite(y))
         return;
-    if (useMaxWidth && (!std::isfinite(maxWidth) || maxWidth <= 0))
+    if (maxWidth && (!std::isfinite(*maxWidth) || *maxWidth <= 0))
         return;
 
-    // If gradient size is zero, then paint nothing.
-    Gradient* gradient = c->strokeGradient();
-    if (!fill && gradient && gradient->isZeroSize())
-        return;
-
-    gradient = c->fillGradient();
-    if (fill && gradient && gradient->isZeroSize())
+    CanvasGradient* gradient = state().style(paintType)->canvasGradient();
+    if (gradient && gradient->gradient()->isZeroSize())
         return;
 
     FontCachePurgePreventer fontCachePurgePreventer;
@@ -2071,8 +2074,8 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     FloatPoint location(x, y + getFontBaseline(fontMetrics));
     float fontWidth = font.width(textRun);
 
-    useMaxWidth = (useMaxWidth && maxWidth < fontWidth);
-    float width = useMaxWidth ? maxWidth : fontWidth;
+    bool useMaxWidth = (maxWidth && *maxWidth < fontWidth);
+    float width = useMaxWidth ? *maxWidth : fontWidth;
 
     TextAlign align = state().textAlign();
     if (align == StartTextAlign)
@@ -2097,39 +2100,36 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
                                         location.y() - fontMetrics.ascent() - fontMetrics.lineGap(),
                                         width + fontMetrics.height(),
                                         fontMetrics.lineSpacing());
-    if (!fill)
+    if (paintType == CanvasRenderingContext2DState::StrokePaintType)
         inflateStrokeRect(textRunPaintInfo.bounds);
-
-    c->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
 
     CanvasRenderingContext2DAutoRestoreSkCanvas stateRestorer(this);
     if (useMaxWidth) {
-        SkCanvas* canvas = drawingCanvas();
-        canvas->save();
-        canvas->translate(location.x(), location.y());
+        c->save();
+        c->translate(location.x(), location.y());
         // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op) still work.
-        canvas->scale((fontWidth > 0 ? (width / fontWidth) : 0), 1);
+        c->scale((fontWidth > 0 ? (width / fontWidth) : 0), 1);
         location = FloatPoint();
     }
 
     SkIRect clipBounds;
-    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds)) {
+    if (!c->getClipDeviceBounds(&clipBounds)) {
         return;
     }
 
     if (isFullCanvasCompositeMode(state().globalComposite())) {
-        fullCanvasCompositedDraw(bind(&GraphicsContext::drawBidiText, c, font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady));
+        fullCanvasCompositedDraw(bind<SkCanvas*, const SkPaint*>(drawBidiTextWrapper, font, textRunPaintInfo, location), paintType, Opaque);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas();
-        c->clearShadow();
-        c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
-        applyShadow(DrawShadowAndForeground);
+        const SkPaint* paint = state().getPaint(paintType, DrawForegroundOnly);
+        font.drawBidiText(drawingCanvas(), textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, nullptr, *paint);
         didDraw(clipBounds);
     } else {
         SkIRect dirtyRect;
         if (computeDirtyRect(textRunPaintInfo.bounds, clipBounds, &dirtyRect)) {
-            c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
+            const SkPaint* paint = state().getPaint(paintType, DrawShadowAndForeground);
+            font.drawBidiText(c, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, nullptr, *paint);
             didDraw(dirtyRect);
         }
     }

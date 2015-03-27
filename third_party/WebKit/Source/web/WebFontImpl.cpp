@@ -97,7 +97,7 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     gc.save();
     gc.setFillColor(color);
     gc.clip(textClipRect);
-    m_font.drawText(&gc, runInfo, leftBaseline);
+    gc.drawText(m_font, runInfo, leftBaseline);
     gc.restore();
 }
 

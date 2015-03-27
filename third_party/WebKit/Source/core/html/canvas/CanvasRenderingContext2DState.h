@@ -72,6 +72,8 @@ public:
     void setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
     CanvasStyle* fillStyle() const { return m_fillStyle.get(); }
 
+    CanvasStyle* style(PaintType) const;
+
     enum Direction {
         DirectionInherit,
         DirectionRTL,

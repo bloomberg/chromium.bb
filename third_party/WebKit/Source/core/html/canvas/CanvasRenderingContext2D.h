@@ -250,7 +250,7 @@ private:
 
     void scrollPathIntoViewInternal(const Path&);
 
-    void drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth = 0, bool useMaxWidth = false);
+    void drawTextInternal(const String&, float x, float y, CanvasRenderingContext2DState::PaintType, float* maxWidth = nullptr);
 
     const Font& accessFont();
     int getFontBaseline(const FontMetrics&) const;
