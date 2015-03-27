@@ -109,6 +109,10 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
     // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
     // Ensure an assertion is not raised.
     request->onError(DOMError::create(AbortError, "Description goes here."));
+
+    // Stop the request lest it be GCed and its destructor
+    // finds the object in a pending state (and asserts.)
+    executionContext()->stopActiveDOMObjects();
 }
 
 class MockWebIDBDatabase : public WebIDBDatabase {
