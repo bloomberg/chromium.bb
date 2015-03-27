@@ -28,7 +28,7 @@ struct VerificationProperties;
 
 // Base class for platform dependent networkingPrivate API implementations.
 // All inputs and results for this class use ONC values. See
-// networking_private.json for descriptions of the expected inputs and results.
+// networking_private.idl for descriptions of the expected inputs and results.
 class NetworkingPrivateDelegate : public KeyedService {
  public:
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>

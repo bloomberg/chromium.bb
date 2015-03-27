@@ -34,7 +34,7 @@
       'mime_handler_private.idl',
       'mime_handler_view_guest_internal.json',
       'mojo_private.idl',
-      'networking_private.json',
+      'networking_private.idl',
       'power.idl',
       'printer_provider.idl',
       'printer_provider_internal.idl',
