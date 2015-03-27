@@ -19,7 +19,6 @@ struct QuicAckFrame;
 class QuicConnection;
 class QuicConnectionVisitorInterface;
 class QuicPacketCreator;
-class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
 
 namespace test {
