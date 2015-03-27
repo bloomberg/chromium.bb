@@ -25,12 +25,6 @@ def GSDJoin(*args):
 def SandboxedTranslators(arches):
   le32_packages = ['newlib_le32', 'libcxx_le32', 'libs_support_le32',
                    'core_sdk_libs_le32', 'metadata', 'compiler_rt_bc_le32']
-  # These are required for building IRT-environment targets, which SCons does
-  # as a side effect of building the same targets in the le32 environment.
-  # (e.g. when you build libnacl_sys_private, that gets built in both the IRT
-  # and pexe environments).
-  naclclang_packages = ['newlib_%s' % arch
-                        for arch in ['i686', 'x86_64', 'arm']]
   private_libs = ['libnacl_sys_private', 'libpthread_private', 'libplatform',
                   'libimc', 'libimc_syscalls', 'libsrpc', 'libgio']
   arch_packages = ['libs_support_translator', 'compiler_rt']
@@ -48,8 +42,7 @@ def SandboxedTranslators(arches):
       # are already built, so we copy those, and build the non-IRT libs here.
       'translator_compiler': {
         'type': 'work',
-        'dependencies': ['target_lib_compiler'] + (
-          le32_packages + arch_deps + naclclang_packages),
+        'dependencies': ['target_lib_compiler'] + le32_packages + arch_deps,
         'inputs': {
             'src_untrusted': os.path.join(NACL_DIR, 'src', 'untrusted'),
             'src_include': os.path.join(NACL_DIR, 'src', 'include'),
@@ -57,10 +50,9 @@ def SandboxedTranslators(arches):
             'site_scons': os.path.join(NACL_DIR, 'site_scons'),
         },
         'commands': [
-          # Copy the required libs
+          # Copy the le32 bitcode libs
           command.CopyRecursive('%(' + p + ')s', '%(output)s')
-            for p in ['target_lib_compiler'] +
-            le32_packages + naclclang_packages] + [
+           for p in ['target_lib_compiler'] + le32_packages] + [
           # Build the non-IRT libs
           command.Command([sys.executable, '%(scons.py)s',
               '--verbose', 'bitcode=1', 'platform=x86-32',
