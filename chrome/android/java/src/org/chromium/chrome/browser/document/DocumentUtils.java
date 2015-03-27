@@ -22,6 +22,8 @@ import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,38 @@ public class DocumentUtils {
     }
 
     /**
+     * Finishes tasks other than the one with the given task ID that were started with the given
+     * tabId, leaving a unique task to own a Tab with that particular ID.
+     * @param tabId ID of the tab to remove duplicates for.
+     * @param canonicalTaskId ID of the task will be the only one left with the ID.
+     * @return Intent of one of the tasks that were finished.
+     */
+    public static Intent finishOtherTasksWithTabID(int tabId, int canonicalTaskId) {
+        if (tabId == Tab.INVALID_TAB_ID || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return null;
+        }
+
+        Context context = ApplicationStatus.getApplicationContext();
+
+        ActivityManager manager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.AppTask> tasksToFinish = new ArrayList<ActivityManager.AppTask>();
+        for (ActivityManager.AppTask task : manager.getAppTasks()) {
+            RecentTaskInfo taskInfo = getTaskInfoFromTask(task);
+            if (taskInfo == null) continue;
+            int taskId = taskInfo.id;
+
+            Intent baseIntent = taskInfo.baseIntent;
+            int otherTabId = ActivityDelegate.getTabIdFromIntent(baseIntent);
+
+            if (otherTabId == tabId && (taskId == -1 || taskId != canonicalTaskId)) {
+                tasksToFinish.add(task);
+            }
+        }
+        return finishAndRemoveTasks(tasksToFinish);
+    }
+
+    /**
      * Finishes tasks other than the one with the given ID that were started with the given data
      * in the Intent, removing those tasks from Recents and leaving a unique task with the data.
      * @param data Passed in as part of the Intent's data when starting the Activity.
@@ -73,16 +107,19 @@ public class DocumentUtils {
             Intent baseIntent = taskInfo.baseIntent;
             String taskData = baseIntent == null ? null : taskInfo.baseIntent.getDataString();
 
-            if (!TextUtils.equals(dataString, taskData)) continue;
-            if (taskId == -1 || taskId != canonicalTaskId) {
+            if (TextUtils.equals(dataString, taskData)
+                    && (taskId == -1 || taskId != canonicalTaskId)) {
                 tasksToFinish.add(task);
             }
         }
+        return finishAndRemoveTasks(tasksToFinish);
+    }
 
+    private static Intent finishAndRemoveTasks(List<ActivityManager.AppTask> tasksToFinish) {
         Intent removedIntent = null;
         for (ActivityManager.AppTask task : tasksToFinish) {
+            Log.d(TAG, "Removing task with duplicated data: " + task);
             removedIntent = getBaseIntentFromTask(task);
-            Log.d(TAG, "Removing duplicated task: " + task);
             task.finishAndRemoveTask();
         }
         return removedIntent;
