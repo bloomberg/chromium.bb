@@ -108,7 +108,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool BindFramebufferToTexture(DrawingFrame* frame,
                                 const ScopedResource* resource,
                                 const gfx::Rect& target_rect) override;
-  void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(DrawingFrame* frame,
                              SurfaceInitializationMode initialization_mode,
@@ -151,6 +150,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void DiscardPixels();
   void ClearFramebuffer(DrawingFrame* frame);
+  void SetViewport();
 
   void DrawCheckerboardQuad(const DrawingFrame* frame,
                             const CheckerboardDrawQuad* quad,
@@ -487,7 +487,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   gfx::Rect swap_buffer_rect_;
   gfx::Rect scissor_rect_;
-  gfx::Rect viewport_;
   bool is_backbuffer_discarded_;
   bool is_using_bind_uniform_;
   bool is_scissor_enabled_;

@@ -115,7 +115,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
                                         const gfx::Rect& target_rect) = 0;
-  virtual void SetDrawViewport(const gfx::Rect& window_space_viewport) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
       DrawingFrame* frame,
@@ -146,13 +145,14 @@ class CC_EXPORT DirectRenderer : public Renderer {
   scoped_ptr<OverlayProcessor> overlay_processor_;
 
   // For use in coordinate conversion, this stores the output rect, viewport
-  // rect (= unflipped version of glViewport rect), and the size of target
-  // framebuffer. During a draw, this stores the values for the current render
-  // pass; in between draws, they retain the values for the root render pass of
-  // the last draw.
+  // rect (= unflipped version of glViewport rect), the size of target
+  // framebuffer, and the current window space viewport. During a draw, this
+  // stores the values for the current render pass; in between draws, they
+  // retain the values for the root render pass of the last draw.
   gfx::Rect current_draw_rect_;
   gfx::Rect current_viewport_rect_;
   gfx::Size current_surface_size_;
+  gfx::Rect current_window_space_viewport_;
 
  private:
   gfx::Vector2d enlarge_pass_texture_amount_;

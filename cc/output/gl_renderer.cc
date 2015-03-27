@@ -417,6 +417,8 @@ void GLRenderer::PrepareSurfaceForPass(
     DrawingFrame* frame,
     SurfaceInitializationMode initialization_mode,
     const gfx::Rect& render_pass_scissor) {
+  SetViewport();
+
   switch (initialization_mode) {
     case SURFACE_INITIALIZATION_MODE_PRESERVE:
       EnsureScissorTestDisabled();
@@ -1222,10 +1224,12 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     GLC(gl_, gl_->Uniform3fv(locations.edge, 8, edge));
 
   if (locations.viewport != -1) {
-    float viewport[4] = {static_cast<float>(viewport_.x()),
-                         static_cast<float>(viewport_.y()),
-                         static_cast<float>(viewport_.width()),
-                         static_cast<float>(viewport_.height()), };
+    float viewport[4] = {
+        static_cast<float>(current_window_space_viewport_.x()),
+        static_cast<float>(current_window_space_viewport_.y()),
+        static_cast<float>(current_window_space_viewport_.width()),
+        static_cast<float>(current_window_space_viewport_.height()),
+    };
     GLC(gl_, gl_->Uniform4fv(locations.viewport, 1, viewport));
   }
 
@@ -1610,10 +1614,12 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                      (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
                      alpha));
   if (use_aa) {
-    float viewport[4] = {static_cast<float>(viewport_.x()),
-                         static_cast<float>(viewport_.y()),
-                         static_cast<float>(viewport_.width()),
-                         static_cast<float>(viewport_.height()), };
+    float viewport[4] = {
+        static_cast<float>(current_window_space_viewport_.x()),
+        static_cast<float>(current_window_space_viewport_.y()),
+        static_cast<float>(current_window_space_viewport_.width()),
+        static_cast<float>(current_window_space_viewport_.height()),
+    };
     GLC(gl_, gl_->Uniform4fv(uniforms.viewport_location, 1, viewport));
     GLC(gl_, gl_->Uniform3fv(uniforms.edge_location, 8, edge));
   }
@@ -1777,10 +1783,10 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   GLC(gl_, gl_->Uniform1i(uniforms.sampler_location, 0));
 
   float viewport[4] = {
-      static_cast<float>(viewport_.x()),
-      static_cast<float>(viewport_.y()),
-      static_cast<float>(viewport_.width()),
-      static_cast<float>(viewport_.height()),
+      static_cast<float>(current_window_space_viewport_.x()),
+      static_cast<float>(current_window_space_viewport_.y()),
+      static_cast<float>(current_window_space_viewport_.width()),
+      static_cast<float>(current_window_space_viewport_.height()),
   };
   GLC(gl_, gl_->Uniform4fv(uniforms.viewport_location, 1, viewport));
   GLC(gl_, gl_->Uniform3fv(uniforms.edge_location, 8, edge));
@@ -2968,13 +2974,11 @@ void GLRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
   scissor_rect_needs_reset_ = false;
 }
 
-void GLRenderer::SetDrawViewport(const gfx::Rect& window_space_viewport) {
-  viewport_ = window_space_viewport;
-  GLC(gl_,
-      gl_->Viewport(window_space_viewport.x(),
-                    window_space_viewport.y(),
-                    window_space_viewport.width(),
-                    window_space_viewport.height()));
+void GLRenderer::SetViewport() {
+  GLC(gl_, gl_->Viewport(current_window_space_viewport_.x(),
+                         current_window_space_viewport_.y(),
+                         current_window_space_viewport_.width(),
+                         current_window_space_viewport_.height()));
 }
 
 void GLRenderer::InitializeSharedObjects() {
@@ -3519,6 +3523,11 @@ void GLRenderer::RestoreGLState() {
 
 void GLRenderer::RestoreFramebuffer(DrawingFrame* frame) {
   UseRenderPass(frame, frame->current_render_pass);
+
+  // Call SetViewport directly, rather than through PrepareSurfaceForPass.
+  // PrepareSurfaceForPass also clears the surface, which is not desired when
+  // restoring.
+  SetViewport();
 }
 
 bool GLRenderer::IsContextLost() {

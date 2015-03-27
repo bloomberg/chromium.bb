@@ -108,11 +108,10 @@ void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                        window_rect.y(),
                                        window_rect.width(),
                                        window_rect.height());
-  SetDrawViewport(window_rect);
-
   current_draw_rect_ = draw_rect;
   current_viewport_rect_ = viewport_rect;
   current_surface_size_ = surface_size;
+  current_window_space_viewport_ = window_rect;
 }
 
 gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(

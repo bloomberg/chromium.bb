@@ -229,9 +229,6 @@ void SoftwareRenderer::PrepareSurfaceForPass(
   }
 }
 
-void SoftwareRenderer::SetDrawViewport(
-    const gfx::Rect& window_space_viewport) {}
-
 bool SoftwareRenderer::IsSoftwareResource(
     ResourceProvider::ResourceId resource_id) const {
   switch (resource_provider_->GetResourceType(resource_id)) {
