@@ -4,13 +4,13 @@
 
 #include "extensions/common/features/simple_feature.h"
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/lazy_instance.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,56 +43,23 @@ Feature::Availability IsAvailableToContextForBind(const Extension* extension,
   return feature->IsAvailableToContext(extension, context, url, platform);
 }
 
-struct Mappings {
-  Mappings() {
-    extension_types["extension"] = Manifest::TYPE_EXTENSION;
-    extension_types["theme"] = Manifest::TYPE_THEME;
-    extension_types["legacy_packaged_app"] = Manifest::TYPE_LEGACY_PACKAGED_APP;
-    extension_types["hosted_app"] = Manifest::TYPE_HOSTED_APP;
-    extension_types["platform_app"] = Manifest::TYPE_PLATFORM_APP;
-    extension_types["shared_module"] = Manifest::TYPE_SHARED_MODULE;
-
-    contexts["blessed_extension"] = Feature::BLESSED_EXTENSION_CONTEXT;
-    contexts["unblessed_extension"] = Feature::UNBLESSED_EXTENSION_CONTEXT;
-    contexts["content_script"] = Feature::CONTENT_SCRIPT_CONTEXT;
-    contexts["web_page"] = Feature::WEB_PAGE_CONTEXT;
-    contexts["blessed_web_page"] = Feature::BLESSED_WEB_PAGE_CONTEXT;
-    contexts["webui"] = Feature::WEBUI_CONTEXT;
-
-    locations["component"] = SimpleFeature::COMPONENT_LOCATION;
-    locations["external_component"] =
-        SimpleFeature::EXTERNAL_COMPONENT_LOCATION;
-    locations["policy"] = SimpleFeature::POLICY_LOCATION;
-
-    platforms["chromeos"] = Feature::CHROMEOS_PLATFORM;
-    platforms["linux"] = Feature::LINUX_PLATFORM;
-    platforms["mac"] = Feature::MACOSX_PLATFORM;
-    platforms["win"] = Feature::WIN_PLATFORM;
-  }
-
-  std::map<std::string, Manifest::Type> extension_types;
-  std::map<std::string, Feature::Context> contexts;
-  std::map<std::string, SimpleFeature::Location> locations;
-  std::map<std::string, Feature::Platform> platforms;
-};
-
-base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
-
 // TODO(aa): Can we replace all this manual parsing with JSON schema stuff?
 
-void ParseSet(const base::DictionaryValue* value,
-              const std::string& property,
-              std::set<std::string>* set) {
+void ParseVector(const base::Value* value,
+                 std::vector<std::string>* vector) {
   const base::ListValue* list_value = NULL;
-  if (!value->GetList(property, &list_value))
+  if (!value->GetAsList(&list_value))
     return;
 
-  set->clear();
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+  vector->clear();
+  size_t list_size = list_value->GetSize();
+  vector->reserve(list_size);
+  for (size_t i = 0; i < list_size; ++i) {
     std::string str_val;
-    CHECK(list_value->GetString(i, &str_val)) << property << " " << i;
-    set->insert(str_val);
+    CHECK(list_value->GetString(i, &str_val));
+    vector->push_back(str_val);
   }
+  std::sort(vector->begin(), vector->end());
 }
 
 template<typename T>
@@ -124,31 +91,30 @@ void ParseEnum(const base::DictionaryValue* value,
 }
 
 template<typename T>
-void ParseEnumSet(const base::DictionaryValue* value,
-                  const std::string& property,
-                  std::set<T>* enum_set,
-                  const std::map<std::string, T>& mapping) {
-  if (!value->HasKey(property))
-    return;
-
-  enum_set->clear();
-
+void ParseEnumVector(const base::Value* value,
+                     std::vector<T>* enum_vector,
+                     const std::map<std::string, T>& mapping) {
+  enum_vector->clear();
   std::string property_string;
-  if (value->GetString(property, &property_string)) {
+  if (value->GetAsString(&property_string)) {
     if (property_string == "all") {
+      enum_vector->reserve(mapping.size());
       for (const auto& it : mapping)
-        enum_set->insert(it.second);
+        enum_vector->push_back(it.second);
     }
+    std::sort(enum_vector->begin(), enum_vector->end());
     return;
   }
 
-  std::set<std::string> string_set;
-  ParseSet(value, property, &string_set);
-  for (const auto& str : string_set) {
+  std::vector<std::string> string_vector;
+  ParseVector(value, &string_vector);
+  enum_vector->reserve(string_vector.size());
+  for (const auto& str : string_vector) {
     T enum_value = static_cast<T>(0);
     ParseEnum(str, &enum_value, mapping);
-    enum_set->insert(enum_value);
+    enum_vector->push_back(enum_value);
   }
+  std::sort(enum_vector->begin(), enum_vector->end());
 }
 
 void ParseURLPatterns(const base::DictionaryValue* value,
@@ -258,6 +224,39 @@ bool IsCommandLineSwitchEnabled(const std::string& switch_name) {
 
 }  // namespace
 
+struct SimpleFeature::Mappings {
+  Mappings() {
+    extension_types["extension"] = Manifest::TYPE_EXTENSION;
+    extension_types["theme"] = Manifest::TYPE_THEME;
+    extension_types["legacy_packaged_app"] = Manifest::TYPE_LEGACY_PACKAGED_APP;
+    extension_types["hosted_app"] = Manifest::TYPE_HOSTED_APP;
+    extension_types["platform_app"] = Manifest::TYPE_PLATFORM_APP;
+    extension_types["shared_module"] = Manifest::TYPE_SHARED_MODULE;
+
+    contexts["blessed_extension"] = Feature::BLESSED_EXTENSION_CONTEXT;
+    contexts["unblessed_extension"] = Feature::UNBLESSED_EXTENSION_CONTEXT;
+    contexts["content_script"] = Feature::CONTENT_SCRIPT_CONTEXT;
+    contexts["web_page"] = Feature::WEB_PAGE_CONTEXT;
+    contexts["blessed_web_page"] = Feature::BLESSED_WEB_PAGE_CONTEXT;
+    contexts["webui"] = Feature::WEBUI_CONTEXT;
+
+    locations["component"] = SimpleFeature::COMPONENT_LOCATION;
+    locations["external_component"] =
+        SimpleFeature::EXTERNAL_COMPONENT_LOCATION;
+    locations["policy"] = SimpleFeature::POLICY_LOCATION;
+
+    platforms["chromeos"] = Feature::CHROMEOS_PLATFORM;
+    platforms["linux"] = Feature::LINUX_PLATFORM;
+    platforms["mac"] = Feature::MACOSX_PLATFORM;
+    platforms["win"] = Feature::WIN_PLATFORM;
+  }
+
+  std::map<std::string, Manifest::Type> extension_types;
+  std::map<std::string, Feature::Context> contexts;
+  std::map<std::string, SimpleFeature::Location> locations;
+  std::map<std::string, Feature::Platform> platforms;
+};
+
 SimpleFeature::SimpleFeature()
     : location_(UNSPECIFIED_LOCATION),
       min_manifest_version_(0),
@@ -274,29 +273,49 @@ void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
   filters_.push_back(filter.release());
 }
 
-std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
-  ParseURLPatterns(value, "matches", &matches_);
-  ParseSet(value, "blacklist", &blacklist_);
-  ParseSet(value, "whitelist", &whitelist_);
-  ParseSet(value, "dependencies", &dependencies_);
-  ParseEnumSet<Manifest::Type>(value, "extension_types", &extension_types_,
-                                g_mappings.Get().extension_types);
-  ParseEnumSet<Context>(value, "contexts", &contexts_,
-                        g_mappings.Get().contexts);
-  ParseEnum<Location>(value, "location", &location_,
-                      g_mappings.Get().locations);
-  ParseEnumSet<Platform>(value, "platforms", &platforms_,
-                         g_mappings.Get().platforms);
-  value->GetInteger("min_manifest_version", &min_manifest_version_);
-  value->GetInteger("max_manifest_version", &max_manifest_version_);
+std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
+  static base::LazyInstance<SimpleFeature::Mappings> mappings =
+      LAZY_INSTANCE_INITIALIZER;
 
   no_parent_ = false;
-  value->GetBoolean("noparent", &no_parent_);
-
-  value->GetBoolean("component_extensions_auto_granted",
-                    &component_extensions_auto_granted_);
-
-  value->GetString("command_line_switch", &command_line_switch_);
+  for (base::DictionaryValue::Iterator it(*dictionary);
+      !it.IsAtEnd();
+      it.Advance()) {
+    std::string key = it.key();
+    const base::Value* value = &it.value();
+    if (key == "matches") {
+      ParseURLPatterns(dictionary, "matches", &matches_);
+    } else if (key == "blacklist") {
+      ParseVector(value, &blacklist_);
+    } else if (key == "whitelist") {
+      ParseVector(value, &whitelist_);
+    } else if (key == "dependencies") {
+      ParseVector(value, &dependencies_);
+    } else if (key == "extension_types") {
+      ParseEnumVector<Manifest::Type>(value, &extension_types_,
+                                      mappings.Get().extension_types);
+    } else if (key == "contexts") {
+      ParseEnumVector<Context>(value, &contexts_,
+                               mappings.Get().contexts);
+    } else if (key == "location") {
+      ParseEnum<Location>(dictionary, "location", &location_,
+                          mappings.Get().locations);
+    } else if (key == "platforms") {
+      ParseEnumVector<Platform>(value, &platforms_,
+                                mappings.Get().platforms);
+    } else if (key == "min_manifest_version") {
+      dictionary->GetInteger("min_manifest_version", &min_manifest_version_);
+    } else if (key == "max_manifest_version") {
+      dictionary->GetInteger("max_manifest_version", &max_manifest_version_);
+    } else if (key == "noparent") {
+      dictionary->GetBoolean("noparent", &no_parent_);
+    } else if (key == "component_extensions_auto_granted") {
+      dictionary->GetBoolean("component_extensions_auto_granted",
+                             &component_extensions_auto_granted_);
+    } else if (key == "command_line_switch") {
+      dictionary->GetString("command_line_switch", &command_line_switch_);
+    }
+  }
 
   // NOTE: ideally we'd sanity check that "matches" can be specified if and
   // only if there's a "web_page" or "webui" context, but without
@@ -309,7 +328,7 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
 
   std::string result;
   for (const auto& filter : filters_) {
-    result = filter->Parse(value);
+    result = filter->Parse(dictionary);
     if (!result.empty())
       break;
   }
@@ -330,7 +349,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   Manifest::Type type_to_check = (type == Manifest::TYPE_USER_SCRIPT) ?
       Manifest::TYPE_EXTENSION : type;
   if (!extension_types_.empty() &&
-      !ContainsKey(extension_types_, type_to_check)) {
+      !ContainsValue(extension_types_, type_to_check)) {
     return CreateAvailability(INVALID_TYPE, type);
   }
 
@@ -363,7 +382,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (!MatchesManifestLocation(location))
     return CreateAvailability(INVALID_LOCATION, type);
 
-  if (!platforms_.empty() && !ContainsKey(platforms_, platform))
+  if (!platforms_.empty() && !ContainsValue(platforms_, platform))
     return CreateAvailability(INVALID_PLATFORM, type);
 
   if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
@@ -407,7 +426,7 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
       return result;
   }
 
-  if (!contexts_.empty() && !ContainsKey(contexts_, context))
+  if (!contexts_.empty() && !ContainsValue(contexts_, context))
     return CreateAvailability(INVALID_CONTEXT, context);
 
   // TODO(kalman): Consider checking |matches_| regardless of context type.
@@ -539,17 +558,27 @@ bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
 }
 
 // static
-bool SimpleFeature::IsIdInList(const std::string& extension_id,
-                               const std::set<std::string>& list) {
-  // Belt-and-suspenders philosophy here. We should be pretty confident by this
-  // point that we've validated the extension ID format, but in case something
-  // slips through, we avoid a class of attack where creative ID manipulation
-  // leads to hash collisions.
-  if (extension_id.length() != 32)  // 128 bits / 4 = 32 mpdecimal characters
+bool SimpleFeature::IsIdInArray(const std::string& extension_id,
+                                const char* const array[],
+                                size_t array_length) {
+  if (!IsValidExtensionId(extension_id))
     return false;
 
-  return (ContainsKey(list, extension_id) ||
-          ContainsKey(list, HashExtensionId(extension_id)));
+  const char* const* start = array;
+  const char* const* end = array + array_length;
+
+  return ((std::find(start, end, extension_id) != end) ||
+          (std::find(start, end, HashExtensionId(extension_id)) != end));
+}
+
+// static
+bool SimpleFeature::IsIdInList(const std::string& extension_id,
+                               const std::vector<std::string>& list) {
+  if (!IsValidExtensionId(extension_id))
+    return false;
+
+  return (ContainsValue(list, extension_id) ||
+          ContainsValue(list, HashExtensionId(extension_id)));
 }
 
 bool SimpleFeature::MatchesManifestLocation(
@@ -581,6 +610,16 @@ Feature::Availability SimpleFeature::CheckDependencies(
       return dependency_availability;
   }
   return CreateAvailability(IS_AVAILABLE);
+}
+
+// static
+bool SimpleFeature::IsValidExtensionId(const std::string& extension_id) {
+  // Belt-and-suspenders philosophy here. We should be pretty confident by this
+  // point that we've validated the extension ID format, but in case something
+  // slips through, we avoid a class of attack where creative ID manipulation
+  // leads to hash collisions.
+  // 128 bits / 4 = 32 mpdecimal characters
+  return (extension_id.length() == 32);
 }
 
 }  // namespace extensions

@@ -41,11 +41,8 @@ bool ExternalComponentLoader::IsModifiable(const Extension* extension) {
         "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
         "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
     };
-    return SimpleFeature::IsIdInList(
-        extension->id(),
-        std::set<std::string>(
-            kEnhancedExtensions,
-            kEnhancedExtensions + arraysize(kEnhancedExtensions)));
+    return SimpleFeature::IsIdInArray(
+        extension->id(), kEnhancedExtensions, arraysize(kEnhancedExtensions));
   }
   return false;
 }

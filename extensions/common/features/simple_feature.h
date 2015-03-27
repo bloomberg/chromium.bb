@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
@@ -21,52 +22,15 @@
 
 namespace extensions {
 
+class BaseFeatureProviderTest;
+class ExtensionAPITest;
+class ManifestUnitTest;
+class SimpleFeatureTest;
+
 class SimpleFeature : public Feature {
  public:
   SimpleFeature();
   ~SimpleFeature() override;
-
-  // Similar to Manifest::Location, these are the classes of locations
-  // supported in feature files.
-  //
-  // This is only public for testing. Production code should never access it,
-  // nor should it really have any reason to access the SimpleFeature class
-  // directly, it should be dealing with the Feature interface.
-  enum Location {
-    UNSPECIFIED_LOCATION,
-    COMPONENT_LOCATION,
-    EXTERNAL_COMPONENT_LOCATION,
-    POLICY_LOCATION,
-  };
-
-  // Accessors defined for testing. See comment above about not directly using
-  // SimpleFeature in production code.
-  std::set<std::string>* blacklist() { return &blacklist_; }
-  const std::set<std::string>* blacklist() const { return &blacklist_; }
-  std::set<std::string>* whitelist() { return &whitelist_; }
-  const std::set<std::string>* whitelist() const { return &whitelist_; }
-  std::set<Manifest::Type>* extension_types() { return &extension_types_; }
-  const std::set<Manifest::Type>* extension_types() const {
-    return &extension_types_;
-  }
-  std::set<Context>* contexts() { return &contexts_; }
-  const std::set<Context>* contexts() const { return &contexts_; }
-  Location location() const { return location_; }
-  void set_location(Location location) { location_ = location; }
-  int min_manifest_version() const { return min_manifest_version_; }
-  void set_min_manifest_version(int min_manifest_version) {
-    min_manifest_version_ = min_manifest_version;
-  }
-  int max_manifest_version() const { return max_manifest_version_; }
-  void set_max_manifest_version(int max_manifest_version) {
-    max_manifest_version_ = max_manifest_version;
-  }
-  const std::string& command_line_switch() const {
-    return command_line_switch_;
-  }
-  void set_command_line_switch(const std::string& command_line_switch) {
-    command_line_switch_ = command_line_switch;
-  }
 
   // Dependency resolution is a property of Features that is preferrably
   // handled internally to avoid temptation, but FeatureFilters may need
@@ -80,9 +44,7 @@ class SimpleFeature : public Feature {
   // Unspecified values in the JSON are not modified in the object. This allows
   // us to implement inheritance by parsing one value after another. Returns
   // the error found, or an empty string on success.
-  virtual std::string Parse(const base::DictionaryValue* value);
-
-  std::set<Platform>* platforms() { return &platforms_; }
+  virtual std::string Parse(const base::DictionaryValue* dictionary);
 
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context) const {
@@ -120,10 +82,51 @@ class SimpleFeature : public Feature {
 
   bool IsIdInBlacklist(const std::string& extension_id) const override;
   bool IsIdInWhitelist(const std::string& extension_id) const override;
-  static bool IsIdInList(const std::string& extension_id,
-                         const std::set<std::string>& list);
+
+  static bool IsIdInArray(const std::string& extension_id,
+                          const char* const array[],
+                          size_t array_length);
 
  protected:
+  // Similar to Manifest::Location, these are the classes of locations
+  // supported in feature files. Production code should never directly access
+  // these.
+  enum Location {
+    UNSPECIFIED_LOCATION,
+    COMPONENT_LOCATION,
+    EXTERNAL_COMPONENT_LOCATION,
+    POLICY_LOCATION,
+  };
+
+  // Accessors defined for testing.
+  std::vector<std::string>* blacklist() { return &blacklist_; }
+  const std::vector<std::string>* blacklist() const { return &blacklist_; }
+  std::vector<std::string>* whitelist() { return &whitelist_; }
+  const std::vector<std::string>* whitelist() const { return &whitelist_; }
+  std::vector<Manifest::Type>* extension_types() { return &extension_types_; }
+  const std::vector<Manifest::Type>* extension_types() const {
+    return &extension_types_;
+  }
+  std::vector<Context>* contexts() { return &contexts_; }
+  const std::vector<Context>* contexts() const { return &contexts_; }
+  std::vector<Platform>* platforms() { return &platforms_; }
+  Location location() const { return location_; }
+  void set_location(Location location) { location_ = location; }
+  int min_manifest_version() const { return min_manifest_version_; }
+  void set_min_manifest_version(int min_manifest_version) {
+    min_manifest_version_ = min_manifest_version;
+  }
+  int max_manifest_version() const { return max_manifest_version_; }
+  void set_max_manifest_version(int max_manifest_version) {
+    max_manifest_version_ = max_manifest_version;
+  }
+  const std::string& command_line_switch() const {
+    return command_line_switch_;
+  }
+  void set_command_line_switch(const std::string& command_line_switch) {
+    command_line_switch_ = command_line_switch;
+  }
+
   // Handy utilities which construct the correct availability message.
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
@@ -134,23 +137,55 @@ class SimpleFeature : public Feature {
                                   Context context) const;
 
  private:
+  friend class SimpleFeatureTest;
+  FRIEND_TEST_ALL_PREFIXES(BaseFeatureProviderTest, ManifestFeatureTypes);
+  FRIEND_TEST_ALL_PREFIXES(BaseFeatureProviderTest, PermissionFeatureTypes);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
+  FRIEND_TEST_ALL_PREFIXES(ManifestUnitTest, Extension);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Blacklist);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, CommandLineSwitch);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Context);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdBlacklist);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdWhitelist);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Inheritance);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Location);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ManifestVersion);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, PackageType);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseContexts);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseLocation);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseManifestVersion);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseNull);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParsePackageTypes);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParsePlatforms);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseWhitelist);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Platform);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Whitelist);
+
+  // Holds String to Enum value mappings.
+  struct Mappings;
+
+  static bool IsIdInList(const std::string& extension_id,
+                         const std::vector<std::string>& list);
+
   bool MatchesManifestLocation(Manifest::Location manifest_location) const;
 
   Availability CheckDependencies(
       const base::Callback<Availability(const Feature*)>& checker) const;
 
+  static bool IsValidExtensionId(const std::string& extension_id);
+
   // For clarity and consistency, we handle the default value of each of these
   // members the same way: it matches everything. It is up to the higher level
   // code that reads Features out of static data to validate that data and set
   // sensible defaults.
-  std::set<std::string> blacklist_;
-  std::set<std::string> whitelist_;
-  std::set<std::string> dependencies_;
-  std::set<Manifest::Type> extension_types_;
-  std::set<Context> contexts_;
+  std::vector<std::string> blacklist_;
+  std::vector<std::string> whitelist_;
+  std::vector<std::string> dependencies_;
+  std::vector<Manifest::Type> extension_types_;
+  std::vector<Context> contexts_;
+  std::vector<Platform> platforms_;
   URLPatternSet matches_;
   Location location_;
-  std::set<Platform> platforms_;
   int min_manifest_version_;
   int max_manifest_version_;
   bool component_extensions_auto_granted_;

@@ -263,10 +263,8 @@ bool AppWindowCreateFunction::RunAsync() {
         "0F585FB1D0FDFBEBCE1FEB5E9DFFB6DA476B8C9B"
       };
       if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev() &&
-          !SimpleFeature::IsIdInList(
-              extension_id(),
-              std::set<std::string>(kWhitelist,
-                                    kWhitelist + arraysize(kWhitelist)))) {
+          !SimpleFeature::IsIdInArray(
+              extension_id(), kWhitelist, arraysize(kWhitelist))) {
         error_ = app_window_constants::kAlphaEnabledWrongChannel;
         return false;
       }

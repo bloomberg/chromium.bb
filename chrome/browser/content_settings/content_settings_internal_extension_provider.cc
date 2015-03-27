@@ -138,10 +138,10 @@ void InternalExtensionProvider::Observe(
           "48CA541313139786F056DBCB504A1025CFF5D2E3",
           "05106136AE7F08A3C181D4648E5438350B1D2B4F"
         };
-        if (extensions::SimpleFeature::IsIdInList(
+        if (extensions::SimpleFeature::IsIdInArray(
                 host->extension()->id(),
-                std::set<std::string>(
-                    kAppWhitelist, kAppWhitelist + arraysize(kAppWhitelist)))) {
+                kAppWhitelist,
+                arraysize(kAppWhitelist))) {
           SetContentSettingForExtensionAndResource(
               host->extension(),
               ChromeContentClient::kRemotingViewerPluginPath,

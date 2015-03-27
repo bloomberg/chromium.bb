@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
@@ -25,19 +26,6 @@ struct IsAvailableTestData {
   Feature::AvailabilityResult expected_result;
 };
 
-bool LocationIsAvailable(SimpleFeature::Location feature_location,
-                         Manifest::Location manifest_location) {
-  SimpleFeature feature;
-  feature.set_location(feature_location);
-  Feature::AvailabilityResult availability_result =
-      feature.IsAvailableToManifest(std::string(),
-                                    Manifest::TYPE_UNKNOWN,
-                                    manifest_location,
-                                    -1,
-                                    Feature::UNSPECIFIED_PLATFORM).result();
-  return availability_result == Feature::IS_AVAILABLE;
-}
-
 class ScopedCommandLineSwitch {
  public:
   explicit ScopedCommandLineSwitch(const std::string& arg)
@@ -55,7 +43,23 @@ class ScopedCommandLineSwitch {
 
 }  // namespace
 
-TEST(SimpleFeatureTest, IsAvailableNullCase) {
+class SimpleFeatureTest : public testing::Test {
+ protected:
+  bool LocationIsAvailable(SimpleFeature::Location feature_location,
+                           Manifest::Location manifest_location) {
+    SimpleFeature feature;
+    feature.set_location(feature_location);
+    Feature::AvailabilityResult availability_result =
+        feature.IsAvailableToManifest(std::string(),
+                                      Manifest::TYPE_UNKNOWN,
+                                      manifest_location,
+                                      -1,
+                                      Feature::UNSPECIFIED_PLATFORM).result();
+    return availability_result == Feature::IS_AVAILABLE;
+  }
+};
+
+TEST_F(SimpleFeatureTest, IsAvailableNullCase) {
   const IsAvailableTestData tests[] = {
       {"", Manifest::TYPE_UNKNOWN, Manifest::INVALID_LOCATION,
        Feature::UNSPECIFIED_PLATFORM, -1, Feature::IS_AVAILABLE},
@@ -84,13 +88,13 @@ TEST(SimpleFeatureTest, IsAvailableNullCase) {
   }
 }
 
-TEST(SimpleFeatureTest, Whitelist) {
+TEST_F(SimpleFeatureTest, Whitelist) {
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
   SimpleFeature feature;
-  feature.whitelist()->insert(kIdFoo);
-  feature.whitelist()->insert(kIdBar);
+  feature.whitelist()->push_back(kIdFoo);
+  feature.whitelist()->push_back(kIdBar);
 
   EXPECT_EQ(
       Feature::IS_AVAILABLE,
@@ -122,7 +126,7 @@ TEST(SimpleFeatureTest, Whitelist) {
                                     -1,
                                     Feature::UNSPECIFIED_PLATFORM).result());
 
-  feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
+  feature.extension_types()->push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
   EXPECT_EQ(
       Feature::NOT_FOUND_IN_WHITELIST,
       feature.IsAvailableToManifest(kIdBaz,
@@ -132,14 +136,14 @@ TEST(SimpleFeatureTest, Whitelist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, HashedIdWhitelist) {
+TEST_F(SimpleFeatureTest, HashedIdWhitelist) {
   // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
   //   sha1sum | tr '[:lower:]' '[:upper:]'
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
   SimpleFeature feature;
 
-  feature.whitelist()->insert(kIdFooHashed);
+  feature.whitelist()->push_back(kIdFooHashed);
 
   EXPECT_EQ(
       Feature::IS_AVAILABLE,
@@ -171,13 +175,13 @@ TEST(SimpleFeatureTest, HashedIdWhitelist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, Blacklist) {
+TEST_F(SimpleFeatureTest, Blacklist) {
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
   SimpleFeature feature;
-  feature.blacklist()->insert(kIdFoo);
-  feature.blacklist()->insert(kIdBar);
+  feature.blacklist()->push_back(kIdFoo);
+  feature.blacklist()->push_back(kIdBar);
 
   EXPECT_EQ(
       Feature::FOUND_IN_BLACKLIST,
@@ -210,14 +214,14 @@ TEST(SimpleFeatureTest, Blacklist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, HashedIdBlacklist) {
+TEST_F(SimpleFeatureTest, HashedIdBlacklist) {
   // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
   //   sha1sum | tr '[:lower:]' '[:upper:]'
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
   SimpleFeature feature;
 
-  feature.blacklist()->insert(kIdFooHashed);
+  feature.blacklist()->push_back(kIdFooHashed);
 
   EXPECT_EQ(
       Feature::FOUND_IN_BLACKLIST,
@@ -249,10 +253,10 @@ TEST(SimpleFeatureTest, HashedIdBlacklist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, PackageType) {
+TEST_F(SimpleFeatureTest, PackageType) {
   SimpleFeature feature;
-  feature.extension_types()->insert(Manifest::TYPE_EXTENSION);
-  feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
+  feature.extension_types()->push_back(Manifest::TYPE_EXTENSION);
+  feature.extension_types()->push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   EXPECT_EQ(
       Feature::IS_AVAILABLE,
@@ -285,12 +289,12 @@ TEST(SimpleFeatureTest, PackageType) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, Context) {
+TEST_F(SimpleFeatureTest, Context) {
   SimpleFeature feature;
   feature.set_name("somefeature");
-  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
-  feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
-  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
+  feature.contexts()->push_back(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.extension_types()->push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+  feature.platforms()->push_back(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(21);
   feature.set_max_manifest_version(25);
 
@@ -307,14 +311,14 @@ TEST(SimpleFeatureTest, Context) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(extension.get());
 
-  feature.whitelist()->insert("monkey");
+  feature.whitelist()->push_back("monkey");
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::CHROMEOS_PLATFORM).result());
   feature.whitelist()->clear();
 
   feature.extension_types()->clear();
-  feature.extension_types()->insert(Manifest::TYPE_THEME);
+  feature.extension_types()->push_back(Manifest::TYPE_THEME);
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -326,10 +330,10 @@ TEST(SimpleFeatureTest, Context) {
   }
 
   feature.extension_types()->clear();
-  feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
+  feature.extension_types()->push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
   feature.contexts()->clear();
-  feature.contexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
-  feature.contexts()->insert(Feature::CONTENT_SCRIPT_CONTEXT);
+  feature.contexts()->push_back(Feature::UNBLESSED_EXTENSION_CONTEXT);
+  feature.contexts()->push_back(Feature::CONTENT_SCRIPT_CONTEXT);
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -340,7 +344,7 @@ TEST(SimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.contexts()->insert(Feature::WEB_PAGE_CONTEXT);
+  feature.contexts()->push_back(Feature::WEB_PAGE_CONTEXT);
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -352,7 +356,7 @@ TEST(SimpleFeatureTest, Context) {
   }
 
   feature.contexts()->clear();
-  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.contexts()->push_back(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.set_location(SimpleFeature::COMPONENT_LOCATION);
   EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -376,7 +380,7 @@ TEST(SimpleFeatureTest, Context) {
   feature.set_max_manifest_version(25);
 }
 
-TEST(SimpleFeatureTest, Location) {
+TEST_F(SimpleFeatureTest, Location) {
   // Component extensions can access any location.
   EXPECT_TRUE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
                                   Manifest::COMPONENT));
@@ -423,9 +427,9 @@ TEST(SimpleFeatureTest, Location) {
                                   Manifest::EXTERNAL_COMPONENT));
 }
 
-TEST(SimpleFeatureTest, Platform) {
+TEST_F(SimpleFeatureTest, Platform) {
   SimpleFeature feature;
-  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
+  feature.platforms()->push_back(Feature::CHROMEOS_PLATFORM);
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature.IsAvailableToManifest(std::string(),
                                           Manifest::TYPE_UNKNOWN,
@@ -441,7 +445,7 @@ TEST(SimpleFeatureTest, Platform) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, ManifestVersion) {
+TEST_F(SimpleFeatureTest, ManifestVersion) {
   SimpleFeature feature;
   feature.set_min_manifest_version(5);
 
@@ -500,7 +504,7 @@ TEST(SimpleFeatureTest, ManifestVersion) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST(SimpleFeatureTest, ParseNull) {
+TEST_F(SimpleFeatureTest, ParseNull) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
@@ -513,7 +517,7 @@ TEST(SimpleFeatureTest, ParseNull) {
   EXPECT_EQ(0, feature->max_manifest_version());
 }
 
-TEST(SimpleFeatureTest, ParseWhitelist) {
+TEST_F(SimpleFeatureTest, ParseWhitelist) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* whitelist = new base::ListValue();
   whitelist->Append(new base::StringValue("foo"));
@@ -522,11 +526,11 @@ TEST(SimpleFeatureTest, ParseWhitelist) {
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
   EXPECT_EQ(2u, feature->whitelist()->size());
-  EXPECT_TRUE(feature->whitelist()->count("foo"));
-  EXPECT_TRUE(feature->whitelist()->count("bar"));
+  EXPECT_TRUE(STLCount(*(feature->whitelist()), "foo"));
+  EXPECT_TRUE(STLCount(*(feature->whitelist()), "bar"));
 }
 
-TEST(SimpleFeatureTest, ParsePackageTypes) {
+TEST_F(SimpleFeatureTest, ParsePackageTypes) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* extension_types = new base::ListValue();
   extension_types->Append(new base::StringValue("extension"));
@@ -539,13 +543,19 @@ TEST(SimpleFeatureTest, ParsePackageTypes) {
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
   EXPECT_EQ(6u, feature->extension_types()->size());
-  EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_EXTENSION));
-  EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_THEME));
-  EXPECT_TRUE(feature->extension_types()->count(
-      Manifest::TYPE_LEGACY_PACKAGED_APP));
-  EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_HOSTED_APP));
-  EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_PLATFORM_APP));
-  EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_SHARED_MODULE));
+  EXPECT_TRUE(
+      STLCount(*(feature->extension_types()), Manifest::TYPE_EXTENSION));
+  EXPECT_TRUE(
+      STLCount(*(feature->extension_types()), Manifest::TYPE_THEME));
+  EXPECT_TRUE(
+      STLCount(
+          *(feature->extension_types()), Manifest::TYPE_LEGACY_PACKAGED_APP));
+  EXPECT_TRUE(
+      STLCount(*(feature->extension_types()), Manifest::TYPE_HOSTED_APP));
+  EXPECT_TRUE(
+      STLCount(*(feature->extension_types()), Manifest::TYPE_PLATFORM_APP));
+  EXPECT_TRUE(
+      STLCount(*(feature->extension_types()), Manifest::TYPE_SHARED_MODULE));
 
   value->SetString("extension_types", "all");
   scoped_ptr<SimpleFeature> feature2(new SimpleFeature());
@@ -553,7 +563,7 @@ TEST(SimpleFeatureTest, ParsePackageTypes) {
   EXPECT_EQ(*(feature->extension_types()), *(feature2->extension_types()));
 }
 
-TEST(SimpleFeatureTest, ParseContexts) {
+TEST_F(SimpleFeatureTest, ParseContexts) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* contexts = new base::ListValue();
   contexts->Append(new base::StringValue("blessed_extension"));
@@ -566,11 +576,16 @@ TEST(SimpleFeatureTest, ParseContexts) {
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
   EXPECT_EQ(6u, feature->contexts()->size());
-  EXPECT_TRUE(feature->contexts()->count(Feature::BLESSED_EXTENSION_CONTEXT));
-  EXPECT_TRUE(feature->contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
-  EXPECT_TRUE(feature->contexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
-  EXPECT_TRUE(feature->contexts()->count(Feature::WEB_PAGE_CONTEXT));
-  EXPECT_TRUE(feature->contexts()->count(Feature::BLESSED_WEB_PAGE_CONTEXT));
+  EXPECT_TRUE(
+      STLCount(*(feature->contexts()), Feature::BLESSED_EXTENSION_CONTEXT));
+  EXPECT_TRUE(
+      STLCount(*(feature->contexts()), Feature::UNBLESSED_EXTENSION_CONTEXT));
+  EXPECT_TRUE(
+      STLCount(*(feature->contexts()), Feature::CONTENT_SCRIPT_CONTEXT));
+  EXPECT_TRUE(
+      STLCount(*(feature->contexts()), Feature::WEB_PAGE_CONTEXT));
+  EXPECT_TRUE(
+      STLCount(*(feature->contexts()), Feature::BLESSED_WEB_PAGE_CONTEXT));
 
   value->SetString("contexts", "all");
   scoped_ptr<SimpleFeature> feature2(new SimpleFeature());
@@ -578,7 +593,7 @@ TEST(SimpleFeatureTest, ParseContexts) {
   EXPECT_EQ(*(feature->contexts()), *(feature2->contexts()));
 }
 
-TEST(SimpleFeatureTest, ParseLocation) {
+TEST_F(SimpleFeatureTest, ParseLocation) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("location", "component");
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
@@ -586,7 +601,7 @@ TEST(SimpleFeatureTest, ParseLocation) {
   EXPECT_EQ(SimpleFeature::COMPONENT_LOCATION, feature->location());
 }
 
-TEST(SimpleFeatureTest, ParsePlatforms) {
+TEST_F(SimpleFeatureTest, ParsePlatforms) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   base::ListValue* platforms = new base::ListValue();
@@ -609,15 +624,15 @@ TEST(SimpleFeatureTest, ParsePlatforms) {
   platforms->AppendString("win");
   platforms->AppendString("chromeos");
   feature->Parse(value.get());
-  std::set<Feature::Platform> expected_platforms;
-  expected_platforms.insert(Feature::CHROMEOS_PLATFORM);
-  expected_platforms.insert(Feature::WIN_PLATFORM);
+  std::vector<Feature::Platform> expected_platforms;
+  expected_platforms.push_back(Feature::CHROMEOS_PLATFORM);
+  expected_platforms.push_back(Feature::WIN_PLATFORM);
 
   EXPECT_FALSE(feature->platforms()->empty());
   EXPECT_EQ(expected_platforms, *feature->platforms());
 }
 
-TEST(SimpleFeatureTest, ParseManifestVersion) {
+TEST_F(SimpleFeatureTest, ParseManifestVersion) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("min_manifest_version", 1);
   value->SetInteger("max_manifest_version", 5);
@@ -627,13 +642,13 @@ TEST(SimpleFeatureTest, ParseManifestVersion) {
   EXPECT_EQ(5, feature->max_manifest_version());
 }
 
-TEST(SimpleFeatureTest, Inheritance) {
+TEST_F(SimpleFeatureTest, Inheritance) {
   SimpleFeature feature;
-  feature.whitelist()->insert("foo");
-  feature.extension_types()->insert(Manifest::TYPE_THEME);
-  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.whitelist()->push_back("foo");
+  feature.extension_types()->push_back(Manifest::TYPE_THEME);
+  feature.contexts()->push_back(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.set_location(SimpleFeature::COMPONENT_LOCATION);
-  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
+  feature.platforms()->push_back(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(1);
   feature.set_max_manifest_version(2);
 
@@ -644,10 +659,10 @@ TEST(SimpleFeatureTest, Inheritance) {
   EXPECT_EQ(1u, feature.whitelist()->size());
   EXPECT_EQ(1u, feature.extension_types()->size());
   EXPECT_EQ(1u, feature.contexts()->size());
-  EXPECT_EQ(1u, feature.whitelist()->count("foo"));
+  EXPECT_EQ(1, STLCount(*(feature.whitelist()), "foo"));
   EXPECT_EQ(SimpleFeature::COMPONENT_LOCATION, feature.location());
   EXPECT_EQ(1u, feature.platforms()->size());
-  EXPECT_EQ(1u, feature.platforms()->count(Feature::CHROMEOS_PLATFORM));
+  EXPECT_EQ(1, STLCount(*(feature.platforms()), Feature::CHROMEOS_PLATFORM));
   EXPECT_EQ(1, feature.min_manifest_version());
   EXPECT_EQ(2, feature.max_manifest_version());
 
@@ -668,15 +683,17 @@ TEST(SimpleFeatureTest, Inheritance) {
   EXPECT_EQ(1u, feature.whitelist()->size());
   EXPECT_EQ(1u, feature.extension_types()->size());
   EXPECT_EQ(1u, feature.contexts()->size());
-  EXPECT_EQ(1u, feature.whitelist()->count("bar"));
-  EXPECT_EQ(1u, feature.extension_types()->count(Manifest::TYPE_EXTENSION));
-  EXPECT_EQ(1u,
-            feature.contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
+  EXPECT_EQ(1, STLCount(*(feature.whitelist()), "bar"));
+  EXPECT_EQ(1,
+            STLCount(*(feature.extension_types()), Manifest::TYPE_EXTENSION));
+  EXPECT_EQ(1,
+            STLCount(
+                *(feature.contexts()), Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_EQ(2, feature.min_manifest_version());
   EXPECT_EQ(3, feature.max_manifest_version());
 }
 
-TEST(SimpleFeatureTest, CommandLineSwitch) {
+TEST_F(SimpleFeatureTest, CommandLineSwitch) {
   SimpleFeature feature;
   feature.set_command_line_switch("laser-beams");
   {
@@ -708,6 +725,25 @@ TEST(SimpleFeatureTest, CommandLineSwitch) {
     EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
               feature.IsAvailableToEnvironment().result());
   }
+}
+
+TEST_F(SimpleFeatureTest, IsIdInArray) {
+  EXPECT_FALSE(SimpleFeature::IsIdInArray("", {}, 0));
+  EXPECT_FALSE(SimpleFeature::IsIdInArray(
+      "bbbbccccdddddddddeeeeeeffffgghhh", {}, 0));
+
+  const char* const kIdArray[] = {
+    "bbbbccccdddddddddeeeeeeffffgghhh",
+    // aaaabbbbccccddddeeeeffffgggghhhh
+    "9A0417016F345C934A1A88F55CA17C05014EEEBA"
+  };
+  EXPECT_FALSE(SimpleFeature::IsIdInArray("", kIdArray, arraysize(kIdArray)));
+  EXPECT_FALSE(SimpleFeature::IsIdInArray(
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", kIdArray, arraysize(kIdArray)));
+  EXPECT_TRUE(SimpleFeature::IsIdInArray(
+      "bbbbccccdddddddddeeeeeeffffgghhh", kIdArray, arraysize(kIdArray)));
+  EXPECT_TRUE(SimpleFeature::IsIdInArray(
+      "aaaabbbbccccddddeeeeffffgggghhhh", kIdArray, arraysize(kIdArray)));
 }
 
 }  // namespace extensions
