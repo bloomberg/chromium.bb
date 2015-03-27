@@ -35,6 +35,6 @@ DevToolsNetworkConditions::~DevToolsNetworkConditions() {
 }
 
 bool DevToolsNetworkConditions::IsThrottling() const {
-  return (latency_ != 0) || (download_throughput_ != 0.0) ||
-      (upload_throughput_ != 0);
+  return !offline_ && ((latency_ != 0) || (download_throughput_ != 0.0) ||
+      (upload_throughput_ != 0));
 }
