@@ -1,0 +1,6 @@
+إعلانات
+إعلانات
+ This is a testharness.js-based test.
+PASS "direction" does not affect sub string lengths. 
+Harness: the test ran to completion.
+

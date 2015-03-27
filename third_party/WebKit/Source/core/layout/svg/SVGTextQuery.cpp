@@ -256,7 +256,7 @@ bool SVGTextQuery::subStringLengthCallback(Data* queryData, const SVGTextFragmen
     if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
         return false;
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset + startPosition, endPosition - startPosition, queryData->textLayoutObject->styleRef().direction());
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset + startPosition, endPosition - startPosition, queryData->textBox->direction());
     data->subStringLength += queryData->isVerticalText ? metrics.height() : metrics.width();
     return false;
 }
