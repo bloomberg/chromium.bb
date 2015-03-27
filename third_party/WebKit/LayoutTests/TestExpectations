@@ -803,6 +803,9 @@ crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 
+crbug.com/466946 fast/inline/outline-offset.html [ NeedsRebaseline ]
+crbug.com/466946 virtual/slimmingpaint/fast/inline/outline-offset.html [ NeedsRebaseline ]
+
 crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]

@@ -16,6 +16,7 @@
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "platform/geometry/LayoutPoint.h"
+#include <limits>
 
 namespace blink {
 
@@ -109,8 +110,12 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
     IntRect pixelSnappedBox = pixelSnappedIntRect(box);
     if (pixelSnappedBox.width() < 0 || pixelSnappedBox.height() < 0)
         return;
-    IntRect pixelSnappedLastLine = pixelSnappedIntRect(paintOffset.x() + lastline.x(), 0, lastline.width(), 0);
-    IntRect pixelSnappedNextLine = pixelSnappedIntRect(paintOffset.x() + nextline.x(), 0, nextline.width(), 0);
+    // Note that we use IntRect below for working with solely x/width values, simplifying logic at cost of a bit of memory.
+    IntRect pixelSnappedLastLine = pixelSnappedIntRect(paintOffset.x() + lastline.x() - offset, 0, lastline.width() + offset, 0);
+    IntRect pixelSnappedNextLine = pixelSnappedIntRect(paintOffset.x() + nextline.x() - offset, 0, nextline.width() + offset, 0);
+
+    const int fallbackMaxOutlineX = std::numeric_limits<int>::max();
+    const int fallbackMinOutlineX = std::numeric_limits<int>::min();
 
     // left edge
     ObjectPainter::drawLineForBoxSide(graphicsContext,
@@ -140,7 +145,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
         ObjectPainter::drawLineForBoxSide(graphicsContext,
             pixelSnappedBox.x() - outlineWidth,
             pixelSnappedBox.y() - outlineWidth,
-            std::min(pixelSnappedBox.maxX() + outlineWidth, (lastline.isEmpty() ? 1000000 : pixelSnappedLastLine.x())),
+            std::min(pixelSnappedBox.maxX() + outlineWidth, (lastline.isEmpty() ? fallbackMaxOutlineX : pixelSnappedLastLine.x())),
             pixelSnappedBox.y(),
             BSTop, outlineColor, outlineStyle,
             outlineWidth,
@@ -150,7 +155,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
 
     if (lastline.maxX() < thisline.maxX()) {
         ObjectPainter::drawLineForBoxSide(graphicsContext,
-            std::max(lastline.isEmpty() ? -1000000 : pixelSnappedLastLine.maxX(), pixelSnappedBox.x() - outlineWidth),
+            std::max(lastline.isEmpty() ? fallbackMinOutlineX : pixelSnappedLastLine.maxX(), pixelSnappedBox.x() - outlineWidth),
             pixelSnappedBox.y() - outlineWidth,
             pixelSnappedBox.maxX() + outlineWidth,
             pixelSnappedBox.y(),
@@ -176,7 +181,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
         ObjectPainter::drawLineForBoxSide(graphicsContext,
             pixelSnappedBox.x() - outlineWidth,
             pixelSnappedBox.maxY(),
-            std::min(pixelSnappedBox.maxX() + outlineWidth, !nextline.isEmpty() ? pixelSnappedNextLine.x() + 1 : 1000000),
+            std::min(pixelSnappedBox.maxX() + outlineWidth, !nextline.isEmpty() ? pixelSnappedNextLine.x() + 1 : fallbackMaxOutlineX),
             pixelSnappedBox.maxY() + outlineWidth,
             BSBottom, outlineColor, outlineStyle,
             outlineWidth,
@@ -186,7 +191,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
 
     if (nextline.maxX() < thisline.maxX()) {
         ObjectPainter::drawLineForBoxSide(graphicsContext,
-            std::max(!nextline.isEmpty() ? pixelSnappedNextLine.maxX() : -1000000, pixelSnappedBox.x() - outlineWidth),
+            std::max(!nextline.isEmpty() ? pixelSnappedNextLine.maxX() : fallbackMinOutlineX, pixelSnappedBox.x() - outlineWidth),
             pixelSnappedBox.maxY(),
             pixelSnappedBox.maxX() + outlineWidth,
             pixelSnappedBox.maxY() + outlineWidth,
