@@ -702,6 +702,18 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   RenderFrameHostImpl* render_frame_host =
       frame_tree_node->render_manager()->GetFrameHostForNavigation(
           *navigation_request);
+
+  // The renderer can exit view source mode when any error or cancellation
+  // happen. When reusing the same renderer, overwrite to recover the mode.
+  if (navigation_request->is_view_source() &&
+      render_frame_host ==
+          frame_tree_node->render_manager()->current_frame_host()) {
+    DCHECK(!render_frame_host->GetParent());
+    render_frame_host->render_view_host()->Send(
+        new ViewMsg_EnableViewSourceMode(
+            render_frame_host->render_view_host()->GetRoutingID()));
+  }
+
   CheckWebUIRendererDoesNotDisplayNormalURL(
       render_frame_host, navigation_request->common_params().url);
 
