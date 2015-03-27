@@ -1400,7 +1400,7 @@ bool LayoutBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     return false;
 }
 
-PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
+PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
 {
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 

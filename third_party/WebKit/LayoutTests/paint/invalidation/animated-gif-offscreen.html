@@ -1,0 +1,33 @@
+<!doctype HTML>
+<body>
+<div style="height: 2000px; width: 2000px;">
+<img id="targetImage">
+</div>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+
+// The image should not show a repaint if offscreen if Slimming Paint is on.
+// Otherwise it should, during this 200ms waiting period.
+
+function myfunc() {
+  testRunner.displayAsyncThen(finishRepaintTest);
+}
+
+function targetImageOnload() {
+  window.scrollTo(0, 1000); // Put the image offscreen.
+  testRunner.displayAsyncThen(function() {
+    setTimeout(myfunc, 400); // The initial red frame of the GIF has a 100ms duration
+  });
+}
+
+function repaintTest() {
+  targetImage.onload = targetImageOnload;
+  targetImage.src="../../fast/backgrounds/resources/red-green-animated.gif";
+}
+
+runRepaintTest();
+
+</script>
+
+</script>

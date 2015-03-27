@@ -169,7 +169,7 @@ public:
 
     void pushLayoutState(LayoutState& layoutState) { m_layoutState = &layoutState; }
     void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
+    virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override final;
 
 private:
     virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;

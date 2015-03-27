@@ -41,7 +41,7 @@ public:
 
     virtual DeprecatedPaintLayerType layerTypeRequired() const override final { return NoDeprecatedPaintLayer; }
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
+    virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override;
 
     // Transitioning out of SVG painters requires updating the PaintInfo rect which is only used by non-SVG painters.
     void updatePaintInfoRect(IntRect&);

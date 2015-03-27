@@ -19,10 +19,10 @@ class LayoutView;
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
-    PaintInvalidationState(const PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer);
-    PaintInvalidationState(const PaintInvalidationState& next, const LayoutSVGModelObject& renderer);
+    PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer);
+    PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& renderer);
 
-    explicit PaintInvalidationState(const LayoutView&);
+    explicit PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations);
 
     const LayoutRect& clipRect() const { return m_clipRect; }
     const LayoutSize& paintOffset() const { return m_paintOffset; }
@@ -40,6 +40,11 @@ public:
     {
         return m_cachedOffsetsEnabled && container == &m_paintInvalidationContainer;
     }
+
+    // Records |obj| as needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
+    void pushDelayedPaintInvalidationTarget(LayoutObject& obj) { m_pendingDelayedPaintInvalidations.append(&obj); }
+    Vector<LayoutObject*>& pendingDelayedPaintInvalidationTargets() { return m_pendingDelayedPaintInvalidations; }
+
 private:
     void applyClipIfNeeded(const LayoutObject&);
     void addClipRectRelativeToPaintOffset(const LayoutSize& clipSize);
@@ -61,6 +66,8 @@ private:
     // SVG root to the userspace _before_ the relevant element. Combining this
     // with |m_paintOffset| yields the "final" offset.
     OwnPtr<AffineTransform> m_svgTransform;
+
+    Vector<LayoutObject*>& m_pendingDelayedPaintInvalidations;
 };
 
 } // namespace blink

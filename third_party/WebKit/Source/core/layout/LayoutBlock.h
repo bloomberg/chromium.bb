@@ -324,7 +324,7 @@ protected:
 
     virtual bool isInlineBlockOrInlineTable() const override final { return isInline() && isReplaced(); }
 
-    virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState) override;
+    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
 
 private:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }

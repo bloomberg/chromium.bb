@@ -646,7 +646,7 @@ private:
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
 
-    void invalidateTreeIfNeeded();
+    void invalidateTreeIfNeeded(Vector<LayoutObject*>& pendingDelayedPaintInvalidations);
 
     DocumentLifecycle& lifecycle() const;
 

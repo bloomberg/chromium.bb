@@ -251,7 +251,7 @@ void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const 
     }
 }
 
-void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
@@ -265,6 +265,9 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
 
     PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
     clearPaintInvalidationState(paintInvalidationState);
+
+    if (reason == PaintInvalidationDelayedFull)
+        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
     if (reason == PaintInvalidationLocationChange)

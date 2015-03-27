@@ -1,0 +1,29 @@
+<!doctype HTML>
+<body>
+<div style="height: 2000px; width: 2000px;">
+<img id="targetImage">
+</div>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+
+// Tests that a repaint of the image occurs during the 200ms waiting period.
+
+function myfunc() {
+  testRunner.displayAsyncThen(finishRepaintTest);
+}
+
+function targetImageOnload() {
+  testRunner.displayAsyncThen(function() {
+    setTimeout(myfunc, 400); // The initial red frame of the GIF has a 100ms duration
+  });
+}
+
+function repaintTest() {
+  targetImage.onload = targetImageOnload;
+  targetImage.src="../../fast/backgrounds/resources/red-green-animated.gif";
+}
+
+runRepaintTest();
+
+</script>

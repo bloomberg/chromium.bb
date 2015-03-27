@@ -751,7 +751,7 @@ protected:
     virtual bool paintInvalidationStateIsDirty() const override;
 #endif
 
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
 
     virtual bool hasNonCompositedScrollbars() const override final;
 

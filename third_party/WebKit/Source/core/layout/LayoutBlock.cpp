@@ -363,7 +363,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addLayoutObject(this);
 }
 
-void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
+void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
 {
     LayoutBox::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 

@@ -882,7 +882,7 @@ public:
     void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
 
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
+    virtual void invalidateTreeIfNeeded(PaintInvalidationState&);
 
     virtual void invalidatePaintForOverflow();
     void invalidatePaintForOverflowIfNeeded();
@@ -1213,8 +1213,8 @@ protected:
     }
 #endif
 
-    virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState);
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
+    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState);
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,

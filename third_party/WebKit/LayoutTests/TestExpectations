@@ -23,6 +23,12 @@ crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 
 crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
+# The screen rectangle differs by one pixel on Windows.
+crbug.com/440466 paint/invalidation/animated-gif.html [ NeedsRebaseline ]
+crbug.com/440466 paint/invalidation/animated-gif-offscreen.html [ NeedsRebaseline ]
+crbug.com/440466 virtual/slimmingpaint/paint/invalidation/animated-gif.html [ NeedsRebaseline ]
+crbug.com/440466 virtual/slimmingpaint/paint/invalidation/animated-gif-offscreen.html [ NeedsRebaseline ]
+
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 # This needs a manual rebaseline for Mac after crbug.com/452967
@@ -108,6 +114,8 @@ crbug.com/443596 [ Mac ] media/sources-fallback-codecs.html [ Failure Pass ]
 crbug.com/443596 [ Win ] media/sources-fallback-codecs.html [ Failure Pass ]
 
 crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Pass Timeout ]
+
+crbug.com/453957 virtual/slimmingpaint/paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsRebaseline ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]

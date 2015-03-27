@@ -217,6 +217,12 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "paint",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "svg/text",
     "args": ["--enable-slimming-paint"],
     "reference_args": []

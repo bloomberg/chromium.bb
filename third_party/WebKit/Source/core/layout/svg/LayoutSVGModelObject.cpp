@@ -126,7 +126,7 @@ IntRect LayoutSVGModelObject::absoluteFocusRingBoundingBoxRect() const
     return localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())).enclosingBoundingBox();
 }
 
-void LayoutSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void LayoutSVGModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 

@@ -1113,7 +1113,7 @@ void FrameView::layout()
 // method would setNeedsRedraw on the GraphicsLayers with invalidations and
 // let the compositor pick which to actually draw.
 // See http://crbug.com/306706
-void FrameView::invalidateTreeIfNeeded()
+void FrameView::invalidateTreeIfNeeded(Vector<LayoutObject*>& pendingDelayedPaintInvalidations)
 {
     ASSERT(layoutView());
     LayoutView& rootForPaintInvalidation = *layoutView();
@@ -1121,7 +1121,7 @@ void FrameView::invalidateTreeIfNeeded()
 
     TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation.debugName().ascii());
 
-    PaintInvalidationState rootPaintInvalidationState(rootForPaintInvalidation);
+    PaintInvalidationState rootPaintInvalidationState(rootForPaintInvalidation, pendingDelayedPaintInvalidations);
 
     // In slimming paint mode we do per-object invalidation.
     if (m_doFullPaintInvalidation && !RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -1135,7 +1135,6 @@ void FrameView::invalidateTreeIfNeeded()
     if (hasHorizontalBarDamage())
         invalidateRect(horizontalBarDamage());
     resetScrollbarDamage();
-
 
 #if ENABLE(ASSERT)
     layoutView()->assertSubtreeClearedPaintInvalidationState();
@@ -2607,7 +2606,10 @@ void FrameView::invalidateTreeIfNeededRecursive()
 {
     // FIXME: We should be more aggressive at cutting tree traversals.
     lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
-    invalidateTreeIfNeeded();
+
+    Vector<LayoutObject*> pendingDelayedPaintInvalidations;
+
+    invalidateTreeIfNeeded(pendingDelayedPaintInvalidations);
 
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
@@ -2618,6 +2620,10 @@ void FrameView::invalidateTreeIfNeededRecursive()
 
     m_doFullPaintInvalidation = false;
     lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
+
+    // Process objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
+    for (auto& target : pendingDelayedPaintInvalidations)
+        target->setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
 }
 
 void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)

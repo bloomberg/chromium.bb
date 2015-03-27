@@ -38,7 +38,7 @@ public:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || LayoutReplaced::isOfType(type); }
     virtual DeprecatedPaintLayerType layerTypeRequired() const override;
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject&) override final;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) override final;
 
     void canvasSizeChanged();
 

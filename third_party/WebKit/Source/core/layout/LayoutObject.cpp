@@ -1194,7 +1194,7 @@ void LayoutObject::invalidatePaintRectangle(const LayoutRect& r) const
     }
 }
 
-void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void LayoutObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
@@ -1203,12 +1203,16 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
     clearPaintInvalidationState(paintInvalidationState);
+
+    if (reason == PaintInvalidationDelayedFull)
+        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
+
     invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
 }
 
-void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
+void LayoutObject::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
 {
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
@@ -1274,7 +1278,7 @@ void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paint
     fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
 }
 
-PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     LayoutView* v = view();
     if (v->document().printing())

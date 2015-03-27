@@ -14,11 +14,12 @@
 
 namespace blink {
 
-PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView)
+PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(false)
     , m_paintInvalidationContainer(*layoutView.containerForPaintInvalidation())
+    , m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations)
 {
     bool establishesPaintInvalidationContainer = layoutView == m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
@@ -34,11 +35,12 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView)
     m_clipped = true;
 }
 
-PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
     , m_paintInvalidationContainer(paintInvalidationContainer)
+    , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
 {
     // FIXME: SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054
     bool establishesPaintInvalidationContainer = renderer == m_paintInvalidationContainer;
@@ -89,13 +91,14 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
-PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, const LayoutSVGModelObject& renderer)
+PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& renderer)
     : m_clipped(next.m_clipped)
     , m_cachedOffsetsEnabled(next.m_cachedOffsetsEnabled)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
     , m_clipRect(next.m_clipRect)
     , m_paintOffset(next.m_paintOffset)
     , m_paintInvalidationContainer(next.m_paintInvalidationContainer)
+    , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
 {
     ASSERT(renderer != m_paintInvalidationContainer);
 

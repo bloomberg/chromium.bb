@@ -76,7 +76,7 @@ private:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
     virtual IntRect absoluteFocusRingBoundingBoxRect() const override final;
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
+    virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override final;
 
 protected:
     FloatRect m_paintInvalidationBoundingBox;

@@ -275,7 +275,6 @@ String BitmapImage::filenameExtension() const
 void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
-
     SkBitmap bitmap;
     if (!bitmapForCurrentFrame(&bitmap))
         return; // It's too early and we don't have an image yet.

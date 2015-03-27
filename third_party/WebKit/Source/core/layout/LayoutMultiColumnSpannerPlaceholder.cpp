@@ -91,7 +91,7 @@ void LayoutMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, Layou
     computedValues.m_margins.m_after = marginAfter();
 }
 
-void LayoutMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void LayoutMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
     m_rendererInFlowThread->invalidateTreeIfNeeded(newPaintInvalidationState);
