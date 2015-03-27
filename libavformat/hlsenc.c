@@ -85,8 +85,6 @@ typedef struct HLSContext {
     char *baseurl;
     char *format_options_str;
     AVDictionary *format_options;
-
-    AVIOContext *pb;
 } HLSContext;
 
 static int hls_delete_old_segments(HLSContext *hls) {
@@ -243,10 +241,19 @@ static int hls_window(AVFormatContext *s, int last)
     HLSSegment *en;
     int target_duration = 0;
     int ret = 0;
+    AVIOContext *out = NULL;
+    char temp_filename[1024];
     int64_t sequence = FFMAX(hls->start_sequence, hls->sequence - hls->nb_entries);
     int version = hls->flags & HLS_SINGLE_FILE ? 4 : 3;
+    const char *proto = avio_find_protocol_name(s->filename);
+    int use_rename = proto && !strcmp(proto, "file");
+    static unsigned warned_non_file;
 
-    if ((ret = avio_open2(&hls->pb, s->filename, AVIO_FLAG_WRITE,
+    if (!use_rename && !warned_non_file++)
+        av_log(s, AV_LOG_ERROR, "Cannot use rename on non file protocol, this may lead to races and temporarly partial files\n");
+
+    snprintf(temp_filename, sizeof(temp_filename), use_rename ? "%s.tmp" : "%s", s->filename);
+    if ((ret = avio_open2(&out, temp_filename, AVIO_FLAG_WRITE,
                           &s->interrupt_callback, NULL)) < 0)
         goto fail;
 
@@ -255,32 +262,34 @@ static int hls_window(AVFormatContext *s, int last)
             target_duration = ceil(en->duration);
     }
 
-    avio_printf(hls->pb, "#EXTM3U\n");
-    avio_printf(hls->pb, "#EXT-X-VERSION:%d\n", version);
+    avio_printf(out, "#EXTM3U\n");
+    avio_printf(out, "#EXT-X-VERSION:%d\n", version);
     if (hls->allowcache == 0 || hls->allowcache == 1) {
-        avio_printf(hls->pb, "#EXT-X-ALLOW-CACHE:%s\n", hls->allowcache == 0 ? "NO" : "YES");
+        avio_printf(out, "#EXT-X-ALLOW-CACHE:%s\n", hls->allowcache == 0 ? "NO" : "YES");
     }
-    avio_printf(hls->pb, "#EXT-X-TARGETDURATION:%d\n", target_duration);
-    avio_printf(hls->pb, "#EXT-X-MEDIA-SEQUENCE:%"PRId64"\n", sequence);
+    avio_printf(out, "#EXT-X-TARGETDURATION:%d\n", target_duration);
+    avio_printf(out, "#EXT-X-MEDIA-SEQUENCE:%"PRId64"\n", sequence);
 
     av_log(s, AV_LOG_VERBOSE, "EXT-X-MEDIA-SEQUENCE:%"PRId64"\n",
            sequence);
 
     for (en = hls->segments; en; en = en->next) {
-        avio_printf(hls->pb, "#EXTINF:%f,\n", en->duration);
+        avio_printf(out, "#EXTINF:%f,\n", en->duration);
         if (hls->flags & HLS_SINGLE_FILE)
-             avio_printf(hls->pb, "#EXT-X-BYTERANGE:%"PRIi64"@%"PRIi64"\n",
+             avio_printf(out, "#EXT-X-BYTERANGE:%"PRIi64"@%"PRIi64"\n",
                          en->size, en->pos);
         if (hls->baseurl)
-            avio_printf(hls->pb, "%s", hls->baseurl);
-        avio_printf(hls->pb, "%s\n", en->filename);
+            avio_printf(out, "%s", hls->baseurl);
+        avio_printf(out, "%s\n", en->filename);
     }
 
     if (last)
-        avio_printf(hls->pb, "#EXT-X-ENDLIST\n");
+        avio_printf(out, "#EXT-X-ENDLIST\n");
 
 fail:
-    avio_closep(&hls->pb);
+    avio_closep(&out);
+    if (ret >= 0 && use_rename)
+        ff_rename(temp_filename, s->filename, s);
     return ret;
 }
 
@@ -486,7 +495,6 @@ static int hls_write_trailer(struct AVFormatContext *s)
 
     hls_free_segments(hls->segments);
     hls_free_segments(hls->old_segments);
-    avio_closep(&hls->pb);
     return 0;
 }
 

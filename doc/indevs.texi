@@ -1,7 +1,7 @@
 @chapter Input Devices
 @c man begin INPUT DEVICES
 
-Input devices are configured elements in FFmpeg which allow to access
+Input devices are configured elements in FFmpeg which enable accessing
 the data coming from a multimedia device attached to your system.
 
 When you configure your FFmpeg build, all the supported input devices
@@ -149,6 +149,81 @@ $ ffmpeg -f avfoundation -pixel_format bgr0 -i "default:none" out.avi
 @section bktr
 
 BSD video input device.
+
+@section decklink
+
+The decklink input device provides capture capabilities for Blackmagic
+DeckLink devices.
+
+To enable this input device, you need the Blackmagic DeckLink SDK and you
+need to configure with the appropriate @code{--extra-cflags}
+and @code{--extra-ldflags}.
+On Windows, you need to run the IDL files through @command{widl}.
+
+DeckLink is very picky about the formats it supports. Pixel format is
+uyvy422 or v210, framerate and video size must be determined for your device with
+@command{-list_formats 1}. Audio sample rate is always 48 kHz and the number
+of channels can be 2, 8 or 16.
+
+@subsection Options
+
+@table @option
+
+@item list_devices
+If set to @option{true}, print a list of devices and exit.
+Defaults to @option{false}.
+
+@item list_formats
+If set to @option{true}, print a list of supported formats and exit.
+Defaults to @option{false}.
+
+@item bm_v210
+If set to @samp{1}, video is captured in 10 bit v210 instead
+of uyvy422. Not all Blackmagic devices support this option.
+
+@end table
+
+@subsection Examples
+
+@itemize
+
+@item
+List input devices:
+@example
+ffmpeg -f decklink -list_devices 1 -i dummy
+@end example
+
+@item
+List supported formats:
+@example
+ffmpeg -f decklink -list_formats 1 -i 'Intensity Pro'
+@end example
+
+@item
+Capture video clip at 1080i50 (format 11):
+@example
+ffmpeg -f decklink -i 'Intensity Pro@@11' -acodec copy -vcodec copy output.avi
+@end example
+
+@item
+Capture video clip at 1080i50 10 bit:
+@example
+ffmpeg -bm_v210 1 -f decklink -i 'UltraStudio Mini Recorder@@11' -acodec copy -vcodec copy output.avi
+@end example
+
+@item
+Capture video clip at 720p50 with 32bit audio:
+@example
+ffmpeg -bm_audiodepth 32 -f decklink -i 'UltraStudio Mini Recorder@@14' -acodec copy -vcodec copy output.avi
+@end example
+
+@item
+Capture video clip at 576i50 with 8 audio channels:
+@example
+ffmpeg -bm_channels 8 -f decklink -i 'UltraStudio Mini Recorder@@3' -acodec copy -vcodec copy output.avi
+@end example
+
+@end itemize
 
 @section dshow
 
@@ -627,19 +702,46 @@ ffmpeg -f lavfi -i "movie=test.ts[out0+subcc]" -map v frame%08d.png -map s -c co
 
 @section libcdio
 
-Audio-CD input device based on cdio.
+Audio-CD input device based on libcdio.
 
 To enable this input device during configuration you need libcdio
-installed on your system. Requires the configure option
+installed on your system. It requires the configure option
 @code{--enable-libcdio}.
 
 This device allows playing and grabbing from an Audio-CD.
 
-For example to copy with @command{ffmpeg} the entire Audio-CD in /dev/sr0,
+For example to copy with @command{ffmpeg} the entire Audio-CD in @file{/dev/sr0},
 you may run the command:
 @example
 ffmpeg -f libcdio -i /dev/sr0 cd.wav
 @end example
+
+@subsection Options
+@table @option
+@item speed
+Set drive reading speed. Default value is 0.
+
+The speed is specified CD-ROM speed units. The speed is set through
+the libcdio @code{cdio_cddap_speed_set} function. On many CD-ROM
+drives, specifying a value too large will result in using the fastest
+speed.
+
+@item paranoia_mode
+Set paranoia recovery mode flags. It accepts one of the following values:
+
+@table @samp
+@item disable
+@item verify
+@item overlap
+@item neverskip
+@item full
+@end table
+
+Default value is @samp{disable}.
+
+For more information about the available recovery modes, consult the
+paranoia project documentation.
+@end table
 
 @section libdc1394
 
@@ -878,6 +980,12 @@ Some usage examples of the video4linux2 device with @command{ffmpeg}
 and @command{ffplay}:
 @itemize
 @item
+List supported formats for a video4linux2 device:
+@example
+ffplay -f video4linux2 -list_formats all /dev/video0
+@end example
+
+@item
 Grab and show the input of a video4linux2 device:
 @example
 ffplay -f video4linux2 -framerate 30 -video_size hd720 /dev/video0
@@ -975,8 +1083,12 @@ other filename will be interpreted as device number 0.
 
 X11 video input device.
 
-Depends on X11, Xext, and Xfixes. Requires the configure option
-@code{--enable-x11grab}.
+To enable this input device during configuration you need libxcb
+installed on your system. It will be automatically detected during
+configuration.
+
+Alternatively, the configure option @option{--enable-x11grab} exists
+for legacy Xlib users.
 
 This device allows one to capture a region of an X11 display.
 
@@ -994,10 +1106,12 @@ omitted, and defaults to "localhost". The environment variable
 area with respect to the top-left border of the X11 screen. They
 default to 0.
 
-Check the X11 documentation (e.g. man X) for more detailed information.
+Check the X11 documentation (e.g. @command{man X}) for more detailed
+information.
 
-Use the @command{dpyinfo} program for getting basic information about the
-properties of your X11 display (e.g. grep for "name" or "dimensions").
+Use the @command{xdpyinfo} program for getting basic information about
+the properties of your X11 display (e.g. grep for "name" or
+"dimensions").
 
 For example to grab from @file{:0.0} using @command{ffmpeg}:
 @example
@@ -1046,6 +1160,10 @@ If @var{show_region} is specified with @code{1}, then the grabbing
 region will be indicated on screen. With this option, it is easy to
 know what is being grabbed if only a portion of the screen is grabbed.
 
+@item region_border
+Set the region border thickness if @option{-show_region 1} is used.
+Range is 1 to 128 and default is 3 (XCB-based x11grab only).
+
 For example:
 @example
 ffmpeg -f x11grab -show_region 1 -framerate 25 -video_size cif -i :0.0+10,20 out.mpg
@@ -1061,61 +1179,19 @@ Set the video frame size. Default value is @code{vga}.
 
 @item use_shm
 Use the MIT-SHM extension for shared memory. Default value is @code{1}.
-It may be necessary to disable it for remote displays.
+It may be necessary to disable it for remote displays (legacy x11grab
+only).
 @end table
 
-@section decklink
+@subsection @var{grab_x} @var{grab_y} AVOption
 
-The decklink input device provides capture capabilities for Blackmagic
-DeckLink devices.
-
-To enable this input device, you need the Blackmagic DeckLink SDK and you
-need to configure with the appropriate @code{--extra-cflags}
-and @code{--extra-ldflags}.
-On Windows, you need to run the IDL files through @command{widl}.
-
-DeckLink is very picky about the formats it supports. Pixel format is always
-uyvy422, framerate and video size must be determined for your device with
-@command{-list_formats 1}. Audio sample rate is always 48 kHz and the number
-of channels currently is limited to 2 (stereo).
-
-@subsection Options
-
-@table @option
-
-@item list_devices
-If set to @option{true}, print a list of devices and exit.
-Defaults to @option{false}.
-
-@item list_formats
-If set to @option{true}, print a list of supported formats and exit.
-Defaults to @option{false}.
-
-@end table
-
-@subsection Examples
-
-@itemize
-
-@item
-List input devices:
+The syntax is:
 @example
-ffmpeg -f decklink -list_devices 1 -i dummy
+-grab_x @var{x_offset} -grab_y @var{y_offset}
 @end example
 
-@item
-List supported formats:
-@example
-ffmpeg -f decklink -list_formats 1 -i 'Intensity Pro'
-@end example
-
-@item
-Capture video clip at 1080i50 (format 11):
-@example
-ffmpeg -f decklink -i 'Intensity Pro@@11' -acodec copy -vcodec copy output.avi
-@end example
-
-@end itemize
+Set the grabbing region coordinates. They are expressed as offset from the top left
+corner of the X11 window. The default value is 0.
 
 
 @c man end INPUT DEVICES

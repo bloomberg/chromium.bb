@@ -198,6 +198,10 @@
  *   be set to the timebase that the caller desires to use for this stream (note
  *   that the timebase actually used by the muxer can be different, as will be
  *   described later).
+ * - It is advised to manually initialize only the relevant fields in
+ *   AVCodecContext, rather than using @ref avcodec_copy_context() during
+ *   remuxing: there is no guarantee that the codec context values remain valid
+ *   for both input and output format contexts.
  * - The caller may fill in additional information, such as @ref
  *   AVFormatContext.metadata "global" or @ref AVStream.metadata "per-stream"
  *   metadata, @ref AVFormatContext.chapters "chapters", @ref
@@ -1503,7 +1507,6 @@ typedef struct AVFormatContext {
 #define AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE 1 ///< Shift timestamps so they are non negative
 #define AVFMT_AVOID_NEG_TS_MAKE_ZERO         2 ///< Shift timestamps so that they start at 0
 
-
     /**
      * Transport stream id.
      * This will be moved into demuxer private options. Thus no API/ABI compatibility
@@ -1616,56 +1619,6 @@ typedef struct AVFormatContext {
      * - decoding: set by user through AVOptions (NO direct access)
      */
     char *format_whitelist;
-
-    /*****************************************************************
-     * All fields below this line are not part of the public API. They
-     * may not be used outside of libavformat and can be changed and
-     * removed at will.
-     * New public fields should be added right above.
-     *****************************************************************
-     */
-
-    /**
-     * This buffer is only needed when packets were already buffered but
-     * not decoded, for example to get the codec parameters in MPEG
-     * streams.
-     */
-    struct AVPacketList *packet_buffer;
-    struct AVPacketList *packet_buffer_end;
-
-    /* av_seek_frame() support */
-    int64_t data_offset; /**< offset of the first packet */
-
-    /**
-     * Raw packets from the demuxer, prior to parsing and decoding.
-     * This buffer is used for buffering packets until the codec can
-     * be identified, as parsing cannot be done without knowing the
-     * codec.
-     */
-    struct AVPacketList *raw_packet_buffer;
-    struct AVPacketList *raw_packet_buffer_end;
-    /**
-     * Packets split by the parser get queued here.
-     */
-    struct AVPacketList *parse_queue;
-    struct AVPacketList *parse_queue_end;
-    /**
-     * Remaining size available for raw_packet_buffer, in bytes.
-     */
-#define RAW_PACKET_BUFFER_SIZE 2500000
-    int raw_packet_buffer_remaining_size;
-
-    /**
-     * Offset to remap timestamps to be non-negative.
-     * Expressed in timebase units.
-     * @see AVStream.mux_ts_offset
-     */
-    int64_t offset;
-
-    /**
-     * Timebase for the timestamp offset.
-     */
-    AVRational offset_timebase;
 
     /**
      * An opaque field for libavformat internal usage.
@@ -2182,6 +2135,24 @@ int av_seek_frame(AVFormatContext *s, int stream_index, int64_t timestamp,
  *       ABI compatibility yet!
  */
 int avformat_seek_file(AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags);
+
+/**
+ * Discard all internally buffered data. This can be useful when dealing with
+ * discontinuities in the byte stream. Generally works only with formats that
+ * can resync. This includes headerless formats like MPEG-TS/TS but should also
+ * work with NUT, Ogg and in a limited way AVI for example.
+ *
+ * The set of streams, the detected duration, stream parameters and codecs do
+ * not change when calling this function. If you want a complete reset, it's
+ * better to open a new AVFormatContext.
+ *
+ * This does not flush the AVIOContext (s->pb). If necessary, call
+ * avio_flush(s->pb) before calling this function.
+ *
+ * @param s media file handle
+ * @return >=0 on success, error code otherwise
+ */
+int avformat_flush(AVFormatContext *s);
 
 /**
  * Start playing a network-based stream (e.g. RTSP stream) at the

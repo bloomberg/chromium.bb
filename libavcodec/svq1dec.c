@@ -40,9 +40,6 @@
 #include "mathops.h"
 #include "svq1.h"
 
-#undef NDEBUG
-#include <assert.h>
-
 static VLC svq1_block_type;
 static VLC svq1_motion_component;
 static VLC svq1_intra_multistage[6];
@@ -165,7 +162,8 @@ static int svq1_decode_block_intra(GetBitContext *bitbuf, uint8_t *pixels,
     const uint32_t *codebook;
     int entries[6];
     int i, j, m, n;
-    int mean, stages;
+    int stages;
+    unsigned mean;
     unsigned x, y, width, height, level;
     uint32_t n1, n2, n3, n4;
 
@@ -190,12 +188,13 @@ static int svq1_decode_block_intra(GetBitContext *bitbuf, uint8_t *pixels,
             continue;   /* skip vector */
         }
 
-        if (stages > 0 && level >= 4) {
+        if ((stages > 0 && level >= 4)) {
             av_dlog(NULL,
                     "Error (svq1_decode_block_intra): invalid vector: stages=%i level=%i\n",
                     stages, level);
             return AVERROR_INVALIDDATA;  /* invalid vector */
         }
+        av_assert0(stages >= 0);
 
         mean = get_vlc2(bitbuf, svq1_intra_mean.table, 8, 3);
 
@@ -230,7 +229,8 @@ static int svq1_decode_block_non_intra(GetBitContext *bitbuf, uint8_t *pixels,
     const uint32_t *codebook;
     int entries[6];
     int i, j, m, n;
-    int mean, stages;
+    int stages;
+    unsigned mean;
     int x, y, width, height, level;
     uint32_t n1, n2, n3, n4;
 
@@ -252,12 +252,13 @@ static int svq1_decode_block_non_intra(GetBitContext *bitbuf, uint8_t *pixels,
         if (stages == -1)
             continue;           /* skip vector */
 
-        if ((stages > 0) && (level >= 4)) {
+        if ((stages > 0 && level >= 4)) {
             av_dlog(NULL,
                     "Error (svq1_decode_block_non_intra): invalid vector: stages=%i level=%i\n",
                     stages, level);
             return AVERROR_INVALIDDATA;  /* invalid vector */
         }
+        av_assert0(stages >= 0);
 
         mean = get_vlc2(bitbuf, svq1_inter_mean.table, 9, 3) - 256;
 

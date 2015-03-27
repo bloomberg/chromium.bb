@@ -63,9 +63,10 @@ static int query_formats(AVFilterContext *ctx)
     static const enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_BGR24, AV_PIX_FMT_BGRA, AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE
     };
-
-    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
-    return 0;
+    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
+    if (!fmts_list)
+        return AVERROR(ENOMEM);
+    return ff_set_common_formats(ctx, fmts_list);
 }
 
 typedef struct OCVContext {
@@ -261,19 +262,24 @@ static av_cold int dilate_init(AVFilterContext *ctx, const char *args)
     OCVContext *s = ctx->priv;
     DilateContext *dilate = s->priv;
     char default_kernel_str[] = "3x3+0x0/rect";
-    char *kernel_str;
+    char *kernel_str = NULL;
     const char *buf = args;
     int ret;
 
-    if (args)
+    if (args) {
         kernel_str = av_get_token(&buf, "|");
-    else
-        kernel_str = av_strdup(default_kernel_str);
-    if (!kernel_str)
-        return AVERROR(ENOMEM);
-    if ((ret = parse_iplconvkernel(&dilate->kernel, kernel_str, ctx)) < 0)
-        return ret;
+
+        if (!kernel_str)
+            return AVERROR(ENOMEM);
+    }
+
+    ret = parse_iplconvkernel(&dilate->kernel,
+                              (!kernel_str || !*kernel_str) ? default_kernel_str
+                                                            : kernel_str,
+                              ctx);
     av_free(kernel_str);
+    if (ret < 0)
+        return ret;
 
     if (!buf || sscanf(buf, "|%d", &dilate->nb_iterations) != 1)
         dilate->nb_iterations = 1;

@@ -184,8 +184,7 @@ static inline int squared_diff_macroblock(uint8_t a[], uint8_t b[], int size)
     return sdiff;
 }
 
-typedef struct
-{
+typedef struct SubcelEvaluation {
     int eval_dist[4];
     int best_bit_use;
     int best_coding;
@@ -195,8 +194,7 @@ typedef struct
     int cbEntry;
 } SubcelEvaluation;
 
-typedef struct
-{
+typedef struct CelEvaluation {
     int eval_dist[4];
     int best_coding;
 
@@ -208,8 +206,7 @@ typedef struct
     int sourceX, sourceY;
 } CelEvaluation;
 
-typedef struct
-{
+typedef struct RoqCodebooks {
     int numCB4;
     int numCB2;
     int usedCB2[MAX_CBS_2x2];
@@ -603,8 +600,7 @@ static inline uint8_t motion_arg(motion_vect mot)
     return ((ax&15)<<4) | (ay&15);
 }
 
-typedef struct
-{
+typedef struct CodingSpool {
     int typeSpool;
     int typeSpoolLength;
     uint8_t argumentSpool[64];
@@ -964,7 +960,8 @@ static int roq_encode_video(RoqContext *enc)
     reconstruct_and_encode_image(enc, tempData, enc->width, enc->height,
                                  enc->width*enc->height/64);
 
-    enc->avctx->coded_frame = enc->current_frame;
+    av_frame_unref(enc->avctx->coded_frame);
+    av_frame_ref(enc->avctx->coded_frame, enc->current_frame);
 
     /* Rotate frame history */
     FFSWAP(AVFrame *, enc->current_frame, enc->last_frame);
@@ -985,6 +982,7 @@ static av_cold int roq_encode_end(AVCodecContext *avctx)
 
     av_frame_free(&enc->current_frame);
     av_frame_free(&enc->last_frame);
+    av_frame_free(&enc->avctx->coded_frame);
 
     av_freep(&enc->tmpData);
     av_freep(&enc->this_motion4);
@@ -1000,6 +998,8 @@ static av_cold int roq_encode_init(AVCodecContext *avctx)
     RoqContext *enc = avctx->priv_data;
 
     av_lfg_init(&enc->randctx, 1);
+
+    enc->avctx = avctx;
 
     enc->framesSinceKeyframe = 0;
     if ((avctx->width & 0xf) || (avctx->height & 0xf)) {
@@ -1023,7 +1023,8 @@ static av_cold int roq_encode_init(AVCodecContext *avctx)
 
     enc->last_frame    = av_frame_alloc();
     enc->current_frame = av_frame_alloc();
-    if (!enc->last_frame || !enc->current_frame) {
+    avctx->coded_frame = av_frame_alloc();
+    if (!enc->last_frame || !enc->current_frame || !avctx->coded_frame) {
         roq_encode_end(avctx);
         return AVERROR(ENOMEM);
     }

@@ -755,11 +755,6 @@ int ff_hevc_decode_nal_sps(HEVCContext *s)
     }
 
     sps->chroma_format_idc = get_ue_golomb_long(gb);
-    if (!(sps->chroma_format_idc == 1 || sps->chroma_format_idc == 2 || sps->chroma_format_idc == 3)) {
-        avpriv_report_missing_feature(s->avctx, "chroma_format_idc != {1, 2, 3}\n");
-        ret = AVERROR_PATCHWELCOME;
-        goto err;
-    }
 
     if (sps->chroma_format_idc == 3)
         sps->separate_colour_plane_flag = get_bits1(gb);
@@ -799,7 +794,7 @@ int ff_hevc_decode_nal_sps(HEVCContext *s)
 
     sps->bit_depth   = get_ue_golomb_long(gb) + 8;
     bit_depth_chroma = get_ue_golomb_long(gb) + 8;
-    if (bit_depth_chroma != sps->bit_depth) {
+    if (sps->chroma_format_idc && bit_depth_chroma != sps->bit_depth) {
         av_log(s->avctx, AV_LOG_ERROR,
                "Luma bit depth (%d) is different from chroma bit depth (%d), "
                "this is unsupported.\n",
@@ -810,21 +805,25 @@ int ff_hevc_decode_nal_sps(HEVCContext *s)
 
     switch (sps->bit_depth) {
     case 8:
+        if (sps->chroma_format_idc == 0) sps->pix_fmt = AV_PIX_FMT_GRAY8;
         if (sps->chroma_format_idc == 1) sps->pix_fmt = AV_PIX_FMT_YUV420P;
         if (sps->chroma_format_idc == 2) sps->pix_fmt = AV_PIX_FMT_YUV422P;
         if (sps->chroma_format_idc == 3) sps->pix_fmt = AV_PIX_FMT_YUV444P;
        break;
     case 9:
+        if (sps->chroma_format_idc == 0) sps->pix_fmt = AV_PIX_FMT_GRAY16;
         if (sps->chroma_format_idc == 1) sps->pix_fmt = AV_PIX_FMT_YUV420P9;
         if (sps->chroma_format_idc == 2) sps->pix_fmt = AV_PIX_FMT_YUV422P9;
         if (sps->chroma_format_idc == 3) sps->pix_fmt = AV_PIX_FMT_YUV444P9;
         break;
     case 10:
+        if (sps->chroma_format_idc == 0) sps->pix_fmt = AV_PIX_FMT_GRAY16;
         if (sps->chroma_format_idc == 1) sps->pix_fmt = AV_PIX_FMT_YUV420P10;
         if (sps->chroma_format_idc == 2) sps->pix_fmt = AV_PIX_FMT_YUV422P10;
         if (sps->chroma_format_idc == 3) sps->pix_fmt = AV_PIX_FMT_YUV444P10;
         break;
     case 12:
+        if (sps->chroma_format_idc == 0) sps->pix_fmt = AV_PIX_FMT_GRAY16;
         if (sps->chroma_format_idc == 1) sps->pix_fmt = AV_PIX_FMT_YUV420P12;
         if (sps->chroma_format_idc == 2) sps->pix_fmt = AV_PIX_FMT_YUV422P12;
         if (sps->chroma_format_idc == 3) sps->pix_fmt = AV_PIX_FMT_YUV444P12;
@@ -895,11 +894,30 @@ int ff_hevc_decode_nal_sps(HEVCContext *s)
     sps->log2_max_trafo_size                 = log2_diff_max_min_transform_block_size +
                                                sps->log2_min_tb_size;
 
-    if (sps->log2_min_tb_size >= sps->log2_min_cb_size) {
+    if (sps->log2_min_cb_size < 3 || sps->log2_min_cb_size > 30) {
+        av_log(s->avctx, AV_LOG_ERROR, "Invalid value %d for log2_min_cb_size", sps->log2_min_cb_size);
+        ret = AVERROR_INVALIDDATA;
+        goto err;
+    }
+
+    if (sps->log2_diff_max_min_coding_block_size > 30) {
+        av_log(s->avctx, AV_LOG_ERROR, "Invalid value %d for log2_diff_max_min_coding_block_size", sps->log2_diff_max_min_coding_block_size);
+        ret = AVERROR_INVALIDDATA;
+        goto err;
+    }
+
+    if (sps->log2_min_tb_size >= sps->log2_min_cb_size || sps->log2_min_tb_size < 2) {
         av_log(s->avctx, AV_LOG_ERROR, "Invalid value for log2_min_tb_size");
         ret = AVERROR_INVALIDDATA;
         goto err;
     }
+
+    if (log2_diff_max_min_transform_block_size < 0 || log2_diff_max_min_transform_block_size > 30) {
+        av_log(s->avctx, AV_LOG_ERROR, "Invalid value %d for log2_diff_max_min_transform_block_size", log2_diff_max_min_transform_block_size);
+        ret = AVERROR_INVALIDDATA;
+        goto err;
+    }
+
     sps->max_transform_hierarchy_depth_inter = get_ue_golomb_long(gb);
     sps->max_transform_hierarchy_depth_intra = get_ue_golomb_long(gb);
 
@@ -1021,7 +1039,8 @@ int ff_hevc_decode_nal_sps(HEVCContext *s)
                          (sps->output_window.left_offset + sps->output_window.right_offset);
     sps->output_height = sps->height -
                          (sps->output_window.top_offset + sps->output_window.bottom_offset);
-    if (sps->output_width <= 0 || sps->output_height <= 0) {
+    if (sps->width  <= sps->output_window.left_offset + (int64_t)sps->output_window.right_offset  ||
+        sps->height <= sps->output_window.top_offset  + (int64_t)sps->output_window.bottom_offset) {
         av_log(s->avctx, AV_LOG_WARNING, "Invalid visible frame dimensions: %dx%d.\n",
                sps->output_width, sps->output_height);
         if (s->avctx->err_recognition & AV_EF_EXPLODE) {
@@ -1063,6 +1082,14 @@ int ff_hevc_decode_nal_sps(HEVCContext *s)
 
     if (sps->log2_ctb_size > MAX_LOG2_CTB_SIZE) {
         av_log(s->avctx, AV_LOG_ERROR, "CTB size out of range: 2^%d\n", sps->log2_ctb_size);
+        goto err;
+    }
+    if (sps->log2_ctb_size < 4) {
+        av_log(s->avctx,
+               AV_LOG_ERROR,
+               "log2_ctb_size %d differs from the bounds of any known profile\n",
+               sps->log2_ctb_size);
+        avpriv_request_sample(s->avctx, "log2_ctb_size %d", sps->log2_ctb_size);
         goto err;
     }
     if (sps->max_transform_hierarchy_depth_inter > sps->log2_ctb_size - sps->log2_min_tb_size) {

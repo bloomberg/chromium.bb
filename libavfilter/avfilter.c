@@ -135,7 +135,7 @@ int avfilter_link(AVFilterContext *src, unsigned srcpad,
 
     if (src->nb_outputs <= srcpad || dst->nb_inputs <= dstpad ||
         src->outputs[srcpad]      || dst->inputs[dstpad])
-        return -1;
+        return AVERROR(EINVAL);
 
     if (src->output_pads[srcpad].type != dst->input_pads[dstpad].type) {
         av_log(src, AV_LOG_ERROR,
@@ -381,7 +381,7 @@ int ff_poll_frame(AVFilterLink *link)
     for (i = 0; i < link->src->nb_inputs; i++) {
         int val;
         if (!link->src->inputs[i])
-            return -1;
+            return AVERROR(EINVAL);
         val = ff_poll_frame(link->src->inputs[i]);
         min = FFMIN(min, val);
     }
@@ -965,21 +965,6 @@ int avfilter_init_str(AVFilterContext *filter, const char *args)
                 goto fail;
 #endif
         } else {
-#if CONFIG_MP_FILTER
-            if (!strcmp(filter->filter->name, "mp")) {
-                char *escaped;
-
-                if (!strncmp(args, "filter=", 7))
-                    args += 7;
-                ret = av_escape(&escaped, args, ":=", AV_ESCAPE_MODE_BACKSLASH, 0);
-                if (ret < 0) {
-                    av_log(filter, AV_LOG_ERROR, "Unable to escape MPlayer filters arg '%s'\n", args);
-                    goto fail;
-                }
-                ret = process_options(filter, &options, escaped);
-                av_free(escaped);
-            } else
-#endif
             ret = process_options(filter, &options, args);
             if (ret < 0)
                 goto fail;

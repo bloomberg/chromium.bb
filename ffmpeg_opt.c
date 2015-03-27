@@ -86,6 +86,7 @@ float dts_error_threshold   = 3600*30;
 int audio_volume      = 256;
 int audio_sync_method = 0;
 int video_sync_method = VSYNC_AUTO;
+float frame_drop_threshold = 0;
 int do_deinterlace    = 0;
 int do_benchmark      = 0;
 int do_benchmark_all  = 0;
@@ -858,6 +859,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     MATCH_PER_TYPE_OPT(codec_names, str,    video_codec_name, ic, "v");
     MATCH_PER_TYPE_OPT(codec_names, str,    audio_codec_name, ic, "a");
     MATCH_PER_TYPE_OPT(codec_names, str, subtitle_codec_name, ic, "s");
+    MATCH_PER_TYPE_OPT(codec_names, str,     data_codec_name, ic, "d");
 
     ic->video_codec_id   = video_codec_name ?
         find_codec_or_die(video_codec_name   , AVMEDIA_TYPE_VIDEO   , 0)->id : AV_CODEC_ID_NONE;
@@ -949,6 +951,9 @@ static int open_input_file(OptionsContext *o, const char *filename)
     f->nb_streams = ic->nb_streams;
     f->rate_emu   = o->rate_emu;
     f->accurate_seek = o->accurate_seek;
+#if HAVE_PTHREADS
+    f->thread_queue_size = o->thread_queue_size > 0 ? o->thread_queue_size : 8;
+#endif
 
     /* check if all codec options have been used */
     unused_opts = strip_specifiers(o->g->codec_opts);
@@ -1392,8 +1397,10 @@ static OutputStream *new_video_stream(OptionsContext *o, AVFormatContext *oc, in
             video_enc->rc_override =
                 av_realloc_array(video_enc->rc_override,
                                  i + 1, sizeof(RcOverride));
-            if (!video_enc->rc_override)
+            if (!video_enc->rc_override) {
+                av_log(NULL, AV_LOG_FATAL, "Could not (re)allocate memory for rc_override.\n");
                 exit_program(1);
+            }
             video_enc->rc_override[i].start_frame = start;
             video_enc->rc_override[i].end_frame   = end;
             if (q > 0) {
@@ -1934,7 +1941,15 @@ static int open_output_file(OptionsContext *o, const char *filename)
                     }
                 }
         }
-        /* do something with data? */
+        /* Data only if codec id match */
+        if (!o->data_disable ) {
+            enum AVCodecID codec_id = av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_DATA);
+            for (i = 0; codec_id != AV_CODEC_ID_NONE && i < nb_input_streams; i++) {
+                if (input_streams[i]->st->codec->codec_type == AVMEDIA_TYPE_DATA
+                    && input_streams[i]->st->codec->codec_id == codec_id )
+                    new_data_stream(o, oc, i);
+            }
+        }
     } else {
         for (i = 0; i < o->nb_stream_maps; i++) {
             StreamMap *map = &o->stream_maps[i];
@@ -2873,6 +2888,8 @@ const OptionDef options[] = {
         " \"dv\", \"dv50\", \"pal-vcd\", \"ntsc-svcd\", ...)", "type" },
     { "vsync",          HAS_ARG | OPT_EXPERT,                        { opt_vsync },
         "video sync method", "" },
+    { "frame_drop_threshold", HAS_ARG | OPT_FLOAT | OPT_EXPERT,      { &frame_drop_threshold },
+        "frame drop threshold", "" },
     { "async",          HAS_ARG | OPT_INT | OPT_EXPERT,              { &audio_sync_method },
         "audio sync method", "" },
     { "adrift_threshold", HAS_ARG | OPT_FLOAT | OPT_EXPERT,          { &audio_drift_threshold },
@@ -2943,6 +2960,9 @@ const OptionDef options[] = {
     { "disposition",    OPT_STRING | HAS_ARG | OPT_SPEC |
                         OPT_OUTPUT,                                  { .off = OFFSET(disposition) },
         "disposition", "" },
+    { "thread_queue_size", HAS_ARG | OPT_INT | OPT_OFFSET | OPT_EXPERT | OPT_INPUT,
+                                                                     { .off = OFFSET(thread_queue_size) },
+        "set the maximum number of queued packets from the demuxer" },
 
     /* video options */
     { "vframes",      OPT_VIDEO | HAS_ARG  | OPT_PERFILE | OPT_OUTPUT,           { .func_arg = opt_video_frames },

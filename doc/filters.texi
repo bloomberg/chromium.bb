@@ -163,13 +163,13 @@ follow the same constraints order of the previous point. The following
 
 If the option value itself is a list of items (e.g. the @code{format} filter
 takes a list of pixel formats), the items in the list are usually separated by
-'|'.
+@samp{|}.
 
-The list of arguments can be quoted using the character "'" as initial
-and ending mark, and the character '\' for escaping the characters
+The list of arguments can be quoted using the character @samp{'} as initial
+and ending mark, and the character @samp{\} for escaping the characters
 within the quoted text; otherwise the argument string is considered
 terminated when the next special character (belonging to the set
-"[]=;,") is encountered.
+@samp{[]=;,}) is encountered.
 
 The name and arguments of the filter are optionally preceded and
 followed by a list of link labels.
@@ -917,6 +917,7 @@ audio, the data is treated as if all the planes were concatenated.
 A list of Adler-32 checksums for each data plane.
 @end table
 
+@anchor{astats}
 @section astats
 
 Display time domain statistical information about the audio channels.
@@ -1393,6 +1394,24 @@ than the signal (making it, in some ways, similar to squelch):
 compand=.1|.1:.1|.1:-45.1/-45.1|-45/-900|0/-900:.01:45:-90:.1
 @end example
 @end itemize
+
+@section dcshift
+Apply a DC shift to the audio.
+
+This can be useful to remove a DC offset (caused perhaps by a hardware problem
+in the recording chain) from the audio. The effect of a DC offset is reduced
+headroom and hence volume. The @ref{astats} filter can be used to determine if
+a signal has a DC offset.
+
+@table @option
+@item shift
+Set the DC shift, allowed range is [-1, 1]. It indicates the amount to shift
+the audio.
+
+@item limitergain
+Optional. It should have a value much less than 1 (e.g. 0.05 or 0.02) and is
+used to prevent clipping.
+@end table
 
 @section earwax
 
@@ -3467,7 +3486,7 @@ Set number overlapping pixels for each block. Since the filter can be slow, you
 may want to reduce this value, at the cost of a less effective filter and the
 risk of various artefacts.
 
-If the overlapping value doesn't allow to process the whole input width or
+If the overlapping value doesn't permit processing the whole input width or
 height, a warning will be displayed and according borders won't be denoised.
 
 Default value is @var{blocksize}-1, which is the best possible setting.
@@ -4130,7 +4149,7 @@ If @option{expansion} is set to @code{none}, the text is printed verbatim.
 If @option{expansion} is set to @code{normal} (which is the default),
 the following expansion mechanism is used.
 
-The backslash character '\', followed by any character, always expands to
+The backslash character @samp{\}, followed by any character, always expands to
 the second character.
 
 Sequence of the form @code{%@{...@}} are expanded. The text between the
@@ -4162,8 +4181,9 @@ value.
 Evaluate the expression's value and output as formatted integer.
 
 The first argument is the expression to be evaluated, just as for the @var{expr} function.
-The second argument specifies the output format. Allowed values are 'x', 'X', 'd' and
-'u'. They are treated exactly as in the printf function.
+The second argument specifies the output format. Allowed values are @samp{x},
+@samp{X}, @samp{d} and @samp{u}. They are treated exactly as in the
+@code{printf} function.
 The third parameter is optional and sets the number of positions taken by the output.
 It can be used to add padding with zeros from the left.
 
@@ -4347,39 +4367,106 @@ The filter accepts the following options:
 
 @table @option
 @item contrast
-Set the contrast value. It accepts a float value in range @code{-2.0} to
-@code{2.0}. The default value is @code{0.0}.
+Set the contrast expression. The value must be a float value in range
+@code{-2.0} to @code{2.0}. The default value is "0".
 
 @item brightness
-Set the brightness value. It accepts a float value in range @code{-1.0} to
-@code{1.0}. The default value is @code{0.0}.
+Set the brightness expression. The value must be a float value in
+range @code{-1.0} to @code{1.0}. The default value is "0".
 
 @item saturation
-Set the saturation value. It accepts a float value in range @code{0.0} to
-@code{3.0}. The default value is @code{1.0}.
+Set the saturation expression. The value must be a float in
+range @code{0.0} to @code{3.0}. The default value is "1".
 
 @item gamma
-Set the gamma value. It accepts a float value in range @code{0.1} to @code{10.0}.
-The default value is @code{1.0}.
+Set the gamma expression. The value must be a float in range
+@code{0.1} to @code{10.0}.  The default value is "1".
 
 @item gamma_r
-Set the gamma value for red. It accepts a float value in range
-@code{0.1} to @code{10.0}. The default value is @code{1.0}.
+Set the gamma expression for red. The value must be a float in
+range @code{0.1} to @code{10.0}. The default value is "1".
 
 @item gamma_g
-Set the gamma value for green. It accepts a float value in range
-@code{0.1} to @code{10.0}. The default value is @code{1.0}.
+Set the gamma expression for green. The value must be a float in range
+@code{0.1} to @code{10.0}. The default value is "1".
 
 @item gamma_b
-Set the gamma value for blue. It accepts a float value in range
-@code{0.1} to @code{10.0}. The default value is @code{1.0}.
+Set the gamma expression for blue. The value must be a float in range
+@code{0.1} to @code{10.0}. The default value is "1".
 
 @item gamma_weight
-Can be used to reduce the effect of a high gamma value on bright image areas,
-e.g. keep them from getting overamplified and just plain white. It accepts a
-float value in range @code{0.0} to @code{1.0}.A value of @code{0.0} turns the
-gamma correction all the way down while @code{1.0} leaves it at its full strength.
-Default is @code{1.0}.
+Set the gamma weight expression. It can be used to reduce the effect
+of a high gamma value on bright image areas, e.g. keep them from
+getting overamplified and just plain white. The value must be a float
+in range @code{0.0} to @code{1.0}. A value of @code{0.0} turns the
+gamma correction all the way down while @code{1.0} leaves it at its
+full strength. Default is "1".
+
+@item eval
+Set when the expressions for brightness, contrast, saturation and
+gamma expressions are evaluated.
+
+It accepts the following values:
+@table @samp
+@item init
+only evaluate expressions once during the filter initialization or
+when a command is processed
+
+@item frame
+evaluate expressions for each incoming frame
+@end table
+
+Default value is @samp{init}.
+@end table
+
+The expressions accept the following parameters:
+@table @option
+@item n
+frame count of the input frame starting from 0
+
+@item pos
+byte position of the corresponding packet in the input file, NAN if
+unspecified
+
+@item r
+frame rate of the input video, NAN if the input frame rate is unknown
+
+@item t
+timestamp expressed in seconds, NAN if the input timestamp is unknown
+@end table
+
+@subsection Commands
+The filter supports the following commands:
+
+@table @option
+@item contrast
+Set the contrast expression.
+
+@item brightness
+Set the brightness expression.
+
+@item saturation
+Set the saturation expression.
+
+@item gamma
+Set the gamma expression.
+
+@item gamma_r
+Set the gamma_r expression.
+
+@item gamma_g
+Set gamma_g expression.
+
+@item gamma_b
+Set gamma_b expression.
+
+@item gamma_weight
+Set gamma_weight expression.
+
+The command accepts the same syntax of the corresponding option.
+
+If the specified expression is not valid, it is kept at its current
+value.
 
 @end table
 
@@ -4484,7 +4571,8 @@ The number of seconds for which the fade effect has to last. At the end of the
 fade-in effect the output video will have the same intensity as the input video,
 at the end of the fade-out transition the output video will be filled with the
 selected @option{color}.
-If both duration and nb_frames are specified, duration is used. Default is 0.
+If both duration and nb_frames are specified, duration is used. Default is 0
+(nb_frames is used by default).
 
 @item color, c
 Specify the color of the fade. Default is "black".
@@ -4533,6 +4621,67 @@ fade=in:0:25:alpha=1
 Make the first 5.5 seconds black, then fade in for 0.5 seconds:
 @example
 fade=t=in:st=5.5:d=0.5
+@end example
+
+@end itemize
+
+@section fftfilt
+Apply arbitrary expressions to samples in frequency domain
+
+@table @option
+@item dc_Y
+Adjust the dc value (gain) of the luma plane of the image. The filter
+accepts an integer value in range @code{0} to @code{1000}. The default
+value is set to @code{0}.
+
+@item dc_U
+Adjust the dc value (gain) of the 1st chroma plane of the image. The
+filter accepts an integer value in range @code{0} to @code{1000}. The
+default value is set to @code{0}.
+
+@item dc_V
+Adjust the dc value (gain) of the 2nd chroma plane of the image. The
+filter accepts an integer value in range @code{0} to @code{1000}. The
+default value is set to @code{0}.
+
+@item weight_Y
+Set the frequency domain weight expression for the luma plane.
+
+@item weight_U
+Set the frequency domain weight expression for the 1st chroma plane.
+
+@item weight_V
+Set the frequency domain weight expression for the 2nd chroma plane.
+
+The filter accepts the following variables:
+@item X
+@item Y
+The coordinates of the current sample.
+
+@item W
+@item H
+The width and height of the image.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+High-pass:
+@example
+fftfilt=dc_Y=128:weight_Y='squish(1-(Y+X)/100)'
+@end example
+
+@item
+Low-pass:
+@example
+fftfilt=dc_Y=0:weight_Y='squish((Y+X)/100-1)'
+@end example
+
+@item
+Sharpen:
+@example
+fftfilt=dc_Y=0:weight_Y='1+squish(1-(Y+X)/100)'
 @end example
 
 @end itemize
@@ -6263,36 +6412,6 @@ Higher values should result in a smoother motion vector field but less
 optimal individual vectors. Default value is 1.
 @end table
 
-@section mp
-
-Apply an MPlayer filter to the input video.
-
-This filter provides a wrapper around some of the filters of
-MPlayer/MEncoder.
-
-This wrapper is considered experimental. Some of the wrapped filters
-may not work properly and we may drop support for them, as they will
-be implemented natively into FFmpeg. Thus you should avoid
-depending on them when writing portable scripts.
-
-The filter accepts the parameters:
-@var{filter_name}[:=]@var{filter_params}
-
-@var{filter_name} is the name of a supported MPlayer filter,
-@var{filter_params} is a string containing the parameters accepted by
-the named filter.
-
-The list of the currently supported filters follows:
-@table @var
-@item softpulldown
-@end table
-
-The parameter syntax and behavior for the listed filters are the same
-of the corresponding MPlayer filters. For detailed instructions check
-the "VIDEO FILTERS" section in the MPlayer manual.
-
-See also mplayer(1), @url{http://www.mplayerhq.hu/}.
-
 @section mpdecimate
 
 Drop frames that do not differ greatly from the previous frame in
@@ -6920,6 +7039,121 @@ pad="2*iw:2*ih:ow-iw:oh-ih"
 @end example
 @end itemize
 
+@anchor{palettegen}
+@section palettegen
+
+Generate one palette for a whole video stream.
+
+It accepts the following options:
+
+@table @option
+@item max_colors
+Set the maximum number of colors to quantize in the palette.
+Note: the palette will still contain 256 colors; the unused palette entries
+will be black.
+
+@item reserve_transparent
+Create a palette of 255 colors maximum and reserve the last one for
+transparency. Reserving the transparency color is useful for GIF optimization.
+If not set, the maximum of colors in the palette will be 256. You probably want
+to disable this option for a standalone image.
+Set by default.
+
+@item stats_mode
+Set statistics mode.
+
+It accepts the following values:
+@table @samp
+@item full
+Compute full frame histograms.
+@item diff
+Compute histograms only for the part that differs from previous frame. This
+might be relevant to give more importance to the moving part of your input if
+the background is static.
+@end table
+
+Default value is @var{full}.
+@end table
+
+The filter also exports the frame metadata @code{lavfi.color_quant_ratio}
+(@code{nb_color_in / nb_color_out}) which you can use to evaluate the degree of
+color quantization of the palette. This information is also visible at
+@var{info} logging level.
+
+@subsection Examples
+
+@itemize
+@item
+Generate a representative palette of a given video using @command{ffmpeg}:
+@example
+ffmpeg -i input.mkv -vf palettegen palette.png
+@end example
+@end itemize
+
+@section paletteuse
+
+Use a palette to downsample an input video stream.
+
+The filter takes two inputs: one video stream and a palette. The palette must
+be a 256 pixels image.
+
+It accepts the following options:
+
+@table @option
+@item dither
+Select dithering mode. Available algorithms are:
+@table @samp
+@item bayer
+Ordered 8x8 bayer dithering (deterministic)
+@item heckbert
+Dithering as defined by Paul Heckbert in 1982 (simple error diffusion).
+Note: this dithering is sometimes considered "wrong" and is included as a
+reference.
+@item floyd_steinberg
+Floyd and Steingberg dithering (error diffusion)
+@item sierra2
+Frankie Sierra dithering v2 (error diffusion)
+@item sierra2_4a
+Frankie Sierra dithering v2 "Lite" (error diffusion)
+@end table
+
+Default is @var{sierra2_4a}.
+
+@item bayer_scale
+When @var{bayer} dithering is selected, this option defines the scale of the
+pattern (how much the crosshatch pattern is visible). A low value means more
+visible pattern for less banding, and higher value means less visible pattern
+at the cost of more banding.
+
+The option must be an integer value in the range [0,5]. Default is @var{2}.
+
+@item diff_mode
+If set, define the zone to process
+
+@table @samp
+@item rectangle
+Only the changing rectangle will be reprocessed. This is similar to GIF
+cropping/offsetting compression mechanism. This option can be useful for speed
+if only a part of the image is changing, and has use cases such as limiting the
+scope of the error diffusal @option{dither} to the rectangle that bounds the
+moving scene (it leads to more deterministic output if the scene doesn't change
+much, and as a result less moving noise and better GIF compression).
+@end table
+
+Default is @var{none}.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Use a palette (generated for example with @ref{palettegen}) to encode a GIF
+using @command{ffmpeg}:
+@example
+ffmpeg -i input.mkv -i palette.png -lavfi paletteuse output.gif
+@end example
+@end itemize
+
 @section perspective
 
 Correct perspective of video not recorded perpendicular to the screen.
@@ -7448,6 +7682,11 @@ much, but it will increase the amount of blurring needed to cover over
 the image and will destroy more information than necessary, and extra
 pixels will slow things down on a large logo.
 
+@section repeatfields
+
+This filter uses the repeat_field flag from the Video ES headers and hard repeats
+fields based on its value.
+
 @section rotate
 
 Rotate video by an arbitrary angle expressed in radians.
@@ -7681,8 +7920,8 @@ complete list of values. If not explicitly specified the filter applies
 the default flags.
 
 @item size, s
-Set the video size. For the syntax of this option, check the "Video size"
-section in the ffmpeg-utils manual.
+Set the video size. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 @item in_color_matrix
 @item out_color_matrix
@@ -8079,8 +8318,8 @@ The sample aspect ratio of the input frame, expressed in the form
 @var{num}/@var{den}.
 
 @item s
-The size of the input frame. For the syntax of this option, check the "Video size"
-section in the ffmpeg-utils manual.
+The size of the input frame. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 @item i
 The type of interlaced mode ("P" for "progressive", "T" for top field first, "B"
@@ -8573,10 +8812,10 @@ Set the filename of the subtitle file to read. It must be specified.
 
 @item original_size
 Specify the size of the original video, the video for which the ASS file
-was composed. For the syntax of this option, check the "Video size" section in
-the ffmpeg-utils manual. Due to a misdesign in ASS aspect ratio arithmetic,
-this is necessary to correctly scale the fonts if the aspect ratio has been
-changed.
+was composed. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Due to a misdesign in ASS aspect ratio arithmetic, this is necessary to
+correctly scale the fonts if the aspect ratio has been changed.
 
 @item charenc
 Set subtitles input character encoding. @code{subtitles} filter only. Only
@@ -8584,6 +8823,10 @@ useful if not UTF-8.
 
 @item stream_index, si
 Set subtitles stream index. @code{subtitles} filter only.
+
+@item force_style
+Override default style or script info parameters of the subtitles. It accepts a
+string containing ASS style format @code{KEY=VALUE} couples separated by ",".
 @end table
 
 If the first key is not specified, it is assumed that the first value
@@ -8608,6 +8851,12 @@ subtitles=video.mkv
 To render the second subtitles stream from that file, use:
 @example
 subtitles=video.mkv:si=1
+@end example
+
+To make the subtitles stream from @file{sub.srt} appear in transparent green
+@code{DejaVu Serif}, use:
+@example
+subtitles=sub.srt:force_style='FontName=DejaVu Serif,PrimaryColour=&HAA00FF00'
 @end example
 
 @section super2xsai
@@ -8700,7 +8949,8 @@ The filter accepts the following options:
 
 @item layout
 Set the grid size (i.e. the number of lines and columns). For the syntax of
-this option, check the "Video size" section in the ffmpeg-utils manual.
+this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 @item nb_frames
 Set the maximum number of frames to render in the given area. It must be less
@@ -9758,8 +10008,8 @@ It accepts the following parameters:
 
 @item video_size
 Specify the size (width and height) of the buffered video frames. For the
-syntax of this option, check the "Video size" section in the ffmpeg-utils
-manual.
+syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 @item width
 The input video width.
@@ -9859,8 +10109,8 @@ Set the cellular automaton rule, it is a number ranging from 0 to 255.
 Default value is 110.
 
 @item size, s
-Set the size of the output video. For the syntax of this option, check
-the "Video size" section in the ffmpeg-utils manual.
+Set the size of the output video. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 If @option{filename} or @option{pattern} is specified, the size is set
 by default to the width of the specified initial state row, and the
@@ -10060,7 +10310,7 @@ This source accepts the following parameters:
 
 @item size
 The size of the video to generate. For the syntax of this option, check the
-"Video size" section in the ffmpeg-utils manual.
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 @item framerate
 The framerate of the generated video. It may be a string of the form
@@ -10149,7 +10399,7 @@ a dead cell.
 
 @item size, s
 Set the size of the output video. For the syntax of this option, check the
-"Video size" section in the ffmpeg-utils manual.
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
 
 If @option{filename} is specified, the size is set by default to the
 same size of the input file. If @option{size} is set, it must contain
@@ -10260,8 +10510,8 @@ coded on a @code{1/(N*N)} scale.
 
 @item size, s
 Specify the size of the sourced video. For the syntax of this option, check the
-"Video size" section in the ffmpeg-utils manual. The default value is
-"320x240".
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+The default value is @code{320x240}.
 
 This option is not available with the @code{haldclutsrc} filter.
 
@@ -10387,8 +10637,9 @@ Same as above but not rotated.
 Default value is @samp{lissajous}.
 
 @item size, s
-Set the video size for the output. For the syntax of this option, check the "Video size"
-section in the ffmpeg-utils manual. Default value is @code{400x400}.
+Set the video size for the output. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default value is @code{400x400}.
 
 @item rate, r
 Set the output frame rate. Default value is @code{25}.
@@ -10528,8 +10779,9 @@ activated. Default is @code{0}.
 
 @item size
 Set the video size. This option is for video only. For the syntax of this
-option, check the "Video size" section in the ffmpeg-utils manual. Default
-and minimum resolution is @code{640x480}.
+option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default and minimum resolution is @code{640x480}.
 
 @item meter
 Set the EBU scale meter. Default is @code{9}. Common values are @code{9} and
@@ -11351,9 +11603,9 @@ The filter accepts the following options:
 
 @table @option
 @item size, s
-Specify the video size for the output. For the syntax of this option, check
-the "Video size" section in the ffmpeg-utils manual. Default value is
-@code{640x512}.
+Specify the video size for the output. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default value is @code{640x512}.
 
 @item slide
 Specify how the spectrum should slide along the window.
@@ -11465,9 +11717,9 @@ The filter accepts the following options:
 
 @table @option
 @item size, s
-Specify the video size for the output. For the syntax of this option, check
-the "Video size" section in the ffmpeg-utils manual. Default value
-is "600x240".
+Specify the video size for the output. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default value is @code{600x240}.
 
 @item mode
 Set display mode.
@@ -11519,6 +11771,33 @@ Create a synthetic signal and show it with showwaves, forcing a
 frame rate of 30 frames per second:
 @example
 aevalsrc=sin(1*2*PI*t)*sin(880*2*PI*t):cos(2*PI*200*t),asplit[out0],showwaves=r=30[out1]
+@end example
+@end itemize
+
+@section showwavespic
+
+Convert input audio to a single video frame, representing the samples waves.
+
+The filter accepts the following options:
+
+@table @option
+@item size, s
+Specify the video size for the output. For the syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default value is @code{600x240}.
+
+@item split_channels
+Set if channels should be drawn separately or overlap. Default value is 0.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Extract a channel split representation of the wave form of a whole audio track
+in a 1024x800 picture using @command{ffmpeg}:
+@example
+ffmpeg -i audio.flac -lavfi showwavespic=split_channels=1:s=1024x800 waveform.png
 @end example
 @end itemize
 

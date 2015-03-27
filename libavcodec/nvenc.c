@@ -67,10 +67,6 @@ typedef CUresult(CUDAAPI *PCUCTXDESTROY)(CUcontext ctx);
 
 typedef NVENCSTATUS (NVENCAPI* PNVENCODEAPICREATEINSTANCE)(NV_ENCODE_API_FUNCTION_LIST *functionList);
 
-#if NVENCAPI_MAJOR_VERSION < 5
-static const GUID dummy_license = { 0x0, 0x0, 0x0, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 } };
-#endif
-
 typedef struct NvencInputSurface
 {
     NV_ENC_INPUT_PTR input_surface;
@@ -474,10 +470,6 @@ static av_cold int nvenc_encode_init(AVCodecContext *avctx)
     int res = 0;
     int dw, dh;
 
-#if NVENCAPI_MAJOR_VERSION < 5
-    GUID license = dummy_license;
-#endif
-
     NvencContext *ctx = avctx->priv_data;
     NvencDynLoadFunctions *dl_fn = &ctx->nvenc_dload_funcs;
     NV_ENCODE_API_FUNCTION_LIST *p_nvenc = &dl_fn->nvenc_funcs;
@@ -499,10 +491,6 @@ static av_cold int nvenc_encode_init(AVCodecContext *avctx)
     preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
     encode_session_params.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
     encode_session_params.apiVersion = NVENCAPI_VERSION;
-
-#if NVENCAPI_MAJOR_VERSION < 5
-    encode_session_params.clientKeyPtr = &license;
-#endif
 
     if (ctx->gpu >= dl_fn->nvenc_device_count) {
         av_log(avctx, AV_LOG_FATAL, "Requested GPU %d, but only %d GPUs are available!\n", ctx->gpu, dl_fn->nvenc_device_count);
@@ -585,6 +573,18 @@ static av_cold int nvenc_encode_init(AVCodecContext *avctx)
     } else {
         ctx->init_encode_params.darHeight = avctx->height;
         ctx->init_encode_params.darWidth = avctx->width;
+    }
+
+    // De-compensate for hardware, dubiously, trying to compensate for
+    // playback at 704 pixel width.
+    if (avctx->width == 720 &&
+        (avctx->height == 480 || avctx->height == 576)) {
+        av_reduce(&dw, &dh,
+                  ctx->init_encode_params.darWidth * 44,
+                  ctx->init_encode_params.darHeight * 45,
+                  1024 * 1204);
+        ctx->init_encode_params.darHeight = dh;
+        ctx->init_encode_params.darWidth = dw;
     }
 
     ctx->init_encode_params.frameRateNum = avctx->time_base.den;
@@ -1095,10 +1095,6 @@ static int nvenc_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         pic_params.inputDuration = 0;
         pic_params.codecPicParams.h264PicParams.sliceMode = ctx->encode_config.encodeCodecConfig.h264Config.sliceMode;
         pic_params.codecPicParams.h264PicParams.sliceModeData = ctx->encode_config.encodeCodecConfig.h264Config.sliceModeData;
-
-#if NVENCAPI_MAJOR_VERSION < 5
-        memcpy(&pic_params.rcParams, &ctx->encode_config.rcParams, sizeof(NV_ENC_RC_PARAMS));
-#endif
 
         res = timestamp_queue_enqueue(&ctx->timestamp_list, frame->pts);
 

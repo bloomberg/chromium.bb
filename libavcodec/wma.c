@@ -28,9 +28,6 @@
 #include "wma_freqs.h"
 #include "wmadata.h"
 
-#undef NDEBUG
-#include <assert.h>
-
 /* XXX: use same run/length optimization as mpeg decoders */
 // FIXME maybe split decode / encode or pass flag
 static av_cold int init_coef_vlc(VLC *vlc, uint16_t **prun_table,
@@ -94,7 +91,6 @@ av_cold int ff_wma_init(AVCodecContext *avctx, int flags2)
         avctx->bit_rate    <= 0)
         return -1;
 
-    ff_fmt_convert_init(&s->fmt_conv, avctx);
 
     if (avctx->codec->id == AV_CODEC_ID_WMAV1)
         s->version = 1;
@@ -455,7 +451,7 @@ int ff_wma_run_level_decode(AVCodecContext *avctx, GetBitContext *gb,
             /** normal code */
             offset                  += run_table[code];
             sign                     = get_bits1(gb) - 1;
-            iptr[offset & coef_mask] = ilvl[code] ^ sign << 31;
+            iptr[offset & coef_mask] = ilvl[code] ^ (sign & 0x80000000);
         } else if (code == 1) {
             /** EOB */
             break;

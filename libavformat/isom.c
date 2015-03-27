@@ -59,6 +59,7 @@ const AVCodecTag ff_mp4_obj_type[] = {
     { AV_CODEC_ID_AC3         , 0xA5 },
     { AV_CODEC_ID_EAC3        , 0xA6 },
     { AV_CODEC_ID_DTS         , 0xA9 }, /* mp4ra.org */
+    { AV_CODEC_ID_TSCC2       , 0xD0 }, /* non standard, camtasia uses it */
     { AV_CODEC_ID_VORBIS      , 0xDD }, /* non standard, gpac uses it */
     { AV_CODEC_ID_DVD_SUBTITLE, 0xE0 }, /* non standard, see unsupported-embedded-subs-2.mp4 */
     { AV_CODEC_ID_QCELP       , 0xE1 },
@@ -173,6 +174,7 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
     { AV_CODEC_ID_H264, MKTAG('a', 'i', '1', '6') }, /* AVC-Intra 100M 1080i60 */
     { AV_CODEC_ID_H264, MKTAG('A', 'V', 'i', 'n') }, /* AVC-Intra with implicit SPS/PPS */
     { AV_CODEC_ID_H264, MKTAG('a', 'i', 'v', 'x') }, /* XAVC 4:2:2 10bit */
+    { AV_CODEC_ID_H264, MKTAG('r', 'v', '6', '4') }, /* X-Com Radvision */
 
     { AV_CODEC_ID_MPEG1VIDEO, MKTAG('m', '1', 'v', ' ') },
     { AV_CODEC_ID_MPEG1VIDEO, MKTAG('m', '1', 'v', '1') }, /* Apple MPEG-1 Camcorder */

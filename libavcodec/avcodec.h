@@ -291,6 +291,8 @@ enum AVCodecID {
     AV_CODEC_ID_SGIRLE_DEPRECATED,
     AV_CODEC_ID_MVC1_DEPRECATED,
     AV_CODEC_ID_MVC2_DEPRECATED,
+    AV_CODEC_ID_HQX,
+    AV_CODEC_ID_TDSC,
 
     AV_CODEC_ID_BRENDER_PIX= MKBETAG('B','P','I','X'),
     AV_CODEC_ID_Y41P       = MKBETAG('Y','4','1','P'),
@@ -391,7 +393,9 @@ enum AVCodecID {
     AV_CODEC_ID_ADPCM_IMA_APC,
     AV_CODEC_ID_ADPCM_VIMA_DEPRECATED,
     AV_CODEC_ID_ADPCM_VIMA = MKBETAG('V','I','M','A'),
+#if FF_API_VIMA_DECODER
     AV_CODEC_ID_VIMA       = MKBETAG('V','I','M','A'),
+#endif
     AV_CODEC_ID_ADPCM_AFC  = MKBETAG('A','F','C',' '),
     AV_CODEC_ID_ADPCM_IMA_OKI = MKBETAG('O','K','I',' '),
     AV_CODEC_ID_ADPCM_DTK  = MKBETAG('D','T','K',' '),
@@ -482,6 +486,7 @@ enum AVCodecID {
     AV_CODEC_ID_METASOUND,
     AV_CODEC_ID_PAF_AUDIO_DEPRECATED,
     AV_CODEC_ID_ON2AVC,
+    AV_CODEC_ID_DSS_SP,
     AV_CODEC_ID_FFWAVESYNTH = MKBETAG('F','F','W','S'),
     AV_CODEC_ID_SONIC       = MKBETAG('S','O','N','C'),
     AV_CODEC_ID_SONIC_LS    = MKBETAG('S','O','N','L'),
@@ -1820,7 +1825,7 @@ typedef struct AVCodecContext {
     /**
      * precision of the intra DC coefficient - 8
      * - encoding: Set by user.
-     * - decoding: unused
+     * - decoding: Set by libavcodec
      */
     int intra_dc_precision;
 
@@ -2847,6 +2852,7 @@ typedef struct AVCodecContext {
 #define FF_PROFILE_DTS_96_24   40
 #define FF_PROFILE_DTS_HD_HRA  50
 #define FF_PROFILE_DTS_HD_MA   60
+#define FF_PROFILE_DTS_EXPRESS 70
 
 #define FF_PROFILE_MPEG2_422    0
 #define FF_PROFILE_MPEG2_HIGH   1
@@ -3259,6 +3265,11 @@ typedef struct AVCodec {
      * Will be called when seeking
      */
     void (*flush)(AVCodecContext *);
+    /**
+     * Internal codec capabilities.
+     * See FF_CODEC_CAP_* in internal.h
+     */
+    int caps_internal;
 } AVCodec;
 
 int av_codec_get_max_lowres(const AVCodec *codec);
@@ -3653,6 +3664,9 @@ void avcodec_free_frame(AVFrame **frame);
  * retrieving a codec.
  *
  * @warning This function is not thread safe!
+ *
+ * @note Always call this function before using decoding routines (such as
+ * @ref avcodec_decode_video2()).
  *
  * @code
  * avcodec_register_all();
@@ -4102,6 +4116,9 @@ attribute_deprecated int avcodec_decode_audio3(AVCodecContext *avctx, int16_t *s
  *          larger than the actual read bytes because some optimized bitstream
  *          readers read 32 or 64 bits at once and could read over the end.
  *
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * before packets may be fed to the decoder.
+ *
  * @param      avctx the codec context
  * @param[out] frame The AVFrame in which to store decoded audio samples.
  *                   The decoder will allocate a buffer for the decoded frame by
@@ -4145,6 +4162,9 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
  * @note Codecs which have the CODEC_CAP_DELAY capability set have a delay
  * between input and output, these need to be fed with avpkt->data=NULL,
  * avpkt->size=0 at the end to return the remaining frames.
+ *
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * before packets may be fed to the decoder.
  *
  * @param avctx the codec context
  * @param[out] picture The AVFrame in which the decoded video frame will be stored.
@@ -4191,6 +4211,9 @@ int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
  * with avpkt->data set to NULL and avpkt->size set to 0 until it stops
  * returning subtitles. It is safe to flush even those decoders that are not
  * marked with CODEC_CAP_DELAY, then no subtitles will be returned.
+ *
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * before packets may be fed to the decoder.
  *
  * @param avctx the codec context
  * @param[out] sub The Preallocated AVSubtitle in which the decoded subtitle will be stored,
@@ -4368,6 +4391,28 @@ typedef struct AVCodecParserContext {
      * For example, this corresponds to H.264 PicOrderCnt.
      */
     int output_picture_number;
+
+    /**
+     * Dimensions of the decoded video intended for presentation.
+     */
+    int width;
+    int height;
+
+    /**
+     * Dimensions of the coded video.
+     */
+    int coded_width;
+    int coded_height;
+
+    /**
+     * The format of the coded data, corresponds to enum AVPixelFormat for video
+     * and for enum AVSampleFormat for audio.
+     *
+     * Note that a decoder can have considerable freedom in how exactly it
+     * decodes the data, so the format reported here might be different from the
+     * one returned by a decoder.
+     */
+    int format;
 } AVCodecParserContext;
 
 typedef struct AVCodecParser {

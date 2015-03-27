@@ -69,6 +69,7 @@ typedef struct OutputStream {
     int nb_segments, segments_size, segment_index;
     Segment **segments;
     int64_t first_pts, start_pts, max_pts;
+    int64_t last_dts;
     int bit_rate;
     char bandwidth_str[64];
 
@@ -155,8 +156,7 @@ static void set_codec_str(AVFormatContext *s, AVCodecContext *codec,
             if (avio_open_dyn_buf(&pb) < 0)
                 return;
             if (ff_isom_write_avcc(pb, extradata, extradata_size) < 0) {
-                avio_close_dyn_buf(pb, &tmpbuf);
-                av_free(tmpbuf);
+                ffio_free_dyn_buf(&pb);
                 return;
             }
             extradata_size = avio_close_dyn_buf(pb, &extradata);
@@ -499,8 +499,10 @@ static int write_manifest(AVFormatContext *s, int final)
         for (i = 0; i < s->nb_streams; i++) {
             AVStream *st = s->streams[i];
             OutputStream *os = &c->streams[i];
-            if (s->streams[i]->codec->codec_type != AVMEDIA_TYPE_VIDEO)
+
+            if (st->codec->codec_type != AVMEDIA_TYPE_VIDEO)
                 continue;
+
             avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"video/mp4\" codecs=\"%s\"%s width=\"%d\" height=\"%d\">\n", i, os->codec_str, os->bandwidth_str, st->codec->width, st->codec->height);
             output_segment_list(&c->streams[i], out, c);
             avio_printf(out, "\t\t\t</Representation>\n");
@@ -512,8 +514,10 @@ static int write_manifest(AVFormatContext *s, int final)
         for (i = 0; i < s->nb_streams; i++) {
             AVStream *st = s->streams[i];
             OutputStream *os = &c->streams[i];
-            if (s->streams[i]->codec->codec_type != AVMEDIA_TYPE_AUDIO)
+
+            if (st->codec->codec_type != AVMEDIA_TYPE_AUDIO)
                 continue;
+
             avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"audio/mp4\" codecs=\"%s\"%s audioSamplingRate=\"%d\">\n", i, os->codec_str, os->bandwidth_str, st->codec->sample_rate);
             avio_printf(out, "\t\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"%d\" />\n", st->codec->channels);
             output_segment_list(&c->streams[i], out, c);
@@ -648,9 +652,10 @@ static int dash_write_header(AVFormatContext *s)
         else if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO)
             c->has_audio = 1;
 
-        set_codec_str(s, os->ctx->streams[0]->codec, os->codec_str, sizeof(os->codec_str));
+        set_codec_str(s, st->codec, os->codec_str, sizeof(os->codec_str));
         os->first_pts = AV_NOPTS_VALUE;
         os->max_pts = AV_NOPTS_VALUE;
+        os->last_dts = AV_NOPTS_VALUE;
         os->segment_index = 1;
     }
 
@@ -731,6 +736,29 @@ static void find_index_range(AVFormatContext *s, const char *full_path,
     if (AV_RL32(&buf[4]) != MKTAG('s', 'i', 'd', 'x'))
         return;
     *index_length = AV_RB32(&buf[0]);
+}
+
+static int update_stream_extradata(AVFormatContext *s, OutputStream *os,
+                                   AVCodecContext *codec)
+{
+    uint8_t *extradata;
+
+    if (os->ctx->streams[0]->codec->extradata_size || !codec->extradata_size)
+        return 0;
+
+    extradata = av_malloc(codec->extradata_size);
+
+    if (!extradata)
+        return AVERROR(ENOMEM);
+
+    memcpy(extradata, codec->extradata, codec->extradata_size);
+
+    os->ctx->streams[0]->codec->extradata = extradata;
+    os->ctx->streams[0]->codec->extradata_size = codec->extradata_size;
+
+    set_codec_str(s, codec, os->codec_str, sizeof(os->codec_str));
+
+    return 0;
 }
 
 static int dash_flush(AVFormatContext *s, int final, int stream)
@@ -835,6 +863,20 @@ static int dash_write_packet(AVFormatContext *s, AVPacket *pkt)
     OutputStream *os = &c->streams[pkt->stream_index];
     int64_t seg_end_duration = (os->segment_index) * (int64_t) c->min_seg_duration;
     int ret;
+
+    ret = update_stream_extradata(s, os, st->codec);
+    if (ret < 0)
+        return ret;
+
+    // Fill in a heuristic guess of the packet duration, if none is available.
+    // The mp4 muxer will do something similar (for the last packet in a fragment)
+    // if nothing is set (setting it for the other packets doesn't hurt).
+    // By setting a nonzero duration here, we can be sure that the mp4 muxer won't
+    // invoke its heuristic (this doesn't have to be identical to that algorithm),
+    // so that we know the exact timestamps of fragments.
+    if (!pkt->duration && os->last_dts != AV_NOPTS_VALUE)
+        pkt->duration = pkt->dts - os->last_dts;
+    os->last_dts = pkt->dts;
 
     // If forcing the stream to start at 0, the mp4 muxer will set the start
     // timestamps to 0. Do the same here, to avoid mismatches in duration/timestamps.

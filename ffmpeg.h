@@ -111,6 +111,7 @@ typedef struct OptionsContext {
     int64_t input_ts_offset;
     int rate_emu;
     int accurate_seek;
+    int thread_queue_size;
 
     SpecifierOpt *ts_scale;
     int        nb_ts_scale;
@@ -350,6 +351,7 @@ typedef struct InputFile {
     pthread_t thread;           /* thread reading from this file */
     int non_blocking;           /* reading packets from the thread should not block */
     int joined;                 /* the thread has been joined */
+    int thread_queue_size;      /* maximum number of queued packets */
 #endif
 } InputFile;
 
@@ -482,6 +484,7 @@ extern float dts_error_threshold;
 extern int audio_volume;
 extern int audio_sync_method;
 extern int video_sync_method;
+extern float frame_drop_threshold;
 extern int do_benchmark;
 extern int do_benchmark_all;
 extern int do_deinterlace;

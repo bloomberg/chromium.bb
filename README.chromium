@@ -3,7 +3,7 @@ URL: http://ffmpeg.org/
 License: LGPL 2.1
 License File: LICENSE.md
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: e5b7e2224f62e9cb6697e664b7d1245302cca9e7, Jan 29 2015
+Last Upstream Merge: 19321a295a641cbc067ec0df597bc1b69addf049, Mar 24 2015
 
 This file documents the layout of the Chromium copy of FFmpeg git, some common
 tasks, how to produce the FFmpeg include directory, and how to create the
@@ -26,13 +26,9 @@ the gyp files, are located under the chromium/ folder off the root.
     chromium/config/...: Pregenerated FFmpeg config options for each platform
       and architecture; e.g., ChromeOS: ARM-Neon, Linux: X64, etc.
 
-    chromium/patches/...: Chromium specific changes which haven't yet made it
-      upstream.  See chromium/patches/README for more details on each patch.
+    chromium/patches/README: Details of Chromium specific changes which haven't
+      yet made it upstream.
 
-      Historically, the .patch files were staged on top of a source tarball
-      instead of the Git repository we have now.  The .patch files are kept for
-      tracking purposes.  The new system only requires that you add an entry to
-      the README file with a link to the tracking issue and code review.
 
 Help w/ Common Tasks:
 =====================
@@ -91,7 +87,7 @@ will clear out all the patches which have been upstreamed.
   git checkout master -b my_new_branch
 
   # Pull the patch out of upstream.
-  git cherry-pick <hash of commit in upstream>
+  git cherry-pick -x <hash of commit in upstream>
 
   <Follow rest of "Submitting changes to Chromium's FFmpeg git repository.">
 
