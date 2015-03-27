@@ -54,6 +54,9 @@ namespace fakeApi {
     // |baz| : The baz to use.
     static void doSomething(Baz baz, VoidCallback callback);
 
+    // |callback| : The callback which will most assuredly in all cases be
+    // called; that is, of course, iff such a callback was provided and is
+    // not at all null.
     static void bazGreek(optional BazGreekCallback callback);
 
     [deprecated="Use a new method."] static DOMString returnString();
@@ -117,7 +120,9 @@ var Baz;
 chrome.fakeApi.doSomething = function(baz, callback) {};
 
 /**
- * @param {function(Baz, !chrome.fakeApi.Greek):void=} callback
+ * @param {function(Baz, !chrome.fakeApi.Greek):void=} callback The callback
+ *     which will most assuredly in all cases be called; that is, of course, iff
+ *     such a callback was provided and is not at all null.
  */
 chrome.fakeApi.bazGreek = function(callback) {};
 

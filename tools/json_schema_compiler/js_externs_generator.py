@@ -94,7 +94,7 @@ class _Generator(object):
 
     is_constructor = self._IsTypeConstructor(js_type)
     if is_constructor:
-      c.Comment('@constructor', comment_prefix = ' * ')
+      c.Comment('@constructor', comment_prefix = ' * ', wrap_indent=4)
     else:
       c.Concat(self._GenerateTypedef(js_type.properties))
 
@@ -141,7 +141,8 @@ class _Generator(object):
 
     lines = []
     if function.description:
-      lines.extend(function.description.splitlines())
+      for line in function.description.splitlines():
+        c.Comment(line, comment_prefix=' * ')
 
     for param in function.params:
       js_type = self._TypeToJsType(param.type_)
@@ -165,7 +166,7 @@ class _Generator(object):
       lines.append('@deprecated %s' % function.deprecated)
 
     for line in lines:
-      c.Comment(line, comment_prefix=' * ');
+      c.Comment(line, comment_prefix=' * ', wrap_indent=4);
 
     c.Append(' */')
     return c

@@ -117,14 +117,14 @@ class CodeTest(unittest.TestCase):
     self.assertFalse(c.IsEmpty())
 
   def testComment(self):
-    long_comment = ('This comment is eighty nine characters in longness, '
-        'that is, to use another word, length')
+    long_comment = ('This comment is ninety one characters in longness, '
+        'that is, using a different word, length.')
     c = Code()
     c.Comment(long_comment)
     self.assertEquals(
-        '// This comment is eighty nine characters '
-        'in longness, that is, to use another\n'
-        '// word, length',
+        '// This comment is ninety one characters '
+        'in longness, that is, using a different\n'
+        '// word, length.',
         c.Render())
     c = Code()
     c.Sblock('sblock')
@@ -133,13 +133,13 @@ class CodeTest(unittest.TestCase):
     c.Comment(long_comment)
     self.assertEquals(
         'sblock\n'
-        '  // This comment is eighty nine characters '
-        'in longness, that is, to use\n'
-        '  // another word, length\n'
+        '  // This comment is ninety one characters '
+        'in longness, that is, using a\n'
+        '  // different word, length.\n'
         'eblock\n'
-        '// This comment is eighty nine characters in '
-        'longness, that is, to use another\n'
-        '// word, length',
+        '// This comment is ninety one characters in '
+        'longness, that is, using a different\n'
+        '// word, length.',
         c.Render())
     long_word = 'x' * 100
     c = Code()
@@ -147,6 +147,14 @@ class CodeTest(unittest.TestCase):
     self.assertEquals(
         '// ' + 'x' * 77 + '\n'
         '// ' + 'x' * 23,
+        c.Render())
+    c = Code(indent_size=2, comment_length=40)
+    c.Comment('Pretend this is a Closure Compiler style comment, which should '
+        'both wrap and indent', comment_prefix=' * ', wrap_indent=4)
+    self.assertEquals(
+        ' * Pretend this is a Closure Compiler\n'
+        ' *     style comment, which should both\n'
+        ' *     wrap and indent',
         c.Render())
 
   def testCommentWithSpecialCharacters(self):

@@ -85,7 +85,7 @@ class Code(object):
       self.Append(line)
     return self
 
-  def Comment(self, comment, comment_prefix='// '):
+  def Comment(self, comment, comment_prefix='// ', wrap_indent=0):
     """Adds the given string as a comment.
 
     Will split the comment if it's too long. Use mainly for variable length
@@ -93,17 +93,31 @@ class Code(object):
 
     Unaffected by code.Substitute().
     """
-    max_len = self._comment_length - self._indent_level - len(comment_prefix)
-    while len(comment) >= max_len:
-      line = comment[0:max_len]
-      last_space = line.rfind(' ')
+    # Helper function to trim a comment to the maximum length, and return one
+    # line and the remainder of the comment.
+    def trim_comment(comment, max_len):
+      if len(comment) <= max_len:
+        return comment, ''
+      last_space = comment.rfind(' ', 0, max_len + 1)
       if last_space != -1:
-        line = line[0:last_space]
+        line = comment[0:last_space]
         comment = comment[last_space + 1:]
       else:
+        line = comment[0:max_len]
         comment = comment[max_len:]
-      self.Append(comment_prefix + line, substitute=False)
-    self.Append(comment_prefix + comment, substitute=False)
+      return line, comment
+
+    # First line has the full maximum length.
+    max_len = self._comment_length - self._indent_level - len(comment_prefix)
+    line, comment = trim_comment(comment, max_len)
+    self.Append(comment_prefix + line, substitute=False)
+
+    # Any subsequent lines be subject to the wrap indent.
+    max_len = max_len - wrap_indent
+    while len(comment):
+      line, comment = trim_comment(comment, max_len)
+      self.Append(comment_prefix + (' ' * wrap_indent) + line, substitute=False)
+
     return self
 
   def Substitute(self, d):
