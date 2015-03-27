@@ -26,19 +26,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-datatransfer-interface
+
 [
     WillBeGarbageCollected
 ] interface DataTransfer {
-             [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
-             [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;
-    readonly attribute DOMString[] types;
-    readonly attribute FileList files;
+    // TODO(philipj): Remove [TreatReturnedNullStringAs=Undefined].
+    [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
+    [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;
 
-    void clearData(optional DOMString type);
-    DOMString getData(DOMString type);
-    void setData(DOMString type, DOMString data);
+    [SameObject] readonly attribute DataTransferItemList items;
+
     [RaisesException] void setDragImage(Element image, long x, long y);
 
-    readonly attribute DataTransferItemList items;
+    /* old interface */
+    [SameObject] readonly attribute DOMString[] types;
+    DOMString getData(DOMString format);
+    void setData(DOMString format, DOMString data);
+    void clearData(optional DOMString format);
+    [SameObject] readonly attribute FileList files;
 };
-
