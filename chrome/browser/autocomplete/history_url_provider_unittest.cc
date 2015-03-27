@@ -413,23 +413,40 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
   // shorter URL that's "good enough".  The host doesn't match the user input
   // and so should not appear.
   const UrlAndLegalDefault short_3[] = {
-    { "http://foo.com/d", true },
     { "http://foo.com/dir/another/", false },
+    { "http://foo.com/d", true },
     { "http://foo.com/dir/another/again/myfile.html", false },
     { "http://foo.com/dir/", false }
   };
   RunTest(ASCIIToUTF16("foo.com/d"), std::string(), true, short_3,
           arraysize(short_3));
+  // If prevent_inline_autocomplete is false, we won't bother creating the
+  // URL-what-you-typed match because we have promoted inline autocompletions.
+  const UrlAndLegalDefault short_3_allow_inline[] = {
+    { "http://foo.com/dir/another/", true },
+    { "http://foo.com/dir/another/again/myfile.html", true },
+    { "http://foo.com/dir/", true }
+  };
+  RunTest(ASCIIToUTF16("foo.com/d"), std::string(), false, short_3_allow_inline,
+          arraysize(short_3_allow_inline));
 
   // We shouldn't promote shorter URLs than the best if they're not good
   // enough.
   const UrlAndLegalDefault short_4[] = {
-    { "http://foo.com/dir/another/a", true },
     { "http://foo.com/dir/another/again/myfile.html", false },
+    { "http://foo.com/dir/another/a", true },
     { "http://foo.com/dir/another/again/", false }
   };
   RunTest(ASCIIToUTF16("foo.com/dir/another/a"), std::string(), true, short_4,
           arraysize(short_4));
+  // If prevent_inline_autocomplete is false, we won't bother creating the
+  // URL-what-you-typed match because we have promoted inline autocompletions.
+  const UrlAndLegalDefault short_4_allow_inline[] = {
+    { "http://foo.com/dir/another/again/myfile.html", true },
+    { "http://foo.com/dir/another/again/", true }
+  };
+  RunTest(ASCIIToUTF16("foo.com/dir/another/a"), std::string(), false,
+          short_4_allow_inline, arraysize(short_4_allow_inline));
 
   // Exact matches should always be best no matter how much more another match
   // has been typed.
@@ -485,11 +502,21 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   // "what you typed" result, plus this one.
   const base::string16 typing(ASCIIToUTF16("http://redirects/"));
   const UrlAndLegalDefault expected_results[] = {
-    { base::UTF16ToUTF8(typing), true },
-    { test_cases[0].url, false }
+    { test_cases[0].url, false },
+    { base::UTF16ToUTF8(typing), true }
   };
   RunTest(typing, std::string(), true, expected_results,
           arraysize(expected_results));
+
+  // If prevent_inline_autocomplete is false, we won't bother creating the
+  // URL-what-you-typed match because we have promoted inline autocompletions.
+  // The result set should instead consist of a single URL representing the
+  // whole set of redirects.
+  const UrlAndLegalDefault expected_results_allow_inlining[] = {
+    { test_cases[0].url, true }
+  };
+  RunTest(typing, std::string(), false, expected_results_allow_inlining,
+          arraysize(expected_results_allow_inlining));
 }
 
 TEST_F(HistoryURLProviderTestNoSearchProvider, WhatYouTypedNoSearchProvider) {
