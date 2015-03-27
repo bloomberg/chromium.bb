@@ -330,25 +330,25 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   return view;
 }
 
-// +------------------------------------------------+
-// | titleLabel_        (Single line.)              |
-// |------------------------------------------------|
-// | permanentErrorBox_ (Multiline, may be hidden.) |
-// |------------------------------------------------|
-// | instructionsLabel_ (Multiline.)                |
-// |------------------------------------------------|
-// | monthPopup_ yearPopup_ cvcInput_ cvcImage      |
-// |     (All enclosed in inputRowView_. Month and  |
-// |         year may be hidden.)                   |
-// |------------------------------------------------|
-// | errorLabel_ (Multiline. Always takes up space  |
-// |                 for one line even if empty.)   |
-// |------------------------------------------------|
-// |                              [Cancel] [Verify] |
-// |------------------------------------------------|
-// | storageCheckbox_ storageTooltip_               |
-// |     (Both enclosed in storageView_.)           |
-// +------------------------------------------------+
+// +---------------------------------------------------------------------------+
+// | titleLabel_        (Single line.)                                         |
+// |---------------------------------------------------------------------------|
+// | permanentErrorBox_ (Multiline, may be hidden.)                            |
+// |---------------------------------------------------------------------------|
+// | instructionsLabel_ (Multiline.)                                           |
+// |---------------------------------------------------------------------------|
+// | monthPopup_ yearPopup_ cvcInput_ cvcImage                                 |
+// |     (All enclosed in inputRowView_. Month and year may be hidden.)        |
+// |---------------------------------------------------------------------------|
+// | errorLabel_ (Multiline. Always takes up space for one line even if        |
+// |                 empty.)                                                   |
+// |---------------------------------------------------------------------------|
+// |                                                         [Cancel] [Verify] |
+// |---------------------------------------------------------------------------|
+// | storageCheckbox_ storageTooltip_                                          |
+// |     (Both enclosed in storageView_. May be hidden but still taking up     |
+// |         layout space. Will all be nil if !CanStoreLocally()).             |
+// +---------------------------------------------------------------------------+
 - (void)performLayoutAndDisplay:(BOOL)display {
   // Calculate dialog content width.
   CGFloat contentWidth =
@@ -359,9 +359,11 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [storageView_
       setFrameOrigin:NSMakePoint(0, chrome_style::kClientBottomPadding)];
 
+  CGFloat verifyMinY =
+      storageView_ ? NSMaxY([storageView_ frame]) + chrome_style::kRowPadding
+                   : chrome_style::kClientBottomPadding;
   [verifyButton_ setFrameOrigin:
-      NSMakePoint(contentWidth - NSWidth([verifyButton_ frame]),
-                  NSMaxY([storageView_ frame]) + chrome_style::kRowPadding)];
+      NSMakePoint(contentWidth - NSWidth([verifyButton_ frame]), verifyMinY)];
 
   [cancelButton_
       setFrameOrigin:NSMakePoint(NSMinX([verifyButton_ frame]) - kButtonGap -
@@ -428,8 +430,10 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   inputRowView_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
   [mainView addSubview:inputRowView_];
 
-  storageView_ = [self createStorageViewWithController:controller];
-  [mainView addSubview:storageView_];
+  if (controller->CanStoreLocally()) {
+    storageView_ = [self createStorageViewWithController:controller];
+    [mainView addSubview:storageView_];
+  }
 
   progressOverlayLabel_.reset([constrained_window::CreateLabel() retain]);
   [progressOverlayLabel_ setHidden:YES];
