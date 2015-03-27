@@ -17,7 +17,6 @@ function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
   this.document_ = dialogDom.ownerDocument;
   this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL');
-  this.selectedCategory = null;
   this.selectedItem_ = null;
   this.progressManager_ = new ProgressManager();
   this.customWallpaperData_ = null;
@@ -182,7 +181,8 @@ function WallpaperManager(dialogDom) {
     var accessManifestKey = Constants.AccessManifestKey;
     var self = this;
     Constants.WallpaperLocalStorage.get(accessManifestKey, function(items) {
-      self.manifest_ = items[accessManifestKey] ? items[accessManifestKey] : {};
+      self.manifest_ = items[accessManifestKey] ?
+          items[accessManifestKey] : null;
       self.showError_(str('connectionFailed'));
       self.postManifestDomInit_();
       $('wallpaper-grid').classList.add('image-picker-offline');
@@ -455,7 +455,6 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.initThumbnailsGrid_ = function() {
     this.wallpaperGrid_ = $('wallpaper-grid');
     wallpapers.WallpaperThumbnailsGrid.decorate(this.wallpaperGrid_);
-    this.wallpaperGrid_.autoExpands = true;
 
     this.wallpaperGrid_.addEventListener('change', this.onChange_.bind(this));
     this.wallpaperGrid_.addEventListener('dblclick', this.onClose_.bind(this));
@@ -1003,10 +1002,14 @@ function WallpaperManager(dialogDom) {
       };
 
       var self = this;
+      // Need this check for test purpose.
+      var numOnlineWallpaper = (this.enableOnlineWallpaper_ && this.manifest_) ?
+        this.manifest_.wallpaper_list.length : 0;
       var processResults = function(entries) {
         for (var i = 0; i < entries.length; i++) {
           var entry = entries[i];
           var wallpaperInfo = {
+                wallpaperId: numOnlineWallpaper + i,
                 baseURL: entry.name,
                 // The layout will be replaced by the actual value saved in
                 // local storage when requested later. Layout is not important
@@ -1021,6 +1024,7 @@ function WallpaperManager(dialogDom) {
         }
         if (loadTimeData.getBoolean('isOEMDefaultWallpaper')) {
           var oemDefaultWallpaperElement = {
+              wallpaperId: numOnlineWallpaper + entries.length,
               baseURL: 'OemDefaultWallpaper',
               layout: 'CENTER_CROPPED',
               source: Constants.WallpaperSourceEnum.OEM,
@@ -1067,18 +1071,22 @@ function WallpaperManager(dialogDom) {
                                        success, errorHandler);
     } else {
       this.document_.body.removeAttribute('custom');
-      for (var key in this.manifest_.wallpaper_list) {
+      // Need this check for test purpose.
+      var numOnlineWallpaper = (this.enableOnlineWallpaper_ && this.manifest_) ?
+          this.manifest_.wallpaper_list.length : 0;
+      for (var i = 0; i < numOnlineWallpaper; i++) {
         if (selectedIndex == AllCategoryIndex ||
-            this.manifest_.wallpaper_list[key].categories.indexOf(
+            this.manifest_.wallpaper_list[i].categories.indexOf(
                 selectedIndex - OnlineCategoriesOffset) != -1) {
           var wallpaperInfo = {
-            baseURL: this.manifest_.wallpaper_list[key].base_url,
-            layout: this.manifest_.wallpaper_list[key].default_layout,
+            wallpaperId: i,
+            baseURL: this.manifest_.wallpaper_list[i].base_url,
+            layout: this.manifest_.wallpaper_list[i].default_layout,
             source: Constants.WallpaperSourceEnum.Online,
             availableOffline: false,
-            author: this.manifest_.wallpaper_list[key].author,
-            authorWebsite: this.manifest_.wallpaper_list[key].author_website,
-            dynamicURL: this.manifest_.wallpaper_list[key].dynamic_url
+            author: this.manifest_.wallpaper_list[i].author,
+            authorWebsite: this.manifest_.wallpaper_list[i].author_website,
+            dynamicURL: this.manifest_.wallpaper_list[i].dynamic_url
           };
           var startIndex = wallpaperInfo.baseURL.lastIndexOf('/') + 1;
           var fileName = wallpaperInfo.baseURL.substring(startIndex) +
@@ -1088,7 +1096,7 @@ function WallpaperManager(dialogDom) {
             wallpaperInfo.availableOffline = true;
           }
           wallpapersDataModel.push(wallpaperInfo);
-          var url = this.manifest_.wallpaper_list[key].base_url +
+          var url = this.manifest_.wallpaper_list[i].base_url +
               Constants.HighResolutionSuffix;
           if (url == this.currentWallpaper_) {
             selectedItem = wallpaperInfo;
