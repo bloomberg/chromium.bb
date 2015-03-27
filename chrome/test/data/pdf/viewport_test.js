@@ -109,6 +109,27 @@ var tests = [
     chrome.test.assertEq('200px', mockSizer.style.height);
     chrome.test.assertEq(100, mockWindow.pageXOffset);
     chrome.test.assertEq(100, mockWindow.pageYOffset);
+
+    var documentDimensions = new MockDocumentDimensions(0, 0);
+    documentDimensions.addPage(200, 200);
+    viewport.setDocumentDimensions(documentDimensions);
+    mockWindow.scrollTo(0, 0);
+    viewport.fitToPage();
+    viewport.setZoom(1);
+    chrome.test.assertEq(Viewport.FittingType.NONE, viewport.fittingType);
+    chrome.test.assertEq('200px', mockSizer.style.width);
+    chrome.test.assertEq('200px', mockSizer.style.height);
+    chrome.test.assertEq(0, mockWindow.pageXOffset);
+    chrome.test.assertEq(0, mockWindow.pageYOffset);
+
+    viewport.fitToWidth();
+    viewport.setZoom(1);
+    chrome.test.assertEq(Viewport.FittingType.NONE, viewport.fittingType);
+    chrome.test.assertEq('200px', mockSizer.style.width);
+    chrome.test.assertEq('200px', mockSizer.style.height);
+    chrome.test.assertEq(0, mockWindow.pageXOffset);
+    chrome.test.assertEq(0, mockWindow.pageYOffset);
+
     chrome.test.succeed();
   },
 
@@ -174,6 +195,8 @@ var tests = [
     viewport.setZoom(0.1);
     mockCallback.reset();
     viewport.fitToWidth();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_WIDTH,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('100px', mockSizer.style.width);
     chrome.test.assertEq(1, viewport.zoom);
@@ -184,6 +207,8 @@ var tests = [
     viewport.setDocumentDimensions(documentDimensions);
     mockCallback.reset();
     viewport.fitToWidth();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_WIDTH,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('100px', mockSizer.style.width);
     chrome.test.assertEq(0.5, viewport.zoom);
@@ -194,6 +219,8 @@ var tests = [
     viewport.setDocumentDimensions(documentDimensions);
     mockCallback.reset();
     viewport.fitToWidth();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_WIDTH,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('100px', mockSizer.style.width);
     chrome.test.assertEq(2, viewport.zoom);
@@ -207,6 +234,8 @@ var tests = [
     mockWindow.scrollTo(0, 100);
     mockCallback.reset();
     viewport.fitToWidth();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_WIDTH,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(2, viewport.zoom);
     chrome.test.assertEq(0, viewport.position.x);
@@ -222,6 +251,8 @@ var tests = [
     viewport.setDocumentDimensions(documentDimensions);
     mockCallback.reset();
     viewport.fitToWidth();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_WIDTH,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('85px', mockSizer.style.width);
     chrome.test.assertEq(1.7, viewport.zoom);
@@ -242,6 +273,8 @@ var tests = [
     viewport.setZoom(0.1);
     mockCallback.reset();
     viewport.fitToPage();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_PAGE,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('100px', mockSizer.style.width);
     chrome.test.assertEq('100px', mockSizer.style.height);
@@ -253,6 +286,8 @@ var tests = [
     viewport.setDocumentDimensions(documentDimensions);
     mockCallback.reset();
     viewport.fitToPage();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_PAGE,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('100px', mockSizer.style.width);
     chrome.test.assertEq('50px', mockSizer.style.height);
@@ -264,6 +299,8 @@ var tests = [
     viewport.setDocumentDimensions(documentDimensions);
     mockCallback.reset();
     viewport.fitToPage();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_PAGE,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('50px', mockSizer.style.width);
     chrome.test.assertEq('100px', mockSizer.style.height);
@@ -279,6 +316,8 @@ var tests = [
     mockWindow.scrollTo(0, 0);
     mockCallback.reset();
     viewport.fitToPage();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_PAGE,
+                         viewport.fittingType);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('100px', mockSizer.style.width);
     chrome.test.assertEq('250px', mockSizer.style.height);
@@ -300,6 +339,8 @@ var tests = [
     viewport.setZoom(1);
     mockWindow.scrollTo(0, 0);
     viewport.fitToPage();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_PAGE,
+                         viewport.fittingType);
     chrome.test.assertEq(0.5, viewport.zoom);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(0, viewport.position.y);
@@ -315,6 +356,8 @@ var tests = [
     // position).
     mockWindow.scrollTo(0, 0);
     viewport.fitToPage();
+    chrome.test.assertEq(Viewport.FittingType.FIT_TO_PAGE,
+                         viewport.fittingType);
     chrome.test.assertEq(0.5, viewport.zoom);
     mockWindow.scrollTo(0, 10);
     mockWindow.setSize(50, 50);

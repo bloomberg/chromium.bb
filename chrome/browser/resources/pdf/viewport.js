@@ -242,6 +242,7 @@ Viewport.prototype = {
    * @param {number} newZoom the zoom level to zoom to.
    */
   setZoom: function(newZoom) {
+    this.fittingType_ = Viewport.FittingType.NONE;
     newZoom = Math.max(Viewport.ZOOM_FACTOR_RANGE.min,
                        Math.min(newZoom, Viewport.ZOOM_FACTOR_RANGE.max));
     this.mightZoom_(function() {
