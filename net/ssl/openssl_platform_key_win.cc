@@ -167,6 +167,50 @@ class BoringSSLEngine {
 base::LazyInstance<BoringSSLEngine>::Leaky global_boringssl_engine =
     LAZY_INSTANCE_INITIALIZER;
 
+// Signs |in| with |key|, writing the output to |out| and the size to |out_len|.
+// Although the buffer is preallocated, this calls NCryptSignHash twice. Some
+// smartcards are buggy and assume the two-call pattern. See
+// https://crbug.com/470204. Returns true on success and false on error.
+bool DoNCryptSignHash(NCRYPT_KEY_HANDLE key,
+                      void* padding,
+                      const BYTE* in,
+                      DWORD in_len,
+                      BYTE* out,
+                      DWORD max_out,
+                      DWORD* out_len,
+                      DWORD flags) {
+  // Determine the output length.
+  DWORD signature_len;
+  SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
+      key, padding, const_cast<BYTE*>(in), in_len, nullptr, 0, &signature_len,
+      flags);
+  if (FAILED(ncrypt_status)) {
+    LOG(ERROR) << "NCryptSignHash failed: " << ncrypt_status;
+    return false;
+  }
+  // Check |max_out| externally rather than trust the smartcard.
+  if (signature_len == 0 || signature_len > max_out) {
+    LOG(ERROR) << "Bad signature length.";
+    return false;
+  }
+  // It is important that |signature_len| already be initialized with the
+  // correct size. Some smartcards are buggy and do not write to it on the
+  // second call.
+  ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
+      key, padding, const_cast<PBYTE>(in), in_len, out, signature_len,
+      &signature_len, flags);
+  if (FAILED(ncrypt_status)) {
+    LOG(ERROR) << "NCryptSignHash failed: " << ncrypt_status;
+    return false;
+  }
+  if (signature_len == 0) {
+    LOG(ERROR) << "Bad signature length.";
+    return false;
+  }
+  *out_len = signature_len;
+  return true;
+}
+
 // Custom RSA_METHOD that uses the platform APIs for signing.
 
 const KeyExData* RsaGetExData(const RSA* rsa) {
@@ -222,10 +266,9 @@ int RsaMethodSign(int hash_nid,
     }
 
     DWORD signature_len;
-    SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
-        ex_data->key->hNCryptKey, &rsa_padding_info, const_cast<PBYTE>(in),
-        in_len, out, RSA_size(rsa), &signature_len, BCRYPT_PAD_PKCS1);
-    if (FAILED(ncrypt_status) || signature_len == 0) {
+    if (!DoNCryptSignHash(ex_data->key->hNCryptKey, &rsa_padding_info, in,
+                          in_len, out, RSA_size(rsa), &signature_len,
+                          BCRYPT_PAD_PKCS1)) {
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
       return 0;
     }
@@ -439,10 +482,13 @@ int EcdsaMethodSign(const uint8_t* digest,
   std::vector<uint8_t> raw_sig(order_len * 2);
 
   DWORD signature_len;
-  SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
-      ex_data->key->hNCryptKey, nullptr, const_cast<PBYTE>(digest), digest_len,
-      &raw_sig[0], raw_sig.size(), &signature_len, 0);
-  if (FAILED(ncrypt_status) || signature_len != raw_sig.size()) {
+  if (!DoNCryptSignHash(ex_data->key->hNCryptKey, nullptr, digest, digest_len,
+                        &raw_sig[0], raw_sig.size(), &signature_len, 0)) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+  if (signature_len != raw_sig.size()) {
+    LOG(ERROR) << "Bad signature length";
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return 0;
   }
