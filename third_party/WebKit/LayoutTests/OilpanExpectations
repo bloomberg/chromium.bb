@@ -27,6 +27,7 @@ crbug.com/410145 [ Win ] virtual/antialiasedtext/fast/text/orientation-sideways.
 crbug.com/410145 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure ]
 crbug.com/410145 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure ]
 
+crbug.com/377567 [ Debug ] animations/interpolation/transform-interpolation.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
@@ -34,6 +35,8 @@ crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pas
 # Allocation performance issue
 crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Timeout Pass ]
 
-# Times out on the Mac Debug Oilpan bot; widen expectations from [Pass Crash].
-crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
+# Times out on the Mac Debug Oilpan bot.
+crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Timeout ]
+crbug.com/456357 [ Mac Debug ] virtual/slimmingpaint/fast/overflow/line-clamp.html [ Timeout ]
+
 crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Timeout ]

@@ -19,7 +19,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Platform specific virtual test suites.
 [ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
-[ Linux XP Android XP ] virtual/antialiasedtext [ WontFix ]
+[ Linux XP Android ] virtual/antialiasedtext [ WontFix ]
 
 # Chrome Win/Linux doesn't support emacs key-bindings.
 [ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]

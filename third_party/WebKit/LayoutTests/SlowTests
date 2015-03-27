@@ -84,20 +84,12 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector/ [ Slow ]
 webkit.org/b/90488 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
-webkit.org/b/90488 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Slow ]
 webkit.org/b/90488 [ Debug ] virtual/deferred/inspector/ [ Slow ]
-webkit.org/b/90488 inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Slow ]
 crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slow ]
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb/ [ Slow ]
-crbug.com/247466 [ Release ] inspector/sources/debugger/dom-breakpoints.html [ Slow ]
-crbug.com/247466 [ Release ] inspector/sources/debugger/live-edit-breakpoints.html [ Slow ]
-crbug.com/247466 [ Release ] inspector/sources/debugger/set-breakpoint.html [ Slow ]
 crbug.com/247466 [ Release ] inspector-enabled/sources/debugger/script-formatter-console.html [ Slow ]
-crbug.com/247466 [ Release ] inspector/sources/debugger/script-formatter-search.html [ Slow ]
 crbug.com/247466 [ Release ] inspector-enabled/sources/debugger/linkifier.html [ Slow ]
 crbug.com/247466 [ Release ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Slow ]
-crbug.com/254988 inspector/sources/debugger/debugger-breakpoints-not-activated-on-reload.html [ Slow ]
-crbug.com/254988 inspector/sources/debugger/callstack-placards-discarded.html [ Slow ]
 crbug.com/327078 http/tests/inspector/network/long-script-content.html [ Slow ]
 crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Slow ]
 crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-breakpoints-4.html [ Slow ]
@@ -106,9 +98,7 @@ crbug.com/420008 [ Release ] inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] virtual/deferred/inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
-
-# inspector tests below are slow on LinuxASAN
-crbug.com/247466 [ Linux Release ] inspector/sources/debugger/debugger-activation-crash2.html [ Slow ]
+crbug.com/450493 inspector/sources/debugger [ Slow ]
 
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
@@ -185,8 +175,6 @@ crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 
 crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]
-
-crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
