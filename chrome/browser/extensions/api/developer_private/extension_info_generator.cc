@@ -103,12 +103,14 @@ linked_ptr<developer::RuntimeError> ConstructRuntimeError(
   linked_ptr<developer::RuntimeError> result(new developer::RuntimeError());
   PopulateErrorBase(error, result.get());
   switch (error.level()) {
+    case logging::LOG_VERBOSE:
     case logging::LOG_INFO:
       result->severity = developer::ERROR_LEVEL_LOG;
       break;
     case logging::LOG_WARNING:
       result->severity = developer::ERROR_LEVEL_WARN;
       break;
+    case logging::LOG_FATAL:
     case logging::LOG_ERROR:
       result->severity = developer::ERROR_LEVEL_ERROR;
       break;

@@ -184,6 +184,20 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
                                         base::UTF8ToUTF16("message"),
                                         base::UTF8ToUTF16("key"),
                                         base::string16())));
+  error_console->ReportError(
+      make_scoped_ptr(new RuntimeError(
+          extension->id(),
+          false,
+          base::UTF8ToUTF16("source"),
+          base::UTF8ToUTF16("message"),
+          StackTrace(1, StackFrame(1,
+                                   1,
+                                   base::UTF8ToUTF16("source"),
+                                   base::UTF8ToUTF16("function"))),
+          GURL("url"),
+          logging::LOG_VERBOSE,
+          1,
+          1)));
 
   // It's not feasible to validate every field here, because that would be
   // a duplication of the logic in the method itself. Instead, test a handful
@@ -204,7 +218,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->file_access.is_active);
   EXPECT_TRUE(info->incognito_access.is_enabled);
   EXPECT_FALSE(info->incognito_access.is_active);
-  ASSERT_EQ(1u, info->runtime_errors.size());
+  ASSERT_EQ(2u, info->runtime_errors.size());
   const api::developer_private::RuntimeError& runtime_error =
       *info->runtime_errors[0];
   EXPECT_EQ(extension->id(), runtime_error.extension_id);
@@ -213,6 +227,10 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
             runtime_error.severity);
   EXPECT_EQ(1u, runtime_error.stack_trace.size());
   ASSERT_EQ(1u, info->manifest_errors.size());
+  const api::developer_private::RuntimeError& runtime_error_verbose =
+      *info->runtime_errors[1];
+  EXPECT_EQ(api::developer_private::ERROR_LEVEL_LOG,
+            runtime_error_verbose.severity);
   const api::developer_private::ManifestError& manifest_error =
       *info->manifest_errors[0];
   EXPECT_EQ(extension->id(), manifest_error.extension_id);
