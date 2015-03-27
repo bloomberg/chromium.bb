@@ -6,8 +6,22 @@
 
 #include "base/metrics/histogram.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
+
+namespace {
+
+// Records the network connection type if upload was successful.
+void RecordConnectionType(int response_code) {
+  if (response_code == 200) {
+    UMA_HISTOGRAM_ENUMERATION("UMA.LogUpload.ConnetionType",
+                              net::NetworkChangeNotifier::GetConnectionType(),
+                              net::NetworkChangeNotifier::CONNECTION_LAST);
+  }
+}
+
+}  // namespace
 
 namespace metrics {
 
@@ -54,6 +68,7 @@ void NetMetricsLogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   if (response_code == net::URLFetcher::RESPONSE_CODE_INVALID)
     response_code = -1;
   current_fetch_.reset();
+  RecordConnectionType(response_code);
   on_upload_complete_.Run(response_code);
 }
 

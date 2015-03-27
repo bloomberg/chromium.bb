@@ -41,6 +41,9 @@ class NET_EXPORT NetworkChangeNotifier {
   //
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+  //
+  // New enum values should only be added to the end of the enum and no values
+  // should be modified or reused, as this is reported via UMA.
   enum ConnectionType {
     CONNECTION_UNKNOWN = 0,  // A connection exists, but its type is unknown.
                              // Also used as a default value.
