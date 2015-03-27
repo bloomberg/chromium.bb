@@ -27,6 +27,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -495,6 +496,7 @@ TEST_F(VideoRendererImplTest, Underflow) {
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
     StartPlayingFrom(0);
     event.RunAndWait();
+    Mock::VerifyAndClearExpectations(&mock_cb_);
   }
 
   // Advance time slightly. Frames should be dropped and we should NOT signal
@@ -513,6 +515,7 @@ TEST_F(VideoRendererImplTest, Underflow) {
     EXPECT_CALL(mock_cb_, Display(HasTimestamp(30))).Times(1);
     AdvanceTimeInMs(3000);  // Must match kTimeToDeclareHaveNothing.
     event.RunAndWait();
+    Mock::VerifyAndClearExpectations(&mock_cb_);
   }
 
   // Receiving end of stream should signal having enough.
