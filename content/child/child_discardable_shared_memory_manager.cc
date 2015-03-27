@@ -72,17 +72,20 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
 };
 
+void SendDeletedDiscardableSharedMemoryMessage(
+    scoped_refptr<ThreadSafeSender> sender,
+    DiscardableSharedMemoryId id) {
+  sender->Send(new ChildProcessHostMsg_DeletedDiscardableSharedMemory(id));
+}
+
 }  // namespace
 
 ChildDiscardableSharedMemoryManager::ChildDiscardableSharedMemoryManager(
     ThreadSafeSender* sender)
-    : heap_(base::GetPageSize()), sender_(sender), weak_ptr_factory_(this) {
+    : heap_(base::GetPageSize()), sender_(sender) {
 }
 
 ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
-  // Cancel all DeletedDiscardableSharedMemory callbacks.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
   // TODO(reveman): Determine if this DCHECK can be enabled. crbug.com/430533
   // DCHECK_EQ(heap_.GetSize(), heap_.GetSizeOfFreeLists());
   if (heap_.GetSize())
@@ -168,9 +171,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   // Create span for allocated memory.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(heap_.Grow(
       shared_memory.Pass(), allocation_size_in_bytes,
-      base::Bind(
-          &ChildDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
-          weak_ptr_factory_.GetWeakPtr(), new_id)));
+      base::Bind(&SendDeletedDiscardableSharedMemoryMessage, sender_, new_id)));
 
   // Unlock and insert any left over memory into free lists.
   if (pages < pages_to_allocate) {
@@ -270,11 +271,6 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   if (!memory->Map(size))
     base::TerminateBecauseOutOfMemory(size);
   return memory.Pass();
-}
-
-void ChildDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(
-    DiscardableSharedMemoryId id) {
-  sender_->Send(new ChildProcessHostMsg_DeletedDiscardableSharedMemory(id));
 }
 
 void ChildDiscardableSharedMemoryManager::MemoryUsageChanged(

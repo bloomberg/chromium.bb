@@ -477,6 +477,10 @@ void ChildThreadImpl::Init(const Options& options) {
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
+  // ChildDiscardableSharedMemoryManager has to be destroyed while
+  // |thread_safe_sender_| is still valid.
+  discardable_shared_memory_manager_.reset();
+
 #if defined(OS_ANDROID)
   {
     base::AutoLock lock(g_lazy_child_thread_lock.Get());
