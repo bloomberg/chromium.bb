@@ -353,7 +353,7 @@ class Py3kCompatChecker(BaseChecker):
 
 
 class SourceChecker(BaseChecker):
-  """Make sure we enforce py3k compatible features"""
+  """Make sure we enforce rules on the source."""
 
   __implements__ = IAstroidChecker
 
@@ -399,6 +399,36 @@ class SourceChecker(BaseChecker):
     parts = shebang.split()
     if parts[0] not in ('#!/usr/bin/python2', '#!/usr/bin/python3'):
       self.add_message('R9200')
+
+
+class ChromiteLoggingChecker(BaseChecker):
+  """Make sure we enforce rules on importing logging."""
+
+  __implements__ = IAstroidChecker
+
+  # pylint: disable=class-missing-docstring,multiple-statements
+  class _MessageR9301(object): pass
+  # pylint: enable=class-missing-docstring,multiple-statements
+
+  name = 'chromite_logging_checker'
+  priority = -1
+  MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
+  msgs = {
+      'R9301': ('logging is deprecated. Use "from chromite.lib import '
+                'cros_logging as logging" to import chromite/lib/cros_logging',
+                ('cros-logging-import'), _MessageR9301),
+  }
+  options = ()
+  # This checker is disabled by default because we only want to disallow "import
+  # logging" in chromite and not in other places cros lint is used. To enable
+  # this checker, modify the pylintrc file.
+  enabled = False
+
+  def visit_import(self, node):
+    """Called when node is an import statement."""
+    for name, _ in node.names:
+      if name == 'logging':
+        self.add_message('R9301', line=node.lineno)
 
 
 def register(linter):

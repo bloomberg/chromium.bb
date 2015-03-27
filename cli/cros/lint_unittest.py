@@ -23,13 +23,17 @@ class TestNode(object):
   Arg = collections.namedtuple('Arg', ('name',))
 
   def __init__(self, doc='', fromlineno=0, path='foo.py', args=(), vararg='',
-               kwarg=''):
+               kwarg='', names=None, lineno=0):
+    if names is None:
+      names = [('name', None)]
     self.doc = doc
     self.lines = doc.split('\n')
     self.fromlineno = fromlineno
+    self.lineno = lineno
     self.file = path
     self.args = self.Args(args=[self.Arg(name=x) for x in args],
                           vararg=vararg, kwarg=kwarg)
+    self.names = names
 
   def argnames(self):
     return self.args
@@ -336,6 +340,24 @@ class DocStringCheckerTest(CheckerTestCase):
       node = TestNode(doc=dc, args=args)
       self.checker._check_all_args_in_doc(node, node.lines)
       self.assertEqual(len(self.results), 1)
+
+
+class ChromiteLoggingCheckerTest(CheckerTestCase):
+  """Tests for ChromiteLoggingChecker module"""
+
+  CHECKER = lint.ChromiteLoggingChecker
+
+  def testLoggingImported(self):
+    """Test that import logging is flagged."""
+    node = TestNode(names=[('logging', None)], lineno=15)
+    self.checker.visit_import(node)
+    self.assertEqual(self.results, [('R9301', '', 15, None)])
+
+  def testLoggingNotImported(self):
+    """Test that importing something else (not logging) is not flagged."""
+    node = TestNode(names=[('myModule', None)], lineno=15)
+    self.checker.visit_import(node)
+    self.assertEqual(self.results, [])
 
 
 class SourceCheckerTest(CheckerTestCase):
