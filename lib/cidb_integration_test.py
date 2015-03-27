@@ -309,11 +309,11 @@ class DataSeries0Test(CIDBIntegrationTest):
     # We should have a diversity of last_updated times. Since the timestamp
     # resolution is only 1 second, and we have lots of parallelism in the test,
     # we won't have a distinct last_updated time per row.
-    # As the test db gets beefier, we're more likely to get collisions. So we
-    # check for a small number of distinct timestamps.
+    # As the test is now local, almost everything happens together, so we check
+    # for a tiny number of distinct timestamps.
     distinct_last_updated = db._GetEngine().execute(
         'select count(distinct last_updated) from buildTable').fetchall()[0][0]
-    self.assertTrue(distinct_last_updated > 20)
+    self.assertTrue(distinct_last_updated > 3)
 
     ids_by_last_updated = db._GetEngine().execute(
         'select id from buildTable order by last_updated').fetchall()
@@ -424,6 +424,9 @@ class DataSeries0Test(CIDBIntegrationTest):
         for slave in slave_metadatas:
           queue.put([slave])
 
+      # Yes, this introduces delay in the test. But this lets us do some basic
+      # sanity tests on the |last_update| column later.
+      time.sleep(1)
       _SimulateCQBuildFinish(db, master, master_build_id)
       logging.debug('Simulated master build %s', master_build_id)
 
