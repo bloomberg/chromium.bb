@@ -405,6 +405,18 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
     devinfo->SetAbsInfo(axis.code, axis.absinfo);
   }
 
+  size_t slots = devinfo->GetAbsMtSlotCount();
+  std::vector<int32_t> zero_slots(slots, 0);
+  std::vector<int32_t> minus_one_slots(slots, -1);
+  for (int code = EVDEV_ABS_MT_FIRST; code <= EVDEV_ABS_MT_LAST; ++code) {
+    if (!devinfo->HasAbsEvent(code))
+      continue;
+    if (code == ABS_MT_TRACKING_ID)
+      devinfo->SetAbsMtSlots(code, minus_one_slots);
+    else
+      devinfo->SetAbsMtSlots(code, zero_slots);
+  }
+
   return true;
 }
 

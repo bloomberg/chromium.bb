@@ -110,14 +110,19 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
   events_.resize(touch_points_);
   for (size_t i = 0; i < events_.size(); ++i) {
-    events_[i].x = info.GetSlotValue(ABS_MT_POSITION_X, i);
-    events_[i].y = info.GetSlotValue(ABS_MT_POSITION_Y, i);
-    events_[i].tracking_id = info.GetSlotValue(ABS_MT_TRACKING_ID, i);
+    events_[i].x = info.GetAbsMtSlotValue(ABS_MT_POSITION_X, i);
+    events_[i].y = info.GetAbsMtSlotValue(ABS_MT_POSITION_Y, i);
+    events_[i].tracking_id = info.GetAbsMtSlotValue(ABS_MT_TRACKING_ID, i);
     events_[i].touching = (events_[i].tracking_id >= 0);
     events_[i].slot = i;
-    events_[i].radius_x = info.GetSlotValue(ABS_MT_TOUCH_MAJOR, i);
-    events_[i].radius_y = info.GetSlotValue(ABS_MT_TOUCH_MINOR, i);
-    events_[i].pressure = info.GetSlotValue(ABS_MT_PRESSURE, i);
+
+    // Optional bits.
+    events_[i].radius_x =
+        info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MAJOR, i, 0);
+    events_[i].radius_y =
+        info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0);
+    events_[i].pressure =
+        info.GetAbsMtSlotValueWithDefault(ABS_MT_PRESSURE, i, 0);
   }
 }
 

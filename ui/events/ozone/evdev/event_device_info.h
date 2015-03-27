@@ -14,8 +14,14 @@
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
+#if !defined(ABS_MT_TOOL_Y)
+#define ABS_MT_TOOL_Y 0x3d
+#endif
+
 // ABS_MT_SLOT isn't valid options for EVIOCGMTSLOTS ioctl.
-#define EVDEV_ABS_MT_COUNT (ABS_MAX - ABS_MT_SLOT - 1)
+#define EVDEV_ABS_MT_FIRST ABS_MT_TOUCH_MAJOR
+#define EVDEV_ABS_MT_LAST ABS_MT_TOOL_Y
+#define EVDEV_ABS_MT_COUNT (EVDEV_ABS_MT_LAST - EVDEV_ABS_MT_FIRST + 1)
 
 namespace ui {
 
@@ -52,6 +58,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   void SetLedEvents(const unsigned long* led_bits, size_t len);
   void SetProps(const unsigned long* prop_bits, size_t len);
   void SetAbsInfo(unsigned int code, const input_absinfo& absinfo);
+  void SetAbsMtSlots(int code, const std::vector<int32_t>& values);
 
   // Check events this device can generate.
   bool HasEventType(unsigned int type) const;
@@ -63,9 +70,13 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   bool HasLedEvent(unsigned int code) const;
 
   // Properties of absolute axes.
-  int32 GetAbsMinimum(unsigned int code) const;
-  int32 GetAbsMaximum(unsigned int code) const;
-  int32 GetSlotValue(unsigned int code, unsigned int slot) const;
+  int32_t GetAbsMinimum(unsigned int code) const;
+  int32_t GetAbsMaximum(unsigned int code) const;
+  uint32_t GetAbsMtSlotCount() const;
+  int32_t GetAbsMtSlotValue(unsigned int code, unsigned int slot) const;
+  int32_t GetAbsMtSlotValueWithDefault(unsigned int code,
+                                       unsigned int slot,
+                                       int32_t default_value) const;
 
   // Check input device properties.
   bool HasProp(unsigned int code) const;
@@ -109,9 +120,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   bool HasTouchscreen() const;
 
  private:
-  // Return the slot vector in |slot_values_| for |code|.
-  const std::vector<int32_t>& GetMtSlotsForCode(int code) const;
-
   enum class LegacyAbsoluteDeviceType {
     LADT_TOUCHPAD,
     LADT_TOUCHSCREEN,

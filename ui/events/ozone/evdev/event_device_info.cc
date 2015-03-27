@@ -52,9 +52,9 @@ bool GetAbsInfo(int fd, int code, struct input_absinfo* absinfo) {
 //
 // |size| is num_slots + 1 (for code).
 bool GetSlotValues(int fd, int32_t* request, unsigned int size) {
-  if (ioctl(fd,
-            EVIOCGMTSLOTS(sizeof(int32_t) * size),
-            request) < 0) {
+  size_t data_size = size * sizeof(*request);
+
+  if (ioctl(fd, EVIOCGMTSLOTS(data_size), request) < 0) {
     DLOG(ERROR) << "failed EVIOCGMTSLOTS(" << request[0] << ") on fd " << fd;
     return false;
   }
@@ -117,18 +117,23 @@ bool EventDeviceInfo::Initialize(int fd) {
       if (!GetAbsInfo(fd, i, &abs_info_[i]))
         return false;
 
-  int max_num_slots = abs_info_[ABS_MT_SLOT].maximum + 1;
+  int max_num_slots = GetAbsMtSlotCount();
+
   // |request| is MT code + slots.
   int32_t request[max_num_slots + 1];
-  for (unsigned int i = ABS_MT_SLOT + 1; i < ABS_MAX; ++i) {
-    memset(request, 0, sizeof(request));
-    request[0] = i;
-    if (HasAbsEvent(i))
-      if (!GetSlotValues(fd, request, max_num_slots + 1))
-        LOG(WARNING) << "Failed to get multitouch values for code " << i;
+  int32_t* request_code = &request[0];
+  int32_t* request_slots = &request[1];
+  for (unsigned int i = EVDEV_ABS_MT_FIRST; i <= EVDEV_ABS_MT_LAST; ++i) {
+    if (!HasAbsEvent(i))
+      continue;
 
-    slot_values_[i - ABS_MT_SLOT - 1].assign(
-        request + 1, request + max_num_slots + 1);
+    memset(request, 0, sizeof(request));
+    *request_code = i;
+    if (!GetSlotValues(fd, request, max_num_slots + 1))
+      LOG(WARNING) << "Failed to get multitouch values for code " << i;
+
+    std::vector<int32_t>* slots = &slot_values_[i - EVDEV_ABS_MT_FIRST];
+    slots->assign(request_slots, request_slots + max_num_slots);
   }
 
   return true;
@@ -172,6 +177,15 @@ void EventDeviceInfo::SetAbsInfo(unsigned int code,
     return;
 
   memcpy(&abs_info_[code], &abs_info, sizeof(abs_info));
+}
+
+void EventDeviceInfo::SetAbsMtSlots(int code,
+                                    const std::vector<int32_t>& values) {
+  DCHECK_EQ(GetAbsMtSlotCount(), values.size());
+  int index = code - EVDEV_ABS_MT_FIRST;
+  if (index < 0 || index >= EVDEV_ABS_MT_COUNT)
+    return;
+  slot_values_[index] = values;
 }
 
 bool EventDeviceInfo::HasEventType(unsigned int type) const {
@@ -222,20 +236,34 @@ bool EventDeviceInfo::HasProp(unsigned int code) const {
   return EvdevBitIsSet(prop_bits_, code);
 }
 
-int32 EventDeviceInfo::GetAbsMinimum(unsigned int code) const {
+int32_t EventDeviceInfo::GetAbsMinimum(unsigned int code) const {
   return abs_info_[code].minimum;
 }
 
-int32 EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
+int32_t EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
   return abs_info_[code].maximum;
 }
 
-int32 EventDeviceInfo::GetSlotValue(unsigned int code,
-                                    unsigned int slot) const {
-  const std::vector<int32_t>& slots = GetMtSlotsForCode(code);
-  DCHECK_LE(0u, slot) << slot << " is an invalid slot";
-  DCHECK_LT(slot, slots.size()) << slot << " is an invalid slot";
-  return slots[slot];
+uint32_t EventDeviceInfo::GetAbsMtSlotCount() const {
+  if (!HasAbsEvent(ABS_MT_SLOT))
+    return 0;
+  return GetAbsMaximum(ABS_MT_SLOT) + 1;
+}
+
+int32_t EventDeviceInfo::GetAbsMtSlotValue(unsigned int code,
+                                           unsigned int slot) const {
+  unsigned int index = code - EVDEV_ABS_MT_FIRST;
+  DCHECK(index < EVDEV_ABS_MT_COUNT);
+  return slot_values_[index][slot];
+}
+
+int32_t EventDeviceInfo::GetAbsMtSlotValueWithDefault(
+    unsigned int code,
+    unsigned int slot,
+    int32_t default_value) const {
+  if (!HasAbsEvent(code))
+    return default_value;
+  return GetAbsMtSlotValue(code, slot);
 }
 
 bool EventDeviceInfo::HasAbsXY() const {
@@ -322,14 +350,6 @@ bool EventDeviceInfo::HasTablet() const {
 
 bool EventDeviceInfo::HasTouchscreen() const {
   return HasAbsXY() && HasDirect();
-}
-
-const std::vector<int32_t>& EventDeviceInfo::GetMtSlotsForCode(int code) const {
-  int index = code - ABS_MT_SLOT - 1;
-  DCHECK_LE(0, index) << code << " is not a valid multi-touch code";
-  DCHECK_LT(index, EVDEV_ABS_MT_COUNT)
-      << code << " is not a valid multi-touch code";
-  return slot_values_[index];
 }
 
 EventDeviceInfo::LegacyAbsoluteDeviceType
