@@ -21,9 +21,9 @@ namespace embedder {
 
 // The maximum number of handles that can be sent "at once" using
 // |PlatformChannelSendmsgWithHandles()|.
-// TODO(vtl): This number is taken from ipc/file_descriptor_set_posix.h:
-// |FileDescriptorSet::kMaxDescriptorsPerMessage|. Where does it come from?
-const size_t kPlatformChannelMaxNumHandles = 7;
+// TODO(vtl): This number is taken from ipc/ipc_message_attachment_set.h:
+// |IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage|.
+const size_t kPlatformChannelMaxNumHandles = 128;
 
 // Use these to write to a socket created using |PlatformChannelPair| (or
 // equivalent). These are like |write()| and |writev()|, but handle |EINTR| and

@@ -409,7 +409,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   DispatcherVector dispatchers;
-  uint32_t num_dispatchers = 30;  // Maximum number to receive.
+  uint32_t num_dispatchers = 255;  // Maximum number to receive.
   CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
                            MakeUserPointer(&num_bytes), &dispatchers,
                            &num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE),
@@ -512,7 +512,7 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 INSTANTIATE_TEST_CASE_P(PipeCount,
                         MultiprocessMessagePipeTestWithPipeCount,
-                        testing::Values(1u, 10u, 25u));
+                        testing::Values(1u, 128u, 255u));
 #endif
 
 }  // namespace

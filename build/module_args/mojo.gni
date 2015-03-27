@@ -7,25 +7,26 @@ mojo_sdk_root = "//third_party/mojo/src"
 
 # Chromium builds the network service from source, as it is the
 # producer of the network service.
-build_network_service_from_source = true
+mojo_build_network_service_from_source = true
 
 # Chromium does not build dart apptests. Disable any Mojo targets which
 # depend on the apptest framework.
-disable_dart_apptest_framework = true
+mojo_disable_dart_apptest_framework = true
 
 # Points to the directory network_service is built from.
-network_service_root = "//mojo/services"
+mojo_network_service_root = "//mojo/services"
 
 declare_args() {
   # Specify prebuilt network service mojo file location rather than download
   # from gs://mojo.
   #
-  # This variable only used when build_network_service_from_source is false.
+  # This variable only used when mojo_build_network_service_from_source is
+  # false.
   #
   # Currently only android_arm and linux_64 available on gs://mojo, and no plan
   # to support more(https://codereview.chromium.org/921873003).
   # It is needed for developers works on other platforms like android_x86 and
   # android_x64. And it is also useful for supportted platform as well when
   # developer want to try its own version of network service files.
-  prebuilt_network_service_location = ""
+  mojo_prebuilt_network_service_location = ""
 }

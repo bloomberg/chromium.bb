@@ -6,23 +6,25 @@ import("//build/module_args/mojo.gni")
 
 # If using the prebuilt shell, gate its usage by the platforms for which it is
 # published.
-use_prebuilt_mojo_shell = false
-if (!defined(build_mojo_shell_from_source) || !build_mojo_shell_from_source) {
-  use_prebuilt_mojo_shell = is_linux || is_android
+mojo_use_prebuilt_mojo_shell = false
+if (!defined(mojo_build_mojo_shell_from_source) ||
+    !mojo_build_mojo_shell_from_source) {
+  mojo_use_prebuilt_mojo_shell = is_linux || is_android
 }
 
 # If using the prebuilt network service, gate its usage by the platforms for
 # which it is published.
-use_prebuilt_network_service = false
-if (!defined(build_network_service_from_source) ||
-    !build_network_service_from_source) {
-  use_prebuilt_network_service = is_linux || is_android
+mojo_use_prebuilt_network_service = false
+if (!defined(mojo_build_network_service_from_source) ||
+    !mojo_build_network_service_from_source) {
+  mojo_use_prebuilt_network_service = is_linux || is_android
 }
 
 # Enable Dart apptest framework by default.
-use_dart_apptest_framework = true
-if (defined(disable_dart_apptest_framework) && disable_dart_apptest_framework) {
-  use_dart_apptest_framework = false
+mojo_use_dart_apptest_framework = true
+if (defined(mojo_disable_dart_apptest_framework) &&
+    mojo_disable_dart_apptest_framework) {
+  mojo_use_dart_apptest_framework = false
 }
 
 # The absolute path to the directory containing the mojo public SDK (i.e., the

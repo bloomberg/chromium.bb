@@ -77,11 +77,11 @@ template("mojo_native_application") {
       }
 
       # Copy any necessary prebuilt artifacts.
-      if (use_prebuilt_mojo_shell) {
+      if (mojo_use_prebuilt_mojo_shell) {
         data_deps +=
             [ rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root) ]
       }
-      if (use_prebuilt_network_service) {
+      if (mojo_use_prebuilt_network_service) {
         data_deps += [ rebase_path("mojo/public/tools:copy_network_service",
                                    ".",
                                    mojo_root) ]
@@ -197,11 +197,11 @@ template("mojo_native_application") {
       }
 
       # Copy any necessary prebuilt artifacts.
-      if (use_prebuilt_mojo_shell) {
+      if (mojo_use_prebuilt_mojo_shell) {
         data_deps +=
             [ rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root) ]
       }
-      if (use_prebuilt_network_service) {
+      if (mojo_use_prebuilt_network_service) {
         data_deps += [ rebase_path("mojo/public/tools:copy_network_service",
                                    ".",
                                    mojo_root) ]

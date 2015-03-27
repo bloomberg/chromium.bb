@@ -5,7 +5,7 @@
 import("//build/module_args/mojo.gni")
 import("../mojo.gni")
 
-if (use_prebuilt_mojo_shell) {
+if (mojo_use_prebuilt_mojo_shell) {
   copy("copy_mojo_shell") {
     filename = "mojo_shell"
     if (is_android) {
@@ -28,13 +28,13 @@ if (use_prebuilt_mojo_shell) {
   }
 }
 
-if (use_prebuilt_network_service) {
+if (mojo_use_prebuilt_network_service) {
   copy("copy_network_service") {
     filename = "network_service.mojo"
-    if (defined(prebuilt_network_service_location) &&
-        prebuilt_network_service_location != "") {
+    if (defined(mojo_prebuilt_network_service_location) &&
+        mojo_prebuilt_network_service_location != "") {
       sources = [
-        "$prebuilt_network_service_location",
+        "$mojo_prebuilt_network_service_location",
       ]
     } else {
       if (is_android) {
@@ -78,7 +78,7 @@ if (use_prebuilt_network_service) {
 # loaded from Google Storage and then puts it in a rule which the
 # "dart_package" template in mojo/public/dart/rules.gni can introspect on,
 # accessing the 'label' and 'target_out_dir' variables.
-if (use_dart_apptest_framework) {
+if (mojo_use_dart_apptest_framework) {
   copy("dart_apptest_framework") {
     sources = [
       "prebuilt/frameworks/apptest.dartzip",
