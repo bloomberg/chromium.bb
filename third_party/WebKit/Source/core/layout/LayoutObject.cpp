@@ -1891,7 +1891,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
             continue;
 
         RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
-        if (!document().regionBasedColumnsEnabled()) {
+        if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
             if (style()->specifiesColumns()) {
                 if (child->style()->specifiesColumns())
                     newStyle->inheritColumnPropertiesFrom(styleRef());

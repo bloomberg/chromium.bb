@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <script src="resources/text-based-repaint.js"></script>
 <script>
-    if (window.internals) {
-        internals.settings.setRegionBasedColumnsEnabled(true);
+    if (window.internals)
         onload = runRepaintTest;
-    } else {
+    else
         onclick = repaintTest;
-    }
     function repaintTest() {
         var mc = document.getElementById('mc');
         mc.appendChild(document.createTextNode('PASS'));

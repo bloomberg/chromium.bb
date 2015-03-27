@@ -8,9 +8,6 @@ function runTest() {
     if (window.testRunner)
         eventSender.gestureShowPress(x, y);
 }
-if (window.internals)
-    internals.settings.setRegionBasedColumnsEnabled(true);
-
 if (window.testRunner)
     testRunner.dumpAsText();
 </script>

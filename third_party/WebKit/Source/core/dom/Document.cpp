@@ -1080,11 +1080,6 @@ PassRefPtrWillBeRawPtr<Element> Document::createElement(const QualifiedName& qNa
     return e.release();
 }
 
-bool Document::regionBasedColumnsEnabled() const
-{
-    return settings() && settings()->regionBasedColumnsEnabled();
-}
-
 String Document::readyState() const
 {
     DEFINE_STATIC_LOCAL(const String, loading, ("loading"));

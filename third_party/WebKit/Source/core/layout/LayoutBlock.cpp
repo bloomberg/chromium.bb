@@ -66,6 +66,7 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "wtf/StdLibExtras.h"
@@ -849,7 +850,7 @@ void LayoutBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
     }
 
     // Check for a spanning element in columns.
-    if (gColumnFlowSplitEnabled && !document().regionBasedColumnsEnabled()) {
+    if (gColumnFlowSplitEnabled && !RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
         LayoutBlockFlow* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
         if (columnsBlockAncestor) {
             TemporaryChange<bool> columnFlowSplitEnabled(gColumnFlowSplitEnabled, false);
@@ -1532,7 +1533,7 @@ bool LayoutBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
         || style()->specifiesColumns() || isLayoutFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
-        || isDocumentElement() || (document().regionBasedColumnsEnabled() ? isColumnSpanAll() : style()->columnSpan()) || isGridItem();
+        || isDocumentElement() || (RuntimeEnabledFeatures::regionBasedColumnsEnabled() ? isColumnSpanAll() : style()->columnSpan()) || isGridItem();
 }
 
 void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox& child)
@@ -2607,7 +2608,7 @@ int LayoutBlock::columnGap() const
 
 void LayoutBlock::calcColumnWidth()
 {
-    if (document().regionBasedColumnsEnabled())
+    if (RuntimeEnabledFeatures::regionBasedColumnsEnabled())
         return;
 
     // Calculate our column width and column count.
@@ -2954,7 +2955,7 @@ void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
     // The flow thread based multicol implementation will do this adjustment on the flow thread, and
     // not here on the multicol container, so that spanners won't incorrectly be treated as column
     // content (and have spanners' preferred widths multiplied by the number of columns, etc.).
-    if (style()->specifiesColumns() && !document().regionBasedColumnsEnabled())
+    if (style()->specifiesColumns() && !RuntimeEnabledFeatures::regionBasedColumnsEnabled())
         adjustIntrinsicLogicalWidthsForColumns(minLogicalWidth, maxLogicalWidth);
 
     if (isTableCell()) {
@@ -3009,7 +3010,7 @@ void LayoutBlock::computePreferredLogicalWidths()
 
 void LayoutBlock::adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    ASSERT(!document().regionBasedColumnsEnabled());
+    ASSERT(!RuntimeEnabledFeatures::regionBasedColumnsEnabled());
     if (!style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth()) {
         // The min/max intrinsic widths calculated really tell how much space elements need when
         // laid out inside the columns. In order to eventually end up with the desired column width,
