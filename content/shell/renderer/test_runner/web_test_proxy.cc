@@ -783,6 +783,9 @@ void WebTestProxyBase::PostAccessibilityEvent(const blink::WebAXObject& obj,
     case blink::WebAXEventMenuListItemSelected:
       event_name = "MenuListItemSelected";
       break;
+    case blink::WebAXEventMenuListItemUnselected:
+      event_name = "MenuListItemUnselected";
+      break;
     case blink::WebAXEventMenuListValueChanged:
       event_name = "MenuListValueChanged";
       break;
