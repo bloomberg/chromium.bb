@@ -45,7 +45,10 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_call_with_script_state %}
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% endif %}
-    {% if attribute.is_check_security_for_node or
+    {% if ((attribute.is_check_security_for_frame or
+            attribute.is_check_security_for_window) and
+           attribute.is_expose_js_accessors) or
+          attribute.is_check_security_for_node or
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
@@ -63,6 +66,26 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_getter_raises_exception %}
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
+    {% endif %}
+    {# Security checks #}
+    {% if attribute.is_expose_js_accessors %}
+    {% if attribute.is_check_security_for_window %}
+    if (LocalDOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+            v8SetReturnValueNull(info);
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
+    {% elif attribute.is_check_security_for_frame %}
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+        v8SetReturnValueNull(info);
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
     {% endif %}
     {% if attribute.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), {{attribute.cpp_value}}, exceptionState)) {
@@ -219,13 +242,25 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
           and is_node and not attribute.is_implemented_in_private_script %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
+    {% if attribute.has_setter_exception_state or
+          ((not attribute.is_replaceable and
+            not attribute.constructor_type and
+            attribute.is_expose_js_accessors) and
+           (attribute.is_check_security_for_frame or
+            attribute.is_check_security_for_node or
+            attribute.is_check_security_for_window)) %}
+    {% set raise_exception = 1 %}
+    {% else %}
+    {% set raise_exception = 0 %}
+    {% endif %}
     {# Local variables #}
-    {% if not attribute.is_static and
-          not attribute.is_replaceable and
-          not attribute.constructor_type %}
+    {% if (not attribute.is_static and
+           not attribute.is_replaceable and
+           not attribute.constructor_type) or
+          raise_exception %}
     v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
-    {% if attribute.has_setter_exception_state %}
+    {% if raise_exception %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
     {% if attribute.is_replaceable or
@@ -247,6 +282,36 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     if (!impl->document())
         return;
     {% endif %}
+    {# Security checks #}
+    {% if not attribute.is_replaceable and
+          not attribute.constructor_type %}
+    {% if attribute.is_expose_js_accessors %}
+    {% if attribute.is_check_security_for_window %}
+    if (LocalDOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+            v8SetReturnValue(info, v8Value);
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
+    {% elif attribute.is_check_security_for_frame %}
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+        v8SetReturnValue(info, v8Value);
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
+    {% endif %}
+    {% if attribute.is_check_security_for_node %}
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), {{attribute.cpp_value}}, exceptionState)) {
+        v8SetReturnValue(info, v8Value);
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
+    {% endif %}{# not attribute.is_replaceable #}
     {# Convert JS value to C++ value #}
     {% if attribute.idl_type != 'EventHandler' %}
     {% if v8_value_to_local_cpp_value(attribute) %}

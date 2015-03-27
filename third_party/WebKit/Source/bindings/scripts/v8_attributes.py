@@ -54,8 +54,16 @@ def attribute_context(interface, attribute):
         includes.add('core/inspector/ConsoleMessage.h')
 
     # [CheckSecurity]
-    is_check_security_for_node = 'CheckSecurity' in extended_attributes
-    if is_check_security_for_node:
+    is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
+    is_check_security_for_frame = (
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Frame') and
+        not is_do_not_check_security)
+    is_check_security_for_node = (
+        has_extended_attribute_value(attribute, 'CheckSecurity', 'Node'))
+    is_check_security_for_window = (
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Window') and
+        not is_do_not_check_security)
+    if is_check_security_for_frame or is_check_security_for_node or is_check_security_for_window:
         includes.add('bindings/core/v8/BindingSecurity.h')
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
@@ -99,9 +107,11 @@ def attribute_context(interface, attribute):
         'has_custom_setter': has_custom_setter(attribute),
         'has_setter': has_setter(attribute),
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
-        'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
-        'is_call_with_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
+        'is_call_with_execution_context': has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
+        'is_call_with_script_state': has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
+        'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
+        'is_check_security_for_window': is_check_security_for_window,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_expose_js_accessors': is_expose_js_accessors(interface, attribute),
         'is_getter_raises_exception':  # [RaisesException]
@@ -330,7 +340,7 @@ def setter_context(interface, attribute, context):
             is_setter_raises_exception or has_type_checking_interface or
             idl_type.v8_conversion_needs_exception_state,
         'has_type_checking_interface': has_type_checking_interface,
-        'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(
+        'is_setter_call_with_execution_context': has_extended_attribute_value(
             attribute, 'SetterCallWith', 'ExecutionContext'),
         'is_setter_raises_exception': is_setter_raises_exception,
         'private_script_cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
