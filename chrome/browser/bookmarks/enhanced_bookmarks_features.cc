@@ -8,33 +8,36 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/variations/variations_associated_data.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#endif
+#endif  // defined(OS_ANDROID)
 
 namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
-
-}  // namespace
 
 bool GetBookmarksExperimentExtensionID(std::string* extension_id) {
   *extension_id = variations::GetVariationParamValue(kFieldTrialName, "id");
   if (extension_id->empty())
     return false;
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   return true;
 #else
   const extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
   extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
   return feature && feature->IsIdInWhitelist(*extension_id);
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
+
+}  // namespace
 
 #if defined(OS_ANDROID)
 bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
@@ -50,29 +53,32 @@ bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
       kFieldTrialName, "DisableImagesFetching");
   return disable_fetching.empty();
 }
+#endif  // defined(OS_ANDROID)
 
 bool IsEnhancedBookmarksEnabled() {
   std::string extension_id;
   return IsEnhancedBookmarksEnabled(&extension_id);
 }
-#endif
 
 bool IsEnhancedBookmarksEnabled(std::string* extension_id) {
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
-  // "0" - user opted out.
-  bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                     switches::kEnhancedBookmarksExperiment) == "0";
+  // "0" - user opted out. "1" is only possible on mobile as desktop needs a
+  // extension id that would not be available by just using the flag.
 
-#if defined(OS_ANDROID)
-  opt_out |= base::android::BuildInfo::GetInstance()->sdk_int() <
-                 base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1;
-
-  // Android tests use command line flag to force enhanced bookmark to be on.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // Tests use command line flag to force enhanced bookmark to be on.
   bool opt_in = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                     switches::kEnhancedBookmarksExperiment) == "1";
   if (opt_in)
     return true;
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+  bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                     switches::kEnhancedBookmarksExperiment) == "0";
+#if defined(OS_ANDROID)
+  opt_out |= base::android::BuildInfo::GetInstance()->sdk_int() <
+                 base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1;
+#endif  // defined(OS_ANDROID)
 
   if (opt_out)
     return false;
