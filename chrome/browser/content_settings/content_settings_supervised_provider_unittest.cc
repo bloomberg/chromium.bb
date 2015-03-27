@@ -84,19 +84,27 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
 
 TEST_F(SupervisedUserProviderTest, CameraMicTest) {
   scoped_ptr<RuleIterator> rule_iterator(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM, std::string(), false));
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
+  EXPECT_FALSE(rule_iterator->HasNext());
+  rule_iterator.reset();
+  rule_iterator.reset(provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false));
   EXPECT_FALSE(rule_iterator->HasNext());
   rule_iterator.reset();
 
   // Disable the default camera and microphone setting.
-  EXPECT_CALL(mock_observer_, OnContentSettingChanged(
-                                  _, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM, ""));
+  EXPECT_CALL(mock_observer_,
+              OnContentSettingChanged(
+                  _, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, ""));
+  EXPECT_CALL(
+      mock_observer_,
+      OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, ""));
   service_.SetLocalSetting(
       supervised_users::kCameraMicDisabled,
       scoped_ptr<base::Value>(new base::FundamentalValue(true)));
 
   rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM, std::string(), false));
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
   ASSERT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
@@ -106,15 +114,34 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
   rule_iterator.reset();
 
+  rule_iterator.reset(provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false));
+  ASSERT_TRUE(rule_iterator->HasNext());
+  rule = rule_iterator->Next();
+  EXPECT_FALSE(rule_iterator->HasNext());
+
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
+  rule_iterator.reset();
+
   // Re-enable the default camera and microphone setting.
-  EXPECT_CALL(mock_observer_, OnContentSettingChanged(
-                                  _, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM, ""));
+  EXPECT_CALL(mock_observer_,
+              OnContentSettingChanged(
+                  _, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, ""));
+  EXPECT_CALL(
+      mock_observer_,
+      OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, ""));
   service_.SetLocalSetting(
       supervised_users::kCameraMicDisabled,
       scoped_ptr<base::Value>(new base::FundamentalValue(false)));
 
   rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM, std::string(), false));
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
+  EXPECT_FALSE(rule_iterator->HasNext());
+  rule_iterator.reset();
+  rule_iterator.reset(provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 

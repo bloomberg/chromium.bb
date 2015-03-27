@@ -24,7 +24,10 @@ const ContentSettingsFromSupervisedSettingsEntry
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
   }, {
     supervised_users::kCameraMicDisabled,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+  }, {
+    supervised_users::kCameraMicDisabled,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
   }
 };
 
