@@ -563,11 +563,15 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
     return LOAD_STATE_CONNECTING;
 
   GroupMap::const_iterator group_it = group_map_.find(group_name);
-  // TODO(mmenke):  Switch to DCHECK once sure this doesn't break anything.
-  //     Added in M43.
-  CHECK(group_it != group_map_.end());
-  const Group& group = *group_it->second;
+  if (group_it == group_map_.end()) {
+    // TODO(mmenke):  This is actually reached in the wild, for unknown reasons.
+    // Would be great to understand why, and if it's a bug, fix it.  If not,
+    // should have a test for that case.
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
+  }
 
+  const Group& group = *group_it->second;
   if (group.HasConnectJobForHandle(handle)) {
     // Just return the state of the farthest along ConnectJob for the first
     // group.jobs().size() pending requests.
