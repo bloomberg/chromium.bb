@@ -36,7 +36,9 @@ static int dirac_header(AVFormatContext *s, int idx)
     if (st->codec->codec_id == AV_CODEC_ID_DIRAC)
         return 0;
 
-    init_get_bits(&gb, os->buf + os->pstart + 13, (os->psize - 13) * 8);
+    if (init_get_bits(&gb, os->buf + os->pstart + 13, (os->psize - 13) * 8) < 0)
+        return -1;
+
     if (avpriv_dirac_parse_sequence_header(st->codec, &gb, &source) < 0)
         return -1;
 
