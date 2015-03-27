@@ -123,8 +123,8 @@ var WebViewContextMenus = Utils.expose(
 WebViewImpl.prototype.maybeSetupContextMenus = function() {
   if (!this.contextMenusOnContextMenuEvent_) {
     var eventName = 'chromeWebViewInternal.onContextMenuShow';
-    // TODO(lazyboy): Find event by name instead of events[1].
-    var eventSchema = ChromeWebViewSchema.events[1];
+    var eventSchema =
+        Utils.lookup(ChromeWebViewSchema.events, 'name', 'onShow');
     var eventOptions = {supportsListeners: true};
     this.contextMenusOnContextMenuEvent_ = new ContextMenusOnContextMenuEvent(
         this, eventName, eventSchema, eventOptions, this.viewInstanceId);
@@ -143,8 +143,8 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
         return function() {
           if (!this.contextMenusOnClickedEvent_) {
             var eventName = 'chromeWebViewInternal.onClicked';
-            // TODO(lazyboy): Find event by name instead of events[0].
-            var eventSchema = ChromeWebViewSchema.events[0];
+            var eventSchema =
+                Utils.lookup(ChromeWebViewSchema.events, 'name', 'onClicked');
             var eventOptions = {supportsListeners: true};
             var onClickedEvent = new ContextMenusOnClickedEvent(
                 eventName, eventSchema, eventOptions, this.viewInstanceId);
