@@ -277,6 +277,11 @@ bool NavigatorImpl::NavigateToEntry(
     navigation_data_.reset(new NavigationMetricsData(
         navigation_start, entry.GetURL(), entry.restore_type()));
     RequestNavigation(frame_tree_node, entry, reload_type, navigation_start);
+
+    // Notify observers about navigation.
+    if (delegate_)
+      delegate_->DidStartNavigationToPendingEntry(entry.GetURL(), reload_type);
+
     return true;
   }
 
