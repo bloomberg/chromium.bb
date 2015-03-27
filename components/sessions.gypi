@@ -74,73 +74,73 @@
   'conditions': [
     ['OS!="ios"', {
       'targets': [
-	{
-	  # GN version: //components/sessions:sessions_content
-	  'target_name': 'sessions_content',
-	  'type': '<(component)',
-	  'dependencies': [
-	    '../base/base.gyp:base',
-	    '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-	    '../content/content.gyp:content_browser',
-	    '../skia/skia.gyp:skia',
-	    '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-	    '../ui/base/ui_base.gyp:ui_base',
+        {
+          # GN version: //components/sessions:sessions_content
+          'target_name': 'sessions_content',
+          'type': '<(component)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../content/content.gyp:content_browser',
+            '../skia/skia.gyp:skia',
+            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+            '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-	    '../url/url.gyp:url_lib',
-	  ],
-	  'include_dirs': [
-	    '..',
-	  ],
-	  'defines': [
-	    'SESSIONS_IMPLEMENTATION',
-	  ],
-	  'sources': [
-	    # Note: sources list duplicated in GN build.
-	    '<@(sessions_core_sources)',
+            '../url/url.gyp:url_lib',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'SESSIONS_IMPLEMENTATION',
+          ],
+          'sources': [
+            # Note: sources list duplicated in GN build.
+            '<@(sessions_core_sources)',
 
-	    'sessions/content/content_serialized_navigation_builder.cc',
-	    'sessions/content/content_serialized_navigation_builder.h',
-	    'sessions/content/content_serialized_navigation_driver.cc',
-	    'sessions/content/content_serialized_navigation_driver.h',
-	  ],
-	  'conditions': [
-	    ['android_webview_build == 0', {
-	      'dependencies': [
-		 '../sync/sync.gyp:sync',
-	      ]
-	    }],
-	  ],
-	},
+            'sessions/content/content_serialized_navigation_builder.cc',
+            'sessions/content/content_serialized_navigation_builder.h',
+            'sessions/content/content_serialized_navigation_driver.cc',
+            'sessions/content/content_serialized_navigation_driver.h',
+          ],
+          'conditions': [
+            ['android_webview_build == 0', {
+              'dependencies': [
+                 '../sync/sync.gyp:sync',
+              ]
+            }],
+          ],
+        },
       ],
     }, {  # OS==ios
       'targets': [
-	{
-	  'target_name': 'sessions_ios',
-	  'type': 'static_library',
-	  'dependencies': [
-	    '../base/base.gyp:base',
+        {
+          'target_name': 'sessions_ios',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
             '../ios/web/ios_web.gyp:ios_web',
             '../sync/sync.gyp:sync',
-	    '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-	    '../ui/base/ui_base.gyp:ui_base',
+            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+            '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-	    '../url/url.gyp:url_lib',
-	  ],
-	  'include_dirs': [
-	    '..',
-	  ],
-	  'defines': [
-	    'SESSIONS_IMPLEMENTATION',
-	  ],
-	  'sources': [
-	    '<@(sessions_core_sources)',
+            '../url/url.gyp:url_lib',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'SESSIONS_IMPLEMENTATION',
+          ],
+          'sources': [
+            '<@(sessions_core_sources)',
 
-	    'sessions/ios/ios_serialized_navigation_builder.cc',
-	    'sessions/ios/ios_serialized_navigation_builder.h',
-	    'sessions/ios/ios_serialized_navigation_driver.cc',
-	    'sessions/ios/ios_serialized_navigation_driver.h',
-	  ],
-	},
+            'sessions/ios/ios_serialized_navigation_builder.cc',
+            'sessions/ios/ios_serialized_navigation_builder.h',
+            'sessions/ios/ios_serialized_navigation_driver.cc',
+            'sessions/ios/ios_serialized_navigation_driver.h',
+          ],
+        },
       ],
     }],
   ],
