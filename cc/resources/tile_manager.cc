@@ -426,6 +426,11 @@ void TileManager::SynchronouslyRasterizeTiles(
                          std::numeric_limits<size_t>::max(),
                          &tiles_that_need_to_be_rasterized);
 
+  // Since we are synchronously rasterizing all tiles, we don't require further
+  // draws for that. Set the flag to false so that we can clear it if it was set
+  // earlier by PrepareTiles.
+  client_->SetIsLikelyToRequireADraw(false);
+
   // We must reduce the amount of unused resources before calling
   // RunTasks to prevent usage from rising above limits.
   resource_pool_->ReduceResourceUsage();
@@ -960,6 +965,12 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   AssignGpuMemoryToTiles(raster_priority_queue.get(),
                          scheduled_raster_task_limit_,
                          &tiles_that_need_to_be_rasterized);
+
+  // Inform the client that will likely require a draw if the highest priority
+  // tile that will be rasterized is required for draw.
+  client_->SetIsLikelyToRequireADraw(
+      !tiles_that_need_to_be_rasterized.empty() &&
+      (*tiles_that_need_to_be_rasterized.begin())->required_for_draw());
 
   // |tiles_that_need_to_be_rasterized| will be empty when we reach a
   // steady memory state. Keep scheduling tasks until we reach this state.

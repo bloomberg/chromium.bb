@@ -128,6 +128,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
                                  int source_frame_number,
                                  int flags);
 
+  bool IsReadyToActivate() const;
+  bool IsReadyToDraw() const;
+
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> BasicStateAsValue()
       const;
   void BasicStateAsValueInto(base::trace_event::TracedValue* dict) const;
@@ -135,6 +138,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
     return memory_stats_from_last_assign_;
   }
 
+  // Public methods for testing.
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
@@ -176,8 +180,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
     scheduled_raster_task_limit_ = limit;
   }
 
-  bool IsReadyToActivate() const;
-  bool IsReadyToDraw() const;
+  void CheckIfMoreTilesNeedToBePreparedForTesting() {
+    CheckIfMoreTilesNeedToBePrepared();
+  }
 
  protected:
   TileManager(TileManagerClient* client,

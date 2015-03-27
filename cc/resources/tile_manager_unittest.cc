@@ -4,6 +4,7 @@
 
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/raster_tile_priority_queue.h"
+#include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/resources/tiling_set_raster_queue_all.h"
@@ -1299,7 +1300,7 @@ TEST_F(TileManagerTilePriorityQueueTest, SetIsLikelyToRequireADraw) {
 }
 
 TEST_F(TileManagerTilePriorityQueueTest,
-       NoSetIsLikelyToRequireADrawOnZeroMemoryBudget) {
+       SetIsLikelyToRequireADrawOnZeroMemoryBudget) {
   const gfx::Size layer_bounds(1000, 1000);
   host_impl_.SetViewportSize(layer_bounds);
   SetupDefaultTrees(layer_bounds);
@@ -1316,6 +1317,61 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
   host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
+  EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
+}
+
+TEST_F(TileManagerTilePriorityQueueTest,
+       SetIsLikelyToRequireADrawOnLimitedMemoryBudget) {
+  const gfx::Size layer_bounds(1000, 1000);
+  host_impl_.SetViewportSize(layer_bounds);
+  SetupDefaultTrees(layer_bounds);
+
+  // Verify that the queue has a required for draw tile at Top.
+  scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
+      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
+  EXPECT_FALSE(queue->IsEmpty());
+  EXPECT_TRUE(queue->Top()->required_for_draw());
+  EXPECT_EQ(gfx::Size(256, 256), queue->Top()->desired_texture_size());
+  EXPECT_EQ(RGBA_8888, host_impl_.resource_provider()->best_texture_format());
+
+  ManagedMemoryPolicy policy = host_impl_.ActualManagedMemoryPolicy();
+  policy.bytes_limit_when_visible =
+      Resource::MemorySizeBytes(gfx::Size(256, 256), RGBA_8888);
+  host_impl_.SetMemoryPolicy(policy);
+
+  EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
+  host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
+  EXPECT_TRUE(host_impl_.is_likely_to_require_a_draw());
+
+  scoped_ptr<ScopedResource> resource =
+      host_impl_.resource_pool()->AcquireResource(gfx::Size(256, 256),
+                                                  RGBA_8888);
+
+  host_impl_.tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
+  EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
+
+  host_impl_.resource_pool()->ReleaseResource(resource.Pass());
+}
+
+TEST_F(TileManagerTilePriorityQueueTest,
+       SetIsLikelyToRequireADrawOnSynchronousRaster) {
+  const gfx::Size layer_bounds(1000, 1000);
+  host_impl_.SetViewportSize(layer_bounds);
+  host_impl_.SetUseGpuRasterization(true);
+  EXPECT_EQ(host_impl_.rasterizer()->GetPrepareTilesMode(),
+            PrepareTilesMode::PREPARE_NONE);
+  SetupDefaultTrees(layer_bounds);
+
+  // Verify that the queue has a required for draw tile at Top.
+  scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
+      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
+  EXPECT_FALSE(queue->IsEmpty());
+  EXPECT_TRUE(queue->Top()->required_for_draw());
+
+  host_impl_.SetIsLikelyToRequireADraw(true);
+
+  EXPECT_TRUE(host_impl_.is_likely_to_require_a_draw());
+  host_impl_.tile_manager()->UpdateVisibleTiles(host_impl_.global_tile_state());
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
 }
 
