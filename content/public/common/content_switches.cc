@@ -131,6 +131,9 @@ const char kDisableGpu[]                    = "disable-gpu";
 // Prevent the compositor from using its GPU implementation.
 const char kDisableGpuCompositing[]         = "disable-gpu-compositing";
 
+// Disable proactive early init of GPU process.
+const char kDisableGpuEarlyInit[]           = "disable-gpu-early-init";
+
 // Disable the limit on the number of times the GPU process may be restarted
 // This switch is intended only for tests.
 extern const char kDisableGpuProcessCrashLimit[] =

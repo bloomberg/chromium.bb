@@ -1061,7 +1061,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   bool established_gpu_channel = false;
 #if defined(USE_AURA) || defined(OS_MACOSX)
   established_gpu_channel = true;
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor() ||
+      parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit)) {
     established_gpu_channel = always_uses_gpu = false;
   }
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
