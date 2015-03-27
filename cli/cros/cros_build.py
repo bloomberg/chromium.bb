@@ -45,7 +45,7 @@ To just build a single package:
     elif self.options.board:
       self.board = self.options.board
     elif self.options.blueprint:
-      bricks = blueprint_lib.GetBricks(self.options.blueprint)
+      bricks = blueprint_lib.Blueprint(self.options.blueprint).GetBricks()
       # TODO(bsimonnet): Support multiple bricks per blueprint (brbug.com/635).
       if len(bricks) != 1:
         cros_build_lib.Die('Blueprint contains multiple bricks, but we can '
