@@ -141,6 +141,10 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // composition.
   HWND composing_window_handle_;
 
+  // Set to false initially. Tracks whether the IME has been initialized with
+  // the current input language.
+  bool default_input_language_initialized_;
+
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };
 

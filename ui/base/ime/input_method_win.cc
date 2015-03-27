@@ -32,7 +32,8 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       active_(false),
       enabled_(false),
       is_candidate_popup_open_(false),
-      composing_window_handle_(NULL) {
+      composing_window_handle_(NULL),
+      default_input_language_initialized_(false) {
   SetDelegate(delegate);
   // In non-Aura environment, appropriate callbacks to OnFocus() and OnBlur()
   // are not implemented yet. To work around this limitation, here we use
@@ -43,9 +44,6 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
 }
 
 void InputMethodWin::Init(bool focused) {
-  // Gets the initial input locale.
-  OnInputLocaleChanged();
-
   InputMethodBase::Init(focused);
 }
 
@@ -66,6 +64,12 @@ bool InputMethodWin::OnUntranslatedIMEMessage(
     InputMethod::NativeEventResult* result) {
   LRESULT original_result = 0;
   BOOL handled = FALSE;
+
+  if (!default_input_language_initialized_) {
+    // Gets the initial input locale.
+    OnInputLocaleChanged();
+  }
+
   switch (event.message) {
     case WM_IME_SETCONTEXT:
       original_result = OnImeSetContext(
@@ -179,6 +183,7 @@ void InputMethodWin::CancelComposition(const TextInputClient* client) {
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
+  default_input_language_initialized_ = true;
   active_ = imm32_manager_.SetInputLanguage();
   locale_ = imm32_manager_.GetInputLanguageName();
   OnInputMethodChanged();
