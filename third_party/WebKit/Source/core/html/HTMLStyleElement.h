@@ -65,7 +65,7 @@ private:
     virtual void finishParsingChildren() override;
 
     virtual bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) override;
+    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
     virtual void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
 
     virtual const AtomicString& media() const override;

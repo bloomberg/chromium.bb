@@ -69,7 +69,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void startLoadingDynamicSheet();
-    void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
+    void notifyLoadedSheetAndAllCriticalSubresources(Node::LoadedSheetErrorStatus);
     bool sheetLoaded();
 
     void setDisabledState(bool);
@@ -192,7 +192,7 @@ private:
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
     virtual const QualifiedName& subResourceAttributeName() const override;
     virtual bool sheetLoaded() override;
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) override;
+    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
     virtual void startLoadingDynamicSheet() override;
     virtual void finishParsingChildren() override;
 

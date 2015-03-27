@@ -1,0 +1,8 @@
+CONSOLE ERROR: line 16: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'nonce-nonceynonce'". Either the 'unsafe-inline' keyword, a hash ('sha256-pckGv9YvNcB5xy-Y4fbqhyo-ib850wyiuWeNbZvLi00='), or a nonce ('nonce-...') is required to enable inline execution.
+
+A test paragraph
+
+This is a testharness.js-based test.
+PASS Style element has error on bad style nonce 
+Harness: the test ran to completion.
+

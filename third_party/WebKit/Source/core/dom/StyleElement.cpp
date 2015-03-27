@@ -62,7 +62,7 @@ StyleElement::~StyleElement()
 #endif
 }
 
-void StyleElement::processStyleSheet(Document& document, Element* element)
+StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& document, Element* element)
 {
     TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
     ASSERT(element);
@@ -71,9 +71,9 @@ void StyleElement::processStyleSheet(Document& document, Element* element)
     m_registeredAsCandidate = true;
     document.styleEngine().addStyleSheetCandidateNode(element, m_createdByParser);
     if (m_createdByParser)
-        return;
+        return ProcessingSuccessful;
 
-    process(element);
+    return process(element);
 }
 
 void StyleElement::insertedInto(Element* element, ContainerNode* insertionPoint)
@@ -121,27 +121,28 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
     }
 }
 
-void StyleElement::childrenChanged(Element* element)
+StyleElement::ProcessingResult StyleElement::childrenChanged(Element* element)
 {
     ASSERT(element);
     if (m_createdByParser)
-        return;
+        return ProcessingSuccessful;
 
-    process(element);
+    return process(element);
 }
 
-void StyleElement::finishParsingChildren(Element* element)
+StyleElement::ProcessingResult StyleElement::finishParsingChildren(Element* element)
 {
     ASSERT(element);
-    process(element);
+    ProcessingResult result = process(element);
     m_createdByParser = false;
+    return result;
 }
 
-void StyleElement::process(Element* element)
+StyleElement::ProcessingResult StyleElement::process(Element* element)
 {
     if (!element || !element->inDocument())
-        return;
-    createSheet(element, element->textFromChildren());
+        return ProcessingSuccessful;
+    return createSheet(element, element->textFromChildren());
 }
 
 void StyleElement::clearSheet(Element* ownerElement)
@@ -169,7 +170,7 @@ static bool shouldBypassMainWorldCSP(Element* element)
     return false;
 }
 
-void StyleElement::createSheet(Element* e, const String& text)
+StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const String& text)
 {
     ASSERT(e);
     ASSERT(e->inDocument());
@@ -201,6 +202,8 @@ void StyleElement::createSheet(Element* e, const String& text)
 
     if (m_sheet)
         m_sheet->contents()->checkLoaded();
+
+    return passesContentSecurityPolicyChecks ? ProcessingSuccessful : ProcessingFatalError;
 }
 
 bool StyleElement::isLoading() const

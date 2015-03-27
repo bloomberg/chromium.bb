@@ -266,8 +266,10 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
         KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted) ? elementDocument.url() : KURL();
-        if (!executeScript(ScriptSourceCode(scriptContent(), scriptURL, position)))
+        if (!executeScript(ScriptSourceCode(scriptContent(), scriptURL, position))) {
+            dispatchErrorEvent();
             return false;
+        }
     }
 
     return true;
@@ -337,20 +339,21 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
         || csp->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr))
         || csp->allowScriptWithHash(sourceCode.source());
 
-    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_startLineNumber, sourceCode.source())))
-        return true;
+    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_startLineNumber, sourceCode.source()))) {
+        return false;
+    }
 
     if (m_isExternalScript) {
         ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
         if (resource && !resource->mimeTypeAllowedByNosniff()) {
             contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled."));
-            return true;
+            return false;
         }
 
         if (resource && resource->mimeType().lower().startsWith("image/")) {
             contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable."));
             UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
-            return true;
+            return false;
         }
     }
 

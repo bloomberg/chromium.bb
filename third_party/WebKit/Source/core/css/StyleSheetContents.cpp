@@ -379,7 +379,7 @@ void StyleSheetContents::checkLoaded()
         // sheetLoaded might be invoked after its owner node is removed from document.
         if (RefPtrWillBeRawPtr<Node> ownerNode = loadingClients[i]->ownerNode()) {
             if (loadingClients[i]->sheetLoaded())
-                ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
+                ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur ? Node::ErrorOccurredLoadingSubresource : Node::NoErrorLoadingSubresource);
         }
     }
 }

@@ -365,10 +365,10 @@ bool HTMLLinkElement::sheetLoaded()
     return linkStyle()->sheetLoaded();
 }
 
-void HTMLLinkElement::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)
+void HTMLLinkElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus errorStatus)
 {
     ASSERT(linkStyle());
-    linkStyle()->notifyLoadedSheetAndAllCriticalSubresources(errorOccurred);
+    linkStyle()->notifyLoadedSheetAndAllCriticalSubresources(errorStatus);
 }
 
 void HTMLLinkElement::dispatchPendingLoadEvents()
@@ -516,7 +516,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     if (!cachedStyleSheet->errorOccurred() && !SubresourceIntegrity::CheckSubresourceIntegrity(*m_owner, cachedStyleSheet->sheetText(), KURL(baseURL, href), cachedStyleSheet->mimeType(), *cachedStyleSheet)) {
         m_loading = false;
         removePendingSheet();
-        notifyLoadedSheetAndAllCriticalSubresources(true);
+        notifyLoadedSheetAndAllCriticalSubresources(Node::ErrorOccurredLoadingSubresource);
         return;
     }
 
@@ -570,11 +570,11 @@ bool LinkStyle::sheetLoaded()
     return false;
 }
 
-void LinkStyle::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)
+void LinkStyle::notifyLoadedSheetAndAllCriticalSubresources(Node::LoadedSheetErrorStatus errorStatus)
 {
     if (m_firedLoad)
         return;
-    m_loadedSheet = !errorOccurred;
+    m_loadedSheet = (errorStatus == Node::NoErrorLoadingSubresource);
     if (m_owner)
         m_owner->scheduleEvent();
     m_firedLoad = true;
@@ -743,9 +743,10 @@ void LinkStyle::process()
         setResource(document().fetcher()->fetchCSSStyleSheet(request));
 
         if (!resource()) {
-            // The request may have been denied if (for example) the stylesheet is local and the document is remote.
+            // The request may have been denied if (for example) the stylesheet is local and the document is remote, or if there was a Content Security Policy Failure.
             m_loading = false;
             removePendingSheet();
+            notifyLoadedSheetAndAllCriticalSubresources(Node::ErrorOccurredLoadingSubresource);
         }
     } else if (m_sheet) {
         // we no longer contain a stylesheet, e.g. perhaps rel or type was changed

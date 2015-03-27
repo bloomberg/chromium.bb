@@ -340,7 +340,11 @@ public:
 
     // For <link> and <style> elements.
     virtual bool sheetLoaded() { return true; }
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool /* error loading subresource */) { }
+    enum LoadedSheetErrorStatus {
+        NoErrorLoadingSubresource,
+        ErrorOccurredLoadingSubresource
+    };
+    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) { }
     virtual void startLoadingDynamicSheet() { ASSERT_NOT_REACHED(); }
 
     bool hasName() const { ASSERT(!isTextNode()); return getFlag(HasNameOrIsEditingTextFlag); }

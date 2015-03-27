@@ -77,8 +77,10 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 void HTMLStyleElement::finishParsingChildren()
 {
-    StyleElement::finishParsingChildren(this);
+    StyleElement::ProcessingResult result = StyleElement::finishParsingChildren(this);
     HTMLElement::finishParsingChildren();
+    if (result == StyleElement::ProcessingFatalError)
+        notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
 Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(ContainerNode* insertionPoint)
@@ -96,13 +98,15 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLStyleElement::didNotifySubtreeInsertionsToDocument()
 {
-    StyleElement::processStyleSheet(document(), this);
+    if (StyleElement::processStyleSheet(document(), this) == StyleElement::ProcessingFatalError)
+        notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
 void HTMLStyleElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
-    StyleElement::childrenChanged(this);
+    if (StyleElement::childrenChanged(this) == StyleElement::ProcessingFatalError)
+        notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
 const AtomicString& HTMLStyleElement::media() const
@@ -137,11 +141,11 @@ void HTMLStyleElement::dispatchPendingEvent(StyleEventSender* eventSender)
     dispatchEvent(Event::create(m_loadedSheet ? EventTypeNames::load : EventTypeNames::error));
 }
 
-void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)
+void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus errorStatus)
 {
     if (m_firedLoad)
         return;
-    m_loadedSheet = !errorOccurred;
+    m_loadedSheet = (errorStatus == NoErrorLoadingSubresource);
     styleLoadEventSender().dispatchEventSoon(this);
     m_firedLoad = true;
 }
