@@ -25,8 +25,10 @@ class MojoBlinkPlatformImpl : public BlinkPlatformImpl {
 
  private:
   // BlinkPlatform
-  virtual blink::WebURLLoader* createURLLoader() override;
-  virtual blink::WebSocketHandle* createWebSocketHandle() override;
+  blink::WebCookieJar* cookieJar() override;
+  blink::WebClipboard* clipboard() override;
+  blink::WebURLLoader* createURLLoader() override;
+  blink::WebSocketHandle* createWebSocketHandle() override;
 
   mojo::NetworkServicePtr network_service_;
   scoped_ptr<WebCookieJarImpl> cookie_jar_;

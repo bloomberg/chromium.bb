@@ -27,6 +27,14 @@ MojoBlinkPlatformImpl::MojoBlinkPlatformImpl(mojo::ApplicationImpl* app) {
 MojoBlinkPlatformImpl::~MojoBlinkPlatformImpl() {
 }
 
+blink::WebCookieJar* MojoBlinkPlatformImpl::cookieJar() {
+  return cookie_jar_.get();
+}
+
+blink::WebClipboard* MojoBlinkPlatformImpl::clipboard() {
+  return clipboard_.get();
+}
+
 blink::WebURLLoader* MojoBlinkPlatformImpl::createURLLoader() {
   return new WebURLLoaderImpl(network_service_.get());
 }
