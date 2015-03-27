@@ -666,8 +666,9 @@ void Node::updateDistribution()
     Node* root = this;
     while (Node* host = root->shadowHost())
         root = host;
-    while (Node* ancestor = root->parentOrShadowHostNode())
+    while (Node* ancestor = root->parentNode())
         root = ancestor;
+    ASSERT(!root->shadowHost());
     if (root->childNeedsDistributionRecalc())
         root->recalcDistribution();
 }
