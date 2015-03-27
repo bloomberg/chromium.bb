@@ -79,6 +79,16 @@ class SmoothnessMaps(benchmark.Benchmark):
     return 'smoothness.maps'
 
 
+@benchmark.Disabled('android')
+class SmoothnessKeyDesktopMoveCases(benchmark.Benchmark):
+  test = smoothness.Smoothness
+  page_set = page_sets.KeyDesktopMoveCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.key_desktop_move_cases'
+
+
 @benchmark.Enabled('android')
 class SmoothnessKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics while scrolling down the key mobile sites.
