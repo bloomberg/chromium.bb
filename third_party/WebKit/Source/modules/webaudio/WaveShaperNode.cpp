@@ -36,7 +36,7 @@ namespace blink {
 WaveShaperNode::WaveShaperNode(AudioContext* context)
     : AudioBasicProcessorNode(NodeTypeWaveShaper, context, context->sampleRate())
 {
-    m_processor = new WaveShaperProcessor(context->sampleRate(), 1);
+    m_processor = adoptPtr(new WaveShaperProcessor(context->sampleRate(), 1));
 
     initialize();
 }

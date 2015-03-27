@@ -59,7 +59,7 @@ protected:
     virtual double latencyTime() const override final;
 
     AudioProcessor* processor() { return m_processor.get(); }
-    Member<AudioProcessor> m_processor;
+    OwnPtr<AudioProcessor> m_processor;
 };
 
 } // namespace blink

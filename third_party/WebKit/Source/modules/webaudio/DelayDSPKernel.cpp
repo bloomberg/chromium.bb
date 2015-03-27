@@ -56,17 +56,17 @@ DelayDSPKernel::DelayDSPKernel(DelayProcessor* processor)
 
 bool DelayDSPKernel::hasSampleAccurateValues()
 {
-    return delayProcessor()->delayTime()->handler().hasSampleAccurateValues();
+    return delayProcessor()->delayTime().hasSampleAccurateValues();
 }
 
 void DelayDSPKernel::calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess)
 {
-    delayProcessor()->delayTime()->handler().calculateSampleAccurateValues(delayTimes, framesToProcess);
+    delayProcessor()->delayTime().calculateSampleAccurateValues(delayTimes, framesToProcess);
 }
 
 double DelayDSPKernel::delayTime(float)
 {
-    return delayProcessor()->delayTime()->handler().finalValue();
+    return delayProcessor()->delayTime().finalValue();
 }
 
 } // namespace blink

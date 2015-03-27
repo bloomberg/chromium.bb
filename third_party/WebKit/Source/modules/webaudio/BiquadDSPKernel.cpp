@@ -47,15 +47,15 @@ void BiquadDSPKernel::updateCoefficientsIfNecessary()
         double detune; // in Cents
 
         if (biquadProcessor()->hasSampleAccurateValues()) {
-            cutoffFrequency = biquadProcessor()->parameter1()->handler().finalValue();
-            Q = biquadProcessor()->parameter2()->handler().finalValue();
-            gain = biquadProcessor()->parameter3()->handler().finalValue();
-            detune = biquadProcessor()->parameter4()->handler().finalValue();
+            cutoffFrequency = biquadProcessor()->parameter1().finalValue();
+            Q = biquadProcessor()->parameter2().finalValue();
+            gain = biquadProcessor()->parameter3().finalValue();
+            detune = biquadProcessor()->parameter4().finalValue();
         } else {
-            cutoffFrequency = biquadProcessor()->parameter1()->handler().smoothedValue();
-            Q = biquadProcessor()->parameter2()->handler().smoothedValue();
-            gain = biquadProcessor()->parameter3()->handler().smoothedValue();
-            detune = biquadProcessor()->parameter4()->handler().smoothedValue();
+            cutoffFrequency = biquadProcessor()->parameter1().smoothedValue();
+            Q = biquadProcessor()->parameter2().smoothedValue();
+            gain = biquadProcessor()->parameter3().smoothedValue();
+            detune = biquadProcessor()->parameter4().smoothedValue();
         }
 
         updateCoefficients(cutoffFrequency, Q, gain, detune);
@@ -166,10 +166,10 @@ void BiquadDSPKernel::getFrequencyResponse(int nFrequencies, const float* freque
         // FIXME: Simplify this: crbug.com/390266
         MutexLocker processLocker(m_processLock);
 
-        cutoffFrequency = biquadProcessor()->parameter1()->value();
-        Q = biquadProcessor()->parameter2()->value();
-        gain = biquadProcessor()->parameter3()->value();
-        detune = biquadProcessor()->parameter4()->value();
+        cutoffFrequency = biquadProcessor()->parameter1().value();
+        Q = biquadProcessor()->parameter2().value();
+        gain = biquadProcessor()->parameter3().value();
+        detune = biquadProcessor()->parameter4().value();
     }
 
     updateCoefficients(cutoffFrequency, Q, gain, detune);

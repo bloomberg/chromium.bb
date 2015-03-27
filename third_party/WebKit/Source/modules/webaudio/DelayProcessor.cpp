@@ -30,23 +30,17 @@
 
 namespace blink {
 
-DelayProcessor::DelayProcessor(AudioContext* context, float sampleRate, unsigned numberOfChannels, double maxDelayTime)
+DelayProcessor::DelayProcessor(float sampleRate, unsigned numberOfChannels, AudioParamHandler& delayTime, double maxDelayTime)
     : AudioDSPKernelProcessor(sampleRate, numberOfChannels)
+    , m_delayTime(delayTime)
     , m_maxDelayTime(maxDelayTime)
 {
-    m_delayTime = AudioParam::create(context, 0.0);
 }
 
 DelayProcessor::~DelayProcessor()
 {
     if (isInitialized())
         uninitialize();
-}
-
-DEFINE_TRACE(DelayProcessor)
-{
-    visitor->trace(m_delayTime);
-    AudioDSPKernelProcessor::trace(visitor);
 }
 
 PassOwnPtr<AudioDSPKernel> DelayProcessor::createKernel()

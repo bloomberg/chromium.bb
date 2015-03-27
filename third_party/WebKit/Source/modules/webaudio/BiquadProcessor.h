@@ -49,9 +49,8 @@ public:
         Allpass = 7
     };
 
-    BiquadProcessor(AudioContext*, float sampleRate, size_t numberOfChannels, bool autoInitialize);
+    BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune, bool autoInitialize);
     virtual ~BiquadProcessor();
-    DECLARE_VIRTUAL_TRACE();
 
     virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 
@@ -66,10 +65,10 @@ public:
     bool filterCoefficientsDirty() const { return m_filterCoefficientsDirty; }
     bool hasSampleAccurateValues() const { return m_hasSampleAccurateValues; }
 
-    AudioParam* parameter1() { return m_parameter1.get(); }
-    AudioParam* parameter2() { return m_parameter2.get(); }
-    AudioParam* parameter3() { return m_parameter3.get(); }
-    AudioParam* parameter4() { return m_parameter4.get(); }
+    AudioParamHandler& parameter1() { return *m_parameter1; }
+    AudioParamHandler& parameter2() { return *m_parameter2; }
+    AudioParamHandler& parameter3() { return *m_parameter3; }
+    AudioParamHandler& parameter4() { return *m_parameter4; }
 
     FilterType type() const { return m_type; }
     void setType(FilterType);
@@ -77,10 +76,10 @@ public:
 private:
     FilterType m_type;
 
-    Member<AudioParam> m_parameter1;
-    Member<AudioParam> m_parameter2;
-    Member<AudioParam> m_parameter3;
-    Member<AudioParam> m_parameter4;
+    RefPtr<AudioParamHandler> m_parameter1;
+    RefPtr<AudioParamHandler> m_parameter2;
+    RefPtr<AudioParamHandler> m_parameter3;
+    RefPtr<AudioParamHandler> m_parameter4;
 
     // so DSP kernels know when to re-compute coefficients
     bool m_filterCoefficientsDirty;

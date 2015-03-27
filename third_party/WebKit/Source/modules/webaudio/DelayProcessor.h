@@ -36,17 +36,16 @@ class AudioDSPKernel;
 
 class DelayProcessor final : public AudioDSPKernelProcessor {
 public:
-    DelayProcessor(AudioContext*, float sampleRate, unsigned numberOfChannels, double maxDelayTime);
+    DelayProcessor(float sampleRate, unsigned numberOfChannels, AudioParamHandler& delayTime, double maxDelayTime);
     virtual ~DelayProcessor();
-    DECLARE_VIRTUAL_TRACE();
 
     virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 
-    AudioParam* delayTime() const { return m_delayTime.get(); }
+    AudioParamHandler& delayTime() const { return *m_delayTime; }
     double maxDelayTime() { return m_maxDelayTime; }
 
 private:
-    Member<AudioParam> m_delayTime;
+    RefPtr<AudioParamHandler> m_delayTime;
     double m_maxDelayTime;
 };
 

@@ -37,8 +37,4 @@ AudioProcessor::~AudioProcessor()
 {
 }
 
-DEFINE_TRACE(AudioProcessor)
-{
-}
-
 } // namespace blink

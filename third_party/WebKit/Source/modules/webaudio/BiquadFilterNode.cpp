@@ -30,9 +30,22 @@ namespace blink {
 
 BiquadFilterNode::BiquadFilterNode(AudioContext* context, float sampleRate)
     : AudioBasicProcessorNode(NodeTypeBiquadFilter, context, sampleRate)
+    , m_frequency(AudioParam::create(context, 350.0))
+    , m_q(AudioParam::create(context, 1))
+    , m_gain(AudioParam::create(context, 0.0))
+    , m_detune(AudioParam::create(context, 0.0))
 {
     // Initially setup as lowpass filter.
-    m_processor = new BiquadProcessor(context, sampleRate, 1, false);
+    m_processor = adoptPtr(new BiquadProcessor(sampleRate, 1, m_frequency->handler(), m_q->handler(), m_gain->handler(), m_detune->handler(), false));
+}
+
+DEFINE_TRACE(BiquadFilterNode)
+{
+    visitor->trace(m_frequency);
+    visitor->trace(m_q);
+    visitor->trace(m_gain);
+    visitor->trace(m_detune);
+    AudioBasicProcessorNode::trace(visitor);
 }
 
 String BiquadFilterNode::type() const

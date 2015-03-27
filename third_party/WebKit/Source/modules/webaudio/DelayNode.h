@@ -38,12 +38,15 @@ class DelayNode final : public AudioBasicProcessorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DelayNode* create(AudioContext*, float sampleRate, double maxDelayTime, ExceptionState&);
+    DECLARE_VIRTUAL_TRACE();
     AudioParam* delayTime();
 
 private:
     DelayNode(AudioContext*, float sampleRate, double maxDelayTime);
 
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
+
+    Member<AudioParam> m_delayTime;
 };
 
 } // namespace blink
