@@ -333,6 +333,18 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # http://crbug.com/471372
+    # BSD
+    'tools/swarming_client/third_party/pyasn1': [
+        'UNKNOWN',
+    ],
+
+    # http://crbug.com/471372
+    # Apache v2.0.
+    'tools/swarming_client/third_party/rsa': [
+        'UNKNOWN',
+    ],
+
     # https://github.com/kennethreitz/requests/issues/1610
     'tools/swarming_client/third_party/requests': [
         'UNKNOWN',
