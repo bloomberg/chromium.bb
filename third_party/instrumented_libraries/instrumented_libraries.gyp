@@ -197,6 +197,8 @@
         '<(_sanitizer_type)-libunity9',
         '<(_sanitizer_type)-dee',
         '<(_sanitizer_type)-libpixman-1-0',
+        '<(_sanitizer_type)-brltty',
+        '<(_sanitizer_type)-libva1',
       ],
       'conditions': [
         ['"<(_ubuntu_release)"=="precise"', {
@@ -221,12 +223,6 @@
             '<(_sanitizer_type)-libpng12-0',
           ],
         }],
-        ['chromeos==1', {
-          'dependencies': [
-            '<(_sanitizer_type)-brltty',
-            '<(_sanitizer_type)-libva1',
-          ],
-        }]
       ],
       'direct_dependent_settings': {
         'target_conditions': [
