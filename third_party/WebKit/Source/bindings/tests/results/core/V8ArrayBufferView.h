@@ -34,6 +34,11 @@ public:
     static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*) { }
 };
 
+template <>
+struct V8TypeOf<TestArrayBufferView> {
+    typedef V8ArrayBufferView Type;
+};
+
 } // namespace blink
 
 #endif // V8ArrayBufferView_h

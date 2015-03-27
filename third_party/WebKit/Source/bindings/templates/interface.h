@@ -204,6 +204,11 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
 bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info);
 
 {% endif %}
+template <>
+struct V8TypeOf<{{cpp_class}}> {
+    typedef {{v8_class}} Type;
+};
+
 } // namespace blink
 {% endfilter %}
 

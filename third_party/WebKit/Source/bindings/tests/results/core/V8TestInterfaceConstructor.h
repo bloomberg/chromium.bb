@@ -46,6 +46,11 @@ public:
     static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*) { }
 };
 
+template <>
+struct V8TypeOf<TestInterfaceConstructor> {
+    typedef V8TestInterfaceConstructor Type;
+};
+
 } // namespace blink
 
 #endif // V8TestInterfaceConstructor_h

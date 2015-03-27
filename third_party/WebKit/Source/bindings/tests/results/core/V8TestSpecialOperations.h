@@ -39,6 +39,11 @@ public:
     static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*) { }
 };
 
+template <>
+struct V8TypeOf<TestSpecialOperations> {
+    typedef V8TestSpecialOperations Type;
+};
+
 } // namespace blink
 
 #endif // V8TestSpecialOperations_h

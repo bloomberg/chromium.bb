@@ -62,6 +62,11 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface
      v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <>
+struct V8TypeOf<TestInterface5Implementation> {
+    typedef V8TestInterface5 Type;
+};
+
 } // namespace blink
 #endif // ENABLE(CONDITION)
 

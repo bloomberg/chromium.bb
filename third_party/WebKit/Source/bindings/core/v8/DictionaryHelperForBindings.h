@@ -26,13 +26,10 @@
 #ifndef DictionaryHelperForBindings_h
 #define DictionaryHelperForBindings_h
 
-#include "Source/bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/V8Binding.h"
 
 namespace blink {
-
-template <typename T>
-struct DictionaryHelperTraits {
-};
 
 template <template <typename> class PointerType, typename T>
 bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, PointerType<T>& value)
@@ -41,7 +38,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Poin
     if (!dictionary.get(key, v8Value))
         return false;
 
-    value = DictionaryHelperTraits<T>::type::toImplWithTypeCheck(dictionary.isolate(), v8Value);
+    value = V8TypeOf<T>::Type::toImplWithTypeCheck(dictionary.isolate(), v8Value);
     return true;
 }
 

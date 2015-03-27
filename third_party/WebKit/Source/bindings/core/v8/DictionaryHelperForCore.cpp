@@ -417,11 +417,6 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     return DictionaryHelper::get(dictionary, key, value);
 }
 
-template <>
-struct DictionaryHelperTraits<DOMUint8Array> {
-    typedef V8Uint8Array type;
-};
-
 template CORE_EXPORT bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMUint8Array>& value);
 
 template <typename T>

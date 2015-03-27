@@ -47,6 +47,11 @@ public:
 
 bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info);
 
+template <>
+struct V8TypeOf<TestInterfaceEventConstructor> {
+    typedef V8TestInterfaceEventConstructor Type;
+};
+
 } // namespace blink
 
 #endif // V8TestInterfaceEventConstructor_h

@@ -63,6 +63,14 @@ class LocalFrame;
 class NodeFilter;
 class XPathNSResolver;
 
+template <typename T>
+struct V8TypeOf {
+    // |Type| provides C++ -> V8 type conversion for DOM wrappers.
+    // The Blink binding code generator will generate specialized version of
+    // V8TypeOf for each wrapper class.
+    typedef void Type;
+};
+
 namespace TraceEvent {
 class ConvertableToTraceFormat;
 }

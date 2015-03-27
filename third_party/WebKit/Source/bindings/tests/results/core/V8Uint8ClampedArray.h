@@ -35,6 +35,11 @@ public:
     static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*) { }
 };
 
+template <>
+struct V8TypeOf<TestUint8ClampedArray> {
+    typedef V8Uint8ClampedArray Type;
+};
+
 } // namespace blink
 
 #endif // V8Uint8ClampedArray_h

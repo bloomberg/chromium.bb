@@ -43,6 +43,11 @@ public:
     static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*) { }
 };
 
+template <>
+struct V8TypeOf<TestInterfaceGarbageCollected> {
+    typedef V8TestInterfaceGarbageCollected Type;
+};
+
 } // namespace blink
 
 #endif // V8TestInterfaceGarbageCollected_h

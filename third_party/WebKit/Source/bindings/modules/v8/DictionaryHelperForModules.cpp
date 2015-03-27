@@ -45,41 +45,6 @@
 
 namespace blink {
 
-template <>
-struct DictionaryHelperTraits<MIDIPort> {
-    typedef V8MIDIPort type;
-};
-
-template <>
-struct DictionaryHelperTraits<SpeechRecognitionResultList> {
-    typedef V8SpeechRecognitionResultList type;
-};
-
-template <>
-struct DictionaryHelperTraits<Gamepad> {
-    typedef V8Gamepad type;
-};
-
-template <>
-struct DictionaryHelperTraits<PushMessageData> {
-    typedef V8PushMessageData type;
-};
-
-template <>
-struct DictionaryHelperTraits<MediaStream> {
-    typedef V8MediaStream type;
-};
-
-template <>
-struct DictionaryHelperTraits<Headers> {
-    typedef V8Headers type;
-};
-
-template <>
-struct DictionaryHelperTraits<Storage> {
-    typedef V8Storage type;
-};
-
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<MIDIPort>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<SpeechRecognitionResultList>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Gamepad>& value);
