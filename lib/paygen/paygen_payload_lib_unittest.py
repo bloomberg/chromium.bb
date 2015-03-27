@@ -114,6 +114,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     if work_dir is None:
       work_dir = self.tempdir
 
+    if not au_generator_uri_override:
+      au_generator_uri_override = gspaths.ChromeosReleases.GeneratorUri(
+          payload.tgt_image.channel, payload.tgt_image.board, '6351.0.0')
+
     return paygen_payload_lib._PaygenPayload(
         payload=payload,
         cache=self.cache,
@@ -717,6 +721,8 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
         payload=payload,
         cache=self.cache,
         work_dir=self.tempdir,
+        au_generator_uri=gspaths.ChromeosReleases.GeneratorUri(
+            payload.tgt_image.channel, payload.tgt_image.board, '6351.0.0'),
         sign=sign)
 
     self.assertTrue(os.path.exists(output_uri))
