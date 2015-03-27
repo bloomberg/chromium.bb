@@ -107,33 +107,30 @@ bool Dictionary::isUndefinedOrNull() const
 
 bool Dictionary::hasProperty(const String& key) const
 {
-    if (isUndefinedOrNull())
+    v8::Local<v8::Object> object;
+    if (!toObject(object))
         return false;
-    v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
-    ASSERT(!options.IsEmpty());
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
     ASSERT(m_exceptionState);
-    v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
-    return v8CallBoolean(options->Has(v8Context(), v8Key));
+    v8::Local<v8::String> v8Key = v8String(m_isolate, key);
+    return v8CallBoolean(object->Has(v8Context(), v8Key));
 }
 
 bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
 {
-    if (isUndefinedOrNull())
+    v8::Local<v8::Object> object;
+    if (!toObject(object))
         return false;
-    v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
-    ASSERT(!options.IsEmpty());
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
     ASSERT(m_exceptionState);
-    v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
-    if (!v8CallBoolean(options->Has(v8Context(), v8Key)))
+    v8::Local<v8::String> v8Key = v8String(m_isolate, key);
+    if (!v8CallBoolean(object->Has(v8Context(), v8Key)))
         return false;
-    value = options->Get(v8Key);
-    return !value.IsEmpty();
+    return object->Get(v8Context(), v8Key).ToLocal(&value);
 }
 
 bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
@@ -174,24 +171,33 @@ bool Dictionary::convert(ConversionContext& context, const String& key, Dictiona
     return false;
 }
 
+static inline bool propertyKey(v8::Local<v8::Context> v8Context, v8::Local<v8::Array> properties, uint32_t index, v8::Local<v8::String>& key)
+{
+    v8::Local<v8::Value> property;
+    if (!properties->Get(v8Context, index).ToLocal(&property))
+        return false;
+    return property->ToString(v8Context).ToLocal(&key);
+}
+
 bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMap) const
 {
-    if (!isObject())
-        return false;
-
-    v8::Handle<v8::Object> options = m_options->ToObject(m_isolate);
-    if (options.IsEmpty())
+    v8::Local<v8::Object> object;
+    if (!toObject(object))
         return false;
 
     v8::Local<v8::Array> properties;
-    if (!options->GetOwnPropertyNames(v8Context()).ToLocal(&properties))
-        return true;
+    if (!object->GetOwnPropertyNames(v8Context()).ToLocal(&properties))
+        return false;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
-        v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
-        if (!v8CallBoolean(options->Has(v8Context(), key)))
+        v8::Local<v8::String> key;
+        if (!propertyKey(v8Context(), properties, i, key))
+            continue;
+        if (!v8CallBoolean(object->Has(v8Context(), key)))
             continue;
 
-        v8::Local<v8::Value> value = options->Get(key);
+        v8::Local<v8::Value> value;
+        if (!object->Get(v8Context(), key).ToLocal(&value))
+            continue;
         TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);
         TOSTRING_DEFAULT(V8StringResource<>, stringValue, value, false);
         if (!static_cast<const String&>(stringKey).isEmpty())
@@ -203,19 +209,18 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
 
 bool Dictionary::getPropertyNames(Vector<String>& names) const
 {
-    if (!isObject())
+    v8::Local<v8::Object> object;
+    if (!toObject(object))
         return false;
 
-    v8::Handle<v8::Object> options = m_options->ToObject(m_isolate);
-    if (options.IsEmpty())
+    v8::Local<v8::Array> properties;
+    if (!object->GetPropertyNames(v8Context()).ToLocal(&properties))
         return false;
-
-    v8::Local<v8::Array> properties = options->GetPropertyNames();
-    if (properties.IsEmpty())
-        return true;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
-        v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
-        if (!v8CallBoolean(options->Has(v8Context(), key)))
+        v8::Local<v8::String> key;
+        if (!propertyKey(v8Context(), properties, i, key))
+            continue;
+        if (!v8CallBoolean(object->Has(v8Context(), key)))
             continue;
         TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);
         names.append(stringKey);
@@ -246,6 +251,11 @@ Dictionary::ConversionContext& Dictionary::ConversionContext::setConversionType(
 void Dictionary::ConversionContext::throwTypeError(const String& detail)
 {
     exceptionState().throwTypeError(detail);
+}
+
+bool Dictionary::toObject(v8::Local<v8::Object>& object) const
+{
+    return !isUndefinedOrNull() && m_options->ToObject(v8Context()).ToLocal(&object);
 }
 
 } // namespace blink

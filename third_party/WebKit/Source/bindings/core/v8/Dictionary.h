@@ -45,7 +45,7 @@ namespace blink {
 // Dictionary class provides ways to retrieve property values as C++ objects
 // from a V8 object. Instances of this class must not outlive V8's handle scope
 // because they hold a V8 value without putting it on persistent handles.
-class CORE_EXPORT Dictionary {
+class CORE_EXPORT Dictionary final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();
@@ -110,15 +110,16 @@ public:
     bool hasProperty(const String&) const;
 
     v8::Isolate* isolate() const { return m_isolate; }
-
-    bool getKey(const String& key, v8::Local<v8::Value>&) const;
-
-private:
     v8::Local<v8::Context> v8Context() const
     {
         ASSERT(m_isolate);
         return m_isolate->GetCurrentContext();
     }
+
+    bool getKey(const String& key, v8::Local<v8::Value>&) const;
+
+private:
+    bool toObject(v8::Local<v8::Object>&) const;
 
     v8::Handle<v8::Value> m_options;
     v8::Isolate* m_isolate;

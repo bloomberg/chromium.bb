@@ -65,11 +65,7 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Boolean> v8Bool = v8Value->ToBoolean(dictionary.isolate());
-    if (v8Bool.IsEmpty())
-        return false;
-    value = v8Bool->Value();
-    return true;
+    return v8Call(v8Value->BooleanValue(dictionary.v8Context()), value);
 }
 
 template <>
@@ -87,11 +83,7 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Int32> v8Int32 = v8Value->ToInt32(dictionary.isolate());
-    if (v8Int32.IsEmpty())
-        return false;
-    value = v8Int32->Value();
-    return true;
+    return v8Call(v8Value->Int32Value(dictionary.v8Context()), value);
 }
 
 template <>
@@ -104,14 +96,7 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
     }
 
     hasValue = true;
-
-    v8::TryCatch block;
-    value = v8Value->NumberValue();
-    if (UNLIKELY(block.HasCaught())) {
-        block.ReThrow();
-        return false;
-    }
-    return true;
+    return v8Call(v8Value->NumberValue(dictionary.v8Context()), value);
 }
 
 template <>
@@ -199,14 +184,10 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
 template<typename NumericType>
 bool getNumericType(const Dictionary& dictionary, const String& key, NumericType& value)
 {
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
+    int32_t int32Value;
+    if (!DictionaryHelper::get(dictionary, key, int32Value))
         return false;
-
-    v8::Local<v8::Int32> v8Int32 = v8Value->ToInt32(dictionary.isolate());
-    if (v8Int32.IsEmpty())
-        return false;
-    value = static_cast<NumericType>(v8Int32->Value());
+    value = static_cast<NumericType>(int32Value);
     return true;
 }
 
@@ -235,10 +216,10 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsi
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Integer> v8Integer = v8Value->ToInteger(dictionary.isolate());
-    if (v8Integer.IsEmpty())
+    int64_t int64Value;
+    if (!v8Call(v8Value->IntegerValue(dictionary.v8Context()), int64Value))
         return false;
-    value = static_cast<unsigned long>(v8Integer->Value());
+    value = int64Value;
     return true;
 }
 
@@ -249,13 +230,10 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsi
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::TryCatch block;
-    double d = v8Value->NumberValue();
-    if (UNLIKELY(block.HasCaught())) {
-        block.ReThrow();
+    double doubleValue;
+    if (!v8Call(v8Value->NumberValue(dictionary.v8Context()), doubleValue))
         return false;
-    }
-    doubleToInteger(d, value);
+    doubleToInteger(doubleValue, value);
     return true;
 }
 
@@ -331,7 +309,9 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
 
     v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
     for (size_t i = 0; i < v8Array->Length(); ++i) {
-        v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Uint32::New(dictionary.isolate(), i));
+        v8::Local<v8::Value> indexedValue;
+        if (!v8Array->Get(dictionary.v8Context(), v8::Uint32::New(dictionary.isolate(), i)).ToLocal(&indexedValue))
+            return false;
         TOSTRING_DEFAULT(V8StringResource<>, stringValue, indexedValue, false);
         value.append(stringValue);
     }
@@ -351,7 +331,9 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
 
     v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
     for (size_t i = 0; i < v8Array->Length(); ++i) {
-        v8::Local<v8::Value> v8IndexedValue = v8Array->Get(v8::Uint32::New(dictionary.isolate(), i));
+        v8::Local<v8::Value> v8IndexedValue;
+        if (!v8Array->Get(dictionary.v8Context(), v8::Uint32::New(dictionary.isolate(), i)).ToLocal(&v8IndexedValue))
+            return false;
         Vector<String> indexedValue = toImplArray<String>(v8IndexedValue, i, dictionary.isolate(), exceptionState);
         if (exceptionState.hadException())
             return false;
