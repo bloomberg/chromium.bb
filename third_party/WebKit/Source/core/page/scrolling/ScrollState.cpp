@@ -12,24 +12,26 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<ScrollState> ScrollState::create(double deltaX, double deltaY,
     double deltaGranularity, double velocityX, double velocityY, bool inInertialPhase,
-    bool isEnding, bool fromUserInput, bool shouldPropagate,
+    bool isBeginning, bool isEnding, bool fromUserInput, bool shouldPropagate,
     bool deltaConsumedForScrollSequence)
 {
     return adoptRefWillBeNoop(new ScrollState(
         deltaX, deltaY, deltaGranularity, velocityX, velocityY,
-        inInertialPhase, isEnding, fromUserInput, shouldPropagate,
+        inInertialPhase, isBeginning, isEnding, fromUserInput, shouldPropagate,
         deltaConsumedForScrollSequence));
 }
 
 ScrollState::ScrollState(double deltaX, double deltaY, double deltaGranularity,
-    double velocityX, double velocityY, bool inInertialPhase, bool isEnding,
-    bool fromUserInput, bool shouldPropagate, bool deltaConsumedForScrollSequence)
+    double velocityX, double velocityY, bool inInertialPhase, bool isBeginning,
+    bool isEnding, bool fromUserInput, bool shouldPropagate,
+    bool deltaConsumedForScrollSequence)
     : m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_deltaGranularity(deltaGranularity)
     , m_velocityX(velocityX)
     , m_velocityY(velocityY)
     , m_inInertialPhase(inInertialPhase)
+    , m_isBeginning(isBeginning)
     , m_isEnding(isEnding)
     , m_fromUserInput(fromUserInput)
     , m_shouldPropagate(shouldPropagate)
@@ -48,6 +50,12 @@ void ScrollState::consumeDelta(double x, double y, ExceptionState& exceptionStat
         return;
     }
     consumeDeltaNative(x, y);
+}
+
+void ScrollState::distributeToScrollChainDescendant()
+{
+    if (!m_scrollChain.isEmpty())
+        m_scrollChain.takeFirst()->distributeScroll(*this);
 }
 
 void ScrollState::consumeDeltaNative(double x, double y)

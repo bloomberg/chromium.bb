@@ -74,6 +74,7 @@ class PlatformWheelEvent;
 class LayoutObject;
 class ScrollableArea;
 class Scrollbar;
+class ScrollState;
 class TextEvent;
 class VisibleSelection;
 class WheelEvent;
@@ -245,7 +246,7 @@ private:
 
     // Scrolls the elements of the DOM tree. Returns true if a node was scrolled.
     // False if we reached the root and couldn't scroll anything.
-    // direction - The direction to scroll in. If this is a logicl direction, it will be
+    // direction - The direction to scroll in. If this is a logical direction, it will be
     //             converted to the physical direction based on a node's writing mode.
     // granularity - The units that the  scroll delta parameter is in.
     // startNode - The node to start bubbling the scroll from. If a node can't scroll,
@@ -255,6 +256,8 @@ private:
     // delta - The delta to scroll by, in the units of the granularity parameter. (e.g. pixels, lines, pages, etc.)
     // absolutePoint - For wheel scrolls - the location, in absolute coordinates, where the event occured.
     bool scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
+
+    void customizedScroll(const Node& startNode, ScrollState&);
 
     TouchAction intersectTouchAction(const TouchAction, const TouchAction);
     TouchAction computeEffectiveTouchAction(const Node&);
@@ -389,6 +392,10 @@ private:
 
     RefPtrWillBeMember<Node> m_scrollGestureHandlingNode;
     bool m_lastGestureScrollOverWidget;
+    // The most recent element to scroll natively during this scroll
+    // sequence. Null if no native element has scrolled this scroll
+    // sequence, or if the most recent element to scroll used scroll
+    // customization.
     RefPtrWillBeMember<Node> m_previousGestureScrolledNode;
     RefPtrWillBeMember<Scrollbar> m_scrollbarHandlingScrollGesture;
 
@@ -399,6 +406,15 @@ private:
     Timer<EventHandler> m_activeIntervalTimer;
     double m_lastShowPressTimestamp;
     RefPtrWillBeMember<Element> m_lastDeferredTapElement;
+
+    // Only used with the ScrollCustomization runtime enabled feature.
+    WillBeHeapDeque<RefPtrWillBeMember<Element>> m_currentScrollChain;
+    // True iff some of the delta has been consumed for the current
+    // scroll sequence in this frame, or any child frames. Only used
+    // with ScrollCustomization. If some delta has been consumed, a
+    // scroll which shouldn't propagate can't cause any element to
+    // scroll other than the |m_previousGestureScrolledNode|.
+    bool m_deltaConsumedForScrollSequence;
 };
 
 } // namespace blink

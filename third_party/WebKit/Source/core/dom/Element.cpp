@@ -112,6 +112,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/SpatialNavigation.h"
+#include "core/page/scrolling/ScrollState.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
@@ -480,6 +481,78 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
     else
         layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
+
+void Element::distributeScroll(ScrollState& scrollState)
+{
+    ASSERT(RuntimeEnabledFeatures::scrollCustomizationEnabled());
+    if (scrollState.fullyConsumed())
+        return;
+
+    scrollState.distributeToScrollChainDescendant();
+
+    // If the scroll doesn't propagate, and we're currently scrolling
+    // an element other than this one, prevent the scroll from
+    // propagating to this element.
+    if (!scrollState.shouldPropagate()
+        && scrollState.deltaConsumedForScrollSequence()
+        && scrollState.currentNativeScrollingElement() != this) {
+        return;
+    }
+
+    const double deltaX = scrollState.deltaX();
+    const double deltaY = scrollState.deltaY();
+
+    applyScroll(scrollState);
+
+    if (deltaX != scrollState.deltaX() || deltaY != scrollState.deltaY())
+        scrollState.setCurrentNativeScrollingElement(this);
+}
+
+void Element::applyScroll(ScrollState& scrollState)
+{
+    ASSERT(RuntimeEnabledFeatures::scrollCustomizationEnabled());
+    if (scrollState.fullyConsumed())
+        return;
+
+    const double deltaX = scrollState.deltaX();
+    const double deltaY = scrollState.deltaY();
+    bool scrolled = false;
+
+    // Handle the documentElement separately, as it scrolls the FrameView.
+    if (this == document().documentElement()) {
+        FloatSize delta(deltaX, deltaY);
+        if (document().frame()->applyScrollDelta(delta, scrollState.isBeginning())) {
+            scrolled = true;
+            scrollState.consumeDeltaNative(scrollState.deltaX(), scrollState.deltaY());
+        }
+    } else {
+        if (!layoutObject())
+            return;
+        LayoutBox* curBox = layoutObject()->enclosingBox();
+        // FIXME: Native scrollers should only consume the scroll they
+        // apply. See crbug.com/457765.
+        if (deltaX && curBox->scroll(ScrollLeft, ScrollByPrecisePixel, deltaX)) {
+            scrollState.consumeDeltaNative(scrollState.deltaX(), 0);
+            scrolled = true;
+        }
+
+        if (deltaY && curBox->scroll(ScrollUp, ScrollByPrecisePixel, deltaY)) {
+            scrollState.consumeDeltaNative(0, scrollState.deltaY());
+            scrolled = true;
+        }
+    }
+
+    if (!scrolled)
+        return;
+
+    // We need to setCurrentNativeScrollingElement in both the
+    // distributeScroll and applyScroll default implementations so
+    // that if JS overrides one of these methods, but not the
+    // other, this bookkeeping remains accurate.
+    scrollState.setCurrentNativeScrollingElement(this);
+    if (scrollState.fromUserInput())
+        document().frame()->view()->setWasScrolledByUser(true);
+};
 
 static float localZoomForRenderer(LayoutObject& renderer)
 {

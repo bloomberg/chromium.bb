@@ -18,13 +18,18 @@ class ScrollState final : public RefCountedWillBeGarbageCollected<ScrollState>, 
 public:
     static PassRefPtrWillBeRawPtr<ScrollState> create(
         double deltaX, double deltaY, double deltaGranularity, double velocityX,
-        double velocityY, bool inInertialPhase, bool isEnding, bool fromUserInput = false,
-        bool shouldPropagate = true, bool deltaConsumedForScrollSequence = false);
+        double velocityY, bool inInertialPhase,
+        bool isBeginning = false, bool isEnding = false,
+        bool fromUserInput = false, bool shouldPropagate = true,
+        bool deltaConsumedForScrollSequence = false);
 
     // Web exposed methods.
 
     // Reduce deltas by x, y.
     void consumeDelta(double x, double y, ExceptionState&);
+    // Pops the first element off of |m_scrollChain| and calls
+    // |distributeScroll| on it.
+    void distributeToScrollChainDescendant();
     // Positive when scrolling left.
     double deltaX() const { return m_deltaX; }
     // Positive when scrolling up.
@@ -37,6 +42,8 @@ public:
     double velocityY() const { return m_velocityY; }
     // True for events dispatched after the users's gesture has finished.
     bool inInertialPhase() const { return m_inInertialPhase; }
+    // True if this is the first event for this scroll.
+    bool isBeginning() const { return m_isBeginning; }
     // True if this is the last event for this scroll.
     bool isEnding() const { return m_isEnding; }
     // True if this scroll is the direct result of user input.
@@ -46,6 +53,11 @@ public:
 
     // Non web exposed methods.
     void consumeDeltaNative(double x, double y);
+
+    void setScrollChain(WillBeHeapDeque<RefPtrWillBeMember<Element>> scrollChain)
+    {
+        m_scrollChain = scrollChain;
+    }
 
     void setCurrentNativeScrollingElement(Element* element)
     {
@@ -57,31 +69,30 @@ public:
         return m_currentNativeScrollingElement.get();
     }
 
-    void setDeltaConsumedForScrollSequence(bool deltaConsumedForScrollSequence)
-    {
-        m_deltaConsumedForScrollSequence = deltaConsumedForScrollSequence;
-    }
-
     bool deltaConsumedForScrollSequence() const
     {
         return m_deltaConsumedForScrollSequence;
     }
 
+    // Scroll begin and end must propagate to all nodes to ensure
+    // their state is updated.
     bool fullyConsumed() const
     {
-        return !m_deltaX && !m_deltaY && !m_isEnding;
+        return !m_deltaX && !m_deltaY && !m_isEnding && !m_isBeginning;
     }
 
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_currentNativeScrollingElement);
+        visitor->trace(m_scrollChain);
     };
 
 private:
     ScrollState();
     ScrollState(double deltaX, double deltaY, double deltaGranularity,
-        double velocityX, double velocityY, bool inInertialPhase, bool isEnding,
-        bool fromUserInput, bool shouldPropagate, bool deltaConsumedForScrollSequence);
+        double velocityX, double velocityY, bool inInertialPhase, bool isBeginning,
+        bool isEnding, bool fromUserInput, bool shouldPropagate,
+        bool deltaConsumedForScrollSequence);
 
     double m_deltaX;
     double m_deltaY;
@@ -89,14 +100,18 @@ private:
     double m_velocityX;
     double m_velocityY;
     bool m_inInertialPhase;
+    bool m_isBeginning;
     bool m_isEnding;
 
     bool m_fromUserInput;
     bool m_shouldPropagate;
     // The last native element to respond to a scroll, or null if none exists.
     RefPtrWillBeMember<Element> m_currentNativeScrollingElement;
-    // Whether the scroll sequence has had any delta consumed.
+    // Whether the scroll sequence has had any delta consumed, in the
+    // current frame, or any child frames.
     bool m_deltaConsumedForScrollSequence;
+
+    WillBeHeapDeque<RefPtrWillBeMember<Element>> m_scrollChain;
 };
 
 } // namespace blink

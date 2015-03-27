@@ -61,6 +61,7 @@ class Locale;
 class MutableStylePropertySet;
 class PropertySetCSSStyleDeclaration;
 class PseudoElement;
+class ScrollState;
 class ScrollToOptions;
 class ShadowRoot;
 class StylePropertySet;
@@ -166,6 +167,9 @@ public:
 
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
+
+    void distributeScroll(ScrollState&);
+    void applyScroll(ScrollState&);
 
     int offsetLeft();
     int offsetTop();

@@ -11,6 +11,7 @@
                 optional double velocityX = 0,
                 optional double velocityY = 0,
                 optional boolean inInertialPhase = false,
+                optional boolean isBeginning = false,
                 optional boolean isEnding = false),
     WillBeGarbageCollected,
     RuntimeEnabled=ScrollCustomization
@@ -22,6 +23,7 @@
     readonly attribute double velocityY;
     readonly attribute boolean inInertialPhase;
     readonly attribute boolean isEnding;
+    readonly attribute boolean isBeginning;
     readonly attribute boolean fromUserInput;
     readonly attribute boolean shouldPropagate;
 

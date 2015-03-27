@@ -162,6 +162,10 @@ namespace blink {
         bool shouldReuseDefaultView(const KURL&) const;
         void removeSpellingMarkersUnderWords(const Vector<String>& words);
 
+        // FIXME: once scroll customization is enabled everywhere
+        // (crbug.com/416862), this should take a ScrollState object.
+        bool applyScrollDelta(const FloatSize& delta, bool isScrollBegin);
+
 #if ENABLE(OILPAN)
         void registerPluginElement(HTMLPlugInElement*);
         void unregisterPluginElement(HTMLPlugInElement*);

@@ -80,6 +80,7 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
+#include "core/page/scrolling/ScrollState.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
@@ -196,6 +197,28 @@ static inline bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& 
     return targetNode->isShadowRoot() && isHTMLInputElement(*toShadowRoot(targetNode)->host());
 }
 
+void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
+    WillBeHeapDeque<RefPtrWillBeMember<Element>>& scrollChain)
+{
+    scrollChain.clear();
+
+    ASSERT(startNode.layoutObject());
+    LayoutBox* curBox = startNode.layoutObject()->enclosingBox();
+
+    // Scrolling propagates along the containing block chain.
+    while (curBox && !curBox->isLayoutView()) {
+        Node* curNode = curBox->node();
+        // FIXME: this should reject more elements, as part of crbug.com/410974.
+        if (curNode && curNode->isElementNode())
+            scrollChain.prepend(toElement(curNode));
+        curBox = curBox->containingBlock();
+    }
+
+    // FIXME: we should exclude the document in some cases, as part
+    // of crbug.com/410974.
+    scrollChain.prepend(frame.document()->documentElement());
+}
+
 EventHandler::EventHandler(LocalFrame* frame)
     : m_frame(frame)
     , m_mousePressed(false)
@@ -223,6 +246,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_longTapShouldInvokeContextMenu(false)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
+    , m_deltaConsumedForScrollSequence(false)
 {
 }
 
@@ -251,6 +275,7 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_scrollGestureHandlingNode);
     visitor->trace(m_previousGestureScrolledNode);
     visitor->trace(m_lastDeferredTapElement);
+    visitor->trace(m_currentScrollChain);
 #endif
 }
 
@@ -940,11 +965,23 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
     return false;
 }
 
+void EventHandler::customizedScroll(const Node& startNode, ScrollState& scrollState)
+{
+    if (scrollState.fullyConsumed())
+        return;
+
+    if (m_currentScrollChain.isEmpty())
+        recomputeScrollChain(*m_frame, startNode, m_currentScrollChain);
+    scrollState.setScrollChain(m_currentScrollChain);
+    scrollState.distributeToScrollChainDescendant();
+}
+
 bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity granularity, Node* startingNode)
 {
     // The layout needs to be up to date to determine if we can scroll. We may be
     // here because of an onLoad event, in which case the final layout hasn't been performed yet.
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (scroll(direction, granularity, startingNode))
         return true;
     LocalFrame* frame = m_frame;
@@ -2081,6 +2118,8 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
+
+    // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (wheelEvent->railsMode() != Event::RailsModeVertical
         && scroll(ScrollRight, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition))
         wheelEvent->setDefaultHandled();
@@ -2474,11 +2513,18 @@ bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& ge
 
 bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEvent) {
     RefPtrWillBeRawPtr<Node> node = m_scrollGestureHandlingNode;
-    clearGestureScrollNodes();
 
-    if (node)
+    if (node) {
         passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
+        if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
+            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
+                0, 0, 0, 0, 0, gestureEvent.inertial(), /* isBeginning */
+                false, /* isEnding */ true, /* fromUserInput */ true);
+            customizedScroll(*node.get(), *scrollState);
+        }
+    }
 
+    clearGestureScrollNodes();
     return false;
 }
 
@@ -2497,22 +2543,26 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
     while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->layoutObject())
         m_scrollGestureHandlingNode = m_scrollGestureHandlingNode->parentOrShadowHostNode();
 
-    if (!m_scrollGestureHandlingNode)
-        return false;
+    if (!m_scrollGestureHandlingNode) {
+        if (RuntimeEnabledFeatures::scrollCustomizationEnabled())
+            m_scrollGestureHandlingNode = m_frame->document()->documentElement();
+        else
+            return false;
+    }
+    ASSERT(m_scrollGestureHandlingNode);
 
     passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->layoutObject());
-
-    if (m_frame->isMainFrame())
-        m_frame->host()->topControls().scrollBegin();
-
+    if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
+        m_currentScrollChain.clear();
+        RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
+            0, 0, 0, 0, 0, /* inInertialPhase */ false, /* isBeginning */
+            true, /* isEnding */ false, /* fromUserInput */ true);
+        customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
+    } else {
+        if (m_frame->isMainFrame())
+            m_frame->host()->topControls().scrollBegin();
+    }
     return true;
-}
-
-static bool scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
-{
-    bool scrolledHorizontal = view.scroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
-    bool scrolledVertical = view.scroll(ScrollUp, ScrollByPrecisePixel, delta.height());
-    return scrolledHorizontal || scrolledVertical;
 }
 
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
@@ -2535,68 +2585,78 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
         // Try to send the event to the correct view.
         if (passScrollGestureEventToWidget(gestureEvent, renderer)) {
-            if (gestureEvent.preventPropagation())
+            if (gestureEvent.preventPropagation()
+                && !RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
+                // This is an optimization which doesn't apply with
+                // scroll customization enabled.
                 m_previousGestureScrolledNode = m_scrollGestureHandlingNode;
-
+            }
+            // FIXME: we should allow simultaneous scrolling of nested
+            // iframes along perpendicular axes. See crbug.com/466991.
+            m_deltaConsumedForScrollSequence = true;
             return true;
         }
 
+        bool scrolled = false;
+        if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
+            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
+                gestureEvent.deltaX(), gestureEvent.deltaY(),
+                0, gestureEvent.velocityX(), gestureEvent.velocityY(),
+                gestureEvent.inertial(), /* isBeginning */
+                false, /* isEnding */ false, /* fromUserInput */ true,
+                !gestureEvent.preventPropagation(), m_deltaConsumedForScrollSequence);
+            if (m_previousGestureScrolledNode) {
+                // The ScrollState needs to know what the current
+                // native scrolling element is, so that for an
+                // inertial scroll that shouldn't propagate, only the
+                // currently scrolling element responds.
+                ASSERT(m_previousGestureScrolledNode->isElementNode());
+                scrollState->setCurrentNativeScrollingElement(toElement(m_previousGestureScrolledNode.get()));
+            }
+            customizedScroll(*node, *scrollState);
+            m_previousGestureScrolledNode = scrollState->currentNativeScrollingElement();
+            m_deltaConsumedForScrollSequence = scrollState->deltaConsumedForScrollSequence();
+            scrolled = scrollState->deltaX() != gestureEvent.deltaX()
+                || scrollState->deltaY() != gestureEvent.deltaY();
+        } else {
+            if (gestureEvent.preventPropagation())
+                stopNode = m_previousGestureScrolledNode.get();
 
-        if (gestureEvent.preventPropagation())
-            stopNode = m_previousGestureScrolledNode.get();
+            // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
+            ScrollGranularity granularity = ScrollByPrecisePixel;
+            bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
+            if (!gestureEvent.preventPropagation())
+                stopNode = nullptr;
+            bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
+            scrolled = horizontalScroll || verticalScroll;
 
-        // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
-        ScrollGranularity granularity = ScrollByPrecisePixel;
-        bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
-        bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
-
-        if (gestureEvent.preventPropagation())
-            m_previousGestureScrolledNode = stopNode;
-
-        if (horizontalScroll || verticalScroll) {
+            if (gestureEvent.preventPropagation())
+                m_previousGestureScrolledNode = stopNode;
+        }
+        if (scrolled) {
             setFrameWasScrolledByUser();
             return true;
         }
     }
 
-    // If this is main frame, allow top controls to scroll first and update
-    // delta accordingly
-    bool consumed = false;
-    if (m_frame->isMainFrame() && shouldTopControlsConsumeScroll(delta)) {
-        FloatSize excessDelta = m_frame->host()->topControls().scrollBy(delta);
-        consumed = excessDelta != delta;
-        delta = excessDelta;
-
-        if (delta.isZero())
-            return consumed;
-    }
+    if (RuntimeEnabledFeatures::scrollCustomizationEnabled())
+        return false;
 
     // Try to scroll the frame view.
-    FrameView* view = m_frame->view();
-    if (!view)
-        return consumed;
-
-    if (scrollAreaOnBothAxes(delta, *view)) {
+    if (m_frame->applyScrollDelta(delta, false)) {
         setFrameWasScrolledByUser();
         return true;
     }
 
-    // If this is the main frame and it didn't scroll, propagate up to the pinch viewport.
-    if (!m_frame->isMainFrame())
-        return consumed;
-
-    if (scrollAreaOnBothAxes(delta, m_frame->host()->pinchViewport())) {
-        setFrameWasScrolledByUser();
-        return true;
-    }
-
-    return consumed;
+    return false;
 }
 
 void EventHandler::clearGestureScrollNodes()
 {
     m_scrollGestureHandlingNode = nullptr;
     m_previousGestureScrolledNode = nullptr;
+    m_deltaConsumedForScrollSequence = false;
+    m_currentScrollChain.clear();
 }
 
 bool EventHandler::isScrollbarHandlingGestures() const
@@ -3423,6 +3483,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
         return;
 
     ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
+    // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (scroll(direction, ScrollByPage)) {
         event->setDefaultHandled();
         return;
@@ -3938,19 +3999,5 @@ unsigned EventHandler::accessKeyModifiers()
     return PlatformEvent::AltKey;
 #endif
 }
-
-bool EventHandler::shouldTopControlsConsumeScroll(FloatSize scrollDelta) const
-{
-    // Always consume if it's in the direction to show the top controls.
-    if (scrollDelta.height() > 0)
-        return true;
-
-    // If it's in the direction to hide the top controls, only consume when the frame can also scroll.
-    if (m_frame->view()->scrollPosition().y() < m_frame->view()->maximumScrollPosition().y())
-        return true;
-
-    return false;
-}
-
 
 } // namespace blink

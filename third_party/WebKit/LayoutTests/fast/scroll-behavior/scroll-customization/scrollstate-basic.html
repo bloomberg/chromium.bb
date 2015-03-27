@@ -23,6 +23,7 @@ test(function() {
   assert_equals(scrollState.velocityX, 0);
   assert_equals(scrollState.velocityY, 0);
   assert_equals(scrollState.inInertialPhase, false);
+  assert_equals(scrollState.isBeginning, false);
   assert_equals(scrollState.isEnding, false);
   assert_equals(scrollState.fromUserInput, false);
   assert_equals(scrollState.shouldPropagate, true);
@@ -35,15 +36,17 @@ test(function() {
   var velocityX = 23.7;
   var velocityY = 2.5;
   var inInertialPhase = true;
+  var isBeginning = true;
   var isEnding = true;
   var scrollState = new ScrollState(deltaX, deltaY, deltaGranularity, velocityX,
-                                  velocityY, inInertialPhase, isEnding);
+                                  velocityY, inInertialPhase, isBeginning, isEnding);
   assert_equals(scrollState.deltaX, deltaX);
   assert_equals(scrollState.deltaY, deltaY);
   assert_equals(scrollState.deltaGranularity, deltaGranularity);
   assert_equals(scrollState.velocityX, velocityX);
   assert_equals(scrollState.velocityY, velocityY);
   assert_equals(scrollState.inInertialPhase, inInertialPhase);
+  assert_equals(scrollState.isBeginning, isBeginning);
   assert_equals(scrollState.isEnding, isEnding);
   assert_equals(scrollState.fromUserInput, false);
   assert_equals(scrollState.shouldPropagate, true);

@@ -63,4 +63,17 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingElement)
     EXPECT_EQ(element, scrollState->currentNativeScrollingElement());
 }
 
+TEST_F(ScrollStateTest, FullyConsumed)
+{
+    RefPtrWillBeRawPtr<ScrollState> scrollStateBegin =
+        ScrollState::create(0, 0, 0, 0, 0, false, true, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollState =
+        ScrollState::create(0, 0, 0, 0, 0, false, false, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollStateEnd =
+        ScrollState::create(0, 0, 0, 0, 0, false, false, true);
+    EXPECT_FALSE(scrollStateBegin->fullyConsumed());
+    EXPECT_TRUE(scrollState->fullyConsumed());
+    EXPECT_FALSE(scrollStateEnd->fullyConsumed());
+}
+
 }

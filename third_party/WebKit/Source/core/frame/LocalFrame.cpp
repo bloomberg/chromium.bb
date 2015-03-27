@@ -728,6 +728,55 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
     spellChecker().removeSpellingMarkersUnderWords(words);
 }
 
+static bool scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
+{
+    bool scrolledHorizontal = view.scroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
+    bool scrolledVertical = view.scroll(ScrollUp, ScrollByPrecisePixel, delta.height());
+    return scrolledHorizontal || scrolledVertical;
+}
+
+// Returns true if a scroll occurred.
+bool LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
+{
+    if (isScrollBegin)
+        host()->topControls().scrollBegin();
+
+    if (!view() || delta.isZero())
+        return false;
+
+    // If this is main frame, allow top controls to scroll first.
+    bool giveToTopControls = false;
+    if (isMainFrame()) {
+        // Always give the delta to the top controls if the scroll is in
+        // the direction to show the top controls. If it's in the
+        // direction to hide the top controls, only give the delta to the
+        // top controls when the frame can scroll.
+        giveToTopControls = delta.height() > 0
+            || view()->scrollPosition().y() < view()->maximumScrollPosition().y();
+    }
+
+    FloatSize remainingDelta = delta;
+    if (giveToTopControls)
+        remainingDelta = host()->topControls().scrollBy(remainingDelta);
+
+    if (remainingDelta.isZero())
+        return true;
+
+    bool consumed = remainingDelta != delta;
+
+    if (scrollAreaOnBothAxes(remainingDelta, *view()))
+        return true;
+
+    // If this is the main frame and it didn't scroll, propagate up to the pinch viewport.
+    if (!isMainFrame())
+        return consumed;
+
+    if (scrollAreaOnBothAxes(remainingDelta, page()->frameHost().pinchViewport()))
+        return true;
+
+    return consumed;
+}
+
 #if ENABLE(OILPAN)
 void LocalFrame::registerPluginElement(HTMLPlugInElement* plugin)
 {
