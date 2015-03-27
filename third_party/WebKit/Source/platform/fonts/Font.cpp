@@ -942,4 +942,14 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
     return offset;
 }
 
+bool Font::loadingCustomFonts() const
+{
+    return m_fontFallbackList && m_fontFallbackList->loadingCustomFonts();
+}
+
+bool Font::isFallbackValid() const
+{
+    return !m_fontFallbackList || m_fontFallbackList->isValid();
+}
+
 } // namespace blink

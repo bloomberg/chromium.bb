@@ -64,6 +64,7 @@ public:
     static PassRefPtr<FontFallbackList> create() { return adoptRef(new FontFallbackList()); }
 
     ~FontFallbackList() { releaseFontData(); }
+    bool isValid() const;
     void invalidate(PassRefPtrWillBeRawPtr<FontSelector>);
 
     bool isFixedPitch(const FontDescription& fontDescription) const

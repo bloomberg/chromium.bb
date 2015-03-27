@@ -117,4 +117,15 @@ void ElementAnimations::clearBaseLayoutStyle()
     m_baseLayoutStyle = nullptr;
 }
 
+bool ElementAnimations::isAnimationStyleChange() const
+{
+    // TODO(rune@opera.com): The FontFaceCache version number may be increased without forcing
+    // a style recalc (see crbug.com/471079). LayoutStyle objects created with different cache
+    // versions will not be considered equal as Font::operator== will compare versions, hence
+    // LayoutStyle::operator== will return false. We avoid using baseLayoutStyle (the check for
+    // isFallbackValid()) in that case to avoid triggering the LayoutStyle comparison ASSERT
+    // in updateBaseLayoutStyle.
+    return m_animationStyleChange && (!m_baseLayoutStyle || m_baseLayoutStyle->font().isFallbackValid());
+}
+
 } // namespace blink

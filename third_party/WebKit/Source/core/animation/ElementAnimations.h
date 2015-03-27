@@ -82,7 +82,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    bool isAnimationStyleChange() const { return m_animationStyleChange; }
+    bool isAnimationStyleChange() const;
 
     AnimationStack m_defaultStack;
     CSSAnimations m_cssAnimations;

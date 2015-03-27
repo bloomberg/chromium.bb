@@ -244,4 +244,12 @@ const FontData* FontFallbackList::fontDataAt(const FontDescription& fontDescript
     return result.get();
 }
 
+bool FontFallbackList::isValid() const
+{
+    if (!m_fontSelector)
+        return m_fontSelectorVersion == 0;
+
+    return m_fontSelector->version() == m_fontSelectorVersion;
+}
+
 } // namespace blink
