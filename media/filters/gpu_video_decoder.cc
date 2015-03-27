@@ -97,7 +97,8 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   vda_->Reset();
 }
 
-static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
+static bool IsCodedSizeSupported(const gfx::Size& coded_size,
+                                 VideoCodecProfile profile) {
 #if defined(OS_WIN)
   // Windows Media Foundation H.264 decoding does not support decoding videos
   // with any dimension smaller than 48 pixels:
@@ -118,7 +119,9 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
   bool hw_large_video_support =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode) ||
-      ((cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 55);
+      ((cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 55 &&
+       // TODO(posciak, henryhsu): Remove this once we can query in runtime.
+       profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX);
   bool os_large_video_support = true;
 #if defined(OS_WIN)
   os_large_video_support = false;
@@ -166,7 +169,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!IsCodedSizeSupported(config.coded_size())) {
+  if (!IsCodedSizeSupported(config.coded_size(), config.profile())) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
