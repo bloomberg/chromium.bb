@@ -11,9 +11,6 @@ namespace blink {
 // the embedder, to talk to the ServiceWorker object from embedder.
 class WebServiceWorkerProxy {
 public:
-    // FIXME: Remove after Chromium-side patch lands to not call this.
-    virtual bool isReady() { return true; }
-
     // Notifies the proxy that the service worker state changed. The new state
     // should be accessible via WebServiceWorker.state().
     virtual void dispatchStateChangeEvent() = 0;
