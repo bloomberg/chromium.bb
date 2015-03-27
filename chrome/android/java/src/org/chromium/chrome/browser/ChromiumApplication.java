@@ -178,9 +178,7 @@ public abstract class ChromiumApplication extends ContentApplication {
             public Integer call() {
                 try {
                     // Kick off checking for a child account with an empty callback.
-                    ChildAccountService childAccountService =
-                            ChildAccountService.getInstance(context);
-                    childAccountService.checkHasChildAccount(
+                    ChildAccountService.getInstance(context).checkHasChildAccount(
                             new ChildAccountService.HasChildAccountCallback() {
                                 @Override
                                 public void onChildAccountChecked(boolean hasChildAccount) {
@@ -189,8 +187,6 @@ public abstract class ChromiumApplication extends ContentApplication {
                     BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
                             .startBrowserProcessesSync(false);
                     if (initGoogleServicesManager) initializeGoogleServicesManager();
-                    // Wait until ChildAccountManager finishes its check.
-                    childAccountService.waitUntilFinished();
                     return LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION;
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Unable to load native library.", e);

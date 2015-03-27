@@ -195,6 +195,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
         getActivity().setTitle(fullName);
 
+        ChildAccountService.getInstance(getActivity()).waitUntilFinished();
+
         configureSignOutSwitch();
         configureAddAccountPreference(fullName);
         configureGoIncognitoPreferences(fullName);

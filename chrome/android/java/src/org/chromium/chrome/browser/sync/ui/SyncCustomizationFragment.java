@@ -170,6 +170,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
                 displaySpinnerDialog();
             }
         }
+        ChildAccountService.getInstance(getActivity()).waitUntilFinished();
 
         mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
         boolean isSyncEnabled = mAndroidSyncSettings.isSyncEnabled();
