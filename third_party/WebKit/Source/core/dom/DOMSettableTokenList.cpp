@@ -64,7 +64,7 @@ void DOMSettableTokenList::add(const Vector<String>& tokens, ExceptionState& exc
 
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (m_tokens.isNull())
-            m_tokens.set(AtomicString(tokens[i]), false);
+            m_tokens.set(AtomicString(tokens[i]), SpaceSplitString::ShouldNotFoldCase);
         else
             m_tokens.add(AtomicString(tokens[i]));
     }
@@ -74,7 +74,7 @@ void DOMSettableTokenList::addInternal(const AtomicString& token)
 {
     DOMTokenList::addInternal(token);
     if (m_tokens.isNull())
-        m_tokens.set(token, false);
+        m_tokens.set(token, SpaceSplitString::ShouldNotFoldCase);
     else
         m_tokens.add(token);
 }
@@ -95,7 +95,7 @@ void DOMSettableTokenList::removeInternal(const AtomicString& token)
 void DOMSettableTokenList::setValue(const AtomicString& value)
 {
     m_value = value;
-    m_tokens.set(value, false);
+    m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
     if (m_observer)
         m_observer->valueChanged();
 }

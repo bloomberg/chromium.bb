@@ -67,7 +67,7 @@ const SpaceSplitString& ClassList::classNames() const
     ASSERT(m_element->hasClass());
     if (m_element->document().inQuirksMode()) {
         if (!m_classNamesForQuirksMode)
-            m_classNamesForQuirksMode = adoptPtr(new SpaceSplitString(value(), false));
+            m_classNamesForQuirksMode = adoptPtr(new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
         return *m_classNamesForQuirksMode.get();
     }
     return m_element->classNames();

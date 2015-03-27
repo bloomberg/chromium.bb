@@ -34,8 +34,7 @@ namespace blink {
 
 SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage)
 {
-    const bool shouldFoldCase = false;
-    SpaceSplitString policyTokens(AtomicString(policy), shouldFoldCase);
+    SpaceSplitString policyTokens(AtomicString(policy), SpaceSplitString::ShouldNotFoldCase);
     return parseSandboxPolicy(policyTokens, invalidTokensErrorMessage);
 }
 

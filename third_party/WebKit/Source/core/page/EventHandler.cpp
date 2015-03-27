@@ -1680,7 +1680,7 @@ static bool findDropZone(Node* target, DataTransfer* dataTransfer)
 
         dropZoneStr = dropZoneStr.lower();
 
-        SpaceSplitString keywords(dropZoneStr, false);
+        SpaceSplitString keywords(dropZoneStr, SpaceSplitString::ShouldNotFoldCase);
         if (keywords.isNull())
             continue;
 

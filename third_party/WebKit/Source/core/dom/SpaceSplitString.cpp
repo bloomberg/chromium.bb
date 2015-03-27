@@ -151,7 +151,7 @@ SpaceSplitString::DataMap& SpaceSplitString::sharedDataMap()
     return map;
 }
 
-void SpaceSplitString::set(const AtomicString& inputString, bool shouldFoldCase)
+void SpaceSplitString::set(const AtomicString& inputString, CaseFolding caseFolding)
 {
     if (inputString.isNull()) {
         clear();
@@ -159,7 +159,7 @@ void SpaceSplitString::set(const AtomicString& inputString, bool shouldFoldCase)
     }
 
     String string(inputString.string());
-    if (shouldFoldCase && hasNonASCIIOrUpper(string))
+    if (caseFolding == ShouldFoldCase && hasNonASCIIOrUpper(string))
         string = string.foldCase();
 
     m_data = Data::create(AtomicString(string));

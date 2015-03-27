@@ -1191,9 +1191,8 @@ bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* el
     if (name == HTMLNames::classAttr) {
         const AtomicString& newClassString = newValue;
         if (classStringHasClassName(newClassString)) {
-            const bool shouldFoldCase = document().inQuirksMode();
             const SpaceSplitString& oldClasses = elementData()->classNames();
-            const SpaceSplitString newClasses(newClassString, shouldFoldCase);
+            const SpaceSplitString newClasses(newClassString, document().inQuirksMode() ? SpaceSplitString::ShouldFoldCase : SpaceSplitString::ShouldNotFoldCase);
             if (featureSet.checkSelectorsForClassChange(oldClasses, newClasses))
                 return true;
         } else {

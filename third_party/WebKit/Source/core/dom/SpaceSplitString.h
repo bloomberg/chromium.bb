@@ -29,12 +29,13 @@ namespace blink {
 
 class SpaceSplitString {
 public:
+    enum CaseFolding { ShouldNotFoldCase, ShouldFoldCase };
     SpaceSplitString() { }
-    SpaceSplitString(const AtomicString& string, bool shouldFoldCase) { set(string, shouldFoldCase); }
+    SpaceSplitString(const AtomicString& string, CaseFolding caseFolding) { set(string, caseFolding); }
 
     bool operator!=(const SpaceSplitString& other) const { return m_data != other.m_data; }
 
-    void set(const AtomicString&, bool shouldFoldCase);
+    void set(const AtomicString&, CaseFolding);
     void clear() { m_data.clear(); }
 
     bool contains(const AtomicString& string) const { return m_data && m_data->contains(string); }
