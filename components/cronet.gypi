@@ -288,7 +288,7 @@
             '../base/base.gyp:base',
             '../net/net.gyp:net',
             '../net/net.gyp:net_test_support',
-            '../net/net.gyp:quic_tools',
+            '../net/net.gyp:simple_quic_tools',
             '../url/url.gyp:url_lib',
             '../base/base.gyp:base_i18n',
             '../third_party/icu/icu.gyp:icui18n',

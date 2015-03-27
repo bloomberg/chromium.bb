@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_SERVER_PACKET_WRITER_H_
-#define NET_QUIC_QUIC_SERVER_PACKET_WRITER_H_
+#ifndef NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_PACKET_WRITER_H_
+#define NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_PACKET_WRITER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
@@ -18,19 +18,21 @@ class QuicBlockedWriterInterface;
 class UDPServerSocket;
 struct WriteResult;
 
+namespace tools {
+
 // Chrome specific packet writer which uses a UDPServerSocket for writing
 // data.
-class QuicServerPacketWriter : public QuicPacketWriter {
+class QuicSimpleServerPacketWriter : public QuicPacketWriter {
  public:
   typedef base::Callback<void(WriteResult)> WriteCallback;
 
-  QuicServerPacketWriter(UDPServerSocket* socket,
+  QuicSimpleServerPacketWriter(UDPServerSocket* socket,
                          QuicBlockedWriterInterface* blocked_writer);
-  ~QuicServerPacketWriter() override;
+  ~QuicSimpleServerPacketWriter() override;
 
   // Use this method to write packets rather than WritePacket:
-  // QuicServerPacketWriter requires a callback to exist for every write, which
-  // will be called once the write completes.
+  // QuicSimpleServerPacketWriter requires a callback to exist for every
+  // write, which will be called once the write completes.
   virtual WriteResult WritePacketWithCallback(
       const char* buffer,
       size_t buf_len,
@@ -64,11 +66,12 @@ class QuicServerPacketWriter : public QuicPacketWriter {
   // Whether a write is currently in flight.
   bool write_blocked_;
 
-  base::WeakPtrFactory<QuicServerPacketWriter> weak_factory_;
+  base::WeakPtrFactory<QuicSimpleServerPacketWriter> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicServerPacketWriter);
+  DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerPacketWriter);
 };
 
+}  // namespace tools
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SERVER_PACKET_WRITER_H_
+#endif  // NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_PACKET_WRITER_H_

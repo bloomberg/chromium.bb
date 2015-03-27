@@ -5,8 +5,8 @@
 // A toy server, which listens on a specified address for QUIC traffic and
 // handles incoming responses.
 
-#ifndef NET_QUIC_QUIC_SERVER_H_
-#define NET_QUIC_QUIC_SERVER_H_
+#ifndef NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_H_
+#define NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,23 +20,22 @@
 
 namespace net {
 
-
-namespace test {
-class QuicServerPeer;
-}  // namespace test
-
-namespace tools {
-class QuicDispatcher;
-}  // namespace tools
-
 class UDPServerSocket;
 
-class QuicServer {
- public:
-  QuicServer(const QuicConfig& config,
-             const QuicVersionVector& supported_versions);
+namespace tools {
 
-  virtual ~QuicServer();
+class QuicDispatcher;
+
+namespace test {
+class QuicSimpleServerPeer;
+}  // namespace test
+
+class QuicSimpleServer {
+ public:
+  QuicSimpleServer(const QuicConfig& config,
+                   const QuicVersionVector& supported_versions);
+
+  virtual ~QuicSimpleServer();
 
   // Start listening on the specified address. Returns an error code.
   int Listen(const IPEndPoint& address);
@@ -62,16 +61,16 @@ class QuicServer {
     crypto_config_.SetProofSource(source);
   }
 
-  tools::QuicDispatcher* dispatcher() { return dispatcher_.get(); }
+  QuicDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
-  friend class net::test::QuicServerPeer;
+  friend class test::QuicSimpleServerPeer;
 
   // Initialize the internal state of the server.
   void Initialize();
 
   // Accepts data from the framer and demuxes clients to sessions.
-  scoped_ptr<tools::QuicDispatcher> dispatcher_;
+  scoped_ptr<QuicDispatcher> dispatcher_;
 
   // Used by the helper_ to time alarms.
   QuicClock clock_;
@@ -114,11 +113,12 @@ class QuicServer {
   // The log to use for the socket.
   NetLog net_log_;
 
-  base::WeakPtrFactory<QuicServer> weak_factory_;
+  base::WeakPtrFactory<QuicSimpleServer> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicServer);
+  DISALLOW_COPY_AND_ASSIGN(QuicSimpleServer);
 };
 
+}  // namespace tools
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SERVER_H_
+#endif  // NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_H_

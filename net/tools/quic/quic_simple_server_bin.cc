@@ -15,8 +15,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_server.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_simple_server.h"
 
 // The port the quic server will listen on.
 int32 FLAGS_port = 6121;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
   if (line->HasSwitch("quic_in_memory_cache_dir")) {
     net::tools::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
-        line->GetSwitchValueNative("quic_in_memory_cache_dir"));
+        line->GetSwitchValueASCII("quic_in_memory_cache_dir"));
   }
 
   if (line->HasSwitch("port")) {
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
   net::QuicConfig config;
-  net::QuicServer server(config, net::QuicSupportedVersions());
+  net::tools::QuicSimpleServer server(config, net::QuicSupportedVersions());
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {

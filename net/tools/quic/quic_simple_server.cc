@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_server.h"
+#include "net/tools/quic/quic_simple_server.h"
 
 #include <string.h>
 
@@ -12,15 +12,14 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_reader.h"
-#include "net/quic/quic_per_connection_packet_writer.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_server_packet_writer.h"
 #include "net/tools/quic/quic_dispatcher.h"
+#include "net/tools/quic/quic_simple_per_connection_packet_writer.h"
+#include "net/tools/quic/quic_simple_server_packet_writer.h"
 #include "net/udp/udp_server_socket.h"
 
 namespace net {
-
-using tools::QuicDispatcher;
+namespace tools {
 
 namespace {
 
@@ -30,10 +29,10 @@ const char kSourceAddressTokenSecret[] = "secret";
 // the limit.
 const int kReadBufferSize = 2 * kMaxPacketSize;
 
-// A packet writer factory which wraps a shared QuicServerPacketWriter
+// A packet writer factory which wraps a shared QuicSimpleServerPacketWriter
 // inside of a QuicPerConnectionPacketWriter. Instead of checking that
 // the shared_writer is the expected writer, this could instead cast
-// from QuicPacketWriter to QuicServerPacketWriter.
+// from QuicPacketWriter to QuicSimpleServerPacketWriter.
 class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
  public:
   ~CustomPacketWriterFactory() override {}
@@ -48,21 +47,21 @@ class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
       LOG(DFATAL) << "writer mismatch";
       return nullptr;
     }
-    return new QuicPerConnectionPacketWriter(shared_writer_, connection);
+    return new QuicSimplePerConnectionPacketWriter(shared_writer_, connection);
   }
 
-  void set_shared_writer(QuicServerPacketWriter* shared_writer) {
+  void set_shared_writer(QuicSimpleServerPacketWriter* shared_writer) {
     shared_writer_ = shared_writer;
   }
 
  private:
-  QuicServerPacketWriter* shared_writer_;  // Not owned.
+  QuicSimpleServerPacketWriter* shared_writer_;  // Not owned.
 };
 
 } // namespace
 
-QuicServer::QuicServer(const QuicConfig& config,
-                       const QuicVersionVector& supported_versions)
+QuicSimpleServer::QuicSimpleServer(const QuicConfig& config,
+                                   const QuicVersionVector& supported_versions)
     : helper_(base::MessageLoop::current()->message_loop_proxy().get(),
               &clock_,
               QuicRandom::GetInstance()),
@@ -76,7 +75,7 @@ QuicServer::QuicServer(const QuicConfig& config,
   Initialize();
 }
 
-void QuicServer::Initialize() {
+void QuicSimpleServer::Initialize() {
 #if MMSG_MORE
   use_recvmmsg_ = true;
 #endif
@@ -102,10 +101,10 @@ void QuicServer::Initialize() {
           QuicCryptoServerConfig::ConfigOptions()));
 }
 
-QuicServer::~QuicServer() {
+QuicSimpleServer::~QuicSimpleServer() {
 }
 
-int QuicServer::Listen(const IPEndPoint& address) {
+int QuicSimpleServer::Listen(const IPEndPoint& address) {
   scoped_ptr<UDPServerSocket> socket(
       new UDPServerSocket(&net_log_, NetLog::Source()));
 
@@ -118,8 +117,8 @@ int QuicServer::Listen(const IPEndPoint& address) {
   }
 
   // These send and receive buffer sizes are sized for a single connection,
-  // because the default usage of QuicServer is as a test server with one or
-  // two clients.  Adjust higher for use with many clients.
+  // because the default usage of QuicSimpleServer is as a test server with
+  // one or two clients.  Adjust higher for use with many clients.
   rc = socket->SetReceiveBufferSize(
       static_cast<int32>(kDefaultSocketReceiveBuffer));
   if (rc < 0) {
@@ -150,7 +149,7 @@ int QuicServer::Listen(const IPEndPoint& address) {
                          supported_versions_,
                          factory,
                          &helper_));
-  QuicServerPacketWriter* writer = new QuicServerPacketWriter(
+  QuicSimpleServerPacketWriter* writer = new QuicSimpleServerPacketWriter(
       socket_.get(),
       dispatcher_.get());
   factory->set_shared_writer(writer);
@@ -161,7 +160,7 @@ int QuicServer::Listen(const IPEndPoint& address) {
   return OK;
 }
 
-void QuicServer::Shutdown() {
+void QuicSimpleServer::Shutdown() {
   // Before we shut down the epoll server, give all active sessions a chance to
   // notify clients that they're closing.
   dispatcher_->Shutdown();
@@ -170,7 +169,7 @@ void QuicServer::Shutdown() {
   socket_.reset();
 }
 
-void QuicServer::StartReading() {
+void QuicSimpleServer::StartReading() {
   if (read_pending_) {
     return;
   }
@@ -180,7 +179,7 @@ void QuicServer::StartReading() {
       read_buffer_.get(),
       read_buffer_->size(),
       &client_address_,
-      base::Bind(&QuicServer::OnReadComplete, base::Unretained(this)));
+      base::Bind(&QuicSimpleServer::OnReadComplete, base::Unretained(this)));
 
   if (result == ERR_IO_PENDING) {
     synchronous_read_count_ = 0;
@@ -193,7 +192,7 @@ void QuicServer::StartReading() {
     // recursion and 2) avoid blocking the thread for too long.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&QuicServer::OnReadComplete,
+        base::Bind(&QuicSimpleServer::OnReadComplete,
                    weak_factory_.GetWeakPtr(),
                    result));
   } else {
@@ -201,13 +200,13 @@ void QuicServer::StartReading() {
   }
 }
 
-void QuicServer::OnReadComplete(int result) {
+void QuicSimpleServer::OnReadComplete(int result) {
   read_pending_ = false;
   if (result == 0)
     result = ERR_CONNECTION_CLOSED;
 
   if (result < 0) {
-    LOG(ERROR) << "QuicServer read failed: " << ErrorToString(result);
+    LOG(ERROR) << "QuicSimpleServer read failed: " << ErrorToString(result);
     Shutdown();
     return;
   }
@@ -218,4 +217,5 @@ void QuicServer::OnReadComplete(int result) {
   StartReading();
 }
 
+}  // namespace tools
 }  // namespace net

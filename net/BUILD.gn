@@ -1139,7 +1139,7 @@ if (is_linux) {
     ]
   }
 
-  source_set("quic_base") {
+  source_set("epoll_quic_tools") {
     sources = [
       "tools/quic/quic_client.cc",
       "tools/quic/quic_client.h",
@@ -1170,14 +1170,29 @@ if (is_linux) {
     ]
   }
 
-  executable("quic_client") {
+  executable("epoll_quic_client") {
     sources = [
       "tools/quic/quic_client_bin.cc",
     ]
     deps = [
       ":balsa",
       ":epoll_server",
-      ":quic_base",
+      ":epoll_quic_tools",
+      ":net",
+      ":simple_quic_tools",
+      "//base",
+      "//third_party/boringssl",
+    ]
+  }
+
+  executable("epoll_quic_server") {
+    sources = [
+      "tools/quic/quic_server_bin.cc",
+    ]
+    deps = [
+      ":balsa",
+      ":epoll_server",
+      ":epoll_quic_tools",
       ":net",
       ":simple_quic_tools",
       "//base",
@@ -1221,25 +1236,6 @@ if (is_android || is_linux) {
   }
 }
 
-# This source_set is defined even if no build targets need it,
-# such as when all dependees are not buildable for the chosen OS.
-source_set("quic_tools") {
-  sources = [
-    "quic/quic_per_connection_packet_writer.cc",
-    "quic/quic_per_connection_packet_writer.h",
-    "quic/quic_server.cc",
-    "quic/quic_server.h",
-    "quic/quic_server_packet_writer.cc",
-    "quic/quic_server_packet_writer.h",
-  ]
-  deps = [
-    ":net",
-    ":simple_quic_tools",
-    "//base",
-    "//base/third_party/dynamic_annotations",
-    "//url",
-  ]
-}
 source_set("simple_quic_tools") {
   sources = [
     "tools/quic/quic_client_session.cc",
@@ -1254,6 +1250,12 @@ source_set("simple_quic_tools") {
     "tools/quic/quic_server_session.h",
     "tools/quic/quic_simple_client.cc",
     "tools/quic/quic_simple_client.h",
+    "tools/quic/quic_simple_per_connection_packet_writer.cc",
+    "tools/quic/quic_simple_per_connection_packet_writer.h",
+    "tools/quic/quic_simple_server.cc",
+    "tools/quic/quic_simple_server.h",
+    "tools/quic/quic_simple_server_packet_writer.cc",
+    "tools/quic/quic_simple_server_packet_writer.h",
     "tools/quic/quic_spdy_client_stream.cc",
     "tools/quic/quic_spdy_client_stream.h",
     "tools/quic/quic_spdy_server_stream.cc",
@@ -1271,8 +1273,7 @@ source_set("simple_quic_tools") {
   ]
 }
 
-executable("simple_quic_client") {
-  testonly = true
+executable("quic_client") {
   sources = [
     "tools/quic/quic_simple_client_bin.cc",
   ]
@@ -1281,6 +1282,18 @@ executable("simple_quic_client") {
     ":simple_quic_tools",
     "//base",
     "//url",
+  ]
+}
+
+executable("quic_server") {
+  sources = [
+    "tools/quic/quic_simple_server_bin.cc",
+  ]
+  deps = [
+    ":net",
+    ":simple_quic_tools",
+    "//base",
+    "//third_party/boringssl",
   ]
 }
 
@@ -1299,7 +1312,7 @@ if (!is_android && !is_win && !is_mac) {
       ":extras",
       ":http_server",
       ":net",
-      ":quic_tools",
+      ":epoll_quic_tools",
       ":simple_quic_tools",
       ":test_support",
       "//base",
@@ -1325,7 +1338,7 @@ if (!is_android && !is_win && !is_mac) {
         ":balsa",
         ":epoll_server",
         ":flip_in_mem_edsm_server_base",
-        ":quic_base",
+        ":epoll_quic_tools",
       ]
     }
 
@@ -1584,21 +1597,6 @@ if (!is_android && !is_win && !is_mac) {
     }
   }
 }  # !is_android && !is_win && !is_mac
-
-if (!is_android && !is_win) {
-  executable("quic_server") {
-    sources = [
-      "quic/quic_server_bin.cc",
-    ]
-    deps = [
-      ":net",
-      ":quic_tools",
-      ":simple_quic_tools",
-      "//base",
-      "//third_party/boringssl",
-    ]
-  }
-}
 
 executable("net_perftests") {
   testonly = true

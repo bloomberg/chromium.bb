@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_per_connection_packet_writer.h"
+#include "net/tools/quic/quic_simple_per_connection_packet_writer.h"
 
-#include "net/quic/quic_server_packet_writer.h"
+#include "net/tools/quic/quic_simple_server_packet_writer.h"
 
 namespace net {
+namespace tools {
 
-QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
-    QuicServerPacketWriter* shared_writer,
+QuicSimplePerConnectionPacketWriter::QuicSimplePerConnectionPacketWriter(
+    QuicSimpleServerPacketWriter* shared_writer,
     QuicConnection* connection)
     : shared_writer_(shared_writer),
       connection_(connection),
       weak_factory_(this){
 }
 
-QuicPerConnectionPacketWriter::~QuicPerConnectionPacketWriter() {
+QuicSimplePerConnectionPacketWriter::~QuicSimplePerConnectionPacketWriter() {
 }
 
-QuicPacketWriter* QuicPerConnectionPacketWriter::shared_writer() const {
+QuicPacketWriter* QuicSimplePerConnectionPacketWriter::shared_writer() const {
   return shared_writer_;
 }
 
-WriteResult QuicPerConnectionPacketWriter::WritePacket(
+WriteResult QuicSimplePerConnectionPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
@@ -33,26 +34,27 @@ WriteResult QuicPerConnectionPacketWriter::WritePacket(
       buf_len,
       self_address,
       peer_address,
-      base::Bind(&QuicPerConnectionPacketWriter::OnWriteComplete,
+      base::Bind(&QuicSimplePerConnectionPacketWriter::OnWriteComplete,
                  weak_factory_.GetWeakPtr()));
 }
 
-bool QuicPerConnectionPacketWriter::IsWriteBlockedDataBuffered() const {
+bool QuicSimplePerConnectionPacketWriter::IsWriteBlockedDataBuffered() const {
   return shared_writer_->IsWriteBlockedDataBuffered();
 }
 
-bool QuicPerConnectionPacketWriter::IsWriteBlocked() const {
+bool QuicSimplePerConnectionPacketWriter::IsWriteBlocked() const {
   return shared_writer_->IsWriteBlocked();
 }
 
-void QuicPerConnectionPacketWriter::SetWritable() {
+void QuicSimplePerConnectionPacketWriter::SetWritable() {
   shared_writer_->SetWritable();
 }
 
-void QuicPerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
+void QuicSimplePerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
   if (result.status == WRITE_STATUS_ERROR) {
     connection_->OnWriteError(result.error_code);
   }
 }
 
+}  // namespace tools
 }  // namespace net

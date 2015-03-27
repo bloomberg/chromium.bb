@@ -114,7 +114,6 @@
         'net_derived_sources',
         'net_extras',
         'net_test_support',
-        'quic_tools',
         'simple_quic_tools',
       ],
       'sources': [
@@ -123,9 +122,9 @@
       'conditions': [
         ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'dependencies': [
+            'epoll_quic_tools',
             'epoll_server',
             'flip_in_mem_edsm_server_base',
-            'quic_base',
           ],
           'sources': [
             '<@(net_linux_test_sources)',
@@ -773,27 +772,6 @@
       'msvs_disabled_warnings': [4267, ],
     },
     {
-      # This is a temporary target which will be merged into 'net' once the
-      # dependency on balsa is eliminated and the classes are actually used.
-      'target_name': 'quic_tools',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../url/url.gyp:url_lib',
-        'net',
-        'simple_quic_tools',
-      ],
-      'sources': [
-        'quic/quic_per_connection_packet_writer.cc',
-        'quic/quic_per_connection_packet_writer.h',
-        'quic/quic_server.cc',
-        'quic/quic_server.h',
-        'quic/quic_server_packet_writer.cc',
-        'quic/quic_server_packet_writer.h',
-      ],
-    },
-    {
       'target_name': 'simple_quic_tools',
       'type': 'static_library',
       'dependencies': [
@@ -815,6 +793,12 @@
         'tools/quic/quic_server_session.h',
         'tools/quic/quic_simple_client.cc',
         'tools/quic/quic_simple_client.h',
+        'tools/quic/quic_simple_per_connection_packet_writer.cc',
+        'tools/quic/quic_simple_per_connection_packet_writer.h',
+        'tools/quic/quic_simple_server.cc',
+        'tools/quic/quic_simple_server.h',
+        'tools/quic/quic_simple_server_packet_writer.cc',
+        'tools/quic/quic_simple_server_packet_writer.h',
         'tools/quic/quic_spdy_client_stream.cc',
         'tools/quic/quic_spdy_client_stream.h',
         'tools/quic/quic_spdy_server_stream.cc',
@@ -1087,7 +1071,7 @@
           ],
         },
         {
-          'target_name': 'simple_quic_client',
+          'target_name': 'quic_client',
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
@@ -1097,6 +1081,18 @@
           ],
           'sources': [
             'tools/quic/quic_simple_client_bin.cc',
+          ],
+        },
+        {
+          'target_name': 'quic_server',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+            'simple_quic_tools',
+          ],
+          'sources': [
+            'tools/quic/quic_simple_server_bin.cc',
           ],
         },
         {
@@ -1227,7 +1223,7 @@
           ],
         },
         {
-          'target_name': 'quic_base',
+          'target_name': 'epoll_quic_tools',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
@@ -1257,33 +1253,29 @@
           ],
         },
         {
-          'target_name': 'quic_client',
+          'target_name': 'epoll_quic_client',
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
             'net',
-            'quic_base',
+            'epoll_quic_tools',
             'simple_quic_tools',
           ],
           'sources': [
             'tools/quic/quic_client_bin.cc',
           ],
         },
-      ]
-    }],
-    ['os_posix == 1 and OS != "ios" and OS != "android"', {
-      'targets': [
         {
-          'target_name': 'quic_server',
+          'target_name': 'epoll_quic_server',
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
             'net',
-            'quic_tools',
+            'epoll_quic_tools',
             'simple_quic_tools',
           ],
           'sources': [
-            'quic/quic_server_bin.cc',
+            'tools/quic/quic_server_bin.cc',
           ],
         },
       ]

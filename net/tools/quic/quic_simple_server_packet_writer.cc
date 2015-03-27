@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_server_packet_writer.h"
+#include "net/tools/quic/quic_simple_server_packet_writer.h"
 
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -13,8 +13,9 @@
 #include "net/udp/udp_server_socket.h"
 
 namespace net {
+namespace tools {
 
-QuicServerPacketWriter::QuicServerPacketWriter(
+QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
     UDPServerSocket* socket,
     QuicBlockedWriterInterface* blocked_writer)
     : socket_(socket),
@@ -23,10 +24,10 @@ QuicServerPacketWriter::QuicServerPacketWriter(
       weak_factory_(this) {
 }
 
-QuicServerPacketWriter::~QuicServerPacketWriter() {
+QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() {
 }
 
-WriteResult QuicServerPacketWriter::WritePacketWithCallback(
+WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
@@ -41,7 +42,7 @@ WriteResult QuicServerPacketWriter::WritePacketWithCallback(
   return result;
 }
 
-void QuicServerPacketWriter::OnWriteComplete(int rv) {
+void QuicSimpleServerPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   write_blocked_ = false;
   WriteResult result(rv < 0 ? WRITE_STATUS_ERROR : WRITE_STATUS_OK, rv);
@@ -49,20 +50,20 @@ void QuicServerPacketWriter::OnWriteComplete(int rv) {
   blocked_writer_->OnCanWrite();
 }
 
-bool QuicServerPacketWriter::IsWriteBlockedDataBuffered() const {
+bool QuicSimpleServerPacketWriter::IsWriteBlockedDataBuffered() const {
   // UDPServerSocket::SendTo buffers the data until the Write is permitted.
   return true;
 }
 
-bool QuicServerPacketWriter::IsWriteBlocked() const {
+bool QuicSimpleServerPacketWriter::IsWriteBlocked() const {
   return write_blocked_;
 }
 
-void QuicServerPacketWriter::SetWritable() {
+void QuicSimpleServerPacketWriter::SetWritable() {
   write_blocked_ = false;
 }
 
-WriteResult QuicServerPacketWriter::WritePacket(
+WriteResult QuicSimpleServerPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
@@ -73,11 +74,13 @@ WriteResult QuicServerPacketWriter::WritePacket(
   DCHECK(!callback_.is_null());
   int rv;
   if (buf_len <= static_cast<size_t>(std::numeric_limits<int>::max())) {
-    rv = socket_->SendTo(buf.get(),
-                         static_cast<int>(buf_len),
-                         peer_address,
-                         base::Bind(&QuicServerPacketWriter::OnWriteComplete,
-                                    weak_factory_.GetWeakPtr()));
+    rv = socket_->SendTo(
+        buf.get(),
+        static_cast<int>(buf_len),
+        peer_address,
+        base::Bind(
+            &QuicSimpleServerPacketWriter::OnWriteComplete,
+            weak_factory_.GetWeakPtr()));
   } else {
     rv = ERR_MSG_TOO_BIG;
   }
@@ -94,4 +97,5 @@ WriteResult QuicServerPacketWriter::WritePacket(
   return WriteResult(status, rv);
 }
 
+}  // namespace tools
 }  // namespace net
