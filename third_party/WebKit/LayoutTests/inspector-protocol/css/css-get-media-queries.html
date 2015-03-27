@@ -14,12 +14,27 @@ function test()
 
     function onMediaQueries(response)
     {
+        function compareValue(value1, value2)
+        {
+            return value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
+        }
+
         function mediaComparator(media1, media2)
         {
-            if (media1.text < media2.text)
-                return -1;
-            if (media1.text > media2.text)
-                return 1;
+            if (media1.text != media2.text)
+                return compareValue(media1.text, media2.text);
+            var hasSource1 = !!(media1.parentStyleSheetId && media1.range);
+            var hasSource2 = !!(media2.parentStyleSheetId && media2.range);
+            if (hasSource1 != hasSource2)
+                return compareValue(hasSource1, hasSource2);
+            if (media1.range.startLine != media2.range.startLine)
+                return compareValue(media1.range.startLine, media2.range.startLine);
+            if (media1.range.startColumn != media2.range.startColumn)
+                return compareValue(media1.range.startColumn, media2.range.startColumn);
+            if (media1.range.endLine != media2.range.endLine)
+                return compareValue(media1.range.endLine, media2.range.endLine);
+            if (media1.range.endColumn != media2.range.endColumn)
+                return compareValue(media1.range.endColumn, media2.range.endColumn);
             return 0;
         }
         response.medias.sort(mediaComparator);
