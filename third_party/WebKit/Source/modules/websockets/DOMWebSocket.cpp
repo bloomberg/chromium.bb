@@ -45,6 +45,7 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -282,6 +283,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     m_url = KURL(KURL(), url);
 
     if (executionContext()->securityContext().insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && m_url.protocol() == "ws") {
+        UseCounter::count(executionContext(), UseCounter::UpgradeInsecureRequestsUpgradedRequest);
         m_url.setProtocol("wss");
         if (m_url.port() == 80)
             m_url.setPort(443);
