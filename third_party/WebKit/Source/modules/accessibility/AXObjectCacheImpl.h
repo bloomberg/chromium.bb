@@ -155,7 +155,7 @@ public:
 
     void postNotification(LayoutObject*, AXNotification, bool postToElement);
     void postNotification(Node*, AXNotification, bool postToElement);
-    void postNotification(AXObject*, Document*, AXNotification, bool postToElement);
+    void postNotification(AXObject*, AXNotification, bool postToElement);
 
 protected:
     void postPlatformNotification(AXObject*, AXNotification);

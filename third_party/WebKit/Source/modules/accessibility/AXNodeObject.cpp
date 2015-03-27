@@ -1848,7 +1848,7 @@ void AXNodeObject::childrenChanged()
     if (!node() && !layoutObject())
         return;
 
-    axObjectCache()->postNotification(this, document(), AXObjectCacheImpl::AXChildrenChanged, true);
+    axObjectCache()->postNotification(this, AXObjectCacheImpl::AXChildrenChanged, true);
 
     // Go up the accessibility parent chain, but only if the element already exists. This method is
     // called during layout, minimal work should be done.
@@ -1862,12 +1862,12 @@ void AXNodeObject::childrenChanged()
 
         // If this element supports ARIA live regions, then notify the AT of changes.
         if (parent->isLiveRegion())
-            axObjectCache()->postNotification(parent, parent->document(), AXObjectCacheImpl::AXLiveRegionChanged, true);
+            axObjectCache()->postNotification(parent, AXObjectCacheImpl::AXLiveRegionChanged, true);
 
         // If this element is an ARIA text box or content editable, post a "value changed" notification on it
         // so that it behaves just like a native input element or textarea.
         if (isNonNativeTextControl())
-            axObjectCache()->postNotification(parent, parent->document(), AXObjectCacheImpl::AXValueChanged, true);
+            axObjectCache()->postNotification(parent, AXObjectCacheImpl::AXValueChanged, true);
     }
 }
 
@@ -1877,7 +1877,7 @@ void AXNodeObject::selectionChanged()
     // focused (to handle form controls, ARIA text boxes and contentEditable),
     // or the web area if the selection is just in the document somewhere.
     if (isFocused() || isWebArea())
-        axObjectCache()->postNotification(this, document(), AXObjectCacheImpl::AXSelectedTextChanged, true);
+        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXSelectedTextChanged, true);
     else
         AXObject::selectionChanged(); // Calls selectionChanged on parent.
 }

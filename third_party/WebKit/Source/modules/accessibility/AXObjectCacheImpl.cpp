@@ -647,7 +647,7 @@ void AXObjectCacheImpl::textChanged(AXObject* obj)
 
     bool parentAlreadyExists = obj->parentObjectIfExists();
     obj->textChanged();
-    postNotification(obj, obj->document(), AXObjectCacheImpl::AXTextChanged, true);
+    postNotification(obj, AXObjectCacheImpl::AXTextChanged, true);
     if (parentAlreadyExists)
         obj->notifyIfIgnoredValueChanged();
 }
@@ -719,19 +719,7 @@ void AXObjectCacheImpl::postNotification(LayoutObject* layoutObject, AXNotificat
         return;
 
     m_modificationCount++;
-
-    // Get an accessibility object that already exists. One should not be created here
-    // because a layout update may be in progress and creating an AX object can re-trigger a layout
-    RefPtr<AXObject> object = get(layoutObject);
-    while (!object && layoutObject) {
-        layoutObject = layoutObject->parent();
-        object = get(layoutObject);
-    }
-
-    if (!layoutObject)
-        return;
-
-    postNotification(object.get(), &layoutObject->document(), notification, postToElement);
+    postNotification(get(layoutObject), notification, postToElement);
 }
 
 void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification, bool postToElement)
@@ -740,30 +728,15 @@ void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification
         return;
 
     m_modificationCount++;
-
-    // Get an accessibility object that already exists. One should not be created here
-    // because a layout update may be in progress and creating an AX object can re-trigger a layout
-    RefPtr<AXObject> object = get(node);
-    while (!object && node) {
-        node = node->parentNode();
-        object = get(node);
-    }
-
-    if (!node)
-        return;
-
-    postNotification(object.get(), &node->document(), notification, postToElement);
+    postNotification(get(node), notification, postToElement);
 }
 
-void AXObjectCacheImpl::postNotification(AXObject* object, Document* document, AXNotification notification, bool postToElement)
+void AXObjectCacheImpl::postNotification(AXObject* object, AXNotification notification, bool postToElement)
 {
     m_modificationCount++;
 
     if (object && !postToElement)
         object = object->observableObject();
-
-    if (!object && document)
-        object = get(document->layoutView());
 
     if (!object)
         return;
@@ -815,7 +788,7 @@ void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* layoutObject)
     // allows an AX notification to be sent when a page has its first layout, rather than when the
     // document first loads.
     if (AXObject* obj = getOrCreate(layoutObject))
-        postNotification(obj, obj->document(), AXLayoutComplete, true);
+        postNotification(obj, AXLayoutComplete, true);
 }
 
 void AXObjectCacheImpl::handleAriaExpandedChange(Node* node)
@@ -1045,12 +1018,12 @@ void AXObjectCacheImpl::handleUpdateActiveMenuOption(LayoutMenuList* menuList, i
 
 void AXObjectCacheImpl::handleLoadComplete(Document* document)
 {
-    postNotification(getOrCreate(document), document, AXObjectCache::AXLoadComplete, true);
+    postNotification(getOrCreate(document), AXObjectCache::AXLoadComplete, true);
 }
 
 void AXObjectCacheImpl::handleLayoutComplete(Document* document)
 {
-    postNotification(getOrCreate(document), document, AXObjectCache::AXLayoutComplete, true);
+    postNotification(getOrCreate(document), AXObjectCache::AXLayoutComplete, true);
 }
 
 void AXObjectCacheImpl::handleScrolledToAnchor(const Node* anchorNode)

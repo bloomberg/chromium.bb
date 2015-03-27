@@ -1770,7 +1770,7 @@ void AXLayoutObject::handleAriaExpandedChanged()
 
     // Post that the row count changed.
     if (containerParent)
-        axObjectCache()->postNotification(containerParent, document(), AXObjectCacheImpl::AXRowCountChanged, true);
+        axObjectCache()->postNotification(containerParent, AXObjectCacheImpl::AXRowCountChanged, true);
 
     // Post that the specific row either collapsed or expanded.
     AccessibilityExpanded expanded = isExpanded();
@@ -1782,7 +1782,7 @@ void AXLayoutObject::handleAriaExpandedChanged()
         if (expanded == ExpandedCollapsed)
             notification = AXObjectCacheImpl::AXRowCollapsed;
 
-        axObjectCache()->postNotification(this, document(), notification, true);
+        axObjectCache()->postNotification(this, notification, true);
     }
 }
 
