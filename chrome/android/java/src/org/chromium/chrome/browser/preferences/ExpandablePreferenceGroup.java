@@ -25,8 +25,11 @@ import java.util.Locale;
  * A preference category that accepts clicks for toggling on/off.
  */
 public class ExpandablePreferenceGroup extends PreferenceGroup {
-    private Drawable mDrawable = null;
-    private ImageView mImageView = null;
+    private Drawable mDrawable;
+    private ImageView mImageView;
+
+    // Whether the PreferenceGroup is in an expanded or collapsed state.
+    private boolean mExpanded;
 
     public ExpandablePreferenceGroup(Context context, AttributeSet attrs) {
         super(context, attrs, android.R.attr.preferenceStyle);
@@ -63,6 +66,10 @@ public class ExpandablePreferenceGroup extends PreferenceGroup {
         setTitle(spannable);
     }
 
+    public void setExpanded(boolean expanded) {
+        mExpanded = expanded;
+    }
+
     @Override
     public void setIcon(Drawable drawable) {
         mDrawable = drawable;
@@ -74,5 +81,11 @@ public class ExpandablePreferenceGroup extends PreferenceGroup {
         super.onBindView(view);
         mImageView = (ImageView) view.findViewById(R.id.expando);
         if (mDrawable != null) mImageView.setImageDrawable(mDrawable);
+
+        // For accessibility, read out the whole title and whether the group is collapsed/expanded.
+        String description = getTitle() + getContext().getResources().getString(mExpanded
+                ? R.string.accessibility_expanded_group
+                : R.string.accessibility_collapsed_group);
+        view.setContentDescription(description);
     }
 }

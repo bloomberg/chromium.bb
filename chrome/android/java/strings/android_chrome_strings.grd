@@ -474,6 +474,12 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_WEBSITE_SETTINGS_EXCEPTIONS_GROUP_HEADING" desc="The heading for a list of websites that have been granted an exception to access a particular permission, e.g. to access the user's location.">
         Exceptions
       </message>
+      <message name="IDS_ACCESSIBILITY_EXPANDED_GROUP" desc="The accessibility text to read when the selected widget is expanded.">
+        Expanded - click to collapse.
+      </message>
+      <message name="IDS_ACCESSIBILITY_COLLAPSED_GROUP" desc="The accessibility text to read when the selected widget is collapsed.">
+        Collapsed - click to expand.
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCK_ALL" desc="Summary text explaining that a permission is blocked for all sites.">
         Block all sites
       </message>
