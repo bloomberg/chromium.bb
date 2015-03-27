@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -233,7 +234,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
      * Verifies that starting the PendingIntent stored as the notification's delete intent will
      * close the notification.
      */
-    @MediumTest
+    /* @MediumTest */
+    @FlakyTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationDeleteIntentClosesNotification() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
