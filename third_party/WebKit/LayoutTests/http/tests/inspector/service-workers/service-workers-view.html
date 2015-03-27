@@ -10,6 +10,8 @@ function test()
     var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
     var scope1 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
     var scope2 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope2/";
+    var expectedTitle1 = "Scope: /inspector/service-workers/resources/scope1/";
+    var expectedTitle2 = "Scope: /inspector/service-workers/resources/scope2/";
     var registrationIDs = {};
 
     InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
@@ -27,8 +29,12 @@ function test()
         InspectorTest.addResult(swView.root.querySelector(".service-workers-origin-title").innerText);
         var registrationElements = swView.root.querySelectorAll(".service-workers-registration");
         for (var i = 0; i < registrationElements.length; i++) {
-            InspectorTest.addResult(registrationElements[i].querySelector(".service-workers-registration-title").innerText);
-            var versionElements = registrationElements[i].querySelectorAll(".service-workers-version-row");
+            var registrationElement = registrationElements[i];
+            var title = registrationElement.querySelector(".service-workers-registration-title").innerText;
+            if (title.indexOf(expectedTitle1) == -1 && title.indexOf(expectedTitle2) == -1)
+                continue;
+            InspectorTest.addResult(title);
+            var versionElements = registrationElement.querySelectorAll(".service-workers-version-row");
             for (var j = 0; j < versionElements.length; j++)
                 InspectorTest.addResult(versionElements[j].innerText);
         }
