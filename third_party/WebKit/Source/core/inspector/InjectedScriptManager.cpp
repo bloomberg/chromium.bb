@@ -68,6 +68,9 @@ InjectedScriptManager::~InjectedScriptManager()
 DEFINE_TRACE(InjectedScriptManager)
 {
     visitor->trace(m_injectedScriptHost);
+#if ENABLE(OILPAN)
+    visitor->trace(m_callbackDataSet);
+#endif
 }
 
 void InjectedScriptManager::disconnect()
@@ -185,5 +188,26 @@ InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedSc
     return result;
 }
 
-} // namespace blink
+PassOwnPtrWillBeRawPtr<InjectedScriptManager::CallbackData> InjectedScriptManager::CallbackData::create(InjectedScriptManager* manager)
+{
+    return adoptPtrWillBeNoop(new CallbackData(manager));
+}
 
+InjectedScriptManager::CallbackData::CallbackData(InjectedScriptManager* manager)
+    : injectedScriptManager(manager)
+{
+}
+
+void InjectedScriptManager::CallbackData::dispose()
+{
+    // Promptly release the ScopedPersistent<>.
+    handle.clear();
+}
+
+DEFINE_TRACE(InjectedScriptManager::CallbackData)
+{
+    visitor->trace(host);
+    visitor->trace(injectedScriptManager);
+}
+
+} // namespace blink

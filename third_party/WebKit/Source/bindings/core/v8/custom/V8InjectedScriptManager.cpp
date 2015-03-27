@@ -49,9 +49,8 @@ namespace blink {
 
 InjectedScriptManager::CallbackData* InjectedScriptManager::createCallbackData(InjectedScriptManager* injectedScriptManager)
 {
-    OwnPtr<InjectedScriptManager::CallbackData> callbackData = adoptPtr(new InjectedScriptManager::CallbackData());
+    OwnPtrWillBeRawPtr<InjectedScriptManager::CallbackData> callbackData = InjectedScriptManager::CallbackData::create(injectedScriptManager);
     InjectedScriptManager::CallbackData* callbackDataPtr = callbackData.get();
-    callbackData->injectedScriptManager = injectedScriptManager;
     m_callbackDataSet.add(callbackData.release());
     return callbackDataPtr;
 }
@@ -59,6 +58,7 @@ InjectedScriptManager::CallbackData* InjectedScriptManager::createCallbackData(I
 void InjectedScriptManager::removeCallbackData(InjectedScriptManager::CallbackData* callbackData)
 {
     ASSERT(m_callbackDataSet.contains(callbackData));
+    callbackData->dispose();
     m_callbackDataSet.remove(callbackData);
 }
 
