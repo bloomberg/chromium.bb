@@ -2681,6 +2681,12 @@ recompute_selection(struct terminal *terminal)
 }
 
 static void
+terminal_minimize(struct terminal *terminal)
+{
+	window_set_minimized(terminal->window);
+}
+
+static void
 menu_func(void *data, struct input *input, int index)
 {
 	struct window *window = data;
@@ -2698,6 +2704,9 @@ menu_func(void *data, struct input *input, int index)
 	case 2:
 		terminal_paste(terminal, input);
 		break;
+	case 3:
+		terminal_minimize(terminal);
+		break;
 	}
 }
 
@@ -2706,7 +2715,7 @@ show_menu(struct terminal *terminal, struct input *input, uint32_t time)
 {
 	int32_t x, y;
 	static const char *entries[] = {
-		"Open Terminal", "Copy", "Paste"
+		"Open Terminal", "Copy", "Paste", "Minimize"
 	};
 
 	input_get_position(input, &x, &y);
