@@ -133,6 +133,7 @@ source_set("sync_core") {
     "internal_api/attachments/fake_attachment_uploader.cc",
     "internal_api/attachments/in_memory_attachment_store.cc",
     "internal_api/attachments/on_disk_attachment_store.cc",
+    "internal_api/attachments/task_queue.cc",
     "internal_api/base_node.cc",
     "internal_api/base_transaction.cc",
     "internal_api/change_record.cc",
