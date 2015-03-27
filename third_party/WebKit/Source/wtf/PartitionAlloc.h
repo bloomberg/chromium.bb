@@ -45,7 +45,7 @@
 // THE ONLY LEGITIMATE WAY TO OBTAIN A PartitionRoot IS THROUGH THE
 // SizeSpecificPartitionAllocator / PartitionAllocatorGeneric classes. To
 // minimize the instruction count to the fullest extent possible, the
-// PartitonRoot is really just a header adjacent to other data areas provided
+// PartitionRoot is really just a header adjacent to other data areas provided
 // by the allocator class.
 //
 // The partitionAlloc() variant of the API has the following caveats:
@@ -153,6 +153,28 @@ static const size_t kMaxSystemPagesPerSlotSpan = kNumSystemPagesPerPartitionPage
 // metadata in the first few pages of each 2MB aligned section. This leads to
 // a very fast free(). We specifically choose 2MB because this virtual address
 // block represents a full but single PTE allocation on ARM, ia32 and x64.
+//
+// The layout of the super page is as follows. The sizes below are the same
+// for 32 bit and 64 bit.
+//
+//   | Guard page (4KB) | Metadata page (4KB) | Guard pages (8KB) | Slot span | Slot span | ... | Slot span | Guard page (4KB) |
+//
+//   - Each slot span is a contiguous range of one or more PartitionPages.
+//   - The metadata page has the following format. Note that the PartitionPage
+//     that is not at the head of a slot span is "unused". In other words,
+//     the metadata for the slot span is stored only in the first PartitionPage
+//     of the slot span. Metadata accesses to other PartitionPages are
+//     redirected to the first PartitionPage.
+//
+//     | SuperPageExtentEntry (32B) | PartitionPage of slot span 1 (32B, used) | PartitionPage of slot span 1 (32B, unused) | PartitionPage of slot span 1 (32B, unused) | PartitionPage of slot span 2 (32B, used) | PartitionPage of slot span 3 (32B, used) | ... | PartitionPage of slot span N (32B, unused) |
+//
+// A direct mapped page has a similar layout to fake it looking like a super page:
+//
+//     | Guard page (4KB) | Metadata page (4KB) | Guard pages (8KB) | Direct mapped object | Guard page (4KB) |
+//
+//    - The metadata page has the following layout:
+//
+//     | SuperPageExtentEntry (32B) | PartitionPage (32B) | PartitionBucket (32B) | PartitionDirectMapExtent (8B) |
 static const size_t kSuperPageShift = 21; // 2MB
 static const size_t kSuperPageSize = 1 << kSuperPageShift;
 static const size_t kSuperPageOffsetMask = kSuperPageSize - 1;
@@ -273,6 +295,10 @@ struct WTF_EXPORT PartitionRootBase {
 
     static int gInitializedLock;
     static bool gInitialized;
+    // gSeedPage is used as a sentinel to indicate that there is no page
+    // in the active page list. We can use nullptr, but in that case we need
+    // to add a null-check branch to the hot allocation path. We want to avoid
+    // that.
     static PartitionPage gSeedPage;
     static PartitionBucket gPagedBucket;
 };
@@ -395,11 +421,12 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPageNoAlignmentCheck(void* ptr)
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
     char* superPagePtr = reinterpret_cast<char*>(pointerAsUint & kSuperPageBaseMask);
     uintptr_t partitionPageIndex = (pointerAsUint & kSuperPageOffsetMask) >> kPartitionPageShift;
-    // Index 0 is invalid because it is the metadata area and the last index is invalid because it is a guard page.
+    // Index 0 is invalid because it is the metadata and guard area and
+    // the last index is invalid because it is a guard page.
     ASSERT(partitionPageIndex);
     ASSERT(partitionPageIndex < kNumPartitionPagesPerSuperPage - 1);
     PartitionPage* page = reinterpret_cast<PartitionPage*>(partitionSuperPageToMetadataArea(superPagePtr) + (partitionPageIndex << kPageMetadataShift));
-    // Many partition pages can share the same page object. Adjust for that.
+    // Partition pages in the same slot span can share the same page object. Adjust for that.
     size_t delta = page->pageOffset << kPageMetadataShift;
     page = reinterpret_cast<PartitionPage*>(reinterpret_cast<char*>(page) - delta);
     return page;
@@ -444,6 +471,7 @@ ALWAYS_INLINE bool partitionPointerIsValid(void* ptr)
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, size_t size, PartitionBucket* bucket)
 {
     PartitionPage* page = bucket->activePagesHead;
+    // Check that this page is neither full nor freed.
     ASSERT(page->numAllocatedSlots >= 0);
     void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
@@ -500,8 +528,8 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     ASSERT(page->numAllocatedSlots);
     PartitionFreelistEntry* freelistHead = page->freelistHead;
     ASSERT(!freelistHead || partitionPointerIsValid(freelistHead));
-    RELEASE_ASSERT(ptr != freelistHead); // Catches an immediate double free.
-    ASSERT(!freelistHead || ptr != partitionFreelistMask(freelistHead->next)); // Look for double free one level deeper in debug.
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(ptr != freelistHead); // Catches an immediate double free.
+    ASSERT_WITH_SECURITY_IMPLICATION(!freelistHead || ptr != partitionFreelistMask(freelistHead->next)); // Look for double free one level deeper in debug.
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
     entry->next = partitionFreelistMask(freelistHead);
     page->freelistHead = entry;
