@@ -38,6 +38,21 @@ executable("gles2_conform_support") {
   }
 }
 
+if (internal_gles2_conform_tests) {
+  action("generate_gles2_conform_embedded_files") {
+    script = "generate_gles2_embedded_data.py"
+    output = [
+      "$target_gen_dir/gles2_conform_test_embedded_data/FilesData.c",
+      "$target_gen_dir/gles2_conform_test_embedded_data/FilesData.h",
+      "$target_gen_dir/gles2_conform_test_embedded_data/FilesTOC.c",
+    ]
+    args = [
+      "../../third_party/gles2_conform/GTF_ES/glsl/GTF",
+      "$target_gen_dir/gles2_conform_test_embedded_data",
+    ]
+  }
+}
+
 test("gles2_conform_test") {
   sources = [
     "gles2_conform_test.cc",
