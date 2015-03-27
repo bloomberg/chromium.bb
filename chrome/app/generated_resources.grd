@@ -9298,6 +9298,14 @@ I don't think this site should be blocked!
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         from accessing the network.
       </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_ICANN_NAME_COLLISION" desc="Summary in the error page when a dns look up fails due to having contained 127.0.53.53.">
+        This site is using a 
+        <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=top_level_domain&amp;hl=[GRITLANGCODE]"&gt;</ph>new generic top-level domain<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+        (gTLD). If you have used 
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+        to access an internal site in the past, contact your network
+        administrator.
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_ADDRESS_UNREACHABLE" desc="Summary in the error page when we can't reach a site.  This is slightly more specific than just being unable to connect, as it means we can't find a route to the server.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         cannot reach the website.  This is typically caused by network issues,
@@ -9487,6 +9495,9 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
         Unable to resolve the server's DNS address.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_ICANN_NAME_COLLISION" desc="The error message displayed when a dns look up fails due to containing 127.0.53.53.">
+        This site is using a new generic top-level domain.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE" desc="The error message displayed when we can't reach a server.">
         Unable to reach the server.
