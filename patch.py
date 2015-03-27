@@ -50,7 +50,7 @@ class FilePatchBase(object):
   def _process_filename(filename):
     filename = filename.replace('\\', '/')
     # Blacklist a few characters for simplicity.
-    for i in ('%', '$', '..', '\'', '"'):
+    for i in ('$', '..', '\'', '"', '<', '>', ':', '|', '?', '*'):
       if i in filename:
         raise UnsupportedPatchFormat(
             filename, 'Can\'t use \'%s\' in filename.' % i)
