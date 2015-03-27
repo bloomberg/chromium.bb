@@ -1,0 +1,36 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMECAST_OZONE_GPU_PLATFORM_SUPPORT_CAST_H_
+#define CHROMECAST_OZONE_GPU_PLATFORM_SUPPORT_CAST_H_
+
+#include "ui/ozone/public/gpu_platform_support.h"
+
+namespace chromecast {
+namespace ozone {
+
+class SurfaceFactoryCast;
+
+// GpuPlatformSupport implementation for use with OzonePlatformCast.
+class GpuPlatformSupportCast : public ui::GpuPlatformSupport {
+ public:
+  explicit GpuPlatformSupportCast(SurfaceFactoryCast* parent)
+      : parent_(parent) {}
+
+  // GpuPlatformSupport implementation:
+  void OnChannelEstablished(IPC::Sender* sender) override {}
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void RelinquishGpuResources(const base::Closure& callback) override;
+  IPC::MessageFilter* GetMessageFilter() override;
+
+ private:
+  SurfaceFactoryCast* parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuPlatformSupportCast);
+};
+
+}  // namespace ozone
+}  // namespace chromecast
+
+#endif  // CHROMECAST_OZONE_GPU_PLATFORM_SUPPORT_CAST_H_
