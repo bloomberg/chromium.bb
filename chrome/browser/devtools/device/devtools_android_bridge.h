@@ -269,18 +269,6 @@ class DevToolsAndroidBridge : public KeyedService {
   scoped_refptr<AndroidDeviceManager::Device> FindDevice(
       const std::string& serial);
 
-  void PageCreatedOnUIThread(scoped_refptr<RemoteBrowser> browser,
-                             const RemotePageCallback& callback,
-                             const std::string& url,
-                             int result,
-                             const std::string& response);
-
-  void NavigatePageOnUIThread(scoped_refptr<RemoteBrowser> browser,
-                              const RemotePageCallback& callback,
-                              int result,
-                              const std::string& response,
-                              const std::string& url);
-
   void RespondToOpenOnUIThread(scoped_refptr<RemoteBrowser> browser,
                                const RemotePageCallback& callback,
                                int result,

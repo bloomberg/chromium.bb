@@ -53,18 +53,12 @@ namespace {
 const char kPageListRequest[] = "/json";
 const char kVersionRequest[] = "/json/version";
 const char kClosePageRequest[] = "/json/close/%s";
-const char kNewPageRequest[] = "/json/new";
 const char kNewPageRequestWithURL[] = "/json/new?%s";
 const char kActivatePageRequest[] = "/json/activate/%s";
 const char kBrowserTargetSocket[] = "/devtools/browser";
 const int kAdbPollingIntervalMs = 1000;
 
-const char kUrlParam[] = "url";
 const char kPageReloadCommand[] = "Page.reload";
-const char kPageNavigateCommand[] = "Page.navigate";
-
-const int kMinVersionNewWithURL = 32;
-const int kNewPageNavigateDelayMs = 500;
 
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
@@ -444,8 +438,6 @@ class DevToolsAndroidBridge::RemotePageTarget : public DevToolsTargetImpl {
   void Inspect(Profile* profile) const override;
   void Reload() const override;
 
-  void Navigate(const std::string& url, base::Closure callback) const;
-
  private:
   base::WeakPtr<DevToolsAndroidBridge> bridge_;
   BrowserId browser_id_;
@@ -563,18 +555,6 @@ void DevToolsAndroidBridge::RemotePageTarget::Reload() const {
 
   bridge_->SendProtocolCommand(browser_id_, debug_url_, kPageReloadCommand,
                                NULL, base::Closure());
-}
-
-void DevToolsAndroidBridge::RemotePageTarget::Navigate(
-    const std::string& url,
-    base::Closure callback) const {
-  if (!bridge_)
-    return;
-
-  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue);
-  params->SetString(kUrlParam, url);
-  bridge_->SendProtocolCommand(browser_id_, debug_url_, kPageNavigateCommand,
-                               params.Pass(), callback);
 }
 
 // DevToolsAndroidBridge::RemotePage ------------------------------------------
@@ -718,57 +698,12 @@ void DevToolsAndroidBridge::OpenRemotePage(
   std::string url = gurl.spec();
   RemoteBrowser::ParsedVersion parsed_version = browser->GetParsedVersion();
 
-  if (browser->IsChrome() &&
-      !parsed_version.empty() &&
-      parsed_version[0] >= kMinVersionNewWithURL) {
-    std::string query = net::EscapeQueryParamValue(url, false /* use_plus */);
-    std::string request =
-        base::StringPrintf(kNewPageRequestWithURL, query.c_str());
-    SendJsonRequest(browser->browser_id_, request,
-                    base::Bind(&DevToolsAndroidBridge::RespondToOpenOnUIThread,
-                               AsWeakPtr(), browser, callback));
-  } else {
-    SendJsonRequest(browser->browser_id_, kNewPageRequest,
-                    base::Bind(&DevToolsAndroidBridge::PageCreatedOnUIThread,
-                               AsWeakPtr(), browser, callback, url));
-  }
-}
-
-void DevToolsAndroidBridge::PageCreatedOnUIThread(
-    scoped_refptr<RemoteBrowser> browser,
-    const RemotePageCallback& callback,
-    const std::string& url,
-    int result,
-    const std::string& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (result < 0)
-    return;
-  // Navigating too soon after the page creation breaks navigation history
-  // (crbug.com/311014). This can be avoided by adding a moderate delay.
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevToolsAndroidBridge::NavigatePageOnUIThread,
-                 AsWeakPtr(), browser, callback, result, response, url),
-      base::TimeDelta::FromMilliseconds(kNewPageNavigateDelayMs));
-}
-
-void DevToolsAndroidBridge::NavigatePageOnUIThread(
-    scoped_refptr<RemoteBrowser> browser,
-    const RemotePageCallback& callback,
-    int result,
-    const std::string& response,
-    const std::string& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
-  base::DictionaryValue* dict;
-
-  if (value && value->GetAsDictionary(&dict)) {
-    RemotePageTarget new_page(this, browser->browser_id_, *dict);
-    new_page.Navigate(url,
-        base::Bind(&DevToolsAndroidBridge::RespondToOpenOnUIThread,
-                   AsWeakPtr(), browser, callback, result, response));
-  }
+  std::string query = net::EscapeQueryParamValue(url, false /* use_plus */);
+  std::string request =
+      base::StringPrintf(kNewPageRequestWithURL, query.c_str());
+  SendJsonRequest(browser->browser_id_, request,
+                  base::Bind(&DevToolsAndroidBridge::RespondToOpenOnUIThread,
+                             AsWeakPtr(), browser, callback));
 }
 
 DevToolsAndroidBridge::RemoteBrowser::~RemoteBrowser() {
