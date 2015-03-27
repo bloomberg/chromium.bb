@@ -110,23 +110,24 @@ void CheckCloneNewUserErrno(int error) {
          error == ENOSYS);
 }
 
-// Converts a LinuxCapability to the corresponding Linux CAP_XXX value.
-int LinuxCapabilityToKernelValue(LinuxCapability cap) {
+// Converts a Capability to the corresponding Linux CAP_XXX value.
+int CapabilityToKernelValue(Credentials::Capability cap) {
   switch (cap) {
-    case LinuxCapability::kCapSysChroot:
+    case Credentials::Capability::SYS_CHROOT:
       return CAP_SYS_CHROOT;
-    case LinuxCapability::kCapSysAdmin:
+    case Credentials::Capability::SYS_ADMIN:
       return CAP_SYS_ADMIN;
   }
 
-  LOG(FATAL) << "Invalid LinuxCapability: " << static_cast<int>(cap);
+  LOG(FATAL) << "Invalid Capability: " << static_cast<int>(cap);
   return 0;
 }
 
 }  // namespace.
 
+// static
 bool Credentials::DropAllCapabilities(int proc_fd) {
-  if (!SetCapabilities(proc_fd, std::vector<LinuxCapability>())) {
+  if (!SetCapabilities(proc_fd, std::vector<Capability>())) {
     return false;
   }
 
@@ -134,14 +135,40 @@ bool Credentials::DropAllCapabilities(int proc_fd) {
   return true;
 }
 
+// static
 bool Credentials::DropAllCapabilities() {
   base::ScopedFD proc_fd(ProcUtil::OpenProc());
   return Credentials::DropAllCapabilities(proc_fd.get());
 }
 
 // static
+bool Credentials::DropAllCapabilitiesOnCurrentThread() {
+  return SetCapabilitiesOnCurrentThread(std::vector<Capability>());
+}
+
+// static
+bool Credentials::SetCapabilitiesOnCurrentThread(
+    const std::vector<Capability>& caps) {
+  struct cap_hdr hdr = {};
+  hdr.version = _LINUX_CAPABILITY_VERSION_3;
+  struct cap_data data[_LINUX_CAPABILITY_U32S_3] = {{}};
+
+  // Initially, cap has no capability flags set. Enable the effective and
+  // permitted flags only for the requested capabilities.
+  for (const Capability cap : caps) {
+    const int cap_num = CapabilityToKernelValue(cap);
+    const size_t index = CAP_TO_INDEX(cap_num);
+    const uint32_t mask = CAP_TO_MASK(cap_num);
+    data[index].effective |= mask;
+    data[index].permitted |= mask;
+  }
+
+  return sys_capset(&hdr, data) == 0;
+}
+
+// static
 bool Credentials::SetCapabilities(int proc_fd,
-                                  const std::vector<LinuxCapability>& caps) {
+                                  const std::vector<Capability>& caps) {
   DCHECK_LE(0, proc_fd);
 
 #if !defined(THREAD_SANITIZER)
@@ -150,21 +177,7 @@ bool Credentials::SetCapabilities(int proc_fd,
   CHECK(ThreadHelpers::IsSingleThreaded(proc_fd));
 #endif
 
-  struct cap_hdr hdr = {};
-  hdr.version = _LINUX_CAPABILITY_VERSION_3;
-  struct cap_data data[_LINUX_CAPABILITY_U32S_3] = {{}};
-
-  // Initially, cap has no capability flags set. Enable the effective and
-  // permitted flags only for the requested capabilities.
-  for (const LinuxCapability cap : caps) {
-    const int cap_num = LinuxCapabilityToKernelValue(cap);
-    const size_t index = CAP_TO_INDEX(cap_num);
-    const uint32_t mask = CAP_TO_MASK(cap_num);
-    data[index].effective |= mask;
-    data[index].permitted |= mask;
-  }
-
-  return sys_capset(&hdr, data) == 0;
+  return SetCapabilitiesOnCurrentThread(caps);
 }
 
 bool Credentials::HasAnyCapability() {
@@ -183,14 +196,14 @@ bool Credentials::HasAnyCapability() {
   return false;
 }
 
-bool Credentials::HasCapability(LinuxCapability cap) {
+bool Credentials::HasCapability(Capability cap) {
   struct cap_hdr hdr = {};
   hdr.version = _LINUX_CAPABILITY_VERSION_3;
   struct cap_data data[_LINUX_CAPABILITY_U32S_3] = {{}};
 
   PCHECK(sys_capget(&hdr, data) == 0);
 
-  const int cap_num = LinuxCapabilityToKernelValue(cap);
+  const int cap_num = CapabilityToKernelValue(cap);
   const size_t index = CAP_TO_INDEX(cap_num);
   const uint32_t mask = CAP_TO_MASK(cap_num);
 

@@ -40,6 +40,7 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "crypto/nss_util.h"
+#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -78,6 +79,11 @@ void CloseFds(const std::vector<int>& fds) {
   for (const auto& it : fds) {
     PCHECK(0 == IGNORE_EINTR(close(it)));
   }
+}
+
+void RunTwoClosures(const base::Closure* first, const base::Closure* second) {
+  first->Run();
+  second->Run();
 }
 
 }  // namespace
@@ -407,12 +413,20 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
   return true;
 }
 
+static void DropAllCapabilities(int proc_fd) {
+  CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd));
+}
+
 static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
                                   base::Closure* post_fork_parent_callback) {
   linux_sandbox->EngageNamespaceSandbox();
 
   if (getpid() == 1) {
-    CHECK(CreateInitProcessReaper(post_fork_parent_callback));
+    base::Closure drop_all_caps_callback =
+        base::Bind(&DropAllCapabilities, linux_sandbox->proc_fd());
+    base::Closure callback = base::Bind(
+        &RunTwoClosures, &drop_all_caps_callback, post_fork_parent_callback);
+    CHECK(CreateInitProcessReaper(&callback));
   }
 }
 

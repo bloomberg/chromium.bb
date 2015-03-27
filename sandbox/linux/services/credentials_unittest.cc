@@ -177,16 +177,17 @@ SANDBOX_TEST(Credentials, SetCapabilities) {
 
   base::ScopedFD proc_fd(ProcUtil::OpenProc());
 
-  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysAdmin));
-  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysChroot));
+  CHECK(Credentials::HasCapability(Credentials::Capability::SYS_ADMIN));
+  CHECK(Credentials::HasCapability(Credentials::Capability::SYS_CHROOT));
 
-  const std::vector<LinuxCapability> caps = {LinuxCapability::kCapSysChroot};
+  std::vector<Credentials::Capability> caps;
+  caps.push_back(Credentials::Capability::SYS_CHROOT);
   CHECK(Credentials::SetCapabilities(proc_fd.get(), caps));
 
-  CHECK(!Credentials::HasCapability(LinuxCapability::kCapSysAdmin));
-  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysChroot));
+  CHECK(!Credentials::HasCapability(Credentials::Capability::SYS_ADMIN));
+  CHECK(Credentials::HasCapability(Credentials::Capability::SYS_CHROOT));
 
-  const std::vector<LinuxCapability> no_caps;
+  const std::vector<Credentials::Capability> no_caps;
   CHECK(Credentials::SetCapabilities(proc_fd.get(), no_caps));
   CHECK(!Credentials::HasAnyCapability());
 }
@@ -198,10 +199,11 @@ SANDBOX_TEST(Credentials, SetCapabilitiesAndChroot) {
 
   base::ScopedFD proc_fd(ProcUtil::OpenProc());
 
-  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysChroot));
+  CHECK(Credentials::HasCapability(Credentials::Capability::SYS_CHROOT));
   PCHECK(chroot("/") == 0);
 
-  const std::vector<LinuxCapability> caps = {LinuxCapability::kCapSysChroot};
+  std::vector<Credentials::Capability> caps;
+  caps.push_back(Credentials::Capability::SYS_CHROOT);
   CHECK(Credentials::SetCapabilities(proc_fd.get(), caps));
   PCHECK(chroot("/") == 0);
 
@@ -216,7 +218,8 @@ SANDBOX_TEST(Credentials, SetCapabilitiesMatchesLibCap2) {
 
   base::ScopedFD proc_fd(ProcUtil::OpenProc());
 
-  const std::vector<LinuxCapability> caps = {LinuxCapability::kCapSysChroot};
+  std::vector<Credentials::Capability> caps;
+  caps.push_back(Credentials::Capability::SYS_CHROOT);
   CHECK(Credentials::SetCapabilities(proc_fd.get(), caps));
 
   ScopedCap actual_cap(cap_get_proc());
