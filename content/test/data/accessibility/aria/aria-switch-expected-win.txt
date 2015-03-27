@@ -1,0 +1,4 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+++IA2_ROLE_TOGGLE_BUTTON xml-roles:switch checkable:true
+++IA2_ROLE_TOGGLE_BUTTON CHECKED xml-roles:switch checkable:true
+++IA2_ROLE_TOGGLE_BUTTON xml-roles:switch checkable:true

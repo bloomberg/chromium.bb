@@ -3861,10 +3861,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_LABEL;
       break;
-    case ui::AX_ROLE_SEARCH:
-      ia_role = ROLE_SYSTEM_GROUPING;
-      ia2_role = IA2_ROLE_SECTION;
-      break;
     case ui::AX_ROLE_LINK:
       ia_role = ROLE_SYSTEM_LINK;
       ia_state |= STATE_SYSTEM_LINKED;
@@ -4002,6 +3998,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_SCROLL_BAR:
       ia_role = ROLE_SYSTEM_SCROLLBAR;
       break;
+    case ui::AX_ROLE_SEARCH:
+      ia_role = ROLE_SYSTEM_GROUPING;
+      ia2_role = IA2_ROLE_SECTION;
+      break;
     case ui::AX_ROLE_SLIDER:
       ia_role = ROLE_SYSTEM_SLIDER;
       break;
@@ -4024,6 +4024,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_SVG_ROOT:
       ia_role = ROLE_SYSTEM_GRAPHIC;
+      break;
+    case ui::AX_ROLE_SWITCH:
+      role_name = L"switch";
+      ia2_role = IA2_ROLE_TOGGLE_BUTTON;
       break;
     case ui::AX_ROLE_TAB:
       ia_role = ROLE_SYSTEM_PAGETAB;
@@ -4060,6 +4064,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_SEARCH_BOX:
       ia_role = ROLE_SYSTEM_TEXT;
       ia2_state |= IA2_STATE_SINGLE_LINE;
       ia2_state |= IA2_STATE_EDITABLE;

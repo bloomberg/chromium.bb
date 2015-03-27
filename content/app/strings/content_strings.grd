@@ -403,6 +403,12 @@ below:
       <message name="IDS_AX_ROLE_STATUS" desc="accessibility role description for status">
         status
       </message>
+      <message name="IDS_AX_ROLE_SEARCH_BOX" desc="accessibility role description for search text field">
+        search text field
+      </message>
+      <message name="IDS_AX_ROLE_SWITCH" desc="accessibility role description for switch">
+        switch
+      </message>
 
       <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
         press

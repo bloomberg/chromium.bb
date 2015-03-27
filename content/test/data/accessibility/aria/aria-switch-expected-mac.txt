@@ -1,0 +1,4 @@
+AXWebArea AXRoleDescription='HTML content'
+++AXCheckBox AXSubrole=AXSwitch AXRoleDescription='switch' AXValue='0'
+++AXCheckBox AXSubrole=AXSwitch AXRoleDescription='switch' AXValue='1'
+++AXCheckBox AXSubrole=AXSwitch AXRoleDescription='switch' AXValue='0'

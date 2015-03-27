@@ -264,6 +264,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_SEAMLESS_WEB_AREA;
     case blink::WebAXRoleSearch:
       return ui::AX_ROLE_SEARCH;
+    case blink::WebAXRoleSearchBox:
+      return ui::AX_ROLE_SEARCH_BOX;
     case blink::WebAXRoleSlider:
       return ui::AX_ROLE_SLIDER;
     case blink::WebAXRoleSliderThumb:
@@ -278,6 +280,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_STATIC_TEXT;
     case blink::WebAXRoleStatus:
       return ui::AX_ROLE_STATUS;
+    case blink::WebAXRoleSwitch:
+      return ui::AX_ROLE_SWITCH;
     case blink::WebAXRoleTab:
       return ui::AX_ROLE_TAB;
     case blink::WebAXRoleTabGroup:

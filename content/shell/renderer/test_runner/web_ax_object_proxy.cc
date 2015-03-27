@@ -194,6 +194,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("SeamlessWebArea");
     case blink::WebAXRoleSearch:
       return result.append("Search");
+    case blink::WebAXRoleSearchBox:
+      return result.append("SearchBox");
     case blink::WebAXRoleSlider:
       return result.append("Slider");
     case blink::WebAXRoleSliderThumb:
@@ -208,6 +210,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("StaticText");
     case blink::WebAXRoleStatus:
       return result.append("Status");
+    case blink::WebAXRoleSwitch:
+      return result.append("Switch");
     case blink::WebAXRoleTabGroup:
       return result.append("TabGroup");
     case blink::WebAXRoleTabList:

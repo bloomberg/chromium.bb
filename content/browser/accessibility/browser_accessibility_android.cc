@@ -255,6 +255,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
   const char* class_name = NULL;
 
   switch (GetRole()) {
+    case ui::AX_ROLE_SEARCH_BOX:
     case ui::AX_ROLE_SPIN_BUTTON:
     case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
@@ -275,6 +276,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
       class_name = "android.widget.Button";
       break;
     case ui::AX_ROLE_CHECK_BOX:
+    case ui::AX_ROLE_SWITCH:
       class_name = "android.widget.CheckBox";
       break;
     case ui::AX_ROLE_RADIO_BUTTON:

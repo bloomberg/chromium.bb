@@ -679,6 +679,12 @@ NSDictionary* attributeToMethodNameMap = nil;
   case ui::AX_ROLE_STATUS:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_STATUS));
+  case ui::AX_ROLE_SEARCH_BOX:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_SEARCH_BOX));
+  case ui::AX_ROLE_SWITCH:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_SWITCH));
   case ui::AX_ROLE_TOGGLE_BUTTON:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_TOGGLE_BUTTON));

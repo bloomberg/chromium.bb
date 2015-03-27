@@ -1,0 +1,4 @@
+android.webkit.WebView focusable focused scrollable
+++android.widget.CheckBox
+++android.widget.CheckBox checkable checked
+++android.widget.CheckBox
