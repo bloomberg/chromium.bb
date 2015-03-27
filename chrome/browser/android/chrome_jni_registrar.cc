@@ -44,6 +44,7 @@
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/password_ui_view_android.h"
+#include "chrome/browser/android/precache/precache_launcher.h"
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
@@ -225,6 +226,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      PasswordUIViewAndroid::RegisterPasswordUIViewAndroid},
     {"PersonalDataManagerAndroid",
      autofill::PersonalDataManagerAndroid::Register},
+    {"PrecacheLauncher", RegisterPrecacheLauncher},
     {"PrefServiceBridge", RegisterPrefServiceBridge},
     {"ProfileAndroid", ProfileAndroid::RegisterProfileAndroid},
     {"ProfileDownloader", RegisterProfileDownloader},
