@@ -705,8 +705,8 @@ void RenderWidgetCompositor::compositeAndReadbackAsync(
       cc::CopyOutputRequest::CreateBitmapRequest(
           base::Bind(&CompositeAndReadbackAsyncCallback, callback));
   // Force a commit to happen. The temporary copy output request will
-  // be installed after layout which will happen as a part of the commit, when
-  // there is guaranteed to be a root layer.
+  // be installed after layout which will happen as a part of the commit, for
+  // widgets that delay the creation of their output surface.
   bool threaded = !!compositor_deps_->GetCompositorImplThreadTaskRunner().get();
   if (!threaded &&
       !layer_tree_host_->settings().single_thread_proxy_scheduler) {
@@ -798,9 +798,14 @@ void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
 
   if (temporary_copy_output_request_) {
-    DCHECK(layer_tree_host_->root_layer());
-    layer_tree_host_->root_layer()->RequestCopyOfOutput(
-        temporary_copy_output_request_.Pass());
+    // For WebViewImpl, this will always have a root layer.  For other widgets,
+    // the widget may be closed before servicing this request, so ignore it.
+    if (cc::Layer* root_layer = layer_tree_host_->root_layer()) {
+      root_layer->RequestCopyOfOutput(temporary_copy_output_request_.Pass());
+    } else {
+      temporary_copy_output_request_->SendEmptyResult();
+      temporary_copy_output_request_ = nullptr;
+    }
   }
 }
 
