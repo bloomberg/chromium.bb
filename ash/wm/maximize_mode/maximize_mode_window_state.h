@@ -17,8 +17,7 @@ class MaximizeModeWindowManager;
 class MaximizeModeWindowState : public wm::WindowState::State {
  public:
   // Called when the window position might need to be updated.
-  static void UpdateWindowPosition(wm::WindowState* window_state,
-                                   bool animated);
+  static void UpdateWindowPosition(wm::WindowState* window_state);
 
   // The |window|'s state object will be modified to use this new window mode
   // state handler. Upon destruction it will restore the previous state handler

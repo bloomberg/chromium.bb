@@ -83,16 +83,11 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
 
 // static
 void MaximizeModeWindowState::UpdateWindowPosition(
-    wm::WindowState* window_state, bool animated) {
+    wm::WindowState* window_state) {
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
-
   if (bounds_in_parent == window_state->window()->bounds())
     return;
-
-  if (animated)
-    window_state->SetBoundsDirect(bounds_in_parent);
-  else
-    window_state->SetBoundsDirectAnimated(bounds_in_parent);
+  window_state->SetBoundsDirect(bounds_in_parent);
 }
 
 MaximizeModeWindowState::MaximizeModeWindowState(

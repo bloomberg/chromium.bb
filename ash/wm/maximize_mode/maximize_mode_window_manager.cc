@@ -130,7 +130,7 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
   for (WindowToState::iterator it = window_state_map_.begin();
        it != window_state_map_.end();
        ++it) {
-    it->second->UpdateWindowPosition(wm::GetWindowState(it->first), false);
+    it->second->UpdateWindowPosition(wm::GetWindowState(it->first));
   }
 }
 
