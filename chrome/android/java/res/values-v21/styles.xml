@@ -58,5 +58,15 @@
     <style name="ButtonCompatBorderless" parent="ButtonCompat">
         <item name="android:background">@drawable/button_borderless_compat</item>
     </style>
-
+    <!-- Cast notification -->
+    <style name="RemoteNotificationTitle"
+        parent="@android:style/TextAppearance.Material.Notification.Title">
+        <item name="android:layout_marginBottom">4dp</item>
+    </style>
+    <style name="RemoteNotificationText"
+        parent="@android:style/TextAppearance.Material.Notification.Line2"/>
+    <style name="RemoteNotificationProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">
+        <item name="android:minHeight">5dp</item>
+    </style>
+    
 </resources>

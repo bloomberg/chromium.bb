@@ -1482,6 +1482,54 @@ Drag from top to exit.
         Your tabs and apps are now in the same place for easier access.  You can turn this feature off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
 
+      <message name="IDS_CAST_NOTIFICATION_STOPPED" desc="AtHome notification text when stopped. [CHAR LIMIT=40]">
+        Stopped
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_FINISHED" desc="AtHome notification text when finished. [CHAR LIMIT=40]">
+        Finished
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_PAUSED" desc="AtHome notification text when paused. [CHAR LIMIT=40]">
+        Paused
+      </message>
+      
+      <!-- Messages for remote media playback (casting) -->
+      <message name="IDS_CAST_NOTIFICATION_LOADING" desc="AtHome notification text when loading a video. [CHAR LIMIT=40]">
+        Loading video
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_PLAYING" desc="AtHome notification text when playing a video. [CHAR LIMIT=40]">
+        Playing video
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_LOADING_FOR_VIDEO" desc="AtHome notification text when loading a given video. [CHAR LIMIT=40]">
+        Loading “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_PLAYING_FOR_VIDEO" desc="AtHome notification text when playing a given video. [CHAR LIMIT=40]">
+        Playing “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_PAUSED_FOR_VIDEO" desc="AtHome notification text when paused in a given video. [CHAR LIMIT=40]">
+        Paused “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
+      </message>
+      <message name="IDS_CAST_NOTIFICATION_FINISHED_FOR_VIDEO" desc="AtHome notification text when finished playing a given video. [CHAR LIMIT=40]">
+        Finished “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
+      </message>
+      <message name="IDS_CAST_CASTING_VIDEO" desc="AtHome text to tell user which screen casting is happening. [CHAR LIMIT=40]">
+        Casting to <ph name="SCREEN_NAME">%1$s<ex>Living Room TV</ex></ph>
+      </message>
+      <message name="IDS_CAST_ERROR_PLAYING_VIDEO" desc="The message shown to the user when playing a video to the Chromecast fails.">
+        Cannot play video on <ph name="SCREEN_NAME">%1$s<ex>Living Room TV</ex></ph>.
+      </message>
+      <message name="IDS_CAST_PERMISSION_ERROR_PLAYING_VIDEO" desc="The message shown to the user when trying to play a video that the domain does not let us cast.">
+        Unable to cast video due to site restrictions
+      </message>
+      <message name="IDS_ACCESSIBILITY_PLAY" desc="Content description for the play button that starts playing the media.">
+        Play
+      </message>
+      <message name="IDS_ACCESSIBILITY_PAUSE" desc="Content description for the pause button that pauses playing the media.">
+        Pause
+      </message>
+      <message name="IDS_ACCESSIBILITY_STOP" desc="Content description for the stop button that stops playing the media.">
+        Stop
+      </message>
+ 
     </messages>
   </release>
 </grit>

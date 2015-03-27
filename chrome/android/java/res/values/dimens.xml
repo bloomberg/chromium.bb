@@ -126,4 +126,8 @@
     <!-- Autofill card unmasking prompt dimensions -->
     <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>
     <dimen name="autofill_card_unmask_tooltip_vertical_padding">4dp</dimen>
+
+    <!-- Cast related constants -->
+    <dimen name="remote_notification_logo_max_width">@android:dimen/notification_large_icon_width</dimen>
+    <dimen name="remote_notification_logo_max_height">64dp</dimen>
 </resources>

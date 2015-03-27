@@ -8,8 +8,22 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
+#include "chrome/browser/android/metrics/uma_utils.h"
+#include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
+
+namespace {
+
+content::BrowserMediaPlayerManager* CreateRemoteMediaPlayerManager(
+    content::RenderFrameHost* render_frame_host,
+    content::MediaPlayersObserver* audio_monitor) {
+  return new remote_media::RemoteMediaPlayerManager(render_frame_host,
+                                                    audio_monitor);
+}
+
+} // namespace
 
 // ChromeMainDelegateAndroid is created when the library is loaded. It is always
 // done in the process's main Java thread. But for non browser process, e.g.
@@ -19,7 +33,6 @@ ChromeMainDelegateAndroid::ChromeMainDelegateAndroid() {
 
 ChromeMainDelegateAndroid::~ChromeMainDelegateAndroid() {
 }
-
 void ChromeMainDelegateAndroid::SandboxInitialized(
     const std::string& process_type) {
   ChromeMainDelegate::SandboxInitialized(process_type);
@@ -49,5 +62,9 @@ int ChromeMainDelegateAndroid::RunProcess(
 
 bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
   SetChromeSpecificCommandLineFlags();
+
+  content::BrowserMediaPlayerManager::RegisterFactory(
+      &CreateRemoteMediaPlayerManager);
+
   return ChromeMainDelegate::BasicStartupComplete(exit_code);
 }

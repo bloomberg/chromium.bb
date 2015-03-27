@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # Fix layering violation crbug.com/396828
+  "chrome_main_delegate_android.cc": [
+    "+content/browser/media/android/browser_media_player_manager.h",
+  ],
+}

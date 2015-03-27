@@ -192,5 +192,30 @@
         <meta-data android:name="org.chromium.chrome.browser.SERVICE_TAB_LAUNCHER"
                    android:value="org.chromium.chrome.shell.ChromeShellServiceTabLauncher" />
 
+        <!-- Activity, service, and meta-data to support casting to Chromecast -->
+
+        <!-- Expanded controller activity is displayed when the Cast Notification is clicked -->
+        <activity android:name="org.chromium.chrome.browser.media.remote.ExpandedControllerActivity"
+            android:theme="@style/MainTheme"
+            android:label="Chrome.ExpandedControllerActivity"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
+            android:excludeFromRecents="true">
+        </activity>
+
+        <service android:name="org.chromium.chrome.browser.media.remote.NotificationTransportControl$ListenerService" />
+
+        <!-- Media route controllers to use for remote playback (cast).
+             This is here, rather than in code, since it varies between upstream and downstream,
+             yet we need this list of classes in the notification service, which belongs upstream
+             and doesn't run the downstream Clank startup code. The Cast code will, for each media element,
+             choose the first MediaRouteController that can play it, so the order of the list can be important.
+             The most specific MediaRouteControllers should be listed first, followed by more generic ones -->
+        <meta-data android:name="org.chromium.content.browser.REMOTE_MEDIA_PLAYERS"
+            android:value="org.chromium.chrome.browser.media.remote.DefaultMediaRouteController"/>
+
+
     </application>
 </manifest>

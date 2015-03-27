@@ -67,6 +67,8 @@
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
+#include "chrome/browser/media/android/remote/record_cast_action.h"
+#include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/notifications/notification_ui_manager_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
@@ -228,6 +230,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ProfileDownloader", RegisterProfileDownloader},
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
+    {"RecordCastAction", remote_media::RegisterRecordCastAction},
+    {"RemoteMediaPlayerBridge",
+     remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
     {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ServiceTabLauncher", ServiceTabLauncher::RegisterServiceTabLauncher},

@@ -39,4 +39,7 @@
     <item type="id" name="menu_id_help_privacy" />
     <item type="id" name="menu_id_contextual_search_learn" />
 
+    <!-- Cast notification -->
+    <item type="id" name="remote_notification" />
+    
 </resources>

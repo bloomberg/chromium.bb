@@ -47,7 +47,12 @@ static media::MediaUrlInterceptor* media_url_interceptor_ = NULL;
 
 // static
 void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
-  g_factory = factory;
+  // TODO(aberent) nullptr test is a temporary fix to simplify upstreaming Cast.
+  // Until Cast is fully upstreamed we want the downstream factory to take
+  // priority over the upstream factory. The downstream call happens first,
+  // so this will ensure that it does.
+  if (g_factory == nullptr)
+    g_factory = factory;
 }
 
 // static
