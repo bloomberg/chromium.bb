@@ -32,6 +32,9 @@ crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.htm
 
 crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
 
+crbug.com/470326 svg/text/bidi-text-query.svg [ NeedsRebaseline ]
+crbug.com/470326 virtual/slimmingpaint/svg/text/bidi-text-query.svg [ NeedsRebaseline ]
+
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 crbug.com/456357 virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash ]

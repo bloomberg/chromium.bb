@@ -283,11 +283,16 @@ static FloatPoint calculateGlyphPositionWithoutTransform(const SVGTextQuery::Dat
 {
     float glyphOffsetInDirection = 0;
     if (offsetInFragment) {
-        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset, offsetInFragment, queryData->textLayoutObject->styleRef().direction());
+        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset, offsetInFragment, queryData->textBox->direction());
         if (queryData->isVerticalText)
             glyphOffsetInDirection = metrics.height();
         else
             glyphOffsetInDirection = metrics.width();
+    }
+
+    if (!queryData->textBox->isLeftToRightDirection()) {
+        float fragmentExtent = queryData->isVerticalText ? fragment.height : fragment.width;
+        glyphOffsetInDirection = fragmentExtent - glyphOffsetInDirection;
     }
 
     FloatPoint glyphPosition(fragment.x, fragment.y);
@@ -424,8 +429,24 @@ static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const
     glyphPosition.move(0, -queryData->textLayoutObject->scaledFont().fontMetrics().floatAscent() / scalingFactor);
     extent.setLocation(glyphPosition);
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset + startPosition, 1, queryData->textLayoutObject->styleRef().direction());
-    extent.setSize(FloatSize(metrics.width(), metrics.height()));
+    // Use the SVGTextMetrics computed by SVGTextMetricsBuilder (which spends
+    // time attempting to compute more correct glyph bounds already, handling
+    // cursive scripts to some degree.)
+    Vector<SVGTextMetrics>& textMetricsValues = queryData->textLayoutObject->layoutAttributes()->textMetricsValues();
+    const SVGTextMetrics& metrics = textMetricsValues[fragment.characterOffset + startPosition];
+
+    // TODO(fs): Negative glyph extents seems kind of weird to have, but
+    // presently it can occur in some cases (like Arabic.)
+    FloatSize glyphSize(std::max<float>(metrics.width(), 0), std::max<float>(metrics.height(), 0));
+    extent.setSize(glyphSize);
+
+    // If RTL, adjust the starting point to align with the LHS of the glyph bounding box.
+    if (!queryData->textBox->isLeftToRightDirection()) {
+        if (queryData->isVerticalText)
+            extent.move(0, -glyphSize.height());
+        else
+            extent.move(-glyphSize.width(), 0);
+    }
 
     AffineTransform fragmentTransform;
     fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);

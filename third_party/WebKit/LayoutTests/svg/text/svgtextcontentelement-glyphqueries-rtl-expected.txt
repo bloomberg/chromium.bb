@@ -1,0 +1,8 @@
+הפוך
+ This is a testharness.js-based test.
+PASS SVGTextContentElement query interface RTL, getStartPositionOfChar(). 
+PASS SVGTextContentElement query interface RTL, getEndPositionOfChar(). 
+PASS SVGTextContentElement query interface RTL, getExtentOfChar(). 
+PASS SVGTextContentElement query interface RTL, getCharNumAtPosition(). 
+Harness: the test ran to completion.
+

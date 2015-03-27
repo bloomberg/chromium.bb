@@ -5,30 +5,40 @@
     <text x="10" y="80"><tspan direction="ltr" unicode-bidi="normal">نشاط التدويل، W3C</tspan></text>
     <g id="container"/>
 
-    <script type="text/javascript">
-        function highlightText(text, start, length, color) {
-            var startExtent = text.getExtentOfChar(start);
-            var endExtent = text.getExtentOfChar(start + length);
+    <script type="text/javascript"><![CDATA[
+        function highlightGlyph(text, index, color) {
+            var extent = text.getExtentOfChar(index);
 
             // Highlight rect that we've selected using the extent information
-            var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "svg:rect");
-            rectElement.setAttribute("x", startExtent.x);
-            rectElement.setAttribute("y", endExtent.y);
-            rectElement.setAttribute("width", endExtent.x + endExtent.width - startExtent.x);
-            rectElement.setAttribute("height", endExtent.height);
+            var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rectElement.setAttribute("x", extent.x);
+            rectElement.setAttribute("y", extent.y);
+            rectElement.setAttribute("width", extent.width);
+            rectElement.setAttribute("height", extent.height);
             rectElement.setAttribute("fill-opacity", "0.4");
             rectElement.setAttribute("fill", color);
             document.getElementById("container").appendChild(rectElement);
+            // Output the start offset
+            var textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            textElement.setAttribute("x", extent.x + extent.width / 2);
+            textElement.setAttribute("y", extent.y + extent.height + 5);
+            textElement.setAttribute("text-anchor", "middle");
+            textElement.setAttribute("font-size", 4);
+            textElement.appendChild(document.createTextNode(index));
+            document.getElementById("container").appendChild(textElement);
         }
 
-        // Highlight arabic text by an half-opaque rect rectangle and latin text by a green one.
-        var text1 = document.getElementsByTagName("text")[0];
-        highlightText(text1, 0, text1.getNumberOfChars() - 5, "red");
-        highlightText(text1, text1.getNumberOfChars() - 3, 2, "green");
+        var colors = [ "red", "orange", "yellow", "green", "blue", "indigo", "violet"];
 
-        var text2 = document.getElementsByTagName("text")[1];
-        highlightText(text2, 0, text2.getNumberOfChars() - 5, "red");
-        highlightText(text2, text2.getNumberOfChars() - 3, 2, "green");
-    </script>
+        // Highlight each glyph with a semi-transparent rectangle and
+        // a number corresponding to the queried character index.
+        var textElements = document.querySelectorAll("text");
+        for (var elemNum = 0; elemNum < textElements.length; ++elemNum) {
+          var text = textElements[elemNum];
+          var charCount = text.getNumberOfChars();
+          for (var index = 0; index < charCount; ++index)
+            highlightGlyph(text, index, colors[index % colors.length]);
+        }
+    ]]></script>
 </g>
 </svg>
