@@ -850,3 +850,8 @@ STATSD_HOST = '146.148.70.158'
 STATSD_PORT = 8125
 STATSD_PROD_PREFIX = 'chromite'
 STATSD_DEBUG_PREFIX = 'chromite_debug'
+
+# Publication of Project SDK artifacts.
+BRILLO_RELEASE_MANIFESTS_URL = 'gs://brillo-releases/sdk-releases'
+BRILLO_LATEST_RELEASE_URL = os.path.join(BRILLO_RELEASE_MANIFESTS_URL,
+                                         'LATEST')

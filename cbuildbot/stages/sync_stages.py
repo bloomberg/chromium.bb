@@ -35,6 +35,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.scripts import cros_mark_chrome_as_stable
@@ -617,10 +618,25 @@ class ManifestVersionedSyncStage(SyncStage):
     git.AddPath(latest_manifest_path)
     git.Commit(git_repo, 'Create project_sdk for %s.' % current_version)
 
-    # Push it.
+    # Push it to Gerrit.
     logging.info('Pushing Project SDK Manifest.')
     git.PushWithRetry(branch, git_repo)
 
+    # Push to GS.
+    gs_ctx = gs.GSContext(dry_run=self._run.debug)
+    publish_uri = os.path.join(constants.BRILLO_RELEASE_MANIFESTS_URL,
+                               sdk_manifest_name)
+
+    # We use the default ACL (public readable) for this file.
+    logging.info('Pushing Project SDK Manifest to: %s', publish_uri)
+    gs_ctx.Copy(manifest, publish_uri)
+
+    # Populate a file on GS with the newest version published.
+    with tempfile.NamedTemporaryFile() as latest:
+      osutils.WriteFile(latest.name, current_version)
+      gs_ctx.Copy(latest.name, constants.BRILLO_LATEST_RELEASE_URL)
+
+    # Log what we published.
     logging.info('Project SDK Manifest \'%s\' published:',
                  os.path.basename(sdk_manifest_path))
     logging.info('%s', osutils.ReadFile(manifest))
@@ -652,6 +668,7 @@ class ManifestVersionedSyncStage(SyncStage):
         next_manifest, filter_cros=self._run.options.local) as new_manifest:
       self.ManifestCheckout(new_manifest)
 
+    # TODO(dgarrett): Push this logic into it's own stage.
     # If we are a Canary Master, create an additional derivative Manifest for
     # the Project SDK builders.
     if (cbuildbot_config.IsCanaryType(self._run.config.build_type) and
