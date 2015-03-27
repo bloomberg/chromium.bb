@@ -299,11 +299,14 @@ template("grit") {
   assert(defined(invoker.source),
          "\"source\" must be defined for the grit template $target_name")
 
+  grit_inputs = [ invoker.source ]
+
   if (defined(invoker.resource_ids)) {
     resource_ids = invoker.resource_ids
   } else {
     resource_ids = grit_resource_id_file
   }
+  grit_inputs += [ resource_ids ]  # Script depends on ID file.
 
   if (defined(invoker.output_dir)) {
     output_dir = invoker.output_dir
@@ -330,8 +333,6 @@ template("grit") {
   } else {
     grit_flags = []  # These are optional so default to empty list.
   }
-
-  grit_inputs = [ invoker.source ]
 
   assert_files_flags = []
 
