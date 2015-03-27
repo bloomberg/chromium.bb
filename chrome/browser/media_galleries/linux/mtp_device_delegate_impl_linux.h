@@ -148,11 +148,11 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const MoveFileLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback,
       const base::File::Info& source_file_info);
-  virtual void CopyFileFromLocalInternal(
+  virtual void OnDidOpenFDToCopyFileFromLocal(
       const base::FilePath& device_file_path,
       const CopyFileFromLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const int source_file_descriptor);
+      const std::pair<int, base::File::Error>& open_fd_result);
   virtual void DeleteFileInternal(
       const base::FilePath& file_path,
       const DeleteFileSuccessCallback& success_callback,
@@ -241,6 +241,21 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   void OnDidGetFileInfoToCreateSnapshotFile(
       scoped_ptr<SnapshotRequestInfo> snapshot_request_info,
       const base::File::Info& file_info);
+
+  // Called when GetFileInfo() for destination path succeeded for a
+  // CopyFileFromLocal operation.
+  void OnDidGetDestFileInfoToCopyFileFromLocal(
+      const ErrorCallback& error_callback,
+      const base::File::Info& file_info);
+
+  // Called when GetFileInfo() for destination path failed to copy file from
+  // local.
+  void OnGetDestFileInfoErrorToCopyFileFromLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Error error);
 
   // Called when ReadDirectory() succeeds.
   //
