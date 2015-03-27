@@ -91,12 +91,6 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Start all tests without a gpu channel so that the tests exercise a
-    // consistent codepath.
-    command_line->AppendSwitch(switches::kDisableGpuEarlyInit);
-  }
-
   void OnContextLost(const base::Closure callback, int* counter) {
     (*counter)++;
     callback.Run();
@@ -139,21 +133,16 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
   }
 };
 
-// These tests are flaky on Windows.
-#if !defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, Basic) {
+// Fails since UI Compositor establishes a GpuChannel.
+IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, DISABLED_Basic) {
   DCHECK(!IsChannelEstablished());
   EstablishAndWait();
   EXPECT_TRUE(GetGpuChannel() != NULL);
 }
-#endif
 
-// Fails on chromeos since Shell::PlatformInitialize instantiates
-// wm::WMTestHelper leading to the compositor establishing a GPU
-// channel.
-#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
+// Fails since UI Compositor establishes a GpuChannel.
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       EstablishAndTerminate) {
+                       DISABLED_EstablishAndTerminate) {
   DCHECK(!IsChannelEstablished());
   base::RunLoop run_loop;
   GetFactory()->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
@@ -162,11 +151,11 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // The callback should still trigger.
   run_loop.Run();
 }
-#endif
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
+#if !defined(OS_ANDROID)
+// Fails since UI Compositor establishes a GpuChannel.
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       AlreadyEstablished) {
+                       DISABLED_AlreadyEstablished) {
   DCHECK(!IsChannelEstablished());
   scoped_refptr<GpuChannelHost> gpu_channel =
       GetFactory()->EstablishGpuChannelSync(kInitCause);
@@ -181,9 +170,9 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 }
 #endif
 
-#if !defined(OS_WIN)
+// Fails since UI Compositor establishes a GpuChannel.
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       CrashAndRecover) {
+                       DISABLED_CrashAndRecover) {
   DCHECK(!IsChannelEstablished());
   EstablishAndWait();
   scoped_refptr<GpuChannelHost> host = GetGpuChannel();
@@ -208,6 +197,5 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EstablishAndWait();
   EXPECT_TRUE(IsChannelEstablished());
 }
-#endif
 
 }  // namespace content
