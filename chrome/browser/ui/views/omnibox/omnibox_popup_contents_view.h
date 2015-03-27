@@ -81,8 +81,6 @@ class OmniboxPopupContentsView : public views::View,
 
   LocationBarView* location_bar_view() { return location_bar_view_; }
 
-  virtual void PaintResultViews(gfx::Canvas* canvas);
-
   // Calculates the height needed to show all the results in the model.
   virtual int CalculatePopupHeight();
   virtual OmniboxResultView* CreateResultView(int model_index,
@@ -94,10 +92,6 @@ class OmniboxPopupContentsView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
-  // This method should not be triggered directly as we paint our children
-  // in an un-conventional way inside OnPaint. We use a separate canvas to
-  // paint the children. Hence we override this method to a no-op so that
-  // the view hierarchy does not "accidentally" trigger this.
   void PaintChildren(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) override;
 
@@ -112,10 +106,6 @@ class OmniboxPopupContentsView : public views::View,
 
   // Returns the match at the specified index within the popup model.
   const AutocompleteMatch& GetMatchAtIndex(size_t index) const;
-
-  // Fill a path for the contents' roundrect. |bounding_rect| is the rect that
-  // bounds the path.
-  void MakeContentsPath(gfx::Path* path, const gfx::Rect& bounding_rect);
 
   // Find the index of the match under the given |point|, specified in window
   // coordinates. Returns OmniboxPopupModel::kNoMatch if there isn't a match at

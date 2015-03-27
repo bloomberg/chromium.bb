@@ -370,12 +370,6 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, protected:
 
-void OmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
-  canvas->DrawColor(result_view_at(0)->GetColor(
-      OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND));
-  View::PaintChildren(canvas, views::CullSet());
-}
-
 int OmniboxPopupContentsView::CalculatePopupHeight() {
   DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
   int popup_height = 0;
@@ -409,19 +403,6 @@ const char* OmniboxPopupContentsView::GetClassName() const {
 }
 
 void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
-  gfx::Rect contents_bounds = GetContentsBounds();
-  contents_bounds.set_height(
-      contents_bounds.height() - bottom_shadow_->height() + kBorderInterior);
-
-  gfx::Path path;
-  MakeContentsPath(&path, contents_bounds);
-  canvas->Save();
-  canvas->sk_canvas()->clipPath(path,
-                                SkRegion::kIntersect_Op,
-                                true /* doAntialias */);
-  PaintResultViews(canvas);
-  canvas->Restore();
-
   // Top border.
   canvas->FillRect(
       gfx::Rect(0, 0, width(), views::NonClientFrameView::kClientEdgeThickness),
@@ -435,7 +416,18 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
 
 void OmniboxPopupContentsView::PaintChildren(gfx::Canvas* canvas,
                                              const views::CullSet& cull_set) {
-  // We paint our children inside OnPaint().
+  gfx::Rect contents_bounds = GetContentsBounds();
+  contents_bounds.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0,
+                        bottom_shadow_->height() - kBorderInterior);
+
+  canvas->Save();
+  canvas->sk_canvas()->clipRect(gfx::RectToSkRect(contents_bounds),
+                                SkRegion::kIntersect_Op,
+                                true /* doAntialias */);
+  canvas->DrawColor(result_view_at(0)->GetColor(OmniboxResultView::NORMAL,
+                                                OmniboxResultView::BACKGROUND));
+  View::PaintChildren(canvas, cull_set);
+  canvas->Restore();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -454,17 +446,6 @@ bool OmniboxPopupContentsView::HasMatchAt(size_t index) const {
 const AutocompleteMatch& OmniboxPopupContentsView::GetMatchAtIndex(
     size_t index) const {
   return model_->result().match_at(index);
-}
-
-void OmniboxPopupContentsView::MakeContentsPath(
-    gfx::Path* path,
-    const gfx::Rect& bounding_rect) {
-  SkRect rect;
-  rect.set(SkIntToScalar(bounding_rect.x()),
-           SkIntToScalar(bounding_rect.y()),
-           SkIntToScalar(bounding_rect.right()),
-           SkIntToScalar(bounding_rect.bottom()));
-  path->addRect(rect);
 }
 
 size_t OmniboxPopupContentsView::GetIndexForPoint(
