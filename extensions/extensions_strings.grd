@@ -365,6 +365,9 @@
       <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
         Manage network connections
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_PRINTER_PROVIDER" desc="Permission string for Printer Provider API.">
+        Add printing destinations and access any jobs you submit to them
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Access your serial devices
       </message>

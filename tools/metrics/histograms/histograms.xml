@@ -49748,6 +49748,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="77" label="kHostsAllReadOnly"/>
   <int value="78" label="kInterceptAllKeys"/>
   <int value="79" label="kSettingsPrivate"/>
+  <int value="80" label="kPrinterProvider"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">

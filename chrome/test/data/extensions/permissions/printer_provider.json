@@ -1,0 +1,7 @@
+{
+  "name": "PrinterProvider permissions",
+  "version": "1.0.1.0",
+  "manifest_version": 2,
+  "permissions": ["printerProvider"],
+  "app": { "background": { "scripts": ["stub_background.js"] } }
+}
