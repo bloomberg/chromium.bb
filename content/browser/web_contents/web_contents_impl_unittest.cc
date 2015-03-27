@@ -1210,48 +1210,6 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   EXPECT_EQ(pending_rfh, contents()->GetMainFrame());
 }
 
-// Test that a cross-site navigation that doesn't commit after the unload
-// handler doesn't leave the contents in a stuck state.  http://crbug.com/88562
-TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {
-  TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
-  SiteInstance* instance1 = contents()->GetSiteInstance();
-
-  // Navigate to URL.  First URL should use original RenderFrameHost.
-  const GURL url("http://www.google.com");
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(orig_rfh, 1, url, ui::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
-
-  // Navigate to new site, simulating an onbeforeunload approval.
-  const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
-  contents()->GetMainFrame()->PrepareForCommit();
-  EXPECT_TRUE(contents()->cross_navigation_pending());
-
-  // Simulate swap out message when the response arrives.
-  orig_rfh->OnSwappedOut();
-
-  // Suppose the navigation doesn't get a chance to commit, and the user
-  // navigates in the current RFH's SiteInstance.
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-
-  // Verify that the pending navigation is cancelled and the renderer is no
-  // longer swapped out.
-  EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
-  SiteInstance* instance2 = contents()->GetSiteInstance();
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, orig_rfh->rfh_state());
-  EXPECT_EQ(instance1, instance2);
-  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
-}
-
 // Test that NavigationEntries have the correct page state after going
 // forward and back.  Prevents regression for bug 1116137.
 TEST_F(WebContentsImplTest, NavigationEntryContentState) {
