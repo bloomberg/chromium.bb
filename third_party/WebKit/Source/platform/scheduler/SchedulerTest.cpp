@@ -43,7 +43,7 @@ public:
         return m_shouldYieldForHighPriorityWork;
     }
 
-    void postIdleTask(const WebTraceLocation&, IdleTask* task) override
+    void postIdleTask(const WebTraceLocation&, blink::WebThread::IdleTask* task) override
     {
         m_latestIdleTask = adoptPtr(task);
     }

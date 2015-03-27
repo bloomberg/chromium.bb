@@ -18,8 +18,6 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
 public:
     virtual ~WebScheduler() { }
 
-    typedef WebThread::IdleTask IdleTask;
-
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.
     // Must be called on the main thread.
@@ -39,20 +37,20 @@ public:
     // tasks which may be reordered relative to other task types and may be
     // starved for an arbitrarily long time if no idle time is available.
     // Takes ownership of |IdleTask|. Can be called from any thread.
-    virtual void postIdleTask(const WebTraceLocation&, IdleTask*) { }
+    virtual void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) { }
 
     // Like postIdleTask but guarantees that the posted task will not run
     // nested within an already-running task. Posting an idle task as
     // non-nestable may not affect when the task gets run, or it could
     // make it run later than it normally would, but it won't make it
     // run earlier than it normally would.
-    virtual void postNonNestableIdleTask(const WebTraceLocation&, IdleTask*) { }
+    virtual void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) { }
 
     // Like postIdleTask but does not run the idle task until after some other
     // task has run. This enables posting of a task which won't stop the Blink
     // main thread from sleeping, but will start running after it wakes up.
     // Takes ownership of |IdleTask|. Can be called from any thread.
-    virtual void postIdleTaskAfterWakeup(const WebTraceLocation&, IdleTask*) { }
+    virtual void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) { }
 
     // Schedule a loading task to be run on the Blink main thread. Loading
     // tasks usually have the default priority, but may be deprioritised
