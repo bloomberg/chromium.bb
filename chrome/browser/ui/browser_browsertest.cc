@@ -1299,7 +1299,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 }
 
-#if !defined(OS_MACOSX)
 // Open with --app-id=<id>, and see that an application tab opens by default.
 IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   ASSERT_TRUE(test_server()->Start());
@@ -1386,7 +1385,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
 }
-#endif  // !defined(OS_MACOSX)
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
