@@ -98,10 +98,13 @@ public class AccountChooserInfoBar extends InfoBar {
                 }
                 ImageView avatarView = (ImageView) convertView.findViewById(R.id.profile_image);
                 TextView usernameView = (TextView) convertView.findViewById(R.id.username);
-                TextView displayNameView = (TextView) convertView.findViewById(R.id.display_name);
+                TextView smallTextView = (TextView) convertView.findViewById(R.id.display_name);
                 Credential credential = getItem(position);
                 usernameView.setText(credential.getUsername());
-                displayNameView.setText(credential.getDisplayName());
+                String smallText = credential.getFederation().isEmpty()
+                        ? credential.getFederation()
+                        : credential.getDisplayName();
+                smallTextView.setText(smallText);
                 // TODO(melandory): View should show proper avatar. Temporarily the view shows
                 // blue man icon.
                 avatarView.setImageResource(R.drawable.account_management_no_picture);
