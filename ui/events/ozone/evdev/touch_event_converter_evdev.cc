@@ -47,13 +47,13 @@ void GetTouchCalibration(TouchCalibration* cal) {
                    switches::kTouchCalibration),
                ",", &parts) >= 4) {
     if (!base::StringToInt(parts[0], &cal->bezel_left))
-      DLOG(ERROR) << "Incorrect left border calibration value passed.";
+      LOG(ERROR) << "Incorrect left border calibration value passed.";
     if (!base::StringToInt(parts[1], &cal->bezel_right))
-      DLOG(ERROR) << "Incorrect right border calibration value passed.";
+      LOG(ERROR) << "Incorrect right border calibration value passed.";
     if (!base::StringToInt(parts[2], &cal->bezel_top))
-      DLOG(ERROR) << "Incorrect top border calibration value passed.";
+      LOG(ERROR) << "Incorrect top border calibration value passed.";
     if (!base::StringToInt(parts[3], &cal->bezel_bottom))
-      DLOG(ERROR) << "Incorrect bottom border calibration value passed.";
+      LOG(ERROR) << "Incorrect bottom border calibration value passed.";
   }
 }
 

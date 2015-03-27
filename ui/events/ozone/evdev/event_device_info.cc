@@ -19,8 +19,7 @@ namespace {
 
 bool GetEventBits(int fd, unsigned int type, void* buf, unsigned int size) {
   if (ioctl(fd, EVIOCGBIT(type, size), buf) < 0) {
-    DLOG(ERROR) << "failed EVIOCGBIT(" << type << ", " << size << ") on fd "
-                << fd;
+    PLOG(ERROR) << "EVIOCGBIT(" << type << ", " << size << ") on fd " << fd;
     return false;
   }
 
@@ -29,7 +28,7 @@ bool GetEventBits(int fd, unsigned int type, void* buf, unsigned int size) {
 
 bool GetPropBits(int fd, void* buf, unsigned int size) {
   if (ioctl(fd, EVIOCGPROP(size), buf) < 0) {
-    DLOG(ERROR) << "failed EVIOCGPROP(" << size << ") on fd " << fd;
+    PLOG(ERROR) << "EVIOCGPROP(" << size << ") on fd " << fd;
     return false;
   }
 
@@ -38,7 +37,7 @@ bool GetPropBits(int fd, void* buf, unsigned int size) {
 
 bool GetAbsInfo(int fd, int code, struct input_absinfo* absinfo) {
   if (ioctl(fd, EVIOCGABS(code), absinfo)) {
-    DLOG(ERROR) << "failed EVIOCGABS(" << code << ") on fd " << fd;
+    PLOG(ERROR) << "EVIOCGABS(" << code << ") on fd " << fd;
     return false;
   }
   return true;
@@ -55,7 +54,7 @@ bool GetSlotValues(int fd, int32_t* request, unsigned int size) {
   size_t data_size = size * sizeof(*request);
 
   if (ioctl(fd, EVIOCGMTSLOTS(data_size), request) < 0) {
-    DLOG(ERROR) << "failed EVIOCGMTSLOTS(" << request[0] << ") on fd " << fd;
+    PLOG(ERROR) << "EVIOCGMTSLOTS(" << request[0] << ") on fd " << fd;
     return false;
   }
 
