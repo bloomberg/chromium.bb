@@ -35,11 +35,12 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
       handle.id, size, format, callback, io_surface.release()));
 }
 
-void* GpuMemoryBufferImplIOSurface::Map() {
+bool GpuMemoryBufferImplIOSurface::Map(void** data) {
   DCHECK(!mapped_);
   IOSurfaceLock(io_surface_, 0, NULL);
   mapped_ = true;
-  return IOSurfaceGetBaseAddress(io_surface_);
+  *data = IOSurfaceGetBaseAddress(io_surface_);
+  return true;
 }
 
 void GpuMemoryBufferImplIOSurface::Unmap() {
@@ -48,8 +49,8 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
   mapped_ = false;
 }
 
-uint32 GpuMemoryBufferImplIOSurface::GetStride() const {
-  return IOSurfaceGetBytesPerRow(io_surface_);
+void GpuMemoryBufferImplIOSurface::GetStride(uint32* stride) const {
+  *stride = IOSurfaceGetBytesPerRow(io_surface_);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {

@@ -72,15 +72,16 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
-  void* Map() override {
+  bool Map(void** data) override {
     mapped_ = true;
-    return &bytes_->data().front();
+    *data = &bytes_->data().front();
+    return true;
   }
   void Unmap() override { mapped_ = false; }
   bool IsMapped() const override { return mapped_; }
   Format GetFormat() const override { return format_; }
-  uint32 GetStride() const override {
-    return StrideInBytes(size_.width(), format_);
+  void GetStride(uint32* stride) const override {
+    *stride = StrideInBytes(size_.width(), format_);
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();

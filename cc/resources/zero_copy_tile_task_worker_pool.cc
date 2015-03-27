@@ -31,9 +31,14 @@ class RasterBufferImpl : public RasterBuffer {
     if (!gpu_memory_buffer)
       return;
 
-    TileTaskWorkerPool::PlaybackToMemory(
-        gpu_memory_buffer->Map(), resource_->format(), resource_->size(),
-        gpu_memory_buffer->GetStride(), raster_source, rect, scale);
+    void* data = NULL;
+    bool rv = gpu_memory_buffer->Map(&data);
+    DCHECK(rv);
+    uint32 stride;
+    gpu_memory_buffer->GetStride(&stride);
+    TileTaskWorkerPool::PlaybackToMemory(data, resource_->format(),
+                                         resource_->size(), stride,
+                                         raster_source, rect, scale);
     gpu_memory_buffer->Unmap();
   }
 

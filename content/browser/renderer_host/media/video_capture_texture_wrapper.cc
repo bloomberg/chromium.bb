@@ -283,11 +283,17 @@ void VideoCaptureTextureWrapper::TextureWrapperDelegate::OnIncomingCapturedData(
   gpu_memory_buffers_.pop();
   DCHECK(gpu_memory_buffer.get());
 
-  uint8* mapped_buffer = static_cast<uint8*>(gpu_memory_buffer->Map());
+  void* data = NULL;
+  bool rv = gpu_memory_buffer->Map(&data);
+  DCHECK(rv);
+  uint32 stride;
+  gpu_memory_buffer->GetStride(&stride);
+
+  uint8* mapped_buffer = static_cast<uint8*>(data);
   DCHECK(mapped_buffer);
   libyuv::ARGBCopy(
       reinterpret_cast<uint8*>(argb_buffer->data()), frame_size.width() * 4,
-      mapped_buffer, frame_size.width() * 4,
+      mapped_buffer, stride,
       frame_size.width(), frame_size.height());
   gpu_memory_buffer->Unmap();
 

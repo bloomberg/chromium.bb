@@ -31,18 +31,17 @@ GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
           handle.id, size, format, callback));
 }
 
-void* GpuMemoryBufferImplOzoneNativeBuffer::Map() {
+bool GpuMemoryBufferImplOzoneNativeBuffer::Map(void** data) {
   NOTREACHED();
-  return NULL;
+  return false;
 }
 
 void GpuMemoryBufferImplOzoneNativeBuffer::Unmap() {
   NOTREACHED();
 }
 
-uint32 GpuMemoryBufferImplOzoneNativeBuffer::GetStride() const {
+void GpuMemoryBufferImplOzoneNativeBuffer::GetStride(uint32* stride) const {
   NOTREACHED();
-  return 0;
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativeBuffer::GetHandle()

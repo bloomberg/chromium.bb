@@ -39,6 +39,10 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                             Format format,
                             size_t* stride_in_bytes);
 
+  // Returns the number of planes based on the format of the buffer.
+  static size_t NumberOfPlanesForGpuMemoryBufferFormat(
+      gfx::GpuMemoryBuffer::Format format);
+
   // Overridden from gfx::GpuMemoryBuffer:
   bool IsMapped() const override;
   Format GetFormat() const override;

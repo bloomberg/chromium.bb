@@ -106,10 +106,12 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
     ASSERT_TRUE(buffer);
     EXPECT_FALSE(buffer->IsMapped());
 
-    void* memory = buffer->Map();
-    ASSERT_TRUE(memory);
+    void* memory;
+    bool rv = buffer->Map(&memory);
+    ASSERT_TRUE(rv);
     EXPECT_TRUE(buffer->IsMapped());
-    uint32 stride = buffer->GetStride();
+    uint32 stride;
+    buffer->GetStride(&stride);
     EXPECT_GE(stride, width_in_bytes);
     memcpy(memory, data.get(), width_in_bytes);
     EXPECT_EQ(memcmp(memory, data.get(), width_in_bytes), 0);

@@ -78,7 +78,11 @@ TEST_F(GpuMemoryBufferTest, Lifecycle) {
       gfx::Size(kImageWidth, kImageHeight), gfx::GpuMemoryBuffer::RGBA_8888));
 
   // Map buffer for writing.
-  uint8* mapped_buffer = static_cast<uint8*>(buffer->Map());
+  void* data;
+  bool rv = buffer->Map(&data);
+  DCHECK(rv);
+
+  uint8* mapped_buffer = static_cast<uint8*>(data);
   ASSERT_TRUE(mapped_buffer != NULL);
 
   // Assign a value to each pixel.

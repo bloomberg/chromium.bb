@@ -68,7 +68,7 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
           handle.id, size, format, callback, native_window));
 }
 
-void* GpuMemoryBufferImplSurfaceTexture::Map() {
+bool GpuMemoryBufferImplSurfaceTexture::Map(void** data) {
   TRACE_EVENT0("gpu", "GpuMemoryBufferImplSurfaceTexture::Map");
 
   DCHECK(!mapped_);
@@ -77,17 +77,18 @@ void* GpuMemoryBufferImplSurfaceTexture::Map() {
   int status = ANativeWindow_lock(native_window_, &buffer, NULL);
   if (status) {
     VLOG(1) << "ANativeWindow_lock failed with error code: " << status;
-    return NULL;
+    return false;
   }
 
   size_t stride_in_bytes = 0;
   if (!StrideInBytes(buffer.stride, format_, &stride_in_bytes))
-    return NULL;
+    return false;
 
   DCHECK_LE(size_.width(), buffer.stride);
   stride_ = stride_in_bytes;
   mapped_ = true;
-  return buffer.bits;
+  *data = buffer.bits;
+  return true;
 }
 
 void GpuMemoryBufferImplSurfaceTexture::Unmap() {
@@ -98,8 +99,8 @@ void GpuMemoryBufferImplSurfaceTexture::Unmap() {
   mapped_ = false;
 }
 
-uint32 GpuMemoryBufferImplSurfaceTexture::GetStride() const {
-  return stride_;
+void GpuMemoryBufferImplSurfaceTexture::GetStride(uint32* stride) const {
+  *stride = stride_;
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSurfaceTexture::GetHandle()

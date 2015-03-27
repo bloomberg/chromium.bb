@@ -111,6 +111,25 @@ bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
   return false;
 }
 
+// static
+size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
+    gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::Format::ATC:
+    case gfx::GpuMemoryBuffer::Format::ATCIA:
+    case gfx::GpuMemoryBuffer::Format::DXT1:
+    case gfx::GpuMemoryBuffer::Format::DXT5:
+    case gfx::GpuMemoryBuffer::Format::ETC1:
+    case gfx::GpuMemoryBuffer::Format::RGBA_8888:
+    case gfx::GpuMemoryBuffer::Format::RGBX_8888:
+    case gfx::GpuMemoryBuffer::Format::BGRA_8888:
+      return 1;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 gfx::GpuMemoryBuffer::Format GpuMemoryBufferImpl::GetFormat() const {
   return format_;
 }

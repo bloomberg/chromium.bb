@@ -156,10 +156,11 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
   return false;
 }
 
-void* GpuMemoryBufferImplSharedMemory::Map() {
+bool GpuMemoryBufferImplSharedMemory::Map(void** data) {
   DCHECK(!mapped_);
   mapped_ = true;
-  return shared_memory_->memory();
+  *data = shared_memory_->memory();
+  return true;
 }
 
 void GpuMemoryBufferImplSharedMemory::Unmap() {
@@ -167,11 +168,11 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
   mapped_ = false;
 }
 
-uint32 GpuMemoryBufferImplSharedMemory::GetStride() const {
+void GpuMemoryBufferImplSharedMemory::GetStride(uint32* stride) const {
   size_t stride_in_bytes = 0;
   bool valid_stride = StrideInBytes(size_.width(), format_, &stride_in_bytes);
   DCHECK(valid_stride);
-  return stride_in_bytes;
+  *stride = stride_in_bytes;
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
