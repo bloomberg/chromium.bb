@@ -28,8 +28,7 @@ def ParseArgs(argv):
   wrapper = subparser.add_parser('create-wrappers')
   wrapper.add_argument('--sysroot', help='Path to the sysroot.', required=True)
   wrapper.add_argument('--friendlyname', help='Name to append to the commands.')
-  wrapper.add_argument('--toolchain', help='Toolchain used in this sysroot.',
-                       required=True)
+  wrapper.add_argument('--toolchain', help='Toolchain used in this sysroot.')
   wrapper.set_defaults(command='create-wrappers')
 
   config = subparser.add_parser('generate-config')

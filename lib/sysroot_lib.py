@@ -70,7 +70,26 @@ def CreateWrapper(command_name, template, **kwargs):
   os.chmod(wrapper_path, 0o755)
 
 
-def CreateAllWrappers(sysroot, chost, friendly_name=None):
+def GetConfigFilePath(sysroot):
+  """Returns the path to the configuration file for |sysroot|.
+
+  sysroot: Path to the sysroot.
+  """
+  return os.path.join(sysroot, _CONFIGURATION_PATH)
+
+
+def GetStandardField(sysroot, field):
+  """Returns the value of a standard field.
+
+  Args:
+    sysroot: Path to the sysroot.
+    field: Field from the standard configuration file to get.
+  """
+  return osutils.SourceEnvironment(GetConfigFilePath(sysroot),
+                                   [field], multiline=True).get(field)
+
+
+def CreateAllWrappers(sysroot, chost=None, friendly_name=None):
   """Creates all the wrappers for a given sysroot.
 
   Creates all portage tools wrappers, plus wrappers for gdb, cros_workon and
@@ -78,10 +97,13 @@ def CreateAllWrappers(sysroot, chost, friendly_name=None):
 
   Args:
     sysroot: path to the sysroot.
-    chost: toolchain to use.
+    chost: toolchain to use. Defaults to the sysroot's CHOST.
     friendly_name: suffix to add to the commands. Defaults to the last component
       of |sysroot|.
   """
+  if chost is None:
+    chost = GetStandardField(sysroot, 'CHOST')
+
   board = friendly_name or os.path.basename(sysroot)
   for cmd in ('ebuild', 'eclean', 'emaint', 'equery', 'portageq', 'qcheck',
               'qdepends', 'qfile', 'qlist', 'qmerge', 'qsize'):
