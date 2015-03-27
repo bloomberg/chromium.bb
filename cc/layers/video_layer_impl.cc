@@ -43,7 +43,7 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
 VideoLayerImpl::VideoLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl,
+    const scoped_refptr<VideoFrameProviderClientImpl>& provider_client_impl,
     media::VideoRotation video_rotation)
     : LayerImpl(tree_impl, id),
       provider_client_impl_(provider_client_impl),

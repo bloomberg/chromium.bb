@@ -48,7 +48,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   VideoLayerImpl(
       LayerTreeImpl* tree_impl,
       int id,
-      scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl,
+      const scoped_refptr<VideoFrameProviderClientImpl>& provider_client_impl,
       media::VideoRotation video_rotation);
 
   const char* LayerTypeAsString() const override;
