@@ -156,8 +156,12 @@ void MutationObserver::disconnect()
     m_records.clear();
     InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
     MutationObserverRegistrationSet registrations(m_registrations);
-    for (auto& registration : registrations)
-        registration->unregister();
+    for (auto& registration : registrations) {
+        // The registration may be already unregistered while iteration.
+        // Only call unregister if it is still in the original set.
+        if (m_registrations.contains(registration))
+            registration->unregister();
+    }
     ASSERT(m_registrations.isEmpty());
 }
 
