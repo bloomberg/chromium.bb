@@ -180,7 +180,10 @@ class OZONE_EXPORT HardwareDisplayController
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.
   OverlayPlaneList current_planes_;
+  // Planes currently being queued without having SchedulePageFlip() called.
   OverlayPlaneList pending_planes_;
+  // Plane lists for which SchedulePageFlip() was called. They are waiting for
+  // previous page flip events to be completed before they can be serviced.
   std::deque<PageFlipRequest> requests_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
 

@@ -56,7 +56,6 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
   mode_ = mode;
 
   current_planes_ = std::vector<OverlayPlane>(1, primary);
-  pending_planes_.clear();
   ClearPendingRequests();
 
   // Because a page flip is pending we need to leave some state for the
@@ -71,7 +70,13 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
 bool HardwareDisplayController::Enable() {
   TRACE_EVENT0("drm", "HDC::Enable");
   DCHECK(!current_planes_.empty());
-  const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(current_planes_);
+
+  const OverlayPlane* primary = nullptr;
+  // Use the last scheduled buffer to modeset to preserve request order.
+  if (!requests_.empty())
+    primary = OverlayPlane::GetPrimaryPlane(requests_.back().planes);
+  else
+    primary = OverlayPlane::GetPrimaryPlane(current_planes_);
 
   return Modeset(*primary, mode_);
 }
