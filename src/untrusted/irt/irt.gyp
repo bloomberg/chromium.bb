@@ -34,7 +34,8 @@
       'irt_exception_handling.c',
       'irt_dev_list_mappings.c',
       'irt_random.c',
-      'irt_pnacl_translator.c',
+      'irt_pnacl_translator_compile.c',
+      'irt_pnacl_translator_link.c',
 # support_srcs
       # We also get nc_init_private.c, nc_thread.c and nc_tsd.c via
       # #includes of .c files.

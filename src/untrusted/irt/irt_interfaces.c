@@ -135,6 +135,13 @@ static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_PRIVATE_PNACL_TRANSLATOR_LINK_v0_1,
     &nacl_irt_private_pnacl_translator_link,
     sizeof(nacl_irt_private_pnacl_translator_link), NULL },
+  /*
+   * TODO(jvoung): Similar to NACL_IRT_PRIVATE_PNACL_TRANSLATOR_LINK_v0_1
+   * ideally this should be hidden from non-translator apps.
+   */
+  { NACL_IRT_PRIVATE_PNACL_TRANSLATOR_COMPILE_v0_1,
+    &nacl_irt_private_pnacl_translator_compile,
+    sizeof(nacl_irt_private_pnacl_translator_compile), NULL },
 };
 
 size_t nacl_irt_query_core(const char *interface_ident,

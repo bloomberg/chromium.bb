@@ -34,5 +34,7 @@ extern const struct nacl_irt_dev_list_mappings nacl_irt_dev_list_mappings;
 extern const struct nacl_irt_code_data_alloc nacl_irt_code_data_alloc;
 extern const struct nacl_irt_private_pnacl_translator_link
     nacl_irt_private_pnacl_translator_link;
+extern const struct nacl_irt_private_pnacl_translator_compile
+    nacl_irt_private_pnacl_translator_compile;
 
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_INTERFACES_H_ */

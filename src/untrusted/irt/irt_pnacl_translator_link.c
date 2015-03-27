@@ -48,7 +48,9 @@ static void serve_link_request(int (*func)(int nexe_fd,
   if (!NaClSrpcModuleInit()) {
     NaClLog(LOG_FATAL, "NaClSrpcModuleInit() failed\n");
   }
-  NaClSrpcAcceptClientConnection(srpc_methods);
+  if (!NaClSrpcAcceptClientConnection(srpc_methods)) {
+    NaClLog(LOG_FATAL, "NaClSrpcAcceptClientConnection() failed\n");
+  }
 }
 
 const struct nacl_irt_private_pnacl_translator_link

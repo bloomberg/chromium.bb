@@ -138,6 +138,61 @@ struct nacl_irt_private_pnacl_translator_link {
                                          int obj_file_fd_count));
 };
 
+/*
+ * This is an internal interface, for use by PNaCl's sandboxed compilers for
+ * communicating with the browser. This applies to pnacl-llc and pnacl-sz
+ * though how pnacl-llc and pnacl-sz use the interface can be slightly
+ * different (e.g., pnacl-sz will only use the first the obj_file_fds entry).
+ *
+ * serve_translate_request(funcs) loops waiting for sequences of requests
+ * via IPC, and then calls the appropriate callback to handle the IPC,
+ * on the same thread.
+ */
+struct nacl_irt_pnacl_compile_funcs {
+  /*
+   * |init_callback| is used to initialize the translation process with
+   * configuration info:
+   * (*) |num_threads| is the number of recommended *translate* threads
+   *     to use (there may be other worker threads). For pnacl-sz,
+   *     num_threads == 0 is for completely sequential translation
+   *     (no worker threads).
+   * (*) |obj_file_fds| is an array of FDs for writing an output object file
+   * (*) |obj_file_fd_count| length of the |obj_file_fds| array.
+   * (*) |cmd_flags| is array of null-terminated commandline flag strings.
+   *     I.e., an argv vector with a final NULL entry.
+   *     The caller retains ownership and immediately frees this array.
+   * (*) |cmd_flags_len| is the number of strings in the |cmd_flags| array.
+   *     I.e., the argc for the argv.
+   * Returns a null-terminated error message or NULL on success.
+   */
+  char *(*init_callback)(uint32_t num_threads,
+                         int *obj_file_fds, size_t obj_file_fd_count,
+                         char **cmd_flags, size_t cmd_flags_len);
+  /*
+   * |data_callback| is invoked to stream additional bitcode data to
+   * the translator.
+   * Return zero on success or a non-zero value on error. If there is an
+   * error, then the caller can/should still call |end_callback| to get
+   * a message describing the error.
+   */
+  int (*data_callback)(const void *data, size_t num_bytes);
+  /*
+   * |end_callback| is invoked to signal the end of the data stream.
+   * This must block until translation is actually complete or an error
+   * has occurred and the translator process can be terminated.
+   * Returns a null-terminated error message or NULL on success.
+   */
+  char *(*end_callback)(void);
+  /* TODO(jvoung): have a separate method for getting internal UMA stats. */
+};
+
+#define NACL_IRT_PRIVATE_PNACL_TRANSLATOR_COMPILE_v0_1 \
+  "nacl-irt-private-pnacl-translator-compile-0.1"
+struct nacl_irt_private_pnacl_translator_compile {
+  void (*serve_translate_request)(
+      const struct nacl_irt_pnacl_compile_funcs *funcs);
+};
+
 #if defined(__cplusplus)
 }
 #endif
