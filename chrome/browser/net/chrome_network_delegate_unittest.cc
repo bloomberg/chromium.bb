@@ -25,36 +25,6 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
-TEST(ChromeNetworkDelegateTest, DisableFirstPartyOnlyCookiesIffFlagDisabled) {
-  BooleanPrefMember pref_member_;
-  scoped_ptr<ChromeNetworkDelegate> delegate;
-
-#if defined(ENABLE_EXTENSIONS)
-  scoped_refptr<extensions::EventRouterForwarder> forwarder =
-      new extensions::EventRouterForwarder();
-  delegate.reset(new ChromeNetworkDelegate(forwarder.get(), &pref_member_));
-#else
-  delegate.reset(new ChromeNetworkDelegate(nullptr, &pref_member_));
-#endif
-  EXPECT_FALSE(delegate->FirstPartyOnlyCookieExperimentEnabled());
-}
-
-TEST(ChromeNetworkDelegateTest, EnableFirstPartyOnlyCookiesIffFlagEnabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-  BooleanPrefMember pref_member_;
-  scoped_ptr<ChromeNetworkDelegate> delegate;
-
-#if defined(ENABLE_EXTENSIONS)
-  scoped_refptr<extensions::EventRouterForwarder> forwarder =
-      new extensions::EventRouterForwarder();
-  delegate.reset(new ChromeNetworkDelegate(forwarder.get(), &pref_member_));
-#else
-  delegate.reset(new ChromeNetworkDelegate(nullptr, &pref_member_));
-#endif
-  EXPECT_TRUE(delegate->FirstPartyOnlyCookieExperimentEnabled());
-}
-
 #if defined(ENABLE_EXTENSIONS)
 class ChromeNetworkDelegateThrottlingTest : public testing::Test {
  protected:

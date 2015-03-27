@@ -252,15 +252,6 @@ void LayeredNetworkDelegate::OnCanEnablePrivacyModeInternal(
     const GURL& first_party_for_cookies) const {
 }
 
-bool LayeredNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
-  OnFirstPartyOnlyCookieExperimentEnabledInternal();
-  return nested_network_delegate_->FirstPartyOnlyCookieExperimentEnabled();
-}
-
-void LayeredNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabledInternal()
-    const {
-}
-
 bool LayeredNetworkDelegate::
     OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         const URLRequest& request,

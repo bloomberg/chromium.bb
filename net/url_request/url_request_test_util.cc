@@ -322,7 +322,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       has_load_timing_info_before_auth_(false),
       can_access_files_(true),
       can_throttle_requests_(true),
-      first_party_only_cookies_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       will_be_intercepted_on_next_error_(false) {
 }
@@ -602,10 +601,6 @@ bool TestNetworkDelegate::OnCanAccessFile(const URLRequest& request,
 bool TestNetworkDelegate::OnCanThrottleRequest(
     const URLRequest& request) const {
   return can_throttle_requests_;
-}
-
-bool TestNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
-  return first_party_only_cookies_enabled_;
 }
 
 bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
