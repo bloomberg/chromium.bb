@@ -44,8 +44,10 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 #define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
     DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
 #else
+// TODO(pkasting): http://crbug.com/471132 Temporarily disabled this test due to
+// unexplained failure.
 #define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
-    RunsAudioVideoWebRTCCallInTwoTabs
+    DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
