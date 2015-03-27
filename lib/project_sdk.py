@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import os
-import re
 
 from chromite.cbuildbot import constants
 from chromite.lib import osutils
@@ -43,18 +42,15 @@ def FindRepoRoot(sdk_dir=None):
   return os.path.dirname(repo_dir) if repo_dir else None
 
 
+def VersionFile(sdk_dir):
+  return os.path.join(sdk_dir, 'SDK_VERSION')
+
+
 def FindVersion(sdk_dir=None):
   """Find the version of a given SDK.
 
-  This really uses the name of the manifest this SDK was based on, that means
-  there are a number of special cases.
-
-  Official pinned SDKs should always use a ChromeOS release number like
-  '6500.0.0'. However, SDKs checked out from other manifests can return
-  all sorts of values like 'official', 'full', or '6500.0.0-r12'.
-
-  This command does not yes distinguish between official and non-official
-  SDKs (brbug.com/262).
+  If the SDK was fetched my any means other that "brillo sdk" then it will
+  always appear to be 'non-official', even if an official manifest was used.
 
   Args:
     sdk_dir: path to the SDK, or any of its sub directories.
@@ -67,22 +63,5 @@ def FindVersion(sdk_dir=None):
   if sdk_root is None:
     return None
 
-  # Find the path to the manifest symlink 'repo' uses.
-  manifest_path = os.path.join(sdk_root, '.repo', 'manifest.xml')
-
-  # e.g. SDK/.repo/manifest/project-sdk/6759.0.0.xml
-  expanded_manifest = os.path.realpath(manifest_path)
-
-  # e.g. 6759.0.0.xml
-  manifest_file = os.path.basename(expanded_manifest)
-
-  # e.g. 6759.0.0
-  version = os.path.splitext(manifest_file)[0]
-
-  # Make sure this is an official SDK version.
-  # TODO(garnold) Remove once we stabilize version number extraction
-  # (brillo:262).
-  if not re.match(r'^\d+\.\d+\.\d+$', version):
-    return None
-
-  return version
+  v_file = VersionFile(sdk_root)
+  return osutils.ReadFile(v_file) if os.path.exists(v_file) else None

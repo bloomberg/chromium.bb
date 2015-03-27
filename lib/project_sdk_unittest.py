@@ -30,25 +30,8 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(os.path.join(self.repo_dir, '.repo'))
     osutils.SafeMakedirs(self.nested_dir)
 
-    # Setup manifest with symlink pointer.
-    real_manifest_path = os.path.join(
-        self.repo_dir, '.repo', 'sub-dir', '%s.xml' % self.version)
-    sym_manifest_path = os.path.join(self.repo_dir, '.repo', 'manifest.xml')
-
-    osutils.Touch(real_manifest_path, makedirs=True)
-    os.symlink(real_manifest_path, sym_manifest_path)
-
-    # Build a repo with a malformed version.
-    self.malformed_version = 'foobar'
-    self.malformed_repo_dir = os.path.join(self.tempdir, 'malformed_repo')
-    osutils.SafeMakedirs(os.path.join(self.malformed_repo_dir, '.repo'))
-    real_manifest_path = os.path.join(
-        self.malformed_repo_dir, '.repo', 'sub-dir',
-        '%s.xml' % self.malformed_version)
-    sym_manifest_path = os.path.join(self.malformed_repo_dir, '.repo',
-                                     'manifest.xml')
-    osutils.Touch(real_manifest_path, makedirs=True)
-    os.symlink(real_manifest_path, sym_manifest_path)
+    version_file = project_sdk.VersionFile(self.repo_dir)
+    osutils.WriteFile(version_file, self.version)
 
   def testFindRepoRootCurrentRepo(self):
     """Test FindRepoRoot with default of CWD."""
@@ -71,6 +54,9 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
     self.assertIsNone(
         project_sdk.FindRepoRoot(os.path.join(self.nested_dir, 'not_there')))
 
+  def testVersionFile(self):
+    self.assertEqual('/foo/SDK_VERSION', project_sdk.VersionFile('/foo'))
+
   def testFindVersionDefault(self):
     """Test FindVersion with default of CWD."""
     # Expected results are undefined, just ensure we don't crash.
@@ -87,7 +73,3 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
   def testFindVersionSpecifiedNested(self):
     """Test FindVersion with nested inside repo tree."""
     self.assertEqual(self.version, project_sdk.FindVersion(self.nested_dir))
-
-  def testFindVersionMalformed(self):
-    """Test FindVersion with malformed version string."""
-    self.assertIsNone(project_sdk.FindVersion(self.malformed_repo_dir))

@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os
+import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
@@ -16,6 +17,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import project_sdk
 from chromite.lib import workspace_lib
@@ -24,51 +26,75 @@ from chromite.lib import workspace_lib
 _BRILLO_SDK_NO_UPDATE = 'BRILLO_SDK_NO_UPDATE'
 
 
-def _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version):
-  """Install specified SDK, and associate the workspace with it."""
+def _ResolveLatest(gs_ctx):
+  """Find the 'latest' SDK release."""
+  return gs_ctx.Cat(constants.BRILLO_LATEST_RELEASE_URL).strip()
+
+
+def _UpdateWorkspaceSdk(gs_ctx, bootstrap_path, workspace_path, version):
+  """Install specified SDK, and associate the workspace with it.
+
+  Args:
+    gs_ctx: GS Context to use.
+    bootstrap_path: Directory to the bootstrap.
+    workspace_path: Directory that holds the workspace.
+    version: Project SDK version to sync.
+  """
   if project_sdk.FindRepoRoot(bootstrap_path):
     cros_build_lib.Die('brillo sdk must run from a git clone. brbug.com/580')
 
   sdk_path = bootstrap_lib.ComputeSdkPath(bootstrap_path, version)
 
   # If this version already exists, no need to reinstall it.
-  if not project_sdk.FindRepoRoot(sdk_path):
-    _UpdateSdk(sdk_path, version)
+  if not os.path.exists(sdk_path):
+    _UpdateSdk(gs_ctx, sdk_path, version)
 
   # Store the new version in the workspace.
   workspace_lib.SetActiveSdkVersion(workspace_path, version)
 
 
-def _UpdateSdk(sdk_dir, version):
+def _UpdateSdk(gs_ctx, sdk_dir, version):
   """Install the specified SDK at the specified location.
 
   Args:
+    gs_ctx: GS Context to use.
     sdk_dir: Directory in which to create a repo.
     version: Project SDK version to sync.
   """
   # Create the SDK dir, if it doesn't already exist.
   osutils.SafeMakedirs(sdk_dir)
 
-  # Figure out what manifest to sync into repo.
+  # TOT is a special case, handle it first.
   if version.lower() == 'tot':
-    manifest_url = constants.MANIFEST_URL
-    manifest_path = constants.PROJECT_MANIFEST
-    depth = None
-  else:
-    manifest_url = constants.MANIFEST_VERSIONS_GOB_URL
-    manifest_path = 'project-sdk/%s.xml' % version
-    depth = 1
+    # Init new repo.
+    repo = repository.RepoRepository(
+        constants.MANIFEST_URL, sdk_dir, manifest=constants.PROJECT_MANIFEST)
+    # Sync it.
+    repo.Sync()
+    return
 
-  # Init new repo.
-  repo = repository.RepoRepository(
-      manifest_url, sdk_dir, manifest=manifest_path, depth=depth)
+  with tempfile.NamedTemporaryFile() as manifest:
+    # Fetch manifest into temp file.
+    manifest_url = os.path.join(constants.BRILLO_RELEASE_MANIFESTS_URL,
+                                '%s.xml' % version)
+    gs_ctx.Copy(manifest_url, manifest.name)
 
-  # Sync it.
-  repo.Sync()
+    with osutils.TempDir() as manifest_git_dir:
+      # Convert manifest into a git repository for the repo command.
+      repository.PrepManifestForRepo(manifest_git_dir, manifest.name)
+
+      # Fetch the SDK.
+      repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1)
+      repo.Sync()
+
+  # TODO(dgarrett): Embed this step into the manifest itself.
+  # Write out the SDK Version.
+  sdk_version_file = project_sdk.VersionFile(sdk_dir)
+  osutils.WriteFile(sdk_version_file, version)
 
 
 def _HandleUpdate(bootstrap_path, workspace_path, sdk_dir, version):
-  """Handle an update request.
+  """Handle an update request for a variety of conditions.
 
   Args:
     bootstrap_path: Path to bootstrap location (or None).
@@ -76,13 +102,20 @@ def _HandleUpdate(bootstrap_path, workspace_path, sdk_dir, version):
     sdk_dir: Directory in which to create a repo (or None).
     version: Project SDK version to sync.
   """
+  # We fetch versioned manifests from GS.
+  gs_ctx = gs.GSContext()
+
+  # Resolve 'latest' into a concrete version.
+  if version.lower() == 'latest':
+    version = _ResolveLatest(gs_ctx)
+
   if sdk_dir:
     # Install the SDK to an explicit location.
-    _UpdateSdk(sdk_dir, version)
+    _UpdateSdk(gs_ctx, sdk_dir, version)
 
-  if workspace_path:
+  elif workspace_path:
     # If we are in a workspace, update the SDK for that workspace.
-    _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version)
+    _UpdateWorkspaceSdk(gs_ctx, bootstrap_path, workspace_path, version)
 
 
 def _FindVersion(workspace_path, sdk_dir):
@@ -93,7 +126,8 @@ def _FindVersion(workspace_path, sdk_dir):
     sdk_dir: Directory in which to create a repo (or None).
   """
   if sdk_dir:
-    return project_sdk.FindVersion(sdk_dir)
+    sdk_root = project_sdk.FindRepoRoot(sdk_dir)
+    return project_sdk.FindVersion(sdk_root) if sdk_root else None
 
   if workspace_path:
     return workspace_lib.GetActiveSdkVersion(workspace_path)
