@@ -243,6 +243,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   ScriptExecutor* script_executor() { return script_executor_.get(); }
 
+  scoped_ptr<WebViewGuestDelegate> SetDelegateForTesting(
+      scoped_ptr<WebViewGuestDelegate> delegate) {
+    web_view_guest_delegate_.swap(delegate);
+    return delegate.Pass();
+  }
+
  private:
   friend class WebViewPermissionHelper;
 
@@ -251,6 +257,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   ~WebViewGuest() override;
 
   void AttachWebViewHelpers(content::WebContents* contents);
+
+  void ClearDataInternal(const base::Time remove_since,
+                         uint32 removal_mask,
+                         const base::Closure& callback);
 
   void OnWebViewNewWindowResponse(int new_window_instance_id,
                                   bool allow,

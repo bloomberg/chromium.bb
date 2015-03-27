@@ -257,6 +257,40 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
 };
 
+class MockWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
+ public:
+  explicit MockWebViewGuestDelegate(extensions::WebViewGuest* web_view_guest)
+      : web_view_guest_(web_view_guest), clear_cache_called_(false) {}
+  ~MockWebViewGuestDelegate() override {}
+
+  // WebViewGuestDelegate implementation.
+  void ClearCache(base::Time remove_since,
+                  const base::Closure& callback) override {
+    clear_cache_called_ = true;
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  }
+  bool HandleContextMenu(const content::ContextMenuParams& params) override {
+    return false;
+  }
+  void OnAttachWebViewHelpers(content::WebContents* contents) override {}
+  void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override {}
+  void OnDidInitialize() override {}
+  void OnDocumentLoadedInFrame(
+      content::RenderFrameHost* render_frame_host) override {}
+  void OnGuestDestroyed() override {}
+  void OnShowContextMenu(
+      int request_id,
+      const WebViewGuestDelegate::MenuItemVector* items) override {}
+
+  bool clear_cache_called() { return clear_cache_called_; }
+
+ private:
+  extensions::WebViewGuest* web_view_guest_;
+  bool clear_cache_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockWebViewGuestDelegate);
+};
+
 // This class intercepts download request from the guest.
 class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
  public:
@@ -699,6 +733,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ASSERT_TRUE(test_run_listener.WaitUntilSatisfied());
   }
 
+  // Loads an app with a <webview> in it, returns once a guest is created.
   void LoadAppWithGuest(const std::string& app_path) {
     ExtensionTestMessageListener launched_listener("WebViewTest.LAUNCHED",
                                                    false);
@@ -2321,6 +2356,28 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "cleardata"))
           << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, ClearDataCache) {
+  LoadAppWithGuest("web_view/clear_data_cache");
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  auto guest = extensions::WebViewGuest::FromWebContents(guest_web_contents);
+  ASSERT_TRUE(guest);
+  scoped_ptr<extensions::WebViewGuestDelegate> mock_web_view_guest_delegate(
+      new MockWebViewGuestDelegate(guest));
+  scoped_ptr<extensions::WebViewGuestDelegate> orig_web_view_guest_delegate =
+      guest->SetDelegateForTesting(mock_web_view_guest_delegate.Pass());
+
+  ASSERT_TRUE(GetEmbedderWebContents());
+  ExtensionTestMessageListener clear_data_done_listener(
+      "WebViewTest.CLEAR_DATA_DONE", false);
+  EXPECT_TRUE(content::ExecuteScript(
+      GetEmbedderWebContents(), base::StringPrintf("testClearDataCache()")));
+  EXPECT_TRUE(clear_data_done_listener.WaitUntilSatisfied());
+
+  // Reset delegate back to original once we're done mocking.
+  mock_web_view_guest_delegate =
+      guest->SetDelegateForTesting(orig_web_view_guest_delegate.Pass());
 }
 
 // This test is disabled on Win due to being flaky. http://crbug.com/294592

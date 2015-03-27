@@ -86,6 +86,9 @@ class WebCacheManager : public content::NotificationObserver {
   // Clears all in-memory caches.
   void ClearCache();
 
+  // Instantly clears renderer cache for a process.
+  void ClearCacheForProcess(int process_id);
+
   // Clears all in-memory caches when a tab is reloaded or the user navigates
   // to a different website.
   void ClearCacheOnNavigation();

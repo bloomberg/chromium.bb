@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_DELEGATE_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_DELEGATE_H_
 
+#include "base/callback.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 
 namespace content {
@@ -30,6 +31,10 @@ class WebViewGuestDelegate {
 
   typedef std::vector<linked_ptr<api::web_view_internal::ContextMenuItem> >
       MenuItemVector;
+
+  // Clears http cache for this guest's StoragePartition.
+  virtual void ClearCache(base::Time remove_since,
+                          const base::Closure& callback) = 0;
 
   // Called when context menu operation was handled.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;

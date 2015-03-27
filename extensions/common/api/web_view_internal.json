@@ -44,6 +44,11 @@
             "type": "boolean",
             "optional": true,
             "description": "Websites' WebSQL data."
+          },
+          "cache": {
+            "type": "boolean",
+            "optional": true,
+            "description": "The Websites' cache data. Note: when removing data, this clears the <em>entire</em> cache: it is not limited to the range you specify."
           }
         }
       },

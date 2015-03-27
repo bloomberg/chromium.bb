@@ -1,0 +1,13 @@
+{
+  "name": "Packaged App Test: <webview> clearData API, clearing cache",
+  "description": "Verifies clearing http cache of <webview>.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

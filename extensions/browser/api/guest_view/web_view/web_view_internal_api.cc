@@ -9,10 +9,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_fetcher.h"
+#include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/common/api/web_view_internal.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/load_flags.h"
@@ -23,11 +23,12 @@
 using content::WebContents;
 using extensions::core_api::web_view_internal::SetPermission::Params;
 using extensions::core_api::extension_types::InjectDetails;
-namespace webview = extensions::core_api::web_view_internal;
+namespace web_view_internal = extensions::core_api::web_view_internal;
 
 namespace {
 
 const char kAppCacheKey[] = "appcache";
+const char kCacheKey[] = "cache";
 const char kCookiesKey[] = "cookies";
 const char kFileSystemsKey[] = "fileSystems";
 const char kIndexedDBKey[] = "indexedDB";
@@ -36,19 +37,21 @@ const char kWebSQLKey[] = "webSQL";
 const char kSinceKey[] = "since";
 const char kLoadFileError[] = "Failed to load file: \"*\". ";
 
-int MaskForKey(const char* key) {
+uint32 MaskForKey(const char* key) {
   if (strcmp(key, kAppCacheKey) == 0)
-    return content::StoragePartition::REMOVE_DATA_MASK_APPCACHE;
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_APPCACHE;
+  if (strcmp(key, kCacheKey) == 0)
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE;
   if (strcmp(key, kCookiesKey) == 0)
-    return content::StoragePartition::REMOVE_DATA_MASK_COOKIES;
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES;
   if (strcmp(key, kFileSystemsKey) == 0)
-    return content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS;
   if (strcmp(key, kIndexedDBKey) == 0)
-    return content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB;
   if (strcmp(key, kLocalStorageKey) == 0)
-    return content::StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE;
   if (strcmp(key, kWebSQLKey) == 0)
-    return content::StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_WEBSQL;
   return 0;
 }
 
@@ -113,8 +116,8 @@ bool WebViewInternalExtensionFunction::RunAsync() {
 }
 
 bool WebViewInternalNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::Navigate::Params> params(
-      webview::Navigate::Params::Create(*args_));
+  scoped_ptr<web_view_internal::Navigate::Params> params(
+      web_view_internal::Navigate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   std::string src = params->src;
   guest->NavigateGuest(src, true /* force_navigation */);
@@ -259,8 +262,8 @@ WebViewInternalSetNameFunction::~WebViewInternalSetNameFunction() {
 }
 
 bool WebViewInternalSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::SetName::Params> params(
-      webview::SetName::Params::Create(*args_));
+  scoped_ptr<web_view_internal::SetName::Params> params(
+      web_view_internal::SetName::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   guest->SetName(params->frame_name);
   SendResponse(true);
@@ -277,8 +280,8 @@ WebViewInternalSetAllowTransparencyFunction::
 
 bool WebViewInternalSetAllowTransparencyFunction::RunAsyncSafe(
     WebViewGuest* guest) {
-  scoped_ptr<webview::SetAllowTransparency::Params> params(
-      webview::SetAllowTransparency::Params::Create(*args_));
+  scoped_ptr<web_view_internal::SetAllowTransparency::Params> params(
+      web_view_internal::SetAllowTransparency::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   guest->SetAllowTransparency(params->allow);
   SendResponse(true);
@@ -294,8 +297,8 @@ WebViewInternalSetAllowScalingFunction::
 }
 
 bool WebViewInternalSetAllowScalingFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::SetAllowScaling::Params> params(
-      webview::SetAllowScaling::Params::Create(*args_));
+  scoped_ptr<web_view_internal::SetAllowScaling::Params> params(
+      web_view_internal::SetAllowScaling::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   guest->SetAllowScaling(params->allow);
   SendResponse(true);
@@ -309,8 +312,8 @@ WebViewInternalSetZoomFunction::~WebViewInternalSetZoomFunction() {
 }
 
 bool WebViewInternalSetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::SetZoom::Params> params(
-      webview::SetZoom::Params::Create(*args_));
+  scoped_ptr<web_view_internal::SetZoom::Params> params(
+      web_view_internal::SetZoom::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   guest->SetZoom(params->zoom_factor);
 
@@ -325,8 +328,8 @@ WebViewInternalGetZoomFunction::~WebViewInternalGetZoomFunction() {
 }
 
 bool WebViewInternalGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::GetZoom::Params> params(
-      webview::GetZoom::Params::Create(*args_));
+  scoped_ptr<web_view_internal::GetZoom::Params> params(
+      web_view_internal::GetZoom::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   double zoom_factor = guest->zoom();
@@ -342,8 +345,8 @@ WebViewInternalFindFunction::~WebViewInternalFindFunction() {
 }
 
 bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::Find::Params> params(
-      webview::Find::Params::Create(*args_));
+  scoped_ptr<web_view_internal::Find::Params> params(
+      web_view_internal::Find::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Convert the std::string search_text to string16.
@@ -371,20 +374,20 @@ WebViewInternalStopFindingFunction::~WebViewInternalStopFindingFunction() {
 }
 
 bool WebViewInternalStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::StopFinding::Params> params(
-      webview::StopFinding::Params::Create(*args_));
+  scoped_ptr<web_view_internal::StopFinding::Params> params(
+      web_view_internal::StopFinding::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Set the StopFindAction.
   content::StopFindAction action;
   switch (params->action) {
-    case webview::StopFinding::Params::ACTION_CLEAR:
+    case web_view_internal::StopFinding::Params::ACTION_CLEAR:
       action = content::STOP_FIND_ACTION_CLEAR_SELECTION;
       break;
-    case webview::StopFinding::Params::ACTION_KEEP:
+    case web_view_internal::StopFinding::Params::ACTION_KEEP:
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
       break;
-    case webview::StopFinding::Params::ACTION_ACTIVATE:
+    case web_view_internal::StopFinding::Params::ACTION_ACTIVATE:
       action = content::STOP_FIND_ACTION_ACTIVATE_SELECTION;
       break;
     default:
@@ -405,8 +408,8 @@ WebViewInternalLoadDataWithBaseUrlFunction::
 
 bool WebViewInternalLoadDataWithBaseUrlFunction::RunAsyncSafe(
     WebViewGuest* guest) {
-  scoped_ptr<webview::LoadDataWithBaseUrl::Params> params(
-      webview::LoadDataWithBaseUrl::Params::Create(*args_));
+  scoped_ptr<web_view_internal::LoadDataWithBaseUrl::Params> params(
+      web_view_internal::LoadDataWithBaseUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // If a virtual URL was provided, use it. Otherwise, the user will be shown
@@ -427,7 +430,8 @@ WebViewInternalGoFunction::~WebViewInternalGoFunction() {
 }
 
 bool WebViewInternalGoFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
+  scoped_ptr<web_view_internal::Go::Params> params(
+      web_view_internal::Go::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool successful = guest->Go(params->relative_index);
@@ -454,8 +458,8 @@ WebViewInternalSetPermissionFunction::~WebViewInternalSetPermissionFunction() {
 }
 
 bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
-  scoped_ptr<webview::SetPermission::Params> params(
-      webview::SetPermission::Params::Create(*args_));
+  scoped_ptr<web_view_internal::SetPermission::Params> params(
+      web_view_internal::SetPermission::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebViewPermissionHelper::PermissionResponseAction action =
@@ -503,8 +507,8 @@ WebViewInternalOverrideUserAgentFunction::
 
 bool WebViewInternalOverrideUserAgentFunction::RunAsyncSafe(
     WebViewGuest* guest) {
-  scoped_ptr<webview::OverrideUserAgent::Params> params(
-      webview::OverrideUserAgent::Params::Create(*args_));
+  scoped_ptr<web_view_internal::OverrideUserAgent::Params> params(
+      web_view_internal::OverrideUserAgent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   guest->SetUserAgentOverride(params->user_agent_override);

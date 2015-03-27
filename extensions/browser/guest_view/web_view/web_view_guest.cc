@@ -53,11 +53,32 @@
 using base::UserMetricsAction;
 using content::RenderFrameHost;
 using content::ResourceType;
+using content::StoragePartition;
 using content::WebContents;
 
 namespace extensions {
 
 namespace {
+
+// Returns storage partition removal mask from web_view clearData mask. Note
+// that storage partition mask is a subset of webview's data removal mask.
+uint32 GetStoragePartitionRemovalMask(uint32 web_view_removal_mask) {
+  uint32 mask = 0;
+  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_APPCACHE)
+    mask |= StoragePartition::REMOVE_DATA_MASK_APPCACHE;
+  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES)
+    mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
+  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS)
+    mask |= StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
+  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB)
+    mask |= StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
+  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE)
+    mask |= StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
+  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_WEBSQL)
+    mask |= StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+
+  return mask;
+}
 
 std::string WindowOpenDispositionToString(
   WindowOpenDisposition window_open_disposition) {
@@ -313,6 +334,26 @@ void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
   if (web_view_guest_delegate_)
     web_view_guest_delegate_->OnAttachWebViewHelpers(contents);
   web_view_permission_helper_.reset(new WebViewPermissionHelper(this));
+}
+
+void WebViewGuest::ClearDataInternal(base::Time remove_since,
+                                     uint32 removal_mask,
+                                     const base::Closure& callback) {
+  uint32 storage_partition_removal_mask =
+      GetStoragePartitionRemovalMask(removal_mask);
+  if (!storage_partition_removal_mask) {
+    callback.Run();
+    return;
+  }
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          web_contents()->GetBrowserContext(),
+          web_contents()->GetSiteInstance());
+  partition->ClearData(
+      storage_partition_removal_mask,
+      content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+      content::StoragePartition::OriginMatcherFunction(), remove_since,
+      base::Time::Now(), callback);
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {
@@ -616,7 +657,7 @@ void WebViewGuest::Terminate() {
         content::RESULT_CODE_KILLED, false);
 }
 
-bool WebViewGuest::ClearData(const base::Time remove_since,
+bool WebViewGuest::ClearData(base::Time remove_since,
                              uint32 removal_mask,
                              const base::Closure& callback) {
   content::RecordAction(UserMetricsAction("WebView.Guest.ClearData"));
@@ -628,14 +669,19 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
   if (!partition)
     return false;
 
-  partition->ClearData(
-      removal_mask,
-      content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(),
-      content::StoragePartition::OriginMatcherFunction(),
-      remove_since,
-      base::Time::Now(),
-      callback);
+  if (removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE) {
+    if (web_view_guest_delegate_) {
+      // First clear http cache data and then clear the rest in
+      // |ClearDataInternal|.
+      web_view_guest_delegate_->ClearCache(
+          remove_since, base::Bind(&WebViewGuest::ClearDataInternal,
+                                   weak_ptr_factory_.GetWeakPtr(), remove_since,
+                                   removal_mask, callback));
+      return true;
+    }
+  }
+
+  ClearDataInternal(remove_since, removal_mask, callback);
   return true;
 }
 

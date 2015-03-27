@@ -324,6 +324,12 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
   }
 }
 
+void WebCacheManager::ClearCacheForProcess(int render_process_id) {
+  std::set<int> renderers;
+  renderers.insert(render_process_id);
+  ClearRendererCache(renderers, INSTANTLY);
+}
+
 void WebCacheManager::ClearRendererCache(
     const std::set<int>& renderers,
     WebCacheManager::ClearCacheOccasion occasion) {

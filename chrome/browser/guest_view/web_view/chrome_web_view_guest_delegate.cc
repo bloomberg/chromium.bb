@@ -5,6 +5,7 @@
 
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
+#include "chrome/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +14,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
+#include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
@@ -36,6 +39,28 @@ ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
 }
 
 ChromeWebViewGuestDelegate::~ChromeWebViewGuestDelegate() {
+}
+
+void ChromeWebViewGuestDelegate::ClearCache(
+    base::Time remove_since,
+    const base::Closure& done_callback) {
+  int render_process_id = guest_web_contents()->GetRenderProcessHost()->GetID();
+  // We need to clear renderer cache separately for our process because
+  // StoragePartitionHttpCacheDataRemover::ClearData() does not clear that.
+  web_cache::WebCacheManager::GetInstance()->Remove(render_process_id);
+  web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
+      render_process_id);
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          guest_web_contents()->GetBrowserContext(),
+          guest_web_contents()->GetSiteInstance());
+
+  // StoragePartitionHttpCacheDataRemover removes itself when it is done.
+  // TODO(lazyboy): Once StoragePartitionHttpCacheDataRemover moves to
+  // components/, move |ClearCache| to WebViewGuest: http//crbug.com/471287.
+  StoragePartitionHttpCacheDataRemover::CreateForRange(
+      partition, remove_since, base::Time::Now())->Remove(done_callback);
 }
 
 bool ChromeWebViewGuestDelegate::HandleContextMenu(
