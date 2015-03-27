@@ -12,7 +12,8 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 630, 180]
+            [0, 0, 630, 180],
+            [0, 0, 625, 180]
           ],
           "paintInvalidationClients": [
             "LayoutText #text",
@@ -32,7 +33,8 @@
             "InlineTextBox 'libero,'",
             "InlineTextBox 'suscipit ut leo'",
             "InlineTextBox 'eget, dapibus'",
-            "InlineTextBox 'ultrices dolor.'"
+            "InlineTextBox 'ultrices dolor.'",
+            "LayoutMultiColumnSet"
           ]
         }
       ]
