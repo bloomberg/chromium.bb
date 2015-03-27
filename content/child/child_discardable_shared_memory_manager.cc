@@ -10,6 +10,7 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/metrics/histogram.h"
+#include "base/process/memory.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -264,10 +265,10 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   sender_->Send(
       new ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory(
           size, id, &handle));
-  CHECK(base::SharedMemory::IsHandleValid(handle));
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
-  CHECK(memory->Map(size));
+  if (!memory->Map(size))
+    base::TerminateBecauseOutOfMemory(size);
   return memory.Pass();
 }
 

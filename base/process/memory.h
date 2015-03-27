@@ -39,6 +39,10 @@ BASE_EXPORT void EnableTerminationOnHeapCorruption();
 // Turns on process termination if memory runs out.
 BASE_EXPORT void EnableTerminationOnOutOfMemory();
 
+// Terminates process. Should be called only for out of memory errors.
+// Crash reporting classifies such crashes as OOM.
+BASE_EXPORT void TerminateBecauseOutOfMemory(size_t size);
+
 #if defined(OS_WIN)
 // Returns the module handle to which an address belongs. The reference count
 // of the module is not incremented.
