@@ -277,7 +277,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     }
 
     // Search IDL functions defined in the prototype
-    if (!info.Holder()->GetRealNamedProperty(nameString).IsEmpty())
+    if (!info.Holder()->GetRealNamedProperty(info.GetIsolate()->GetCurrentContext(), nameString).IsEmpty())
         return;
 
     // Frame could have been detached in call to GetRealNamedProperty.

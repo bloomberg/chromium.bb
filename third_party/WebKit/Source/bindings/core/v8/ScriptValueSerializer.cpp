@@ -492,10 +492,10 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
                 return newState;
             if (propertyName.IsEmpty())
                 return serializer.handleError(InputError, "Empty property names cannot be cloned.", this);
-            bool hasStringProperty = propertyName->IsString() && composite()->HasRealNamedProperty(propertyName.As<v8::String>());
+            bool hasStringProperty = propertyName->IsString() && v8CallBoolean(composite()->HasRealNamedProperty(serializer.context(), propertyName.As<v8::String>()));
             if (StateBase* newState = serializer.checkException(this))
                 return newState;
-            bool hasIndexedProperty = !hasStringProperty && propertyName->IsUint32() && composite()->HasRealIndexedProperty(propertyName->Uint32Value());
+            bool hasIndexedProperty = !hasStringProperty && propertyName->IsUint32() && v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName->Uint32Value()));
             if (StateBase* newState = serializer.checkException(this))
                 return newState;
             if (hasStringProperty || (hasIndexedProperty && !ignoreIndexed)) {

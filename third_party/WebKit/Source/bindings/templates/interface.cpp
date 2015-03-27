@@ -183,9 +183,11 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
         return;
     auto nameString = name.As<v8::String>();
     {% if not is_override_builtins %}
-    if (info.Holder()->HasRealNamedProperty(nameString))
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    if (v8CallBoolean(info.Holder()->HasRealNamedProperty(context, nameString)))
         return;
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+    v8::Local<v8::Value> namedPropertyValue;
+    if (info.Holder()->GetRealNamedPropertyInPrototypeChain(context, nameString).ToLocal(&namedPropertyValue))
         return;
 
     {% endif %}
@@ -247,9 +249,11 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
         return;
     auto nameString = name.As<v8::String>();
     {% if not is_override_builtins %}
-    if (info.Holder()->HasRealNamedProperty(nameString))
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    if (v8CallBoolean(info.Holder()->HasRealNamedProperty(context, nameString)))
         return;
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+    v8::Local<v8::Value> namedPropertyValue;
+    if (info.Holder()->GetRealNamedPropertyInPrototypeChain(context, nameString).ToLocal(&namedPropertyValue))
         return;
 
     {% endif %}

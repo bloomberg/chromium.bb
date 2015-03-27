@@ -194,7 +194,7 @@ public:
 
     ScriptValueSerializer(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
-    v8::Local<v8::Context> context() { return isolate()->GetCurrentContext(); }
+    v8::Local<v8::Context> context() { return m_scriptState->context(); }
 
     Status serialize(v8::Local<v8::Value>);
     String errorMessage() { return m_errorMessage; }
@@ -446,6 +446,7 @@ public:
 
 protected:
     v8::Isolate* isolate() const { return m_scriptState->isolate(); }
+    v8::Local<v8::Context> context() const { return m_scriptState->context(); }
     unsigned length() const { return m_length; }
     unsigned position() const { return m_position; }
 

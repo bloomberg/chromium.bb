@@ -187,7 +187,8 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementType(isolate), v8Type);
 
     v8::Handle<v8::String> prototypeKey = v8String(isolate, "prototype");
-    ASSERT(m_constructor->HasOwnProperty(prototypeKey));
+    if (!v8CallBoolean(m_constructor->HasOwnProperty(isolate->GetCurrentContext(), prototypeKey)))
+        return false;
     // This sets the property *value*; calling Set is safe because
     // "prototype" is a non-configurable data property so there can be
     // no side effects.

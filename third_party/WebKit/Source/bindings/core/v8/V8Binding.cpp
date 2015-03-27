@@ -872,16 +872,17 @@ JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, 
         return inspectorArray;
     }
     if (value->IsObject()) {
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         RefPtr<JSONObject> jsonObject = JSONObject::create();
-        v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
         v8::Local<v8::Array> propertyNames;
-        if (!object->GetPropertyNames(isolate->GetCurrentContext()).ToLocal(&propertyNames))
+        if (!object->GetPropertyNames(context).ToLocal(&propertyNames))
             return nullptr;
         uint32_t length = propertyNames->Length();
         for (uint32_t i = 0; i < length; i++) {
             v8::Local<v8::Value> name = propertyNames->Get(v8::Int32::New(isolate, i));
             // FIXME(yurys): v8::Object should support GetOwnPropertyNames
-            if (name->IsString() && !object->HasRealNamedProperty(v8::Handle<v8::String>::Cast(name)))
+            if (name->IsString() && !v8CallBoolean(object->HasRealNamedProperty(context, v8::Local<v8::String>::Cast(name))))
                 continue;
             RefPtr<JSONValue> propertyValue = nativeValue(isolate, object->Get(name), exceptionState, maxDepth);
             if (!propertyValue)
