@@ -473,7 +473,10 @@
     },
     'metrics_xml_files': {
       # Subscribe to this to watch for changes to histograms.xml.
-      'filepath': 'tools/metrics/.*\.xml$'
+      'filepath': 'tools/metrics/.*\.xml$',
+    },
+    'midi': {
+      'filepath': 'midi',
     },
     'mojo': {
       'filepath': 'mojo',
@@ -964,6 +967,7 @@
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
     'metrics_xml_files': ['asvitkine+watch@chromium.org'],
+    'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['aa@chromium.org',
              'abarth@chromium.org',
              'ben+mojo@chromium.org',
