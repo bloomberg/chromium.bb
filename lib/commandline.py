@@ -444,8 +444,8 @@ class ChromiteStreamHandler(logging.StreamHandler):
 class BaseParser(object):
   """Base parser class that includes the logic to add logging controls."""
 
-  DEFAULT_LOG_LEVELS = ('fatal', 'critical', 'error', 'warning', 'info',
-                        'debug')
+  DEFAULT_LOG_LEVELS = ('fatal', 'critical', 'error', 'warning', 'notice',
+                        'info', 'debug')
 
   DEFAULT_LOG_LEVEL = 'info'
   ALLOW_LOGGING = True
@@ -789,7 +789,8 @@ def _RestartInChroot(cmd, chroot_args):
   """
   return cros_build_lib.RunCommand(cmd, error_code_ok=True,
                                    enter_chroot=True, chroot_args=chroot_args,
-                                   cwd=constants.SOURCE_ROOT).returncode
+                                   cwd=constants.SOURCE_ROOT,
+                                   mute_output=False).returncode
 
 
 def RunInsideChroot(command, auto_detect_brick=False,

@@ -44,5 +44,6 @@ class ChrootCommand(command.CliCommand):
     if not cmd:
       cmd = ['bash']
 
-    result = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True)
+    result = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
+                                       mute_output=False)
     return result.returncode

@@ -627,6 +627,15 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertEqual(self._CaptureRunCommand(command, mute_output=False),
                      ('foo\n', 'bar\n'))
 
+  def testRunCommandAtNoticeLevel(self):
+    """Ensure that RunCommand prints output when mute_output is False."""
+    # Needed by cros_sdk and brillo/cros chroot.
+    with self.OutputCapturer():
+      cros_build_lib.RunCommand(['echo', 'foo'], mute_output=False,
+                                error_code_ok=True, print_cmd=False,
+                                debug_level=logging.NOTICE)
+    self.AssertOutputContainsLine('foo')
+
 
 class TestRetries(cros_test_lib.MockTempDirTestCase):
   """Tests of GenericRetry and relatives."""
