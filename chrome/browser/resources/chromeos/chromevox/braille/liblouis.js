@@ -50,6 +50,13 @@ cvox.LibLouis = function(nmfPath, opt_tablesDir) {
 
 
 /**
+ * Set to {@code true} to enable debug logging of RPC messages.
+ * @type {boolean}
+ */
+cvox.LibLouis.DEBUG = false;
+
+
+/**
  * Attaches the Native Client wrapper to the DOM as a child of the provided
  * element, assumed to already be in the document.
  * @param {!Element} elem Desired parent element of the instance.
@@ -145,7 +152,7 @@ cvox.LibLouis.prototype.rpc_ =
   message['message_id'] = messageId;
   message['command'] = command;
   var json = JSON.stringify(message);
-  if (goog.DEBUG) {
+  if (cvox.LibLouis.DEBUG) {
     window.console.debug('RPC -> ' + json);
   }
   this.embedElement_.postMessage(json);
@@ -180,7 +187,7 @@ cvox.LibLouis.prototype.onInstanceError_ = function(e) {
  * @private
  */
 cvox.LibLouis.prototype.onInstanceMessage_ = function(e) {
-  if (goog.DEBUG) {
+  if (cvox.LibLouis.DEBUG) {
     window.console.debug('RPC <- ' + e.data);
   }
   var message = /** @type {!Object} */ (JSON.parse(e.data));
