@@ -38,3 +38,4 @@ crbug.com/461041 [ Linux ] fast/forms/calendar-picker/month-picker-ax.html [ Tim
 
 # Times out on MSAN
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Pass Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Pass Timeout ]
