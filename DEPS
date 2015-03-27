@@ -103,6 +103,7 @@ allowed_hosts = [
   'chromium.googlesource.com',
   'boringssl.googlesource.com',
   'pdfium.googlesource.com',
+  'android.googlesource.com',
 ]
 
 deps = {
