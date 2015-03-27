@@ -15,18 +15,6 @@ var remoting = remoting || {};
 'use strict';
 
 /**
- * True to enable mouse lock.
- * This is currently disabled because the current client plugin does not
- * properly handle mouse lock and delegated large cursors at the same time.
- * This should be re-enabled (by removing this flag) once a version of
- * the plugin that supports both has reached Chrome Stable channel.
- * (crbug.com/429322).
- *
- * @type {boolean}
- */
-remoting.enableMouseLock = false;
-
-/**
  * @param {remoting.ClientPlugin} plugin
  * @param {HTMLElement} viewportElement
  * @param {HTMLElement} cursorElement
@@ -64,8 +52,7 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
 
   // TODO(wez): Only allow mouse lock if the app has the pointerLock permission.
   // Enable automatic mouse-lock.
-  if (remoting.enableMouseLock &&
-      this.plugin_.hasFeature(remoting.ClientPlugin.Feature.ALLOW_MOUSE_LOCK)) {
+  if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.ALLOW_MOUSE_LOCK)) {
     this.plugin_.allowMouseLock();
   }
 
