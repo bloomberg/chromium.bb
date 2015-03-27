@@ -219,7 +219,7 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Loc
         return;
 
     if (v8Value->IsBoolean()) {
-        impl.setBoolean(v8Value->ToBoolean()->Value());
+        impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
         return;
     }
 

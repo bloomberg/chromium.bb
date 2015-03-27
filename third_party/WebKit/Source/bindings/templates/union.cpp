@@ -118,7 +118,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {% if container.boolean_type %}
     {# 14. Boolean #}
     if (v8Value->IsBoolean()) {
-        impl.setBoolean(v8Value->ToBoolean()->Value());
+        impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
         return;
     }
 

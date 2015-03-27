@@ -88,7 +88,7 @@ void importFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
     bool compileAndRunScript = true;
     if (args.Length() == 2) {
         RELEASE_ASSERT(args[1]->IsBoolean());
-        compileAndRunScript = args[1]->ToBoolean()->Value();
+        compileAndRunScript = args[1].As<v8::Boolean>()->Value();
     }
 
     if (resourceFileName.endsWith(".js") && compileAndRunScript)

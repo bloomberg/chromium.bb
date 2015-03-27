@@ -92,9 +92,9 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
             ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString, String());
             if (checked->IsBoolean())
-                menuItem.setChecked(checked->ToBoolean(isolate)->Value());
+                menuItem.setChecked(checked.As<v8::Boolean>()->Value());
             if (enabled->IsBoolean())
-                menuItem.setEnabled(enabled->ToBoolean(isolate)->Value());
+                menuItem.setEnabled(enabled.As<v8::Boolean>()->Value());
             menu.appendItem(menuItem);
         }
     }
