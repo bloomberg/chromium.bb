@@ -168,7 +168,9 @@ class Environment:
     # TODO(vabr): Wait until element is displayed instead.
     time.sleep(2)
     script = (
-        "document.querySelector('#password-manager-enabled').checked = true;")
+        "if (!document.querySelector('#password-manager-enabled').checked) {"
+        "  document.querySelector('#password-manager-enabled').click();"
+        "}")
     self.driver.execute_script(script)
     time.sleep(2)
 
