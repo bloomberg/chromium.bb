@@ -129,18 +129,15 @@ protected:
     virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
     virtual void quitMessageLoopOnPause() = 0;
 
-    static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    void handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
+private:
+    bool enabled() const;
+    void ensureDebuggerScriptCompiled();
+    v8::Local<v8::Object> debuggerScriptLocal() const;
 
     void dispatchDidParseSource(ScriptDebugListener*, v8::Local<v8::Object> sourceObject, CompileResult);
 
-    void ensureDebuggerScriptCompiled();
-    void discardDebuggerScript();
-    v8::Local<v8::Object> debuggerScriptLocal() const;
-
-    v8::Isolate* m_isolate;
-
-private:
+    static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    void handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
     static void v8InterruptCallback(v8::Isolate*, void*);
     static void v8DebugEventCallback(const v8::Debug::EventDetails&);
     v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object>, const char* functionName);
@@ -158,6 +155,7 @@ private:
     void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
     void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
+    v8::Isolate* m_isolate;
     bool m_breakpointsActivated;
     V8PersistentValueMap<String, v8::Script, false> m_compiledScripts;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;

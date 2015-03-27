@@ -48,7 +48,6 @@ WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobal
     , m_listener(0)
     , m_workerGlobalScope(workerGlobalScope)
 {
-    ASSERT(m_isolate);
 }
 
 DEFINE_TRACE(WorkerScriptDebugServer)

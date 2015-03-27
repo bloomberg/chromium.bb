@@ -103,6 +103,7 @@ DEFINE_TRACE(ScriptDebugServer)
 
 void ScriptDebugServer::enable()
 {
+    ASSERT(!enabled());
     v8::HandleScope scope(m_isolate);
     v8::Debug::SetDebugEventListener(&ScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
     ensureDebuggerScriptCompiled();
@@ -110,9 +111,15 @@ void ScriptDebugServer::enable()
 
 void ScriptDebugServer::disable()
 {
-    discardDebuggerScript();
+    ASSERT(enabled());
+    m_debuggerScript.Reset();
     v8::Debug::SetDebugEventListener(nullptr);
     // FIXME: Remove all breakpoints set by the agent.
+}
+
+bool ScriptDebugServer::enabled() const
+{
+    return !m_debuggerScript.IsEmpty();
 }
 
 void ScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context, const String& contextDebugData)
@@ -488,6 +495,8 @@ void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
 
 void ScriptDebugServer::runPendingTasks()
 {
+    if (!enabled())
+        return;
     while (true) {
         OwnPtr<Task> task = m_taskQueue->tryTake();
         if (!task)
@@ -576,6 +585,8 @@ v8::Local<v8::Value> ScriptDebugServer::callInternalGetterFunction(v8::Local<v8:
 
 void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
 {
+    if (!enabled())
+        return;
     v8::DebugEvent event = eventDetails.GetEvent();
     if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError && event != v8::PromiseEvent)
         return;
@@ -679,12 +690,6 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
         return;
     ASSERT(value->IsObject());
     m_debuggerScript.Reset(m_isolate, v8::Local<v8::Object>::Cast(value));
-}
-
-void ScriptDebugServer::discardDebuggerScript()
-{
-    ASSERT(!m_debuggerScript.IsEmpty());
-    m_debuggerScript.Reset();
 }
 
 v8::Local<v8::Object> ScriptDebugServer::debuggerScriptLocal() const
