@@ -196,6 +196,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
   [progressOverlayLabel_ setHidden:text.empty()];
   [inputRowView_ setHidden:!text.empty()];
+  [storageView_ setHidden:!text.empty()];
   [self updateVerifyButtonEnabled];
 }
 
