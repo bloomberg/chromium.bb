@@ -199,7 +199,8 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const YUVVideoDrawQuad* a, const YUVVideoDrawQuad* b) {
     EXPECT_EQ(a->tex_coord_rect, b->tex_coord_rect);
-    EXPECT_EQ(a->tex_size, b->tex_size);
+    EXPECT_EQ(a->ya_tex_size, b->ya_tex_size);
+    EXPECT_EQ(a->uv_tex_size, b->uv_tex_size);
     EXPECT_EQ(a->y_plane_resource_id, b->y_plane_resource_id);
     EXPECT_EQ(a->u_plane_resource_id, b->u_plane_resource_id);
     EXPECT_EQ(a->v_plane_resource_id, b->v_plane_resource_id);
@@ -469,6 +470,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                       arbitrary_bool1,
                       arbitrary_rectf1,
                       arbitrary_size1,
+                      arbitrary_size2,
                       arbitrary_resourceid1,
                       arbitrary_resourceid2,
                       arbitrary_resourceid3,

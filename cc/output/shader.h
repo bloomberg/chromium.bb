@@ -774,7 +774,8 @@ class FragmentShaderYUVVideo : public FragmentTexBlendMode {
   int alpha_location() const { return alpha_location_; }
   int yuv_matrix_location() const { return yuv_matrix_location_; }
   int yuv_adj_location() const { return yuv_adj_location_; }
-  int clamp_rect_location() const { return clamp_rect_location_; }
+  int ya_clamp_rect_location() const { return ya_clamp_rect_location_; }
+  int uv_clamp_rect_location() const { return uv_clamp_rect_location_; }
 
  private:
   int y_texture_location_;
@@ -783,7 +784,8 @@ class FragmentShaderYUVVideo : public FragmentTexBlendMode {
   int alpha_location_;
   int yuv_matrix_location_;
   int yuv_adj_location_;
-  int clamp_rect_location_;
+  int ya_clamp_rect_location_;
+  int uv_clamp_rect_location_;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVVideo);
 };
@@ -807,7 +809,8 @@ class FragmentShaderYUVAVideo : public FragmentTexBlendMode {
   int alpha_location() const { return alpha_location_; }
   int yuv_matrix_location() const { return yuv_matrix_location_; }
   int yuv_adj_location() const { return yuv_adj_location_; }
-  int clamp_rect_location() const { return clamp_rect_location_; }
+  int ya_clamp_rect_location() const { return ya_clamp_rect_location_; }
+  int uv_clamp_rect_location() const { return uv_clamp_rect_location_; }
 
  private:
   int y_texture_location_;
@@ -817,7 +820,8 @@ class FragmentShaderYUVAVideo : public FragmentTexBlendMode {
   int alpha_location_;
   int yuv_matrix_location_;
   int yuv_adj_location_;
-  int clamp_rect_location_;
+  int ya_clamp_rect_location_;
+  int uv_clamp_rect_location_;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVAVideo);
 };

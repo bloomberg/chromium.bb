@@ -1969,7 +1969,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   int matrix_location = -1;
   int tex_scale_location = -1;
   int tex_offset_location = -1;
-  int clamp_rect_location = -1;
+  int ya_clamp_rect_location = -1;
+  int uv_clamp_rect_location = -1;
   int y_texture_location = -1;
   int u_texture_location = -1;
   int v_texture_location = -1;
@@ -1990,7 +1991,10 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     a_texture_location = program->fragment_shader().a_texture_location();
     yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
     yuv_adj_location = program->fragment_shader().yuv_adj_location();
-    clamp_rect_location = program->fragment_shader().clamp_rect_location();
+    ya_clamp_rect_location =
+        program->fragment_shader().ya_clamp_rect_location();
+    uv_clamp_rect_location =
+        program->fragment_shader().uv_clamp_rect_location();
     alpha_location = program->fragment_shader().alpha_location();
   } else {
     const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
@@ -2004,7 +2008,10 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     v_texture_location = program->fragment_shader().v_texture_location();
     yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
     yuv_adj_location = program->fragment_shader().yuv_adj_location();
-    clamp_rect_location = program->fragment_shader().clamp_rect_location();
+    ya_clamp_rect_location =
+        program->fragment_shader().ya_clamp_rect_location();
+    uv_clamp_rect_location =
+        program->fragment_shader().uv_clamp_rect_location();
     alpha_location = program->fragment_shader().alpha_location();
   }
 
@@ -2018,14 +2025,23 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
                      quad->tex_coord_rect.y()));
   // Clamping to half a texel inside the tex coord rect prevents bilinear
   // filtering from filtering outside the tex coord rect.
-  gfx::RectF clamp_rect(quad->tex_coord_rect);
+  gfx::RectF ya_clamp_rect(quad->tex_coord_rect);
   // Special case: empty texture size implies no clamping.
-  if (!quad->tex_size.IsEmpty()) {
-    clamp_rect.Inset(0.5f / quad->tex_size.width(),
-                     0.5f / quad->tex_size.height());
+  if (!quad->ya_tex_size.IsEmpty()) {
+    ya_clamp_rect.Inset(0.5f / quad->ya_tex_size.width(),
+                        0.5f / quad->ya_tex_size.height());
   }
-  GLC(gl_, gl_->Uniform4f(clamp_rect_location, clamp_rect.x(), clamp_rect.y(),
-                          clamp_rect.right(), clamp_rect.bottom()));
+  gfx::RectF uv_clamp_rect(quad->tex_coord_rect);
+  if (!quad->uv_tex_size.IsEmpty()) {
+    uv_clamp_rect.Inset(0.5f / quad->uv_tex_size.width(),
+                        0.5f / quad->uv_tex_size.height());
+  }
+  GLC(gl_, gl_->Uniform4f(ya_clamp_rect_location, ya_clamp_rect.x(),
+                          ya_clamp_rect.y(), ya_clamp_rect.right(),
+                          ya_clamp_rect.bottom()));
+  GLC(gl_, gl_->Uniform4f(uv_clamp_rect_location, uv_clamp_rect.x(),
+                          uv_clamp_rect.y(), uv_clamp_rect.right(),
+                          uv_clamp_rect.bottom()));
 
   GLC(gl_, gl_->Uniform1i(y_texture_location, 1));
   GLC(gl_, gl_->Uniform1i(u_texture_location, 2));

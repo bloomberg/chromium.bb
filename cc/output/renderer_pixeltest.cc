@@ -247,10 +247,23 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
             resources.release_callbacks[media::VideoFrame::kAPlane]));
   }
 
+  const gfx::Size ya_tex_size = video_frame->coded_size();
+  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
+      video_frame->format(), media::VideoFrame::kUPlane,
+      video_frame->coded_size());
+  DCHECK(uv_tex_size == media::VideoFrame::PlaneSize(
+                            video_frame->format(), media::VideoFrame::kVPlane,
+                            video_frame->coded_size()));
+  if (with_alpha) {
+    DCHECK(ya_tex_size == media::VideoFrame::PlaneSize(
+                              video_frame->format(), media::VideoFrame::kAPlane,
+                              video_frame->coded_size()));
+  }
+
   YUVVideoDrawQuad* yuv_quad =
       render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                   tex_coord_rect, video_frame->coded_size(), y_resource,
+                   tex_coord_rect, ya_tex_size, uv_tex_size, y_resource,
                    u_resource, v_resource, a_resource, color_space);
 }
 
@@ -939,7 +952,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     // if the tex coords are not clamped.
     CreateTestYUVVideoDrawQuad_TwoColor(
         shared_state, format, false, tex_coord_rect, background_size,
-        gfx::Rect(background_size), 0, 0, 0, green_rect, 149, 43, 21,
+        gfx::Rect(background_size), 128, 128, 128, green_rect, 149, 43, 21,
         pass.get(), video_resource_updater_.get(), resource_provider_.get());
     pass_list->push_back(pass.Pass());
   }
