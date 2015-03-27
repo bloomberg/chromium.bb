@@ -361,6 +361,9 @@ const char kInvalidFileAccessValue[] =
     "Invalid value for 'file_access[*]'.";
 const char kInvalidFileBrowserHandler[] =
     "Invalid value for 'file_browser_handlers'.";
+const char kInvalidFileBrowserHandlerMissingPermission[] =
+    "Declaring file browser handlers requires the fileBrowserHandler manifest "
+    "permission.";
 const char kInvalidFileFiltersList[] =
     "Invalid value for 'file_filters'.";
 const char kInvalidFileFilterValue[] =

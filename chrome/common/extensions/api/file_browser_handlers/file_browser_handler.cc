@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
@@ -131,6 +132,7 @@ FileBrowserHandlerParser::FileBrowserHandlerParser() {
 FileBrowserHandlerParser::~FileBrowserHandlerParser() {
 }
 
+#if defined(OS_CHROMEOS)
 namespace {
 
 FileBrowserHandler* LoadFileBrowserHandler(
@@ -268,32 +270,43 @@ bool LoadFileBrowserHandlers(
 }
 
 }  // namespace
+#endif
 
 bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
                                      base::string16* error) {
-  // If the permission is missing, then skip parsing the list of handlers.
-  if (!extensions::PermissionsParser::HasAPIPermission(
-          extension, extensions::APIPermission::ID::kFileBrowserHandler)) {
+#if !defined(OS_CHROMEOS)
+  return true;
+#else
+  const base::Value* file_browser_handlers_value = nullptr;
+  if (!extension->manifest()->Get(keys::kFileBrowserHandlers,
+                                  &file_browser_handlers_value)) {
     return true;
   }
 
-  const base::ListValue* file_browser_handlers_value = NULL;
-  if (!extension->manifest()->GetList(keys::kFileBrowserHandlers,
-                                      &file_browser_handlers_value)) {
+  if (!extensions::PermissionsParser::HasAPIPermission(
+          extension, extensions::APIPermission::ID::kFileBrowserHandler)) {
+    extension->AddInstallWarning(extensions::InstallWarning(
+        errors::kInvalidFileBrowserHandlerMissingPermission));
+    return true;
+  }
+
+  const base::ListValue* file_browser_handlers_list_value = nullptr;
+  if (!file_browser_handlers_value->GetAsList(
+          &file_browser_handlers_list_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
     return false;
   }
 
   scoped_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);
   if (!LoadFileBrowserHandlers(extension->id(),
-                               file_browser_handlers_value,
-                               &info->file_browser_handlers,
-                               error)) {
+                               file_browser_handlers_list_value,
+                               &info->file_browser_handlers, error)) {
     return false;  // Failed to parse file browser actions definition.
   }
 
   extension->SetManifestData(keys::kFileBrowserHandlers, info.release());
   return true;
+#endif
 }
 
 const std::vector<std::string> FileBrowserHandlerParser::Keys() const {

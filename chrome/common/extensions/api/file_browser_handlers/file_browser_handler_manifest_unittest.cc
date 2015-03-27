@@ -73,31 +73,35 @@ TEST_F(FileBrowserHandlerManifestTest, GetHandlersRequiresPermission) {
 
 TEST_F(FileBrowserHandlerManifestTest, InvalidFileBrowserHandlers) {
   Testcase testcases[] = {
-    Testcase("filebrowser_invalid_access_permission.json",
-             extensions::ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidFileAccessValue, base::IntToString(1))),
-    Testcase("filebrowser_invalid_access_permission_list.json",
-             errors::kInvalidFileAccessList),
-    Testcase("filebrowser_invalid_empty_access_permission_list.json",
-             errors::kInvalidFileAccessList),
-    Testcase("filebrowser_invalid_actions_1.json",
-             errors::kInvalidFileBrowserHandler),
-    Testcase("filebrowser_invalid_actions_2.json",
-             errors::kInvalidFileBrowserHandler),
-    Testcase("filebrowser_invalid_action_id.json",
-             errors::kInvalidPageActionId),
-    Testcase("filebrowser_invalid_action_title.json",
-             errors::kInvalidPageActionDefaultTitle),
-    Testcase("filebrowser_invalid_file_filters_1.json",
-             errors::kInvalidFileFiltersList),
-    Testcase("filebrowser_invalid_file_filters_2.json",
-             extensions::ErrorUtils::FormatErrorMessage(
-                errors::kInvalidFileFilterValue, base::IntToString(0))),
-    Testcase("filebrowser_invalid_file_filters_url.json",
-             extensions::ErrorUtils::FormatErrorMessage(
-                errors::kInvalidURLPatternError, "http:*.html"))
-  };
+      Testcase("filebrowser_invalid_access_permission.json",
+               extensions::ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidFileAccessValue, base::IntToString(1))),
+      Testcase("filebrowser_invalid_access_permission_list.json",
+               errors::kInvalidFileAccessList),
+      Testcase("filebrowser_invalid_empty_access_permission_list.json",
+               errors::kInvalidFileAccessList),
+      Testcase("filebrowser_invalid_value.json",
+               errors::kInvalidFileBrowserHandler),
+      Testcase("filebrowser_invalid_actions_1.json",
+               errors::kInvalidFileBrowserHandler),
+      Testcase("filebrowser_invalid_actions_2.json",
+               errors::kInvalidFileBrowserHandler),
+      Testcase("filebrowser_invalid_action_id.json",
+               errors::kInvalidPageActionId),
+      Testcase("filebrowser_invalid_action_title.json",
+               errors::kInvalidPageActionDefaultTitle),
+      Testcase("filebrowser_invalid_file_filters_1.json",
+               errors::kInvalidFileFiltersList),
+      Testcase("filebrowser_invalid_file_filters_2.json",
+               extensions::ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidFileFilterValue, base::IntToString(0))),
+      Testcase("filebrowser_invalid_file_filters_url.json",
+               extensions::ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidURLPatternError, "http:*.html"))};
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+  RunTestcase(Testcase("filebrowser_missing_permission.json",
+                       errors::kInvalidFileBrowserHandlerMissingPermission),
+              EXPECT_TYPE_WARNING);
 }
 
 TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {

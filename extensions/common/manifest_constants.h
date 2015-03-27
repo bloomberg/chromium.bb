@@ -302,7 +302,7 @@ extern const char kInvalidExportWhitelistString[];
 extern const char kInvalidFileAccessList[];
 extern const char kInvalidFileAccessValue[];
 extern const char kInvalidFileBrowserHandler[];
-extern const char kInvalidFileBrowserHandlerMIMETypes[];
+extern const char kInvalidFileBrowserHandlerMissingPermission[];
 extern const char kInvalidFileFiltersList[];
 extern const char kInvalidFileFilterValue[];
 extern const char kInvalidFileHandlers[];
