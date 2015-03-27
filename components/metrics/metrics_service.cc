@@ -209,6 +209,7 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
   }
 }
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
@@ -217,6 +218,7 @@ void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
   // Start writing right away (write happens on a different thread).
   local_state->CommitPendingWrite();
 }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }  // namespace
 
@@ -1088,9 +1090,6 @@ void MetricsService::RecordCurrentStabilityHistograms() {
 }
 
 void MetricsService::LogCleanShutdown() {
-  // Redundant hack to write pref ASAP.
-  MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
-
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
