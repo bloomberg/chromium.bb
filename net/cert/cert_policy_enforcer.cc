@@ -43,20 +43,34 @@ bool IsBuildTimely() {
 #endif
 }
 
-uint32_t ApproximateMonthDifference(const base::Time& start,
-                                    const base::Time& end) {
+// Returns a rounded-down months difference of |start| and |end|,
+// together with an indication of whether the last month was
+// a full month, because the range starts specified in the policy
+// are not consistent in terms of including the range start value.
+void RoundedDownMonthDifference(const base::Time& start,
+                                const base::Time& end,
+                                size_t* rounded_months_difference,
+                                bool* has_partial_month) {
+  DCHECK(rounded_months_difference);
+  DCHECK(has_partial_month);
   base::Time::Exploded exploded_start;
   base::Time::Exploded exploded_expiry;
   start.UTCExplode(&exploded_start);
   end.UTCExplode(&exploded_expiry);
+  if (end < start) {
+    *rounded_months_difference = 0;
+    *has_partial_month = false;
+  }
+
+  *has_partial_month = true;
   uint32_t month_diff = (exploded_expiry.year - exploded_start.year) * 12 +
                         (exploded_expiry.month - exploded_start.month);
+  if (exploded_expiry.day_of_month < exploded_start.day_of_month)
+    --month_diff;
+  else if (exploded_expiry.day_of_month == exploded_start.day_of_month)
+    *has_partial_month = false;
 
-  // Add any remainder as a full month.
-  if (exploded_expiry.day_of_month > exploded_start.day_of_month)
-    ++month_diff;
-
-  return month_diff;
+  *rounded_months_difference = month_diff;
 }
 
 bool HasRequiredNumberOfSCTs(const X509Certificate& cert,
@@ -81,18 +95,20 @@ bool HasRequiredNumberOfSCTs(const X509Certificate& cert,
     return false;
   }
 
-  uint32_t expiry_in_months_approx =
-      ApproximateMonthDifference(cert.valid_start(), cert.valid_expiry());
+  size_t lifetime;
+  bool has_partial_month;
+  RoundedDownMonthDifference(cert.valid_start(), cert.valid_expiry(), &lifetime,
+                             &has_partial_month);
 
   // For embedded SCTs, if the certificate has the number of SCTs specified in
   // table 1 of the "Qualifying Certificate" section of the CT/EV policy, then
   // it qualifies.
   size_t num_required_embedded_scts;
-  if (expiry_in_months_approx > 39) {
+  if (lifetime > 39 || (lifetime == 39 && has_partial_month)) {
     num_required_embedded_scts = 5;
-  } else if (expiry_in_months_approx > 27) {
+  } else if (lifetime > 27 || (lifetime == 27 && has_partial_month)) {
     num_required_embedded_scts = 4;
-  } else if (expiry_in_months_approx >= 15) {
+  } else if (lifetime >= 15) {
     num_required_embedded_scts = 3;
   } else {
     num_required_embedded_scts = 2;

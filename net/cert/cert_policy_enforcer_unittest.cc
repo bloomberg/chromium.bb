@@ -67,6 +67,29 @@ class CertPolicyEnforcerTest : public ::testing::Test {
     }
   }
 
+  void CheckCertificateCompliesWithExactNumberOfEmbeddedSCTs(
+      const base::Time& start,
+      const base::Time& end,
+      size_t required_scts) {
+    scoped_refptr<X509Certificate> cert(
+        new X509Certificate("subject", "issuer", start, end));
+    ct::CTVerifyResult result;
+    for (size_t i = 0; i < required_scts - 1; ++i) {
+      FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED,
+                                 1, &result);
+      EXPECT_FALSE(policy_enforcer_->DoesConformToCTEVPolicy(
+          cert.get(), nullptr, result, BoundNetLog()))
+          << " for: " << (end - start).InDays() << " and " << required_scts
+          << " scts=" << result.verified_scts.size() << " i=" << i;
+    }
+    FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 1,
+                               &result);
+    EXPECT_TRUE(policy_enforcer_->DoesConformToCTEVPolicy(
+        cert.get(), nullptr, result, BoundNetLog()))
+        << " for: " << (end - start).InDays() << " and " << required_scts
+        << " scts=" << result.verified_scts.size();
+  }
+
  protected:
   scoped_ptr<CertPolicyEnforcer> policy_enforcer_;
   scoped_refptr<X509Certificate> chain_;
@@ -140,31 +163,45 @@ TEST_F(CertPolicyEnforcerTest, DoesNotConformToPolicyInvalidDates) {
 
 TEST_F(CertPolicyEnforcerTest,
        ConformsToPolicyExactNumberOfSCTsForValidityPeriod) {
-  // Test multiple validity periods: Over 27 months, Over 15 months (but less
-  // than 27 months),
-  // Less than 15 months.
-  const size_t validity_period[] = {12, 19, 30, 50};
-  const size_t needed_scts[] = {2, 3, 4, 5};
+  // Test multiple validity periods
+  const struct TestData {
+    base::Time validity_start;
+    base::Time validity_end;
+    size_t scts_required;
+  } kTestData[] = {{// Cert valid for 14 months, needs 2 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2016, 6, 0, 6, 11, 25, 0, 0}),
+                    2},
+                   {// Cert valid for exactly 15 months, needs 3 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2016, 6, 0, 25, 11, 25, 0, 0}),
+                    3},
+                   {// Cert valid for over 15 months, needs 3 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2016, 6, 0, 27, 11, 25, 0, 0}),
+                    3},
+                   {// Cert valid for exactly 27 months, needs 3 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2017, 6, 0, 25, 11, 25, 0, 0}),
+                    3},
+                   {// Cert valid for over 27 months, needs 4 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2017, 6, 0, 28, 11, 25, 0, 0}),
+                    4},
+                   {// Cert valid for exactly 39 months, needs 4 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2018, 6, 0, 25, 11, 25, 0, 0}),
+                    4},
+                   {// Cert valid for over 39 months, needs 5 SCTs.
+                    base::Time::FromUTCExploded({2015, 3, 0, 25, 11, 25, 0, 0}),
+                    base::Time::FromUTCExploded({2018, 6, 0, 27, 11, 25, 0, 0}),
+                    5}};
 
-  for (int i = 0; i < 3; ++i) {
-    size_t curr_validity = validity_period[i];
-    scoped_refptr<X509Certificate> cert(new X509Certificate(
-        "subject", "issuer", base::Time::Now(),
-        base::Time::Now() + base::TimeDelta::FromDays(31 * curr_validity)));
-    size_t curr_required_scts = needed_scts[i];
-    ct::CTVerifyResult result;
-    for (size_t j = 0; j < curr_required_scts - 1; ++j) {
-      FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                                 1, &result);
-      EXPECT_FALSE(policy_enforcer_->DoesConformToCTEVPolicy(
-          cert.get(), nullptr, result, BoundNetLog()))
-          << " for: " << curr_validity << " and " << curr_required_scts
-          << " scts=" << result.verified_scts.size() << " j=" << j;
-    }
-    FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 1,
-                               &result);
-    EXPECT_TRUE(policy_enforcer_->DoesConformToCTEVPolicy(
-        cert.get(), nullptr, result, BoundNetLog()));
+  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+    SCOPED_TRACE(i);
+    CheckCertificateCompliesWithExactNumberOfEmbeddedSCTs(
+        kTestData[i].validity_start, kTestData[i].validity_end,
+        kTestData[i].scts_required);
   }
 }
 
