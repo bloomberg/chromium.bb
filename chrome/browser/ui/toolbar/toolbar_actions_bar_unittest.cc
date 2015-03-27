@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
@@ -388,6 +389,36 @@ TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   width -= ToolbarActionsBar::IconWidth(true);
   EXPECT_EQ(width, toolbar_actions_bar()->GetPreferredSize().width());
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+}
+
+TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
+  for (int i = 0; i < 3; ++i) {
+    CreateAndAddExtension(
+        base::StringPrintf("extension %d", i),
+        extensions::extension_action_test_util::BROWSER_ACTION);
+  }
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
+  // Change the value of the toolbar preference.
+  // Test drag-and-drop logic.
+  const char kExtension0[] = "extension 0";
+  const char kExtension1[] = "extension 1";
+  const char kExtension2[] = "extension 2";
+  {
+    // The order should start as 0, 1, 2.
+    const char* expected_names[] = { kExtension0, kExtension1, kExtension2 };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+  }
+
+  extensions::ExtensionIdList new_order;
+  new_order.push_back(toolbar_actions_bar()->toolbar_actions()[1]->GetId());
+  new_order.push_back(toolbar_actions_bar()->toolbar_actions()[2]->GetId());
+  extensions::ExtensionPrefs::Get(profile())->SetToolbarOrder(new_order);
+
+  {
+    // The order should now reflect the prefs, and be 1, 2, 0.
+    const char* expected_names[] = { kExtension1, kExtension2, kExtension0 };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+  }
 }
 
 class ToolbarActionsBarRedesignUnitTest : public ToolbarActionsBarUnitTest {

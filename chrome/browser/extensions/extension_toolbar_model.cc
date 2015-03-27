@@ -617,22 +617,23 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   }
   last_known_positions_.swap(pref_positions);
 
-  // Clear out the old...
-  while (!toolbar_items_.empty()) {
-    scoped_refptr<const Extension> extension = toolbar_items_.back();
-    toolbar_items_.pop_back();
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarExtensionRemoved(extension.get()));
-  }
-  DCHECK(toolbar_items_.empty());
-
-  // ...Add the new...
-  Populate(&last_known_positions_);
-
-  // ...And notify.
-  for (size_t i = 0; i < toolbar_items().size(); ++i) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarExtensionAdded(toolbar_items()[i].get(), i));
+  int desired_index = 0;
+  // Loop over the updated list of last known positions, moving any extensions
+  // that are in the wrong place.
+  for (const std::string& id : last_known_positions_) {
+    int current_index = GetIndexForId(id);
+    if (current_index == -1)
+      continue;
+    if (current_index != desired_index) {
+      scoped_refptr<const Extension> extension = toolbar_items_[current_index];
+      toolbar_items_.erase(toolbar_items_.begin() + current_index);
+      toolbar_items_.insert(toolbar_items_.begin() + desired_index, extension);
+      // Notify the observers to keep them up-to-date.
+      FOR_EACH_OBSERVER(
+          Observer, observers_,
+          OnToolbarExtensionMoved(extension.get(), desired_index));
+    }
+    ++desired_index;
   }
 
   if (last_known_positions_.size() > pref_position_size) {
