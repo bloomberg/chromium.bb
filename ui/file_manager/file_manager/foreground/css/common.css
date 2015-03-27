@@ -489,6 +489,11 @@ html[dir='rtl'] .entry-name {
   width: 44px;
 }
 
+html[dir='rtl'] .cr-dialog-close {
+  left: 0;
+  right: auto;
+}
+
 .cr-dialog-close:hover {
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
 }
