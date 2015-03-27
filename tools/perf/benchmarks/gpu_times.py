@@ -27,7 +27,7 @@ class _GPUTimes(benchmark.Benchmark):
     return (isinstance(value, gpu_timeline.GPUTimelineListOfValues) or
             isinstance(value, gpu_timeline.GPUTimelineValue))
 
-@benchmark.Disabled  # http://crbug.com/455292
+@benchmark.Enabled('android')  # http://crbug.com/453131
 class GPUTimesKeyMobileSites(_GPUTimes):
   """Measures GPU timeline metric on key mobile sites."""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
@@ -36,7 +36,7 @@ class GPUTimesKeyMobileSites(_GPUTimes):
   def Name(cls):
     return 'gpu_times.key_mobile_sites_smooth'
 
-@benchmark.Disabled  # http://crbug.com/455292
+@benchmark.Enabled('android')  # http://crbug.com/453131
 class GPUTimesGpuRasterizationKeyMobileSites(_GPUTimes):
   """Measures GPU timeline metric on key mobile sites with GPU rasterization.
   """
@@ -48,7 +48,7 @@ class GPUTimesGpuRasterizationKeyMobileSites(_GPUTimes):
   def Name(cls):
     return 'gpu_times.gpu_rasterization.key_mobile_sites_smooth'
 
-@benchmark.Disabled  # http://crbug.com/453131, http://crbug.com/455292
+@benchmark.Enabled('android')  # http://crbug.com/453131
 class GPUTimesTop25Sites(_GPUTimes):
   """Measures GPU timeline metric for the top 25 sites."""
   page_set = page_sets.Top25SmoothPageSet
@@ -57,7 +57,7 @@ class GPUTimesTop25Sites(_GPUTimes):
   def Name(cls):
     return 'gpu_times.top_25_smooth'
 
-@benchmark.Disabled  # http://crbug.com/455292
+@benchmark.Enabled('android')  # http://crbug.com/453131
 class GPUTimesGpuRasterizationTop25Sites(_GPUTimes):
   """Measures GPU timeline metric for the top 25 sites with GPU rasterization.
   """
@@ -68,4 +68,3 @@ class GPUTimesGpuRasterizationTop25Sites(_GPUTimes):
   @classmethod
   def Name(cls):
     return 'gpu_times.gpu_rasterization.top_25_smooth'
-
