@@ -17,12 +17,22 @@
 namespace cc {
 namespace {
 
+// NOTE: We cannot use DebugScopedSetImplThreadAndMainThreadBlocked in these
+// tests because it gets destroyed before the VideoLayerImpl is destroyed. This
+// causes a DCHECK in VideoLayerImpl's destructor to fail.
+static void DebugSetImplThreadAndMainThreadBlocked(Proxy* proxy) {
+#if DCHECK_IS_ON()
+  proxy->SetCurrentThreadIsImplThread(true);
+  proxy->SetMainThreadBlocked(true);
+#endif
+}
+
 TEST(VideoLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
   LayerTestCommon::LayerImplTest impl;
-  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
@@ -76,7 +86,7 @@ TEST(VideoLayerImplTest, Occlusion) {
 
 TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
   LayerTestCommon::LayerImplTest impl;
-  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
 
   FakeVideoFrameProvider provider;
   VideoLayerImpl* video_layer_impl =
@@ -85,10 +95,10 @@ TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
   VideoFrameProviderClientImpl* client =
       static_cast<VideoFrameProviderClientImpl*>(provider.client());
   ASSERT_TRUE(client);
-  EXPECT_FALSE(client->active_video_layer());
 
+  EXPECT_FALSE(client->ActiveVideoLayer());
   video_layer_impl->DidBecomeActive();
-  EXPECT_EQ(video_layer_impl, client->active_video_layer());
+  EXPECT_EQ(video_layer_impl, client->ActiveVideoLayer());
 }
 
 TEST(VideoLayerImplTest, Rotated0) {
@@ -96,7 +106,7 @@ TEST(VideoLayerImplTest, Rotated0) {
   gfx::Size viewport_size(1000, 500);
 
   LayerTestCommon::LayerImplTest impl;
-  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
@@ -132,7 +142,7 @@ TEST(VideoLayerImplTest, Rotated90) {
   gfx::Size viewport_size(1000, 500);
 
   LayerTestCommon::LayerImplTest impl;
-  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
@@ -168,7 +178,7 @@ TEST(VideoLayerImplTest, Rotated180) {
   gfx::Size viewport_size(1000, 500);
 
   LayerTestCommon::LayerImplTest impl;
-  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
@@ -204,7 +214,7 @@ TEST(VideoLayerImplTest, Rotated270) {
   gfx::Size viewport_size(1000, 500);
 
   LayerTestCommon::LayerImplTest impl;
-  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,

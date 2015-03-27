@@ -6,6 +6,7 @@
 #define CC_LAYERS_VIDEO_FRAME_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
+#include "cc/base/cc_export.h"
 
 namespace media {
 class VideoFrame;
@@ -18,11 +19,11 @@ namespace cc {
 // PutCurrentFrame() from the compositor thread. If so, the caller is
 // responsible for making sure Client::DidReceiveFrame() and
 // Client::DidUpdateMatrix() are only called from this same thread.
-class VideoFrameProvider {
+class CC_EXPORT VideoFrameProvider {
  public:
   virtual ~VideoFrameProvider() {}
 
-  class Client {
+  class CC_EXPORT Client {
    public:
     // Provider will call this method to tell the client to stop using it.
     // StopUsingProvider() may be called from any thread. The client should

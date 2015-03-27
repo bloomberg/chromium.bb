@@ -30,18 +30,23 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
     int id,
     VideoFrameProvider* provider,
     media::VideoRotation video_rotation) {
-  scoped_ptr<VideoLayerImpl> layer(
-      new VideoLayerImpl(tree_impl, id, video_rotation));
-  layer->SetProviderClientImpl(VideoFrameProviderClientImpl::Create(provider));
-  DCHECK(tree_impl->proxy()->IsImplThread());
   DCHECK(tree_impl->proxy()->IsMainThreadBlocked());
-  return layer.Pass();
+  DCHECK(tree_impl->proxy()->IsImplThread());
+
+  scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl =
+      VideoFrameProviderClientImpl::Create(provider);
+
+  return make_scoped_ptr(
+      new VideoLayerImpl(tree_impl, id, provider_client_impl, video_rotation));
 }
 
-VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* tree_impl,
-                               int id,
-                               media::VideoRotation video_rotation)
+VideoLayerImpl::VideoLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl,
+    media::VideoRotation video_rotation)
     : LayerImpl(tree_impl, id),
+      provider_client_impl_(provider_client_impl),
       frame_(nullptr),
       video_rotation_(video_rotation) {
 }
@@ -61,14 +66,8 @@ VideoLayerImpl::~VideoLayerImpl() {
 
 scoped_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(new VideoLayerImpl(tree_impl, id(), video_rotation_));
-}
-
-void VideoLayerImpl::PushPropertiesTo(LayerImpl* layer) {
-  LayerImpl::PushPropertiesTo(layer);
-
-  VideoLayerImpl* other = static_cast<VideoLayerImpl*>(layer);
-  other->SetProviderClientImpl(provider_client_impl_);
+  return make_scoped_ptr(new VideoLayerImpl(
+      tree_impl, id(), provider_client_impl_, video_rotation_));
 }
 
 void VideoLayerImpl::DidBecomeActive() {
@@ -275,12 +274,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       StreamVideoDrawQuad* stream_video_quad =
           render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
       stream_video_quad->SetNew(
-          shared_quad_state,
-          quad_rect,
-          opaque_rect,
-          visible_quad_rect,
+          shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
           frame_resources_[0],
-          scale * provider_client_impl_->stream_texture_matrix());
+          scale * provider_client_impl_->StreamTextureMatrix());
       break;
     }
     case VideoFrameExternalResources::IO_SURFACE: {
@@ -362,11 +358,6 @@ void VideoLayerImpl::ReleaseResources() {
 void VideoLayerImpl::SetNeedsRedraw() {
   SetUpdateRect(gfx::UnionRects(update_rect(), gfx::Rect(bounds())));
   layer_tree_impl()->SetNeedsRedraw();
-}
-
-void VideoLayerImpl::SetProviderClientImpl(
-    scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl) {
-  provider_client_impl_ = provider_client_impl;
 }
 
 const char* VideoLayerImpl::LayerTypeAsString() const {

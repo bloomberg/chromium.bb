@@ -23,6 +23,8 @@ class VideoFrameProviderClientImpl;
 
 class CC_EXPORT VideoLayerImpl : public LayerImpl {
  public:
+  // Must be called on the impl thread while the main thread is blocked. This is
+  // so that |provider| stays alive while this is being created.
   static scoped_ptr<VideoLayerImpl> Create(LayerTreeImpl* tree_impl,
                                            int id,
                                            VideoFrameProvider* provider,
@@ -31,7 +33,6 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
 
   // LayerImpl implementation.
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
-  void PushPropertiesTo(LayerImpl* layer) override;
   bool WillDraw(DrawMode draw_mode,
                 ResourceProvider* resource_provider) override;
   void AppendQuads(RenderPass* render_pass,
@@ -41,16 +42,14 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   void ReleaseResources() override;
 
   void SetNeedsRedraw();
-
-  void SetProviderClientImpl(
-      scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl);
-
   media::VideoRotation video_rotation() const { return video_rotation_; }
 
  private:
-  VideoLayerImpl(LayerTreeImpl* tree_impl,
-                 int id,
-                 media::VideoRotation video_rotation);
+  VideoLayerImpl(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl,
+      media::VideoRotation video_rotation);
 
   const char* LayerTypeAsString() const override;
 
