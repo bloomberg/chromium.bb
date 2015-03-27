@@ -1097,7 +1097,14 @@ matrix_test_LDADD = -lm -lrt
 
 if ENABLE_IVI_SHELL
 module_tests += 				\
+	ivi-layout-internal-test.la		\
 	ivi-layout-test.la
+
+ivi_layout_internal_test_la_LIBADD = $(COMPOSITOR_LIBS)
+ivi_layout_internal_test_la_LDFLAGS = $(test_module_ldflags)
+ivi_layout_internal_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+ivi_layout_internal_test_la_SOURCES =			\
+	tests/ivi_layout-internal-test.c
 
 ivi_layout_test_la_LIBADD = $(COMPOSITOR_LIBS)
 ivi_layout_test_la_LDFLAGS = $(test_module_ldflags)
