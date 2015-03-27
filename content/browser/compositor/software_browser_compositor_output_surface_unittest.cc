@@ -104,7 +104,9 @@ scoped_ptr<content::BrowserCompositorOutputSurface>
 SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     scoped_ptr<cc::SoftwareOutputDevice> device) {
   return scoped_ptr<content::BrowserCompositorOutputSurface>(
-      new content::SoftwareBrowserCompositorOutputSurface(device.Pass()));
+      new content::SoftwareBrowserCompositorOutputSurface(
+          device.Pass(),
+          compositor_->vsync_manager()));
 }
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {

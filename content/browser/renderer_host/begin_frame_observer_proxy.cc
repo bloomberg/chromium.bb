@@ -14,7 +14,6 @@ BeginFrameObserverProxy::BeginFrameObserverProxy(
 }
 
 BeginFrameObserverProxy::~BeginFrameObserverProxy() {
-  DCHECK(!compositor_);
 }
 
 void BeginFrameObserverProxy::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -39,7 +38,6 @@ void BeginFrameObserverProxy::SetCompositor(ui::Compositor* compositor) {
   DCHECK(compositor);
 
   compositor_ = compositor;
-  compositor_->AddObserver(this);
   if (needs_begin_frames_)
     StartObservingBeginFrames();
 }
@@ -47,7 +45,6 @@ void BeginFrameObserverProxy::SetCompositor(ui::Compositor* compositor) {
 void BeginFrameObserverProxy::ResetCompositor() {
   if (!compositor_)
     return;
-  compositor_->RemoveObserver(this);
 
   if (needs_begin_frames_)
     StopObservingBeginFrames();
@@ -58,11 +55,6 @@ void BeginFrameObserverProxy::OnSendBeginFrame(const cc::BeginFrameArgs& args) {
   if (last_sent_begin_frame_args_.frame_time != args.frame_time)
     client_->SendBeginFrame(args);
   last_sent_begin_frame_args_ = args;
-}
-
-void BeginFrameObserverProxy::OnCompositingShuttingDown(
-    ui::Compositor* compositor) {
-  ResetCompositor();
 }
 
 void BeginFrameObserverProxy::StartObservingBeginFrames() {

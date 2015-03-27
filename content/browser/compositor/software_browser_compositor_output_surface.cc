@@ -17,8 +17,10 @@
 namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
-    scoped_ptr<cc::SoftwareOutputDevice> software_device)
-    : BrowserCompositorOutputSurface(software_device.Pass()),
+    scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    : BrowserCompositorOutputSurface(software_device.Pass(),
+                                     vsync_manager),
       weak_factory_(this) {
 }
 

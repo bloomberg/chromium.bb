@@ -41,8 +41,10 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider)
-      : BrowserCompositorOutputSurface(context_provider) {}
+      const scoped_refptr<cc::ContextProvider>& context_provider,
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+      : BrowserCompositorOutputSurface(context_provider,
+                                       vsync_manager) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
@@ -80,7 +82,9 @@ class ReflectorImplTest : public testing::Test {
     context_provider_ = cc::TestContextProvider::Create(
         cc::TestWebGraphicsContext3D::Create().Pass());
     output_surface_ =
-        scoped_ptr<TestOutputSurface>(new TestOutputSurface(context_provider_));
+        scoped_ptr<TestOutputSurface>(
+            new TestOutputSurface(context_provider_,
+                                  compositor_->vsync_manager())).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     mirroring_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));

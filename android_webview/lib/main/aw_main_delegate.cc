@@ -60,6 +60,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   BrowserViewRenderer::CalculateTileMemoryPolicy();
 
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
 
   // WebView uses the Android system's scrollbars and overscroll glow.
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);

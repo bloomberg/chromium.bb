@@ -440,6 +440,12 @@ void RenderWidgetHostViewMac::DelegatedFrameHostOnLostCompositorResources() {
   render_widget_host_->ScheduleComposite();
 }
 
+void RenderWidgetHostViewMac::DelegatedFrameHostUpdateVSyncParameters(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
+  render_widget_host_->UpdateVSyncParameters(timebase, interval);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMacNSView, public:
 

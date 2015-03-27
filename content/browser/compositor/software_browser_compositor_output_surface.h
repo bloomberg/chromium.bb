@@ -13,13 +13,18 @@ namespace cc {
 class SoftwareOutputDevice;
 }
 
+namespace ui {
+class CompositorVSyncManager;
+}
+
 namespace content {
 
 class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   SoftwareBrowserCompositorOutputSurface(
-      scoped_ptr<cc::SoftwareOutputDevice> software_device);
+      scoped_ptr<cc::SoftwareOutputDevice> software_device,
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   ~SoftwareBrowserCompositorOutputSurface() override;
 

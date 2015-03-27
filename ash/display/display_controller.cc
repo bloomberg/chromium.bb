@@ -36,6 +36,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -149,9 +150,9 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   DisplayMode mode =
       GetDisplayManager()->GetActiveModeForDisplayId(display.id());
   if (mode.refresh_rate > 0.0f) {
-    host->compositor()->SetAuthoritativeVSyncInterval(
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          mode.refresh_rate));
+    host->compositor()->vsync_manager()->SetAuthoritativeVSyncInterval(
+        base::TimeDelta::FromMicroseconds(
+            base::Time::kMicrosecondsPerSecond / mode.refresh_rate));
   }
 
   // Just movnig the display requires the full redraw.

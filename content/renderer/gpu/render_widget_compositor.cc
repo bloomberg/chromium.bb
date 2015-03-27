@@ -201,9 +201,8 @@ void RenderWidgetCompositor::Initialize() {
 
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
-#if !defined(OS_MACOSX)
-  settings.use_external_begin_frame_source = true;
-#endif
+  settings.use_external_begin_frame_source =
+      cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);

@@ -483,6 +483,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       int output_surface_id,
       const cc::CompositorFrameAck& ack) override;
   void DelegatedFrameHostOnLostCompositorResources() override;
+  void DelegatedFrameHostUpdateVSyncParameters(
+      const base::TimeTicks& timebase,
+      const base::TimeDelta& interval) override;
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;

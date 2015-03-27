@@ -34,6 +34,8 @@
         'compositor_observer.h',
         'compositor_switches.cc',
         'compositor_switches.h',
+        'compositor_vsync_manager.cc',
+        'compositor_vsync_manager.h',
         'debug_utils.cc',
         'debug_utils.h',
         'dip_util.cc',

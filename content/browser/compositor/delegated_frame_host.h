@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -60,6 +61,10 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
       int output_surface_id,
       const cc::CompositorFrameAck& ack) = 0;
   virtual void DelegatedFrameHostOnLostCompositorResources() = 0;
+
+  virtual void DelegatedFrameHostUpdateVSyncParameters(
+      const base::TimeTicks& timebase,
+      const base::TimeDelta& interval) = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -68,6 +73,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
 // the ui::Compositor associated with its DelegatedFrameHostClient.
 class CONTENT_EXPORT DelegatedFrameHost
     : public ui::CompositorObserver,
+      public ui::CompositorVSyncManager::Observer,
       public ui::LayerOwnerDelegate,
       public ImageTransportFactoryObserver,
       public DelegatedFrameEvictorClient,
@@ -93,7 +99,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
   void ResetCompositor();
-  void SetVSyncParameters(base::TimeTicks timebase, base::TimeDelta interval);
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
                                   ReadbackRequestCallback& callback,
@@ -150,6 +155,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnCompositingAborted(ui::Compositor* compositor) override;
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+
+  // Overridden from ui::CompositorVSyncManager::Observer:
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
 
   // Overridden from ui::LayerOwnerObserver:
   void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
@@ -230,8 +239,11 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
+  // The vsync manager we are observing for changes, if any.
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+
   // The current VSync timebase and interval. These are zero until the first
-  // call to UpdateVSyncParameters().
+  // call to OnUpdateVSyncParameters().
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
 

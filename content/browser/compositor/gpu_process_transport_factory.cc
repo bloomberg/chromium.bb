@@ -277,7 +277,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   scoped_ptr<BrowserCompositorOutputSurface> surface;
   if (!create_gpu_output_surface) {
     surface = make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
-        CreateSoftwareOutputDevice(compositor.get())));
+        CreateSoftwareOutputDevice(compositor.get()),
+        compositor->vsync_manager()));
   } else {
     DCHECK(context_provider);
 #if defined(USE_OZONE)
@@ -285,14 +286,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             ->CanShowPrimaryPlaneAsOverlay()) {
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
-              context_provider, data->surface_id,
+              context_provider, data->surface_id, compositor->vsync_manager(),
               CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
               BrowserGpuMemoryBufferManager::current()));
     } else
 #endif
     {
       surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
-          context_provider,
+          context_provider, compositor->vsync_manager(),
           CreateOverlayCandidateValidator(compositor->widget())));
     }
   }
