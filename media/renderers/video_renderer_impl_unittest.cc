@@ -490,10 +490,9 @@ TEST_F(VideoRendererImplTest, Underflow) {
 
   {
     WaitableMessageLoopEvent event;
-    EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)))
-        .Times(1)
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
+    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
         .WillOnce(RunClosure(event.GetClosure()));
-    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
     StartPlayingFrom(0);
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
