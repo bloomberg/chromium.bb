@@ -58,6 +58,10 @@ int GetIPv4AddressFromIndex(int socket, uint32 index, uint32* address){
 
 #endif  // OS_MACOSX
 
+int GetSocketFDHash(int fd) {
+  return fd * 1595649551 + 52141;
+}
+
 }  // namespace
 
 UDPSocketLibevent::UDPSocketLibevent(
@@ -66,6 +70,7 @@ UDPSocketLibevent::UDPSocketLibevent(
     net::NetLog* net_log,
     const net::NetLog::Source& source)
         : socket_(kInvalidSocket),
+          socket_hash_(0),
           addr_family_(0),
           is_connected_(false),
           socket_options_(SOCKET_OPTION_MULTICAST_LOOP),
@@ -98,6 +103,7 @@ int UDPSocketLibevent::Open(AddressFamily address_family) {
   socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, 0);
   if (socket_ == kInvalidSocket)
     return MapSystemError(errno);
+  socket_hash_ = GetSocketFDHash(socket_);
   if (SetNonBlocking(socket_)) {
     const int err = MapSystemError(errno);
     Close();
@@ -127,12 +133,11 @@ void UDPSocketLibevent::Close() {
   ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
 
-  if (IGNORE_EINTR(close(socket_)) == -1) {
-    int last_error = errno;
-    base::debug::Alias(&last_error);
-    // Crash on any error other than EIO.
-    PCHECK(last_error == EIO);
-  }
+  // Verify that |socket_| hasn't been corrupted. Needed to debug
+  // crbug.com/461246.
+  CHECK_EQ(socket_hash_, GetSocketFDHash(socket_));
+
+  PCHECK(IGNORE_EINTR(close(socket_)) == 0);
 
   socket_ = kInvalidSocket;
   addr_family_ = 0;

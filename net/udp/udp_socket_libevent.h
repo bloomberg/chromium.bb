@@ -246,6 +246,12 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   int RandomBind(const IPAddressNumber& address);
 
   int socket_;
+
+  // Hash of |socket_| to verify that it is not corrupted when calling close().
+  // Used to debug crbug.com/461246.
+  // TODO(sergeyu): Remove this once the bug is fixed.
+  int socket_hash_;
+
   int addr_family_;
   bool is_connected_;
 
