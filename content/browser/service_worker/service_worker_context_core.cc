@@ -356,7 +356,7 @@ void ServiceWorkerContextCore::UnregistrationComplete(
     int64 registration_id,
     ServiceWorkerStatusCode status) {
   callback.Run(status);
-  if (observer_list_.get()) {
+  if (status == SERVICE_WORKER_OK && observer_list_.get()) {
     observer_list_->Notify(FROM_HERE,
                            &ServiceWorkerContextObserver::OnRegistrationDeleted,
                            registration_id, pattern);
