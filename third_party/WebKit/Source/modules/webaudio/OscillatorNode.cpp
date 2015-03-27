@@ -155,8 +155,8 @@ bool OscillatorNode::calculateSampleAccuratePhaseIncrements(size_t framesToProce
 
     if (m_firstRender) {
         m_firstRender = false;
-        m_frequency->resetSmoothedValue();
-        m_detune->resetSmoothedValue();
+        m_frequency->handler().resetSmoothedValue();
+        m_detune->handler().resetSmoothedValue();
     }
 
     bool hasSampleAccurateValues = false;
@@ -165,26 +165,26 @@ bool OscillatorNode::calculateSampleAccuratePhaseIncrements(size_t framesToProce
 
     float finalScale = m_periodicWave->rateScale();
 
-    if (m_frequency->hasSampleAccurateValues()) {
+    if (m_frequency->handler().hasSampleAccurateValues()) {
         hasSampleAccurateValues = true;
         hasFrequencyChanges = true;
 
         // Get the sample-accurate frequency values and convert to phase increments.
         // They will be converted to phase increments below.
-        m_frequency->calculateSampleAccurateValues(phaseIncrements, framesToProcess);
+        m_frequency->handler().calculateSampleAccurateValues(phaseIncrements, framesToProcess);
     } else {
         // Handle ordinary parameter smoothing/de-zippering if there are no scheduled changes.
-        m_frequency->smooth();
-        float frequency = m_frequency->smoothedValue();
+        m_frequency->handler().smooth();
+        float frequency = m_frequency->handler().smoothedValue();
         finalScale *= frequency;
     }
 
-    if (m_detune->hasSampleAccurateValues()) {
+    if (m_detune->handler().hasSampleAccurateValues()) {
         hasSampleAccurateValues = true;
 
         // Get the sample-accurate detune values.
         float* detuneValues = hasFrequencyChanges ? m_detuneValues.data() : phaseIncrements;
-        m_detune->calculateSampleAccurateValues(detuneValues, framesToProcess);
+        m_detune->handler().calculateSampleAccurateValues(detuneValues, framesToProcess);
 
         // Convert from cents to rate scalar.
         float k = 1.0 / 1200;
@@ -198,8 +198,8 @@ bool OscillatorNode::calculateSampleAccuratePhaseIncrements(size_t framesToProce
         }
     } else {
         // Handle ordinary parameter smoothing/de-zippering if there are no scheduled changes.
-        m_detune->smooth();
-        float detune = m_detune->smoothedValue();
+        m_detune->handler().smooth();
+        float detune = m_detune->handler().smoothedValue();
         float detuneScale = powf(2, detune / 1200);
         finalScale *= detuneScale;
     }
@@ -269,8 +269,8 @@ void OscillatorNode::process(size_t framesToProcess)
     float tableInterpolationFactor = 0;
 
     if (!hasSampleAccurateValues) {
-        frequency = m_frequency->smoothedValue();
-        float detune = m_detune->smoothedValue();
+        frequency = m_frequency->handler().smoothedValue();
+        float detune = m_detune->handler().smoothedValue();
         float detuneScale = powf(2, detune / 1200);
         frequency *= detuneScale;
         m_periodicWave->waveDataForFundamentalFrequency(frequency, lowerWaveData, higherWaveData, tableInterpolationFactor);

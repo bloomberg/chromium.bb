@@ -40,7 +40,7 @@ namespace blink {
 class AudioContext;
 class AudioNodeInput;
 class AudioNodeOutput;
-class AudioParamHandler;
+class AudioParam;
 class ExceptionState;
 
 // An AudioNode is the basic building block for handling audio within an AudioContext.
@@ -137,15 +137,15 @@ public:
 
     // Called from main thread by corresponding JavaScript methods.
     virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    void connect(AudioParamHandler*, unsigned outputIndex, ExceptionState&);
+    void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
 
     virtual void disconnect();
     virtual void disconnect(unsigned outputIndex, ExceptionState&);
     virtual void disconnect(AudioNode*, ExceptionState&);
     virtual void disconnect(AudioNode*, unsigned outputIndex, ExceptionState&);
     virtual void disconnect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    virtual void disconnect(AudioParamHandler*, ExceptionState&);
-    virtual void disconnect(AudioParamHandler*, unsigned outputIndex, ExceptionState&);
+    virtual void disconnect(AudioParam*, ExceptionState&);
+    virtual void disconnect(AudioParam*, unsigned outputIndex, ExceptionState&);
 
     // Like disconnect, but no exception is thrown if the outputIndex is invalid.  Just do nothing
     // in that case.
@@ -232,6 +232,10 @@ private:
     float m_sampleRate;
     HeapVector<Member<AudioNodeInput>> m_inputs;
     HeapVector<Member<AudioNodeOutput>> m_outputs;
+    // Represents audio node graph with Oilpan references. N-th HeapHashSet
+    // represents a set of AudioParam objects connected to this AudioNode's N-th
+    // output.
+    HeapVector<Member<HeapHashSet<Member<AudioParam>>>> m_connectedParams;
 
     double m_lastProcessingTime;
     double m_lastNonSilentTime;

@@ -68,7 +68,7 @@ public:
 
     // Disconnect a specific input or AudioParam.
     void disconnectInput(AudioNodeInput &);
-    void disconnectAudioParam(AudioParam &);
+    void disconnectAudioParam(AudioParamHandler&);
 
     void setNumberOfChannels(unsigned);
     unsigned numberOfChannels() const { return m_numberOfChannels; }
@@ -78,7 +78,7 @@ public:
 
     // Probe if the output node is connected with a certain input or AudioParam
     bool isConnectedToInput(AudioNodeInput &);
-    bool isConnectedToAudioParam(AudioParam &);
+    bool isConnectedToAudioParam(AudioParamHandler&);
 
     // Disable/Enable happens when there are still JavaScript references to a node, but it has otherwise "finished" its work.
     // For example, when a note has finished playing.  It is kept around, because it may be played again at a later time.
@@ -102,8 +102,8 @@ private:
     // They must be called with the context's graph lock.
     void addInput(AudioNodeInput&);
     void removeInput(AudioNodeInput&);
-    void addParam(AudioParam&);
-    void removeParam(AudioParam&);
+    void addParam(AudioParamHandler&);
+    void removeParam(AudioParamHandler&);
 
     // fanOutCount() is the number of AudioNodeInputs that we're connected to.
     // This method should not be called in audio thread rendering code, instead renderingFanOutCount() should be used.
@@ -158,7 +158,9 @@ private:
     unsigned m_renderingFanOutCount;
     unsigned m_renderingParamFanOutCount;
 
-    HeapHashSet<Member<AudioParam>> m_params;
+    // This collection of raw pointers is safe because they are retained by
+    // AudioParam objects referred in m_nextParams of the owner AudioNode.
+    HashSet<AudioParamHandler*> m_params;
 };
 
 } // namespace blink

@@ -38,6 +38,14 @@ namespace blink {
 const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
 const double AudioParamHandler::SnapThreshold = 0.001;
 
+AudioContext* AudioParamHandler::context() const
+{
+    // TODO(tkent): We can remove this dangerous function by removing
+    // AudioContext dependency from AudioParamTimeline.
+    ASSERT_WITH_SECURITY_IMPLICATION(deferredTaskHandler().isAudioThread());
+    return &m_context;
+}
+
 float AudioParamHandler::value()
 {
     // Update value for timeline.
@@ -184,15 +192,74 @@ void AudioParamHandler::disconnect(AudioNodeOutput& output)
     }
 }
 
-DEFINE_TRACE(AudioParamHandler)
+// ----------------------------------------------------------------
+
+AudioParam::AudioParam(AudioContext* context, double defaultValue)
+    : m_handler(AudioParamHandler::create(context, defaultValue))
+    , m_context(context)
+{
+}
+
+AudioParam* AudioParam::create(AudioContext* context, double defaultValue)
+{
+    ASSERT(context);
+    return new AudioParam(context, defaultValue);
+}
+
+DEFINE_TRACE(AudioParam)
 {
     visitor->trace(m_context);
     // TODO(tkent): Oilpan: m_renderingOutputs should not be strong references.
     // This is a short-term workaround to avoid crashes, and causes AudioNode
     // leaks.
-    AudioContext::AutoLocker locker(deferredTaskHandler());
-    for (size_t i = 0; i < m_renderingOutputs.size(); ++i)
-        visitor->trace(m_renderingOutputs[i]);
+    AudioContext::AutoLocker locker(context());
+    for (unsigned i = 0; i < handler().numberOfRenderingConnections(); ++i)
+        visitor->trace(handler().renderingOutput(i));
+}
+
+float AudioParam::value() const
+{
+    return handler().value();
+}
+
+void AudioParam::setValue(float value)
+{
+    handler().setValue(value);
+}
+
+float AudioParam::defaultValue() const
+{
+    return handler().defaultValue();
+}
+
+void AudioParam::setValueAtTime(float value, double time, ExceptionState& exceptionState)
+{
+    handler().timeline().setValueAtTime(value, time, exceptionState);
+}
+
+void AudioParam::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
+{
+    handler().timeline().linearRampToValueAtTime(value, time, exceptionState);
+}
+
+void AudioParam::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
+{
+    handler().timeline().exponentialRampToValueAtTime(value, time, exceptionState);
+}
+
+void AudioParam::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
+{
+    handler().timeline().setTargetAtTime(target, time, timeConstant, exceptionState);
+}
+
+void AudioParam::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
+{
+    handler().timeline().setValueCurveAtTime(curve, time, duration, exceptionState);
+}
+
+void AudioParam::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
+{
+    handler().timeline().cancelScheduledValues(startTime, exceptionState);
 }
 
 } // namespace blink

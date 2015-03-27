@@ -42,7 +42,7 @@ public:
     virtual ~AudioSummingJunction();
 
     // Can be called from any thread.
-    DeferredTaskHandler& deferredTaskHandler() { return *m_deferredTaskHandler; }
+    DeferredTaskHandler& deferredTaskHandler() const { return *m_deferredTaskHandler; }
 
     // This must be called whenever we modify m_outputs.
     void changedOutputs();

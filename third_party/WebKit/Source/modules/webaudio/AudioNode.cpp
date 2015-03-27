@@ -176,6 +176,8 @@ void AudioNode::addInput()
 void AudioNode::addOutput(unsigned numberOfChannels)
 {
     m_outputs.append(AudioNodeOutput::create(this, numberOfChannels));
+    m_connectedParams.append(nullptr);
+    ASSERT(numberOfOutputs() == m_connectedParams.size());
 }
 
 AudioNodeInput* AudioNode::input(unsigned i)
@@ -272,7 +274,10 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
         return;
     }
 
-    param->connect(*output(outputIndex));
+    param->handler().connect(*output(outputIndex));
+    if (!m_connectedParams[outputIndex])
+        m_connectedParams[outputIndex] = new HeapHashSet<Member<AudioParam>>();
+    m_connectedParams[outputIndex]->add(param);
 }
 
 void AudioNode::disconnect()
@@ -446,8 +451,9 @@ void AudioNode::disconnect(AudioParam* destinationParam, ExceptionState& excepti
     // Disconnect if connected and increase |numberOfDisconnectios| by 1.
     for (unsigned i = 0; i < numberOfOutputs(); ++i) {
         AudioNodeOutput* output = this->output(i);
-        if (output->isConnectedToAudioParam(*destinationParam)) {
-            output->disconnectAudioParam(*destinationParam);
+        if (output->isConnectedToAudioParam(destinationParam->handler())) {
+            output->disconnectAudioParam(destinationParam->handler());
+            m_connectedParams[i]->remove(destinationParam);
             numberOfDisconnections++;
         }
     }
@@ -473,14 +479,15 @@ void AudioNode::disconnect(AudioParam* destinationParam, unsigned outputIndex, E
         AudioNodeOutput* output = this->output(outputIndex);
 
         // Sanity check on the connection between the output and the destination.
-        if (!output->isConnectedToAudioParam(*destinationParam)) {
+        if (!output->isConnectedToAudioParam(destinationParam->handler())) {
             exceptionState.throwDOMException(
                 InvalidAccessError,
                 "specified destination AudioParam and node output (" + String::number(outputIndex) + ") are not connected.");
             return;
         }
 
-        output->disconnectAudioParam(*destinationParam);
+        output->disconnectAudioParam(destinationParam->handler());
+        m_connectedParams[outputIndex]->remove(destinationParam);
     } else {
 
         // The output index is out of range. Throw an exception.
@@ -503,8 +510,10 @@ void AudioNode::disconnectWithoutException(unsigned outputIndex)
     AudioContext::AutoLocker locker(context());
 
     // Sanity check input and output indices.
-    if (outputIndex < numberOfOutputs())
-        output(outputIndex)->disconnectAll();
+    if (outputIndex >= numberOfOutputs())
+        return;
+    output(outputIndex)->disconnectAll();
+    m_connectedParams[outputIndex] = nullptr;
 }
 
 unsigned long AudioNode::channelCount()
@@ -810,6 +819,7 @@ DEFINE_TRACE(AudioNode)
     visitor->trace(m_context);
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
+    visitor->trace(m_connectedParams);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
 }
 

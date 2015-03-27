@@ -58,7 +58,6 @@ DEFINE_TRACE(AudioNodeOutput)
 {
     visitor->trace(m_node);
     visitor->trace(m_inputs);
-    visitor->trace(m_params);
 }
 
 void AudioNodeOutput::dispose()
@@ -196,19 +195,19 @@ void AudioNodeOutput::disconnectInput(AudioNodeInput& input)
     input.disconnect(*this);
 }
 
-void AudioNodeOutput::disconnectAudioParam(AudioParam& param)
+void AudioNodeOutput::disconnectAudioParam(AudioParamHandler& param)
 {
     ASSERT(context()->isGraphOwner() && isConnectedToAudioParam(param));
     param.disconnect(*this);
 }
 
-void AudioNodeOutput::addParam(AudioParam& param)
+void AudioNodeOutput::addParam(AudioParamHandler& param)
 {
     ASSERT(context()->isGraphOwner());
     m_params.add(&param);
 }
 
-void AudioNodeOutput::removeParam(AudioParam& param)
+void AudioNodeOutput::removeParam(AudioParamHandler& param)
 {
     ASSERT(context()->isGraphOwner());
     m_params.remove(&param);
@@ -235,7 +234,7 @@ bool AudioNodeOutput::isConnectedToInput(AudioNodeInput& input)
     return m_inputs.contains(&input);
 }
 
-bool AudioNodeOutput::isConnectedToAudioParam(AudioParam& param)
+bool AudioNodeOutput::isConnectedToAudioParam(AudioParamHandler& param)
 {
     ASSERT(context()->isGraphOwner());
     return m_params.contains(&param);

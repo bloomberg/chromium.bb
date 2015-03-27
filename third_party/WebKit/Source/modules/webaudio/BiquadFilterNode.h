@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class AudioParamHandler;
+class AudioParam;
 
 class BiquadFilterNode final : public AudioBasicProcessorNode {
     DEFINE_WRAPPERTYPEINFO();
@@ -56,10 +56,10 @@ public:
     String type() const;
     void setType(const String&);
 
-    AudioParamHandler* frequency() { return biquadProcessor()->parameter1(); }
-    AudioParamHandler* q() { return biquadProcessor()->parameter2(); }
-    AudioParamHandler* gain() { return biquadProcessor()->parameter3(); }
-    AudioParamHandler* detune() { return biquadProcessor()->parameter4(); }
+    AudioParam* frequency() { return biquadProcessor()->parameter1(); }
+    AudioParam* q() { return biquadProcessor()->parameter2(); }
+    AudioParam* gain() { return biquadProcessor()->parameter3(); }
+    AudioParam* detune() { return biquadProcessor()->parameter4(); }
 
     // Get the magnitude and phase response of the filter at the given
     // set of frequencies (in Hz). The phase response is in radians.

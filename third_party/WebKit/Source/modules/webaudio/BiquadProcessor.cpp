@@ -78,24 +78,24 @@ void BiquadProcessor::checkForDirtyCoefficients()
     m_filterCoefficientsDirty = false;
     m_hasSampleAccurateValues = false;
 
-    if (m_parameter1->hasSampleAccurateValues() || m_parameter2->hasSampleAccurateValues() || m_parameter3->hasSampleAccurateValues() || m_parameter4->hasSampleAccurateValues()) {
+    if (m_parameter1->handler().hasSampleAccurateValues() || m_parameter2->handler().hasSampleAccurateValues() || m_parameter3->handler().hasSampleAccurateValues() || m_parameter4->handler().hasSampleAccurateValues()) {
         m_filterCoefficientsDirty = true;
         m_hasSampleAccurateValues = true;
     } else {
         if (m_hasJustReset) {
             // Snap to exact values first time after reset, then smooth for subsequent changes.
-            m_parameter1->resetSmoothedValue();
-            m_parameter2->resetSmoothedValue();
-            m_parameter3->resetSmoothedValue();
-            m_parameter4->resetSmoothedValue();
+            m_parameter1->handler().resetSmoothedValue();
+            m_parameter2->handler().resetSmoothedValue();
+            m_parameter3->handler().resetSmoothedValue();
+            m_parameter4->handler().resetSmoothedValue();
             m_filterCoefficientsDirty = true;
             m_hasJustReset = false;
         } else {
             // Smooth all of the filter parameters. If they haven't yet converged to their target value then mark coefficients as dirty.
-            bool isStable1 = m_parameter1->smooth();
-            bool isStable2 = m_parameter2->smooth();
-            bool isStable3 = m_parameter3->smooth();
-            bool isStable4 = m_parameter4->smooth();
+            bool isStable1 = m_parameter1->handler().smooth();
+            bool isStable2 = m_parameter2->handler().smooth();
+            bool isStable3 = m_parameter3->handler().smooth();
+            bool isStable4 = m_parameter4->handler().smooth();
             if (!(isStable1 && isStable2 && isStable3 && isStable4))
                 m_filterCoefficientsDirty = true;
         }

@@ -59,12 +59,12 @@ void GainNode::process(size_t framesToProcess)
     } else {
         AudioBus* inputBus = input(0)->bus();
 
-        if (gain()->hasSampleAccurateValues()) {
+        if (gain()->handler().hasSampleAccurateValues()) {
             // Apply sample-accurate gain scaling for precise envelopes, grain windows, etc.
             ASSERT(framesToProcess <= m_sampleAccurateGainValues.size());
             if (framesToProcess <= m_sampleAccurateGainValues.size()) {
                 float* gainValues = m_sampleAccurateGainValues.data();
-                gain()->calculateSampleAccurateValues(gainValues, framesToProcess);
+                gain()->handler().calculateSampleAccurateValues(gainValues, framesToProcess);
                 outputBus->copyWithSampleAccurateGainValuesFrom(*inputBus, gainValues, framesToProcess);
             }
         } else {

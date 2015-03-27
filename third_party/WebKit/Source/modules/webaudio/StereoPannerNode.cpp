@@ -62,12 +62,12 @@ void StereoPannerNode::process(size_t framesToProcess)
         return;
     }
 
-    if (pan()->hasSampleAccurateValues()) {
+    if (pan()->handler().hasSampleAccurateValues()) {
         // Apply sample-accurate panning specified by AudioParam automation.
         ASSERT(framesToProcess <= m_sampleAccuratePanValues.size());
         if (framesToProcess <= m_sampleAccuratePanValues.size()) {
             float* panValues = m_sampleAccuratePanValues.data();
-            pan()->calculateSampleAccurateValues(panValues, framesToProcess);
+            pan()->handler().calculateSampleAccurateValues(panValues, framesToProcess);
             m_stereoPanner->panWithSampleAccurateValues(inputBus, outputBus, panValues, framesToProcess);
         }
     } else {
