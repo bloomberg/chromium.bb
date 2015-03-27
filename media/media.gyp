@@ -1421,6 +1421,11 @@
             'midi/midi_manager_alsa_unittest.cc',
           ]
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
       ],
     },
     {

@@ -814,6 +814,7 @@ if (use_x11) {
       ":media",
       ":shared_memory_support",
       "//base",
+      "//tools/xdisplaycheck",
       "//ui/gl",
       "//ui/gfx",
       "//ui/gfx/geometry",
