@@ -287,6 +287,8 @@ bool QuicServer::ReadAndDispatchSinglePacket(int fd,
   IPEndPoint server_address(server_ip, port);
   processor->ProcessPacket(server_address, client_address, packet);
 
+  // The socket read was successful, so return true even if packet dispatch
+  // failed.
   return true;
 }
 

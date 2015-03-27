@@ -12,8 +12,6 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/containers/hash_tables.h"
-#include "base/strings/string_piece.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection.h"
@@ -22,10 +20,8 @@
 #include "net/quic/quic_protocol.h"
 
 namespace net {
-
 namespace tools {
 
-class ConnectionIdCleanUpAlarm;
 class QuicServerSessionVisitor;
 
 namespace test {

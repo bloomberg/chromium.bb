@@ -19,7 +19,7 @@ namespace tools {
 
 namespace test {
 class QuicInMemoryCachePeer;
-}  // namespace
+}  // namespace test
 
 class QuicServer;
 

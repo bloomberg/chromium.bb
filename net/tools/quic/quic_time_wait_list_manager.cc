@@ -6,7 +6,6 @@
 
 #include <errno.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/ip_endpoint.h"
@@ -24,9 +23,6 @@ using base::StringPiece;
 
 namespace net {
 namespace tools {
-
-// TODO(rtenneti): Remove the duplicated code in this file. Share code with
-// "net/quic/quic_time_wait_list_manager.cc"
 
 // A very simple alarm that just informs the QuicTimeWaitListManager to clean
 // up old connection_ids. This alarm should be cancelled  and deleted before
