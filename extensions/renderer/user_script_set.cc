@@ -205,17 +205,17 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
                                                              this,
                                                              is_declarative));
 
-  blink::WebDocument top_document = web_frame->top()->document();
-  // This can be null if site isolation is turned on. The best we can do is to
-  // just give up - generally the wrong behavior, but better than crashing.
+  blink::WebFrame* top_frame = web_frame->top();
+  // It doesn't make sense to do script injection for remote frames, since they
+  // cannot host any documents or content.
   // TODO(kalman): Fix this properly by moving all security checks into the
   // browser. See http://crbug.com/466373 for ongoing work here.
-  if (top_document.isNull())
+  if (top_frame->isWebRemoteFrame())
     return injection.Pass();
 
   if (injector->CanExecuteOnFrame(injection_host.get(), web_frame,
                                   -1,  // Content scripts are not tab-specific.
-                                  top_document.url()) ==
+                                  top_frame->document().url()) ==
       PermissionsData::ACCESS_DENIED) {
     return injection.Pass();
   }

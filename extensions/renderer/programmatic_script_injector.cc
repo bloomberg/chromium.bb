@@ -70,6 +70,10 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
     blink::WebFrame* frame,
     int tab_id,
     const GURL& top_url) const {
+  // It doesn't make sense to inject a script into a remote frame or a frame
+  // with a null document.
+  if (frame->isWebRemoteFrame() || frame->document().isNull())
+    return PermissionsData::ACCESS_DENIED;
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, frame->document().url(), params_->match_about_blank);
   if (params_->is_web_view) {
