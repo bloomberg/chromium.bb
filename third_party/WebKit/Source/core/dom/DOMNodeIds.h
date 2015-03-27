@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorNodeIds_h
-#define InspectorNodeIds_h
+#ifndef DOMNodeIds_h
+#define DOMNodeIds_h
 
 namespace blink {
 
 class Node;
 
-class InspectorNodeIds {
+class DOMNodeIds {
 public:
     static int idForNode(Node*);
     static Node* nodeForId(int);
@@ -18,4 +18,4 @@ public:
 } // namespace blink
 
 
-#endif // !defined(InspectorNodeIds_h)
+#endif // DOMNodeIds_h

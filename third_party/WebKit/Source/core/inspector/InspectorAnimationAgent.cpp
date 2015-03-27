@@ -18,8 +18,8 @@
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
@@ -92,7 +92,7 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
         .setDirection(computedTiming.direction())
         .setFill(computedTiming.fill())
         .setName(animation->name())
-        .setBackendNodeId(InspectorNodeIds::idForNode(animation->target()))
+        .setBackendNodeId(DOMNodeIds::idForNode(animation->target()))
         .setEasing(easing);
     return animationObject.release();
 }

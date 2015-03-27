@@ -28,6 +28,7 @@
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
@@ -37,7 +38,6 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutImage.h"
@@ -215,7 +215,7 @@ PassOwnPtr<GraphicsLayer> CompositedDeprecatedPaintLayerMapping::createGraphicsL
 
     graphicsLayer->setCompositingReasons(reasons);
     if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode())
-        graphicsLayer->setOwnerNodeId(InspectorNodeIds::idForNode(owningNode));
+        graphicsLayer->setOwnerNodeId(DOMNodeIds::idForNode(owningNode));
 
     return graphicsLayer.release();
 }

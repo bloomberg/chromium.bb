@@ -39,13 +39,13 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/svg/SVGStyleElement.h"
@@ -1420,7 +1420,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
         result->setHasSourceURL(true);
 
     if (styleSheet->ownerNode())
-        result->setOwnerNode(InspectorNodeIds::idForNode(styleSheet->ownerNode()));
+        result->setOwnerNode(DOMNodeIds::idForNode(styleSheet->ownerNode()));
 
     String sourceMapURLValue = sourceMapURL();
     if (!sourceMapURLValue.isEmpty())

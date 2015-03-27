@@ -7,9 +7,9 @@
 #include "modules/accessibility/InspectorAccessibilityAgent.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/page/Page.h"
@@ -99,7 +99,7 @@ PassRefPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject)
     Node* node = axObject->node();
     if (!node)
         return PassRefPtr<AXRelatedNode>();
-    int backendNodeId = InspectorNodeIds::idForNode(node);
+    int backendNodeId = DOMNodeIds::idForNode(node);
     if (!backendNodeId)
         return PassRefPtr<AXRelatedNode>();
     RefPtr<AXRelatedNode> relatedNode = AXRelatedNode::create().setBackendNodeId(backendNodeId);

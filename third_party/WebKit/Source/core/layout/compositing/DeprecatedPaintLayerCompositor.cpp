@@ -28,6 +28,7 @@
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 
 #include "core/animation/DocumentAnimations.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameHost.h"
@@ -36,7 +37,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
@@ -963,7 +963,7 @@ void DeprecatedPaintLayerCompositor::ensureRootLayer()
         IntRect overflowRect = m_layoutView.pixelSnappedLayoutOverflowRect();
         m_rootContentLayer->setSize(FloatSize(overflowRect.maxX(), overflowRect.maxY()));
         m_rootContentLayer->setPosition(FloatPoint());
-        m_rootContentLayer->setOwnerNodeId(InspectorNodeIds::idForNode(m_layoutView.generatingNode()));
+        m_rootContentLayer->setOwnerNodeId(DOMNodeIds::idForNode(m_layoutView.generatingNode()));
 
         // FIXME: with rootLayerScrolls, we probably don't even need m_rootContentLayer?
         if (!(settings && settings->rootLayerScrolls())) {

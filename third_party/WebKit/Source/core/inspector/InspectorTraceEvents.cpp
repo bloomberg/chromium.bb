@@ -11,13 +11,13 @@
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/css/invalidation/DescendantInvalidationSet.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
@@ -58,7 +58,7 @@ void setCallStack(TracedValue* value)
 
 void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = nullptr)
 {
-    value->setInteger(idFieldName, InspectorNodeIds::idForNode(node));
+    value->setInteger(idFieldName, DOMNodeIds::idForNode(node));
     if (nameFieldName)
         value->setString(nameFieldName, node->debugName());
 }

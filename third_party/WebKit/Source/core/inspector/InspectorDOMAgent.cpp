@@ -38,6 +38,7 @@
 #include "core/dom/CharacterData.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
@@ -68,7 +69,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -1233,7 +1233,7 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
     if (!node)
         return;
 
-    int backendNodeId = InspectorNodeIds::idForNode(node);
+    int backendNodeId = DOMNodeIds::idForNode(node);
     if (!frontend() || !enabled()) {
         m_backendNodeIdToInspect = backendNodeId;
         return;
@@ -1360,7 +1360,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
     if (nodeId) {
         node = assertNode(errorString, *nodeId);
     } else if (backendNodeId) {
-        node = InspectorNodeIds::nodeForId(*backendNodeId);
+        node = DOMNodeIds::nodeForId(*backendNodeId);
     } else if (objectId) {
         InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*objectId);
         node = injectedScript.nodeForObjectId(*objectId);
@@ -1819,7 +1819,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> InspectorDOMAgent:
         RefPtr<TypeBuilder::DOM::BackendNode> backendNode = TypeBuilder::DOM::BackendNode::create()
             .setNodeType(distributedNode->nodeType())
             .setNodeName(distributedNode->nodeName())
-            .setBackendNodeId(InspectorNodeIds::idForNode(distributedNode));
+            .setBackendNodeId(DOMNodeIds::idForNode(distributedNode));
         distributedNodes->addItem(backendNode.release());
     }
     return distributedNodes.release();
@@ -2207,7 +2207,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
             return;
         }
 
-        Node* node = InspectorNodeIds::nodeForId(backendNodeId);
+        Node* node = DOMNodeIds::nodeForId(backendNodeId);
         if (node && node->document().frame()->instrumentingAgents() == m_pageAgent->inspectedFrame()->instrumentingAgents())
             result->addItem(pushNodePathToFrontend(node));
         else

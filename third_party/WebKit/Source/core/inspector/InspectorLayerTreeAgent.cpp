@@ -33,12 +33,12 @@
 
 #include "core/inspector/InspectorLayerTreeAgent.h"
 
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -251,7 +251,7 @@ void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<
 
 int InspectorLayerTreeAgent::idForNode(Node* node)
 {
-    return InspectorNodeIds::idForNode(node);
+    return DOMNodeIds::idForNode(node);
 }
 
 DeprecatedPaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()

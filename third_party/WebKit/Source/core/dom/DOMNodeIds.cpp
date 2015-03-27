@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/inspector/InspectorNodeIds.h"
+#include "core/dom/DOMNodeIds.h"
 
 #if ENABLE(OILPAN)
 #include "core/dom/Node.h"
@@ -16,7 +16,7 @@ namespace blink {
 
 #if ENABLE(OILPAN)
 typedef HeapHashMap<WeakMember<Node>, int> NodeToIdMap;
-typedef HeapHashMap<int, WeakMember<Node> > IdToNodeMap;
+typedef HeapHashMap<int, WeakMember<Node>> IdToNodeMap;
 
 static NodeToIdMap& nodeToIdMap()
 {
@@ -30,7 +30,7 @@ static IdToNodeMap& idToNodeMap()
     return *idToNodeMap;
 }
 
-int InspectorNodeIds::idForNode(Node* node)
+int DOMNodeIds::idForNode(Node* node)
 {
     static int s_nextNodeId = 1;
     NodeToIdMap::iterator it = nodeToIdMap().find(node);
@@ -43,7 +43,7 @@ int InspectorNodeIds::idForNode(Node* node)
     return id;
 }
 
-Node* InspectorNodeIds::nodeForId(int id)
+Node* DOMNodeIds::nodeForId(int id)
 {
     return idToNodeMap().get(id);
 }
@@ -54,7 +54,7 @@ static WeakNodeMap& nodeIds()
     return self;
 }
 
-int InspectorNodeIds::idForNode(Node* node)
+int DOMNodeIds::idForNode(Node* node)
 {
     static int s_nextNodeId = 1;
     WeakNodeMap& ids = nodeIds();
@@ -66,7 +66,7 @@ int InspectorNodeIds::idForNode(Node* node)
     return result;
 }
 
-Node* InspectorNodeIds::nodeForId(int id)
+Node* DOMNodeIds::nodeForId(int id)
 {
     return nodeIds().node(id);
 }
