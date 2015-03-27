@@ -227,6 +227,9 @@ void BluetoothAudioSinkChromeOS::AdapterPresentChanged(
     device::BluetoothAdapter* adapter, bool present) {
   VLOG(1) << "AdapterPresentChanged: " << present;
 
+  if (adapter != adapter_.get())
+    return;
+
   if (adapter->IsPresent()) {
     StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
   } else {
@@ -238,6 +241,9 @@ void BluetoothAudioSinkChromeOS::AdapterPresentChanged(
 void BluetoothAudioSinkChromeOS::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter, bool powered) {
   VLOG(1) << "AdapterPoweredChanged: " << powered;
+
+  if (adapter != adapter_.get())
+    return;
 
   // Regardless of the new powered state, |state_| goes to STATE_DISCONNECTED.
   // If false, the transport is closed, but the endpoint is still valid for use.
