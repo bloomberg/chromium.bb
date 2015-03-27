@@ -63,6 +63,9 @@ HardwareProperties GestureHardwareProperties(
   hwprops.support_semi_mt = Event_Get_Semi_MT(evdev);
   /* buttonpad means a physical button under the touch surface */
   hwprops.is_button_pad = Event_Get_Button_Pad(evdev);
+  hwprops.has_wheel = EvdevBitIsSet(evdev->info.rel_bitmask, REL_WHEEL) ||
+                      EvdevBitIsSet(evdev->info.rel_bitmask, REL_HWHEEL);
+
   return hwprops;
 }
 
