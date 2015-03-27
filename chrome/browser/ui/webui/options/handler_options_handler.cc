@@ -14,18 +14,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/web_ui.h"
 
 namespace options {
-
-namespace {
-
-const char kHandlersLearnMoreUrl[] =
-    "https://support.google.com/chrome/answer/1382847";
-
-}  // namespace
 
 HandlerOptionsHandler::HandlerOptionsHandler() {
 }
@@ -53,7 +47,7 @@ void HandlerOptionsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
   localized_strings->SetString("handlers_learn_more_url",
-                               kHandlersLearnMoreUrl);
+                               chrome::kLearnMoreRegisterProtocolHandlerURL);
 }
 
 void HandlerOptionsHandler::InitializeHandler() {
