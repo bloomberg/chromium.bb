@@ -52,7 +52,7 @@ void PermissionRequestCreatorSync::CreateURLAccessRequest(
     const GURL& url_requested,
     const SuccessCallback& callback) {
   CreateRequest(kSupervisedUserAccessRequestKeyPrefix,
-                url_requested.spec(),
+                net::EscapeQueryParamValue(url_requested.spec(), true),
                 callback);
 }
 
@@ -66,10 +66,9 @@ void PermissionRequestCreatorSync::CreateRequest(
     const std::string& prefix,
     const std::string& data,
     const SuccessCallback& callback) {
-  // Escape the data string and add the prefix.
-  std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
-      prefix,
-      net::EscapeQueryParamValue(data, true));
+  // Add the prefix.
+  std::string key =
+      SupervisedUserSettingsService::MakeSplitSettingKey(prefix, data);
 
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   // TODO(sergiu): Use sane time here when it's ready.
