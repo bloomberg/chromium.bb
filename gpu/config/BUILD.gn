@@ -52,6 +52,7 @@ source_set("config") {
 
   deps = [
     "//base",
+    "//gpu/command_buffer/service",
     "//third_party/re2",
     "//ui/gl",
   ]
