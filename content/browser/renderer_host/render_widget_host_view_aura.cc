@@ -64,7 +64,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
@@ -454,6 +453,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_snapped_to_boundary_(false),
       touch_editing_client_(NULL),
       is_guest_view_hack_(is_guest_view_hack),
+      begin_frame_observer_proxy_(this),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -483,6 +483,8 @@ bool RenderWidgetHostViewAura::OnMessageReceived(
     // RenderWidgetHostViewAndroid should also be moved at the same time.
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
+                        OnSetNeedsBeginFrames)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -710,6 +712,15 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 
 ui::TextInputClient* RenderWidgetHostViewAura::GetTextInputClient() {
   return this;
+}
+
+void RenderWidgetHostViewAura::OnSetNeedsBeginFrames(bool needs_begin_frames) {
+  begin_frame_observer_proxy_.SetNeedsBeginFrames(needs_begin_frames);
+}
+
+void RenderWidgetHostViewAura::SendBeginFrame(const cc::BeginFrameArgs& args) {
+  delegated_frame_host_->SetVSyncParameters(args.frame_time, args.interval);
+  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
 }
 
 void RenderWidgetHostViewAura::SetKeyboardFocus() {
@@ -2580,6 +2591,8 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
 #endif
 
   delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());
+  if (window_->GetHost()->compositor())
+    begin_frame_observer_proxy_.SetCompositor(window_->GetHost()->compositor());
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -2592,6 +2605,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
   window_->GetHost()->RemoveObserver(this);
   delegated_frame_host_->ResetCompositor();
+  begin_frame_observer_proxy_.ResetCompositor();
 
 #if defined(OS_WIN)
   // Update the legacy window's parent temporarily to the desktop window. It
@@ -2701,12 +2715,6 @@ void RenderWidgetHostViewAura::DelegatedFrameHostSendReclaimCompositorResources(
 
 void RenderWidgetHostViewAura::DelegatedFrameHostOnLostCompositorResources() {
   host_->ScheduleComposite();
-}
-
-void RenderWidgetHostViewAura::DelegatedFrameHostUpdateVSyncParameters(
-    const base::TimeTicks& timebase,
-    const base::TimeDelta& interval) {
-  host_->UpdateVSyncParameters(timebase, interval);
 }
 
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {

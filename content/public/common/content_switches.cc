@@ -298,9 +298,6 @@ const char kEnableDistanceFieldText[]       = "enable-distance-field-text";
 // Enable the experimental Credential Manager JavaScript API.
 const char kEnableCredentialManagerAPI[]    = "enable-credential-manager-api";
 
-// Use a BeginFrame signal from browser to renderer to schedule rendering.
-const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
-
 // Enable the creation of compositing layers when it would prevent LCD text.
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";

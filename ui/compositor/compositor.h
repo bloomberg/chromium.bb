@@ -218,11 +218,16 @@ class COMPOSITOR_EXPORT Compositor
   // Gets the visibility of the underlying compositor.
   bool IsVisible();
 
+  // The "authoritative" vsync interval, if provided, will override interval
+  // reported from 3D context. This is typically the value reported by a more
+  // reliable source, e.g, the platform display configuration.
+  // In the particular case of ChromeOS -- this is the value queried through
+  // XRandR, which is more reliable than the value queried through the 3D
+  // context.
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
+
   // Returns the widget for this compositor.
   gfx::AcceleratedWidget widget() const { return widget_; }
-
-  // Returns the vsync manager for this compositor.
-  scoped_refptr<CompositorVSyncManager> vsync_manager() const;
 
   // Returns the main thread task runner this compositor uses. Users of the
   // compositor generally shouldn't use this.
@@ -334,9 +339,6 @@ class COMPOSITOR_EXPORT Compositor
   scoped_refptr<cc::Layer> root_web_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // The manager of vsync parameters for this compositor.
-  scoped_refptr<CompositorVSyncManager> vsync_manager_;
 
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.

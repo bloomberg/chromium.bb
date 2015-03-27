@@ -27,7 +27,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
@@ -75,7 +74,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       widget_(widget),
       surface_id_allocator_(context_factory->CreateSurfaceIdAllocator()),
       task_runner_(task_runner),
-      vsync_manager_(new CompositorVSyncManager()),
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
@@ -257,8 +255,9 @@ bool Compositor::IsVisible() {
   return host_->visible();
 }
 
-scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
-  return vsync_manager_;
+void Compositor::SetAuthoritativeVSyncInterval(
+    const base::TimeDelta& interval) {
+  host_->SetAuthoritativeVSyncInterval(interval);
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {

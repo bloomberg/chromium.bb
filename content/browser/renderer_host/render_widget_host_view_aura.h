@@ -20,6 +20,7 @@
 #include "content/browser/compositor/delegated_frame_host.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
+#include "content/browser/renderer_host/begin_frame_observer_proxy.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
@@ -81,6 +82,7 @@ class RenderWidgetHostView;
 class CONTENT_EXPORT RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
       public DelegatedFrameHostClient,
+      public BeginFrameObserverProxyClient,
       public ui::TextInputClient,
       public gfx::DisplayObserver,
       public aura::WindowTreeHostObserver,
@@ -469,9 +471,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       int output_surface_id,
       const cc::CompositorFrameAck& ack) override;
   void DelegatedFrameHostOnLostCompositorResources() override;
-  void DelegatedFrameHostUpdateVSyncParameters(
-      const base::TimeTicks& timebase,
-      const base::TimeDelta& interval) override;
+
+  // BeginFrameObserverProxyClient implementation.
+  void SendBeginFrame(const cc::BeginFrameArgs& args) override;
 
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
@@ -493,6 +495,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();
+
+  // Called when RenderWidget wants to start BeginFrame scheduling or stop.
+  void OnSetNeedsBeginFrames(bool needs_begin_frames);
 
   RenderFrameHostImpl* GetFocusedFrame();
 
@@ -649,6 +654,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // view, so we can ensure the window hasn't moved between copying from the
   // compositing surface and showing the disambiguation popup.
   gfx::Vector2dF disambiguation_scroll_offset_;
+
+  BeginFrameObserverProxy begin_frame_observer_proxy_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);

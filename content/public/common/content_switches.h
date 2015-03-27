@@ -93,7 +93,6 @@ CONTENT_EXPORT extern const char kDomAutomationController[];
 extern const char kEnable2dCanvasClipAntialiasing[];
 CONTENT_EXPORT extern const char kEnableBleedingEdgeRenderingFastPaths[];
 CONTENT_EXPORT extern const char kEnableCredentialManagerAPI[];
-CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kEnableBlinkFeatures[];
 CONTENT_EXPORT extern const char kEnableBrowserSideNavigation[];
