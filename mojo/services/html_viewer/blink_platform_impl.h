@@ -46,6 +46,7 @@ class BlinkPlatformImpl : public blink::Platform {
       const blink::WebURL& url, blink::WebString& mime_type,
       blink::WebString& charset);
   virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
+  virtual bool isReservedIPAddress(const blink::WebString& host) const;
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
   virtual void yieldCurrentThread();

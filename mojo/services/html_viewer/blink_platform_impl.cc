@@ -17,6 +17,7 @@
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 
 namespace html_viewer {
@@ -207,6 +208,14 @@ blink::WebURLError BlinkPlatformImpl::cancelledError(const blink::WebURL& url)
   error.staleCopyInCache = false;
   error.isCancellation = true;
   return error;
+}
+
+bool BlinkPlatformImpl::isReservedIPAddress(
+    const blink::WebString& host) const {
+  net::IPAddressNumber address;
+  if (!net::ParseURLHostnameToNumber(host.utf8(), &address))
+    return false;
+  return net::IsIPAddressReserved(address);
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
