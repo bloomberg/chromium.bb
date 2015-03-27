@@ -505,10 +505,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) {}
 
   // Clears browser cache.
-  virtual void ClearCache(RenderViewHost* rvh) {}
+  virtual void ClearCache(RenderFrameHost* rfh) {}
 
   // Clears browser cookies.
-  virtual void ClearCookies(RenderViewHost* rvh) {}
+  virtual void ClearCookies(RenderFrameHost* rfh) {}
 
   // Returns the default download directory.
   // This can be called on any thread.

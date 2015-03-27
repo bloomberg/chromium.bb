@@ -420,7 +420,7 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   dom_handler_->SetRenderViewHost(rvh);
   emulation_handler_->SetRenderViewHost(rvh);
   input_handler_->SetRenderViewHost(rvh);
-  network_handler_->SetRenderViewHost(rvh);
+  network_handler_->SetRenderFrameHost(render_frame_host_);
   page_handler_->SetRenderViewHost(rvh);
   service_worker_handler_->SetRenderFrameHost(render_frame_host_);
 
@@ -442,7 +442,7 @@ void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
   dom_handler_->SetRenderViewHost(nullptr);
   emulation_handler_->SetRenderViewHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
-  network_handler_->SetRenderViewHost(nullptr);
+  network_handler_->SetRenderFrameHost(nullptr);
   page_handler_->SetRenderViewHost(nullptr);
   service_worker_handler_->SetRenderFrameHost(nullptr);
 }

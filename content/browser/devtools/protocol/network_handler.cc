@@ -19,7 +19,7 @@ NetworkHandler::NetworkHandler() : host_(nullptr) {
 NetworkHandler::~NetworkHandler() {
 }
 
-void NetworkHandler::SetRenderViewHost(RenderViewHost* host) {
+void NetworkHandler::SetRenderFrameHost(RenderFrameHost* host) {
   host_ = host;
 }
 

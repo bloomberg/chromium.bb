@@ -9,7 +9,7 @@
 
 namespace content {
 
-class RenderViewHost;
+class RenderFrameHost;
 
 namespace devtools {
 namespace network {
@@ -21,7 +21,7 @@ class NetworkHandler {
   NetworkHandler();
   virtual ~NetworkHandler();
 
-  void SetRenderViewHost(RenderViewHost* host);
+  void SetRenderFrameHost(RenderFrameHost* host);
 
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
@@ -33,7 +33,7 @@ class NetworkHandler {
                                     double upload_throughput);
 
  private:
-  RenderViewHost* host_;
+  RenderFrameHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

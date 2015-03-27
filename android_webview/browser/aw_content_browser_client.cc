@@ -30,6 +30,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -501,12 +502,12 @@ bool AwContentBrowserClient::IsFastShutdownPossible() {
   return false;
 }
 
-void AwContentBrowserClient::ClearCache(content::RenderViewHost* rvh) {
-  RemoveHttpDiskCache(rvh->GetProcess()->GetBrowserContext(),
-                      rvh->GetProcess()->GetID());
+void AwContentBrowserClient::ClearCache(content::RenderFrameHost* rfh) {
+  RemoveHttpDiskCache(rfh->GetProcess()->GetBrowserContext(),
+                      rfh->GetProcess()->GetID());
 }
 
-void AwContentBrowserClient::ClearCookies(content::RenderViewHost* rvh) {
+void AwContentBrowserClient::ClearCookies(content::RenderFrameHost* rfh) {
   // TODO(boliu): Implement.
   NOTIMPLEMENTED();
 }

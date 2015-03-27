@@ -134,8 +134,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   net::NetLog* GetNetLog() override;
   content::AccessTokenStore* CreateAccessTokenStore() override;
   bool IsFastShutdownPossible() override;
-  void ClearCache(content::RenderViewHost* rvh) override;
-  void ClearCookies(content::RenderViewHost* rvh) override;
+  void ClearCache(content::RenderFrameHost* rfh) override;
+  void ClearCookies(content::RenderFrameHost* rfh) override;
   base::FilePath GetDefaultDownloadDirectory() override;
   std::string GetDefaultDownloadName() override;
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
