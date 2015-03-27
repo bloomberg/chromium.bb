@@ -6,19 +6,16 @@ import("//build/config/android/rules.gni")
 
 # GYP: //third_party/robolectric/robolectric.gyp:android-all-4.3_r2-robolectric-0
 java_prebuilt("android-all-4.3_r2-robolectric-0") {
-  visibility = [ ":*" ]
   jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
 }
 
 # GYP: //third_party/robolectric/robolectric.gyp:tagsoup-1.2
 java_prebuilt("tagsoup-1.2") {
-  visibility = [ ":*" ]
   jar_path = "lib/tagsoup-1.2.jar"
 }
 
 # GYP: //third_party/robolectric/robolectric.gyp:json-20080701
 java_prebuilt("json-20080701") {
-  visibility = [ ":*" ]
   jar_path = "lib/json-20080701.jar"
 }
 

@@ -11,6 +11,8 @@ java_prebuilt("hamcrest") {
 
 # GYP: //third_party/junit.gyp:junit_jar
 java_library("junit") {
+  chromium_code = false
+  testonly = true
   deps = [
     ":hamcrest",
   ]

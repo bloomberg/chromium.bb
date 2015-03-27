@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 
 # GYP: //testing/android/junit_test.gyp:junit_test_support
 java_library("junit_test_support") {
+  testonly = true
   DEPRECATED_java_in_dir = "java/src"
   deps = [
     "//third_party/junit",
@@ -18,6 +19,7 @@ java_library("junit_test_support") {
 
 # GYP: //testing/android/junit_test.gyp:junit_unit_tests
 java_binary("junit_unittests") {
+  testonly = true
   deps = [
     ":junit_test_support",
     "//third_party/junit",
