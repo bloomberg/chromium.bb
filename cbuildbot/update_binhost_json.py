@@ -39,10 +39,10 @@ def main(argv):
 
   # Fetch all compat IDs.
   fetcher = binhost.CompatIdFetcher()
-  compat_ids = fetcher.FetchCompatIds(binhost.GetChromePrebuiltConfigs())
+  keys = binhost.GetChromePrebuiltConfigs().keys()
+  compat_ids = fetcher.FetchCompatIds(keys)
 
   # Save the PFQ configs.
-  keys = binhost.GetChromePrebuiltConfigs().keys()
   pfq_configs = binhost.PrebuiltMapping.Get(keys, compat_ids)
   filename = binhost.PrebuiltMapping.GetFilename(opts.buildroot, 'chrome')
   pfq_configs.Dump(filename)

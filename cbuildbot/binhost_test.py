@@ -44,7 +44,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       binhost.GenConfigsForBoard(board, regen=not cls.CACHING,
                                  error_code_ok=False)
     fetcher = binhost.CompatIdFetcher(caching=cls.CACHING)
-    cls.COMPAT_IDS = fetcher.FetchCompatIds(board_keys)
+    cls.COMPAT_IDS = fetcher.FetchCompatIds(list(board_keys))
 
   def setUp(self):
     self.complaints = []

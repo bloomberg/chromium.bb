@@ -282,7 +282,7 @@ class CompatIdFetcher(object):
     """Generate a dict mapping BoardKeys to their associated CompatId.
 
     Args:
-      board_keys: A list BoardKey objects to fetch.
+      board_keys: A list of BoardKey objects to fetch.
     """
     # pylint: disable=method-hidden
     logging.info('Fetching CompatId objects...')
