@@ -5,9 +5,17 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_FALLBACK_ICON_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_FALLBACK_ICON_SOURCE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
-#include "components/favicon/core/fallback_icon_service.h"
 #include "content/public/browser/url_data_source.h"
+
+class FallbackIconService;
+class GURL;
+
+namespace favicon_base {
+struct FallbackIconStyle;
+}
 
 // FallbackIconSource services explicit chrome:// requests for fallback icons.
 //
@@ -41,7 +49,8 @@
 //    32 * 0.5 = 16, and the icon's background shape is a circle.
 class FallbackIconSource : public content::URLDataSource {
  public:
-  FallbackIconSource();
+  // |fallback_icon_service| is owned by caller, and may be null.
+  explicit FallbackIconSource(FallbackIconService* fallback_icon_service);
 
   ~FallbackIconSource() override;
 
@@ -57,11 +66,17 @@ class FallbackIconSource : public content::URLDataSource {
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
  private:
+  void SendFallbackIconHelper(
+      const GURL& url,
+      int size_in_pixels,
+      const favicon_base::FallbackIconStyle& style,
+      const content::URLDataSource::GotDataCallback& callback);
+
   // Sends the default fallback icon.
   void SendDefaultResponse(
       const content::URLDataSource::GotDataCallback& callback);
 
-  scoped_ptr<FallbackIconService> fallback_icon_service_;
+  FallbackIconService* fallback_icon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackIconSource);
 };

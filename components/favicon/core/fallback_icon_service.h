@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_FAVICON_CORE_FALLBACK_ICON_SERVICE_H_
 #define COMPONENTS_FAVICON_CORE_FALLBACK_ICON_SERVICE_H_
 
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "components/keyed_service/core/keyed_service.h"
 
+class FallbackIconClient;
 class GURL;
 
 namespace gfx {
@@ -21,10 +22,10 @@ struct FallbackIconStyle;
 }
 
 // A service to provide methods to render fallback favicons.
-class FallbackIconService {
+class FallbackIconService : public KeyedService {
  public:
-  explicit FallbackIconService(const std::vector<std::string>& font_list);
-  ~FallbackIconService();
+  explicit FallbackIconService(FallbackIconClient* fallback_icon_client);
+  ~FallbackIconService() override;
 
   // Renders a fallback icon synchronously and returns the bitmap. Returns an
   // empty std::vector on failure. |size| is icon width and height in pixels.
@@ -41,7 +42,7 @@ class FallbackIconService {
                         const favicon_base::FallbackIconStyle& style,
                         gfx::Canvas* canvas);
 
-  std::vector<std::string> font_list_;
+  FallbackIconClient* fallback_icon_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackIconService);
 };

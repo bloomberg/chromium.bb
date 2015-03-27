@@ -6,10 +6,8 @@
 
 #include <algorithm>
 
-#include "base/i18n/case_conversion.h"
-#include "base/strings/utf_string_conversions.h"
+#include "components/favicon/core/fallback_icon_client.h"
 #include "components/favicon_base/fallback_icon_style.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -23,21 +21,11 @@ namespace {
 // Arbitrary maximum icon size, can be reasonably increased if needed.
 const int kMaxFallbackFaviconSize = 288;
 
-// Returns a single character to represent a page URL. To do this we take the
-// first letter in a domain's name and make it upper case.
-// TODO(huangs): Handle non-ASCII ("xn--") domain names.
-base::string16 GetFallbackIconText(const GURL& url) {
-  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-        url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  return domain.empty() ? base::string16() :
-      base::i18n::ToUpper(base::ASCIIToUTF16(domain.substr(0, 1)));
-}
-
 }  // namespace
 
 FallbackIconService::FallbackIconService(
-    const std::vector<std::string>& font_list)
-  : font_list_(font_list) {
+    FallbackIconClient* fallback_icon_client)
+    : fallback_icon_client_(fallback_icon_client) {
 }
 
 FallbackIconService::~FallbackIconService() {
@@ -77,17 +65,18 @@ void FallbackIconService::DrawFallbackIcon(
       gfx::Rect(kOffsetX, kOffsetY, size, size), corner_radius, paint);
 
   // Draw text.
-  base::string16 icon_text = GetFallbackIconText(icon_url);
+  base::string16 icon_text =
+      fallback_icon_client_->GetFallbackIconText(icon_url);
   if (icon_text.empty())
     return;
   int font_size = static_cast<int>(size * style.font_size_ratio);
   if (font_size <= 0)
     return;
 
-  // TODO(huangs): See how expensive gfx::FontList() is, and possibly cache.
   canvas->DrawStringRectWithFlags(
       icon_text,
-      gfx::FontList(font_list_, gfx::Font::NORMAL, font_size),
+      gfx::FontList(fallback_icon_client_->GetFontNameList(), gfx::Font::NORMAL,
+                    font_size),
       style.text_color,
       gfx::Rect(kOffsetX, kOffsetY, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);

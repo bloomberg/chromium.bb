@@ -20,7 +20,9 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/favicon/chrome_fallback_icon_client_factory.h"
 #include "chrome/browser/favicon/chrome_favicon_client_factory.h"
+#include "chrome/browser/favicon/fallback_icon_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
@@ -54,6 +56,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/content_visit_delegate.h"
 #include "components/history/content/browser/history_database_helper.h"
@@ -212,6 +215,12 @@ KeyedService* CreateTestDesktopNotificationService(
   return new DesktopNotificationService(static_cast<Profile*>(profile));
 }
 #endif
+
+KeyedService* BuildFallbackIconService(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new FallbackIconService(
+      ChromeFallbackIconClientFactory::GetForBrowserContext(profile));
+}
 
 KeyedService* BuildFaviconService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -568,6 +577,11 @@ TestingProfile::~TestingProfile() {
     resource_context_ = NULL;
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
+}
+
+void TestingProfile::CreateFallbackIconService() {
+  FaviconServiceFactory::GetInstance()->SetTestingFactory(
+      this, BuildFallbackIconService);
 }
 
 void TestingProfile::CreateFaviconService() {

@@ -12,6 +12,7 @@ include_rules = [
   "+chrome/browser/profiles/incognito_helpers.h",
   "+chrome/browser/search/search.h",
   "+components/favicon/core",
+  "+net/base/registry_controlled_domains/registry_controlled_domain.h",
   "+third_party/skia/include/core/SkBitmap.h",
 
   # TODO(caitkp): Bring this list to zero.

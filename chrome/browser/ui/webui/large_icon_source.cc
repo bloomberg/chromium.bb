@@ -4,21 +4,17 @@
 
 #include "chrome/browser/ui/webui/large_icon_source.h"
 
-#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/common/favicon/large_icon_url_parser.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
-#include "grit/platform_locale_settings.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -42,16 +38,10 @@ LargeIconSource::IconRequest::IconRequest(
 LargeIconSource::IconRequest::~IconRequest() {
 }
 
-LargeIconSource::LargeIconSource(Profile* profile) : profile_(profile) {
-  std::vector<std::string> font_list;
-#if defined(OS_CHROMEOS)
-  font_list.push_back("Noto Sans");
-#elif defined(OS_IOS)
-  font_list.push_back("Helvetica Neue");
-#else
-  font_list.push_back(l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY));
-#endif
-  fallback_icon_service_.reset(new FallbackIconService(font_list));
+LargeIconSource::LargeIconSource(FaviconService* favicon_service,
+                                 FallbackIconService* fallback_icon_service)
+    : favicon_service_(favicon_service),
+      fallback_icon_service_(fallback_icon_service) {
 }
 
 LargeIconSource::~LargeIconSource() {
@@ -66,17 +56,16 @@ void LargeIconSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  LargeIconUrlParser parser;
-  bool success = parser.Parse(path);
-  if (!success || parser.size_in_pixels() <= 0 ||
-      parser.size_in_pixels() > kMaxLargeIconSize) {
+  if (!favicon_service_) {
     SendNotFoundResponse(callback);
     return;
   }
 
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!favicon_service) {
+  LargeIconUrlParser parser;
+  bool success = parser.Parse(path);
+  if (!success ||
+      parser.size_in_pixels() <= 0 ||
+      parser.size_in_pixels() > kMaxLargeIconSize) {
     SendNotFoundResponse(callback);
     return;
   }
@@ -87,7 +76,7 @@ void LargeIconSource::StartDataRequest(
     return;
   }
 
-  favicon_service->GetRawFaviconForPageURL(
+  favicon_service_->GetRawFaviconForPageURL(
       url,
       favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON,
       parser.size_in_pixels(),
@@ -127,6 +116,10 @@ void LargeIconSource::OnIconDataAvailable(
 }
 
 void LargeIconSource::SendFallbackIcon(const IconRequest& request) {
+  if (!fallback_icon_service_) {
+    SendNotFoundResponse(request.callback);
+    return;
+  }
   favicon_base::FallbackIconStyle style;
   style.background_color = SkColorSetRGB(0xcc, 0xcc, 0xcc);
   favicon_base::MatchFallbackIconTextColorAgainstBackgroundColor(&style);

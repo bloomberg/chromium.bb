@@ -4,29 +4,21 @@
 
 #include "chrome/browser/ui/webui/fallback_icon_source.h"
 
-#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/common/favicon/fallback_icon_url_parser.h"
 #include "chrome/common/url_constants.h"
-#include "grit/platform_locale_settings.h"
+#include "components/favicon/core/fallback_icon_service.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "net/url_request/url_request.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 
-FallbackIconSource::FallbackIconSource() {
-  std::vector<std::string> font_list;
-#if defined(OS_CHROMEOS)
-  font_list.push_back("Noto Sans");
-#elif defined(OS_IOS)
-  font_list.push_back("Helvetica Neue");
-#else
-  font_list.push_back(l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY));
-#endif
-  fallback_icon_service_.reset(new FallbackIconService(font_list));
+FallbackIconSource::FallbackIconSource(
+    FallbackIconService* fallback_icon_service)
+    : fallback_icon_service_(fallback_icon_service) {
 }
 
 FallbackIconSource::~FallbackIconSource() {
@@ -47,15 +39,15 @@ void FallbackIconSource::StartDataRequest(
     SendDefaultResponse(callback);
     return;
   }
+
   GURL url(parsed.url_string());
   if (url.is_empty() || !url.is_valid()) {
     SendDefaultResponse(callback);
     return;
   }
-  std::vector<unsigned char> bitmap_data =
-      fallback_icon_service_->RenderFallbackIconBitmap(
-          url, parsed.size_in_pixels(), parsed.style());
-  callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
+
+  SendFallbackIconHelper(
+      url, parsed.size_in_pixels(), parsed.style(), callback);
 }
 
 std::string FallbackIconSource::GetMimeType(const std::string&) const {
@@ -77,10 +69,23 @@ bool FallbackIconSource::ShouldServiceRequest(
   return URLDataSource::ShouldServiceRequest(request);
 }
 
-void FallbackIconSource::SendDefaultResponse(
+void FallbackIconSource::SendFallbackIconHelper(
+    const GURL& url,
+    int size_in_pixels,
+    const favicon_base::FallbackIconStyle& style,
     const content::URLDataSource::GotDataCallback& callback) {
+  if (!fallback_icon_service_) {  // Can be null for tests.
+    callback.Run(nullptr);  // Trigger "Not Found" response.
+    return;
+  }
   std::vector<unsigned char> bitmap_data =
       fallback_icon_service_->RenderFallbackIconBitmap(
-          GURL(), gfx::kFaviconSize, favicon_base::FallbackIconStyle());
+          url, size_in_pixels, style);
   callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
+}
+
+void FallbackIconSource::SendDefaultResponse(
+    const content::URLDataSource::GotDataCallback& callback) {
+  favicon_base::FallbackIconStyle default_style;
+  SendFallbackIconHelper(GURL(), gfx::kFaviconSize, default_style, callback);
 }

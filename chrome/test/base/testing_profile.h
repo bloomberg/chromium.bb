@@ -6,6 +6,8 @@
 #define CHROME_TEST_BASE_TESTING_PROFILE_H_
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -163,6 +165,9 @@ class TestingProfile : public Profile {
                  const TestingFactories& factories);
 
   ~TestingProfile() override;
+
+  // Creates the fallback icon service.
+  void CreateFallbackIconService();
 
   // Creates the favicon service. Consequent calls would recreate the service.
   void CreateFaviconService();

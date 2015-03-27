@@ -4,6 +4,7 @@
 
 static_library("core") {
   sources = [
+    "fallback_icon_client.h",
     "fallback_icon_service.cc",
     "fallback_icon_service.h",
     "favicon_client.h",

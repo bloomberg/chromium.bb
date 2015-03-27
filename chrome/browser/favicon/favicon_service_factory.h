@@ -18,7 +18,7 @@ class Profile;
 // Profiles.
 class FaviconServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // |access| defines what the caller plans to do with the service. See
+  // |sat| defines what the caller plans to do with the service. See
   // the ServiceAccessType definition in profile.h.
   static FaviconService* GetForProfile(Profile* profile, ServiceAccessType sat);
 

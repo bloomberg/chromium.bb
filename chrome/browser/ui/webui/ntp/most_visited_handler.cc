@@ -20,6 +20,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/browser/favicon/fallback_icon_service_factory.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
@@ -35,8 +37,11 @@
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/core/fallback_icon_service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -81,11 +86,16 @@ void MostVisitedHandler::RegisterMessages() {
   // Set up our sources for top-sites data.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
 
-  // Register chrome://large-icon as a data source for large icons.
-  content::URLDataSource::Add(profile, new LargeIconSource(profile));
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  FallbackIconService* fallback_icon_service =
+      FallbackIconServiceFactory::GetForBrowserContext(profile);
 
-  // Register chrome://fallback-icon as a data source for fallback icons.
-  content::URLDataSource::Add(profile, new FallbackIconSource());
+  // Register chrome://large-icon as a data source for large icons.
+  content::URLDataSource::Add(profile,
+      new LargeIconSource(favicon_service, fallback_icon_service));
+  content::URLDataSource::Add(profile,
+                              new FallbackIconSource(fallback_icon_service));
 
   // Register chrome://favicon as a data source for favicons.
   content::URLDataSource::Add(

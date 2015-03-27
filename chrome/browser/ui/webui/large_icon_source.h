@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_LARGE_ICON_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_LARGE_ICON_SOURCE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/url_data_source.h"
 
-class Profile;
+class FallbackIconService;
+class FaviconService;
 
 // LargeIconSource services explicit chrome:// requests for large icons.
 //
@@ -28,7 +31,10 @@ class Profile;
 //    This requests a 48x48 large icon for http://www.google.com.
 class LargeIconSource : public content::URLDataSource {
  public:
-  explicit LargeIconSource(Profile* profile);
+  // |favicon_service| and |fallback_icon_service| are owned by caller and may
+  // be null.
+  LargeIconSource(FaviconService* favicon_service,
+                  FallbackIconService* fallback_icon_service);
 
   ~LargeIconSource() override;
 
@@ -69,11 +75,11 @@ class LargeIconSource : public content::URLDataSource {
   void SendNotFoundResponse(
       const content::URLDataSource::GotDataCallback& callback);
 
-  Profile* profile_;
-
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  scoped_ptr<FallbackIconService> fallback_icon_service_;
+  FaviconService* favicon_service_;
+
+  FallbackIconService* fallback_icon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconSource);
 };
