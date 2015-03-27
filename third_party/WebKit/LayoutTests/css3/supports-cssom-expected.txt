@@ -41,7 +41,7 @@ PASS rules[0].insertRule('@namespace ""', 2) threw exception SyntaxError: Failed
 PASS rules[0].insertRule('@import url("../fast/cssom/resources/import.css")', 2) threw exception HierarchyRequestError: Failed to execute 'insertRule' on 'CSSSupportsRule': '@import' rules cannot be inserted inside a group rule..
 
 Whitespace and formatting should be preserved within the condition, whitespace outside the condition should be trimmed.
-PASS rules[1].conditionText is "((  (     padding: 0)    and (display: none)) or (display: rainbow))"
+PASS rules[1].conditionText is "(( ( padding: 0) and (display: none)) or (display: rainbow))"
 
 @supports rule nested inside a media rule.
 PASS rules[2].type is CSSRule.MEDIA_RULE

@@ -92,7 +92,7 @@ NavigatorConnect status=experimental
 NavigatorContentUtils
 NetworkInformation status=stable
 // CSS parser based on the css-syntax spec. crbug.com/330389
-NewCSSParser
+NewCSSParser status=experimental
 NotificationConstructor status=stable
 NotificationExperimental status=test
 Notifications status=stable
