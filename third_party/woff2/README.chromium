@@ -1,0 +1,16 @@
+Name: woff2
+URL: https://github.com/google/woff2
+Version: 445f541996fe8376f3976d35692fd2b9a6eedf2d
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+The reference implementation of the WOFF 2.0 web font compression
+format (http://www.w3.org/TR/WOFF2/).
+
+Local Modifications:
+
+- BUILD.gn: Added.
+- woff2.gyp: Added.
+- Cherry-picked https://github.com/google/woff2/commit/0c1ec8895bce7c7b2da66ebc6e9887ef2e0c1a55.
