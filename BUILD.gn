@@ -46,6 +46,7 @@ group("gn_all") {
     "//chrome/test:unit_tests",
     "//chrome/test/chromedriver:chromedriver_unittests",
     "//components:components_unittests",
+    "//components/policy:policy_templates",
     "//content/shell:content_shell",
     "//content/test:content_browsertests",
     "//content/test:content_perftests",
@@ -61,6 +62,7 @@ group("gn_all") {
     "//media:media_unittests",
     "//media/cast:cast_unittests",
     "//mojo",
+    "//mojo/application",
     "//mojo/common:mojo_common_unittests",
     "//net:hpack_example_generator",
     "//net:hpack_fuzz_mutator",
@@ -290,18 +292,12 @@ group("gn_all") {
       "//net:dns_fuzz_stub",
       "//net:gdig",
       "//net:get_server_time",
-
-      #"//net:hpack_example_generator",  # TODO(GYP) rockot in progress
-      #"//net:hpack_fuzz_mutator",  # TODO(GYP) rockot in progress
-      #"//net:hpack_fuzz_wrapper",  # TODO(GYP) rockot in progress
-      #"//net:net_perftests",  # TODO(GYP) rockot in progress
       "//net:net_watcher",  # TODO(GYP): This should be conditional on use_v8_in_net
       "//net:stress_cache",
       "//net:tld_cleanup",
       "//net:run_testserver",
       "//net:dump_cache",
-
-      # "//ppapi:pepper_hash_for_uma",  # TODO(GYP): Implement me.
+      "//ppapi:pepper_hash_for_uma",
       "//ppapi:ppapi_perftests",  # TODO(GYP): Are there other ppapi_* test targets?
       "//skia:filter_fuzz_stub",
       "//skia:image_operations_bench",

@@ -6,10 +6,10 @@ copy("copy_test_files") {
   visibility = [ ":*" ]
   sources = [
     # Keep "test_case.html.mock-http-headers" with "test_case.html".
+    "tests/ppapi_nacl_tests_newlib.nmf",
     "tests/test_case.html",
     "tests/test_case.html.mock-http-headers",
     "tests/test_page.css",
-    "tests/ppapi_nacl_tests_newlib.nmf",
   ]
   outputs = [
     "$root_out_dir/{{source_file_part}}",
@@ -114,5 +114,15 @@ test("ppapi_perftests") {
     "//ppapi/shared_impl",
     "//ppapi/shared_impl:test_support",
     "//testing/gtest",
+  ]
+}
+
+executable("pepper_hash_for_uma") {
+  sources = [
+    "tools/pepper_hash_for_uma.cc",
+  ]
+
+  deps = [
+    "//base",
   ]
 }

@@ -62,6 +62,7 @@
         '../chrome/chrome.gyp:unit_tests',
         '../chrome/tools/profile_reset/jtl_compiler.gyp:jtl_compiler',
         '../components/components.gyp:network_hints_browser',
+        '../components/components.gyp:policy_templates',
         '../components/components.gyp:webui_generator',
         '../components/components_tests.gyp:components_perftests',
         '../components/components_tests.gyp:components_unittests',
@@ -81,6 +82,7 @@
         '../crypto/crypto.gyp:crypto_unittests',
         '../extensions/extensions_tests.gyp:extensions_browsertests',
         '../extensions/extensions_tests.gyp:extensions_unittests',
+        '../dbus/dbus.gyp:dbus_test_server',
         '../device/device_tests.gyp:device_unittests',
         '../gin/gin.gyp:gin_v8_snapshot_fingerprint',
         '../gin/gin.gyp:gin_shell',
@@ -103,6 +105,7 @@
         '../media/cast/cast.gyp:cast_unittests',
         '../media/cast/cast.gyp:generate_barcode_video',
         '../media/cast/cast.gyp:generate_timecode_audio',
+        '../media/cast/cast.gyp:tap_proxy',
         '../mojo/mojo.gyp:mojo',
         '../mojo/mojo_base.gyp:mojo_application_chromium',
         '../mojo/mojo_base.gyp:mojo_common_unittests',
@@ -124,6 +127,7 @@
         '../ppapi/ppapi_internal.gyp:*',  # TODO(GYP) - list all of the examples explicitly.
         '../ppapi/ppapi_internal.gyp:ppapi_tests',  # TODO(GYP): Split out the examples and tests
         '../ppapi/ppapi_internal.gyp:ppapi_unittests',
+        '../ppapi/tools/ppapi_tools.gyp:pepper_hash_for_uma',
         '../printing/printing.gyp:printing_unittests',
         '../skia/skia_tests.gyp:skia_unittests',
         '../skia/skia.gyp:filter_fuzz_stub',
@@ -174,6 +178,11 @@
         '../v8/tools/gyp/v8.gyp:postmortem-metadata',
       ],
       'conditions': [
+        ['chromeos== 1 or use_ash==1', {
+          'dependencies': [
+            '../components/components.gyp:session_manager_component',
+          ],
+        }],
         ['enable_extensions==1 and OS!="mac"', {
           'dependencies': [
             '../extensions/shell/app_shell.gyp:app_shell',
@@ -183,6 +192,11 @@
         ['OS!="win"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:symupload',
+          ],
+        }],
+        ['remoting==1', {
+          'dependencies': [
+            '../remoting/remoting.gyp:remoting_unittests',
           ],
         }],
         ['use_x11==1', {
@@ -399,51 +413,14 @@
           'dependencies': [
             '../chrome/chrome.gyp:performance_browser_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
-            '../components/components.gyp:policy_templates',
             '../components/components_tests.gyp:components_browsertests',
             '../components/components_tests.gyp:components_perftests',
-            '../content/content.gyp:content_app_browser',
-            '../content/content.gyp:content_app_child',
-            '../content/content_shell_and_tests.gyp:content_gl_benchmark',
-            '../content/content_shell_and_tests.gyp:content_gl_tests',
-            '../courgette/courgette.gyp:courgette',
-            '../courgette/courgette.gyp:courgette_fuzz',
-            '../dbus/dbus.gyp:dbus_test_server',
-            '../device/device_tests.gyp:device_unittests',
-            '../gin/gin.gyp:gin_v8_snapshot_fingerprint',
-            '../gin/gin.gyp:gin_shell',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test',
-            '../media/cast/cast.gyp:cast_benchmarks',
-            '../media/cast/cast.gyp:generate_barcode_video',
-            '../media/cast/cast.gyp:generate_timecode_audio',
-            '../media/cast/cast.gyp:tap_proxy',
-            '../mojo/mojo_base.gyp:mojo_application_chromium',
-            '../ppapi/ppapi_internal.gyp:ppapi_unittests',
-            '../ppapi/tools/ppapi_tools.gyp:pepper_hash_for_uma',
-            '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests',
-            '../skia/skia.gyp:filter_fuzz_stub',
-            '../skia/skia.gyp:image_operations_bench',
-            '../sync/sync.gyp:run_sync_testserver',
-            '../sync/sync.gyp:sync_endtoend_tests',
-            '../sync/tools/sync_tools.gyp:sync_client',
-            '../sync/tools/sync_tools.gyp:sync_listen_notifications',
-            '../testing/gmock.gyp:gmock_main',
-            '../third_party/leveldatabase/leveldatabase.gyp:env_chromium_unittests',
-            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
-            '../tools/gn/gn.gyp:generate_test_gn_data',
-            '../tools/perf/clear_system_cache/clear_system_cache.gyp:clear_system_cache',
-            #'../tools/telemetry/telemetry.gyp:bitmaptools', TODO(GYP) should this be #host ?
-            '../ui/compositor/compositor.gyp:compositor_unittests',
-            '../ui/message_center/message_center.gyp:message_center_unittests',
-            '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
-            '../v8/tools/gyp/v8.gyp:v8_snapshot',
-            '../v8/tools/gyp/v8.gyp:postmortem-metadata',
 
             # TODO(GYP) - list all of the examples explicitly.
             '../ppapi/ppapi_internal.gyp:*',
@@ -453,37 +430,19 @@
               'dependencies': [
                 '../components/nacl.gyp:nacl_loader_unittests',
                 '../mojo/mojo_nacl.gyp:monacl_shell',  # TODO(GYP) This will be deleted; don't port
-                '../remoting/remoting.gyp:remoting_key_tester',
+                 '../remoting/remoting.gyp:remoting_key_tester',
               ]
-            }],
-            ['chromeos== 1 or use_ash==1', {
-              'dependencies': [
-                '../components/components.gyp:session_manager_component',
-              ],
-            }],
-            ['use_x11==1', {
-              'dependencies': [
-                '../gpu/tools/tools.gyp:compositor_model_bench',
-                '../media/media.gyp:player_x11',
-              ],
             }],
             ['remoting==1', {
               'dependencies': [
                 '../remoting/app_remoting_webapp.gyp:ar_sample_app',
                 '../remoting/remoting.gyp:remoting_host',
                 '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
-                '../remoting/remoting.gyp:remoting_key_tester',
                 '../remoting/remoting.gyp:remoting_me2me_host',
                 '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
                 '../remoting/remoting.gyp:remoting_native_messaging_manifests',
                 '../remoting/remoting.gyp:remoting_perftests',
                 '../remoting/remoting.gyp:remoting_start_host',
-                '../remoting/remoting.gyp:remoting_unittests',
-              ],
-            }],
-            ['toolkit_views==1', {
-              'dependencies': [
-                '../ui/app_list/app_list.gyp:app_list_demo',
               ],
             }],
             ['test_isolation_mode!="noop"', {
