@@ -4106,23 +4106,63 @@
                   ['android_webview_build==0', {
                     'conditions': [
                       ['mips_arch_variant=="r6"', {
-                        'cflags': ['-mips32r6', '-Wa,-mips32r6'],
                         'conditions': [
-                          ['OS=="android"', {
+                          ['clang==1', {
+                            'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r6', ],
+                            'ldflags': [ '-target mipsel-linux-gnu', ],
+                          }, { # clang==0
+                            'cflags': ['-mips32r6', '-Wa,-mips32r6', ],
+                          }],
+                          ['clang==0 and OS=="android"', {
                             'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
                           }],
                         ],
                       }],
                       ['mips_arch_variant=="r2"', {
-                        'cflags': ['-mips32r2', '-Wa,-mips32r2'],
                         'conditions': [
                           ['mips_float_abi=="hard" and mips_fpu_mode!=""', {
                             'cflags': ['-m<(mips_fpu_mode)'],
                           }],
+                          ['clang==1', {
+                             'conditions': [
+                              ['OS=="android"', {
+                                'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32r2'],
+                                'ldflags': [ '-target mipsel-linux-android', ],
+                              }],
+                             ],
+                          }, { # clang==0
+                            'cflags': ['-mips32r2', '-Wa,-mips32r2', ],
+                          }],
                         ],
                       }],
                       ['mips_arch_variant=="r1"', {
-                        'cflags': ['-mips32', '-Wa,-mips32'],
+                        'conditions': [
+                          ['clang==1', {
+                            'conditions': [
+                              ['OS=="android"', {
+                                'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32'],
+                                'ldflags': [ '-target mipsel-linux-android', ],
+                              }],
+                            ],
+                          }, { # clang==0
+                            'cflags': ['-mips32', '-Wa,-mips32', ],
+                          }],
+                        ],
+                      }],
+                      ['clang==1', {
+                        'cflags!': [
+                          # Clang does not support the following options.
+                          '-finline-limit=64',
+                        ],
+                        'cflags': [
+                          # TODO(gordanac) Enable integrated-as.
+                          '-no-integrated-as',
+                          '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
+                        ],
+                        'ldflags': [
+                          # Let clang find the ld in the NDK.
+                          '--gcc-toolchain=<(android_toolchain)/..',
+                        ],
                       }],
                       ['mips_dsp_rev==1', {
                         'cflags': ['-mdsp'],
