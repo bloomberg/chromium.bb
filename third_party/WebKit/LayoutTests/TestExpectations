@@ -519,10 +519,6 @@ crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-0
 
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
 
-crbug.com/467500 fast/gradients/css3-radial-gradients4.html [ NeedsRebaseline ]
-crbug.com/467500 fast/gradients/css3-radial-gradients2.html [ NeedsRebaseline ]
-crbug.com/467500 fast/gradients/unprefixed-radial-gradients2.html [ NeedsRebaseline ]
-
 # Switching to content shell failures
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
