@@ -211,10 +211,12 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
 }
 
 bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
-  // TODO(estade): Always return false for Linux. See
-  // https://codereview.chromium.org/1012223002/
+#if defined(ENABLE_SAVE_WALLET_CARDS_LOCALLY)
   return !Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->IsOffTheRecord();
+#else
+  return false;
+#endif
 }
 
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {

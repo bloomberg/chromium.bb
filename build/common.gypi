@@ -1021,6 +1021,15 @@
         }, {
           'v8_use_external_startup_data%': 0,
         }],
+
+        # Controls whether Wallet cards can be saved to the local instance of
+        # chrome. TODO(estade): set to 0 for Linux before M43 branch.
+        ['desktop_linux==1', {
+          'enable_save_wallet_cards_locally%': 1,
+        }, {
+          'enable_save_wallet_cards_locally%': 1,
+        }],
+
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -1172,6 +1181,7 @@
     'enable_themes%': '<(enable_themes)',
     'enable_autofill_dialog%': '<(enable_autofill_dialog)',
     'enable_prod_wallet_service%': '<(enable_prod_wallet_service)',
+    'enable_save_wallet_cards_locally%': '<(enable_save_wallet_cards_locally)',
     'enable_background%': '<(enable_background)',
     'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
     'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
@@ -2941,6 +2951,9 @@
       }],
       ['enable_prod_wallet_service==1', {
         'defines': ['ENABLE_PROD_WALLET_SERVICE=1'],
+      }],
+      ['enable_save_wallet_cards_locally==1', {
+        'defines': ['ENABLE_SAVE_WALLET_CARDS_LOCALLY=1'],
       }],
       ['enable_background==1', {
         'defines': ['ENABLE_BACKGROUND=1'],
