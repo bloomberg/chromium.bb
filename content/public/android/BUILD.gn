@@ -178,4 +178,17 @@ android_library("content_javatests") {
 
   DEPRECATED_java_in_dir = "javatests/src"
 }
+
+# GYP: //content/content_tests.gypi:content_shell_unit_tests
+java_binary("chrome_shell_unit_tests") {
+  testonly = true
+  java_files = [ "junit/src/org/chromium/content/browser/input/GamepadMappingsTest.java" ]
+  main_class = "org.chromium.testing.local.JunitTestMain"
+  deps = [
+    ":content_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//testing/android/junit:junit_test_support",
+  ]
+}
 # TODO(GYP): content_icudata

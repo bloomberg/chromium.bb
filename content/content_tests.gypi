@@ -2026,6 +2026,26 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
+        {
+          # GN: //content/public/android:content_shell_unit_tests
+          'target_name': 'content_shell_unit_tests',
+          'type': 'none',
+          'dependencies': [
+            'content.gyp:content_java',
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'variables': {
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              'public/android/junit/',
+            ],
+          },
+          'includes': [
+            '../build/host_jar.gypi',
+          ],
+        },
       ],
     }],
     ['OS!="android" and OS!="ios" and OS!="linux"', {

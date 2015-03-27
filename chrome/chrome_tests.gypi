@@ -2927,6 +2927,26 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          # GN: //chrome/android:chrome_shell_unit_tests
+          'target_name': 'chrome_shell_unit_tests',
+          'type': 'none',
+          'dependencies': [
+            'chrome_java',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'variables': {
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              'android/junit/',
+            ],
+          },
+          'includes': [
+            '../build/host_jar.gypi',
+          ],
+        },
+        {
           # GN: //chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk
           'target_name': 'chromedriver_webview_shell_apk',
           'type': 'none',
