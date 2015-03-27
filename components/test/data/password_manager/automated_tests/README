@@ -75,10 +75,6 @@ class NewWebsiteTest(WebsiteTest):
     self.FillPasswordInto("Password CSS selector")
     self.Submit("Password CSS selector")
 
-  def Logout(self):
-    # Add logout steps for the website, for example:
-    self.Click("Logout button CSS selector")
-
 Then, to create the new test, you need just to add:
 
 environment.AddWebsiteTest(NewWebsiteTest("website name"))
@@ -149,7 +145,7 @@ manager. When this bug is solved, all the tests that were failing because of
 it are going to be moved to working tests.
 
 Other files:
-* websites.xml : a private file where you can find all the passwords. You can 
+* websites.xml: a private file where you can find all the passwords. You can 
 ask someone to give it to you or just create your own with your personal 
 accounts. 
 <websites>

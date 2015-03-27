@@ -67,12 +67,11 @@ class TestRunner(object):
     # TODO(vabr): Ideally we would replace timeout with something allowing
     # calling tests directly inside Python, and working on other platforms.
     #
-    # The website test runs in two passes, each pass has an internal
+    # The website test runs multiple scenarios, each one has an internal
     # timeout of 200s for waiting (see |remaining_time_to_wait| and
-    # Wait() in websitetest.py). Accounting for some more time spent on
-    # the non-waiting execution, 300 seconds should be the upper bound on
-    # the runtime of one pass, thus 600 seconds for the whole test.
-    self.test_cmd = ["timeout", "600"] + self.test_cmd
+    # Wait() in websitetest.py). Expecting that not every scenario should
+    # take 200s, the maximum time allocated for all of them is 300s.
+    self.test_cmd = ["timeout", "300"] + self.test_cmd
 
     self.logger.log(SCRIPT_DEBUG,
                     "TestRunner set up for test %s, command '%s', "
@@ -110,21 +109,26 @@ class TestRunner(object):
 
   def _check_if_test_passed(self):
     """Returns True if and only if the test passed."""
+
+    success = False
     if os.path.isfile(self.results_path):
       with open(self.results_path, "r") as results:
-        count = 0  # Count the number of successful tests.
+        # TODO(vabr): Parse the results to make sure all scenarios succeeded
+        # instead of hard-coding here the number of tests scenarios from
+        # test.py:main.
+        NUMBER_OF_TEST_SCENARIOS = 3
+        passed_scenarios = 0
         for line in results:
           self.failures.append(line)
-          count += line.count("successful='True'")
+          passed_scenarios += line.count("successful='True'")
+          success = passed_scenarios == NUMBER_OF_TEST_SCENARIOS
+          if success:
+            break
 
-      # There is only two tests running for every website: the prompt and
-      # the normal test. If both of the tests were successful, the tests
-      # would be stopped for the current website.
-      self.logger.log(SCRIPT_DEBUG, "Test run of %s: %s",
-                      self.test_name, "pass" if count == 2 else "fail")
-      if count == 2:
-        return True
-    return False
+    self.logger.log(
+        SCRIPT_DEBUG,
+        "Test run of {0} succeded: {1}".format(self.test_name, success))
+    return success
 
   def _run_test(self):
     """Executes the command to run the test."""

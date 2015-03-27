@@ -12,390 +12,372 @@ from selenium.webdriver.common.keys import Keys
 
 import environment
 
-
-def _IsOneSubstringOfAnother(s1, s2):
-  """Checks if one of the string arguements is substring of the other.
-
-  Args:
-      s1: The first string.
-      s2: The second string.
-  Returns:
-
-    True if one of the string arguements is substring of the other.
-    False otherwise.
-  """
-  return s1 in s2 or s2 in s1
-
+SCRIPT_DEBUG = 9  # TODO(vabr) -- make this consistent with run_tests.py.
 
 class WebsiteTest:
-  """Handles a tested WebsiteTest."""
+  """WebsiteTest testing class.
 
-  class Mode:
-    """Test mode."""
-    # Password and username are expected to be autofilled.
-    AUTOFILLED = 1
-    # Password and username are not expected to be autofilled.
-    NOT_AUTOFILLED = 2
+  Represents one website, defines some generic operations on that site.
+  To customise for a particular website, this class needs to be inherited
+  and the Login() method overridden.
+  """
 
-    def __init__(self):
-      pass
+  # Possible values of self.autofill_expectation.
+  AUTOFILLED = 1  # Expect password and username to be autofilled.
+  NOT_AUTOFILLED = 2  # Expect password and username not to be autofilled.
+
+  # The maximal accumulated time to spend in waiting for website UI
+  # interaction.
+  MAX_WAIT_TIME_IN_SECONDS = 200
+
+  # Types of test to be passed to self.RunTest().
+  TEST_TYPE_PROMPT_FAIL = 1
+  TEST_TYPE_PROMPT_SUCCESS = 2
+  TEST_TYPE_SAVE_AND_AUTOFILL = 3
 
   def __init__(self, name, username_not_auto=False):
     """Creates a new WebsiteTest.
 
     Args:
-      name: The website name.
-      username_not_auto: Username inputs in some websites (like wikipedia) are
-          sometimes filled with some messages and thus, the usernames are not
-          automatically autofilled. This flag handles that and disables us from
-          checking if the state of the DOM is the same as the username of
-          website.
+      name: The website name, identifying it in the test results.
+      username_not_auto: Expect that the tested website fills username field
+        on load, and Chrome cannot autofill in that case.
     """
-    # Name of the website
     self.name = name
-    # Username of the website.
     self.username = None
-    # Password of the website.
     self.password = None
-    # Username is not automatically filled.
     self.username_not_auto = username_not_auto
-    # Autofilling mode.
-    self.mode = self.Mode.NOT_AUTOFILLED
-    # The |remaining_time_to_wait| limits the total time in seconds spent in
-    # potentially infinite loops.
-    self.remaining_time_to_wait = 200
-    # The testing Environment.
+
+    # Specify, whether it is expected that credentials get autofilled.
+    self.autofill_expectation = WebsiteTest.NOT_AUTOFILLED
+    self.remaining_seconds_to_wait = WebsiteTest.MAX_WAIT_TIME_IN_SECONDS
+    # The testing Environment, if added to any.
     self.environment = None
-    # The webdriver.
+    # The webdriver from the environment.
     self.driver = None
-    # Whether or not the test was run.
-    self.was_run = False
 
   # Mouse/Keyboard actions.
 
   def Click(self, selector):
-    """Clicks on an element.
+    """Clicks on the element described by |selector|.
 
     Args:
-      selector: The element CSS selector.
+      selector: The clicked element's CSS selector.
     """
-    logging.info("action: Click %s" % selector)
-    self.WaitUntilDisplayed(selector)
-    element = self.driver.find_element_by_css_selector(selector)
+
+    logging.log(SCRIPT_DEBUG, "action: Click %s" % selector)
+    element = self.WaitUntilDisplayed(selector)
     element.click()
 
   def ClickIfClickable(self, selector):
-    """Clicks on an element if it's clickable: If it doesn't exist in the DOM,
-    it's covered by another element or it's out viewing area, nothing is
-    done and False is returned. Otherwise, even if the element is 100%
-    transparent, the element is going to receive a click and a True is
-    returned.
+    """Clicks on the element described by |selector| if it is clickable.
+
+    The driver's find_element_by_css_selector method defines what is clickable
+    -- anything for which it does not throw, is clickable. To be clickable,
+    the element must:
+      * exist in the DOM,
+      * be not covered by another element
+      * be inside the visible area.
+    Note that transparency does not influence clickability.
 
     Args:
-      selector: The element CSS selector.
+      selector: The clicked element's CSS selector.
 
     Returns:
-      True if the click happens.
+      True if the element is clickable (and was clicked on).
       False otherwise.
     """
-    logging.info("action: ClickIfVisible %s" % selector)
-    self.WaitUntilDisplayed(selector)
+
+    logging.log(SCRIPT_DEBUG, "action: ClickIfVisible %s" % selector)
+    element = self.WaitUntilDisplayed(selector)
     try:
-      element = self.driver.find_element_by_css_selector(selector)
       element.click()
       return True
     except Exception:
       return False
 
   def GoTo(self, url):
-    """Navigates the main frame to the |url|.
+    """Navigates the main frame to |url|.
 
     Args:
-      url: The URL.
+      url: The URL of where to go to.
     """
-    logging.info("action: GoTo %s" % self.name)
-    if self.environment.first_go_to:
-      self.environment.OpenTabAndGoToInternals(url)
-      self.environment.first_go_to = False
-    else:
-      self.driver.get(url)
+
+    logging.log(SCRIPT_DEBUG, "action: GoTo %s" % self.name)
+    self.driver.get(url)
 
   def HoverOver(self, selector):
-    """Hovers over an element.
+    """Hovers over the element described by |selector|.
 
     Args:
-      selector: The element CSS selector.
+      selector: The CSS selector of the element to hover over.
     """
-    logging.info("action: Hover %s" % selector)
-    self.WaitUntilDisplayed(selector)
-    element = self.driver.find_element_by_css_selector(selector)
+
+    logging.log(SCRIPT_DEBUG, "action: Hover %s" % selector)
+    element = self.WaitUntilDisplayed(selector)
     hover = ActionChains(self.driver).move_to_element(element)
     hover.perform()
 
   # Waiting/Displaying actions.
 
-  def IsDisplayed(self, selector):
-    """Returns False if an element doesn't exist in the DOM or is 100%
-    transparent. Otherwise, returns True even if it's covered by another
-    element or it's out viewing area.
+  def _ReturnElementIfDisplayed(self, selector):
+    """Returns the element described by |selector|, if displayed.
+
+    Note: This takes neither overlapping among elements nor position with
+    regards to the visible area into account.
 
     Args:
-      selector: The element CSS selector.
+      selector: The CSS selector of the checked element.
+
+    Returns:
+      The element if displayed, None otherwise.
     """
-    logging.info("action: IsDisplayed %s" % selector)
+
     try:
       element = self.driver.find_element_by_css_selector(selector)
-      return element.is_displayed()
+      return element if element.is_displayed() else None
     except Exception:
-      return False
+      return None
+
+  def IsDisplayed(self, selector):
+    """Check if the element described by |selector| is displayed.
+
+    Note: This takes neither overlapping among elements nor position with
+    regards to the visible area into account.
+
+    Args:
+      selector: The CSS selector of the checked element.
+
+    Returns:
+      True if the element is in the DOM and less than 100% transparent.
+      False otherwise.
+    """
+
+    logging.log(SCRIPT_DEBUG, "action: IsDisplayed %s" % selector)
+    return self._ReturnElementIfDisplayed(selector) is not None
 
   def Wait(self, duration):
-    """Wait for a duration in seconds. This needs to be used in potentially
-    infinite loops, to limit their running time.
+    """Wait for |duration| in seconds.
+
+    To avoid deadlocks, the accummulated waiting time for the whole object does
+    not exceed MAX_WAIT_TIME_IN_SECONDS.
 
     Args:
       duration: The time to wait in seconds.
-    """
-    logging.info("action: Wait %s" % duration)
-    time.sleep(duration)
-    self.remaining_time_to_wait -= 1
-    if self.remaining_time_to_wait < 0:
-      raise Exception("Tests took more time than expected for the following "
-                      "website : %s \n" % self.name)
 
-  def WaitUntilDisplayed(self, selector, timeout=10):
-    """Waits until an element is displayed.
+    Raises:
+      Exception: In case the accummulated waiting limit is exceeded.
+    """
+
+    logging.log(SCRIPT_DEBUG, "action: Wait %s" % duration)
+    self.remaining_seconds_to_wait -= duration
+    if self.remaining_seconds_to_wait < 0:
+      raise Exception("Waiting limit exceeded for website: %s" % self.name)
+    time.sleep(duration)
+
+  # TODO(vabr): Pull this out into some website-utils and use in Environment
+  # also?
+  def WaitUntilDisplayed(self, selector):
+    """Waits until the element described by |selector| is displayed.
 
     Args:
-      selector: The element CSS selector.
-      timeout: The maximum waiting time in seconds before failing.
+      selector: The CSS selector of the element to wait for.
+
+    Returns:
+      The displayed element.
     """
-    if not self.IsDisplayed(selector):
+
+    element = self._ReturnElementIfDisplayed(selector)
+    while not element:
       self.Wait(1)
-      timeout = timeout - 1
-      if (timeout <= 0):
-        raise Exception("Error: Element %s not shown before timeout is "
-                        "finished for the following website: %s"
-                        % (selector, self.name))
-      else:
-        self.WaitUntilDisplayed(selector, timeout)
+      element = self._ReturnElementIfDisplayed(selector)
+    return element
 
   # Form actions.
 
   def FillPasswordInto(self, selector):
-    """If the testing mode is the Autofilled mode, compares the website
-    password to the DOM state.
-    If the testing mode is the NotAutofilled mode, checks that the DOM state
-    is empty.
-    Then, fills the input with the Website password.
+    """Ensures that the selected element's value is the saved password.
+
+    Depending on self.autofill_expectation, this either checks that the
+    element already has the password autofilled, or checks that the value
+    is empty and replaces it with the password.
 
     Args:
-      selector: The password input CSS selector.
+      selector: The CSS selector for the filled element.
 
     Raises:
-      Exception: An exception is raised if the DOM value of the password is
-          different than the one we expected.
+      Exception: An exception is raised if the element's value is different
+          from the expectation.
     """
-    logging.info("action: FillPasswordInto %s" % selector)
-    self.WaitUntilDisplayed(selector)
-    password_element = self.driver.find_element_by_css_selector(selector)
+
+    logging.log(SCRIPT_DEBUG, "action: FillPasswordInto %s" % selector)
+    password_element = self.WaitUntilDisplayed(selector)
+
     # Chrome protects the password inputs and doesn't fill them until
     # the user interacts with the page. To be sure that such thing has
     # happened we perform |Keys.CONTROL| keypress.
     action_chains = ActionChains(self.driver)
     action_chains.key_down(Keys.CONTROL).key_up(Keys.CONTROL).perform()
-    if self.mode == self.Mode.AUTOFILLED:
-      autofilled_password = password_element.get_attribute("value")
-      if autofilled_password != self.password:
-        raise Exception("Error: autofilled password is different from the one "
-                        "we just saved for the following website : %s p1: %s "
-                        "p2:%s \n" % (self.name,
-                                      password_element.get_attribute("value"),
-                                      self.password))
 
-    elif self.mode == self.Mode.NOT_AUTOFILLED:
-      autofilled_password = password_element.get_attribute("value")
-      if autofilled_password:
-        raise Exception("Error: password is autofilled when it shouldn't  be "
-                        "for the following website : %s \n"
-                        % self.name)
-
+    if self.autofill_expectation == WebsiteTest.AUTOFILLED:
+      if password_element.get_attribute("value") != self.password:
+        raise Exception("Error: autofilled password is different from the saved"
+                        " one on website: %s" % self.name)
+    elif self.autofill_expectation == WebsiteTest.NOT_AUTOFILLED:
+      if password_element.get_attribute("value"):
+        raise Exception("Error: password value unexpectedly not empty on"
+                        "website: %s" % self.name)
       password_element.send_keys(self.password)
 
   def FillUsernameInto(self, selector):
-    """If the testing mode is the Autofilled mode, compares the website
-    username to the input value. Then, fills the input with the website
+    """Ensures that the selected element's value is the saved username.
+
+    Depending on self.autofill_expectation, this either checks that the
+    element already has the username autofilled, or checks that the value
+    is empty and replaces it with the password. If self.username_not_auto
+    is true, it skips the checks and just overwrites the value with the
     username.
 
     Args:
-      selector: The username input CSS selector.
+      selector: The CSS selector for the filled element.
 
     Raises:
-      Exception: An exception is raised if the DOM value of the username is
-          different that the one we expected.
+      Exception: An exception is raised if the element's value is different
+          from the expectation.
     """
-    logging.info("action: FillUsernameInto %s" % selector)
-    self.WaitUntilDisplayed(selector)
-    username_element = self.driver.find_element_by_css_selector(selector)
 
-    if (self.mode == self.Mode.AUTOFILLED and not self.username_not_auto):
-      if not (username_element.get_attribute("value") == self.username):
-        raise Exception("Error: autofilled username is different form the one "
-                        "we just saved for the following website : %s \n" %
-                        self.name)
-    else:
-      username_element.clear()
-      username_element.send_keys(self.username)
+    logging.log(SCRIPT_DEBUG, "action: FillUsernameInto %s" % selector)
+    username_element = self.WaitUntilDisplayed(selector)
+
+    if not self.username_not_auto:
+      if self.autofill_expectation == WebsiteTest.AUTOFILLED:
+        if username_element.get_attribute("value") != self.username:
+          raise Exception("Error: filled username different from the saved"
+                          " one on website: %s" % self.name)
+        return
+      if self.autofill_expectation == WebsiteTest.NOT_AUTOFILLED:
+        if username_element.get_attribute("value"):
+          raise Exception("Error: username value unexpectedly not empty on"
+                          "website: %s" % self.name)
+
+    username_element.clear()
+    username_element.send_keys(self.username)
 
   def Submit(self, selector):
-    """Finds an element using CSS Selector and calls its submit() handler.
+    """Finds an element using CSS |selector| and calls its submit() handler.
 
     Args:
-      selector: The input CSS selector.
+      selector: The CSS selector for the element to call submit() on.
     """
-    logging.info("action: Submit %s" % selector)
-    self.WaitUntilDisplayed(selector)
-    element = self.driver.find_element_by_css_selector(selector)
+
+    logging.log(SCRIPT_DEBUG, "action: Submit %s" % selector)
+    element = self.WaitUntilDisplayed(selector)
     element.submit()
 
-  # Login/Logout Methods
+  # Login/Logout methods
 
   def Login(self):
-    """Login Method. Has to be overloaded by the WebsiteTest test."""
+    """Login Method. Has to be overridden by the WebsiteTest test."""
+
     raise NotImplementedError("Login is not implemented.")
 
   def LoginWhenAutofilled(self):
     """Logs in and checks that the password is autofilled."""
-    self.mode = self.Mode.AUTOFILLED
+
+    self.autofill_expectation = WebsiteTest.AUTOFILLED
     self.Login()
 
   def LoginWhenNotAutofilled(self):
     """Logs in and checks that the password is not autofilled."""
-    self.mode = self.Mode.NOT_AUTOFILLED
+
+    self.autofill_expectation = WebsiteTest.NOT_AUTOFILLED
     self.Login()
 
   def Logout(self):
-    """Logout Method."""
+    self.environment.DeleteCookies()
 
-  # Tests
+  # Test scenarios
 
-  def WrongLoginTest(self):
-    """Does the wrong login test: Tries to login with a wrong password and
-    checks that the password is not saved.
+  def PromptFailTest(self):
+    """Checks that prompt is not shown on a failed login attempt.
 
-    Raises:
-      Exception: An exception is raised if the test fails: If there is a
-          problem when performing the login (ex: the login button is not
-          available ...), if the state of the username and password fields is
-          not like we expected or if the password is saved.
-    """
-    logging.info("\nWrong Login Test for %s \n" % self.name)
-    try:
-      correct_password = self.password
-      # Hardcoded random wrong password. Chosen by fair `pwgen` call.
-      # For details, see: http://xkcd.com/221/.
-      self.password = "ChieF2ae"
-      self.LoginWhenNotAutofilled()
-      self.password = correct_password
-      self.Wait(2)
-      self.environment.SwitchToInternals()
-      self.environment.CheckForNewMessage(
-          environment.MESSAGE_SAVE,
-          False,
-          "Error: password manager thinks that a login with wrong password was "
-          "successful for the following website : %s \n" % self.name)
-    finally:
-      self.environment.SwitchFromInternals()
-
-  def SuccessfulLoginTest(self):
-    """Does the successful login when the password is not expected to be
-    autofilled test: Checks that the password is not autofilled, tries to login
-    with a right password and checks if the password is saved. Then logs out.
+    Tries to login with a wrong password and checks that the password
+    is not offered for saving.
 
     Raises:
-      Exception: An exception is raised if the test fails: If there is a
-          problem when performing the login and the logout (ex: the login
-          button is not available ...), if the state of the username and
-          password fields is not like we expected or if the password is not
-          saved.
+      Exception: An exception is raised if the test fails.
     """
-    logging.info("\nSuccessful Login Test for %s \n" % self.name)
-    try:
-      self.LoginWhenNotAutofilled()
-      self.Wait(2)
-      self.environment.SwitchToInternals()
-      self.environment.CheckForNewMessage(
-          environment.MESSAGE_SAVE,
-          True,
-          "Error: password manager hasn't detected a successful login for the "
-          "following website : %s \n"
-          % self.name)
-    finally:
-      self.environment.SwitchFromInternals()
-      self.Logout()
 
-  def SuccessfulLoginWithAutofilledPasswordTest(self):
-    """Does the successful login when the password is expected to be autofilled
-    test: Checks that the password is autofilled, tries to login with the
-    autofilled password and checks if the password is saved. Then logs out.
+    logging.log(SCRIPT_DEBUG, "PromptFailTest for %s" % self.name)
+    correct_password = self.password
+    # Hardcoded random wrong password. Chosen by fair `pwgen` call.
+    # For details, see: http://xkcd.com/221/.
+    self.password = "ChieF2ae"
+    self.LoginWhenNotAutofilled()
+    self.password = correct_password
+    self.environment.CheckForNewString(
+        [environment.MESSAGE_ASK, environment.MESSAGE_SAVE],
+        False,
+        "Error: did not detect wrong login on website: %s" % self.name)
+
+  def PromptSuccessTest(self):
+    """Checks that prompt is shown on a successful login attempt.
+
+    Tries to login with a correct password and checks that the password
+    is offered for saving. Chrome cannot have the auto-save option on
+    when running this test.
 
     Raises:
-      Exception: An exception is raised if the test fails: If there is a
-          problem when performing the login and the logout (ex: the login
-          button is not available ...), if the state of the username and
-          password fields is not like we expected or if the password is not
-          saved.
+      Exception: An exception is raised if the test fails.
     """
-    logging.info("\nSuccessful Login With Autofilled Password"
-                        " Test %s \n" % self.name)
-    try:
-      self.LoginWhenAutofilled()
-      self.Wait(2)
-      self.environment.SwitchToInternals()
-      self.environment.CheckForNewMessage(
-          environment.MESSAGE_SAVE,
-          True,
-          "Error: password manager hasn't detected a successful login for the "
-          "following website : %s \n"
-          % self.name)
-    finally:
-      self.environment.SwitchFromInternals()
-      self.Logout()
 
-  def PromptTest(self):
-    """Does the prompt test: Tries to login with a wrong password and
-    checks that the prompt is not shown. Then tries to login with a right
-    password and checks that the prompt is not shown.
+    logging.log(SCRIPT_DEBUG, "PromptSuccessTest for %s" % self.name)
+    if not self.environment.show_prompt:
+      raise Exception("Switch off auto-save during PromptSuccessTest.")
+    self.LoginWhenNotAutofilled()
+    self.environment.CheckForNewString(
+        [environment.MESSAGE_ASK],
+        True,
+        "Error: did not detect login success on website: %s" % self.name)
+
+  def SaveAndAutofillTest(self):
+    """Checks that a correct password is saved and autofilled.
+
+    Tries to login with a correct password and checks that the password
+    is saved and autofilled on next visit. Chrome must have the auto-save
+    option on when running this test.
 
     Raises:
-      Exception: An exception is raised if the test fails: If there is a
-          problem when performing the login (ex: the login button is not
-          available ...), if the state of the username and password fields is
-          not like we expected or if the prompt is not shown for the right
-          password or is shown for a wrong one.
+      Exception: An exception is raised if the test fails.
     """
-    logging.info("\nPrompt Test for %s \n" % self.name)
-    try:
-      correct_password = self.password
-      self.password = self.password + "1"
-      self.LoginWhenNotAutofilled()
-      self.password = correct_password
-      self.Wait(2)
-      self.environment.SwitchToInternals()
-      self.environment.CheckForNewMessage(
-          environment.MESSAGE_ASK,
-          False,
-          "Error: password manager thinks that a login with wrong password was "
-          "successful for the following website : %s \n" % self.name)
-      self.environment.SwitchFromInternals()
 
-      self.LoginWhenNotAutofilled()
-      self.Wait(2)
-      self.environment.SwitchToInternals()
-      self.environment.CheckForNewMessage(
-          environment.MESSAGE_ASK,
-          True,
-          "Error: password manager hasn't detected a successful login for the "
-          "following website : %s \n" % self.name)
-    finally:
-      self.environment.SwitchFromInternals()
+    logging.log(SCRIPT_DEBUG, "SaveAndAutofillTest for %s" % self.name)
+    if self.environment.show_prompt:
+      raise Exception("Switch off auto-save during PromptSuccessTest.")
+    self.LoginWhenNotAutofilled()
+    self.environment.CheckForNewString(
+        [environment.MESSAGE_SAVE],
+        True,
+        "Error: did not detect login success on website: %s" % self.name)
+    self.Logout()
+    self.LoginWhenAutofilled()
+    self.environment.CheckForNewString(
+        [environment.MESSAGE_SAVE],
+        True,
+        "Error: failed autofilled login on website: %s" % self.name)
+
+  def RunTest(self, test_type):
+    """Runs test according to the |test_type|.
+
+    Raises:
+      Exception: If |test_type| is not one of the TEST_TYPE_* constants.
+    """
+
+    if test_type == WebsiteTest.TEST_TYPE_PROMPT_FAIL:
+      self.PromptFailTest()
+    elif test_type == WebsiteTest.TEST_TYPE_PROMPT_SUCCESS:
+      self.PromptSuccessTest()
+    elif test_type == WebsiteTest.TEST_TYPE_SAVE_AND_AUTOFILL:
+      self.SaveAndAutofillTest()
+    else:
+      raise Exception("Unknown test type {}.".format(test_type))

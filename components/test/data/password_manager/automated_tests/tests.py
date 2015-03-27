@@ -475,7 +475,7 @@ all_tests = {
 }
 
 
-def saveResults(environment_tests_results, environment_save_path):
+def SaveResults(environment_tests_results, environment_save_path):
   """Save the test results in an xml file.
 
   Args:
@@ -488,17 +488,16 @@ def saveResults(environment_tests_results, environment_save_path):
   """
   if environment_save_path:
     xml = "<result>"
-    for test_result in environment_tests_results:
-      xml += ("<test name='%s' successful='%s' type='%s'>%s</test>"
-          % (test_result.name, str(test_result.successful),
-          test_result.test_type, test_result.message))
+    for (name, test_type, success, failure_log) in environment_tests_results:
+      xml += (
+          "<test name='{0}' successful='{1}' type='{2}'>{3}</test>".format(
+              name, success, test_type, failure_log))
     xml += "</result>"
     with open(environment_save_path, "w") as save_file:
       save_file.write(xml)
 
 def RunTest(chrome_path, chromedriver_path, profile_path,
-            environment_passwords_path, enable_automatic_password_saving,
-            website_test_name):
+            environment_passwords_path, website_test_name, test_type):
   """Runs the test for the specified website.
 
   Args:
@@ -506,8 +505,6 @@ def RunTest(chrome_path, chromedriver_path, profile_path,
     chromedriver_path: The chromedriver binary file.
     profile_path: The chrome testing profile folder.
     environment_passwords_path: The usernames and passwords file.
-    enable_automatic_password_saving: If True, the passwords are going to be
-        saved without showing the prompt.
     website_test_name: Name of the website to test (refer to keys in
         all_tests above).
 
@@ -519,26 +516,22 @@ def RunTest(chrome_path, chromedriver_path, profile_path,
         fails, or if the website name is not known.
   """
 
+  enable_automatic_password_saving = (
+      test_type == WebsiteTest.TEST_TYPE_SAVE_AND_AUTOFILL)
   environment = Environment(chrome_path, chromedriver_path, profile_path,
                             environment_passwords_path,
                             enable_automatic_password_saving)
-
-  # Test which care about the save-password prompt need the prompt
-  # to be shown. Automatic password saving results in no prompt.
-  run_prompt_tests = not enable_automatic_password_saving
 
   if website_test_name in all_tests:
     environment.AddWebsiteTest(all_tests[website_test_name])
   else:
     raise Exception("Test name {} is unknown.".format(website_test_name))
 
-  environment.AllTests(run_prompt_tests)
-
+  environment.RunTestsOnSites(test_type)
   environment.Quit()
   return environment.tests_results
 
-# Tests setup.
-if __name__ == "__main__":
+def main():
   parser = argparse.ArgumentParser(
       description="Password Manager automated tests help.")
 
@@ -568,22 +561,19 @@ if __name__ == "__main__":
   if args.save_path:
     save_path = args.save_path
 
-  # Run the test without enable-automatic-password-saving to check whether or
-  # not the prompt is shown in the way we expected.
-  tests_results = RunTest(args.chrome_path,
-                          args.chromedriver_path,
-                          args.profile_path,
-                          args.passwords_path,
-                          False,
-                          args.test)
+  tests_results = RunTest(
+      args.chrome_path, args.chromedriver_path, args.profile_path,
+      args.passwords_path, args.test, WebsiteTest.TEST_TYPE_PROMPT_FAIL)
 
-  # Run the test with enable-automatic-password-saving to check whether or not
-  # the passwords is stored in the the way we expected.
-  tests_results += RunTest(args.chrome_path,
-                           args.chromedriver_path,
-                           args.profile_path,
-                           args.passwords_path,
-                           True,
-                           args.test)
+  tests_results += RunTest(
+      args.chrome_path, args.chromedriver_path, args.profile_path,
+      args.passwords_path, args.test, WebsiteTest.TEST_TYPE_PROMPT_SUCCESS)
 
-  saveResults(tests_results, save_path)
+  tests_results += RunTest(
+      args.chrome_path, args.chromedriver_path, args.profile_path,
+      args.passwords_path, args.test, WebsiteTest.TEST_TYPE_SAVE_AND_AUTOFILL)
+
+  SaveResults(tests_results, save_path)
+
+if __name__ == "__main__":
+  main()
