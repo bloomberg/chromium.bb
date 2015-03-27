@@ -223,6 +223,7 @@ class BufferedDataSourceTest : public testing::Test {
   BufferedResourceLoader* loader() {
     return data_source_->loader_.get();
   }
+  ActiveLoader* active_loader() { return loader()->active_loader_.get(); }
   WebURLLoader* url_loader() {
     return loader()->active_loader_->loader_.get();
   }
@@ -805,6 +806,47 @@ TEST_F(BufferedDataSourceTest,
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   Stop();
+}
+
+TEST_F(BufferedDataSourceTest, ExternalResource_Response206_VerifyDefer) {
+  set_preload(BufferedDataSource::METADATA);
+  InitializeWith206Response();
+
+  EXPECT_EQ(BufferedDataSource::METADATA, preload());
+  EXPECT_FALSE(is_local_source());
+  EXPECT_TRUE(loader()->range_supported());
+  EXPECT_EQ(BufferedResourceLoader::kReadThenDefer, defer_strategy());
+
+  // Read a bit from the beginning.
+  ReadAt(0);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
+  ReceiveData(kDataSize);
+
+  ASSERT_TRUE(active_loader());
+  EXPECT_TRUE(active_loader()->deferred());
+}
+
+TEST_F(BufferedDataSourceTest, ExternalResource_Response206_CancelAfterDefer) {
+  set_preload(BufferedDataSource::METADATA);
+  InitializeWith206Response();
+
+  EXPECT_EQ(BufferedDataSource::METADATA, preload());
+  EXPECT_FALSE(is_local_source());
+  EXPECT_TRUE(loader()->range_supported());
+  EXPECT_EQ(BufferedResourceLoader::kReadThenDefer, defer_strategy());
+
+  data_source_->OnBufferingHaveEnough();
+
+  ASSERT_TRUE(active_loader());
+
+  // Read a bit from the beginning.
+  ReadAt(0);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
+  ReceiveData(kDataSize);
+
+  EXPECT_FALSE(active_loader());
 }
 
 }  // namespace media

@@ -789,8 +789,7 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 
   pipeline_metadata_ = metadata;
 
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation",
-                            metadata.video_rotation,
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation", metadata.video_rotation,
                             VIDEO_ROTATION_MAX + 1);
   SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
@@ -823,6 +822,11 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
   // them and translate them ready state changes http://crbug.com/144683
   DCHECK_EQ(buffering_state, BUFFERING_HAVE_ENOUGH);
   SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+
+  // Let the DataSource know we have enough data. It may use this information to
+  // release unused network connections.
+  if (data_source_)
+    data_source_->OnBufferingHaveEnough();
 
   // Blink expects a timeChanged() in response to a seek().
   if (should_notify_time_changed_)

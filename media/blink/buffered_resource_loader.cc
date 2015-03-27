@@ -124,7 +124,8 @@ BufferedResourceLoader::BufferedResourceLoader(
       last_offset_(0),
       bitrate_(bitrate),
       playback_rate_(playback_rate),
-      media_log_(media_log) {
+      media_log_(media_log),
+      cancel_upon_deferral_(false) {
 
   // Set the initial capacity of |buffer_| based on |bitrate_| and
   // |playback_rate_|.
@@ -578,6 +579,10 @@ void BufferedResourceLoader::SetPlaybackRate(float playback_rate) {
   if (playback_rate_ == 0.0)
     return;
 
+  // Abort any cancellations in progress if playback starts.
+  if (playback_rate_ > 0 && cancel_upon_deferral_)
+    cancel_upon_deferral_ = false;
+
   UpdateBufferWindow();
 }
 
@@ -616,6 +621,9 @@ void BufferedResourceLoader::SetDeferred(bool deferred) {
 
   active_loader_->SetDeferred(deferred);
   loading_cb_.Run(deferred ? kLoadingDeferred : kLoading);
+
+  if (deferred && cancel_upon_deferral_)
+    CancelUponDeferral();
 }
 
 bool BufferedResourceLoader::ShouldDefer() const {
@@ -730,6 +738,12 @@ bool BufferedResourceLoader::ParseContentRange(
   }
 
   return true;
+}
+
+void BufferedResourceLoader::CancelUponDeferral() {
+  cancel_upon_deferral_ = true;
+  if (active_loader_ && active_loader_->deferred())
+    active_loader_.reset();
 }
 
 bool BufferedResourceLoader::VerifyPartialResponse(

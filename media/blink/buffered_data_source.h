@@ -103,9 +103,15 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
   void MediaPlaybackRateChanged(float playback_rate);
   void MediaIsPlaying();
   void MediaIsPaused();
+  bool media_has_played() const { return media_has_played_; }
 
   // Returns true if the resource is local.
   bool assume_fully_buffered() { return !url_.SchemeIsHTTPOrHTTPS(); }
+
+  // Cancels any open network connections once reaching the deferred state for
+  // preload=metadata, non-streaming resources that have not started playback.
+  // If already deferred, connections will be immediately closed.
+  void OnBufferingHaveEnough();
 
   // DataSource implementation.
   // Called from demuxer thread.

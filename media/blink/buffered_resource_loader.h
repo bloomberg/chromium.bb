@@ -198,6 +198,13 @@ class MEDIA_EXPORT BufferedResourceLoader
       const std::string& content_range_str, int64* first_byte_position,
       int64* last_byte_position, int64* instance_size);
 
+  // Cancels and closes any outstanding deferred ActiveLoader instances. Does
+  // not report a failed state, so subsequent read calls to cache may still
+  // complete okay. If the ActiveLoader is not deferred it will be canceled once
+  // it is unless playback starts before then (as determined by the reported
+  // playback rate).
+  void CancelUponDeferral();
+
  private:
   friend class BufferedDataSourceTest;
   friend class BufferedResourceLoaderTest;
@@ -310,6 +317,8 @@ class MEDIA_EXPORT BufferedResourceLoader
   float playback_rate_;
 
   scoped_refptr<MediaLog> media_log_;
+
+  bool cancel_upon_deferral_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceLoader);
 };

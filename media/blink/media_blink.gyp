@@ -95,6 +95,7 @@
         '../../base/base.gyp:test_support_base',
         '../../cc/cc.gyp:cc',
         '../../cc/blink/cc_blink.gyp:cc_blink',
+        '../../gin/gin.gyp:gin',
         '../../net/net.gyp:net',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',

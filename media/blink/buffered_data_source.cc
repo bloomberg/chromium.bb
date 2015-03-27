@@ -231,6 +231,12 @@ void BufferedDataSource::SetBitrate(int bitrate) {
                                     bitrate));
 }
 
+void BufferedDataSource::OnBufferingHaveEnough() {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+  if (loader_ && preload_ == METADATA && !media_has_played_ && !IsStreaming())
+    loader_->CancelUponDeferral();
+}
+
 void BufferedDataSource::Read(
     int64 position, int size, uint8* data,
     const DataSource::ReadCB& read_cb) {

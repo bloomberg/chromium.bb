@@ -92,6 +92,7 @@ if (!is_mac) {
       "//base/test:test_support",
       "//cc",
       "//cc/blink",
+      "//gin",
       "//media",
       "//media:shared_memory_support",
       "//media/base:test_support",

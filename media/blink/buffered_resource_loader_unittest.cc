@@ -282,6 +282,8 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_LE(loader_->buffer_.backward_capacity(), kMaxBufferCapacity);
   }
 
+  bool HasActiveLoader() { return loader_->active_loader_; }
+
   MOCK_METHOD1(StartCallback, void(BufferedResourceLoader::Status));
   MOCK_METHOD2(ReadCallback, void(BufferedResourceLoader::Status, int));
   MOCK_METHOD1(LoadingCallback, void(BufferedResourceLoader::LoadingState));
@@ -1126,6 +1128,32 @@ TEST(BufferedResourceLoaderStandaloneTest, ParseContentRange) {
   ExpectContentRangeSuccess("bytes 10-11/50", 10, 11, 50);
   ExpectContentRangeSuccess("bytes 10-11/*", 10, 11,
                             kPositionNotSpecified);
+}
+
+// Tests the data buffering logic of ReadThenDefer strategy.
+TEST_F(BufferedResourceLoaderTest, CancelAfterDeferral) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kReadThenDefer);
+  loader_->CancelUponDeferral();
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[10];
+
+  // Make an outstanding read request.
+  ReadLoader(10, 10, buffer);
+
+  // Receive almost enough data to cover, shouldn't defer.
+  WriteLoader(10, 9);
+  EXPECT_TRUE(HasActiveLoader());
+
+  // As soon as we have received enough data to fulfill the read, defer.
+  EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoadingDeferred));
+  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 10));
+  WriteLoader(19, 1);
+  VerifyBuffer(buffer, 10, 10);
+  EXPECT_FALSE(HasActiveLoader());
 }
 
 }  // namespace media
