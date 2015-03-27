@@ -24,7 +24,7 @@ COLORAMA_ROOT = os.path.join(CHROMIUM_SRC,
                              'third_party', 'colorama', 'src')
 # aapt should ignore OWNERS files in addition the default ignore pattern.
 AAPT_IGNORE_PATTERN = ('!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:' +
-                       '!CVS:!thumbs.db:!picasa.ini:!*~')
+                       '!CVS:!thumbs.db:!picasa.ini:!*~:!*.d.stamp')
 
 
 @contextlib.contextmanager

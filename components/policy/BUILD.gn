@@ -109,7 +109,6 @@ if (enable_configuration_policy) {
     import("resources/policy_templates.gni")
     source = "resources/policy_templates.grd"
     use_qualified_include = true
-    depend_on_stamp = true
     output_dir = "$root_gen_dir/chrome"
     outputs = policy_templates_doc_outputs
     if (is_android) {
