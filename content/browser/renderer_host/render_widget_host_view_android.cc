@@ -77,6 +77,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -818,7 +819,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
     return false;
 
   blink::WebTouchEvent web_event =
-      CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
+      ui::CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
   host_->ForwardTouchEventWithLatencyInfo(web_event,
                                           CreateLatencyInfo(web_event));
 
@@ -1878,7 +1879,7 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks(
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
   blink::WebGestureEvent web_gesture =
-      CreateWebGestureEventFromGestureEventData(gesture);
+      ui::CreateWebGestureEventFromGestureEventData(gesture);
   // TODO(jdduke): Remove this workaround after Android fixes UiAutomator to
   // stop providing shift meta values to synthetic MotionEvents. This prevents
   // unintended shift+click interpretation of all accessibility clicks.

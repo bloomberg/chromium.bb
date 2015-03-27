@@ -66,6 +66,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
@@ -2103,7 +2104,7 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
     return;
   }
 
-  blink::WebTouchEvent touch_event = CreateWebTouchEventFromMotionEvent(
+  blink::WebTouchEvent touch_event = ui::CreateWebTouchEventFromMotionEvent(
       pointer_state_, event->may_cause_scrolling());
   pointer_state_.CleanupRemovedTouchPoints(*event);
 

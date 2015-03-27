@@ -184,6 +184,22 @@
       ],
     },
     {
+      # GN version: //ui/events/blink
+      'target_name': 'blink',
+      'type': 'static_library',
+      'dependencies': [
+        '../../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+        '../gfx/gfx.gyp:gfx_geometry',
+        'events',
+        'gesture_detection',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'blink/blink_event_util.cc',
+        'blink/blink_event_util.h',
+      ],
+    },
+    {
       # GN version: //ui/events:gesture_detection
       'target_name': 'gesture_detection',
       'type': '<(component)',

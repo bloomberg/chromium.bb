@@ -998,6 +998,7 @@
         '../third_party/re2/re2.gyp:re2',
         '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/events/events.gyp:blink',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',

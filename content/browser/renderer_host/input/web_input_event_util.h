@@ -24,22 +24,6 @@ CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
     blink::WebKeyboardEvent* event,
     ui::KeyboardCode windows_key_code);
 
-CONTENT_EXPORT blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
-    const ui::MotionEvent& event, bool may_cause_scrolling);
-
-CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEvent(
-    const ui::GestureEventDetails& details,
-    base::TimeDelta timestamp,
-    const gfx::PointF& location,
-    const gfx::PointF& raw_location,
-    int flags);
-
-// Convenience wrapper for |CreateWebGestureEvent| using the supplied |data|.
-CONTENT_EXPORT blink::WebGestureEvent
-CreateWebGestureEventFromGestureEventData(const ui::GestureEventData& data);
-
-int EventFlagsToWebEventModifiers(int flags);
-
 int WebEventModifiersToEventFlags(int modifiers);
 
 }  // namespace content

@@ -116,6 +116,7 @@ source_set("browser") {
       "//third_party/mojo/src/mojo/public/cpp/bindings",
       "//third_party/mojo/src/mojo/public/interfaces/application",
       "//third_party/mojo/src/mojo/public/js",
+      "//ui/events/blink",
       "//ui/resources",
       "//ui/surface",
       "//ui/touch_selection",

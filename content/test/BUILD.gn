@@ -470,7 +470,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       "//third_party/re2",
       "//ui/accessibility",
       "//ui/base",
-      "//ui/base",
+      "//ui/events/blink",
       "//ui/gfx",
       "//ui/gfx/geometry",
       "//ui/gfx/ipc",

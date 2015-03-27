@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
@@ -50,7 +51,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   blink::WebKeyboardEvent webkit_event;
 
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
+  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
 
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
@@ -85,7 +86,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
 
   webkit_event.type = blink::WebInputEvent::MouseWheel;
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
+  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
   webkit_event.hasPreciseScrollingDeltas = true;
 
@@ -133,7 +134,7 @@ blink::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   }
 
   webkit_event.sourceDevice = blink::WebGestureDeviceTouchpad;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
+  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
   return webkit_event;
 }
@@ -318,7 +319,7 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
     const ui::MouseEvent& event) {
   blink::WebMouseEvent webkit_event;
 
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
+  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
 
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
@@ -367,7 +368,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
 
   webkit_event.type = blink::WebInputEvent::MouseWheel;
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
+  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
 
   if ((event.flags() & ui::EF_SHIFT_DOWN) != 0 && event.x_offset() == 0) {

@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
@@ -56,7 +57,8 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   expected_pointer.force = pointer.pressure;
   expected_event.touches[0] = expected_pointer;
 
-  WebTouchEvent actual_event = CreateWebTouchEventFromMotionEvent(event, false);
+  WebTouchEvent actual_event =
+      ui::CreateWebTouchEventFromMotionEvent(event, false);
   EXPECT_EQ(WebInputEventTraits::ToString(expected_event),
             WebInputEventTraits::ToString(actual_event));
 }
@@ -88,7 +90,7 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
                              flags);
 
   blink::WebGestureEvent web_event =
-      CreateWebGestureEventFromGestureEventData(event);
+      ui::CreateWebGestureEventFromGestureEventData(event);
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, web_event.type);
   EXPECT_EQ(0, web_event.modifiers);
   EXPECT_EQ((timestamp - base::TimeTicks()).InSecondsF(),

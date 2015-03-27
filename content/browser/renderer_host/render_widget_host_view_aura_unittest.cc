@@ -54,6 +54,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -299,7 +300,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     RenderWidgetHostViewAura::OnTouchEvent(event);
     if (pointer_state().GetPointerCount() > 0) {
       touch_event_.reset(
-          new blink::WebTouchEvent(CreateWebTouchEventFromMotionEvent(
+          new blink::WebTouchEvent(ui::CreateWebTouchEventFromMotionEvent(
               pointer_state(), event->may_cause_scrolling())));
     } else {
       // Never create a WebTouchEvent with 0 touch points.
