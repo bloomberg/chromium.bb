@@ -42,6 +42,12 @@ source_set("sqlite") {
       "HAVE_USLEEP=1",
     ]
   }
+  if (is_linux || is_android) {
+    defines += [
+      # Linux provides fdatasync(), a faster equivalent of fsync().
+      "fdatasync=fdatasync",
+    ]
+  }
 
   include_dirs = [ "amalgamation" ]
 

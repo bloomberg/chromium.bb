@@ -62,6 +62,12 @@
             'HAVE_USLEEP=1',
           ],
         }],
+        ['OS == "linux" or OS == "android"', {
+          'defines': [
+            # Linux provides fdatasync(), a faster equivalent of fsync().
+            'fdatasync=fdatasync',
+          ],
+        }],
         ['use_system_sqlite', {
           'type': 'none',
           'direct_dependent_settings': {
