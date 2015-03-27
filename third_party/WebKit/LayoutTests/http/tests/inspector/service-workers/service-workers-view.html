@@ -12,22 +12,15 @@ function test()
     var scope2 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope2/";
     var expectedTitle1 = "Scope: /inspector/service-workers/resources/scope1/";
     var expectedTitle2 = "Scope: /inspector/service-workers/resources/scope2/";
-    var registrationIDs = {};
+    var step = 0;
 
     InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
-    function registrationUpdated(event)
-    {
-        var registration = event.data;
-        registrationIDs[registration.scopeURL] = registration.registrationId;
-    }
-
-    InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_versionUpdated", versionUpdated, true);
     function dumpServiceWorkersView()
     {
         var swView = WebInspector.panels.resources.visibleView;
         InspectorTest.addResult("==== ServiceWorkersView ====");
-        InspectorTest.addResult(swView.root.querySelector(".service-workers-origin-title").innerText);
-        var registrationElements = swView.root.querySelectorAll(".service-workers-registration");
+        InspectorTest.addResult(swView._root.querySelector(".service-workers-origin-title").innerText);
+        var registrationElements = swView._root.querySelectorAll(".service-workers-registration");
         for (var i = 0; i < registrationElements.length; i++) {
             var registrationElement = registrationElements[i];
             var title = registrationElement.querySelector(".service-workers-registration-title").innerText;
@@ -41,23 +34,29 @@ function test()
         InspectorTest.addResult("============================");
     }
 
-    function versionUpdated(event)
+    function registrationUpdated(event)
     {
-        var version = event.data;
-        if (version.registrationId == registrationIDs[scope1] && version.status == "activated" && version.runningStatus == "running") {
-            dumpServiceWorkersView();
-            InspectorTest.addResult("Register ServiceWorker for scope2");
-            InspectorTest.registerServiceWorker(scriptURL, scope2);
-        } else if (version.registrationId == registrationIDs[scope2] && version.status == "activated" && version.runningStatus == "running") {
-            dumpServiceWorkersView();
-            InspectorTest.addResult("Unegister ServiceWorker for scope1");
-            InspectorTest.unregisterServiceWorker(scope1);
-        } else if (version.registrationId == registrationIDs[scope1] && version.status == "redundant") {
-            dumpServiceWorkersView();
-            InspectorTest.addResult("Unegister ServiceWorker for scope1");
-            InspectorTest.unregisterServiceWorker(scope2);
-        } else if (version.registrationId == registrationIDs[scope2] && version.status == "redundant") {
-            InspectorTest.completeTest();
+        var registration = event.data;
+        for (var version of registration.versions.values()) {
+            if (step == 0 && registration.scopeURL == scope1 && version.isActivated() && version.isRunning()) {
+                ++step;
+                dumpServiceWorkersView();
+                InspectorTest.addResult("Register ServiceWorker for scope2");
+                InspectorTest.registerServiceWorker(scriptURL, scope2);
+            } else if (step == 1 && registration.scopeURL == scope2 && version.isActivated() && version.isRunning()) {
+                ++step;
+                dumpServiceWorkersView();
+                InspectorTest.addResult("Unegister ServiceWorker for scope1");
+                InspectorTest.unregisterServiceWorker(scope1);
+            } else if (step == 2 && registration.scopeURL == scope1 && version.isRedundant() && version.isRunning()) {
+                ++step;
+                dumpServiceWorkersView();
+                InspectorTest.addResult("Unegister ServiceWorker for scope1");
+                InspectorTest.unregisterServiceWorker(scope2);
+            } else if (step == 3 && registration.scopeURL == scope2 && version.isRedundant()) {
+                ++step;
+                InspectorTest.completeTest();
+            }
         }
     }
 
