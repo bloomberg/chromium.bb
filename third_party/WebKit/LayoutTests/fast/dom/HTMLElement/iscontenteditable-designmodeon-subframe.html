@@ -8,15 +8,16 @@
 <div id="console"></div>
 <div id="result"></div>
 <script>
-description('document.designMode inherits from parent documents.')
+description('document.designMode should not inherit from parent documents.')
 
 function runTest()
 {
     evalAndLog('document.designMode = "on"');
 
     subDocument = document.getElementById("subframe").contentDocument;
+    shouldBe('subDocument.designMode', '"off"');
     shouldBe('subDocument.getElementById("div").contentEditable', '"inherit"');
-    shouldBe('subDocument.getElementById("div").isContentEditable', 'true');
+    shouldBe('subDocument.getElementById("div").isContentEditable', 'false');
 
     document.getElementById("subframe").style.display= 'none';
 }

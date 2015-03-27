@@ -115,7 +115,7 @@ interface Document : Node {
     readonly attribute Element? activeElement;
     boolean hasFocus();
     // FIXME: designMode should not have [TreatNullAs=NullString].
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString designMode;
+    [TreatNullAs=NullString, CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
     [CustomElementCallbacks] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
     boolean queryCommandEnabled(DOMString commandId);
     boolean queryCommandIndeterm(DOMString commandId);

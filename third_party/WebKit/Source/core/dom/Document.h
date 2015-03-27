@@ -803,9 +803,7 @@ public:
     KURL openSearchDescriptionURL();
 
     // designMode support
-    enum InheritedBool { off = false, on = true, inherit };
-    void setDesignMode(InheritedBool value);
-    bool inDesignMode() const;
+    bool inDesignMode() const { return m_designMode; }
     String designMode() const;
     void setDesignMode(const String&);
 
@@ -1297,7 +1295,7 @@ private:
 
     DocumentEncodingData m_encodingData;
 
-    InheritedBool m_designMode;
+    bool m_designMode;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase>> m_listsInvalidatedAtDocument;
 #if ENABLE(OILPAN)

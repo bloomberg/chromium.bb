@@ -443,7 +443,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_xmlVersion("1.0")
     , m_xmlStandalone(StandaloneUnspecified)
     , m_hasXMLDeclaration(0)
-    , m_designMode(inherit)
+    , m_designMode(false)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
     , m_useSecureKeyboardEntryWhenActive(false)
@@ -4324,27 +4324,6 @@ void Document::setTransformSource(PassOwnPtr<TransformSource> source)
     m_transformSource = source;
 }
 
-void Document::setDesignMode(InheritedBool value)
-{
-    m_designMode = value;
-    for (Frame* frame = m_frame; frame; frame = frame->tree().traverseNext(m_frame)) {
-        if (!frame->isLocalFrame())
-            continue;
-        if (!toLocalFrame(frame)->document())
-            break;
-        toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::DesignMode));
-    }
-}
-
-bool Document::inDesignMode() const
-{
-    for (const Document* d = this; d; d = d->parentDocument()) {
-        if (d->m_designMode != inherit)
-            return d->m_designMode;
-    }
-    return false;
-}
-
 String Document::designMode() const
 {
     return inDesignMode() ? "on" : "off";
@@ -4352,14 +4331,15 @@ String Document::designMode() const
 
 void Document::setDesignMode(const String& value)
 {
-    InheritedBool mode;
+    bool newValue = m_designMode;
     if (equalIgnoringCase(value, "on"))
-        mode = on;
+        newValue = true;
     else if (equalIgnoringCase(value, "off"))
-        mode = off;
-    else
-        mode = inherit;
-    setDesignMode(mode);
+        newValue = false;
+    if (newValue == m_designMode)
+        return;
+    m_designMode = newValue;
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::DesignMode));
 }
 
 Document* Document::parentDocument() const

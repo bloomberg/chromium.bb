@@ -675,7 +675,7 @@ public:
         DocumentSetDomain = 739,
         UpgradeInsecureRequestsEnabled = 740,
         UpgradeInsecureRequestsUpgradedRequest = 741,
-
+        DocumentDesignMode = 742,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
