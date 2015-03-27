@@ -466,6 +466,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, StripUsernamePasswordTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteThumbnailsDatabaseTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitSource);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitBackForward);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitRedirectBackForward);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitNotLastVisit);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            AddPageVisitFiresNotificationWithCorrectDetails);

@@ -725,14 +725,13 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // NOTE: This code must stay in sync with
   // ExpireHistoryBackend::ExpireURLsForVisits().
-  // TODO(pkasting): http://b/1148304 We shouldn't be marking so many URLs as
-  // typed, which would eliminate the need for this code.
   int typed_increment = 0;
   ui::PageTransition transition_type =
       ui::PageTransitionStripQualifier(transition);
-  if ((transition_type == ui::PAGE_TRANSITION_TYPED &&
-       !ui::PageTransitionIsRedirect(transition)) ||
-      transition_type == ui::PAGE_TRANSITION_KEYWORD_GENERATED)
+  if (ui::PageTransitionIsNewNavigation(transition) &&
+      ((transition_type == ui::PAGE_TRANSITION_TYPED &&
+        !ui::PageTransitionIsRedirect(transition)) ||
+       transition_type == ui::PAGE_TRANSITION_KEYWORD_GENERATED))
     typed_increment = 1;
 
   // See if this URL is already in the DB.

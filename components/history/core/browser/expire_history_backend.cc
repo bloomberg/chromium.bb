@@ -386,16 +386,14 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
   for (size_t i = 0; i < visits.size(); i++) {
     ChangedURL& cur = changed_urls[visits[i].url_id];
     // NOTE: This code must stay in sync with HistoryBackend::AddPageVisit().
-    // TODO(pkasting): http://b/1148304 We shouldn't be marking so many URLs as
-    // typed, which would help eliminate the need for this code (we still would
-    // need to handle RELOAD transitions specially, though).
     ui::PageTransition transition =
         ui::PageTransitionStripQualifier(visits[i].transition);
     if (transition != ui::PAGE_TRANSITION_RELOAD)
       cur.visit_count++;
-    if ((transition == ui::PAGE_TRANSITION_TYPED &&
-        !ui::PageTransitionIsRedirect(visits[i].transition)) ||
-        transition == ui::PAGE_TRANSITION_KEYWORD_GENERATED)
+    if (ui::PageTransitionIsNewNavigation(visits[i].transition) &&
+        ((transition == ui::PAGE_TRANSITION_TYPED &&
+          !ui::PageTransitionIsRedirect(visits[i].transition)) ||
+         transition == ui::PAGE_TRANSITION_KEYWORD_GENERATED))
       cur.typed_count++;
   }
 

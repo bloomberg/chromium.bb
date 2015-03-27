@@ -888,6 +888,17 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   backend_->db()->GetVisibleVisitsInRange(query_options, &visits);
   EXPECT_TRUE(visits.empty());
 
+  // Going back to the same entry should not increment the typed count.
+  ui::PageTransition back_transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FORWARD_BACK);
+  HistoryAddPageArgs back_request(url, visit_time, NULL, 0, GURL(),
+                                  history::RedirectList(), back_transition,
+                                  history::SOURCE_BROWSED, false);
+  backend_->AddPage(back_request);
+  url_id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_NE(0, url_id);
+  ASSERT_EQ(1, row.typed_count());
+
   // Expire the visits.
   std::set<GURL> restrict_urls;
   backend_->expire_backend()->ExpireHistoryBetween(restrict_urls,
@@ -1200,6 +1211,81 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Check if stripped url is stored in database.
   ASSERT_EQ(1U, visits.size());
+}
+
+TEST_F(HistoryBackendTest, AddPageVisitBackForward) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://www.google.com");
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // Visit the url after typing it.
+  backend_->AddPageVisit(url, base::Time::Now(), 0,
+      ui::PAGE_TRANSITION_TYPED,
+      history::SOURCE_BROWSED);
+
+  // Ensure both the typed count and visit count are 1.
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  EXPECT_EQ(1, row.typed_count());
+  EXPECT_EQ(1, row.visit_count());
+
+  // Visit the url again via back/forward.
+  backend_->AddPageVisit(url, base::Time::Now(), 0,
+      ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FORWARD_BACK),
+      history::SOURCE_BROWSED);
+
+  // Ensure the typed count is still 1 but the visit count is 2.
+  id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  EXPECT_EQ(1, row.typed_count());
+  EXPECT_EQ(2, row.visit_count());
+}
+
+TEST_F(HistoryBackendTest, AddPageVisitRedirectBackForward) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url1("http://www.google.com");
+  GURL url2("http://www.chromium.org");
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // Visit a typed URL with a redirect.
+  backend_->AddPageVisit(url1, base::Time::Now(), 0,
+      ui::PAGE_TRANSITION_TYPED,
+      history::SOURCE_BROWSED);
+  backend_->AddPageVisit(url2, base::Time::Now(), 0,
+      ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_CLIENT_REDIRECT),
+      history::SOURCE_BROWSED);
+
+  // Ensure the redirected URL does not count as typed.
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url2, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  EXPECT_EQ(0, row.typed_count());
+  EXPECT_EQ(1, row.visit_count());
+
+  // Visit the redirected url again via back/forward.
+  backend_->AddPageVisit(url2, base::Time::Now(), 0,
+      ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED |
+          ui::PAGE_TRANSITION_FORWARD_BACK |
+          ui::PAGE_TRANSITION_CLIENT_REDIRECT),
+      history::SOURCE_BROWSED);
+
+  // Ensure the typed count is still 1 but the visit count is 2.
+  id = backend_->db()->GetRowForURL(url2, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  EXPECT_EQ(0, row.typed_count());
+  EXPECT_EQ(2, row.visit_count());
 }
 
 TEST_F(HistoryBackendTest, AddPageVisitSource) {
