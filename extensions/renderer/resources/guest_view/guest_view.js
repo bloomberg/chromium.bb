@@ -146,17 +146,9 @@ GuestViewImpl.prototype.attachImpl = function(
     this.contentWindow = contentWindow;
 
     // Check if attaching failed.
-    if (this.contentWindow === null) {
+    if (!this.contentWindow) {
       this.state = GUEST_STATE_CREATED;
-    } else {
-      // Detach automatically when the container is destroyed.
-      GuestViewInternalNatives.RegisterDestructionCallback(internalInstanceId,
-                                                           function() {
-        if (this.state == GUEST_STATE_ATTACHED) {
-          this.internalInstanceId = 0;
-          this.state = GUEST_STATE_CREATED;
-        }
-      }.bind(this));
+      this.internalInstanceId = 0;
     }
 
     this.handleCallback(callback);
@@ -170,6 +162,18 @@ GuestViewImpl.prototype.attachImpl = function(
 
   this.internalInstanceId = internalInstanceId;
   this.state = GUEST_STATE_ATTACHED;
+
+  // Detach automatically when the container is destroyed.
+  GuestViewInternalNatives.RegisterDestructionCallback(internalInstanceId,
+                                                       function() {
+    if (this.state != GUEST_STATE_ATTACHED ||
+        this.internalInstanceId != internalInstanceId) {
+      return;
+    }
+
+    this.internalInstanceId = 0;
+    this.state = GUEST_STATE_CREATED;
+  }.bind(this));
 };
 
 // Internal implementation of create().

@@ -32,6 +32,9 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
     virtual void PerformRequest() = 0;
     virtual void HandleResponse(const IPC::Message& message) = 0;
 
+    void ExecuteCallbackIfAvailable(int argc,
+                                    scoped_ptr<v8::Handle<v8::Value>[]> argv);
+
     GuestViewContainer* container() const { return container_; }
 
     bool HasCallback() const;
