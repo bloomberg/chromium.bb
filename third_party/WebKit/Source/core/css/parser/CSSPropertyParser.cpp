@@ -247,22 +247,24 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
     if (isCalculation(value))
         return validCalculationUnit(value, unitflags, releaseCalc);
 
-    bool b = false;
+    if (unitflags & FNonNeg && value->fValue < 0)
+        return false;
     switch (value->unit) {
     case CSSPrimitiveValue::CSS_NUMBER:
-        b = (unitflags & FNumber);
-        if (!b && shouldAcceptUnitLessValues(value, unitflags, cssParserMode)) {
+        if (unitflags & FNumber)
+            return true;
+        if (shouldAcceptUnitLessValues(value, unitflags, cssParserMode)) {
             value->unit = (unitflags & FLength) ? CSSPrimitiveValue::CSS_PX : CSSPrimitiveValue::CSS_DEG;
-            b = true;
+            return true;
         }
-        if (!b && (unitflags & FInteger) && value->isInt)
-            b = true;
-        if (!b && (unitflags & FPositiveInteger) && value->isInt && value->fValue > 0)
-            b = true;
-        break;
+        if ((unitflags & FInteger) && value->isInt)
+            return true;
+        if ((unitflags & FPositiveInteger) && value->isInt && value->fValue > 0)
+            return true;
+        return false;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
-        b = (unitflags & FPercent);
-        break;
+        return unitflags & FPercent;
+    // TODO(timloh): Restrict usage of __qem to UA sheets
     case CSSParserValue::Q_EMS:
     case CSSPrimitiveValue::CSS_EMS:
     case CSSPrimitiveValue::CSS_REMS:
@@ -278,32 +280,22 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
     case CSSPrimitiveValue::CSS_VH:
     case CSSPrimitiveValue::CSS_VMIN:
     case CSSPrimitiveValue::CSS_VMAX:
-        b = (unitflags & FLength);
-        break;
+        return unitflags & FLength;
     case CSSPrimitiveValue::CSS_MS:
     case CSSPrimitiveValue::CSS_S:
-        b = (unitflags & FTime);
-        break;
+        return unitflags & FTime;
     case CSSPrimitiveValue::CSS_DEG:
     case CSSPrimitiveValue::CSS_RAD:
     case CSSPrimitiveValue::CSS_GRAD:
     case CSSPrimitiveValue::CSS_TURN:
-        b = (unitflags & FAngle);
-        break;
+        return unitflags & FAngle;
     case CSSPrimitiveValue::CSS_DPPX:
     case CSSPrimitiveValue::CSS_DPI:
     case CSSPrimitiveValue::CSS_DPCM:
-        b = (unitflags & FResolution);
-        break;
-    case CSSPrimitiveValue::CSS_HZ:
-    case CSSPrimitiveValue::CSS_KHZ:
-    case CSSParserValue::Dimension:
+        return unitflags & FResolution;
     default:
-        break;
+        return false;
     }
-    if (b && unitflags & FNonNeg && value->fValue < 0)
-        b = false;
-    return b;
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveNumericValue(CSSParserValue* value)
