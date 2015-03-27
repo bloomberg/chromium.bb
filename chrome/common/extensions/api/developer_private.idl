@@ -403,10 +403,10 @@ namespace developerPrivate {
     // |includeDisabled| : include disabled items.
     // |includeTerminated| : include terminated items.
     // |callback| : Called with items info.
-    // DEPRECATED: Prefer getExtensionsInfo.
-    static void getItemsInfo(boolean includeDisabled,
-                             boolean includeTerminated,
-                             ItemsInfoCallback callback);
+    [deprecated="Use getExtensionsInfo"] static void getItemsInfo(
+        boolean includeDisabled,
+        boolean includeTerminated,
+        ItemsInfoCallback callback);
 
     // Opens a permissions dialog.
     // |extensionId| : The id of the extension to show permissions for.
@@ -475,15 +475,21 @@ namespace developerPrivate {
         DeleteExtensionErrorsProperties properties,
         optional VoidCallback callback);
 
-    // Deprecated api methods, retained for compatability.
-    [nocompile] static void allowIncognito(DOMString extensionId,
-                                           boolean allow,
-                                           optional VoidCallback callback);
-    [nocompile] static void allowFileAccess(DOMString extensionId,
-                                            boolean allow,
-                                            optional VoidCallback callback);
-    [nocompile] static void inspect(InspectOptions options,
+    [nocompile, deprecated="Use management.setEnabled"]
+        static void enable(DOMString id,
+                           boolean enabled,
+                           optional VoidCallback callback);
+    [nocompile, deprecated="Use updateExtensionConfiguration"]
+        static void allowIncognito(DOMString extensionId,
+                                   boolean allow,
+                                   optional VoidCallback callback);
+    [nocompile, deprecated="Use updateExtensionConfiguration"]
+        static void allowFileAccess(DOMString extensionId,
+                                    boolean allow,
                                     optional VoidCallback callback);
+    [nocompile, deprecated="Use openDevTools"]
+        static void inspect(InspectOptions options,
+                            optional VoidCallback callback);
   };
 
   interface Events {
