@@ -59,6 +59,7 @@ protected:
 
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
     virtual void layout() override;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override final;
 

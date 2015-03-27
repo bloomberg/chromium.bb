@@ -71,6 +71,7 @@ public:
     virtual void paint(GraphicsContext*, const IntRect&) { }
     void invalidate() { invalidateRect(boundsRect()); }
     virtual void invalidateRect(const IntRect&) = 0;
+    virtual void issuePaintInvalidations() { }
 
     virtual void setFocus(bool, WebFocusType) { }
 

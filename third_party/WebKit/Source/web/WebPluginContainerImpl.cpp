@@ -141,20 +141,32 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     if (!parent())
         return;
 
-    LayoutBox* renderer = toLayoutBox(m_element->layoutObject());
-    if (!renderer)
+    LayoutBox* layoutObject = toLayoutBox(m_element->layoutObject());
+    if (!layoutObject)
         return;
 
     IntRect dirtyRect = rect;
-    dirtyRect.move(renderer->borderLeft() + renderer->paddingLeft(),
-                   renderer->borderTop() + renderer->paddingTop());
+    dirtyRect.move(
+        layoutObject->borderLeft() + layoutObject->paddingLeft(),
+        layoutObject->borderTop() + layoutObject->paddingTop());
+
+    m_pendingInvalidationRect.unite(dirtyRect);
+}
+
+void WebPluginContainerImpl::issuePaintInvalidations()
+{
+    if (m_pendingInvalidationRect.isEmpty())
+        return;
+
+    LayoutBox* layoutObject = toLayoutBox(m_element->layoutObject());
+    if (!layoutObject)
+        return;
 
     // For querying DeprecatedPaintLayer::compositingState().
     // This code should be correct.
     DisableCompositingQueryAsserts disabler;
-    // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
-    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    renderer->invalidatePaintRectangle(LayoutRect(dirtyRect));
+    layoutObject->invalidatePaintRectangle(LayoutRect(m_pendingInvalidationRect));
+    m_pendingInvalidationRect = IntRect();
 }
 
 void WebPluginContainerImpl::setFocus(bool focused, WebFocusType focusType)
@@ -316,9 +328,9 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     m_element->setNeedsCompositingUpdate();
     // Being composited or not affects the self painting layer bit
     // on the DeprecatedPaintLayer.
-    if (LayoutPart* renderer = m_element->layoutPart()) {
-        ASSERT(renderer->hasLayer());
-        renderer->layer()->updateSelfPaintingLayer();
+    if (LayoutPart* layoutObject = m_element->layoutPart()) {
+        ASSERT(layoutObject->hasLayer());
+        layoutObject->layer()->updateSelfPaintingLayer();
     }
 }
 
@@ -403,7 +415,7 @@ void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 
 void WebPluginContainerImpl::reportGeometry()
 {
-    // We cannot compute geometry without a parent or renderer.
+    // We cannot compute geometry without a parent or layoutObject.
     if (!parent() || !m_element->layoutObject())
         return;
 
