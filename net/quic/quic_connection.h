@@ -26,7 +26,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "net/base/iovec.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/iovector.h"
 #include "net/quic/quic_ack_notifier.h"

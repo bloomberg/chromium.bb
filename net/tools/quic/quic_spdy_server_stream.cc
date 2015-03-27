@@ -4,12 +4,13 @@
 
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
+#include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_session.h"
-#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/spdy_utils.h"
-#include "url/gurl.h"
 
 using base::StringPiece;
 using base::StringToInt;

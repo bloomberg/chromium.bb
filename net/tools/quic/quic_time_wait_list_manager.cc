@@ -6,6 +6,7 @@
 
 #include <errno.h>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/ip_endpoint.h"

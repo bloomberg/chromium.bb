@@ -4,12 +4,11 @@
 
 #include "net/tools/quic/quic_dispatcher.h"
 
-#include <errno.h>
+#include <utility>
 
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "net/quic/quic_blocked_writer_interface.h"
-#include "net/quic/quic_flags.h"
+#include "base/stl_util.h"
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
@@ -362,10 +361,10 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
     return;
   }
 
-  DLOG_IF(INFO, error != QUIC_NO_ERROR) << "Closing connection ("
-                                        << connection_id
-                                        << ") due to error: "
-                                        << QuicUtils::ErrorToString(error);
+  DVLOG_IF(1, error != QUIC_NO_ERROR) << "Closing connection ("
+                                      << connection_id
+                                      << ") due to error: "
+                                      << QuicUtils::ErrorToString(error);
 
   if (closed_session_list_.empty()) {
     delete_sessions_alarm_->Cancel();

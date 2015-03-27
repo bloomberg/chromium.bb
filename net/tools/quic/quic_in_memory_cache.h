@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "net/spdy/spdy_framer.h"
 
-template <typename T> struct DefaultSingletonTraits;
+template <typename Type> struct DefaultSingletonTraits;
 
 namespace net {
 namespace tools {

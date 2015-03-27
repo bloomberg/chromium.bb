@@ -48,15 +48,14 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
                           const QuicVersionVector& supported_versions);
   ~QuicTimeWaitListManager() override;
 
-  // Adds the given connection_id to time wait state for
-  // time_wait_period_.  Henceforth, any packet bearing this
-  // connection_id should not be processed while the connection_id
-  // remains in this list. If a non-nullptr |close_packet| is
-  // provided, the TimeWaitListManager takes ownership of it and sends
-  // it again when packets are received for added connection_ids. If
-  // nullptr, a public reset packet is sent with the specified
-  // |version|. DCHECKs that connection_id is not already on the list.
-  // virtual to override in tests.
+  // Adds the given connection_id to time wait state for time_wait_period_.
+  // Henceforth, any packet bearing this connection_id should not be processed
+  // while the connection_id remains in this list. If a non-nullptr
+  // |close_packet| is provided, the TimeWaitListManager takes ownership of it
+  // and sends it again when packets are received for added connection_ids. If
+  // nullptr, a public reset packet is sent with the specified |version|.
+  // DCHECKs that connection_id is not already on the list. "virtual" to
+  // override in tests.
   virtual void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
                                          QuicVersion version,
                                          QuicEncryptedPacket* close_packet);
