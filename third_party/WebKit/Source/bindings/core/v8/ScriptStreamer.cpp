@@ -22,13 +22,29 @@
 namespace blink {
 
 namespace {
-const char* kStartedStreamingHistogramName = "WebCore.Scripts.Async.StartedStreaming";
+
+const char* startedStreamingHistogramName(PendingScript::Type scriptType)
+{
+    switch (scriptType) {
+    case PendingScript::ParsingBlocking:
+        return "WebCore.Scripts.ParsingBlocking.StartedStreaming";
+        break;
+    case PendingScript::Deferred:
+        return "WebCore.Scripts.Deferred.StartedStreaming";
+        break;
+    case PendingScript::Async:
+        return "WebCore.Scripts.Async.StartedStreaming";
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return 0;
+}
 
 // For tracking why some scripts are not streamed. Not streaming is part of
 // normal operation (e.g., script already loaded, script too small) and doesn't
 // necessarily indicate a failure.
-const char* kNotStreamingReasonHistogramName = "WebCore.Scripts.Async.NotStreamingReason";
-
 enum NotStreamingReason {
     AlreadyLoaded,
     NotHTTP,
@@ -40,7 +56,27 @@ enum NotStreamingReason {
     ScriptTooSmall,
     NotStreamingReasonEnd
 };
+
+const char* notStreamingReasonHistogramName(PendingScript::Type scriptType)
+{
+    switch (scriptType) {
+    case PendingScript::ParsingBlocking:
+        return "WebCore.Scripts.ParsingBlocking.NotStreamingReason";
+        break;
+    case PendingScript::Deferred:
+        return "WebCore.Scripts.Deferred.NotStreamingReason";
+        break;
+    case PendingScript::Async:
+        return "WebCore.Scripts.Async.NotStreamingReason";
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return 0;
 }
+
+} // namespace
 
 // For passing data between the main thread (producer) and the streamer thread
 // (consumer). The main thread prepares the data (copies it from Resource) and
@@ -239,14 +275,14 @@ private:
 
 size_t ScriptStreamer::kSmallScriptThreshold = 30 * 1024;
 
-void ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, ScriptState* scriptState)
+void ScriptStreamer::startStreaming(PendingScript& script, PendingScript::Type scriptType, Settings* settings, ScriptState* scriptState)
 {
     // We don't yet know whether the script will really be streamed. E.g.,
     // suppressing streaming for short scripts is done later. Record only the
     // sure negative cases here.
-    bool startedStreaming = startStreamingInternal(script, settings, scriptState);
+    bool startedStreaming = startStreamingInternal(script, scriptType, settings, scriptState);
     if (!startedStreaming)
-        blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
+        blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(scriptType), 0, 2);
 }
 
 bool ScriptStreamer::convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding* encoding)
@@ -340,8 +376,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // from the decoder.
         if (!convertEncoding(decoder->encoding().name(), &m_encoding)) {
             suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, EncodingNotSupported, NotStreamingReasonEnd);
-            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), EncodingNotSupported, NotStreamingReasonEnd);
+            blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
             return;
         }
         if (ScriptStreamerThread::shared()->isRunningTask()) {
@@ -350,15 +386,15 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             // because the running task can block and wait for data from the
             // network.
             suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, ThreadBusy, NotStreamingReasonEnd);
-            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), ThreadBusy, NotStreamingReasonEnd);
+            blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
             return;
         }
 
         if (!m_scriptState->contextIsValid()) {
             suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, ContextNotValid, NotStreamingReasonEnd);
-            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), ContextNotValid, NotStreamingReasonEnd);
+            blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
             return;
         }
 
@@ -375,8 +411,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             suppressStreaming();
             m_stream = 0;
             m_source.clear();
-            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, V8CannotStream, NotStreamingReasonEnd);
-            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), V8CannotStream, NotStreamingReasonEnd);
+            blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
             return;
         }
 
@@ -386,7 +422,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         ref();
         ScriptStreamingTask* task = new ScriptStreamingTask(scriptStreamingTask.release(), this);
         ScriptStreamerThread::shared()->postTask(task);
-        blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 1, 2);
+        blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 1, 2);
     }
     if (m_stream)
         m_stream->didReceiveData(this, lengthOfBOM);
@@ -401,8 +437,8 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     // be a "parsing complete" notification either, and we should not wait for
     // it.
     if (!m_haveEnoughDataForStreaming) {
-        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, ScriptTooSmall, NotStreamingReasonEnd);
-        blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
+        blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), ScriptTooSmall, NotStreamingReasonEnd);
+        blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
         suppressStreaming();
     }
     if (m_stream)
@@ -416,7 +452,7 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     notifyFinishedToClient();
 }
 
-ScriptStreamer::ScriptStreamer(ScriptResource* resource, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
+ScriptStreamer::ScriptStreamer(ScriptResource* resource, PendingScript::Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
     : m_resource(resource)
     , m_detached(false)
     , m_stream(0)
@@ -427,6 +463,7 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, ScriptState* scriptStat
     , m_streamingSuppressed(false)
     , m_compileOptions(compileOptions)
     , m_scriptState(scriptState)
+    , m_scriptType(scriptType)
     , m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE) // Unfortunately there's no dummy encoding value in the enum; let's use one we don't stream.
 {
 }
@@ -485,20 +522,20 @@ void ScriptStreamer::notifyFinishedToClient()
         m_client->notifyFinished(m_resource);
 }
 
-bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* settings, ScriptState* scriptState)
+bool ScriptStreamer::startStreamingInternal(PendingScript& script, PendingScript::Type scriptType, Settings* settings, ScriptState* scriptState)
 {
     ASSERT(isMainThread());
     ScriptResource* resource = script.resource();
     if (resource->isLoaded()) {
-        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, AlreadyLoaded, NotStreamingReasonEnd);
+        blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), AlreadyLoaded, NotStreamingReasonEnd);
         return false;
     }
     if (!resource->url().protocolIsInHTTPFamily()) {
-        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, NotHTTP, NotStreamingReasonEnd);
+        blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), NotHTTP, NotStreamingReasonEnd);
         return false;
     }
     if (resource->resourceToRevalidate()) {
-        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, Reload, NotStreamingReasonEnd);
+        blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), Reload, NotStreamingReasonEnd);
         // This happens e.g., during reloads. We're actually not going to load
         // the current Resource of the PendingScript but switch to another
         // Resource -> don't stream.
@@ -509,7 +546,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
     // downloads.
 
     if (!scriptState->contextIsValid()) {
-        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, ContextNotValid, NotStreamingReasonEnd);
+        blink::Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), ContextNotValid, NotStreamingReasonEnd);
         return false;
     }
 
@@ -523,7 +560,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
     // The Resource might go out of scope if the script is no longer
     // needed. This makes PendingScript notify the ScriptStreamer when it is
     // destroyed.
-    script.setStreamer(ScriptStreamer::create(resource, scriptState, compileOption));
+    script.setStreamer(ScriptStreamer::create(resource, scriptType, scriptState, compileOption));
 
     return true;
 }

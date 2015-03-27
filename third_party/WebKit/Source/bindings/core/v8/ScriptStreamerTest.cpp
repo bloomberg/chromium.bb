@@ -142,7 +142,7 @@ private:
 TEST_F(ScriptStreamingTest, CompilingStreamedScript)
 {
     // Test that we can successfully compile a streamed script.
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
 
@@ -173,7 +173,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
     // Test that scripts with parse errors are handled properly. In those cases,
     // the V8 side typically finished before loading finishes: make sure we
     // handle it gracefully.
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
     appendData("function foo() {");
@@ -205,7 +205,7 @@ TEST_F(ScriptStreamingTest, CancellingStreaming)
 {
     // Test that the upper layers (PendingScript and up) can be ramped down
     // while streaming is ongoing, and ScriptStreamer handles it gracefully.
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
     appendData("function foo() {");
@@ -234,7 +234,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming)
     // is suppressed (V8 doesn't parse while the script is loading), and the
     // upper layer (ScriptResourceClient) should get a notification when the
     // script is loaded.
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
     appendData("function foo() {");
@@ -263,7 +263,7 @@ TEST_F(ScriptStreamingTest, EmptyScripts)
     // Empty scripts should also be streamed properly, that is, the upper layer
     // (ScriptResourceClient) should be notified when an empty script has been
     // loaded.
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
 
@@ -284,7 +284,7 @@ TEST_F(ScriptStreamingTest, SmallScripts)
     // Small scripts shouldn't be streamed.
     ScriptStreamer::setSmallScriptThresholdForTesting(100);
 
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
 
@@ -308,7 +308,7 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
     // chunk is small.
     ScriptStreamer::setSmallScriptThresholdForTesting(100);
 
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
 
@@ -338,7 +338,7 @@ TEST_F(ScriptStreamingTest, EncodingChanges)
     // loading it.
     m_resource->setEncoding("windows-1252");
 
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
 
@@ -367,7 +367,7 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM)
     // will also affect encoding detection.
     m_resource->setEncoding("windows-1252"); // This encoding is wrong on purpose.
 
-    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
 

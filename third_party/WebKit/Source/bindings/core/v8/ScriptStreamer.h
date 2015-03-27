@@ -31,21 +31,17 @@ class SourceStream;
 class ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
-    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
+    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, PendingScript::Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
     {
-        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptState, compileOptions));
+        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptType, scriptState, compileOptions));
     }
 
     ~ScriptStreamer();
     DECLARE_TRACE();
 
     // Launches a task (on a background thread) which will stream the given
-    // PendingScript into V8 as it loads. It's also possible that V8 cannot
-    // stream the given script; in that case this function returns
-    // false. Internally, this constructs a ScriptStreamer and attaches it to
-    // the PendingScript. Use ScriptStreamer::addClient to get notified when the
-    // streaming finishes.
-    static void startStreaming(PendingScript&, Settings*, ScriptState*);
+    // PendingScript into V8 as it loads.
+    static void startStreaming(PendingScript&, PendingScript::Type, Settings*, ScriptState*);
 
     // Returns false if we cannot stream the given encoding.
     static bool convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding*);
@@ -113,14 +109,12 @@ private:
     // streamed. Non-const for testing.
     static size_t kSmallScriptThreshold;
 
-    ScriptStreamer(ScriptResource*, ScriptState*, v8::ScriptCompiler::CompileOptions);
+    ScriptStreamer(ScriptResource*, PendingScript::Type, ScriptState*, v8::ScriptCompiler::CompileOptions);
 
     void streamingComplete();
     void notifyFinishedToClient();
 
-    static const char* startedStreamingHistogramName(PendingScript::Type);
-
-    static bool startStreamingInternal(PendingScript&, Settings*, ScriptState*);
+    static bool startStreamingInternal(PendingScript&, PendingScript::Type, Settings*, ScriptState*);
 
     // This pointer is weak. If PendingScript and its Resource are deleted
     // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
