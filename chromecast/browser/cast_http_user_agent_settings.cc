@@ -20,11 +20,11 @@ namespace chromecast {
 namespace shell {
 
 CastHttpUserAgentSettings::CastHttpUserAgentSettings() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 CastHttpUserAgentSettings::~CastHttpUserAgentSettings() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 std::string CastHttpUserAgentSettings::GetAcceptLanguage() const {

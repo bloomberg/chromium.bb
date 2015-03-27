@@ -110,7 +110,7 @@ std::string GetFrontendUrl() {
 }  // namespace
 
 RemoteDebuggingServer::RemoteDebuggingServer() : port_(0) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_port_.Init(prefs::kRemoteDebuggingPort,
                   CastBrowserProcess::GetInstance()->pref_service(),
                   base::Bind(&RemoteDebuggingServer::OnPortChanged,

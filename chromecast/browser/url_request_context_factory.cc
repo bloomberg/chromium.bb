@@ -143,7 +143,7 @@ URLRequestContextFactory::~URLRequestContextFactory() {
 }
 
 void URLRequestContextFactory::InitializeOnUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Cast http user agent settings must be initialized in UI thread
   // because it registers itself to pref notification observer which is not
   // thread safe.
@@ -297,7 +297,7 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   InitializeSystemContextDependencies();
   net::HttpNetworkSession::Params system_params;
   PopulateNetworkSessionParams(false, &system_params);
@@ -329,7 +329,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateMediaRequestContext() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(main_getter_.get())
       << "Getting MediaRequestContext before MainRequestContext";
   net::URLRequestContext* main_context = main_getter_->GetURLRequestContext();
@@ -351,7 +351,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
     content::BrowserContext* browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   InitializeSystemContextDependencies();
 
   bool ignore_certificate_errors = false;
