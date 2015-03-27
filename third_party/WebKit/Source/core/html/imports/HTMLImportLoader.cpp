@@ -54,26 +54,19 @@ HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
 HTMLImportLoader::~HTMLImportLoader()
 {
 #if !ENABLE(OILPAN)
-    clear();
+    dispose();
 #endif
 }
 
-#if !ENABLE(OILPAN)
-void HTMLImportLoader::importDestroyed()
-{
-    clear();
-}
-
-void HTMLImportLoader::clear()
+void HTMLImportLoader::dispose()
 {
     m_controller = nullptr;
     if (m_document) {
-        m_document->setImportsController(0);
+        m_document->setImportsController(nullptr);
         m_document->cancelParsing();
         m_document.clear();
     }
 }
-#endif
 
 void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
 {
@@ -207,13 +200,11 @@ void HTMLImportLoader::addImport(HTMLImportChild* import)
         import->didFinishLoading();
 }
 
-#if !ENABLE(OILPAN)
 void HTMLImportLoader::removeImport(HTMLImportChild* client)
 {
     ASSERT(kNotFound != m_imports.find(client));
     m_imports.remove(m_imports.find(client));
 }
-#endif
 
 bool HTMLImportLoader::shouldBlockScriptExecution() const
 {

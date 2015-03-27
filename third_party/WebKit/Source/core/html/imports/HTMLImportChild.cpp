@@ -56,7 +56,7 @@ HTMLImportChild::HTMLImportChild(const KURL& url, HTMLImportLoader* loader, Sync
 HTMLImportChild::~HTMLImportChild()
 {
 #if !ENABLE(OILPAN)
-    // importDestroyed() should be called before the destruction.
+    // dispose() should be called before the destruction.
     ASSERT(!m_loader);
 
     if (m_client)
@@ -100,8 +100,7 @@ void HTMLImportChild::didFinishUpgradingCustomElements()
     m_customElementMicrotaskStep.clear();
 }
 
-#if !ENABLE(OILPAN)
-void HTMLImportChild::importDestroyed()
+void HTMLImportChild::dispose()
 {
     if (parent())
         parent()->removeChild(this);
@@ -110,7 +109,6 @@ void HTMLImportChild::importDestroyed()
     m_loader->removeImport(this);
     m_loader = nullptr;
 }
-#endif
 
 Document* HTMLImportChild::document() const
 {
@@ -161,7 +159,7 @@ bool HTMLImportChild::isDone() const
 
 HTMLImportLoader* HTMLImportChild::loader() const
 {
-    // This should never be called after importDestroyed.
+    // This should never be called after dispose().
     ASSERT(m_loader);
     return m_loader;
 }

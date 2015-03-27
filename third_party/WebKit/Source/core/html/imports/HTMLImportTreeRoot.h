@@ -19,6 +19,7 @@ public:
     static PassOwnPtrWillBeRawPtr<HTMLImportTreeRoot> create(Document*);
 
     virtual ~HTMLImportTreeRoot();
+    void dispose();
 
     // HTMLImport
     virtual Document* document() const override;

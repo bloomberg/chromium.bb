@@ -71,12 +71,12 @@ public:
     }
 
     virtual ~HTMLImportLoader();
+    void dispose();
 
     Document* document() const { return m_document.get(); }
     void addImport(HTMLImportChild*);
-#if !ENABLE(OILPAN)
     void removeImport(HTMLImportChild*);
-#endif
+
     void moveToFirst(HTMLImportChild*);
     HTMLImportChild* firstImport() const { return m_imports[0]; }
     bool isFirstImport(const HTMLImportChild* child) const { return m_imports.size() ? firstImport() == child : false; }
@@ -85,9 +85,6 @@ public:
     bool hasError() const { return m_state == StateError; }
     bool shouldBlockScriptExecution() const;
 
-#if !ENABLE(OILPAN)
-    void importDestroyed();
-#endif
     void startLoading(const ResourcePtr<RawResource>&);
 
     // Tells the loader that all of the import's stylesheets finished

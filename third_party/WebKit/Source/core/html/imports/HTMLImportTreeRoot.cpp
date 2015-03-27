@@ -28,11 +28,17 @@ HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
 HTMLImportTreeRoot::~HTMLImportTreeRoot()
 {
 #if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void HTMLImportTreeRoot::dispose()
+{
     for (size_t i = 0; i < m_imports.size(); ++i)
-        m_imports[i]->importDestroyed();
+        m_imports[i]->dispose();
     m_imports.clear();
     m_document = nullptr;
-#endif
+    m_recalcTimer.stop();
 }
 
 Document* HTMLImportTreeRoot::document() const

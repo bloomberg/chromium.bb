@@ -32,22 +32,19 @@
 #define HTMLImportsController_h
 
 #include "core/dom/DocumentSupplementable.h"
-#include "core/fetch/RawResource.h"
-#include "core/html/LinkResource.h"
-#include "core/html/imports/HTMLImport.h"
-#include "platform/Supplementable.h"
-#include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class FetchRequest;
+class HTMLImport;
 class HTMLImportChild;
 class HTMLImportChildClient;
 class HTMLImportLoader;
 class HTMLImportTreeRoot;
+class KURL;
 
 class HTMLImportsController final : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportsController>, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
@@ -79,8 +76,10 @@ public:
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
 
+    void dispose();
+
     OwnPtrWillBeMember<HTMLImportTreeRoot> m_root;
-    typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader>> LoaderList;
+    using LoaderList = WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader>>;
     LoaderList m_loaders;
 };
 

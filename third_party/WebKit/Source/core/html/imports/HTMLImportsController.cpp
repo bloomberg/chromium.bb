@@ -57,6 +57,9 @@ void HTMLImportsController::provideTo(Document& master)
 
 void HTMLImportsController::removeFrom(Document& master)
 {
+    HTMLImportsController* controller = master.importsController();
+    ASSERT(controller);
+    controller->dispose();
     static_cast<DocumentSupplementable&>(master).removeSupplement(supplementName());
     master.setImportsController(nullptr);
 }
@@ -70,12 +73,21 @@ HTMLImportsController::HTMLImportsController(Document& master)
 HTMLImportsController::~HTMLImportsController()
 {
 #if !ENABLE(OILPAN)
-    m_root.clear();
+    // Verify that dispose() has been called.
+    ASSERT(!m_root);
+#endif
+}
+
+void HTMLImportsController::dispose()
+{
+    if (m_root) {
+        m_root->dispose();
+        m_root.clear();
+    }
 
     for (size_t i = 0; i < m_loaders.size(); ++i)
-        m_loaders[i]->importDestroyed();
+        m_loaders[i]->dispose();
     m_loaders.clear();
-#endif
 }
 
 static bool makesCycle(HTMLImport* parent, const KURL& url)
