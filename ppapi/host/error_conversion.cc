@@ -53,6 +53,7 @@ int32_t NetErrorToPepperError(int net_error) {
     case net::ERR_CONNECTION_FAILED:
       return PP_ERROR_CONNECTION_FAILED;
     case net::ERR_NAME_NOT_RESOLVED:
+    case net::ERR_ICANN_NAME_COLLISION:
       return PP_ERROR_NAME_NOT_RESOLVED;
     case net::ERR_ADDRESS_INVALID:
       return PP_ERROR_ADDRESS_INVALID;

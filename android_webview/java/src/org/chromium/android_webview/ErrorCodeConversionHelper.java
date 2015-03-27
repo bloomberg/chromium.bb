@@ -97,6 +97,7 @@ public abstract class ErrorCodeConversionHelper {
             case NetError.ERR_ADDRESS_UNREACHABLE:
             case NetError.ERR_NAME_NOT_RESOLVED:
             case NetError.ERR_NAME_RESOLUTION_FAILED:
+            case NetError.ERR_ICANN_NAME_COLLISION:
                 return ERROR_HOST_LOOKUP;
 
             case NetError.ERR_SSL_PROTOCOL_ERROR:
