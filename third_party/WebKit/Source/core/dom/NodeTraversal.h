@@ -84,7 +84,14 @@ public:
     static Node* childAt(const Node& parent, unsigned index) { return childAtTemplate(parent, index); }
     static Node* childAt(const ContainerNode& parent, unsigned index) { return childAtTemplate(parent, index); }
 
+    // These functions are provided for matching with |ComposedTreeTraversal|.
+    static bool hasChildren(const Node& parent) { return firstChild(parent); }
+    static Node* firstChild(const Node& parent) { return parent.firstChild(); }
+    static Node* lastChild(const Node& parent) { return parent.lastChild(); }
     static Node* nextSibling(const Node& node) { return node.nextSibling(); }
+    static Node* previousSibling(const Node& node) { return node.previousSibling(); }
+
+    static ContainerNode* parent(const Node& node) { return node.parentNode(); }
 
     static TraversalRange<TraversalChildrenIterator<NodeTraversal>> childrenOf(const Node&);
     static TraversalRange<TraversalDescendantIterator<NodeTraversal>> descendantsOf(const Node&);
