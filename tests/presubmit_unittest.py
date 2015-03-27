@@ -2205,9 +2205,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
     self.ContentTest(
         check,
-        ' http:// 0 23 5',
-        None,
         ' http:// 0 23 56',
+        None,
+        ' foob:// 0 23 56',
         None,
         presubmit.OutputApi.PresubmitPromptWarning)
 
@@ -2215,9 +2215,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
     self.ContentTest(
         check,
-        ' file:// 0 23 5',
-        None,
         ' file:// 0 23 56',
+        None,
+        ' foob:// 0 23 56',
         None,
         presubmit.OutputApi.PresubmitPromptWarning)
 

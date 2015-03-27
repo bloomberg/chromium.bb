@@ -368,11 +368,12 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     if line_len <= file_maxlen:
       return True
 
-    if line_len > extra_maxlen:
-      return False
-
+    # Allow long URLs of any length.
     if any((url in line) for url in ('file://', 'http://', 'https://')):
       return True
+
+    if line_len > extra_maxlen:
+      return False
 
     if 'url(' in line and file_extension == 'css':
       return True
