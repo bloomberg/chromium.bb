@@ -61,7 +61,9 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
-  void TearDown() override { session_.CloseSessionOnError(ERR_ABORTED); }
+  void TearDown() override {
+    session_.CloseSessionOnError(ERR_ABORTED, QUIC_INTERNAL_ERROR);
+  }
 
   scoped_ptr<DatagramClientSocket> GetSocket() {
     socket_factory_.AddSocketDataProvider(&socket_data_);

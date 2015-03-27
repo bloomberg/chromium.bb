@@ -108,6 +108,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_connection_racing,
       bool enable_non_blocking_io,
       bool disable_disk_cache,
+      int max_number_of_lossy_connections,
+      float packet_loss_threshold,
       int socket_receive_buffer_size,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
@@ -123,6 +125,15 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
              base::StringPiece method,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
+
+  // Returns false if |packet_loss_rate| is less than |packet_loss_threshold_|
+  // otherwise it returns true and closes the session and marks QUIC as recently
+  // broken for the port of the session. Increments
+  // |number_of_lossy_connections_| by port.
+  bool OnHandshakeConfirmed(QuicClientSession* session, float packet_loss_rate);
+
+  // Returns true if QUIC is disabled for this port.
+  bool IsQuicDisabled(uint16 port);
 
   // Called by a session when it becomes idle.
   void OnIdleSession(QuicClientSession* session);
@@ -326,6 +337,16 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if we do not want to load server config from the disk cache.
   bool disable_disk_cache_;
+
+  // Set if we want to disable QUIC when there is high packet loss rate.
+  // Specifies the maximum number of connections with high packet loss in a row
+  // after which QUIC will be disabled.
+  int max_number_of_lossy_connections_;
+  // Specifies packet loss rate in franction after which a connection is closed
+  // and is considered as a lossy connection.
+  float packet_loss_threshold_;
+  // Count number of lossy connections by port.
+  std::map<uint16, int> number_of_lossy_connections_;
 
   // Size of the UDP receive buffer.
   int socket_receive_buffer_size_;

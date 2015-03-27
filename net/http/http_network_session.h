@@ -119,6 +119,8 @@ class NET_EXPORT HttpNetworkSession
     bool quic_enable_connection_racing;
     bool quic_enable_non_blocking_io;
     bool quic_disable_disk_cache;
+    int quic_max_number_of_lossy_connections;
+    float quic_packet_loss_threshold;
     int quic_socket_receive_buffer_size;
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.

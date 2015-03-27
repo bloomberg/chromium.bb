@@ -524,6 +524,8 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS = 69,
   // The quic connection job to load server config is cancelled.
   QUIC_CONNECTION_CANCELLED = 70,
+  // Disabled QUIC because of high packet loss rate.
+  QUIC_BAD_PACKET_LOSS_RATE = 71,
 
   // Crypto errors.
 
@@ -581,7 +583,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 71,
+  QUIC_LAST_ERROR = 72,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

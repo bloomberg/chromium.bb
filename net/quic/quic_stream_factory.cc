@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -539,6 +540,8 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_connection_racing,
     bool enable_non_blocking_io,
     bool disable_disk_cache,
+    int max_number_of_lossy_connections,
+    float packet_loss_threshold,
     int socket_receive_buffer_size,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
@@ -562,6 +565,8 @@ QuicStreamFactory::QuicStreamFactory(
       enable_connection_racing_(enable_connection_racing),
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
+      max_number_of_lossy_connections_(max_number_of_lossy_connections),
+      packet_loss_threshold_(packet_loss_threshold),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
@@ -762,6 +767,41 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
       new QuicHttpStream(session->GetWeakPtr()));
 }
 
+bool QuicStreamFactory::IsQuicDisabled(uint16 port) {
+  return max_number_of_lossy_connections_ > 0 &&
+         number_of_lossy_connections_[port] >= max_number_of_lossy_connections_;
+}
+
+bool QuicStreamFactory::OnHandshakeConfirmed(QuicClientSession* session,
+                                             float packet_loss_rate) {
+  DCHECK(session);
+  uint16 port = session->server_id().port();
+  if (packet_loss_rate < packet_loss_threshold_) {
+    number_of_lossy_connections_[port] = 0;
+    return false;
+  }
+
+  if (http_server_properties_) {
+    // We mark it as recently broken, which means that 0-RTT will be disabled
+    // but we'll still race.
+    http_server_properties_->MarkAlternativeServiceRecentlyBroken(
+        AlternativeService(QUIC, session->server_id().host(), port));
+  }
+
+  // We abandon the connection if packet loss rate is too bad.
+  session->CloseSessionOnError(ERR_ABORTED, QUIC_BAD_PACKET_LOSS_RATE);
+
+  if (IsQuicDisabled(port))
+    return true;  // Exit if Quic is already disabled for this port.
+
+  if (++number_of_lossy_connections_[port] >=
+      max_number_of_lossy_connections_) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicStreamFactory.QuicIsDisabled", port);
+  }
+
+  return true;
+}
+
 void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {
 }
 
@@ -838,12 +878,14 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
 void QuicStreamFactory::CloseAllSessions(int error) {
   while (!active_sessions_.empty()) {
     size_t initial_size = active_sessions_.size();
-    active_sessions_.begin()->second->CloseSessionOnError(error);
+    active_sessions_.begin()->second->CloseSessionOnError(error,
+                                                          QUIC_INTERNAL_ERROR);
     DCHECK_NE(initial_size, active_sessions_.size());
   }
   while (!all_sessions_.empty()) {
     size_t initial_size = all_sessions_.size();
-    all_sessions_.begin()->first->CloseSessionOnError(error);
+    all_sessions_.begin()->first->CloseSessionOnError(error,
+                                                      QUIC_INTERNAL_ERROR);
     DCHECK_NE(initial_size, all_sessions_.size());
   }
   DCHECK(all_sessions_.empty());

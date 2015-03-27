@@ -169,7 +169,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
 
   // Close the session because of |error| and notifies the factory
   // that this session has been closed, which will delete the session.
-  void CloseSessionOnError(int error);
+  void CloseSessionOnError(int error, QuicErrorCode quic_error);
 
   base::Value* GetInfoAsValue(const std::set<HostPortPair>& aliases);
 

@@ -593,6 +593,12 @@ void QuicClientSession::OnClosedStream() {
 }
 
 void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
+  if (stream_factory_ && event == HANDSHAKE_CONFIRMED &&
+      (stream_factory_->OnHandshakeConfirmed(
+          this, logger_->ReceivedPacketLossRate()))) {
+    return;
+  }
+
   if (!callback_.is_null() &&
       (!require_confirmation_ ||
        event == HANDSHAKE_CONFIRMED || event == ENCRYPTION_REESTABLISHED)) {
@@ -768,9 +774,10 @@ void QuicClientSession::StartReading() {
   packet_reader_.StartReading();
 }
 
-void QuicClientSession::CloseSessionOnError(int error) {
+void QuicClientSession::CloseSessionOnError(int error,
+                                            QuicErrorCode quic_error) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError", -error);
-  CloseSessionOnErrorInner(error, QUIC_INTERNAL_ERROR);
+  CloseSessionOnErrorInner(error, quic_error);
   NotifyFactoryOfSessionClosed();
 }
 

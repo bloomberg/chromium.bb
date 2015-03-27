@@ -232,6 +232,9 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceRequestFor(
     if (!session_->params().enable_quic)
       return kNoAlternativeService;
 
+    if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
+      return kNoAlternativeService;
+
     // TODO(rch):  Figure out how to make QUIC iteract with PAC
     // scripts.  By not re-writing the URL, we will query the PAC script
     // for the proxy to use to reach the original URL via TCP.  But

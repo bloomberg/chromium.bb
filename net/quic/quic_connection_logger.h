@@ -77,6 +77,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                                  int num_duplicate_frames_received);
   void OnCertificateVerified(const CertVerifyResult& result);
 
+  // Returns connection's overall packet loss rate in fraction.
+  float ReceivedPacketLossRate() const;
+
  private:
   friend class test::QuicConnectionLoggerPeer;
 

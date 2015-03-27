@@ -145,7 +145,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   ~QuicHttpStreamTest() {
-    session_->CloseSessionOnError(ERR_ABORTED);
+    session_->CloseSessionOnError(ERR_ABORTED, QUIC_INTERNAL_ERROR);
     for (size_t i = 0; i < writes_.size(); i++) {
       delete writes_[i].packet;
     }

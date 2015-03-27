@@ -769,6 +769,13 @@ void QuicConnectionLogger::AddTo21CumulativeHistogram(
   }
 }
 
+float QuicConnectionLogger::ReceivedPacketLossRate() const {
+  if (largest_received_packet_sequence_number_ <= num_packets_received_)
+    return 0.0f;
+  return (largest_received_packet_sequence_number_ - num_packets_received_) /
+         largest_received_packet_sequence_number_;
+}
+
 void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   // For short connections under 22 packets in length, we'll rely on the
   // Net.QuicSession.21CumulativePacketsReceived_* histogram to indicate packet
@@ -779,17 +786,12 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   if (largest_received_packet_sequence_number_ <= 21)
     return;
 
-  QuicPacketSequenceNumber divisor = largest_received_packet_sequence_number_;
-  QuicPacketSequenceNumber numerator = divisor - num_packets_received_;
-  if (divisor < 100000)
-    numerator *= 1000;
-  else
-    divisor /= 1000;
   string prefix("Net.QuicSession.PacketLossRate_");
   base::HistogramBase* histogram = base::Histogram::FactoryGet(
       prefix + connection_description_, 1, 1000, 75,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(static_cast<base::HistogramBase::Sample>(numerator / divisor));
+  histogram->Add(static_cast<base::HistogramBase::Sample>(
+      ReceivedPacketLossRate() * 1000));
 }
 
 void QuicConnectionLogger::RecordLossHistograms() const {
