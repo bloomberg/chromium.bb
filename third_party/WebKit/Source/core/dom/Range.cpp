@@ -1775,9 +1775,18 @@ FloatRect Range::boundingRect() const
     Vector<FloatQuad> quads;
     getBorderAndTextQuads(quads);
 
+    if (quads.isEmpty())
+        return FloatRect();
+
     FloatRect result;
-    for (const FloatQuad& quad : quads)
-        result.unite(quad.boundingBox());
+    for (const FloatQuad& quad : quads) {
+        if (result.isEmpty()) {
+            result = quad.boundingBox();
+            continue;
+        }
+
+        result.uniteEvenIfEmpty(quad.boundingBox());
+    }
 
     return result;
 }
