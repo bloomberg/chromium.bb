@@ -50,6 +50,7 @@ using base::StringPiece;
 using base::WaitableEvent;
 using net::EpollServer;
 using net::test::GenerateBody;
+using net::test::MockQuicConnectionDebugVisitor;
 using net::test::QuicConnectionPeer;
 using net::test::QuicFlowControllerPeer;
 using net::test::QuicSentPacketManagerPeer;
@@ -740,7 +741,7 @@ TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
 
   // Ensure both stream and connection level are flow control blocked by setting
   // the send window offset to 0.
-  const uint64 kFlowControlWindow =
+  const uint64 flow_control_window =
       server_config_.GetInitialStreamFlowControlWindowToSend();
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
   QuicSession* session = client_->client()->session();
@@ -755,7 +756,7 @@ TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
 
   // The stream now attempts to write, fails because it is still connection
   // level flow control blocked, and is added to the write blocked list.
-  QuicWindowUpdateFrame window_update(stream->id(), 2 * kFlowControlWindow);
+  QuicWindowUpdateFrame window_update(stream->id(), 2 * flow_control_window);
   stream->OnWindowUpdateFrame(window_update);
 
   // Prior to fixing b/14677858 this call would result in an infinite loop in
@@ -1394,6 +1395,93 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
     client_->client()->WaitForEvents();
   }
   server_thread_->Resume();
+}
+
+// Send a public reset from the server for a different connection ID.
+// It should be ignored.
+TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
+  ASSERT_TRUE(Initialize());
+
+  // Send the public reset.
+  QuicConnectionId incorrect_connection_id =
+      client_->client()->session()->connection()->connection_id() + 1;
+  QuicPublicResetPacket header;
+  header.public_header.connection_id = incorrect_connection_id;
+  header.public_header.reset_flag = true;
+  header.public_header.version_flag = false;
+  header.rejected_sequence_number = 10101;
+  QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
+                    Perspective::IS_SERVER);
+  scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
+  testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
+  client_->client()->session()->connection()->set_debug_visitor(&visitor);
+  EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
+      .Times(1);
+  server_writer_->WritePacket(packet->data(), packet->length(),
+                              server_address_.address(),
+                              client_->client()->client_address());
+
+  // The connection should be unaffected.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  client_->client()->session()->connection()->set_debug_visitor(nullptr);
+}
+
+// Send a public reset from the client for a different connection ID.
+// It should be ignored.
+TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
+  ASSERT_TRUE(Initialize());
+
+  // Send the public reset.
+  QuicConnectionId incorrect_connection_id =
+      client_->client()->session()->connection()->connection_id() + 1;
+  QuicPublicResetPacket header;
+  header.public_header.connection_id = incorrect_connection_id;
+  header.public_header.reset_flag = true;
+  header.public_header.version_flag = false;
+  header.rejected_sequence_number = 10101;
+  QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
+                    Perspective::IS_CLIENT);
+  scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
+  client_writer_->WritePacket(packet->data(), packet->length(),
+                              client_->client()->client_address().address(),
+                              server_address_);
+
+  // The connection should be unaffected.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+}
+
+// Send a version negotiation packet from the server for a different
+// connection ID.  It should be ignored.
+TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
+  ASSERT_TRUE(Initialize());
+
+  // Send the version negotiation packet.
+  QuicConnectionId incorrect_connection_id =
+      client_->client()->session()->connection()->connection_id() + 1;
+  QuicVersionNegotiationPacket header;
+  header.connection_id = incorrect_connection_id;
+  header.reset_flag = true;
+  header.version_flag = true;
+  QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
+                    Perspective::IS_SERVER);
+  scoped_ptr<QuicEncryptedPacket> packet(
+      framer.BuildVersionNegotiationPacket(header, server_supported_versions_));
+  testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
+  client_->client()->session()->connection()->set_debug_visitor(&visitor);
+  EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
+      .Times(1);
+  server_writer_->WritePacket(packet->data(), packet->length(),
+                              server_address_.address(),
+                              client_->client()->client_address());
+
+  // The connection should be unaffected.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  client_->client()->session()->connection()->set_debug_visitor(nullptr);
 }
 
 }  // namespace

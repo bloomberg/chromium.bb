@@ -399,9 +399,7 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
       framer_->EncryptPacket(encryption_level_, sequence_number_, *packet);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
-    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
-                               nullptr);
-    return kNoPacket;
+    return NoPacket();
   }
 
   packet_size_ = 0;
@@ -416,9 +414,7 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   if (fec_group_.get() == nullptr || fec_group_->NumReceivedPackets() <= 0) {
     LOG(DFATAL) << "SerializeFEC called but no group or zero packets in group.";
     // TODO(jri): Make this a public method of framer?
-    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
-                               nullptr);
-    return kNoPacket;
+    return NoPacket();
   }
   DCHECK_EQ(0u, queued_frames_.size());
   QuicPacketHeader header;
@@ -438,9 +434,7 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
       framer_->EncryptPacket(encryption_level_, sequence_number_, *packet);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
-    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
-                               nullptr);
-    return kNoPacket;
+    return NoPacket();
   }
   SerializedPacket serialized(
       header.packet_sequence_number,
@@ -463,6 +457,10 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
   DCHECK(encrypted);
   DCHECK_GE(max_packet_length_, encrypted->length());
   return encrypted;
+}
+
+SerializedPacket QuicPacketCreator::NoPacket() {
+  return SerializedPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0, nullptr);
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,

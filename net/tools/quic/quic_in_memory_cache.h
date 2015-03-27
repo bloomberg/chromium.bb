@@ -96,6 +96,7 @@ class QuicInMemoryCache {
 
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;
+
   friend struct DefaultSingletonTraits<QuicInMemoryCache>;
   friend class test::QuicInMemoryCachePeer;
 

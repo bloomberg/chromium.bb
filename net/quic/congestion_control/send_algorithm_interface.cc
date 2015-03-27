@@ -6,6 +6,7 @@
 
 #include "net/quic/congestion_control/tcp_cubic_bytes_sender.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -19,28 +20,33 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
     CongestionControlType congestion_control_type,
     QuicConnectionStats* stats,
     QuicPacketCount initial_congestion_window) {
+  const QuicPacketCount max_congestion_window =
+      FLAGS_quic_limit_max_cwnd_to_receive_buffer
+          ? (kDefaultSocketReceiveBuffer * kUsableRecieveBufferFraction) /
+                kDefaultTCPMSS
+          : kMaxTcpCongestionWindow;
   switch (congestion_control_type) {
     case kCubic:
       return new TcpCubicSender(clock, rtt_stats, false /* don't use Reno */,
                                 initial_congestion_window,
-                                kMaxTcpCongestionWindow, stats);
+                                max_congestion_window, stats);
     case kCubicBytes:
       return new TcpCubicBytesSender(
           clock, rtt_stats, false /* don't use Reno */,
-          initial_congestion_window, kMaxTcpCongestionWindow, stats);
+          initial_congestion_window, max_congestion_window, stats);
     case kReno:
       return new TcpCubicSender(clock, rtt_stats, true /* use Reno */,
                                 initial_congestion_window,
-                                kMaxTcpCongestionWindow, stats);
+                                max_congestion_window, stats);
     case kRenoBytes:
       return new TcpCubicBytesSender(clock, rtt_stats, true /* use Reno */,
                                      initial_congestion_window,
-                                     kMaxTcpCongestionWindow, stats);
+                                     max_congestion_window, stats);
     case kBBR:
   // TODO(rtenneti): Enable BbrTcpSender.
 #if 0
       return new BbrTcpSender(clock, rtt_stats, initial_congestion_window,
-                              kMaxTcpCongestionWindow, stats);
+                              max_congestion_window, stats);
 #endif
       LOG(DFATAL) << "BbrTcpSender is not supported.";
       return nullptr;

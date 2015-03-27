@@ -4359,56 +4359,6 @@ TEST_P(QuicConnectionTest, NetworkChangeVisitorRttCallbackChangesFecState) {
             QuicPacketGeneratorPeer::GetFecTimeout(generator_));
 }
 
-class MockQuicConnectionDebugVisitor
-    : public QuicConnectionDebugVisitor {
- public:
-  MOCK_METHOD1(OnFrameAddedToPacket,
-               void(const QuicFrame&));
-
-  MOCK_METHOD6(OnPacketSent,
-               void(const SerializedPacket&,
-                    QuicPacketSequenceNumber,
-                    EncryptionLevel,
-                    TransmissionType,
-                    const QuicEncryptedPacket&,
-                    QuicTime));
-
-  MOCK_METHOD3(OnPacketReceived,
-               void(const IPEndPoint&,
-                    const IPEndPoint&,
-                    const QuicEncryptedPacket&));
-
-  MOCK_METHOD1(OnProtocolVersionMismatch,
-               void(QuicVersion));
-
-  MOCK_METHOD1(OnPacketHeader,
-               void(const QuicPacketHeader& header));
-
-  MOCK_METHOD1(OnStreamFrame,
-               void(const QuicStreamFrame&));
-
-  MOCK_METHOD1(OnAckFrame,
-               void(const QuicAckFrame& frame));
-
-  MOCK_METHOD1(OnStopWaitingFrame,
-               void(const QuicStopWaitingFrame&));
-
-  MOCK_METHOD1(OnRstStreamFrame,
-               void(const QuicRstStreamFrame&));
-
-  MOCK_METHOD1(OnConnectionCloseFrame,
-               void(const QuicConnectionCloseFrame&));
-
-  MOCK_METHOD1(OnPublicResetPacket,
-               void(const QuicPublicResetPacket&));
-
-  MOCK_METHOD1(OnVersionNegotiationPacket,
-               void(const QuicVersionNegotiationPacket&));
-
-  MOCK_METHOD2(OnRevivedPacket,
-               void(const QuicPacketHeader&, StringPiece payload));
-};
-
 TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
   QuicPacketHeader header;
 

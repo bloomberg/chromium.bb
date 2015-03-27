@@ -468,17 +468,17 @@ TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
   // 50% flaky.
   int odd_second = static_cast<int>(epoll_server_.ApproximateNowInUsec()) % 2;
   EXPECT_TRUE(odd_second == 0 || odd_second == 1);
-  const QuicConnectionId kConnectionId1 = odd_second;
-  const QuicConnectionId kConnectionId2 = 1 - odd_second;
+  const QuicConnectionId connection_id1 = odd_second;
+  const QuicConnectionId connection_id2 = 1 - odd_second;
 
   // 1 will hash lower than 2, but we add it later. They should come out in the
   // add order, not hash order.
   epoll_server_.set_now_in_usec(0);
-  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId1));
-  AddConnectionId(kConnectionId1);
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id1));
+  AddConnectionId(connection_id1);
   epoll_server_.set_now_in_usec(10);
-  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId2));
-  AddConnectionId(kConnectionId2);
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id2));
+  AddConnectionId(connection_id2);
   EXPECT_EQ(2u, time_wait_list_manager_.num_connections());
 
   const QuicTime::Delta time_wait_period =
@@ -487,10 +487,10 @@ TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
 
   EXPECT_CALL(epoll_server_, RegisterAlarm(_, _));
 
-  EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(kConnectionId1));
+  EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(connection_id1));
   time_wait_list_manager_.CleanUpOldConnectionIds();
-  EXPECT_FALSE(IsConnectionIdInTimeWait(kConnectionId1));
-  EXPECT_TRUE(IsConnectionIdInTimeWait(kConnectionId2));
+  EXPECT_FALSE(IsConnectionIdInTimeWait(connection_id1));
+  EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id2));
   EXPECT_EQ(1u, time_wait_list_manager_.num_connections());
 }
 

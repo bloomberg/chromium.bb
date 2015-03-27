@@ -51,10 +51,6 @@ static const size_t kNumMinRttSamplesAfterQuiescence = 2;
 // Number of unpaced packets to send after quiescence.
 static const size_t kInitialUnpacedBurst = 10;
 
-// Fraction of the receive buffer that can be used for encrypted bytes.
-// Allows a 5% overhead for IP and UDP framing, as well as ack only packets.
-static const float kUsableRecieveBufferFraction = 0.95f;
-
 bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
   if (transmission_info.retransmittable_frames == nullptr) {
     return false;

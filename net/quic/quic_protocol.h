@@ -81,6 +81,10 @@ const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
 // Smaller values are ignored.
 const QuicByteCount kMinSocketReceiveBuffer = 16 * 1024;
 
+// Fraction of the receive buffer that can be used for encrypted bytes.
+// Allows a 5% overhead for IP and UDP framing, as well as ack only packets.
+static const float kUsableRecieveBufferFraction = 0.95f;
+
 // Don't allow a client to suggest an RTT shorter than 10ms.
 const uint32 kMinInitialRoundTripTimeUs = 10 * kNumMicrosPerMilli;
 

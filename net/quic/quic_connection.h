@@ -329,6 +329,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Processes an incoming UDP packet (consisting of a QuicEncryptedPacket) from
   // the peer.  If processing this packet permits a packet to be revived from
   // its FEC group that packet will be revived and processed.
+  // In a client, the packet may be "stray" and have a different connection ID
+  // than that of this connection.
   virtual void ProcessUdpPacket(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet);

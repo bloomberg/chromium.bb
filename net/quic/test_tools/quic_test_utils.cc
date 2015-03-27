@@ -714,5 +714,11 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
                                                     peer_address);
 }
 
+MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {
+}
+
+MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {
+}
+
 }  // namespace test
 }  // namespace net

@@ -165,6 +165,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   QuicEncryptedPacket* SerializeVersionNegotiationPacket(
       const QuicVersionVector& supported_versions);
 
+  // Returns a dummy packet that is valid but contains no useful information.
+  static SerializedPacket NoPacket();
+
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level) {
     encryption_level_ = level;

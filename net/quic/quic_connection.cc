@@ -391,6 +391,10 @@ void QuicConnection::OnPacket() {
 
 void QuicConnection::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
+  // Check that any public reset packet with a different connection ID that was
+  // routed to this QuicConnection has been redirected before control reaches
+  // here.  (Check for a bug regression.)
+  DCHECK_EQ(connection_id_, packet.public_header.connection_id);
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPublicResetPacket(packet);
   }
@@ -460,6 +464,10 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 // Handles version negotiation for client connection.
 void QuicConnection::OnVersionNegotiationPacket(
     const QuicVersionNegotiationPacket& packet) {
+  // Check that any public reset packet with a different connection ID that was
+  // routed to this QuicConnection has been redirected before control reaches
+  // here.  (Check for a bug regression.)
+  DCHECK_EQ(connection_id_, packet.connection_id);
   if (perspective_ == Perspective::IS_SERVER) {
     LOG(DFATAL) << ENDPOINT << "Framer parsed VersionNegotiationPacket."
                 << " Closing connection.";
@@ -503,10 +511,28 @@ void QuicConnection::OnRevivedPacket() {
 
 bool QuicConnection::OnUnauthenticatedPublicHeader(
     const QuicPacketPublicHeader& header) {
-  return true;
+  if (header.connection_id == connection_id_) {
+    return true;
+  }
+
+  ++stats_.packets_dropped;
+  DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected ConnectionId: "
+           << header.connection_id << " instead of " << connection_id_;
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnIncorrectConnectionId(header.connection_id);
+  }
+  // If this is a server, the dispatcher routes each packet to the
+  // QuicConnection responsible for the packet's connection ID.  So if control
+  // arrives here and this is a server, the dispatcher must be malfunctioning.
+  DCHECK_NE(Perspective::IS_SERVER, perspective_);
+  return false;
 }
 
 bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
+  // Check that any public reset packet with a different connection ID that was
+  // routed to this QuicConnection has been redirected before control reaches
+  // here.
+  DCHECK_EQ(connection_id_, header.public_header.connection_id);
   return true;
 }
 
@@ -532,17 +558,6 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
 
   // Will be decrement below if we fall through to return true;
   ++stats_.packets_dropped;
-
-  if (header.public_header.connection_id != connection_id_) {
-    DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected ConnectionId: "
-             << header.public_header.connection_id << " instead of "
-             << connection_id_;
-    if (debug_visitor_ != nullptr) {
-      debug_visitor_->OnIncorrectConnectionId(
-          header.public_header.connection_id);
-    }
-    return false;
-  }
 
   if (!Near(header.packet_sequence_number,
             last_header_.packet_sequence_number)) {
