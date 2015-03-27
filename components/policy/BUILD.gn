@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -106,7 +107,6 @@ if (enable_configuration_policy) {
   }
 
   grit("policy_templates") {
-    import("resources/policy_templates.gni")
     source = "resources/policy_templates.grd"
     use_qualified_include = true
     output_dir = "$root_gen_dir/chrome"
@@ -234,6 +234,62 @@ if (enable_configuration_policy) {
       "//testing/gmock",
       "//testing/gtest",
     ]
+  }
+
+  if (is_android) {
+    import("//build/config/android/rules.gni")
+    group("app_restrictions_resources") {
+      resources_zip = "res.java/$target_name.zip"
+      generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
+
+      copy("${target_name}__consolidate_resources") {
+        sources = [
+          "$root_gen_dir/policy/app_restrictions.xml",
+        ]
+        outputs = [
+          "$generated_resources_dir/xml-v21/app_restrictions.xml",
+        ]
+        deps = [
+          ":policy_templates",
+        ]
+      }
+
+      # TODO(471115): The write_build_config template is in
+      # //build/config/android/internal_rules.gni and is not meant for external
+      # use. The public rules (in rules.gni) should be updated to support what
+      # we are doing here.
+      build_config_path = "$target_gen_dir/$target_name.build_config"
+      write_build_config("${target_name}__build_config") {
+        build_config = build_config_path
+        resources_zip = "$root_build_dir/$resources_zip"
+        type = "android_resources"
+      }
+
+      action("${target_name}__create_zip") {
+        script = "//build/android/gn/zip.py"
+        outputs = [
+          "$root_build_dir/$resources_zip",
+        ]
+        generated_resources =
+            [ "$generated_resources_dir/xml-v21/app_restrictions.xml" ] +
+            policy_templates_android_outputs
+        inputs = generated_resources
+        rebased_inputs = rebase_path(generated_resources, root_build_dir)
+        rebased_resources_dir =
+            rebase_path(generated_resources_dir, root_build_dir)
+        args = [
+          "--inputs=$rebased_inputs",
+          "--output=$resources_zip",
+          "--base-dir=$rebased_resources_dir",
+        ]
+      }
+
+      deps = [
+        ":${target_name}__consolidate_resources",
+        ":${target_name}__build_config",
+        ":${target_name}__create_zip",
+      ]
+    }
   }
 }
 #TODO(GYP) chrome_manifest_bundle

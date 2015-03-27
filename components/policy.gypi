@@ -337,6 +337,52 @@
         },
       ],
     }],
+    ['OS=="android" and configuration_policy==1', {
+      'targets': [
+        {
+          'target_name': 'app_restrictions_resources',
+          'type': 'none',
+          'variables': {
+            'resources_zip': '<(PRODUCT_DIR)/res.java/<(_target_name).zip',
+            'input_resources_dir':
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/app/policy/android',
+            'create_zip_script': '../build/android/gyp/zip.py',
+          },
+          'copies': [
+            {
+              'destination': '<(input_resources_dir)/xml-v21/',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/policy/app_restrictions.xml'
+              ],
+            },
+          ],
+          'actions': [
+            {
+              'action_name': 'create_resources_zip',
+              'inputs': [
+                '<(create_zip_script)',
+                '<(input_resources_dir)/xml-v21/app_restrictions.xml',
+                '<(input_resources_dir)/values-v21/restriction_values.xml',
+              ],
+              'outputs': [
+                '<(resources_zip)'
+              ],
+              'action': [
+                'python', '<(create_zip_script)',
+                '--input-dir', '<(input_resources_dir)',
+                '--output', '<(resources_zip)',
+              ],
+            }
+          ],
+          'all_dependent_settings': {
+            'variables': {
+              'additional_input_paths': ['<(resources_zip)'],
+              'dependencies_res_zip_paths': ['<(resources_zip)'],
+            },
+          },
+        }
+      ],
+    }],
     ['OS=="win" and target_arch=="ia32" and configuration_policy==1', {
       'targets': [
         {
