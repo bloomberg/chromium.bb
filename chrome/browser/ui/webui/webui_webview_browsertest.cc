@@ -44,3 +44,11 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCode) {
       "testExecuteScriptCode",
       new base::StringValue(GetTestUrl("empty.html").spec())));
 }
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCodeFromFile) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testExecuteScriptCodeFromFile",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}

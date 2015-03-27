@@ -8,12 +8,12 @@ function createWebview() {
   return webview;
 }
 
+function onGetBackgroundExecuted(results) {
+  chrome.send('testResult', [results.length == 1 && results[0] == 'red']);
+};
+
 function testExecuteScriptCode(url) {
   var webview = createWebview();
-
-  var onGetBackgroundExecuted = function(results) {
-    chrome.send('testResult', [results.length == 1 && results[0] == 'red']);
-  };
 
   var onSetBackgroundExecuted = function() {
     webview.executeScript({
@@ -24,6 +24,25 @@ function testExecuteScriptCode(url) {
   var onLoadStop = function() {
     webview.executeScript({
       code: 'document.body.style.backgroundColor = \'red\';'
+    }, onSetBackgroundExecuted);
+  };
+
+  webview.addEventListener('loadstop', onLoadStop);
+  webview.src = url;
+}
+
+function testExecuteScriptCodeFromFile(url) {
+  var webview = createWebview();
+
+  var onSetBackgroundExecuted = function() {
+    webview.executeScript({
+      code: 'document.body.style.backgroundColor;'
+    }, onGetBackgroundExecuted);
+  };
+
+  var onLoadStop = function() {
+    webview.executeScript({
+      file: 'test/webview_execute_script.js'
     }, onSetBackgroundExecuted);
   };
 

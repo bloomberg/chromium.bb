@@ -37,13 +37,20 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
                                      const GURL& on_url,
                                      const base::ListValue& result);
 
-  // The injection details.
-  scoped_ptr<core_api::extension_types::InjectDetails> details_;
+  virtual bool LoadFile(const std::string& file);
+
+  // Called when contents from the loaded file have been localized.
+  void DidLoadAndLocalizeFile(const std::string& file,
+                              bool success,
+                              const std::string& data);
 
   const HostID& host_id() const { return host_id_; }
   void set_host_id(HostID host_id) {
     host_id_ = host_id;
   }
+
+  // The injection details.
+  scoped_ptr<core_api::extension_types::InjectDetails> details_;
 
  private:
   // Called when contents from the file whose path is specified in JSON
@@ -57,9 +64,6 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
                                 const std::string& extension_id,
                                 const base::FilePath& extension_path,
                                 const std::string& extension_default_locale);
-
-  // Called when contents from the loaded file have been localized.
-  void DidLoadAndLocalizeFile(bool success, const std::string& data);
 
   // Run in UI thread.  Code string contains the code to be executed. Returns
   // true on success. If true is returned, this does an AddRef.

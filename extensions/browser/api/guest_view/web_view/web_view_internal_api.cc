@@ -6,12 +6,18 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
+#include "content/public/common/url_fetcher.h"
 #include "extensions/common/api/web_view_internal.h"
+#include "extensions/common/error_utils.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 using content::WebContents;
@@ -28,6 +34,7 @@ const char kIndexedDBKey[] = "indexedDB";
 const char kLocalStorageKey[] = "localStorage";
 const char kWebSQLKey[] = "webSQL";
 const char kSinceKey[] = "since";
+const char kLoadFileError[] = "Failed to load file: \"*\". ";
 
 int MaskForKey(const char* key) {
   if (strcmp(key, kAppCacheKey) == 0)
@@ -48,6 +55,51 @@ int MaskForKey(const char* key) {
 }  // namespace
 
 namespace extensions {
+
+// WebUIURLFetcher downloads the content of a file by giving its |url| on WebUI.
+// Each WebUIURLFetcher is associated with a given |render_process_id,
+// render_view_id| pair.
+class WebViewInternalExecuteCodeFunction::WebUIURLFetcher
+    : public net::URLFetcherDelegate {
+ public:
+  WebUIURLFetcher(
+      content::BrowserContext* context,
+      const WebViewInternalExecuteCodeFunction::WebUILoadFileCallback& callback)
+      : context_(context), callback_(callback) {}
+  ~WebUIURLFetcher() override {}
+
+  void Start(int render_process_id, int render_view_id, const GURL& url) {
+    fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
+    fetcher_->SetRequestContext(context_->GetRequestContext());
+    fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+
+    content::AssociateURLFetcherWithRenderFrame(
+        fetcher_.get(), url, render_process_id, render_view_id);
+    fetcher_->Start();
+  }
+
+ private:
+  // net::URLFetcherDelegate:
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    CHECK_EQ(fetcher_.get(), source);
+
+    std::string data;
+    bool result = false;
+    if (fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS) {
+      result = fetcher_->GetResponseAsString(&data);
+      DCHECK(result);
+    }
+    fetcher_.reset();
+    callback_.Run(result, data);
+    callback_.Reset();
+  }
+
+  content::BrowserContext* context_;
+  WebViewInternalExecuteCodeFunction::WebUILoadFileCallback callback_;
+  scoped_ptr<net::URLFetcher> fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebUIURLFetcher);
+};
 
 bool WebViewInternalExtensionFunction::RunAsync() {
   int instance_id = 0;
@@ -143,6 +195,41 @@ bool WebViewInternalExecuteCodeFunction::IsWebView() const {
 
 const GURL& WebViewInternalExecuteCodeFunction::GetWebViewSrc() const {
   return guest_src_;
+}
+
+bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
+    const std::string& file_src,
+    const WebUILoadFileCallback& callback) {
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), guest_instance_id_);
+  if (!guest || host_id().type() != HostID::WEBUI)
+    return false;
+
+  GURL owner_base_url(guest->GetOwnerSiteURL().GetWithEmptyPath());
+  GURL file_url(owner_base_url.Resolve(file_src));
+
+  url_fetcher_.reset(new WebUIURLFetcher(this->browser_context(), callback));
+  url_fetcher_->Start(render_view_host()->GetProcess()->GetID(),
+                      render_view_host()->GetRoutingID(), file_url);
+  return true;
+}
+
+bool WebViewInternalExecuteCodeFunction::LoadFile(const std::string& file) {
+  if (!extension()) {
+    if (LoadFileForWebUI(
+            *details_->file,
+            base::Bind(
+                &WebViewInternalExecuteCodeFunction::DidLoadAndLocalizeFile,
+                this, file)))
+      return true;
+
+    SendResponse(false);
+    error_ = ErrorUtils::FormatErrorMessage(kLoadFileError, file);
+    return false;
+  }
+  return ExecuteCodeFunction::LoadFile(file);
 }
 
 WebViewInternalExecuteScriptFunction::WebViewInternalExecuteScriptFunction() {

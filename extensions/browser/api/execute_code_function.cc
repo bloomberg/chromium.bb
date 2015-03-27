@@ -43,7 +43,8 @@ ExecuteCodeFunction::~ExecuteCodeFunction() {
 
 void ExecuteCodeFunction::DidLoadFile(bool success, const std::string& data) {
   if (!success || !details_->file) {
-    DidLoadAndLocalizeFile(success, data);
+    DidLoadAndLocalizeFile(
+        resource_.relative_path().AsUTF8Unsafe(), success, data);
     return;
   }
 
@@ -102,24 +103,24 @@ void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
       FROM_HERE,
       base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile,
                  this,
+                 resource_.relative_path().AsUTF8Unsafe(),
                  true,
                  localized_data));
 }
 
-void ExecuteCodeFunction::DidLoadAndLocalizeFile(bool success,
+void ExecuteCodeFunction::DidLoadAndLocalizeFile(const std::string& file,
+                                                 bool success,
                                                  const std::string& data) {
   if (success) {
     if (!base::IsStringUTF8(data)) {
-      error_ = ErrorUtils::FormatErrorMessage(
-          kBadFileEncodingError, resource_.relative_path().AsUTF8Unsafe());
+      error_ = ErrorUtils::FormatErrorMessage(kBadFileEncodingError, file);
       SendResponse(false);
     } else if (!Execute(data))
       SendResponse(false);
   } else {
     // TODO(viettrungluu): bug: there's no particular reason the path should be
     // UTF-8, in which case this may fail.
-    error_ = ErrorUtils::FormatErrorMessage(
-        kLoadFileError, resource_.relative_path().AsUTF8Unsafe());
+    error_ = ErrorUtils::FormatErrorMessage(kLoadFileError, file);
     SendResponse(false);
   }
 }
@@ -205,10 +206,11 @@ bool ExecuteCodeFunction::RunAsync() {
   if (!details_->file.get())
     return false;
 
-  if (!extension())
-    return false;
+  return LoadFile(*details_->file);
+}
 
-  resource_ = extension()->GetResource(*details_->file);
+bool ExecuteCodeFunction::LoadFile(const std::string& file) {
+  resource_ = extension()->GetResource(file);
 
   if (resource_.extension_root().empty() || resource_.relative_path().empty()) {
     error_ = kNoCodeOrFileToExecuteError;

@@ -4,10 +4,16 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 
+#include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -25,6 +31,28 @@
 
 namespace {
 
+bool HandleTestFileRequestCallback(
+    const std::string& path,
+    const content::WebUIDataSource::GotDataCallback& callback) {
+  std::vector<std::string> url_substr;
+  base::SplitString(path, '/', &url_substr);
+  if (url_substr.size() != 2 || url_substr[0] != "test")
+    return false;
+
+  std::string contents;
+  base::FilePath test_data_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  if (!base::ReadFileToString(
+          test_data_dir.AppendASCII("webui").AppendASCII(url_substr[1]),
+          &contents, std::string::npos))
+    return false;
+
+  base::RefCountedString* ref_contents = new base::RefCountedString();
+  ref_contents->data() = contents;
+  callback.Run(ref_contents);
+  return true;
+}
+
 content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
         content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
@@ -35,6 +63,14 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   bool is_webview_signin_enabled = switches::IsEnableWebviewBasedSignin();
   source->SetDefaultResource(is_webview_signin_enabled ?
       IDR_NEW_INLINE_LOGIN_HTML : IDR_INLINE_LOGIN_HTML);
+
+  // Only add a filter when runing as test.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
+                               command_line->HasSwitch(::switches::kTestType);
+  if (is_running_test)
+    source->SetRequestFilter(base::Bind(&HandleTestFileRequestCallback));
+
   source->AddResourcePath("inline_login.css", IDR_INLINE_LOGIN_CSS);
   source->AddResourcePath("inline_login.js", IDR_INLINE_LOGIN_JS);
   source->AddResourcePath("gaia_auth_host.js", is_webview_signin_enabled ?

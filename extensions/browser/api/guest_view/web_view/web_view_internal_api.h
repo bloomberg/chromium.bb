@@ -54,6 +54,11 @@ class WebViewInternalExecuteCodeFunction
     : public extensions::ExecuteCodeFunction {
  public:
   WebViewInternalExecuteCodeFunction();
+  // Called when a file URL request is complete.
+  // Parameters:
+  // - whether the request is success.
+  // - If yes, the content of the file.
+  using WebUILoadFileCallback = base::Callback<void(bool, const std::string&)>;
 
  protected:
   ~WebViewInternalExecuteCodeFunction() override;
@@ -66,8 +71,15 @@ class WebViewInternalExecuteCodeFunction
   extensions::ScriptExecutor* GetScriptExecutor() final;
   bool IsWebView() const override;
   const GURL& GetWebViewSrc() const override;
+  bool LoadFile(const std::string& file) override;
 
  private:
+  class WebUIURLFetcher;
+
+  // Loads a file url on WebUI.
+  bool LoadFileForWebUI(const std::string& file_src,
+                        const WebUILoadFileCallback& callback);
+
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
   extensions::ExtensionResource resource_;
@@ -75,6 +87,8 @@ class WebViewInternalExecuteCodeFunction
   int guest_instance_id_;
 
   GURL guest_src_;
+
+  scoped_ptr<WebUIURLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalExecuteCodeFunction);
 };
