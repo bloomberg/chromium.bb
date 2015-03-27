@@ -249,12 +249,13 @@ void EchoInformation::UpdateAecDelayStats(
           &dummy_median, &dummy_std, &fraction_poor_delays) ==
       webrtc::AudioProcessing::kNoError) {
     num_chunks_ = 0;
+    // Map |fraction_poor_delays| to an Echo Cancellation quality and log in UMA
+    // histogram. See DelayBasedEchoQuality for information on histogram
+    // buckets.
+    UMA_HISTOGRAM_ENUMERATION("WebRTC.AecDelayBasedQuality",
+                              EchoDelayFrequencyToQuality(fraction_poor_delays),
+                              DELAY_BASED_ECHO_QUALITY_MAX);
   }
-  // Map |fraction_poor_delays| to an Echo Cancellation quality and log in UMA
-  // histogram. See DelayBasedEchoQuality for information on histogram buckets.
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.AecDelayBasedQuality",
-                            EchoDelayFrequencyToQuality(fraction_poor_delays),
-                            DELAY_BASED_ECHO_QUALITY_MAX);
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
