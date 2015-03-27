@@ -383,7 +383,7 @@ message ClientIncidentReport {
       optional string variations_seed_signature = 1;
     }
     message ScriptRequestIncident {
-      optional string script_digest = 1;
+      optional bytes script_digest = 1;
       optional string inclusion_origin = 2;
     }
     optional int64 incident_time_msec = 1;
