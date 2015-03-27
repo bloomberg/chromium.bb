@@ -1,0 +1,35 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.cast-mode {
+  cursor: pointer;
+}
+
+.cast-mode:hover {
+  background-color: rgb(187, 206, 236);
+  border: 0;
+}
+
+.cast-mode-list {
+  -webkit-user-select: none;
+  background-color: white;
+  border: 1px solid #a5a5a5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #2c2c2c;
+  font-size: 0.75em;
+  font-weight: normal;
+  margin: 15px 10px 0 0;
+  padding-bottom: 6px;
+  padding-top: 6px;
+  position: absolute;
+  top: 20px;
+  width: 235px;
+}
+
+#selectbox {
+  border: 0;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  width: 100%;
+}
