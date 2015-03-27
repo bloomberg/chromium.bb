@@ -416,7 +416,7 @@ class GerritHelper(object):
 
       # Rebase the branch.
       try:
-        git.SyncPushBranch(git_repo, remote_ref.remote, remote_ref.reference)
+        git.SyncPushBranch(git_repo, remote_ref.remote, remote_ref.ref)
       except cros_build_lib.RunCommandError:
         logging.warn('git rebase failed for %s; was a change chumped in the '
                      'middle of the CQ run?',
