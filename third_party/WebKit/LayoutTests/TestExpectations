@@ -58,48 +58,6 @@ crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer
 # Incorrect cull rects cause failure when we raster via SkPicture
 crbug.com/460198 virtual/slimmingpaint/fast/text/text-transform-upper-lithuanian.html [ ImageOnlyFailure Pass ]
 
-# Under-invalidation of collapsed table border
-# Restore the following lines and remove virtual/slimmingpaint pixel expectations after rebaseline.
-#crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-cell-append.html [ ImageOnlyFailure ]
-#crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-table-border-color.html [ ImageOnlyFailure ]
-#crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-color.html [ ImageOnlyFailure ]
-#crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-color.html [ ImageOnlyFailure ]
-#crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-color.html [ ImageOnlyFailure ]
-#crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ ImageOnlyFailure ]
-
-crbug.com/471002 fast/table/border-collapsing/cached-69296.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-cell-append.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-cell-remove.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-cell-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-cell-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-cell-sl-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-col-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-col-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-colgroup-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-colgroup-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-row-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-row-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-table-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-table-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-tbody-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 fast/table/border-collapsing/cached-change-tbody-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-69296.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-cell-append.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-cell-remove.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-cell-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-cell-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-cell-sl-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-table-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-table-border-width.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ NeedsRebaseline ]
-crbug.com/471002 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-width.html [ NeedsRebaseline ]
-
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests

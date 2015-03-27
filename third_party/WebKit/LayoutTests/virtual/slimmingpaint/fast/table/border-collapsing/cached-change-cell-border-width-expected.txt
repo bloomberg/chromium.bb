@@ -18,6 +18,13 @@
         [8, 58, 113, 4],
         [8, 8, 59, 54],
         [8, 8, 55, 52]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTable TABLE",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD id='foo'",
+        "LayoutTableCell TD"
       ]
     }
   ]
