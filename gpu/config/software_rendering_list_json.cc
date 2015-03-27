@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.1",
+  "version": "10.2",
   "entries": [
     {
       "id": 1,
@@ -552,6 +552,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "vendor_id": "0x10de",
       "driver_vendor": "NVIDIA",
+      "driver_version": {
+        "op": "<",
+        "value": "331.38"
+      },
       "features": [
         "accelerated_video_decode",
         "flash_3d",
