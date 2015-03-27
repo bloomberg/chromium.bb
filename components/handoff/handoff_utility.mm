@@ -21,4 +21,15 @@ Origin OriginFromString(NSString* string) {
   return ORIGIN_UNKNOWN;
 }
 
+NSString* StringFromOrigin(Origin origin) {
+  switch (origin) {
+    case ORIGIN_IOS:
+      return kOriginiOS;
+    case ORIGIN_MAC:
+      return kOriginMac;
+    default:
+      return nil;
+  }
+}
+
 }  // namespace handoff

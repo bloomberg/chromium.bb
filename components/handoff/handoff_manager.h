@@ -8,6 +8,7 @@
 #include <Foundation/Foundation.h>
 
 #include "base/mac/objc_property_releaser.h"
+#include "components/handoff/handoff_utility.h"
 #include "url/gurl.h"
 
 @class NSUserActivity;
@@ -20,6 +21,7 @@
 
   GURL _activeURL;
   NSUserActivity* _userActivity;
+  handoff::Origin _origin;
 }
 
 // The active URL is defined as the URL of the most recently accessed tab. This

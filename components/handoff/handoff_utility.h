@@ -35,6 +35,9 @@ enum Origin {
 // Returns ORIGIN_UNKNOWN if |string| is nil or unrecognized.
 Origin OriginFromString(NSString* string);
 
+// Returns nil if |origin| is not ORIGIN_IOS or ORIGIN_MAC.
+NSString* StringFromOrigin(Origin origin);
+
 }  // namespace handoff
 
 #endif  // COMPONENTS_HANDOFF_HANDOFF_UTILITY_H_

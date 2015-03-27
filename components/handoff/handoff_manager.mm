@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "components/handoff/handoff_utility.h"
 #include "net/base/mac/url_conversions.h"
 
 #if defined(OS_IOS)
@@ -39,6 +38,13 @@
   self = [super init];
   if (self) {
     _propertyReleaser_HandoffManager.Init(self, [HandoffManager class]);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    _origin = handoff::ORIGIN_MAC;
+#elif defined(OS_IOS)
+    _origin = handoff::ORIGIN_IOS;
+#else
+    NOTREACHED();
+#endif
   }
   return self;
 }
@@ -84,7 +90,9 @@
            withObject:handoff::kChromeHandoffActivityType];
   self.userActivity = base::scoped_nsobject<NSUserActivity>(userActivity);
   self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
-  self.userActivity.userInfo = @{ handoff::kOriginKey : handoff::kOriginiOS };
+  NSString* origin = handoff::StringFromOrigin(_origin);
+  DCHECK(origin);
+  self.userActivity.userInfo = @{ handoff::kOriginKey : origin };
   [self.userActivity becomeCurrent];
 }
 
