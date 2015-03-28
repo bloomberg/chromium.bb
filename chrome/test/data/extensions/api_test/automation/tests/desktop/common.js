@@ -42,28 +42,14 @@ function runWithDocument(docString, callback) {
 
 function setupAndRunTests(allTests, opt_docString) {
   function runTestInternal() {
-    chrome.test.runTests(allTests);
+    chrome.automation.getDesktop(function(rootNodeArg) {
+      rootNode = rootNodeArg;
+      chrome.test.runTests(allTests);
+    });
   }
 
-  chrome.automation.getDesktop(function(rootNodeArg) {
-    rootNode = rootNodeArg;
-
-    // Only run the test when the window containing the new tab loads.
-    rootNodeArg.addEventListener(
-        chrome.automation.EventType.childrenChanged,
-        function(evt) {
-          var subroot = evt.target.firstChild;
-          if (!opt_docString || !subroot)
-            return;
-
-          if (subroot.role == 'rootWebArea' &&
-              subroot.attributes.docUrl.indexOf(opt_docString) != -1)
-            runTestInternal();
-        },
-        true);
-    if (opt_docString)
-      runWithDocument(opt_docString, null);
-    else
-      runTestInternal();
-  });
+  if (opt_docString)
+    runWithDocument(opt_docString, runTestInternal);
+  else
+    runTestInternal();
 }

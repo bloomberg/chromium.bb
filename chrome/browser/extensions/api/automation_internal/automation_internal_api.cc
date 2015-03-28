@@ -30,8 +30,8 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #endif
 
 namespace extensions {
@@ -257,6 +257,7 @@ AutomationInternalEnableTabFunction::Run() {
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
 // TODO(dtseng): Limited to desktop tree for now pending out of proc iframes.
+#if defined(OS_CHROMEOS)
   using api::automation_internal::EnableFrame::Params;
 
   scoped_ptr<Params> params(Params::Create(*args_));
@@ -274,6 +275,8 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   contents->EnableTreeOnlyAccessibilityMode();
 
   return RespondNow(NoArguments());
+#endif
+  return RespondNow(Error("enableFrame is only supported on Chrome OS"));
 }
 
 ExtensionFunction::ResponseAction
@@ -286,14 +289,14 @@ AutomationInternalPerformActionFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (params->args.tree_id == kDesktopTreeID) {
-#if defined(USE_AURA)
-    return RouteActionToAdapter(params.get(),
-                                AutomationManagerAura::GetInstance());
+#if defined(OS_CHROMEOS)
+    return RouteActionToAdapter(
+        params.get(), AutomationManagerAsh::GetInstance());
 #else
     NOTREACHED();
     return RespondNow(Error("Unexpected action on desktop automation tree;"
                             " platform does not support desktop automation"));
-#endif  // defined(USE_AURA)
+#endif  // defined(OS_CHROMEOS)
   }
   AXTreeIDRegistry::FrameID frame_id =
       AXTreeIDRegistry::GetInstance()->GetFrameID(params->args.tree_id);
@@ -346,16 +349,16 @@ AutomationInternalPerformActionFunction::RouteActionToAdapter(
 
 ExtensionFunction::ResponseAction
 AutomationInternalEnableDesktopFunction::Run() {
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
   const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   if (!automation_info || !automation_info->desktop)
     return RespondNow(Error("desktop permission must be requested"));
 
-  AutomationManagerAura::GetInstance()->Enable(browser_context());
+  AutomationManagerAsh::GetInstance()->Enable(browser_context());
   return RespondNow(NoArguments());
 #else
   return RespondNow(Error("getDesktop is unsupported by this platform"));
-#endif  // defined(USE_AURA)
+#endif  // defined(OS_CHROMEOS)
 }
 
 // static

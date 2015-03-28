@@ -6,7 +6,6 @@
 #define UI_VIEWS_ACCESSIBILITY_AX_AURA_OBJ_CACHE_H_
 
 #include <map>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "ui/views/views_export.h"
@@ -52,9 +51,6 @@ class VIEWS_EXPORT AXAuraObjCache {
 
   // Remove a cached entry based on an id.
   void Remove(int32 id);
-
-  // Get all top level windows this cache knows about.
-  void GetTopLevelWindows(std::vector<AXAuraObjWrapper*>* children);
 
   // Indicates if this object's currently being destroyed.
   bool is_destroying() { return is_destroying_; }

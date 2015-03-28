@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
+#include "chrome/browser/ui/ash/accessibility/ax_tree_source_ash.h"
 
 #include <vector>
 
 #include "chrome/browser/accessibility/ax_tree_id_registry.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -19,83 +19,83 @@
 using views::AXAuraObjCache;
 using views::AXAuraObjWrapper;
 
-AXTreeSourceAura::AXTreeSourceAura() {
-  root_.reset(new AXRootObjWrapper(AXAuraObjCache::GetInstance()->GetNextID()));
+AXTreeSourceAsh::AXTreeSourceAsh() {
+  root_.reset(
+      new AXRootObjWrapper(AXAuraObjCache::GetInstance()->GetNextID()));
 }
 
-AXTreeSourceAura::~AXTreeSourceAura() {
+AXTreeSourceAsh::~AXTreeSourceAsh() {
   root_.reset();
 }
 
-void AXTreeSourceAura::DoDefault(int32 id) {
+void AXTreeSourceAsh::DoDefault(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
   CHECK(obj);
   obj->DoDefault();
 }
 
-void AXTreeSourceAura::Focus(int32 id) {
+void AXTreeSourceAsh::Focus(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
   CHECK(obj);
   obj->Focus();
 }
 
-void AXTreeSourceAura::MakeVisible(int32 id) {
+void AXTreeSourceAsh::MakeVisible(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
   CHECK(obj);
   obj->MakeVisible();
 }
 
-void AXTreeSourceAura::SetSelection(int32 id, int32 start, int32 end) {
+void AXTreeSourceAsh::SetSelection(int32 id, int32 start, int32 end) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
   CHECK(obj);
   obj->SetSelection(start, end);
 }
 
-AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetRoot() const {
   return root_.get();
 }
 
-AXAuraObjWrapper* AXTreeSourceAura::GetFromId(int32 id) const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetFromId(int32 id) const {
   if (id == root_->GetID())
     return root_.get();
   return AXAuraObjCache::GetInstance()->Get(id);
 }
 
-int32 AXTreeSourceAura::GetId(AXAuraObjWrapper* node) const {
+int32 AXTreeSourceAsh::GetId(AXAuraObjWrapper* node) const {
   return node->GetID();
 }
 
-void AXTreeSourceAura::GetChildren(
-    AXAuraObjWrapper* node,
+void AXTreeSourceAsh::GetChildren(AXAuraObjWrapper* node,
     std::vector<AXAuraObjWrapper*>* out_children) const {
   node->GetChildren(out_children);
 }
 
-AXAuraObjWrapper* AXTreeSourceAura::GetParent(AXAuraObjWrapper* node) const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetParent(AXAuraObjWrapper* node) const {
   AXAuraObjWrapper* parent = node->GetParent();
   if (!parent && node->GetID() != root_->GetID())
     parent = root_.get();
   return parent;
 }
 
-bool AXTreeSourceAura::IsValid(AXAuraObjWrapper* node) const {
+bool AXTreeSourceAsh::IsValid(AXAuraObjWrapper* node) const {
   return node && node->GetID() != -1;
 }
 
-bool AXTreeSourceAura::IsEqual(AXAuraObjWrapper* node1,
-                               AXAuraObjWrapper* node2) const {
+bool AXTreeSourceAsh::IsEqual(AXAuraObjWrapper* node1,
+                                AXAuraObjWrapper* node2) const {
   if (!node1 || !node2)
     return false;
 
   return node1->GetID() == node2->GetID() && node1->GetID() != -1;
 }
 
-AXAuraObjWrapper* AXTreeSourceAura::GetNull() const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetNull() const {
   return NULL;
 }
 
-void AXTreeSourceAura::SerializeNode(AXAuraObjWrapper* node,
-                                     ui::AXNodeData* out_data) const {
+void AXTreeSourceAsh::SerializeNode(
+    AXAuraObjWrapper* node, ui::AXNodeData* out_data) const {
   node->Serialize(out_data);
 
   if (out_data->role == ui::AX_ROLE_WEB_VIEW) {
@@ -113,8 +113,8 @@ void AXTreeSourceAura::SerializeNode(AXAuraObjWrapper* node,
   }
 }
 
-std::string AXTreeSourceAura::ToString(AXAuraObjWrapper* root,
-                                       std::string prefix) {
+std::string AXTreeSourceAsh::ToString(
+    AXAuraObjWrapper* root, std::string prefix) {
   ui::AXNodeData data;
   root->Serialize(&data);
   std::string output = prefix + data.ToString() + '\n';

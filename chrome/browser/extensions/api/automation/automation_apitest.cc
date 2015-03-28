@@ -27,12 +27,6 @@
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/tree_generator.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/shell.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -146,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationHostsPermissions) {
       << message_;
 }
 
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "desktop.html"))
       << message_;
@@ -157,18 +151,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
                                   "desktop_not_requested.html")) << message_;
 }
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
-  AutomationManagerAura::GetInstance()->Enable(browser()->profile());
-  // Trigger the shelf subtree to be computed.
-  ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
-      ash::FOCUS_SHELF);
-
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "actions.html"))
       << message_;
 }
-#endif  // defined(OS_CHROMEOS)
 
+// http://crbug.com/435449
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopLoadTabs) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "load_tabs.html"))
       << message_;
@@ -176,8 +164,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopLoadTabs) {
 #else
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop",
-                                  "desktop_not_supported.html"))
-      << message_;
+                                  "desktop_not_supported.html")) << message_;
 }
 #endif
 

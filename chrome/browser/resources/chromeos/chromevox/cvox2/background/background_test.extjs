@@ -69,6 +69,29 @@ SYNC_TEST_F('BackgroundTest', 'NextNamespaces', function() {
   assertEquals('function', typeof(Background));
 });
 
+/** Tests that ChromeVox reads the desktop tree. */
+TEST_F('BackgroundTest', 'DesktopFocus', function() {
+  function findStatusTray(root) {
+    if (root.role == chrome.automation.RoleType.button &&
+        root.attributes.name &&
+        root.attributes.name.indexOf('Status tray') != -1) {
+      return root;
+    }
+    for (var i = 0; i < root.children.length; i++) {
+      var found = findStatusTray(root.children[i]);
+      if (found)
+        return found;
+    }
+    return null;
+  }
+
+  chrome.automation.getDesktop(this.newCallback(function(root) {
+    var testButton = findStatusTray(root);
+    cvox.ChromeVox.tts.expectSpeech('Status tray', this.newCallback());
+    testButton.focus();
+  }));
+});
+
 /** Tests feedback once a page loads. */
 TEST_F('BackgroundTest', 'MANUAL_InitialFeedback', function() {
   cvox.ChromeVox.tts.expectSpeech('start', this.newCallback());

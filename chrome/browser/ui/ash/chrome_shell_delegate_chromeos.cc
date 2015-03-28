@@ -24,11 +24,11 @@
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -171,12 +171,12 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     if (profile) {
       switch (alert) {
         case ui::A11Y_ALERT_WINDOW_NEEDED: {
-          AutomationManagerAura::GetInstance()->HandleAlert(
+          AutomationManagerAsh::GetInstance()->HandleAlert(
               profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           break;
         }
         case ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
-          AutomationManagerAura::GetInstance()->HandleAlert(
+          AutomationManagerAsh::GetInstance()->HandleAlert(
               profile, l10n_util::GetStringUTF8(
                            IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
           break;

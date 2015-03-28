@@ -43,7 +43,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -991,7 +991,7 @@ void ExistingUserController::ShowGaiaPasswordChanged(
 
 void ExistingUserController::SendAccessibilityAlert(
     const std::string& alert_text) {
-  AutomationManagerAura::GetInstance()->HandleAlert(
+  AutomationManagerAsh::GetInstance()->HandleAlert(
       ProfileHelper::GetSigninProfile(), alert_text);
 }
 

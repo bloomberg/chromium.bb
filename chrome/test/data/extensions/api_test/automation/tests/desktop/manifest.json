@@ -3,6 +3,5 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Tests for the Automation API.",
-    "permissions": [ "windows" ],
   "automation": {"desktop": true}
 }

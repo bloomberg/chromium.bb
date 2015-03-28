@@ -76,15 +76,6 @@ void AXAuraObjCache::Remove(int32 id) {
   delete obj;
 }
 
-void AXAuraObjCache::GetTopLevelWindows(
-    std::vector<AXAuraObjWrapper*>* children) {
-  for (std::map<aura::Window*, int32>::iterator it = window_to_id_map_.begin();
-       it != window_to_id_map_.end(); ++it) {
-    if (!it->first->parent())
-      children->push_back(GetOrCreate(it->first));
-  }
-}
-
 AXAuraObjCache::AXAuraObjCache() : current_id_(1), is_destroying_(false) {
 }
 
