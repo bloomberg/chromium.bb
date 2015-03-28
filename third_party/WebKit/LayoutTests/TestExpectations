@@ -1954,3 +1954,5 @@ crbug.com/471093 [ Win Debug ] inspector/sources/debugger/frameworks-dom-xhr-eve
 crbug.com/471375 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
 
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
+
+crbug.com/465517 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ NeedsRebaseline ]
