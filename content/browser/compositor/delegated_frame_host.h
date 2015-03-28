@@ -99,6 +99,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
   void ResetCompositor();
+  // Note: |src_subset| is specified in DIP dimensions while |output_size|
+  // expects pixels.
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
                                   ReadbackRequestCallback& callback,

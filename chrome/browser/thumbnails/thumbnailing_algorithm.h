@@ -25,14 +25,15 @@ class ThumbnailingAlgorithm
       ConsumerCallback;
   // Provides information necessary to crop-and-resize image data from a source
   // canvas of |source_size|. Auxiliary |scale_factor| helps compute the target
-  // thumbnail size. Parameters of the required copy operation are assigned to
-  // |clipping_rect| (cropping rectangle for the source canvas) and
-  // |target_size| (the size of the target bitmap).
-  // The return value indicates the type of clipping that will be done.
+  // thumbnail size to be copied from the backing store, in pixels. Parameters
+  // of the required copy operation are assigned to |clipping_rect| (cropping
+  // rectangle for the source canvas) and |copy_size| (the size of the copied
+  // bitmap in pixels). The return value indicates the type of clipping that
+  // will be done.
   virtual ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
                                        ui::ScaleFactor scale_factor,
                                        gfx::Rect* clipping_rect,
-                                       gfx::Size* target_size) const = 0;
+                                       gfx::Size* copy_size) const = 0;
 
   // Invoked to produce a thumbnail image from a |bitmap| extracted by the
   // callee from source canvas according to instructions provided by a call
@@ -51,6 +52,6 @@ class ThumbnailingAlgorithm
   friend class base::RefCountedThreadSafe<ThumbnailingAlgorithm>;
 };
 
-}
+}  // namespace thumbnails
 
 #endif  // CHROME_BROWSER_THUMBNAILS_THUMBNAILING_ALGORITHM_H_

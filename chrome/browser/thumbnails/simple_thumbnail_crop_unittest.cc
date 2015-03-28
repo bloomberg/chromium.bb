@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 using content::WebContents;
@@ -110,6 +111,8 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NonSquareOutput) {
 
 TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
   gfx::Size thumbnail_size(200, 120);
+  gfx::Size expected_2x_size =
+      gfx::ToFlooredSize(gfx::ScaleSize(thumbnail_size, 2.0));
   float desired_aspect =
       static_cast<float>(thumbnail_size.width()) / thumbnail_size.height();
   scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm(
@@ -126,7 +129,7 @@ TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
   float clip_aspect =
       static_cast<float>(clipping_size.width()) / clipping_size.height();
   EXPECT_EQ(thumbnails::CLIP_RESULT_WIDER_THAN_TALL, clip_result);
-  EXPECT_EQ(thumbnail_size, target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
   EXPECT_NEAR(desired_aspect, clip_aspect, 0.01);
 
   clip_result = algorithm->GetCanvasCopyInfo(
@@ -138,7 +141,7 @@ TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
   clip_aspect =
       static_cast<float>(clipping_size.width()) / clipping_size.height();
   EXPECT_EQ(thumbnails::CLIP_RESULT_MUCH_WIDER_THAN_TALL, clip_result);
-  EXPECT_EQ(thumbnail_size, target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
   EXPECT_NEAR(desired_aspect, clip_aspect, 0.01);
 
   clip_result = algorithm->GetCanvasCopyInfo(
@@ -150,7 +153,7 @@ TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
   clip_aspect =
       static_cast<float>(clipping_size.width()) / clipping_size.height();
   EXPECT_EQ(thumbnails::CLIP_RESULT_TALLER_THAN_WIDE, clip_result);
-  EXPECT_EQ(thumbnail_size, target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
   EXPECT_NEAR(desired_aspect, clip_aspect, 0.01);
 
   clip_result = algorithm->GetCanvasCopyInfo(
@@ -159,7 +162,36 @@ TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
       &clipping_rect_result,
       &target_size_result);
   EXPECT_EQ(thumbnails::CLIP_RESULT_SOURCE_IS_SMALLER, clip_result);
-  EXPECT_EQ(thumbnail_size, target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
+}
+
+TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfoDifferentScales) {
+  gfx::Size thumbnail_size(200, 120);
+  scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm(
+      new SimpleThumbnailCrop(thumbnail_size));
+
+  gfx::Rect clipping_rect_result;
+  gfx::Size target_size_result;
+
+  gfx::Size expected_2x_size =
+      gfx::ToFlooredSize(gfx::ScaleSize(thumbnail_size, 2.0));
+
+  // Test at 1x scale. Expect a 2x thumbnail (we do this for quality).
+  algorithm->GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_100P,
+                               &clipping_rect_result, &target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
+
+  // Test at 2x scale.
+  algorithm->GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_200P,
+                               &clipping_rect_result, &target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
+
+  // Test at 3x scale.
+  gfx::Size expected_3x_size =
+      gfx::ToFlooredSize(gfx::ScaleSize(thumbnail_size, 3.0));
+  algorithm->GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_300P,
+                               &clipping_rect_result, &target_size_result);
+  EXPECT_EQ(expected_3x_size, target_size_result);
 }
 
 TEST_F(SimpleThumbnailCropTest, GetClippingRect) {

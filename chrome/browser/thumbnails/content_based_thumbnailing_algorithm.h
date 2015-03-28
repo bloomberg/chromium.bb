@@ -20,7 +20,7 @@ class ContentBasedThumbnailingAlgorithm : public ThumbnailingAlgorithm {
   ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
                                ui::ScaleFactor scale_factor,
                                gfx::Rect* clipping_rect,
-                               gfx::Size* target_size) const override;
+                               gfx::Size* copy_size) const override;
 
   void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
                      const ConsumerCallback& callback,

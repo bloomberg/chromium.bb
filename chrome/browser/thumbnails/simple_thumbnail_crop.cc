@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
@@ -25,15 +26,14 @@ SimpleThumbnailCrop::SimpleThumbnailCrop(const gfx::Size& target_size)
   DCHECK(!target_size.IsEmpty());
 }
 
-ClipResult SimpleThumbnailCrop::GetCanvasCopyInfo(
-    const gfx::Size& source_size,
-    ui::ScaleFactor scale_factor,
-    gfx::Rect* clipping_rect,
-    gfx::Size* target_size) const {
+ClipResult SimpleThumbnailCrop::GetCanvasCopyInfo(const gfx::Size& source_size,
+                                                  ui::ScaleFactor scale_factor,
+                                                  gfx::Rect* clipping_rect,
+                                                  gfx::Size* copy_size) const {
   DCHECK(!source_size.IsEmpty());
   ClipResult clip_result = thumbnails::CLIP_RESULT_NOT_CLIPPED;
   *clipping_rect = GetClippingRect(source_size, target_size_, &clip_result);
-  *target_size = GetCopySizeForThumbnail(scale_factor, target_size_);
+  *copy_size = GetCopySizeForThumbnail(scale_factor, target_size_);
   return clip_result;
 }
 
@@ -74,55 +74,23 @@ SkBitmap SimpleThumbnailCrop::GetClippedBitmap(const SkBitmap& bitmap,
   return clipped_bitmap;
 }
 
-// Returns the size used by RenderWidgetHost::CopyFromBackingStore.
-//
-// The size is calculated in such a way that the copied size in pixel becomes
-// equal to (f * kThumbnailWidth, f * kThumbnailHeight), where f is the scale
-// of ui::SCALE_FACTOR_200P. Since RenderWidgetHost::CopyFromBackingStore takes
-// the size in DIP, we need to adjust the size based on |view|'s device scale
-// factor in order to copy the pixels with the size above.
-//
-// The copied size was chosen for the following reasons.
-//
-// 1. When the scale factor of the primary monitor is ui::SCALE_FACTOR_200P, the
-// generated thumbnail size is (f * kThumbnailWidth, f * kThumbnailHeight).
-// In order to avoid degrading the image quality by magnification, the size
-// of the copied pixels should be equal to or larger than this thumbnail size.
-//
-// 2. RenderWidgetHost::CopyFromBackingStore can be costly especially when
-// it is necessary to read back the web contents image data from GPU. As the
-// cost is roughly propotional to the number of the copied pixels, the size of
-// the copied pixels should be as small as possible.
-//
-// When the scale factor of the primary monitor is ui::SCALE_FACTOR_100P,
-// we still copy the pixels with the same size as ui::SCALE_FACTOR_200P (2.0f)
-// because the resampling method used in RenderWidgetHost::CopyFromBackingStore
-// is not good enough for the resampled image to be used directly for the
-// thumbnail (http://crbug.com/141235). We assume this is not an issue in case of
-// ui::SCALE_FACTOR_200P because the high resolution thumbnail on high density
-// display alleviates the aliasing.
-// TODO(mazda): Copy the pixels with the smaller size in the case of
-// ui::SCALE_FACTOR_100P once the resampling method has been improved.
+// RenderWidgetHost::CopyFromBackingStore can be costly especially when it is
+// necessary to read back the web contents image data from GPU. As the cost is
+// roughly proportional to the number of the copied pixels, the size of the
+// copied pixels should be as small as possible.
 // static
 gfx::Size SimpleThumbnailCrop::GetCopySizeForThumbnail(
     ui::ScaleFactor scale_factor,
     const gfx::Size& thumbnail_size) {
-  gfx::Size copy_size(thumbnail_size);
-  switch (scale_factor) {
-    case ui::SCALE_FACTOR_100P:
-      copy_size = gfx::ToFlooredSize(gfx::ScaleSize(copy_size, 2.0f));
-      break;
-    case ui::SCALE_FACTOR_200P:
-      // Use the size as-is.
-      break;
-    default:
-      DLOG(WARNING) << "Unsupported scale factor. Use the same copy size as "
-                    << "ui::SCALE_FACTOR_100P";
-      copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
-          copy_size, gfx::ImageSkia::GetMaxSupportedScale()));
-      break;
+  // The copy size returned is the pixel equivalent of |thumbnail_size|, which
+  // is in DIPs.
+  if (scale_factor == ui::SCALE_FACTOR_100P) {
+    // In the case of 1x devices, we get a thumbnail twice as big and reduce
+    // it at serve time to improve quality.
+    scale_factor = ui::SCALE_FACTOR_200P;
   }
-  return copy_size;
+  float scale = GetScaleForScaleFactor(scale_factor);
+  return gfx::ToFlooredSize(gfx::ScaleSize(thumbnail_size, scale));
 }
 
 gfx::Rect SimpleThumbnailCrop::GetClippingRect(const gfx::Size& source_size,

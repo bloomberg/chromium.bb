@@ -21,7 +21,7 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
   ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
                                ui::ScaleFactor scale_factor,
                                gfx::Rect* clipping_rect,
-                               gfx::Size* target_size) const override;
+                               gfx::Size* copy_size) const override;
 
   void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
                      const ConsumerCallback& callback,
@@ -37,6 +37,8 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                                    int desired_width,
                                    int desired_height,
                                    thumbnails::ClipResult* clip_result);
+  // Returns the size copied from the backing store. |thumbnail_size| is in
+  // DIP, returned size in pixels.
   static gfx::Size GetCopySizeForThumbnail(ui::ScaleFactor scale_factor,
                                            const gfx::Size& thumbnail_size);
   static gfx::Rect GetClippingRect(const gfx::Size& source_size,
@@ -57,6 +59,7 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                                   const gfx::Size& desired_size,
                                   ClipResult* clip_result);
 
+  // The target size of the captured thumbnails, in DIPs.
   const gfx::Size target_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleThumbnailCrop);

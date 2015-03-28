@@ -45,14 +45,14 @@ ClipResult ContentBasedThumbnailingAlgorithm::GetCanvasCopyInfo(
     const gfx::Size& source_size,
     ui::ScaleFactor scale_factor,
     gfx::Rect* clipping_rect,
-    gfx::Size* target_size) const {
+    gfx::Size* copy_size) const {
   DCHECK(!source_size.IsEmpty());
-  gfx::Size target_thumbnail_size =
+  gfx::Size copy_thumbnail_size =
       SimpleThumbnailCrop::GetCopySizeForThumbnail(scale_factor, target_size_);
 
   ClipResult clipping_method = thumbnails::CLIP_RESULT_NOT_CLIPPED;
-  *clipping_rect = GetClippingRect(
-      source_size, target_thumbnail_size, target_size, &clipping_method);
+  *clipping_rect = GetClippingRect(source_size, copy_thumbnail_size, copy_size,
+                                   &clipping_method);
   return clipping_method;
 }
 
