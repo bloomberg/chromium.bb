@@ -44,7 +44,8 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // Takes ownership of |cmd_line| and |delegate|.
   virtual void Launch(
       SandboxedProcessLauncherDelegate* delegate,
-      base::CommandLine* cmd_line) = 0;
+      base::CommandLine* cmd_line,
+      bool terminate_on_shutdown) = 0;
 
   virtual const ChildProcessData& GetData() const = 0;
 

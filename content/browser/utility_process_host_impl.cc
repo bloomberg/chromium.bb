@@ -292,7 +292,8 @@ bool UtilityProcessHostImpl::StartProcess() {
                                                     run_elevated_,
                                                     no_sandbox_, env_,
                                                     process_->GetHost()),
-        cmd_line);
+        cmd_line,
+        true);
   }
 
   return true;

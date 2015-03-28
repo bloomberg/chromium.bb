@@ -67,7 +67,8 @@ bool NaClBrokerHost::Init() {
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate,
-                   cmd_line);
+                   cmd_line,
+                   true);
   return true;
 }
 

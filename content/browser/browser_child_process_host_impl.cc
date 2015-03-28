@@ -128,7 +128,8 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 
 void BrowserChildProcessHostImpl::Launch(
     SandboxedProcessLauncherDelegate* delegate,
-    base::CommandLine* cmd_line) {
+    base::CommandLine* cmd_line,
+    bool terminate_on_shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
@@ -152,7 +153,8 @@ void BrowserChildProcessHostImpl::Launch(
       delegate,
       cmd_line,
       data_.id,
-      this));
+      this,
+      terminate_on_shutdown));
 }
 
 const ChildProcessData& BrowserChildProcessHostImpl::GetData() const {
@@ -192,12 +194,6 @@ void BrowserChildProcessHostImpl::ForceShutdown() {
 
 void BrowserChildProcessHostImpl::SetBackgrounded(bool backgrounded) {
   child_process_->SetProcessBackgrounded(backgrounded);
-}
-
-void BrowserChildProcessHostImpl::SetTerminateChildOnShutdown(
-    bool terminate_on_shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  child_process_->SetTerminateChildOnShutdown(terminate_on_shutdown);
 }
 
 void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {

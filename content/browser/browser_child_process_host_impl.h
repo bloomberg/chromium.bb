@@ -54,7 +54,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // BrowserChildProcessHost implementation:
   bool Send(IPC::Message* message) override;
   void Launch(SandboxedProcessLauncherDelegate* delegate,
-              base::CommandLine* cmd_line) override;
+              base::CommandLine* cmd_line,
+              bool terminate_on_shutdown) override;
   const ChildProcessData& GetData() const override;
   ChildProcessHost* GetHost() const override;
   base::TerminationStatus GetTerminationStatus(bool known_dead,
@@ -76,10 +77,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   // Callers can reduce the BrowserChildProcess' priority.
   void SetBackgrounded(bool backgrounded);
-
-  // Controls whether the child process should be terminated on browser
-  // shutdown. Default is to always terminate.
-  void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
 
   // Adds an IPC message filter.
   void AddFilter(BrowserMessageFilter* filter);

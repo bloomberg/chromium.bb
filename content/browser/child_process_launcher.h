@@ -6,11 +6,14 @@
 #define CONTENT_BROWSER_CHILD_PROCESS_LAUNCHER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/files/scoped_file.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace base {
 class CommandLine;
@@ -22,7 +25,7 @@ class SandboxedProcessLauncherDelegate;
 // Launches a process asynchronously and notifies the client of the process
 // handle when it's available.  It's used to avoid blocking the calling thread
 // on the OS since often it can take > 100 ms to create the process.
-class CONTENT_EXPORT ChildProcessLauncher {
+class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
  public:
   class CONTENT_EXPORT Client {
    public:
@@ -45,7 +48,8 @@ class CONTENT_EXPORT ChildProcessLauncher {
       SandboxedProcessLauncherDelegate* delegate,
       base::CommandLine* cmd_line,
       int child_process_id,
-      Client* client);
+      Client* client,
+      bool terminate_on_shutdown = true);
   ~ChildProcessLauncher();
 
   // True if the process is being launched and so the handle isn't available.
@@ -72,18 +76,49 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // this after the process has started.
   void SetProcessBackgrounded(bool background);
 
-  // Controls whether the child process should be terminated on browser
-  // shutdown.
-  void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
-
   // Replaces the ChildProcessLauncher::Client for testing purposes. Returns the
   // previous  client.
   Client* ReplaceClientForTest(Client* client);
 
  private:
-  class Context;
+  // Posts a task to the launcher thread to do the actual work.
+  void Launch(SandboxedProcessLauncherDelegate* delegate,
+              base::CommandLine* cmd_line,
+              int child_process_id);
 
-  scoped_refptr<Context> context_;
+  void UpdateTerminationStatus(bool known_dead);
+
+  // This is always called on the client thread after an attempt
+  // to launch the child process on the launcher thread.
+  // It makes sure we always perform the necessary cleanup if the
+  // client went away.
+  static void DidLaunch(base::WeakPtr<ChildProcessLauncher> instance,
+                        bool terminate_on_shutdown,
+                        bool zygote,
+#if defined(OS_ANDROID)
+                        base::ScopedFD ipcfd,
+#endif
+                        base::Process process);
+
+  // Notifies the client about the result of the operation.
+  void Notify(bool zygote,
+#if defined(OS_ANDROID)
+              base::ScopedFD ipcfd,
+#endif
+              base::Process process);
+
+  Client* client_;
+  BrowserThread::ID client_thread_id_;
+  base::Process process_;
+  base::TerminationStatus termination_status_;
+  int exit_code_;
+  bool zygote_;
+  bool starting_;
+  // Controls whether the child process should be terminated on browser
+  // shutdown. Default behavior is to terminate the child.
+  const bool terminate_child_on_shutdown_;
+
+  base::WeakPtrFactory<ChildProcessLauncher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessLauncher);
 };

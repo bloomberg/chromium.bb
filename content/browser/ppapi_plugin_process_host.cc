@@ -388,7 +388,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
       new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_,
                                                       info,
                                                       process_->GetHost()),
-      cmd_line);
+      cmd_line,
+      true);
   return true;
 }
 

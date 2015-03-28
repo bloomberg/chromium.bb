@@ -938,7 +938,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   process_->Launch(
       new GpuSandboxedProcessLauncherDelegate(cmd_line,
                                               process_->GetHost()),
-      cmd_line);
+      cmd_line,
+      true);
   process_launched_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",

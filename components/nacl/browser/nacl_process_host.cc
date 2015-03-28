@@ -626,7 +626,8 @@ bool NaClProcessHost::LaunchSelLdr() {
 #endif
   process_->Launch(
       new NaClSandboxedProcessLauncherDelegate(process_->GetHost()),
-      cmd_line.release());
+      cmd_line.release(),
+      true);
   return true;
 }
 

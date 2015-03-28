@@ -248,15 +248,15 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
 
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
-  process_->Launch(
-      new PluginSandboxedProcessLauncherDelegate(process_->GetHost()),
-      cmd_line);
-
   // The plugin needs to be shutdown gracefully, i.e. NP_Shutdown needs to be
   // called on the plugin. The plugin process exits when it receives the
   // OnChannelError notification indicating that the browser plugin channel has
   // been destroyed.
-  process_->SetTerminateChildOnShutdown(false);
+  bool terminate_on_shutdown = false;
+  process_->Launch(
+      new PluginSandboxedProcessLauncherDelegate(process_->GetHost()),
+      cmd_line,
+      terminate_on_shutdown);
 
   ResourceMessageFilter::GetContextsCallback get_contexts_callback(
       base::Bind(&PluginProcessHost::GetContexts,
