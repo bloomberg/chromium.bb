@@ -342,7 +342,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Specifies the maximum number of connections with high packet loss in a row
   // after which QUIC will be disabled.
   int max_number_of_lossy_connections_;
-  // Specifies packet loss rate in franction after which a connection is closed
+  // Specifies packet loss rate in fraction after which a connection is closed
   // and is considered as a lossy connection.
   float packet_loss_threshold_;
   // Count number of lossy connections by port.

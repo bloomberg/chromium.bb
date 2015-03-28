@@ -225,6 +225,8 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.quic_enable_connection_racing);
   EXPECT_FALSE(params.quic_enable_non_blocking_io);
   EXPECT_FALSE(params.quic_disable_disk_cache);
+  EXPECT_EQ(0, params.quic_max_number_of_lossy_connections);
+  EXPECT_EQ(1.0f, params.quic_packet_loss_threshold);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
@@ -412,6 +414,24 @@ TEST_F(IOThreadTest, QuicDisableDiskCache) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_disable_disk_cache);
+}
+
+TEST_F(IOThreadTest, QuicMaxNumberOfLossyConnectionsFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["max_number_of_lossy_connections"] = "5";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_EQ(5, params.quic_max_number_of_lossy_connections);
+}
+
+TEST_F(IOThreadTest, QuicPacketLossThresholdFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["packet_loss_threshold"] = "0.5";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_EQ(0.5f, params.quic_packet_loss_threshold);
 }
 
 TEST_F(IOThreadTest, QuicReceiveBufferSize) {

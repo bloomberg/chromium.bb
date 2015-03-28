@@ -189,6 +189,8 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> quic_enable_connection_racing;
     Optional<bool> quic_enable_non_blocking_io;
     Optional<bool> quic_disable_disk_cache;
+    Optional<int> quic_max_number_of_lossy_connections;
+    Optional<float> quic_packet_loss_threshold;
     Optional<int> quic_socket_receive_buffer_size;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
@@ -370,6 +372,18 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC shouldn't load QUIC server information from the disk
   // cache.
   static bool ShouldQuicDisableDiskCache(
+      const VariationParameters& quic_trial_params);
+
+  // Returns the maximum number of QUIC connections with high packet loss in a
+  // row after which QUIC should be disabled.  Returns 0 if the default value
+  // should be used.
+  static int GetQuicMaxNumberOfLossyConnections(
+      const VariationParameters& quic_trial_params);
+
+  // Returns the packet loss rate in fraction after which a QUIC connection is
+  // closed and is considered as a lossy connection. Returns 0 if the default
+  // value should be used.
+  static float GetQuicPacketLossThreshold(
       const VariationParameters& quic_trial_params);
 
   // Returns the size of the QUIC receive buffer to use, or 0 if

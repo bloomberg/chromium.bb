@@ -1211,6 +1211,10 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_enable_non_blocking_io);
   globals.quic_disable_disk_cache.CopyToIfSet(
       &params->quic_disable_disk_cache);
+  globals.quic_max_number_of_lossy_connections.CopyToIfSet(
+      &params->quic_max_number_of_lossy_connections);
+  globals.quic_packet_loss_threshold.CopyToIfSet(
+      &params->quic_packet_loss_threshold);
   globals.quic_socket_receive_buffer_size.CopyToIfSet(
       &params->quic_socket_receive_buffer_size);
   globals.enable_quic_port_selection.CopyToIfSet(
@@ -1347,6 +1351,15 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicEnableNonBlockingIO(quic_trial_params));
     globals->quic_disable_disk_cache.set(
         ShouldQuicDisableDiskCache(quic_trial_params));
+    int max_number_of_lossy_connections = GetQuicMaxNumberOfLossyConnections(
+        quic_trial_params);
+    if (max_number_of_lossy_connections != 0) {
+      globals->quic_max_number_of_lossy_connections.set(
+          max_number_of_lossy_connections);
+    }
+    float packet_loss_threshold = GetQuicPacketLossThreshold(quic_trial_params);
+    if (packet_loss_threshold != 0)
+      globals->quic_packet_loss_threshold.set(packet_loss_threshold);
     globals->enable_quic_port_selection.set(
         ShouldEnableQuicPortSelection(command_line));
     globals->quic_connection_options =
@@ -1544,6 +1557,30 @@ bool IOThread::ShouldQuicDisableDiskCache(
     const VariationParameters& quic_trial_params) {
   return LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
+}
+
+// static
+int IOThread::GetQuicMaxNumberOfLossyConnections(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(GetVariationParam(quic_trial_params,
+                                          "max_number_of_lossy_connections"),
+                        &value)) {
+    return value;
+  }
+  return 0;
+}
+
+// static
+float IOThread::GetQuicPacketLossThreshold(
+    const VariationParameters& quic_trial_params) {
+  double value;
+  if (base::StringToDouble(GetVariationParam(quic_trial_params,
+                                             "packet_loss_threshold"),
+                           &value)) {
+    return (float)value;
+  }
+  return 0.0f;
 }
 
 // static
