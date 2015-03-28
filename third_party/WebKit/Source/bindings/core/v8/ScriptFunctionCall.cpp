@@ -58,41 +58,6 @@ void ScriptCallArgumentHandler::appendArgument(const String& argument)
     m_arguments.append(ScriptValue(m_scriptState.get(), v8String(isolate, argument)));
 }
 
-void ScriptCallArgumentHandler::appendArgument(const char* argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8String(isolate, argument)));
-}
-
-void ScriptCallArgumentHandler::appendArgument(long argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
-}
-
-void ScriptCallArgumentHandler::appendArgument(long long argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
-}
-
-void ScriptCallArgumentHandler::appendArgument(unsigned argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
-}
-
-void ScriptCallArgumentHandler::appendArgument(unsigned long argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
-}
-
 void ScriptCallArgumentHandler::appendArgument(int argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();

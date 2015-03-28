@@ -45,11 +45,6 @@ public:
 
     void appendArgument(const ScriptValue&);
     void appendArgument(const String&);
-    void appendArgument(const char*);
-    void appendArgument(long);
-    void appendArgument(long long);
-    void appendArgument(unsigned);
-    void appendArgument(unsigned long);
     void appendArgument(int);
     void appendArgument(bool);
     void appendArgument(const Vector<ScriptValue>&);
