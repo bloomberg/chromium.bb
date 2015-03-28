@@ -55,6 +55,10 @@ WebViewImpl.setupElement = function(proto) {
 
 // Initiates navigation once the <webview> element is attached to the DOM.
 WebViewImpl.prototype.onElementAttached = function() {
+  // Mark all attributes as dirty on attachment.
+  for (var i in this.attributes) {
+    this.attributes[i].dirty = true;
+  }
   for (var i in this.attributes) {
     this.attributes[i].attach();
   }
@@ -63,6 +67,9 @@ WebViewImpl.prototype.onElementAttached = function() {
 // Resets some state upon detaching <webview> element from the DOM.
 WebViewImpl.prototype.onElementDetached = function() {
   this.guest.destroy();
+  for (var i in this.attributes) {
+    this.attributes[i].dirty = false;
+  }
   for (var i in this.attributes) {
     this.attributes[i].detach();
   }
@@ -167,7 +174,9 @@ WebViewImpl.prototype.onAttach = function(storagePartitionId) {
 WebViewImpl.prototype.buildContainerParams = function() {
   var params = { 'userAgentOverride': this.userAgentOverride };
   for (var i in this.attributes) {
-    params[i] = this.attributes[i].getValue();
+    var value = this.attributes[i].getValueIfDirty();
+    if (value)
+      params[i] = value;
   }
   return params;
 };

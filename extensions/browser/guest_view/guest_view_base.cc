@@ -785,21 +785,21 @@ double GuestViewBase::GetEmbedderZoomFactor() {
 
 void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   // Read the autosize parameters passed in from the embedder.
-  bool auto_size_enabled = false;
+  bool auto_size_enabled = auto_size_enabled_;
   params.GetBoolean(guestview::kAttributeAutoSize, &auto_size_enabled);
 
-  int max_height = 0;
-  int max_width = 0;
+  int max_height = max_auto_size_.height();
+  int max_width = max_auto_size_.width();
   params.GetInteger(guestview::kAttributeMaxHeight, &max_height);
   params.GetInteger(guestview::kAttributeMaxWidth, &max_width);
 
-  int min_height = 0;
-  int min_width = 0;
+  int min_height = min_auto_size_.height();
+  int min_width = min_auto_size_.width();
   params.GetInteger(guestview::kAttributeMinHeight, &min_height);
   params.GetInteger(guestview::kAttributeMinWidth, &min_width);
 
-  int normal_height = 0;
-  int normal_width = 0;
+  int normal_height = normal_size_.height();
+  int normal_width = normal_size_.width();
   if (is_full_page_plugin()) {
     // The initial size of a full page plugin should be set to fill the
     // owner's visible viewport.

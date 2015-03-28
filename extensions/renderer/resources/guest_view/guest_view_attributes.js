@@ -9,9 +9,10 @@
 
 // Default implementation of a GuestView attribute.
 function Attribute(name, view) {
+  this.dirty = false;
+  this.ignoreMutation = false;
   this.name = name;
   this.view = view;
-  this.ignoreMutation = false;
 
   this.defineProperty();
 }
@@ -19,6 +20,15 @@ function Attribute(name, view) {
 // Retrieves and returns the attribute's value.
 Attribute.prototype.getValue = function() {
   return this.view.element.getAttribute(this.name) || '';
+};
+
+// Retrieves and returns the attribute's value if it has been dirtied since
+// the last time this method was called. Returns null otherwise.
+Attribute.prototype.getValueIfDirty = function() {
+  if (!this.dirty)
+    return null;
+  this.dirty = false;
+  return this.getValue();
 };
 
 // Sets the attribute's value.
@@ -51,6 +61,7 @@ Attribute.prototype.maybeHandleMutation = function(oldValue, newValue) {
   if (this.ignoreMutation)
     return;
 
+  this.dirty = true;
   this.handleMutation(oldValue, newValue);
 };
 
