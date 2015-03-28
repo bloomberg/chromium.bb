@@ -2790,6 +2790,44 @@ class URLRequestTestHTTP : public URLRequestTest {
       LOG(WARNING) << "Request method was: " << request_method;
   }
 
+  // Requests |redirect_url|, which must return a HTTP 3xx redirect.
+  // |request_method| is the method to use for the initial request.
+  // |redirect_method| is the method that is expected to be used for the second
+  // request, after redirection.
+  // |origin_value| is the expected value for the Origin header after
+  // redirection. If empty, expects that there will be no Origin header.
+  void HTTPRedirectOriginHeaderTest(const GURL& redirect_url,
+                                    const std::string& request_method,
+                                    const std::string& redirect_method,
+                                    const std::string& origin_value) {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(
+        default_context_.CreateRequest(redirect_url, DEFAULT_PRIORITY, &d));
+    req->set_method(request_method);
+    req->SetExtraRequestHeaderByName(HttpRequestHeaders::kOrigin,
+                                     redirect_url.GetOrigin().spec(), false);
+    req->Start();
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(redirect_method, req->method());
+    // Note that there is no check for request success here because, for
+    // purposes of testing, the request very well may fail. For example, if the
+    // test redirects to an HTTPS server from an HTTP origin, thus it is cross
+    // origin, there is not an HTTPS server in this unit test framework, so the
+    // request would fail. However, that's fine, as long as the request headers
+    // are in order and pass the checks below.
+    if (origin_value.empty()) {
+      EXPECT_FALSE(
+          req->extra_request_headers().HasHeader(HttpRequestHeaders::kOrigin));
+    } else {
+      std::string origin_header;
+      EXPECT_TRUE(req->extra_request_headers().GetHeader(
+          HttpRequestHeaders::kOrigin, &origin_header));
+      EXPECT_EQ(origin_value, origin_header);
+    }
+  }
+
   void HTTPUploadDataOperationTest(const std::string& method) {
     const int kMsgSize = 20000;  // multiple of 10
     const int kIterations = 50;
@@ -6156,58 +6194,97 @@ TEST_F(URLRequestTestHTTP, Post302RedirectGet) {
   EXPECT_TRUE(ContainsString(data, "Accept-Charset:"));
 }
 
-// The following tests check that we handle mutating the request method for
-// HTTP redirects as expected.
-// See http://crbug.com/56373 and http://crbug.com/102130.
+// The following tests check that we handle mutating the request for HTTP
+// redirects as expected.
+// See https://crbug.com/56373, https://crbug.com/102130, and
+// https://crbug.com/465517.
 
 TEST_F(URLRequestTestHTTP, Redirect301Tests) {
   ASSERT_TRUE(test_server_.Start());
 
   const GURL url = test_server_.GetURL("files/redirect301-to-echo");
+  const GURL https_redirect_url =
+      test_server_.GetURL("files/redirect301-to-https");
 
   HTTPRedirectMethodTest(url, "POST", "GET", true);
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
+  HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
+                               std::string());
 }
 
 TEST_F(URLRequestTestHTTP, Redirect302Tests) {
   ASSERT_TRUE(test_server_.Start());
 
   const GURL url = test_server_.GetURL("files/redirect302-to-echo");
+  const GURL https_redirect_url =
+      test_server_.GetURL("files/redirect302-to-https");
 
   HTTPRedirectMethodTest(url, "POST", "GET", true);
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
+  HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
+                               std::string());
 }
 
 TEST_F(URLRequestTestHTTP, Redirect303Tests) {
   ASSERT_TRUE(test_server_.Start());
 
   const GURL url = test_server_.GetURL("files/redirect303-to-echo");
+  const GURL https_redirect_url =
+      test_server_.GetURL("files/redirect303-to-https");
 
   HTTPRedirectMethodTest(url, "POST", "GET", true);
   HTTPRedirectMethodTest(url, "PUT", "GET", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
+  HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
+                               std::string());
 }
 
 TEST_F(URLRequestTestHTTP, Redirect307Tests) {
   ASSERT_TRUE(test_server_.Start());
 
   const GURL url = test_server_.GetURL("files/redirect307-to-echo");
+  const GURL https_redirect_url =
+      test_server_.GetURL("files/redirect307-to-https");
 
   HTTPRedirectMethodTest(url, "POST", "POST", true);
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
+  HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null");
 }
 
 TEST_F(URLRequestTestHTTP, Redirect308Tests) {
   ASSERT_TRUE(test_server_.Start());
 
   const GURL url = test_server_.GetURL("files/redirect308-to-echo");
+  const GURL https_redirect_url =
+      test_server_.GetURL("files/redirect308-to-https");
 
   HTTPRedirectMethodTest(url, "POST", "POST", true);
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
+  HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null");
 }
 
 // Make sure that 308 responses without bodies are not treated as redirects.

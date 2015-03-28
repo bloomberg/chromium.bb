@@ -37,6 +37,8 @@
 #include "net/url_request/url_request_job_manager.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "net/url_request/url_request_redirect_job.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using base::Time;
 using std::string;
@@ -54,6 +56,8 @@ void StripPostSpecificHeaders(HttpRequestHeaders* headers) {
   // These are headers that may be attached to a POST.
   headers->RemoveHeader(HttpRequestHeaders::kContentLength);
   headers->RemoveHeader(HttpRequestHeaders::kContentType);
+  // TODO(jww): This is Origin header removal is probably layering violation and
+  // should be refactored into //content. See https://crbug.com/471397.
   headers->RemoveHeader(HttpRequestHeaders::kOrigin);
 }
 
@@ -938,6 +942,29 @@ int URLRequest::Redirect(const RedirectInfo& redirect_info) {
     }
     upload_data_stream_.reset();
     method_ = redirect_info.new_method;
+  }
+
+  // Cross-origin redirects should not result in an Origin header value that is
+  // equal to the original request's Origin header. This is necessary to prevent
+  // a reflection of POST requests to bypass CSRF protections. If the header was
+  // not set to "null", a POST request from origin A to a malicious origin M
+  // could be redirected by M back to A.
+  //
+  // In the Section 4.2, Step 4.10 of the Fetch spec
+  // (https://fetch.spec.whatwg.org/#concept-http-fetch), it states that on
+  // cross-origin 301, 302, 303, 307, and 308 redirects, the user agent should
+  // set the request's origin to an "opaque identifier," which serializes to
+  // "null." This matches Firefox and IE behavior, although it supercedes the
+  // suggested behavior in RFC 6454, "The Web Origin Concept."
+  //
+  // See also https://crbug.com/465517.
+  //
+  // TODO(jww): This is probably layering violation and should be refactored
+  // into //content. See https://crbug.com/471397.
+  if (redirect_info.new_url.GetOrigin() != url().GetOrigin() &&
+      extra_request_headers_.HasHeader(HttpRequestHeaders::kOrigin)) {
+    extra_request_headers_.SetHeader(HttpRequestHeaders::kOrigin,
+                                     url::Origin().string());
   }
 
   referrer_ = redirect_info.new_referrer;
