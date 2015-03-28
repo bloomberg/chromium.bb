@@ -528,6 +528,9 @@ interface CompositionEvent
     method constructor
     method getSegments
     method initCompositionEvent
+interface CompositorProxy
+    method constructor
+    method supports
 interface CompositorWorker
     getter onerror
     getter onmessage

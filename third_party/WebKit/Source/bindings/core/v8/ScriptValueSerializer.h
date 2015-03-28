@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class CompositorProxy;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class File;
@@ -122,6 +123,7 @@ public:
     void writeNumberObject(double number);
     void writeBlob(const String& uuid, const String& type, unsigned long long size);
     void writeBlobIndex(int blobIndex);
+    void writeCompositorProxy(const CompositorProxy&);
     void writeFile(const File&);
     void writeFileIndex(int blobIndex);
     void writeFileList(const FileList&);
@@ -358,6 +360,7 @@ private:
     void writeNumberObject(v8::Local<v8::Value>);
     void writeBooleanObject(v8::Local<v8::Value>);
     StateBase* writeBlob(v8::Local<v8::Value>, StateBase* next);
+    StateBase* writeCompositorProxy(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeFile(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeFileList(v8::Local<v8::Value>, StateBase* next);
     void writeImageData(v8::Local<v8::Value>);
@@ -482,6 +485,7 @@ private:
     bool readNumber(v8::Local<v8::Value>*);
     bool readNumberObject(v8::Local<v8::Value>*);
     bool readImageData(v8::Local<v8::Value>*);
+    bool readCompositorProxy(v8::Local<v8::Value>*);
     PassRefPtr<DOMArrayBuffer> doReadArrayBuffer();
     bool readArrayBuffer(v8::Local<v8::Value>*);
     bool readArrayBufferView(v8::Local<v8::Value>*, ScriptValueCompositeCreator&);

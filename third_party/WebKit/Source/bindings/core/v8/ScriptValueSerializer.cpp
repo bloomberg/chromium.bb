@@ -8,10 +8,12 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMDataView.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
@@ -196,6 +198,13 @@ void SerializedScriptValueWriter::writeBlobIndex(int blobIndex)
     ASSERT(blobIndex >= 0);
     append(BlobIndexTag);
     doWriteUint32(blobIndex);
+}
+
+void SerializedScriptValueWriter::writeCompositorProxy(const CompositorProxy& compositorProxy)
+{
+    append(CompositorProxyTag);
+    doWriteUint64(compositorProxy.elementId());
+    doWriteUint32(compositorProxy.bitfieldsSupported());
 }
 
 void SerializedScriptValueWriter::writeFile(const File& file)
@@ -709,6 +718,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             writeRegExp(value);
         } else if (V8ArrayBuffer::hasInstance(value, isolate())) {
             return writeArrayBuffer(value, next);
+        } else if (V8CompositorProxy::hasInstance(value, isolate())) {
+            return writeCompositorProxy(value, next);
         } else if (value->IsObject()) {
             if (isHostObject(jsObject) || jsObject->IsCallable() || value->IsNativeError())
                 return handleError(DataCloneError, "An object could not be cloned.", next);
@@ -818,6 +829,15 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Local<v8:
     else
         m_writer.writeBlob(blob->uuid(), blob->type(), blob->size());
     return 0;
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeCompositorProxy(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+{
+    CompositorProxy* compositorProxy = V8CompositorProxy::toImpl(value.As<v8::Object>());
+    if (!compositorProxy)
+        return nullptr;
+    m_writer.writeCompositorProxy(*compositorProxy);
+    return nullptr;
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
@@ -1097,6 +1117,12 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
             return false;
         creator.pushObjectReference(*value);
         break;
+    case CompositorProxyTag:
+        if (!readCompositorProxy(value))
+            return false;
+        creator.pushObjectReference(*value);
+        break;
+
     case ImageDataTag:
         if (!readImageData(value))
             return false;
@@ -1379,6 +1405,20 @@ bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
     memcpy(pixelArray->data(), m_buffer + m_position, pixelDataLength);
     m_position += pixelDataLength;
     *value = toV8(imageData.release(), m_scriptState->context()->Global(), isolate());
+    return true;
+}
+
+bool SerializedScriptValueReader::readCompositorProxy(v8::Local<v8::Value>* value)
+{
+    uint32_t attributes;
+    uint64_t element;
+    if (!doReadUint64(&element))
+        return false;
+    if (!doReadUint32(&attributes))
+        return false;
+
+    CompositorProxy* compositorProxy = CompositorProxy::create(element, attributes);
+    *value = toV8(compositorProxy, m_scriptState->context()->Global(), isolate());
     return true;
 }
 
