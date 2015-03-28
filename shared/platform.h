@@ -41,8 +41,13 @@ extern "C" {
 #ifdef ENABLE_EGL
 
 #ifndef EGL_EXT_platform_base
-typedef void (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (void);
-typedef void (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (void);
+typedef EGLDisplay (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform,
+						       void *native_display,
+						       const EGLint *attrib_list);
+typedef EGLSurface (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy,
+								EGLConfig config,
+								void *native_window,
+								const EGLint *attrib_list);
 #endif
 
 static inline void *
