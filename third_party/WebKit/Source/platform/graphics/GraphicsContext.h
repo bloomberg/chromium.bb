@@ -187,11 +187,6 @@ public:
     bool isAccelerated() const { return m_accelerated; }
     void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
-    // The text region is empty until tracking is turned on.
-    // It is never clerared by the context.
-    void setTrackTextRegion(bool track) { m_trackTextRegion = track; }
-    const SkRect& textRegion() const { return m_textRegion; }
-
     AnnotationModeFlags annotationMode() const { return m_annotationMode; }
     void setAnnotationMode(const AnnotationModeFlags mode) { m_annotationMode = mode; }
 
@@ -474,14 +469,9 @@ private:
     bool m_inDrawingRecorder;
 #endif
 
-    // Tracks the region where text is painted via the GraphicsContext.
-    SkRect m_textRegion;
-
     const DisabledMode m_disabledState;
 
     float m_deviceScaleFactor;
-
-    unsigned m_trackTextRegion : 1;
 
     unsigned m_accelerated : 1;
     unsigned m_printing : 1;

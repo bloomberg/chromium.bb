@@ -89,7 +89,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
 #endif
     , m_disabledState(disableContextOrPainting)
     , m_deviceScaleFactor(1.0f)
-    , m_trackTextRegion(false)
     , m_accelerated(false)
     , m_printing(false)
     , m_antialiasHairlineImages(false)
@@ -982,7 +981,7 @@ void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo
         return;
 
     drawTextPasses([&font, &runInfo, &point, this](const SkPaint& paint) {
-        font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, m_trackTextRegion ? &m_textRegion : nullptr, paint);
+        font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, paint);
     });
 }
 
@@ -992,7 +991,7 @@ void GraphicsContext::drawEmphasisMarks(const Font& font, const TextRunPaintInfo
         return;
 
     drawTextPasses([&font, &runInfo, &mark, &point, this](const SkPaint& paint) {
-        font.drawEmphasisMarks(m_canvas, runInfo, mark, point, m_deviceScaleFactor, m_trackTextRegion ? &m_textRegion : nullptr, paint);
+        font.drawEmphasisMarks(m_canvas, runInfo, mark, point, m_deviceScaleFactor, paint);
     });
 }
 
@@ -1002,7 +1001,7 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
         return;
 
     drawTextPasses([&font, &runInfo, &point, customFontNotReadyAction, this](const SkPaint& paint) {
-        font.drawBidiText(m_canvas, runInfo, point, customFontNotReadyAction, m_deviceScaleFactor, m_trackTextRegion ? &m_textRegion : nullptr, paint);
+        font.drawBidiText(m_canvas, runInfo, point, customFontNotReadyAction, m_deviceScaleFactor, paint);
     });
 }
 

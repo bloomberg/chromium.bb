@@ -100,9 +100,9 @@ public:
     void update(PassRefPtrWillBeRawPtr<FontSelector>) const;
 
     enum CustomFontNotReadyAction { DoNotPaintIfFontNotReady, UseFallbackIfFontNotReady };
-    void drawText(SkCanvas*, const TextRunPaintInfo&, const FloatPoint&, float deviceScaleFactor, SkRect* trackingRect, const SkPaint&) const;
-    void drawBidiText(SkCanvas*, const TextRunPaintInfo&, const FloatPoint&, CustomFontNotReadyAction, float deviceScaleFactor, SkRect* trackingRect, const SkPaint&) const;
-    void drawEmphasisMarks(SkCanvas*, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&, float deviceScaleFactor, SkRect* trackingRect, const SkPaint&) const;
+    void drawText(SkCanvas*, const TextRunPaintInfo&, const FloatPoint&, float deviceScaleFactor, const SkPaint&) const;
+    void drawBidiText(SkCanvas*, const TextRunPaintInfo&, const FloatPoint&, CustomFontNotReadyAction, float deviceScaleFactor, const SkPaint&) const;
+    void drawEmphasisMarks(SkCanvas*, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&, float deviceScaleFactor, const SkPaint&) const;
 
     float width(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
 
@@ -136,13 +136,13 @@ private:
     float buildGlyphBuffer(const TextRunPaintInfo&, GlyphBuffer&, const GlyphData* emphasisData = nullptr) const;
     PassTextBlobPtr buildTextBlob(const GlyphBuffer&) const;
     void paintGlyphs(SkCanvas*, const SkPaint&, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
-        const SkPoint pos[], const FloatRect& textRect, float deviceScaleFactor, SkRect* trackingRect) const;
+        const SkPoint pos[], const FloatRect& textRect, float deviceScaleFactor) const;
     void paintGlyphsHorizontal(SkCanvas*, const SkPaint&, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
-        const SkScalar xpos[], SkScalar constY, const FloatRect& textRect, float deviceScaleFactor, SkRect* trackingRect) const;
+        const SkScalar xpos[], SkScalar constY, const FloatRect& textRect, float deviceScaleFactor) const;
     void drawGlyphs(SkCanvas*, const SkPaint&, const SimpleFontData*, const GlyphBuffer&, unsigned from, unsigned numGlyphs,
-        const FloatPoint&, const FloatRect& textRect, float deviceScaleFactor, SkRect* trackingRect) const;
-    void drawTextBlob(SkCanvas*, const SkPaint&, const SkTextBlob*, const SkPoint& origin, SkRect* trackingRect) const;
-    void drawGlyphBuffer(SkCanvas*, const SkPaint&, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&, float deviceScaleFactor, SkRect* trackingRect) const;
+        const FloatPoint&, const FloatRect& textRect, float deviceScaleFactor) const;
+    void drawTextBlob(SkCanvas*, const SkPaint&, const SkTextBlob*, const SkPoint& origin) const;
+    void drawGlyphBuffer(SkCanvas*, const SkPaint&, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&, float deviceScaleFactor) const;
     float floatWidthForSimpleText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, IntRectOutsets* glyphBounds = 0) const;
     int offsetForPositionForSimpleText(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForSimpleText(const TextRun&, const FloatPoint&, int h, int from, int to, bool accountForGlyphBounds) const;

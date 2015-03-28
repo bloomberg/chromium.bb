@@ -2029,7 +2029,7 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
 // It also re-orders the arguments to put the SkCanvas near the end for partial parameterization.
 static inline void drawBidiTextWrapper(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point, SkCanvas* canvas, const SkPaint* paint)
 {
-    font.drawBidiText(canvas, runInfo, point, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, nullptr, *paint);
+    font.drawBidiText(canvas, runInfo, point, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
 }
 
 void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, float y, CanvasRenderingContext2DState::PaintType paintType, float* maxWidth)
@@ -2123,13 +2123,13 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas();
         const SkPaint* paint = state().getPaint(paintType, DrawForegroundOnly);
-        font.drawBidiText(drawingCanvas(), textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, nullptr, *paint);
+        font.drawBidiText(drawingCanvas(), textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
         didDraw(clipBounds);
     } else {
         SkIRect dirtyRect;
         if (computeDirtyRect(textRunPaintInfo.bounds, clipBounds, &dirtyRect)) {
             const SkPaint* paint = state().getPaint(paintType, DrawShadowAndForeground);
-            font.drawBidiText(c, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, nullptr, *paint);
+            font.drawBidiText(c, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
             didDraw(dirtyRect);
         }
     }
