@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_PERMISSIONS_PERMISSION_MANAGER_H_
-#define CONTENT_CHILD_PERMISSIONS_PERMISSION_MANAGER_H_
+#ifndef CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_H_
+#define CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_H_
 
 #include <string>
 
@@ -18,17 +18,17 @@ namespace content {
 
 class ServiceRegistry;
 
-// The PermissionManager is a layer between Blink and the Mojo PermissionService
-// It implements blink::WebPermissionClient. It is being used from workers and
-// frames independently. When called outside of the main thread,
-// QueryPermissionForWorker is meant to be called. It will handle the thread
-// jumping.
-class PermissionManager : public blink::WebPermissionClient {
+// The PermissionDispatcher is a layer between Blink and the Mojo
+// PermissionService. It implements blink::WebPermissionClient. It is being used
+// from workers and frames independently. When called outside of the main
+// thread, QueryPermissionForWorker is meant to be called. It will handle the
+// thread jumping.
+class PermissionDispatcher : public blink::WebPermissionClient {
  public:
   // The caller must guarantee that |service_registry| will have a lifetime
-  // larger than this instance of PermissionManager.
-  explicit PermissionManager(ServiceRegistry* service_registry);
-  virtual ~PermissionManager();
+  // larger than this instance of PermissionDispatcher.
+  explicit PermissionDispatcher(ServiceRegistry* service_registry);
+  virtual ~PermissionDispatcher();
 
   // blink::WebPermissionClient implementation.
   virtual void queryPermission(blink::WebPermissionType type,
@@ -79,9 +79,9 @@ class PermissionManager : public blink::WebPermissionClient {
   ServiceRegistry* service_registry_;
   PermissionServicePtr permission_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionManager);
+  DISALLOW_COPY_AND_ASSIGN(PermissionDispatcher);
 };
 
 }  // namespace content
 
-#endif // CONTENT_CHILD_PERMISSIONS_PERMISSION_MANAGER_H_
+#endif // CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/permissions/permission_manager.h"
+#include "content/child/permissions/permission_dispatcher.h"
 
 #include "content/child/worker_task_runner.h"
 #include "content/public/common/service_registry.h"
@@ -48,7 +48,7 @@ const int kNoWorkerThread = 0;
 
 }  // anonymous namespace
 
-PermissionManager::CallbackInformation::CallbackInformation(
+PermissionDispatcher::CallbackInformation::CallbackInformation(
     blink::WebPermissionQueryCallback* callback,
     int worker_thread_id)
   : callback_(callback),
@@ -56,30 +56,30 @@ PermissionManager::CallbackInformation::CallbackInformation(
 }
 
 blink::WebPermissionQueryCallback*
-PermissionManager::CallbackInformation::callback() const {
+PermissionDispatcher::CallbackInformation::callback() const {
   return callback_.get();
 }
 
-int PermissionManager::CallbackInformation::worker_thread_id() const {
+int PermissionDispatcher::CallbackInformation::worker_thread_id() const {
   return worker_thread_id_;
 }
 
 blink::WebPermissionQueryCallback*
-PermissionManager::CallbackInformation::ReleaseCallback() {
+PermissionDispatcher::CallbackInformation::ReleaseCallback() {
   return callback_.release();
 }
 
-PermissionManager::CallbackInformation::~CallbackInformation() {
+PermissionDispatcher::CallbackInformation::~CallbackInformation() {
 }
 
-PermissionManager::PermissionManager(ServiceRegistry* service_registry)
+PermissionDispatcher::PermissionDispatcher(ServiceRegistry* service_registry)
     : service_registry_(service_registry) {
 }
 
-PermissionManager::~PermissionManager() {
+PermissionDispatcher::~PermissionDispatcher() {
 }
 
-void PermissionManager::queryPermission(
+void PermissionDispatcher::queryPermission(
     blink::WebPermissionType type,
     const blink::WebURL& origin,
     blink::WebPermissionQueryCallback* callback) {
@@ -87,7 +87,7 @@ void PermissionManager::queryPermission(
       type, origin.string().utf8(), callback, kNoWorkerThread);
 }
 
-void PermissionManager::QueryPermissionForWorker(
+void PermissionDispatcher::QueryPermissionForWorker(
     blink::WebPermissionType type,
     const std::string& origin,
     blink::WebPermissionQueryCallback* callback,
@@ -95,7 +95,7 @@ void PermissionManager::QueryPermissionForWorker(
   QueryPermissionInternal(type, origin, callback, worker_thread_id);
 }
 
-void PermissionManager::QueryPermissionInternal(
+void PermissionDispatcher::QueryPermissionInternal(
     blink::WebPermissionType type,
     const std::string& origin,
     blink::WebPermissionQueryCallback* callback,
@@ -111,12 +111,12 @@ void PermissionManager::QueryPermissionInternal(
   permission_service_->HasPermission(
       GetPermissionName(type),
       origin,
-      base::Bind(&PermissionManager::OnQueryPermission,
+      base::Bind(&PermissionDispatcher::OnQueryPermission,
                  base::Unretained(this),
                  request_id));
 }
 
-void PermissionManager::OnQueryPermission(int request_id,
+void PermissionDispatcher::OnQueryPermission(int request_id,
                                            PermissionStatus result) {
   CallbackInformation* callback_information =
       pending_callbacks_.Lookup(request_id);
@@ -134,7 +134,7 @@ void PermissionManager::OnQueryPermission(int request_id,
     // gracefully fail, destroying the callback too.
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id,
-        base::Bind(&PermissionManager::RunCallbackOnWorkerThread,
+        base::Bind(&PermissionDispatcher::RunCallbackOnWorkerThread,
                    base::Unretained(callback),
                    base::Passed(&status)));
     return;
@@ -145,7 +145,7 @@ void PermissionManager::OnQueryPermission(int request_id,
 }
 
 // static
-void PermissionManager::RunCallbackOnWorkerThread(
+void PermissionDispatcher::RunCallbackOnWorkerThread(
     blink::WebPermissionQueryCallback* callback,
     scoped_ptr<blink::WebPermissionStatus> status) {
   callback->onSuccess(status.release());

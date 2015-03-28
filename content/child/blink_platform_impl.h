@@ -34,7 +34,7 @@ class MessageLoop;
 namespace content {
 class FlingCurveConfiguration;
 class NotificationDispatcher;
-class PermissionManager;
+class PermissionDispatcher;
 class PushDispatcher;
 class ThreadSafeSender;
 class WebBluetoothImpl;
@@ -198,7 +198,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
-  scoped_ptr<PermissionManager> permission_client_;
+  scoped_ptr<PermissionDispatcher> permission_client_;
 };
 
 }  // namespace content

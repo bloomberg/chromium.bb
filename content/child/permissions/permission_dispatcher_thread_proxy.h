@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_PERMISSIONS_PERMISSION_MANAGER_THREAD_PROXY_H_
-#define CONTENT_CHILD_PERMISSIONS_PERMISSION_MANAGER_THREAD_PROXY_H_
+#ifndef CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_THREAD_PROXY_H_
+#define CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_THREAD_PROXY_H_
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
@@ -18,15 +18,15 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-class PermissionManager;
+class PermissionDispatcher;
 
-class PermissionManagerThreadProxy :
+class PermissionDispatcherThreadProxy :
     public blink::WebPermissionClient,
     public WorkerTaskRunner::Observer {
  public:
-  static PermissionManagerThreadProxy* GetThreadInstance(
+  static PermissionDispatcherThreadProxy* GetThreadInstance(
       base::SingleThreadTaskRunner* main_thread_task_runner,
-      PermissionManager* permissions_manager);
+      PermissionDispatcher* permissions_dispatcher);
 
   // blink::WebPermissionClient implementation.
   virtual void queryPermission(blink::WebPermissionType type,
@@ -37,18 +37,18 @@ class PermissionManagerThreadProxy :
   void OnWorkerRunLoopStopped() override;
 
  private:
-  PermissionManagerThreadProxy(
+  PermissionDispatcherThreadProxy(
       base::SingleThreadTaskRunner* main_thread_task_runner,
-      PermissionManager* permissions_manager);
+      PermissionDispatcher* permissions_dispatcher);
 
-  virtual ~PermissionManagerThreadProxy();
+  virtual ~PermissionDispatcherThreadProxy();
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  PermissionManager* permissions_manager_;
+  PermissionDispatcher* permission_dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionManagerThreadProxy);
+  DISALLOW_COPY_AND_ASSIGN(PermissionDispatcherThreadProxy);
 };
 
 }  // namespace content
 
-#endif // CONTENT_CHILD_PERMISSIONS_PERMISSIONS_MANAGER_THREAD_PROXY_H_
+#endif // CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_THREAD_PROXY_H_

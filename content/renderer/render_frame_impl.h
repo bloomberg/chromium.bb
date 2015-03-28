@@ -87,7 +87,7 @@ class NavigationState;
 class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
-class PermissionManager;
+class PermissionDispatcher;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
 class RendererAccessibility;
@@ -903,7 +903,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // AccessibilityModeOff.
   RendererAccessibility* renderer_accessibility_;
 
-  scoped_ptr<PermissionManager> permission_client_;
+  scoped_ptr<PermissionDispatcher> permission_client_;
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.

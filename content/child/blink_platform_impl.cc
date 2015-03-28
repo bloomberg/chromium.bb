@@ -35,8 +35,8 @@
 #include "content/child/navigator_connect/navigator_connect_provider.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
-#include "content/child/permissions/permission_manager.h"
-#include "content/child/permissions/permission_manager_thread_proxy.h"
+#include "content/child/permissions/permission_dispatcher.h"
+#include "content/child/permissions/permission_dispatcher_thread_proxy.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
@@ -444,7 +444,7 @@ void BlinkPlatformImpl::InternalInit() {
     notification_dispatcher_ =
         ChildThreadImpl::current()->notification_dispatcher();
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
-    permission_client_.reset(new PermissionManager(
+    permission_client_.reset(new PermissionDispatcher(
         ChildThreadImpl::current()->service_registry()));
   }
 
@@ -1090,7 +1090,7 @@ blink::WebPermissionClient* BlinkPlatformImpl::permissionClient() {
   if (IsMainThread())
     return permission_client_.get();
 
-  return PermissionManagerThreadProxy::GetThreadInstance(
+  return PermissionDispatcherThreadProxy::GetThreadInstance(
       main_thread_task_runner_.get(), permission_client_.get());
 }
 
