@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
@@ -33,12 +34,14 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 
+using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::NavigationController;
@@ -793,6 +796,42 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
 
 INSTANTIATE_TEST_CASE_P(SafeBrowsingBlockingPageBrowserTestWithThreatType,
                         SafeBrowsingBlockingPageBrowserTest,
+                        testing::Values(SB_THREAT_TYPE_URL_MALWARE,
+                                        SB_THREAT_TYPE_URL_PHISHING,
+                                        SB_THREAT_TYPE_URL_UNWANTED));
+
+// Test that SafeBrowsingBlockingPage properly decodes IDN URLs that are
+// displayed.
+class SafeBrowsingBlockingPageIDNTest
+    : public SecurityInterstitialIDNTest,
+      public testing::WithParamInterface<SBThreatType> {
+ protected:
+  // SecurityInterstitialIDNTest implementation
+  SecurityInterstitialPage* CreateInterstitial(
+      content::WebContents* contents,
+      const GURL& request_url) const override {
+    SafeBrowsingService* sb_service =
+        g_browser_process->safe_browsing_service();
+    SafeBrowsingBlockingPage::UnsafeResource resource;
+
+    resource.url = request_url;
+    resource.is_subresource = false;
+    resource.threat_type = GetParam();
+    resource.render_process_host_id = contents->GetRenderProcessHost()->GetID();
+    resource.render_view_id = contents->GetRenderViewHost()->GetRoutingID();
+
+    return SafeBrowsingBlockingPage::CreateBlockingPage(
+        sb_service->ui_manager().get(), contents, resource);
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageIDNTest,
+                       SafeBrowsingBlockingPageDecodesIDN) {
+  EXPECT_TRUE(VerifyIDNDecoded());
+}
+
+INSTANTIATE_TEST_CASE_P(SafeBrowsingBlockingPageIDNTestWithThreatType,
+                        SafeBrowsingBlockingPageIDNTest,
                         testing::Values(SB_THREAT_TYPE_URL_MALWARE,
                                         SB_THREAT_TYPE_URL_PHISHING,
                                         SB_THREAT_TYPE_URL_UNWANTED));
