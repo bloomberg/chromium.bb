@@ -34,6 +34,8 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   }
   base::CommandLine cmd_line(exe_path);
 
+  // Propagate an explicit --user-data-dir value if one was given. The new
+  // browser process will pick up a policy override during initialization.
   const base::CommandLine& process_command_line =
       *base::CommandLine::ForCurrentProcess();
   base::FilePath user_data_dir =

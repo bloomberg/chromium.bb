@@ -345,10 +345,8 @@ void InitializeUserDataDir() {
 
   // On Windows, trailing separators leave Chrome in a bad state.
   // See crbug.com/464616.
-  if (user_data_dir.EndsWithSeparator()) {
+  if (user_data_dir.EndsWithSeparator())
     user_data_dir = user_data_dir.StripTrailingSeparators();
-    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-  }
 
   const bool specified_directory_was_invalid = !user_data_dir.empty() &&
       !PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
