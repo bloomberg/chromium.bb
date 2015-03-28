@@ -84,6 +84,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   });
 
   this.registerDefaultEventListeners(player);
+  player.video.receivedKeyMessage = false;
   Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
   var persistentState = player.testConfig.sessionToLoad ? "required"
                                                         : "optional";
@@ -141,6 +142,7 @@ PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
   // The prefixed API is all synchronous, so wrap the calls in a promise.
   return new Promise(function(resolve, reject) {
     PlayerUtils.registerDefaultEventListeners(player);
+    player.video.receivedKeyMessage = false;
     resolve(player);
   });
 };
