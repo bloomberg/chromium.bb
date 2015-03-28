@@ -1,3 +1,11 @@
+# turn off Slimming Paint tests for all non-Linux platforms...
+crbug.com/453972 [ Mac ] virtual/slimmingpaint/ [ Skip ]
+crbug.com/453972 [ Win ] virtual/slimmingpaint/ [ Skip ]
+crbug.com/453972 [ Android ] virtual/slimmingpaint/ [ Skip ]
+# except for fast/block/, as a sanity test directory.
+crbug.com/453972 [ Mac ] virtual/slimmingpaint/fast/block [ Pass ]
+crbug.com/453972 [ Win ] virtual/slimmingpaint/fast/block [ Pass ]
+crbug.com/453972 [ Android ] virtual/slimmingpaint/fast/block [ Pass ]
 
 crbug.com/452320 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/452320 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
