@@ -5,6 +5,7 @@
 #include "content/browser/notifications/platform_notification_context_impl.h"
 
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/notifications/notification_database.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -94,6 +95,8 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
                                       origin,
                                       &database_data);
 
+  // TODO(peter): Record UMA on |status| for reading from the database.
+
   if (status == NotificationDatabase::STATUS_OK) {
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
@@ -103,8 +106,9 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
     return;
   }
 
-  // TODO(peter): Record UMA on |status| for reading from the database.
-  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -135,9 +139,10 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
                                        database_data,
                                        &notification_id);
 
-  DCHECK_GT(notification_id, 0);
+  // TODO(peter): Record UMA on |status| for reading from the database.
 
   if (status == NotificationDatabase::STATUS_OK) {
+    DCHECK_GT(notification_id, 0);
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
                             base::Bind(callback,
@@ -146,8 +151,9 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     return;
   }
 
-  // TODO(peter): Record UMA on |status| for reading from the database.
-  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
+  // Blow away the database if writing data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -175,10 +181,17 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
   NotificationDatabase::Status status =
       database_->DeleteNotificationData(notification_id, origin);
 
-  const bool success = status == NotificationDatabase::STATUS_OK;
-
   // TODO(peter): Record UMA on |status| for reading from the database.
-  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
+
+  bool success = status == NotificationDatabase::STATUS_OK;
+
+  // Blow away the database if deleting data failed due to corruption. Following
+  // the contract of the delete methods, consider this to be a success as the
+  // caller's goal has been achieved: the data is gone.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED) {
+    DestroyDatabase();
+    success = true;
+  }
 
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -203,13 +216,25 @@ void PlatformNotificationContextImpl::
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   std::set<int64_t> deleted_notifications_set;
-  database_->DeleteAllNotificationDataForServiceWorkerRegistration(
-        origin, service_worker_registration_id, &deleted_notifications_set);
+  NotificationDatabase::Status status =
+      database_->DeleteAllNotificationDataForServiceWorkerRegistration(
+            origin, service_worker_registration_id, &deleted_notifications_set);
 
   // TODO(peter): Record UMA on status for deleting from the database.
-  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
+
+  // Blow away the database if a corruption error occurred during the deletion.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
 
   // TODO(peter): Close the notifications in |deleted_notifications_set|.
+}
+
+void PlatformNotificationContextImpl::OnStorageWiped() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LazyInitialize(
+      base::Bind(base::IgnoreResult(
+          &PlatformNotificationContextImpl::DestroyDatabase), this),
+      base::Bind(&DoNothing));
 }
 
 void PlatformNotificationContextImpl::LazyInitialize(
@@ -241,22 +266,49 @@ void PlatformNotificationContextImpl::OpenDatabase(
   }
 
   database_.reset(new NotificationDatabase(GetDatabasePath()));
-
-  // TODO(peter): Record UMA on |status| for opening the database.
-  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
-
   NotificationDatabase::Status status =
       database_->Open(true /* create_if_missing */);
+
+  // TODO(peter): Record UMA on |status| for opening the database.
+
+  // When the database could not be opened due to corruption, destroy it, blow
+  // away the contents of the directory and try re-opening the database.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED) {
+    if (DestroyDatabase()) {
+      status = database_->Open(true /* create_if_missing */);
+
+      // TODO(peter): Record UMA on |status| for re-opening the database after
+      // corruption was detected.
+    }
+  }
 
   if (status == NotificationDatabase::STATUS_OK) {
     success_closure.Run();
     return;
   }
 
-  // TODO(peter): Properly handle failures when opening the database.
   database_.reset();
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, failure_closure);
+}
+
+bool PlatformNotificationContextImpl::DestroyDatabase() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(database_);
+
+  // TODO(peter): Record UMA on the status code of the Destroy() call.
+  database_->Destroy();
+  database_.reset();
+
+  // TODO(peter): Close any existing persistent notifications on the platform.
+
+  // Remove all files in the directory that the database was previously located
+  // in, to make sure that any left-over files are gone as well.
+  base::FilePath database_path = GetDatabasePath();
+  if (!database_path.empty())
+    return base::DeleteFile(database_path, true);
+
+  return true;
 }
 
 base::FilePath PlatformNotificationContextImpl::GetDatabasePath() const {

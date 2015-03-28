@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -279,6 +281,75 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(success());
+}
+
+TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
+  scoped_refptr<PlatformNotificationContextImpl> context =
+      CreatePlatformNotificationContext();
+
+  GURL origin("https://example.com");
+  NotificationDatabaseData notification_database_data;
+
+  context->WriteNotificationData(
+      origin,
+      notification_database_data,
+      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The write operation should have succeeded with a notification id.
+  ASSERT_TRUE(success());
+  EXPECT_GT(notification_id(), 0);
+
+  // Call the OnStorageWiped override from the ServiceWorkerContextObserver,
+  // which indicates that the database should go away entirely.
+  context->OnStorageWiped();
+
+  // Verify that reading notification data fails because the data does not
+  // exist anymore. Deliberately omit RunUntilIdle(), since this is unlikely to
+  // be the case when OnStorageWiped gets called in production.
+  context->ReadNotificationData(
+      notification_id(),
+      origin,
+      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(success());
+}
+
+TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
+  base::ScopedTempDir database_dir;
+  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
+
+  // Manually construct the PlatformNotificationContextImpl because this test
+  // requires the database to be created on the filesystem.
+  scoped_refptr<PlatformNotificationContextImpl> context(
+      new PlatformNotificationContextImpl(database_dir.path(), nullptr));
+
+  OverrideTaskRunnerForTesting(context.get());
+
+  // Trigger a read-operation to force creating the database.
+  context->ReadNotificationData(
+      42 /* notification_id */,
+      GURL("https://example.com"),
+      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(IsDirectoryEmpty(database_dir.path()));
+  EXPECT_FALSE(success());
+
+  // Blow away the database by faking a Service Worker Context wipe-out.
+  context->OnStorageWiped();
+
+  base::RunLoop().RunUntilIdle();
+
+  // The database's directory should be empty at this point.
+  EXPECT_TRUE(IsDirectoryEmpty(database_dir.path()));
 }
 
 }  // namespace content

@@ -66,6 +66,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // ServiceWorkerContextObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override;
+  void OnStorageWiped() override;
 
  private:
   friend class base::DeleteHelper<PlatformNotificationContextImpl>;
@@ -118,6 +119,11 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DoDeleteNotificationsForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id);
+
+  // Destroys the database regardless of its initialization status. This method
+  // must only be called on the |task_runner_| thread. Returns if the directory
+  // the database was stored in could be emptied.
+  bool DestroyDatabase();
 
   // Returns the path in which the database should be initialized. May be empty.
   base::FilePath GetDatabasePath() const;
