@@ -111,6 +111,7 @@ void NotificationMessageFilter::OnShowPlatformNotification(
 }
 
 void NotificationMessageFilter::OnShowPersistentNotification(
+    int request_id,
     int64 service_worker_registration_id,
     const GURL& origin,
     const SkBitmap& icon,
@@ -129,6 +130,11 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   service->DisplayPersistentNotification(browser_context_,
                                          service_worker_registration_id, origin,
                                          icon, notification_data);
+
+  // TODO(peter): Confirm display of the persistent notification after the
+  // data has been stored using the |notification_context_|.
+  Send(new PlatformNotificationMsg_DidShowPersistent(request_id,
+                                                     true /* success */));
 }
 
 void NotificationMessageFilter::OnGetNotifications(

@@ -198,6 +198,8 @@ bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationManager, message)
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShow, OnDidShow);
+    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShowPersistent,
+                        OnDidShowPersistent)
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClose, OnDidClose);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClick, OnDidClick);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidGetNotifications,
@@ -214,6 +216,22 @@ void NotificationManager::OnDidShow(int notification_id) {
     return;
 
   iter->second->dispatchShowEvent();
+}
+
+void NotificationManager::OnDidShowPersistent(int request_id, bool success) {
+  blink::WebNotificationShowCallbacks* callbacks =
+      pending_show_notification_requests_.Lookup(request_id);
+  DCHECK(callbacks);
+
+  if (!callbacks)
+    return;
+
+  if (success)
+    callbacks->onSuccess();
+  else
+    callbacks->onError();
+
+  pending_show_notification_requests_.Remove(request_id);
 }
 
 void NotificationManager::OnDidClose(int notification_id) {
@@ -284,16 +302,21 @@ void NotificationManager::DisplayPersistentNotification(
     int64 service_worker_registration_id,
     scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
     const SkBitmap& icon) {
+  // TODO(peter): GenerateNotificationId is more of a request id. Consider
+  // renaming the method in the NotificationDispatcher if this makes sense.
+  int request_id =
+      notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
+
+  pending_show_notification_requests_.AddWithID(callbacks.release(),
+                                                request_id);
+
   thread_safe_sender_->Send(
       new PlatformNotificationHostMsg_ShowPersistent(
+          request_id,
           service_worker_registration_id,
           GURL(origin.string()),
           icon,
           ToPlatformNotificationData(notification_data)));
-
-  // There currently isn't a case in which the promise would be rejected per
-  // our implementation, so always resolve it here.
-  callbacks->onSuccess();
 }
 
 }  // namespace content

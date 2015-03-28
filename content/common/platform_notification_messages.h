@@ -59,6 +59,13 @@ IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClose,
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClick,
                      int /* notification_id */)
 
+// Reply to PlatformNotificationHostMsg_ShowPersistent indicating that a
+// persistent notification has been shown on the platform (if |success| is
+// true), or that an unspecified error occurred.
+IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidShowPersistent,
+                     int /* request_id */,
+                     bool /* success */)
+
 // Reply to PlatformNotificationHostMsg_GetNotifications sharing a vector of
 // available notifications per the request's constraints.
 IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidGetNotifications,
@@ -74,7 +81,8 @@ IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_Show,
                      SkBitmap /* icon */,
                      content::PlatformNotificationData /* notification_data */)
 
-IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_ShowPersistent,
+IPC_MESSAGE_CONTROL5(PlatformNotificationHostMsg_ShowPersistent,
+                     int /* request_id */,
                      int64_t /* service_worker_registration_id */,
                      GURL /* origin */,
                      SkBitmap /* icon */,

@@ -73,6 +73,7 @@ class NotificationManager : public blink::WebNotificationManager,
 
   // IPC message handlers.
   void OnDidShow(int notification_id);
+  void OnDidShowPersistent(int request_id, bool success);
   void OnDidClose(int notification_id);
   void OnDidClick(int notification_id);
   void OnDidGetNotifications(
@@ -110,6 +111,10 @@ class NotificationManager : public blink::WebNotificationManager,
   // Tracks pending requests for getting a list of notifications.
   IDMap<blink::WebNotificationGetCallbacks, IDMapOwnPointer>
       pending_get_notification_requests_;
+
+  // Tracks pending requests for displaying persistent notifications.
+  IDMap<blink::WebNotificationShowCallbacks, IDMapOwnPointer>
+      pending_show_notification_requests_;
 
   // Map to store the delegate associated with a notification request Id.
   std::map<int, blink::WebNotificationDelegate*> active_page_notifications_;
