@@ -26,13 +26,19 @@ if (enable_nacl) {
     ]
 
     deps = [
+      ":nacl_common",
+      ":nacl_switches",
       "//base",
       "//base:base_static",
+      "//content/public/common",
+      "//crypto",
       "//ipc",
       "//mojo/nacl:monacl_sel",
       "//native_client/src/trusted/service_runtime:sel_main_chrome",
+      "//ppapi/c",
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
+      "//third_party/mojo/src/mojo/edk/embedder",
     ]
 
     if (enable_nacl_untrusted) {
@@ -76,8 +82,18 @@ if (enable_nacl) {
     deps = [
       ":nacl_common",
       ":nacl_switches",
+      ":nacl_helper",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//content/public/browser",
+      "//content/public/common",
+      "//ipc",
       "//native_client/src/trusted/service_runtime:sel_main_chrome",
-      "//content//public/browser",
+      "//net",
+      "//ppapi/host",
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
+      "//sandbox/linux:sandbox_services",
     ]
 
     if (is_linux) {
@@ -120,10 +136,19 @@ if (enable_nacl) {
 
     deps = [
       ":nacl_common",
+      ":nacl_switches",
       "renderer/plugin:nacl_trusted_plugin",
+      "//base",
+      "//content/public/common",
       "//content/public/renderer",
-      "//third_party/jsoncpp",
+      "//ipc",
+      "//net",
+      "//ppapi/c",
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
+      "//ppapi/thunk",
       "//third_party/WebKit/public:blink",
+      "//third_party/jsoncpp",
     ]
   }
 
@@ -147,8 +172,15 @@ if (enable_nacl) {
       ]
 
       deps = [
+        ":nacl",
         ":nacl_linux",
+        ":nacl_switches",
+        "//base",
+        "//content/public/common",
+        "//crypto",
+        "//ipc",
         "//mojo/nacl:monacl_sel",
+        "//sandbox/linux:libc_urandom_override",
       ]
 
       cflags = [ "-fPIE" ]
@@ -201,11 +233,17 @@ if (enable_nacl) {
         ":nacl",
         ":nacl_common",
         ":nacl_switches",
+        "//base",
         "//components/tracing",
+        "//content/public/common",
         "//crypto",
+        "//ipc",
+        "//ppapi/c",
         "//ppapi/proxy",
-        "//sandbox/linux:libc_urandom_override",
+        "//ppapi/shared_impl",
         "//sandbox",
+        "//sandbox/linux:libc_urandom_override",
+        "//sandbox/linux:sandbox_services_headers",
       ]
 
       if (use_glib) {
@@ -254,7 +292,11 @@ source_set("nacl_common") {
   ]
 
   deps = [
+    ":nacl_switches",
+    "//base",
     "//content/public/common",
+    "//ipc",
+    "//url",
   ]
 
   if (is_linux) {
