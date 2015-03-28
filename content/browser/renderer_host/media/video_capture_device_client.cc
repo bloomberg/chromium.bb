@@ -161,6 +161,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       flip = true;
 #endif
       break;
+    case media::PIXEL_FORMAT_RGB32:
+// Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows platforms.
+#if defined(OS_WIN)
+      flip = true;
+#endif
     case media::PIXEL_FORMAT_ARGB:
       origin_colorspace = libyuv::FOURCC_ARGB;
       break;

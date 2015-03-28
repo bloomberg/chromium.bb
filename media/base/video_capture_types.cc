@@ -47,6 +47,7 @@ size_t VideoCaptureFormat::ImageAllocationSize() const {
     case PIXEL_FORMAT_RGB24:
       result_frame_size *= 3;
       break;
+    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_ARGB:
       result_frame_size *= 4;
       break;
@@ -80,6 +81,8 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
     return "UYVY";
   case PIXEL_FORMAT_RGB24:
     return "RGB24";
+  case PIXEL_FORMAT_RGB32:
+    return "RGB32";
   case PIXEL_FORMAT_ARGB:
     return "ARGB";
   case PIXEL_FORMAT_MJPEG:

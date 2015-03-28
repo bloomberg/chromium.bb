@@ -155,15 +155,16 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
     { kMediaSubTypeI420, PIXEL_FORMAT_I420 },
     { MEDIASUBTYPE_IYUV, PIXEL_FORMAT_I420 },
     { MEDIASUBTYPE_RGB24, PIXEL_FORMAT_RGB24 },
+    { MEDIASUBTYPE_RGB32, PIXEL_FORMAT_RGB32 },
     { MEDIASUBTYPE_YUY2, PIXEL_FORMAT_YUY2 },
     { MEDIASUBTYPE_MJPG, PIXEL_FORMAT_MJPEG },
     { MEDIASUBTYPE_UYVY, PIXEL_FORMAT_UYVY },
     { MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB },
     { kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY },
   };
-  for (size_t i = 0; i < arraysize(pixel_formats); ++i) {
-    if (sub_type == pixel_formats[i].sub_type)
-      return pixel_formats[i].format;
+  for (const auto& pixel_format : pixel_formats) {
+    if (sub_type == pixel_format.sub_type)
+      return pixel_format.format;
   }
 #ifndef NDEBUG
   WCHAR guid_str[128];
