@@ -10,8 +10,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
 
 class GURL;
@@ -24,16 +27,30 @@ namespace content {
 
 class NotificationDatabase;
 struct NotificationDatabaseData;
+class ServiceWorkerContextWrapper;
 
 // Implementation of the Web Notification storage context. The public methods
-// defined in this interface must only be called on the IO thread.
+// defined in this interface must only be called on the IO thread unless
+// otherwise specified.
 class CONTENT_EXPORT PlatformNotificationContextImpl
-    : public NON_EXPORTED_BASE(PlatformNotificationContext) {
+    : NON_EXPORTED_BASE(public PlatformNotificationContext),
+      NON_EXPORTED_BASE(public ServiceWorkerContextObserver),
+      public base::RefCountedThreadSafe<PlatformNotificationContextImpl,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   // Constructs a new platform notification context. If |path| is non-empty, the
   // database will be initialized in the "Platform Notifications" subdirectory
-  // of |path|. Otherwise, the database will be initialized in memory.
-  explicit PlatformNotificationContextImpl(const base::FilePath& path);
+  // of |path|. Otherwise, the database will be initialized in memory. The
+  // constructor must only be called on the IO thread.
+  PlatformNotificationContextImpl(
+      const base::FilePath& path,
+      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+
+  // To be called on the UI thread to initialize the instance.
+  void Initialize();
+
+  // To be called on the UI thread when the context is being shut down.
+  void Shutdown();
 
   // PlatformNotificationContext implementation.
   void ReadNotificationData(int64_t notification_id,
@@ -46,10 +63,21 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                               const GURL& origin,
                               const DeleteResultCallback& callback) override;
 
+  // ServiceWorkerContextObserver implementation.
+  void OnRegistrationDeleted(int64_t registration_id,
+                             const GURL& pattern) override;
+
  private:
+  friend class base::DeleteHelper<PlatformNotificationContextImpl>;
+  friend class base::RefCountedThreadSafe<PlatformNotificationContextImpl,
+                                        BrowserThread::DeleteOnUIThread>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class PlatformNotificationContextTest;
 
   ~PlatformNotificationContextImpl() override;
+
+  void InitializeOnIO();
+  void ShutdownOnIO();
 
   // Initializes the database if neccesary. Must be called on the IO thread.
   // |success_closure| will be invoked on a the |task_runner_| thread when
@@ -85,6 +113,12 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                                 const GURL& origin,
                                 const DeleteResultCallback& callback);
 
+  // Deletes all notifications associated with |service_worker_registration_id|
+  // belonging to |origin|. Must be called on the |task_runner_| thread.
+  void DoDeleteNotificationsForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id);
+
   // Returns the path in which the database should be initialized. May be empty.
   base::FilePath GetDatabasePath() const;
 
@@ -93,6 +127,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   base::FilePath path_;
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<NotificationDatabase> database_;

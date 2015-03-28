@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 
 class GURL;
 
@@ -19,8 +18,7 @@ struct NotificationDatabaseData;
 // Represents the storage context for persistent Web Notifications, specific to
 // the storage partition owning the instance. All methods defined in this
 // interface may only be used on the IO thread.
-class PlatformNotificationContext
-    : public base::RefCountedThreadSafe<PlatformNotificationContext> {
+class PlatformNotificationContext {
  public:
   using ReadResultCallback =
       base::Callback<void(bool /* success */,
@@ -55,8 +53,6 @@ class PlatformNotificationContext
                                       const DeleteResultCallback& callback) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<PlatformNotificationContext>;
-
   virtual ~PlatformNotificationContext() {}
 };
 

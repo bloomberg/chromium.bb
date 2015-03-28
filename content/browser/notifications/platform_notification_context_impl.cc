@@ -4,10 +4,14 @@
 
 #include "content/browser/notifications/platform_notification_context_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/notifications/notification_database.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_database_data.h"
+
+using base::DoNothing;
 
 namespace content {
 
@@ -17,17 +21,54 @@ const base::FilePath::CharType kPlatformNotificationsDirectory[] =
     FILE_PATH_LITERAL("Platform Notifications");
 
 PlatformNotificationContextImpl::PlatformNotificationContextImpl(
-    const base::FilePath& path)
-    : path_(path) {
+    const base::FilePath& path,
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
+    : path_(path),
+      service_worker_context_(service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 PlatformNotificationContextImpl::~PlatformNotificationContextImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // If the database has been initialized, it must be deleted on the task runner
   // thread as closing it may cause file I/O.
   if (database_) {
     DCHECK(task_runner_);
     task_runner_->DeleteSoon(FROM_HERE, database_.release());
   }
+}
+
+void PlatformNotificationContextImpl::Initialize() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PlatformNotificationContextImpl::InitializeOnIO, this));
+}
+
+void PlatformNotificationContextImpl::InitializeOnIO() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // |service_worker_context_| may be NULL in tests.
+  if (service_worker_context_)
+    service_worker_context_->AddObserver(this);
+}
+
+void PlatformNotificationContextImpl::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PlatformNotificationContextImpl::ShutdownOnIO, this));
+}
+
+void PlatformNotificationContextImpl::ShutdownOnIO() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // |service_worker_context_| may be NULL in tests.
+  if (service_worker_context_)
+    service_worker_context_->RemoveObserver(this);
 }
 
 void PlatformNotificationContextImpl::ReadNotificationData(
@@ -142,6 +183,33 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(callback, success));
+}
+
+void PlatformNotificationContextImpl::OnRegistrationDeleted(
+    int64_t registration_id,
+    const GURL& pattern) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LazyInitialize(
+      base::Bind(&PlatformNotificationContextImpl::
+                     DoDeleteNotificationsForServiceWorkerRegistration,
+                 this, pattern.GetOrigin(), registration_id),
+      base::Bind(&DoNothing));
+}
+
+void PlatformNotificationContextImpl::
+    DoDeleteNotificationsForServiceWorkerRegistration(
+        const GURL& origin,
+        int64_t service_worker_registration_id) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  std::set<int64_t> deleted_notifications_set;
+  database_->DeleteAllNotificationDataForServiceWorkerRegistration(
+        origin, service_worker_registration_id, &deleted_notifications_set);
+
+  // TODO(peter): Record UMA on status for deleting from the database.
+  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
+
+  // TODO(peter): Close the notifications in |deleted_notifications_set|.
 }
 
 void PlatformNotificationContextImpl::LazyInitialize(

@@ -422,6 +422,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetGeofencingManager())
     GetGeofencingManager()->Shutdown();
+
+  if (GetPlatformNotificationContext())
+    GetPlatformNotificationContext()->Shutdown();
 }
 
 StoragePartitionImpl* StoragePartitionImpl::Create(
@@ -510,7 +513,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new NavigatorConnectServiceWorkerServiceFactory(service_worker_context)));
 
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context =
-      new PlatformNotificationContextImpl(path);
+      new PlatformNotificationContextImpl(path, service_worker_context);
+  platform_notification_context->Initialize();
 
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),

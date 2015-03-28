@@ -6,12 +6,12 @@
 
 #include "base/callback.h"
 #include "content/browser/notifications/page_notification_delegate.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/desktop_notification_delegate.h"
-#include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
@@ -20,7 +20,7 @@ namespace content {
 
 NotificationMessageFilter::NotificationMessageFilter(
     int process_id,
-    PlatformNotificationContext* notification_context,
+    PlatformNotificationContextImpl* notification_context,
     ResourceContext* resource_context,
     BrowserContext* browser_context)
     : BrowserMessageFilter(PlatformNotificationMsgStart),
