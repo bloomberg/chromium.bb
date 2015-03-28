@@ -256,10 +256,13 @@ class GFX_EXPORT RenderText {
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
 
-  // TODO(ckocagil): Multiline text rendering is currently only supported on
-  // Windows. Support other platforms.
+  // TODO(ckocagil): Multiline text rendering is not supported on Mac.
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
+
+  // TODO(mukai): ELIDE_LONG_WORDS is not supported.
+  WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }
+  void SetWordWrapBehavior(WordWrapBehavior behavior);
 
   // Set whether newline characters should be replaced with newline symbols.
   void SetReplaceNewlineCharsWithSymbols(bool replace);
@@ -634,6 +637,7 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_SufficientWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_Newline);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_WordWrapBehavior);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, NewlineWithoutMultilineFlag);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GlyphBounds);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_GlyphBounds);
@@ -761,6 +765,10 @@ class GFX_EXPORT RenderText {
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.
   bool multiline_;
+
+  // The wrap behavior when the text is broken into lines. Do nothing unless
+  // |multiline_| is set. The default value is IGNORE_LONG_WORDS.
+  WordWrapBehavior word_wrap_behavior_;
 
   // Whether newline characters should be replaced with newline symbols.
   bool replace_newline_chars_with_symbols_;

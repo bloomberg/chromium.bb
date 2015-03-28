@@ -2090,6 +2090,7 @@ TEST_F(RenderTextTest, Multiline_MinWidth) {
   RenderTextHarfBuzz render_text;
   render_text.SetDisplayRect(Rect(1, 1000));
   render_text.SetMultiline(true);
+  render_text.SetWordWrapBehavior(WRAP_LONG_WORDS);
   Canvas canvas;
 
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
@@ -2123,6 +2124,7 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
   render_text.set_glyph_width_for_test(5);
   render_text.SetDisplayRect(Rect(50, 1000));
   render_text.SetMultiline(true);
+  render_text.SetWordWrapBehavior(WRAP_LONG_WORDS);
   render_text.SetHorizontalAlignment(ALIGN_TO_HEAD);
 
   Canvas canvas;
@@ -2305,6 +2307,46 @@ TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
       int difference = (lines[0].length() - lines[1].length()) * kGlyphSize;
       EXPECT_EQ(render_text.GetAlignmentOffset(0).x() + difference,
                 render_text.GetAlignmentOffset(1).x());
+    }
+  }
+}
+
+TEST_F(RenderTextTest, Multiline_WordWrapBehavior) {
+  const int kGlyphSize = 5;
+  const struct {
+    const WordWrapBehavior behavior;
+    const size_t num_lines;
+    const Range char_ranges[4];
+  } kTestScenarios[] = {
+    { IGNORE_LONG_WORDS, 3u,
+      { Range(0, 4), Range(4, 11), Range(11, 14), Range::InvalidRange() } },
+    { TRUNCATE_LONG_WORDS, 3u,
+      { Range(0, 4), Range(4, 8), Range(11, 14), Range::InvalidRange() } },
+    { WRAP_LONG_WORDS, 4u,
+      { Range(0, 4), Range(4, 8), Range(8, 11), Range(11, 14) } },
+    // TODO(mukai): implement ELIDE_LONG_WORDS. It's not used right now.
+  };
+  RenderTextHarfBuzz render_text;
+  render_text.SetMultiline(true);
+  render_text.SetText(ASCIIToUTF16("foo fooooo foo"));
+  render_text.set_glyph_width_for_test(kGlyphSize);
+  render_text.SetDisplayRect(Rect(0, 0, kGlyphSize * 4, 0));
+
+  Canvas canvas;
+
+  for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
+    SCOPED_TRACE(base::StringPrintf(
+        "kTestScenarios[%" PRIuS "] %d", i, kTestScenarios[i].behavior));
+    render_text.SetWordWrapBehavior(kTestScenarios[i].behavior);
+    render_text.Draw(&canvas);
+
+    ASSERT_EQ(kTestScenarios[i].num_lines, render_text.lines().size());
+    for (size_t j = 0; j < render_text.lines().size(); ++j) {
+      SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
+      EXPECT_EQ(kTestScenarios[i].char_ranges[j],
+                render_text.lines()[j].segments[0].char_range);
+      EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
+                render_text.lines()[j].size.width());
     }
   }
 }

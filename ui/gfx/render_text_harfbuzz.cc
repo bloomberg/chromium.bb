@@ -224,6 +224,7 @@ class HarfBuzzLineBreaker {
                       int min_baseline,
                       float min_height,
                       bool multiline,
+                      WordWrapBehavior word_wrap_behavior,
                       const base::string16& text,
                       const BreakList<size_t>* words,
                       const internal::TextRunList& run_list)
@@ -231,6 +232,7 @@ class HarfBuzzLineBreaker {
         min_baseline_(min_baseline),
         min_height_(min_height),
         multiline_(multiline),
+        word_wrap_behavior_(word_wrap_behavior),
         text_(text),
         words_(words),
         run_list_(run_list),
@@ -285,9 +287,10 @@ class HarfBuzzLineBreaker {
     // Break the run until it fits the current line.
     while (next_char < run.range.end()) {
       const size_t current_char = next_char;
+      size_t end_char = next_char;
       const bool skip_line =
-          BreakRunAtWidth(run, current_char, &width, &next_char);
-      AddSegment(run_index, Range(current_char, next_char),
+          BreakRunAtWidth(run, current_char, &width, &end_char, &next_char);
+      AddSegment(run_index, Range(current_char, end_char),
                  SkScalarToFloat(width));
       if (skip_line)
         AdvanceLine();
@@ -298,7 +301,8 @@ class HarfBuzzLineBreaker {
   // before available width using word break. If the current position is at the
   // beginning of a line, this function will not roll back to |start_char| and
   // |*next_char| will be greater than |start_char| (to avoid constructing empty
-  // lines).
+  // lines). It stores the end of the segment range to |end_char|, which can be
+  // smaller than |*next_char| for certain word wrapping behavior.
   // Returns whether to skip the line before |*next_char|.
   // TODO(ckocagil): We might have to reshape after breaking at ligatures.
   //                 See whether resolving the TODO above resolves this too.
@@ -306,6 +310,7 @@ class HarfBuzzLineBreaker {
   bool BreakRunAtWidth(const internal::TextRunHarfBuzz& run,
                        size_t start_char,
                        SkScalar* width,
+                       size_t* end_char,
                        size_t* next_char) {
     DCHECK(words_);
     DCHECK(run.range.Contains(Range(start_char, start_char + 1)));
@@ -317,11 +322,21 @@ class HarfBuzzLineBreaker {
     *width = 0;
 
     Range char_range;
+    SkScalar truncated_width = 0;
     for (size_t i = start_char; i < run.range.end(); i += char_range.length()) {
       // |word| holds the word boundary at or before |i|, and |next_word| holds
       // the word boundary right after |i|. Advance both |word| and |next_word|
       // when |i| reaches |next_word|.
       if (next_word != words_->breaks().end() && i >= next_word->first) {
+        if (*width > available_width) {
+          DCHECK_NE(WRAP_LONG_WORDS, word_wrap_behavior_);
+          *next_char = i;
+          if (word_wrap_behavior_ != TRUNCATE_LONG_WORDS)
+            *end_char = *next_char;
+          else
+            *width = truncated_width;
+          return true;
+        }
         word = next_word++;
         word_width = 0;
       }
@@ -338,24 +353,35 @@ class HarfBuzzLineBreaker {
       *width += char_width;
       word_width += char_width;
 
+      // TODO(mukai): implement ELIDE_LONG_WORDS.
       if (*width > available_width) {
         if (line_x_ != 0 || word_width < *width) {
           // Roll back one word.
           *width -= word_width;
           *next_char = std::max(word->first, start_char);
-        } else if (char_width < *width) {
-          // Roll back one character.
-          *width -= char_width;
-          *next_char = i;
-        } else {
-          // Continue from the next character.
-          *next_char = i + char_range.length();
+          *end_char = *next_char;
+          return true;
+        } else if (word_wrap_behavior_ == WRAP_LONG_WORDS) {
+          if (char_width < *width) {
+            // Roll back one character.
+            *width -= char_width;
+            *next_char = i;
+          } else {
+            // Continue from the next character.
+            *next_char = i + char_range.length();
+          }
+          *end_char = *next_char;
+          return true;
         }
-        return true;
+      } else {
+        *end_char = char_range.end();
+        truncated_width = *width;
       }
     }
 
-    *next_char = run.range.end();
+    if (word_wrap_behavior_ == TRUNCATE_LONG_WORDS)
+      *width = truncated_width;
+    *end_char = *next_char = run.range.end();
     return false;
   }
 
@@ -448,6 +474,7 @@ class HarfBuzzLineBreaker {
   const int min_baseline_;
   const float min_height_;
   const bool multiline_;
+  const WordWrapBehavior word_wrap_behavior_;
   const base::string16& text_;
   const BreakList<size_t>* const words_;
   const internal::TextRunList& run_list_;
@@ -997,7 +1024,8 @@ void RenderTextHarfBuzz::EnsureLayout() {
     HarfBuzzLineBreaker line_breaker(
         display_rect().width(), font_list().GetBaseline(),
         std::max(font_list().GetHeight(), min_line_height()), multiline(),
-        GetDisplayText(), multiline() ? &GetLineBreaks() : nullptr, *run_list);
+        word_wrap_behavior(), GetDisplayText(),
+        multiline() ? &GetLineBreaks() : nullptr, *run_list);
 
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
     tracked_objects::ScopedTracker tracking_profile3(

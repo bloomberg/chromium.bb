@@ -109,26 +109,6 @@ GFX_EXPORT bool ElideRectangleString(const base::string16& input,
                                      bool strict,
                                      base::string16* output);
 
-// Specifies the word wrapping behavior of |ElideRectangleText()| when a word
-// would exceed the available width.
-enum WordWrapBehavior {
-  // Words that are too wide will be put on a new line, but will not be
-  // truncated or elided.
-  IGNORE_LONG_WORDS,
-
-  // Words that are too wide will be put on a new line and will be truncated to
-  // the available width.
-  TRUNCATE_LONG_WORDS,
-
-  // Words that are too wide will be put on a new line and will be elided to the
-  // available width.
-  ELIDE_LONG_WORDS,
-
-  // Words that are too wide will be put on a new line and will be wrapped over
-  // multiple lines.
-  WRAP_LONG_WORDS,
-};
-
 // Indicates whether the |available_pixel_width| by |available_pixel_height|
 // rectangle passed to |ElideRectangleText()| had insufficient space to
 // accommodate the given |text|, leading to elision or truncation.

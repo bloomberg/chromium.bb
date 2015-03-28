@@ -86,6 +86,7 @@ class VIEWS_EXPORT Label : public View {
   void SetObscured(bool obscured);
 
   // Sets whether multi-line text can wrap mid-word; the default is false.
+  // TODO(mukai): allow specifying WordWrapBehavior.
   void SetAllowCharacterBreak(bool allow_character_break);
 
   // Sets the eliding or fading behavior, applied as necessary. The default is
@@ -209,7 +210,6 @@ class VIEWS_EXPORT Label : public View {
   bool handles_tooltips_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
-  bool allow_character_break_;
   int max_width_;
 
   // TODO(vadimt): Remove is_first_paint_text_ before crbug.com/431326 is

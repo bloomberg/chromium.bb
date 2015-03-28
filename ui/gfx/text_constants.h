@@ -15,6 +15,16 @@ enum BreakType {
   LINE_BREAK,          // Stop cursor movement on line ends as shown on screen.
 };
 
+// Specifies the word wrapping behavior when a word would exceed the available
+// display width. All words that are too wide will be put on a new line, and
+// then:
+enum WordWrapBehavior {
+  IGNORE_LONG_WORDS,   // Overflowing word text is left on that line.
+  TRUNCATE_LONG_WORDS, // Overflowing word text is truncated.
+  ELIDE_LONG_WORDS,    // Overflowing word text is elided at the ellipsis.
+  WRAP_LONG_WORDS,     // Overflowing word text is wrapped over multiple lines.
+};
+
 // Horizontal text alignment modes.
 enum HorizontalAlignment {
   ALIGN_LEFT = 0, // Align the text's left edge with that of its display area.

@@ -532,6 +532,17 @@ void RenderText::SetMultiline(bool multiline) {
   }
 }
 
+void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
+  if (word_wrap_behavior_ == behavior)
+    return;
+  word_wrap_behavior_ = behavior;
+  if (multiline_) {
+    cached_bounds_and_offset_valid_ = false;
+    lines_.clear();
+    OnTextAttributeChanged();
+  }
+}
+
 void RenderText::SetReplaceNewlineCharsWithSymbols(bool replace) {
   if (replace_newline_chars_with_symbols_ == replace)
     return;
@@ -976,6 +987,7 @@ RenderText::RenderText()
       text_elided_(false),
       min_line_height_(0),
       multiline_(false),
+      word_wrap_behavior_(IGNORE_LONG_WORDS),
       replace_newline_chars_with_symbols_(true),
       subpixel_rendering_suppressed_(false),
       clip_to_display_rect_(true),

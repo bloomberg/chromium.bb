@@ -150,11 +150,15 @@ void Label::SetObscured(bool obscured) {
 }
 
 void Label::SetAllowCharacterBreak(bool allow_character_break) {
-  if (allow_character_break_ == allow_character_break)
+  const gfx::WordWrapBehavior behavior =
+      allow_character_break ? gfx::WRAP_LONG_WORDS : gfx::TRUNCATE_LONG_WORDS;
+  if (render_text_->word_wrap_behavior() == behavior)
     return;
-  is_first_paint_text_ = true;
-  allow_character_break_ = allow_character_break;
-  ResetLayout();
+  render_text_->SetWordWrapBehavior(behavior);
+  if (multi_line()) {
+    is_first_paint_text_ = true;
+    ResetLayout();
+  }
 }
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
@@ -258,9 +262,7 @@ int Label::GetHeightForWidth(int w) const {
     return std::max(line_height(), font_list().GetHeight());
 
   int height = 0;
-  // RenderText doesn't support character breaks.
-  // TODO(mukai): remove this restriction.
-  if (render_text_->MultilineSupported() && !allow_character_break_) {
+  if (render_text_->MultilineSupported()) {
     // SetDisplayRect() has a side effect for later calls of GetStringSize().
     // Be careful to invoke |render_text_->SetDisplayRect(gfx::Rect())| to
     // cancel this effect before the next time GetStringSize() is called.
@@ -384,6 +386,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   render_text_->SetElideBehavior(gfx::NO_ELIDE);
   render_text_->SetFontList(font_list);
   render_text_->SetCursorEnabled(false);
+  render_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
 
   elide_behavior_ = gfx::ELIDE_TAIL;
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
@@ -393,7 +396,6 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   UpdateColorsFromTheme(ui::NativeTheme::instance());
   handles_tooltips_ = true;
   collapse_when_hidden_ = false;
-  allow_character_break_ = false;
   max_width_ = 0;
   is_first_paint_text_ = true;
   SetText(text);
@@ -451,12 +453,12 @@ void Label::MaybeBuildRenderTextLines() {
   // TODO(mukai): Add multi-lined elided text support.
   gfx::ElideBehavior elide_behavior =
       multi_line() ? gfx::NO_ELIDE : elide_behavior_;
-  if (!multi_line() ||
-      (render_text_->MultilineSupported() && !allow_character_break_)) {
+  if (!multi_line() || render_text_->MultilineSupported()) {
     scoped_ptr<gfx::RenderText> render_text =
         CreateRenderText(text(), alignment, directionality, elide_behavior);
     render_text->SetDisplayRect(rect);
     render_text->SetMultiline(multi_line());
+    render_text->SetWordWrapBehavior(render_text_->word_wrap_behavior());
     lines_.push_back(render_text.release());
   } else {
     std::vector<base::string16> lines = GetLinesForWidth(rect.width());
@@ -504,11 +506,9 @@ std::vector<base::string16> Label::GetLinesForWidth(int width) const {
   if (width <= 0) {
     base::SplitString(render_text_->GetDisplayText(), '\n', &lines);
   } else {
-    const gfx::WordWrapBehavior wrap = allow_character_break_
-                                           ? gfx::WRAP_LONG_WORDS
-                                           : gfx::TRUNCATE_LONG_WORDS;
     gfx::ElideRectangleText(render_text_->GetDisplayText(), font_list(), width,
-                            std::numeric_limits<int>::max(), wrap, &lines);
+                            std::numeric_limits<int>::max(),
+                            render_text_->word_wrap_behavior(), &lines);
   }
   return lines;
 }
@@ -517,8 +517,7 @@ gfx::Size Label::GetTextSize() const {
   gfx::Size size;
   if (text().empty()) {
     size = gfx::Size(0, std::max(line_height(), font_list().GetHeight()));
-  } else if (!multi_line() ||
-             (render_text_->MultilineSupported() && !allow_character_break_)) {
+  } else if (!multi_line() || render_text_->MultilineSupported()) {
     // Cancel the display rect of |render_text_|. The display rect may be
     // specified in GetHeightForWidth(), and specifying empty Rect cancels
     // its effect. See also the comment in GetHeightForWidth().
