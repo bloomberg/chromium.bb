@@ -101,6 +101,15 @@ static String convertMediaKeysRequirement(WebMediaKeySystemConfiguration::Requir
     return "not-allowed";
 }
 
+static Vector<String> convertSessionTypes(const WebVector<WebEncryptedMediaSessionType>& sessionTypes)
+{
+    Vector<String> result;
+    result.reserveCapacity(sessionTypes.size());
+    for (size_t i = 0; i < sessionTypes.size(); i++)
+        result.append(EncryptedMediaUtils::convertFromSessionType(sessionTypes[i]));
+    return result;
+}
+
 } // namespace
 
 MediaKeySystemAccess::MediaKeySystemAccess(const String& keySystem, PassOwnPtr<WebContentDecryptionModuleAccess> access)
@@ -121,6 +130,7 @@ void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
     result.setVideoCapabilities(convertCapabilities(configuration.videoCapabilities));
     result.setDistinctiveIdentifier(convertMediaKeysRequirement(configuration.distinctiveIdentifier));
     result.setPersistentState(convertMediaKeysRequirement(configuration.persistentState));
+    result.setSessionTypes(convertSessionTypes(configuration.sessionTypes));
 }
 
 ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)

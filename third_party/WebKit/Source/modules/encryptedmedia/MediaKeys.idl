@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-enum SessionType {
+enum MediaKeySessionType {
     "temporary",
     "persistent-license",
     "persistent-release-message"
@@ -34,7 +34,7 @@ enum SessionType {
     GarbageCollected,
     TypeChecking=Interface
 ] interface MediaKeys {
-    [CallWith=ScriptState, RaisesException] MediaKeySession createSession(optional SessionType sessionType = "temporary");
+    [CallWith=ScriptState, RaisesException] MediaKeySession createSession(optional MediaKeySessionType sessionType = "temporary");
 
     [CallWith=ScriptState] Promise<void> setServerCertificate(BufferSource serverCertificate);
 };

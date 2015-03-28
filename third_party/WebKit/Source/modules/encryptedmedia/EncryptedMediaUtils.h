@@ -16,6 +16,7 @@ public:
     static String convertFromInitDataType(WebEncryptedMediaInitDataType);
 
     static WebEncryptedMediaSessionType convertToSessionType(const String& sessionType);
+    static String convertFromSessionType(WebEncryptedMediaSessionType);
 
 private:
     EncryptedMediaUtils();

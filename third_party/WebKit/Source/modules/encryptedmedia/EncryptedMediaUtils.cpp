@@ -7,6 +7,14 @@
 
 namespace blink {
 
+namespace {
+
+const char kTemporary[] = "temporary";
+const char kPersistentLicense[] = "persistent-license";
+const char kPersistentReleaseMessage[] = "persistent-release-message";
+
+} // namespace
+
 WebEncryptedMediaInitDataType EncryptedMediaUtils::convertToInitDataType(const String& initDataType)
 {
     if (initDataType == "cenc")
@@ -30,6 +38,8 @@ String EncryptedMediaUtils::convertFromInitDataType(WebEncryptedMediaInitDataTyp
     case WebEncryptedMediaInitDataType::Webm:
         return "webm";
     case WebEncryptedMediaInitDataType::Unknown:
+        // Chromium should not use Unknown, but we use it in Blink when the
+        // actual value has been blocked for non-same-origin or mixed content.
         return String();
     }
 
@@ -39,15 +49,34 @@ String EncryptedMediaUtils::convertFromInitDataType(WebEncryptedMediaInitDataTyp
 
 WebEncryptedMediaSessionType EncryptedMediaUtils::convertToSessionType(const String& sessionType)
 {
-    if (sessionType == "temporary")
+    if (sessionType == kTemporary)
         return WebEncryptedMediaSessionType::Temporary;
-    if (sessionType == "persistent-license")
+    if (sessionType == kPersistentLicense)
         return WebEncryptedMediaSessionType::PersistentLicense;
-    if (sessionType == "persistent-release-message")
+    if (sessionType == kPersistentReleaseMessage)
         return WebEncryptedMediaSessionType::PersistentReleaseMessage;
 
-    ASSERT_NOT_REACHED();
+    // |sessionType| is not restricted in the idl, so anything is possible.
     return WebEncryptedMediaSessionType::Unknown;
+}
+
+String EncryptedMediaUtils::convertFromSessionType(WebEncryptedMediaSessionType sessionType)
+{
+    switch (sessionType) {
+    case WebEncryptedMediaSessionType::Temporary:
+        return kTemporary;
+    case WebEncryptedMediaSessionType::PersistentLicense:
+        return kPersistentLicense;
+    case WebEncryptedMediaSessionType::PersistentReleaseMessage:
+        return kPersistentReleaseMessage;
+    case WebEncryptedMediaSessionType::Unknown:
+        // Chromium should not use Unknown.
+        ASSERT_NOT_REACHED();
+        return String();
+    }
+
+    ASSERT_NOT_REACHED();
+    return String();
 }
 
 } // namespace blink

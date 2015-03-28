@@ -68,6 +68,14 @@ static WebMediaKeySystemConfiguration::Requirement convertMediaKeysRequirement(c
     return WebMediaKeySystemConfiguration::Requirement::Optional;
 }
 
+static WebVector<WebEncryptedMediaSessionType> convertSessionTypes(const Vector<String>& sessionTypes)
+{
+    WebVector<WebEncryptedMediaSessionType> result(sessionTypes.size());
+    for (size_t i = 0; i < sessionTypes.size(); ++i)
+        result[i] = EncryptedMediaUtils::convertToSessionType(sessionTypes[i]);
+    return result;
+}
+
 // This class allows capabilities to be checked and a MediaKeySystemAccess
 // object to be created asynchronously.
 class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
@@ -110,6 +118,12 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
         webConfig.distinctiveIdentifier = convertMediaKeysRequirement(config.distinctiveIdentifier());
         ASSERT(config.hasPersistentState());
         webConfig.persistentState = convertMediaKeysRequirement(config.persistentState());
+        if (config.hasSessionTypes()) {
+            webConfig.sessionTypes = convertSessionTypes(config.sessionTypes());
+        } else {
+            webConfig.sessionTypes = WebVector<WebEncryptedMediaSessionType>(static_cast<size_t>(1));
+            webConfig.sessionTypes[0] = WebEncryptedMediaSessionType::Temporary;
+        }
         m_supportedConfigurations[i] = webConfig;
     }
 }
