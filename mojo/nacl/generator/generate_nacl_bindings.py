@@ -29,7 +29,7 @@ def _GetDirAbove(dirname):
 
 
 def _AddThirdPartyImportPath():
-  sys.path.append(os.path.join(_GetDirAbove('mojo'), 'third_party'))
+  sys.path.insert(0, os.path.join(_GetDirAbove('mojo'), 'third_party'))
 
 
 _AddThirdPartyImportPath()
