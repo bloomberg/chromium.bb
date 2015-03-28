@@ -188,11 +188,10 @@ private:
     void focusPlugin();
 
     void calculateGeometry(
-        const IntRect& frameRect,
         IntRect& windowRect,
         IntRect& clipRect,
+        IntRect& unobscuredRect,
         Vector<IntRect>& cutOutRects);
-    IntRect windowClipRect() const;
     void windowCutOutRects(
         const IntRect& frameRect,
         Vector<IntRect>& cutOutRects);

@@ -53,7 +53,7 @@ public:
     virtual NPObject* scriptableObject() override { return 0; }
     virtual bool canProcessDrag() const override { return false; }
     virtual void paint(WebCanvas*, const WebRect&) override { }
-    virtual void updateGeometry(const WebRect& frameRect, const WebRect& clipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
+    virtual void updateGeometry(const WebRect& clientRect, const WebRect& clipRect, const WebRect& windowClipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
     virtual void updateFocus(bool, WebFocusType) override { }
     virtual void updateVisibility(bool) override { }
     virtual bool acceptsInputEvents() override { return true; }

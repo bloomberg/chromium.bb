@@ -2164,12 +2164,17 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
     HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     FrameView* parentView = ownerElement->document().view();
     if (parentView)
-        clipRect.intersect(parentView->windowClipRectForFrameOwner(ownerElement));
+        clipRect.intersect(parentView->clipRectsForFrameOwner(ownerElement, nullptr));
     return clipRect;
 }
 
-IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* ownerElement) const
+IntRect FrameView::clipRectsForFrameOwner(const HTMLFrameOwnerElement* ownerElement, IntRect* unobscuredRect) const
 {
+    ASSERT(ownerElement);
+
+    if (unobscuredRect)
+        *unobscuredRect = IntRect();
+
     // The renderer can sometimes be null when style="display:none" interacts
     // with external content and plugins.
     if (!ownerElement->layoutObject())
@@ -2185,8 +2190,18 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     DisableCompositingQueryAsserts disabler;
 
     // Apply the clip from the layer.
-    IntRect clipRect = contentsToRootFrame(pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect()));
-    return intersection(clipRect, windowClipRect());
+    IntRect elementRect = contentsToRootFrame(pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect()));
+
+    if (unobscuredRect) {
+        *unobscuredRect = elementRect;
+
+        // If element is not in root frame, clip to the local frame.
+        // FIXME: Do we need to do this for remote frames?
+        if (m_frame->deprecatedLocalOwner())
+            unobscuredRect->intersect(contentsToRootFrame(visibleContentRect()));
+    }
+
+    return intersection(elementRect, windowClipRect());
 }
 
 bool FrameView::shouldUseIntegerScrollOffset() const

@@ -419,11 +419,11 @@ void WebPluginContainerImpl::reportGeometry()
     if (!parent() || !m_element->layoutObject())
         return;
 
-    IntRect windowRect, clipRect;
+    IntRect windowRect, clipRect, unobscuredRect;
     Vector<IntRect> cutOutRects;
-    calculateGeometry(frameRect(), windowRect, clipRect, cutOutRects);
+    calculateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects);
 
-    m_webPlugin->updateGeometry(windowRect, clipRect, cutOutRects, isVisible());
+    m_webPlugin->updateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects, isVisible());
 
     if (m_scrollbarGroup) {
         m_scrollbarGroup->scrollAnimator()->contentsResized();
@@ -977,28 +977,13 @@ void WebPluginContainerImpl::focusPlugin()
         containingFrame.document()->setFocusedElement(m_element);
 }
 
-void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,
-                                               IntRect& windowRect,
-                                               IntRect& clipRect,
-                                               Vector<IntRect>& cutOutRects)
+void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& clipRect, IntRect& unobscuredRect, Vector<IntRect>& cutOutRects)
 {
-    windowRect = toFrameView(parent())->contentsToRootFrame(frameRect);
+    windowRect = toFrameView(parent())->contentsToRootFrame(frameRect());
 
     // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
-    clipRect = windowClipRect();
-    clipRect.move(-windowRect.x(), -windowRect.y());
-
-    getPluginOcclusions(m_element, this->parent(), frameRect, cutOutRects);
-    // Convert to the plugin position.
-    for (size_t i = 0; i < cutOutRects.size(); i++)
-        cutOutRects[i].move(-frameRect.x(), -frameRect.y());
-}
-
-IntRect WebPluginContainerImpl::windowClipRect() const
-{
-    // Start by clipping to our bounds.
-    IntRect clipRect =
-        convertToContainingWindow(IntRect(0, 0, width(), height()));
+    clipRect = convertToContainingWindow(IntRect(0, 0, width(), height()));
+    unobscuredRect = clipRect;
 
     // document().layoutView() can be 0 when we receive messages from the
     // plugins while we are destroying a frame.
@@ -1006,11 +991,19 @@ IntRect WebPluginContainerImpl::windowClipRect() const
     if (m_element->layoutObject()->document().layoutView()) {
         // Take our element and get the clip rect from the enclosing layer and
         // frame view.
-        clipRect.intersect(
-            m_element->document().view()->windowClipRectForFrameOwner(m_element));
+        IntRect elementUnobscuredRect;
+        IntRect elementWindowClipRect = m_element->document().view()->clipRectsForFrameOwner(m_element, &elementUnobscuredRect);
+        clipRect.intersect(elementWindowClipRect);
+        unobscuredRect.intersect(elementUnobscuredRect);
     }
 
-    return clipRect;
+    clipRect.move(-windowRect.x(), -windowRect.y());
+    unobscuredRect.move(-windowRect.x(), -windowRect.y());
+
+    getPluginOcclusions(m_element, this->parent(), frameRect(), cutOutRects);
+    // Convert to the plugin position.
+    for (size_t i = 0; i < cutOutRects.size(); i++)
+        cutOutRects[i].move(-frameRect().x(), -frameRect().y());
 }
 
 bool WebPluginContainerImpl::pluginShouldPersist() const

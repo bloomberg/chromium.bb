@@ -89,10 +89,19 @@ public:
 
     virtual void paint(WebCanvas*, const WebRect&) = 0;
 
+    // DEPRECATED. TODO(tommycli): Remove once embedders migrate to the new interface.
+    virtual void updateGeometry(
+        const WebRect& windowRect, const WebRect& clipRect,
+        const WebVector<WebRect>& cutOutsRects, bool isVisible) { }
+
     // Coordinates are relative to the containing window.
     virtual void updateGeometry(
-        const WebRect& frameRect, const WebRect& clipRect,
-        const WebVector<WebRect>& cutOutsRects, bool isVisible) = 0;
+        const WebRect& windowRect, const WebRect& clipRect,
+        const WebRect& unobscuredRect, const WebVector<WebRect>& cutOutsRects,
+        bool isVisible) {
+        // TODO(tommycli): This default implementation calls the old, deprecated interface. This method should be pure virtual after the deprecated interface is removed.
+        updateGeometry(windowRect, clipRect, cutOutsRects, isVisible);
+    }
 
     virtual void updateFocus(bool focused, WebFocusType) = 0;
 

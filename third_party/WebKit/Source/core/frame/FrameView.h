@@ -154,7 +154,8 @@ public:
 
     void adjustViewSize();
 
-    IntRect windowClipRectForFrameOwner(const HTMLFrameOwnerElement*) const;
+    // |unobscuredRect| receives the clip rect that is not clipped to the root window. It may be nullptr.
+    IntRect clipRectsForFrameOwner(const HTMLFrameOwnerElement*, IntRect* unobscuredRect) const;
 
     float visibleContentScaleFactor() const { return m_visibleContentScaleFactor; }
     void setVisibleContentScaleFactor(float);
