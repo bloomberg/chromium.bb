@@ -310,7 +310,7 @@ nested_client_create(void)
 					      client->width, client->height);
 
 	client->egl_surface = weston_platform_create_egl_surface(client->egl_display,
-								 nclient->egl_config,
+								 client->egl_config,
 								 client->native, NULL);
 
 	eglMakeCurrent(client->egl_display, client->egl_surface,
