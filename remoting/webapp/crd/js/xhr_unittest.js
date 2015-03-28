@@ -181,6 +181,7 @@ QUnit.test('successful GET', function(assert) {
     method: 'GET',
     url: 'http://foo.com'
   }).start().then(function(response) {
+    assert.ok(!response.isError());
     assert.equal(response.status, 200);
     assert.equal(response.getText(), 'body');
   });
@@ -342,13 +343,52 @@ QUnit.test('GET with useIdentity', function(assert) {
   });
 
   xhr.start();
-
   var done = assert.async();
   fakeXhr.addEventListener('loadstart', function() {
     assert.equal(fakeXhr.requestHeaders['Authorization'],
                  'Bearer my_token');
     done();
   });
+});
+
+//
+// Error responses.
+//
+QUnit.test('GET with error response', function(assert) {
+  var promise = new remoting.Xhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.ok(response.isError());
+    assert.equal(response.status, 500);
+    assert.equal(response.getText(), 'body');
+  });
+  fakeXhr.respond(500, {}, 'body');
+  return promise;
+});
+
+QUnit.test('204 is not an error', function(assert) {
+  var promise = new remoting.Xhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.ok(!response.isError());
+    assert.equal(response.status, 204);
+    assert.equal(response.getText(), '');
+  });
+  fakeXhr.respond(204, {}, null);
+  return promise;
+});
+
+QUnit.test('GET with non-HTTP response', function(assert) {
+  var promise = new remoting.Xhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.ok(response.isError());
+  });
+  fakeXhr.respond(0, {}, null);
+  return promise;
 });
 
 })();

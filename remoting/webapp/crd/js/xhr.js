@@ -294,6 +294,14 @@ remoting.Xhr.Response = function(xhr, allowJson) {
 };
 
 /**
+ * @return {boolean} True if the response code is outside the 200-299
+ *     range (i.e. success as defined by the HTTP protocol).
+ */
+remoting.Xhr.Response.prototype.isError = function() {
+  return this.status < 200 || this.status >= 300;
+};
+
+/**
  * @return {string} The text content of the response.
  */
 remoting.Xhr.Response.prototype.getText = function() {
