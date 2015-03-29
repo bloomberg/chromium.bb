@@ -7272,7 +7272,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         An unsandboxed plugin was prevented from running on this page.
       </message>
       <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was allowed">
-        An unsandboxed plugin was allowed to run running on this page.
+        An unsandboxed plugin was allowed to run on this page.
       </message>
       <message name="IDS_BLOCKED_PPAPI_BROKER_UNBLOCK" desc="Radio button to unblock the Pepper broker">
         Always allow unsandboxed plugins on <ph name="HOST">$1<ex>example.com</ex></ph>
