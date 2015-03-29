@@ -20,6 +20,8 @@
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/x/x11_types.h"
@@ -284,11 +286,11 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   }
 
   bool has_work_area = false;
-  gfx::Rect work_area;
+  gfx::Rect work_area_in_pixels;
   std::vector<int> value;
   if (ui::GetIntArrayProperty(x_root_window_, "_NET_WORKAREA", &value) &&
       value.size() >= 4) {
-    work_area = gfx::Rect(value[0], value[1], value[2], value[3]);
+    work_area_in_pixels = gfx::Rect(value[0], value[1], value[2], value[3]);
     has_work_area = true;
   }
 
@@ -331,9 +333,17 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
       }
 
       if (has_work_area) {
-        gfx::Rect intersection = crtc_bounds;
-        intersection.Intersect(work_area);
-        display.set_work_area(intersection);
+        gfx::Rect intersection_in_pixels = crtc_bounds;
+        intersection_in_pixels.Intersect(work_area_in_pixels);
+        // SetScaleAndBounds() above does the conversion from pixels to DIP for
+        // us, but set_work_area does not, so we need to do it here.
+        display.set_work_area(gfx::Rect(
+            gfx::ToFlooredPoint(
+                gfx::ScalePoint(intersection_in_pixels.origin(),
+                                1.0f / display.device_scale_factor())),
+            gfx::ToFlooredSize(
+                gfx::ScaleSize(intersection_in_pixels.size(),
+                               1.0f / display.device_scale_factor()))));
       }
 
       switch (crtc->rotation) {
