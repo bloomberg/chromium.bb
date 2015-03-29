@@ -16,6 +16,7 @@ namespace content {
 
 class DownloadManagerDelegate;
 class LayoutTestPushMessagingService;
+class PermissionManager;
 class PushMessagingService;
 
 class LayoutTestBrowserContext : public ShellBrowserContext {
@@ -26,6 +27,7 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
   // BrowserContext implementation.
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   PushMessagingService* GetPushMessagingService() override;
+  PermissionManager* GetPermissionManager() override;
 
   LayoutTestPushMessagingService* GetLayoutTestPushMessagingService();
 
@@ -36,6 +38,7 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
 
  private:
   scoped_ptr<LayoutTestPushMessagingService> push_messaging_service_;
+  scoped_ptr<PermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBrowserContext);
 };

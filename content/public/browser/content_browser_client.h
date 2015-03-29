@@ -428,35 +428,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // support this functionality. May be called from any thread.
   virtual PlatformNotificationService* GetPlatformNotificationService();
 
-  virtual void RequestPermission(
-      PermissionType permission,
-      WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      const base::Callback<void(PermissionStatus)>& callback);
-
-  virtual void CancelPermissionRequest(PermissionType permission,
-                                       WebContents* web_contents,
-                                       int bridge_id,
-                                       const GURL& requesting_frame) {}
-
-  virtual void RegisterPermissionUsage(PermissionType permission,
-                                       WebContents* web_contents,
-                                       const GURL& frame_url,
-                                       const GURL& main_frame_url) {}
-
-  virtual PermissionStatus GetPermissionStatus(
-      PermissionType permission,
-      BrowserContext* browser_context,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin);
-
-  virtual void ResetPermission(PermissionType permission,
-                               BrowserContext* browser_context,
-                               const GURL& requesting_origin,
-                               const GURL& embedding_origin) {}
-
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.

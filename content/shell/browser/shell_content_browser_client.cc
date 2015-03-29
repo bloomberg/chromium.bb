@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -295,25 +294,6 @@ void ShellContentBrowserClient::SelectClientCertificate(
     scoped_ptr<ClientCertificateDelegate> delegate) {
   if (!select_client_certificate_callback_.is_null())
     select_client_certificate_callback_.Run();
-}
-
-void ShellContentBrowserClient::RequestPermission(
-    PermissionType permission,
-    WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const base::Callback<void(PermissionStatus)>& callback) {
-  // Some Geolocation tests on Android are still expecting to have the
-  // permission granted. See https://crbug.com/463514.
-  if (permission == PermissionType::GEOLOCATION) {
-    callback.Run(PERMISSION_STATUS_GRANTED);
-    return;
-  }
-
-  ContentBrowserClient::RequestPermission(
-      permission, web_contents, bridge_id,
-      requesting_frame, user_gesture, callback);
 }
 
 SpeechRecognitionManagerDelegate*

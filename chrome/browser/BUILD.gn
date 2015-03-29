@@ -196,6 +196,9 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_password_manager_sources,
                            ".",
                            "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_permissions_sources,
+                           ".",
+                           "//chrome")
     sources += rebase_path(gypi_values.chrome_browser_predictor_sources,
                            ".",
                            "//chrome")

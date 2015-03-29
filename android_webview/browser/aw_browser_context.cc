@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 
 #include "android_webview/browser/aw_form_database_service.h"
+#include "android_webview/browser/aw_permission_manager.h"
 #include "android_webview/browser/aw_pref_store.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/aw_resource_context.h"
@@ -349,6 +350,12 @@ content::SSLHostStateDelegate* AwBrowserContext::GetSSLHostStateDelegate() {
     ssl_host_state_delegate_.reset(new AwSSLHostStateDelegate());
   }
   return ssl_host_state_delegate_.get();
+}
+
+content::PermissionManager* AwBrowserContext::GetPermissionManager() {
+  if (!permission_manager_.get())
+    permission_manager_.reset(new AwPermissionManager());
+  return permission_manager_.get();
 }
 
 void AwBrowserContext::RebuildTable(

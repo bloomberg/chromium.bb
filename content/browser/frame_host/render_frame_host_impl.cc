@@ -53,6 +53,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -1942,12 +1943,16 @@ void RenderFrameHostImpl::CancelSuspendedNavigations() {
 }
 
 void RenderFrameHostImpl::DidUseGeolocationPermission() {
-  RenderFrameHost* top_frame = frame_tree_node()->frame_tree()->GetMainFrame();
-  GetContentClient()->browser()->RegisterPermissionUsage(
+  PermissionManager* permission_manager =
+      GetSiteInstance()->GetBrowserContext()->GetPermissionManager();
+  if (!permission_manager)
+    return;
+
+  permission_manager->RegisterPermissionUsage(
       PermissionType::GEOLOCATION,
-      delegate_->GetAsWebContents(),
       GetLastCommittedURL().GetOrigin(),
-      top_frame->GetLastCommittedURL().GetOrigin());
+      frame_tree_node()->frame_tree()->GetMainFrame()
+          ->GetLastCommittedURL().GetOrigin());
 }
 
 }  // namespace content

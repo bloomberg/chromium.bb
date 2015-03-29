@@ -7,7 +7,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigator_connect_context.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
@@ -22,21 +21,6 @@ namespace content {
 namespace {
 
 LayoutTestContentBrowserClient* g_layout_test_browser_client;
-
-void RequestDesktopNotificationPermissionOnIO(
-    const GURL& source_origin,
-    const base::Callback<void(PermissionStatus)>& callback) {
-  LayoutTestNotificationManager* manager =
-      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
-  PermissionStatus result = manager ? manager->RequestPermission(source_origin)
-                                    : PERMISSION_STATUS_GRANTED;
-
-  // The callback came from the UI thread, we need to run it from there again.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, result));
-}
 
 }  // namespace
 
@@ -79,31 +63,6 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
       partition->GetURLRequestContext()));
 
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
-}
-
-void LayoutTestContentBrowserClient::RequestPermission(
-    PermissionType permission,
-    WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const base::Callback<void(PermissionStatus)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (permission == PermissionType::NOTIFICATIONS) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&RequestDesktopNotificationPermissionOnIO,
-                   requesting_frame,
-                   callback));
-    return;
-  }
-  ShellContentBrowserClient::RequestPermission(permission,
-                                               web_contents,
-                                               bridge_id,
-                                               requesting_frame,
-                                               user_gesture,
-                                               callback);
 }
 
 PlatformNotificationService*

@@ -80,6 +80,10 @@ content::SSLHostStateDelegate* FakeProfile::GetSSLHostStateDelegate() {
   return nullptr;
 }
 
+content::PermissionManager* FakeProfile::GetPermissionManager() {
+  return nullptr;
+}
+
 scoped_refptr<base::SequencedTaskRunner>
 FakeProfile::GetIOTaskRunner() {
   return scoped_refptr<base::SequencedTaskRunner>();

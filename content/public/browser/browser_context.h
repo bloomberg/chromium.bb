@@ -39,6 +39,7 @@ class BrowserPluginGuestManager;
 class DownloadManager;
 class DownloadManagerDelegate;
 class IndexedDBContext;
+class PermissionManager;
 class PushMessagingService;
 class ResourceContext;
 class SiteInstance;
@@ -181,6 +182,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the SSL host state decisions for this context. The context may
   // return nullptr, implementing the default exception storage strategy.
   virtual SSLHostStateDelegate* GetSSLHostStateDelegate() = 0;
+
+  // Returns the PermissionManager associated with that context if any, nullptr
+  // otherwise.
+  virtual PermissionManager* GetPermissionManager() = 0;
 };
 
 }  // namespace content

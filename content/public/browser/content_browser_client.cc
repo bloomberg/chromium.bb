@@ -223,24 +223,6 @@ ContentBrowserClient::GetPlatformNotificationService() {
   return nullptr;
 }
 
-void ContentBrowserClient::RequestPermission(
-    PermissionType permission,
-    WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const base::Callback<void(PermissionStatus)>& callback) {
-  callback.Run(PERMISSION_STATUS_DENIED);
-}
-
-PermissionStatus ContentBrowserClient::GetPermissionStatus(
-    PermissionType permission,
-    BrowserContext* browser_context,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  return PERMISSION_STATUS_DENIED;
-}
-
 bool ContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,

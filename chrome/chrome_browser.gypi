@@ -1960,6 +1960,14 @@
       'browser/password_manager/sync_metrics.cc',
       'browser/password_manager/sync_metrics.h',
     ],
+    'chrome_browser_permissions_sources': [
+      'browser/permissions/permission_context.cc',
+      'browser/permissions/permission_context.h',
+      'browser/permissions/permission_manager.cc',
+      'browser/permissions/permission_manager.h',
+      'browser/permissions/permission_manager_factory.cc',
+      'browser/permissions/permission_manager_factory.h',
+    ],
     # See also the plugin_installation_sources list below.
     'chrome_browser_plugins_sources': [
       'browser/browsing_data/browsing_data_flash_lso_helper.cc',
@@ -3112,6 +3120,7 @@
             '<@(chrome_browser_metrics_sources)',
             '<@(chrome_browser_net_sources)',
             '<@(chrome_browser_password_manager_sources)',
+            '<@(chrome_browser_permissions_sources)',
             '<@(chrome_browser_predictor_sources)',
             '<@(chrome_browser_pref_sources)',
             '<@(chrome_browser_profiles_sources)',

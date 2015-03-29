@@ -124,4 +124,8 @@ SSLHostStateDelegate* TestBrowserContext::GetSSLHostStateDelegate() {
   return NULL;
 }
 
+PermissionManager* TestBrowserContext::GetPermissionManager() {
+  return NULL;
+}
+
 }  // namespace content

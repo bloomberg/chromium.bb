@@ -177,31 +177,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::MediaObserver* GetMediaObserver() override;
   content::PlatformNotificationService* GetPlatformNotificationService()
       override;
-  void RequestPermission(
-      content::PermissionType permission,
-      content::WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      const base::Callback<void(content::PermissionStatus)>& callback) override;
-  content::PermissionStatus GetPermissionStatus(
-      content::PermissionType permission,
-      content::BrowserContext* browser_context,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) override;
-  void ResetPermission(
-      content::PermissionType permission,
-      content::BrowserContext* browser_context,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) override;
-  void CancelPermissionRequest(content::PermissionType permission,
-                               content::WebContents* web_contents,
-                               int bridge_id,
-                               const GURL& requesting_frame) override;
-  void RegisterPermissionUsage(content::PermissionType permission,
-                               content::WebContents* web_contents,
-                               const GURL& frame_url,
-                               const GURL& main_frame_url) override;
   bool CanCreateWindow(const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
                        const GURL& source_origin,

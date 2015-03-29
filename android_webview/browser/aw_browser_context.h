@@ -24,6 +24,7 @@ class GURL;
 class PrefService;
 
 namespace content {
+class PermissionManager;
 class ResourceContext;
 class SSLHostStateDelegate;
 class WebContents;
@@ -121,6 +122,7 @@ class AwBrowserContext : public content::BrowserContext,
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  content::PermissionManager* GetPermissionManager() override;
 
   // visitedlink::VisitedLinkDelegate implementation.
   void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
@@ -157,6 +159,7 @@ class AwBrowserContext : public content::BrowserContext,
       data_reduction_proxy_io_data_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyService>
       data_reduction_proxy_service_;
+  scoped_ptr<content::PermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

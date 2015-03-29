@@ -22,6 +22,7 @@ class NetLog;
 namespace content {
 
 class DownloadManagerDelegate;
+class PermissionManager;
 class ShellDownloadManagerDelegate;
 class ZoomLevelDelegate;
 
@@ -55,6 +56,7 @@ class ShellBrowserContext : public BrowserContext {
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   PushMessagingService* GetPushMessagingService() override;
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  PermissionManager* GetPermissionManager() override;
 
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,
@@ -105,6 +107,7 @@ class ShellBrowserContext : public BrowserContext {
   scoped_ptr<ShellResourceContext> resource_context_;
   bool ignore_certificate_errors_;
   scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
+  scoped_ptr<PermissionManager> permission_manager_;
 
  private:
   // Performs initialization of the ShellBrowserContext while IO is still

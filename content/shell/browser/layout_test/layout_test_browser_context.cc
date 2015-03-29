@@ -12,6 +12,7 @@
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/shell/browser/layout_test/layout_test_download_manager_delegate.h"
+#include "content/shell/browser/layout_test/layout_test_permission_manager.h"
 #include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
 #include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
@@ -72,6 +73,12 @@ LayoutTestPushMessagingService*
 LayoutTestBrowserContext::GetLayoutTestPushMessagingService() {
   return static_cast<LayoutTestPushMessagingService*>(
       GetPushMessagingService());
+}
+
+PermissionManager* LayoutTestBrowserContext::GetPermissionManager() {
+  if (!permission_manager_.get())
+    permission_manager_.reset(new LayoutTestPermissionManager());
+  return permission_manager_.get();
 }
 
 }  // namespace content

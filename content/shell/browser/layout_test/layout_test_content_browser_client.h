@@ -9,7 +9,6 @@
 
 namespace content {
 
-enum class PermissionType;
 class LayoutTestBrowserContext;
 class LayoutTestNotificationManager;
 
@@ -28,13 +27,6 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
 
   // ContentBrowserClient overrides.
   void RenderProcessWillLaunch(RenderProcessHost* host) override;
-  void RequestPermission(
-      PermissionType permission,
-      WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      const base::Callback<void(PermissionStatus)>& callback) override;
 
   PlatformNotificationService* GetPlatformNotificationService() override;
   void GetAdditionalNavigatorConnectServices(

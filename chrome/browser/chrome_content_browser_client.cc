@@ -34,11 +34,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
-#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/midi_permission_context.h"
-#include "chrome/browser/media/midi_permission_context_factory.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -56,8 +52,6 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
-#include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -95,11 +89,9 @@
 #include "chromeos/chromeos_constants.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
-#include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/permission_request_id.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/google/core/browser/google_util.h"
@@ -117,7 +109,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -169,11 +160,6 @@
 #include "components/crash/browser/crash_dump_manager_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#include "chrome/browser/media/protected_media_identifier_permission_context.h"
-#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -588,86 +574,6 @@ void GetGuestViewDefaultContentSettingRules(
                                   incognito));
 }
 #endif  // defined(ENALBE_EXTENSIONS)
-
-content::PermissionStatus
-ContentSettingToPermissionStatus(ContentSetting setting) {
-  switch (setting) {
-    case CONTENT_SETTING_ALLOW:
-    case CONTENT_SETTING_SESSION_ONLY:
-      return content::PERMISSION_STATUS_GRANTED;
-    case CONTENT_SETTING_BLOCK:
-      return content::PERMISSION_STATUS_DENIED;
-    case CONTENT_SETTING_ASK:
-      return content::PERMISSION_STATUS_ASK;
-    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
-    case CONTENT_SETTING_DEFAULT:
-    case CONTENT_SETTING_NUM_SETTINGS:
-      break;
-  }
-  NOTREACHED();
-  return content::PERMISSION_STATUS_DENIED;
-}
-
-PermissionContextBase* GetPermissionContext(Profile* profile,
-    content::PermissionType permission) {
-  switch (permission) {
-    case content::PermissionType::MIDI_SYSEX:
-      return MidiPermissionContextFactory::GetForProfile(profile);
-    case content::PermissionType::NOTIFICATIONS:
-#if defined(ENABLE_NOTIFICATIONS)
-      return DesktopNotificationServiceFactory::GetForProfile(profile);
-#else
-      NOTIMPLEMENTED();
-      break;
-#endif
-    case content::PermissionType::GEOLOCATION:
-      return GeolocationPermissionContextFactory::GetForProfile(profile);
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-      return ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
-          profile);
-#else
-      NOTIMPLEMENTED();
-      break;
-#endif
-    case content::PermissionType::PUSH_MESSAGING:
-      return PushMessagingPermissionContextFactory::GetForProfile(profile);
-    case content::PermissionType::NUM:
-      NOTREACHED() << "Invalid RequestPermission for "
-                   << static_cast<int>(permission);
-      break;
-  }
-  return nullptr;
-}
-
-// Helper method to translate from Permissions to ContentSettings
-ContentSettingsType PermissionToContentSetting(
-    content::PermissionType permission) {
-  switch (permission) {
-    case content::PermissionType::MIDI_SYSEX:
-      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
-    case content::PermissionType::PUSH_MESSAGING:
-      return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
-    case content::PermissionType::NOTIFICATIONS:
-      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-    case content::PermissionType::GEOLOCATION:
-      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
-#endif
-    default:
-      NOTREACHED() << "Unknown content setting for permission "
-                   << static_cast<int>(permission);
-      return CONTENT_SETTINGS_TYPE_DEFAULT;
-  }
-}
-
-void OnRequestPermission(
-    const base::Callback<void(content::PermissionStatus)>& callback,
-    ContentSetting content_setting) {
-  callback.Run(ContentSettingToPermissionStatus(content_setting));
-}
 
 }  // namespace
 
@@ -1886,94 +1792,6 @@ ChromeContentBrowserClient::GetPlatformNotificationService() {
   NOTIMPLEMENTED();
   return NULL;
 #endif
-}
-
-void ChromeContentBrowserClient::RequestPermission(
-    content::PermissionType permission,
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const base::Callback<void(content::PermissionStatus)>& result_callback) {
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  const PermissionRequestID request_id(render_process_id,
-                                       render_view_id,
-                                       bridge_id,
-                                       requesting_frame);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PermissionContextBase* context = GetPermissionContext(profile, permission);
-
-  if (!context)
-    return;
-
-  context->RequestPermission(web_contents, request_id, requesting_frame,
-                             user_gesture,
-                             base::Bind(&OnRequestPermission, result_callback));
-}
-
-content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(
-    content::PermissionType permission,
-    content::BrowserContext* browser_context,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  DCHECK(browser_context);
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  PermissionContextBase* context = GetPermissionContext(profile, permission);
-
-  if (!context)
-    return content::PERMISSION_STATUS_ASK;
-
-  return ContentSettingToPermissionStatus(
-      context->GetPermissionStatus(requesting_origin.GetOrigin(),
-                                   embedding_origin.GetOrigin()));
-}
-
-void ChromeContentBrowserClient::ResetPermission(
-    content::PermissionType permission,
-    content::BrowserContext* browser_context,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  DCHECK(browser_context);
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  PermissionContextBase* context = GetPermissionContext(profile, permission);
-
-  if (!context)
-    return;
-
-  context->ResetPermission(requesting_origin.GetOrigin(),
-                           embedding_origin.GetOrigin());
-}
-
-void ChromeContentBrowserClient::CancelPermissionRequest(
-    content::PermissionType permission,
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame) {
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  const PermissionRequestID request_id(render_process_id,
-                                       render_view_id,
-                                       bridge_id,
-                                       requesting_frame);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PermissionContextBase* context = GetPermissionContext(profile, permission);
-  if (!context)
-    return;
-  context->CancelPermissionRequest(web_contents, request_id);
-}
-
-void ChromeContentBrowserClient::RegisterPermissionUsage(
-    content::PermissionType permission,
-    content::WebContents* web_contents,
-    const GURL& frame_url,
-    const GURL& main_frame_url) {
-  Profile::FromBrowserContext(web_contents->GetBrowserContext())
-      ->GetHostContentSettingsMap()
-      ->UpdateLastUsage(
-          frame_url, main_frame_url, PermissionToContentSetting(permission));
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

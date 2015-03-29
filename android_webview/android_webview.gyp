@@ -224,6 +224,8 @@
         'browser/aw_message_port_message_filter.cc',
         'browser/aw_message_port_message_filter.h',
         'browser/aw_message_port_service.h',
+        'browser/aw_permission_manager.cc',
+        'browser/aw_permission_manager.h',
         'browser/aw_pref_store.cc',
         'browser/aw_pref_store.h',
         'browser/aw_printing_message_filter.cc',

@@ -1047,6 +1047,10 @@ content::SSLHostStateDelegate* TestingProfile::GetSSLHostStateDelegate() {
   return NULL;
 }
 
+content::PermissionManager* TestingProfile::GetPermissionManager() {
+  return NULL;
+}
+
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
 }

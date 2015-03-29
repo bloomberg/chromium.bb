@@ -44,6 +44,8 @@
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -1081,6 +1083,12 @@ content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
 
 content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {
   return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+}
+
+// TODO(mlamouri): we should all these BrowserContext implementation to Profile
+// instead of repeating them inside all Profile implementations.
+content::PermissionManager* ProfileImpl::GetPermissionManager() {
+  return PermissionManagerFactory::GetForProfile(this);
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
-#include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
@@ -29,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -140,13 +138,6 @@ class AwAccessTokenStore : public content::AccessTokenStore {
 
   DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };
-
-void CallbackPermisisonStatusWrapper(
-    const base::Callback<void(content::PermissionStatus)>& callback,
-    bool allowed) {
-  callback.Run(allowed ? content::PERMISSION_STATUS_GRANTED
-                       : content::PERMISSION_STATUS_DENIED);
-}
 
 }  // anonymous namespace
 
@@ -377,83 +368,6 @@ void AwContentBrowserClient::SelectClientCertificate(
       AwContentsClientBridgeBase::FromWebContents(web_contents);
   if (client)
     client->SelectClientCertificate(cert_request_info, delegate.Pass());
-}
-
-void AwContentBrowserClient::RequestPermission(
-    content::PermissionType permission,
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  GURL origin = requesting_frame.GetOrigin();
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
-  switch (permission) {
-    case content::PermissionType::GEOLOCATION:
-      if (!delegate) {
-        DVLOG(0) << "Dropping GeolocationPermission request";
-        callback.Run(content::PERMISSION_STATUS_DENIED);
-        return;
-      }
-      delegate->RequestGeolocationPermission(
-          origin, base::Bind(&CallbackPermisisonStatusWrapper, callback));
-      break;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      if (!delegate) {
-        DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
-        callback.Run(content::PERMISSION_STATUS_DENIED);
-        return;
-      }
-      delegate->RequestProtectedMediaIdentifierPermission(
-          origin, base::Bind(&CallbackPermisisonStatusWrapper, callback));
-      break;
-    case content::PermissionType::MIDI_SYSEX:
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
-      NOTIMPLEMENTED() << "RequestPermission not implemented for "
-                       << static_cast<int>(permission);
-      break;
-    case content::PermissionType::NUM:
-      NOTREACHED() << "Invalid RequestPermission for "
-                   << static_cast<int>(permission);
-      break;
-  }
-}
-
-void AwContentBrowserClient::CancelPermissionRequest(
-    content::PermissionType permission,
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& origin) {
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
-  if (!delegate)
-    return;
-  switch (permission) {
-    case content::PermissionType::GEOLOCATION:
-      delegate->CancelGeolocationPermissionRequests(origin);
-      break;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
-      break;
-    case content::PermissionType::MIDI_SYSEX:
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
-      NOTIMPLEMENTED() << "CancelPermission not implemented for "
-                       << static_cast<int>(permission);
-      break;
-    case content::PermissionType::NUM:
-      NOTREACHED() << "Invalid CancelPermission for "
-                   << static_cast<int>(permission);
-      break;
-  }
 }
 
 bool AwContentBrowserClient::CanCreateWindow(

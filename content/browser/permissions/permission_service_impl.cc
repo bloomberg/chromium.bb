@@ -4,7 +4,9 @@
 
 #include "content/browser/permissions/permission_service_impl.h"
 
-#include "content/public/browser/content_browser_client.h"
+#include "base/bind.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 
 namespace content {
@@ -78,11 +80,18 @@ void PermissionServiceImpl::RequestPermission(
     return;
   }
 
+  BrowserContext* browser_context = context_->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!browser_context->GetPermissionManager()) {
+    callback.Run(content::PERMISSION_STATUS_DENIED);
+    return;
+  }
+
   PermissionType permission_type = PermissionNameToPermissionType(permission);
   int request_id = pending_requests_.Add(
       new PendingRequest(permission_type, GURL(origin), callback));
 
-  GetContentClient()->browser()->RequestPermission(
+  browser_context->GetPermissionManager()->RequestPermission(
       permission_type,
       context_->web_contents(),
       request_id,
@@ -105,10 +114,16 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
 
 void PermissionServiceImpl::CancelPendingRequests() {
   DCHECK(context_->web_contents());
+  DCHECK(context_->GetBrowserContext());
+
+  PermissionManager* permission_manager =
+      context_->GetBrowserContext()->GetPermissionManager();
+  if (!permission_manager)
+    return;
 
   for (RequestsMap::Iterator<PendingRequest> it(&pending_requests_);
        !it.IsAtEnd(); it.Advance()) {
-    GetContentClient()->browser()->CancelPermissionRequest(
+    permission_manager->CancelPermissionRequest(
         it.GetCurrentValue()->permission,
         context_->web_contents(),
         it.GetCurrentKey(),
@@ -150,20 +165,28 @@ void PermissionServiceImpl::RevokePermission(
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatus(PermissionType type,
                                                             GURL origin) {
+  BrowserContext* browser_context = context_->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!browser_context->GetPermissionManager())
+    return content::PERMISSION_STATUS_DENIED;
+
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
-  return GetContentClient()->browser()->GetPermissionStatus(
-      type, context_->GetBrowserContext(), origin,
-      embedding_origin.is_empty() ? origin : embedding_origin);
+  return browser_context->GetPermissionManager()->GetPermissionStatus(
+      type, origin, embedding_origin.is_empty() ? origin : embedding_origin);
 }
 
 void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
                                                   GURL origin) {
+  BrowserContext* browser_context = context_->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!browser_context->GetPermissionManager())
+    return;
+
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
-  GetContentClient()->browser()->ResetPermission(
-      type, context_->GetBrowserContext(), origin,
-      embedding_origin.is_empty() ? origin : embedding_origin);
+  browser_context->GetPermissionManager()->ResetPermission(
+      type, origin, embedding_origin.is_empty() ? origin : embedding_origin);
 }
 
 }  // namespace content

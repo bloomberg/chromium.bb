@@ -11,8 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "content/common/media/cdm_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -519,12 +521,17 @@ void BrowserCdmManager::CheckPermissionStatusOnUIThread(
   RenderFrameHost* rfh =
       RenderFrameHost::FromID(render_process_id_, render_frame_id);
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
-  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+  PermissionManager* permission_manager =
+      web_contents->GetBrowserContext()->GetPermissionManager();
+  if (!permission_manager) {
+    permission_status_cb.Run(false);
+    return;
+  }
 
-  PermissionStatus permission_status =
-      GetContentClient()->browser()->GetPermissionStatus(
-          content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-          web_contents->GetBrowserContext(), security_origin, embedding_origin);
+  PermissionStatus permission_status = permission_manager->GetPermissionStatus(
+      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
+      security_origin,
+      web_contents->GetLastCommittedURL().GetOrigin());
 
   bool allowed = (permission_status == PERMISSION_STATUS_GRANTED);
   if (!task_runner_->RunsTasksOnCurrentThread()) {

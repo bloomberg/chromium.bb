@@ -172,6 +172,7 @@
       'browser/password_manager/password_store_mac_unittest.cc',
       'browser/password_manager/password_store_win_unittest.cc',
       'browser/password_manager/password_store_x_unittest.cc',
+      'browser/permissions/permission_manager_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_unittest.cc',
       'browser/predictors/resource_prefetch_common_unittest.cc',

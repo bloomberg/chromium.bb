@@ -51,6 +51,7 @@ class FakeProfile : public Profile {
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  content::PermissionManager* GetPermissionManager() override;
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   Profile* GetOffTheRecordProfile() override;
   void DestroyOffTheRecordProfile() override;

@@ -16,13 +16,10 @@
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using content::PermissionType;
 
 namespace chrome {
 
@@ -196,69 +193,3 @@ TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {
 
 }  // namespace content
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
-
-namespace chrome {
-
-// For testing permissions related functionality.
-class PermissionBrowserClientTest : public testing::Test {
- public:
-  PermissionBrowserClientTest() : url_("https://www.google.com") {}
-
-  void CheckPermissionStatus(PermissionType type,
-                             content::PermissionStatus expected) {
-    EXPECT_EQ(expected, client_.GetPermissionStatus(type, &profile_,
-                                                    url_.GetOrigin(),
-                                                    url_.GetOrigin()));
-  }
-
-  void SetPermission(ContentSettingsType type, ContentSetting value) {
-    profile_.GetHostContentSettingsMap()->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_),
-        ContentSettingsPattern::FromURLNoWildcard(url_),
-        type, std::string(), value);
-  }
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  ChromeContentBrowserClient client_;
-  TestingProfile profile_;
-  GURL url_;
-};
-
-TEST_F(PermissionBrowserClientTest, GetPermissionStatusDefault) {
-  using namespace content;
-  CheckPermissionStatus(PermissionType::MIDI_SYSEX, PERMISSION_STATUS_ASK);
-  CheckPermissionStatus(PermissionType::PUSH_MESSAGING, PERMISSION_STATUS_ASK);
-  CheckPermissionStatus(PermissionType::NOTIFICATIONS, PERMISSION_STATUS_ASK);
-  CheckPermissionStatus(PermissionType::GEOLOCATION, PERMISSION_STATUS_ASK);
-#if defined(OS_ANDROID)
-  CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        PERMISSION_STATUS_ASK);
-#endif
-}
-
-TEST_F(PermissionBrowserClientTest, GetPermissionStatusAfterSet) {
-  using namespace content;
-  SetPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::GEOLOCATION, PERMISSION_STATUS_GRANTED);
-
-  SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::NOTIFICATIONS,
-                        PERMISSION_STATUS_GRANTED);
-
-  SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::MIDI_SYSEX, PERMISSION_STATUS_GRANTED);
-
-  SetPermission(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::PUSH_MESSAGING,
-                        PERMISSION_STATUS_GRANTED);
-
-#if defined(OS_ANDROID)
-  SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        PERMISSION_STATUS_GRANTED);
-#endif
-}
-
-}  // namespace chrome

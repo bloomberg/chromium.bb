@@ -47,6 +47,7 @@ class TestBrowserContext : public BrowserContext {
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   PushMessagingService* GetPushMessagingService() override;
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  PermissionManager* GetPermissionManager() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
