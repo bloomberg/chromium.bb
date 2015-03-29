@@ -57,7 +57,6 @@ AudioNodeOutput* AudioNodeOutput::create(AudioNode* node, unsigned numberOfChann
 DEFINE_TRACE(AudioNodeOutput)
 {
     visitor->trace(m_node);
-    visitor->trace(m_inputs);
 }
 
 void AudioNodeOutput::dispose()
@@ -122,8 +121,8 @@ void AudioNodeOutput::propagateChannelCount()
 
     if (isChannelCountKnown()) {
         // Announce to any nodes we're connected to that we changed our channel count for its input.
-        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
-            i->value->checkNumberOfChannelsForInput(i->key);
+        for (AudioNodeInput* i : m_inputs)
+            i->node().checkNumberOfChannelsForInput(i);
     }
 }
 
@@ -172,7 +171,7 @@ unsigned AudioNodeOutput::renderingFanOutCount() const
 void AudioNodeOutput::addInput(AudioNodeInput& input)
 {
     ASSERT(context()->isGraphOwner());
-    m_inputs.add(&input, &input.node());
+    m_inputs.add(&input);
     input.node().makeConnection();
 }
 
@@ -189,7 +188,7 @@ void AudioNodeOutput::disconnectAllInputs()
 
     // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
     while (!m_inputs.isEmpty())
-        m_inputs.begin()->key->disconnect(*this);
+        (*m_inputs.begin())->disconnect(*this);
 }
 
 void AudioNodeOutput::disconnectInput(AudioNodeInput& input)
@@ -249,8 +248,8 @@ void AudioNodeOutput::disable()
 
     if (m_isEnabled) {
         m_isEnabled = false;
-        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
-            i->key->disable(*this);
+        for (AudioNodeInput* i : m_inputs)
+            i->disable(*this);
     }
 }
 
@@ -260,8 +259,8 @@ void AudioNodeOutput::enable()
 
     if (!m_isEnabled) {
         m_isEnabled = true;
-        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
-            i->key->enable(*this);
+        for (AudioNodeInput* i : m_inputs)
+            i->enable(*this);
     }
 }
 

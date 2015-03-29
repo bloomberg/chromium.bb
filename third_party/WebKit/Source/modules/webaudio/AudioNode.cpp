@@ -174,6 +174,8 @@ void AudioNode::addInput()
 void AudioNode::addOutput(unsigned numberOfChannels)
 {
     m_outputs.append(AudioNodeOutput::create(this, numberOfChannels));
+    m_connectedNodes.append(nullptr);
+    ASSERT(numberOfOutputs() == m_connectedNodes.size());
     m_connectedParams.append(nullptr);
     ASSERT(numberOfOutputs() == m_connectedParams.size());
 }
@@ -234,6 +236,9 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     }
 
     destination->input(inputIndex)->connect(*output(outputIndex));
+    if (!m_connectedNodes[outputIndex])
+        m_connectedNodes[outputIndex] = new HeapHashSet<Member<AudioNode>>();
+    m_connectedNodes[outputIndex]->add(destination);
 
     // Let context know that a connection has been made.
     context()->incrementConnectionCount();
@@ -284,8 +289,11 @@ void AudioNode::disconnect()
     AudioContext::AutoLocker locker(context());
 
     // Disconnect all outgoing connections.
-    for (unsigned i = 0; i < numberOfOutputs(); ++i)
+    for (unsigned i = 0; i < numberOfOutputs(); ++i) {
         this->output(i)->disconnectAll();
+        m_connectedNodes[i] = nullptr;
+        m_connectedParams[i] = nullptr;
+    }
 }
 
 void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
@@ -309,6 +317,8 @@ void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
 
     // Disconnect all outgoing connections from the given output.
     output(outputIndex)->disconnectAll();
+    m_connectedNodes[outputIndex] = nullptr;
+    m_connectedParams[outputIndex] = nullptr;
 }
 
 void AudioNode::disconnect(AudioNode* destination, ExceptionState& exceptionState)
@@ -326,6 +336,7 @@ void AudioNode::disconnect(AudioNode* destination, ExceptionState& exceptionStat
             AudioNodeInput* input = destination->input(j);
             if (output->isConnectedToInput(*input)) {
                 output->disconnectInput(*input);
+                m_connectedNodes[i]->remove(destination);
                 numberOfDisconnections++;
             }
         }
@@ -357,6 +368,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, Excepti
             AudioNodeInput* input = destination->input(i);
             if (output->isConnectedToInput(*input)) {
                 output->disconnectInput(*input);
+                m_connectedNodes[outputIndex]->remove(destination);
                 numberOfDisconnections++;
             }
         }
@@ -407,6 +419,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, unsigne
         }
 
         output->disconnectInput(*input);
+        m_connectedNodes[outputIndex]->remove(destination);
     }
 
     // Sanity check input and output indices.
@@ -511,6 +524,7 @@ void AudioNode::disconnectWithoutException(unsigned outputIndex)
     if (outputIndex >= numberOfOutputs())
         return;
     output(outputIndex)->disconnectAll();
+    m_connectedNodes[outputIndex] = nullptr;
     m_connectedParams[outputIndex] = nullptr;
 }
 
@@ -815,8 +829,18 @@ void AudioNode::printNodeCounts()
 DEFINE_TRACE(AudioNode)
 {
     visitor->trace(m_context);
-    visitor->trace(m_inputs);
+    // TODO(tkent): Oilpan: renderingOutputs should not be strong references.
+    // This is a short-term workaround to avoid crashes, and causes AudioNode
+    // leaks.
+    {
+        AudioContext::AutoLocker locker(context()->handler());
+        for (const OwnPtr<AudioNodeInput>& input : m_inputs) {
+            for (unsigned i = 0; i < input->numberOfRenderingConnections(); ++i)
+                visitor->trace(input->renderingOutput(i));
+        }
+    }
     visitor->trace(m_outputs);
+    visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
 }

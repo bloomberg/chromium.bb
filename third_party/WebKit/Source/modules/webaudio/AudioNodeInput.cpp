@@ -40,20 +40,9 @@ inline AudioNodeInput::AudioNodeInput(AudioNode& node)
     m_internalSummingBus = AudioBus::create(1, AudioNode::ProcessingSizeInFrames);
 }
 
-AudioNodeInput* AudioNodeInput::create(AudioNode& node)
+PassOwnPtr<AudioNodeInput> AudioNodeInput::create(AudioNode& node)
 {
-    return new AudioNodeInput(node);
-}
-
-DEFINE_TRACE(AudioNodeInput)
-{
-    // TODO(tkent): Oilpan: m_renderingOutputs should not be strong references.
-    // This is a short-term workaround to avoid crashes, and causes AudioNode
-    // leaks.
-    AudioContext::AutoLocker locker(deferredTaskHandler());
-    for (size_t i = 0; i < m_renderingOutputs.size(); ++i)
-        visitor->trace(m_renderingOutputs[i]);
-    visitor->trace(m_node);
+    return adoptPtr(new AudioNodeInput(node));
 }
 
 void AudioNodeInput::connect(AudioNodeOutput& output)

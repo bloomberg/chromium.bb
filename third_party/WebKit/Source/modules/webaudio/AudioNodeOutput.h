@@ -142,11 +142,11 @@ private:
     // If m_isInPlace is true, use m_inPlaceBus as the valid AudioBus; If false, use the default m_internalBus.
     bool m_isInPlace;
 
-    // Oilpan: This HashMap holds connection references. We must call
-    // AudioNode::makeConnection when we add an AudioNode to this, and must call
-    // AudioNode::breakConnection() when we remove an AudioNode from this.
-    HeapHashMap<Member<AudioNodeInput>, Member<AudioNode>> m_inputs;
-    typedef HeapHashMap<Member<AudioNodeInput>, Member<AudioNode>>::iterator InputsIterator;
+    // This HashSet holds connection references. We must call
+    // AudioNode::makeConnection when we add an AudioNodeInput to this, and must
+    // call AudioNode::breakConnection() when we remove an AudioNodeInput from
+    // this.
+    HashSet<AudioNodeInput*> m_inputs;
     bool m_isEnabled;
 
 #if ENABLE(ASSERT)

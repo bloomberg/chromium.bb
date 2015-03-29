@@ -230,8 +230,12 @@ private:
     NodeType m_nodeType;
     Member<AudioContext> m_context;
     float m_sampleRate;
-    HeapVector<Member<AudioNodeInput>> m_inputs;
+    Vector<OwnPtr<AudioNodeInput>> m_inputs;
     HeapVector<Member<AudioNodeOutput>> m_outputs;
+    // Represents audio node graph with Oilpan references. N-th HeapHashSet
+    // represents a set of AudioNode objects connected to this AudioNode's N-th
+    // output.
+    HeapVector<Member<HeapHashSet<Member<AudioNode>>>> m_connectedNodes;
     // Represents audio node graph with Oilpan references. N-th HeapHashSet
     // represents a set of AudioParam objects connected to this AudioNode's N-th
     // output.

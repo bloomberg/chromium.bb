@@ -39,16 +39,15 @@ class AudioNodeOutput;
 // In the case of multiple connections, the input will act as a unity-gain summing junction, mixing all the outputs.
 // The number of channels of the input's bus is the maximum of the number of channels of all its connections.
 
-class AudioNodeInput final : public GarbageCollectedFinalized<AudioNodeInput>, public AudioSummingJunction {
+class AudioNodeInput final : public AudioSummingJunction {
 public:
-    static AudioNodeInput* create(AudioNode&);
-    DECLARE_TRACE();
+    static PassOwnPtr<AudioNodeInput> create(AudioNode&);
 
     // AudioSummingJunction
     virtual void didUpdate() override;
 
     // Can be called from any thread.
-    AudioNode& node() const { return *m_node; }
+    AudioNode& node() const { return m_node; }
 
     // Must be called with the context's graph lock.
     void connect(AudioNodeOutput&);
@@ -81,7 +80,10 @@ public:
 private:
     explicit AudioNodeInput(AudioNode&);
 
-    Member<AudioNode> m_node;
+    // This reference to an Oilpan object is safe because the AudioNode owns
+    // this AudioNodeInput object.
+    // TODO(tkent): Replace this to AudioNodeHandler.
+    AudioNode& m_node;
 
     // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will not be processed) by the audio graph rendering.
     // But, from JavaScript's perspective, these outputs are still connected to us.
