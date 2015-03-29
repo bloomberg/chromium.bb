@@ -196,13 +196,17 @@ tc-test-bot() {
   local optset
   optset[1]="--opt O3f --opt O2b"
   for arch in ${archset}; do
-    # Run all appropriate frontend/backend optimization combinations.
-    # For now, this means running 2 combinations for x86 since each
-    # takes about 20 minutes on the bots, and making a single run
-    # elsewhere since e.g. arm takes about 75 minutes.  In a perfect
-    # world, all 4 combinations would be run.
+    # Run all appropriate frontend/backend optimization combinations.  For now,
+    # this means running 2 combinations for x86 (plus one more for Subzero on
+    # x86-32) since each takes about 20 minutes on the bots, and making a single
+    # run elsewhere since e.g. arm takes about 75 minutes.  In a perfect world,
+    # all 4 combinations would be run, plus more for Subzero.
     if [[ ${archset} =~ x86 ]]; then
       optset[2]="--opt O3f --opt O0b"
+      if [[ ${archset} == x86-32 ]]; then
+        # Run a Subzero -O2 test set on x86-32.
+        optset[3]="--opt O3f --opt O2b_sz"
+      fi
     fi
     for opt in "${optset[@]}"; do
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
