@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include <linux/input.h>
 #include <cairo.h>
@@ -76,6 +77,8 @@ struct text_entry {
 
 struct editor {
 	struct wl_text_input_manager *text_input_manager;
+	struct wl_data_source *selection;
+	char *selected_text;
 	struct display *display;
 	struct window *window;
 	struct widget *widget;
@@ -553,6 +556,128 @@ static const struct wl_text_input_listener text_input_listener = {
 	text_input_language,
 	text_input_text_direction
 };
+
+static void
+data_source_target(void *data,
+		   struct wl_data_source *source, const char *mime_type)
+{
+}
+
+static void
+data_source_send(void *data,
+		 struct wl_data_source *source,
+		 const char *mime_type, int32_t fd)
+{
+	struct editor *editor = data;
+
+	write(fd, editor->selected_text, strlen(editor->selected_text) + 1);
+}
+
+static void
+data_source_cancelled(void *data, struct wl_data_source *source)
+{
+	wl_data_source_destroy(source);
+}
+
+static const struct wl_data_source_listener data_source_listener = {
+	data_source_target,
+	data_source_send,
+	data_source_cancelled
+};
+
+static void
+paste_func(void *buffer, size_t len,
+	   int32_t x, int32_t y, void *data)
+{
+	struct editor *editor = data;
+	struct text_entry *entry = editor->active_entry;
+	char *pasted_text;
+
+	if (!entry)
+		return;
+
+	pasted_text = malloc(len + 1);
+	strncpy(pasted_text, buffer, len);
+	pasted_text[len] = '\0';
+
+	text_entry_insert_at_cursor(entry, pasted_text, 0, 0);
+
+	free(pasted_text);
+}
+
+static void
+editor_copy_cut(struct editor *editor, struct input *input, bool cut)
+{
+	struct text_entry *entry = editor->active_entry;
+
+	if (!entry)
+		return;
+	
+	if (entry->cursor != entry->anchor) {
+		int start_index = MIN(entry->cursor, entry->anchor);
+		int end_index = MAX(entry->cursor, entry->anchor);
+		int len = end_index - start_index;
+
+		editor->selected_text = realloc(editor->selected_text, len + 1);
+		strncpy(editor->selected_text, &entry->text[start_index], len);
+		editor->selected_text[len] = '\0';
+
+		if (cut)
+			text_entry_delete_text(entry, start_index, len);
+
+		editor->selection =
+			display_create_data_source(editor->display);
+		wl_data_source_offer(editor->selection,
+				     "text/plain;charset=utf-8");
+		wl_data_source_add_listener(editor->selection,
+					    &data_source_listener, editor);
+		input_set_selection(input, editor->selection,
+				    display_get_serial(editor->display));
+	}
+}
+
+static void
+editor_paste(struct editor *editor, struct input *input)
+{
+	input_receive_selection_data(input,
+				     "text/plain;charset=utf-8",
+				     paste_func, editor);
+}
+
+static void
+menu_func(void *data, struct input *input, int index)
+{
+	struct window *window = data;
+	struct editor *editor = window_get_user_data(window);
+
+	fprintf(stderr, "picked entry %d\n", index);
+
+	switch (index) {
+	case 0:
+		editor_copy_cut(editor, input, true);
+		break;
+	case 1:
+		editor_copy_cut(editor, input, false);
+		break;
+	case 2:
+		editor_paste(editor, input);
+		break;
+	}
+}
+
+static void
+show_menu(struct editor *editor, struct input *input, uint32_t time)
+{
+	int32_t x, y;
+	static const char *entries[] = {
+		"Cut", "Copy", "Paste"
+	};
+
+	input_get_position(input, &x, &y);
+	window_show_menu(editor->display, input, time, editor->window,
+			 x + 10, y + 20, menu_func,
+			 entries, ARRAY_LENGTH(entries));
+}
 
 static struct text_entry*
 text_entry_create(struct editor *editor, const char *text)
@@ -1123,13 +1248,18 @@ text_entry_button_handler(struct widget *widget,
 
 	editor = window_get_user_data(entry->window);
 
-	if (button == BTN_LEFT) {
+	switch (button) {
+	case BTN_LEFT:
 		entry->button_pressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
-
 		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
 			input_grab(input, entry->widget, button);
 		else
 			input_ungrab(input);
+		break;
+	case BTN_RIGHT:
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+			show_menu(editor, input, time);
+		break;
 	}
 
 	if (text_entry_has_preedit(entry)) {
@@ -1139,7 +1269,8 @@ text_entry_button_handler(struct widget *widget,
 			return;
 	}
 
-	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
+	    button == BTN_LEFT) {
 		struct wl_seat *seat = input_get_seat(input);
 
 		text_entry_activate(entry, seat);
@@ -1216,6 +1347,25 @@ keyboard_focus_handler(struct window *window,
 	window_schedule_redraw(editor->window);
 }
 
+static int
+handle_bound_key(struct editor *editor,
+		 struct input *input, uint32_t sym, uint32_t time)
+{
+	switch (sym) {
+	case XKB_KEY_X:
+		editor_copy_cut(editor, input, true);
+		return 1;
+	case XKB_KEY_C:
+		editor_copy_cut(editor, input, false);
+		return 1;
+	case XKB_KEY_V:
+		editor_paste(editor, input);
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 static void
 key_handler(struct window *window,
 	    struct input *input, uint32_t time,
@@ -1226,6 +1376,7 @@ key_handler(struct window *window,
 	struct text_entry *entry;
 	const char *new_char;
 	char text[16];
+	uint32_t modifiers;
 
 	if (!editor->active_entry)
 		return;
@@ -1233,6 +1384,12 @@ key_handler(struct window *window,
 	entry = editor->active_entry;
 
 	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+		return;
+
+	modifiers = input_get_modifiers(input);
+	if ((modifiers & MOD_CONTROL_MASK) &&
+	    (modifiers & MOD_SHIFT_MASK) &&
+	    handle_bound_key(editor, input, sym, time))
 		return;
 
 	switch (sym) {
@@ -1374,6 +1531,8 @@ main(int argc, char *argv[])
 	editor.editor = text_entry_create(&editor, "Numeric");
 	editor.editor->content_purpose = WL_TEXT_INPUT_CONTENT_PURPOSE_NUMBER;
 	editor.editor->click_to_show = click_to_show;
+	editor.selection = NULL;
+	editor.selected_text = NULL;
 
 	window_set_title(editor.window, "Text Editor");
 	window_set_key_handler(editor.window, key_handler);
@@ -1390,6 +1549,10 @@ main(int argc, char *argv[])
 
 	display_run(editor.display);
 
+	if (editor.selected_text)
+		free(editor.selected_text);
+	if (editor.selection)
+		wl_data_source_destroy(editor.selection);
 	text_entry_destroy(editor.entry);
 	text_entry_destroy(editor.editor);
 	widget_destroy(editor.widget);
