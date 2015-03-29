@@ -295,6 +295,8 @@ pnacl-trybot-x8632() {
   build-prerequisites "x86-32" "bitcode"
   build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclX8632OptSz "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclX8632OptSz "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslator1ThreadX8632Opt "${TRYBOT_TESTS}" 1 1
@@ -393,6 +395,7 @@ pnacl-x8632() {
   download-spec2k-harness
   build-prerequisites "x86-32" "bitcode"
   local setups="SetupPnaclX8632Opt \
+                SetupPnaclX8632OptSz \
                 SetupPnaclTranslatorX8632Opt \
                 SetupPnaclTranslator1ThreadX8632Opt \
                 SetupPnaclTranslatorFastX8632Opt \
