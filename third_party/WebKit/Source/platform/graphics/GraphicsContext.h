@@ -289,7 +289,6 @@ public:
     // Don't change the current SkXfermode::Mode states.
     void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, SkImageFilter* = 0);
     void endLayer();
-    bool isDrawingToLayer() { return m_layerCount; }
 
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
@@ -461,9 +460,8 @@ private:
 
     Vector<OwnPtr<RecordingState>> m_recordingStateStack;
 
-    unsigned m_layerCount;
-
 #if ENABLE(ASSERT)
+    unsigned m_layerCount;
     unsigned m_annotationCount;
     bool m_disableDestructionChecks;
     bool m_inDrawingRecorder;

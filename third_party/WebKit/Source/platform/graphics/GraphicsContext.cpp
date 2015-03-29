@@ -81,8 +81,8 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     , m_paintStateStack()
     , m_paintStateIndex(0)
     , m_annotationMode(0)
-    , m_layerCount(0)
 #if ENABLE(ASSERT)
+    , m_layerCount(0)
     , m_annotationCount(0)
     , m_disableDestructionChecks(false)
     , m_inDrawingRecorder(false)
@@ -458,7 +458,9 @@ void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const
         saveLayer(0, &layerPaint);
     }
 
+#if ENABLE(ASSERT)
     ++m_layerCount;
+#endif
 }
 
 void GraphicsContext::endLayer()
@@ -468,8 +470,7 @@ void GraphicsContext::endLayer()
 
     restoreLayer();
 
-    ASSERT(m_layerCount > 0);
-    --m_layerCount;
+    ASSERT(m_layerCount-- > 0);
 }
 
 void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFlags)
