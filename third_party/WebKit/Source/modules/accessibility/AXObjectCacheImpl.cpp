@@ -647,7 +647,7 @@ void AXObjectCacheImpl::textChanged(AXObject* obj)
 
     bool parentAlreadyExists = obj->parentObjectIfExists();
     obj->textChanged();
-    postNotification(obj, AXObjectCacheImpl::AXTextChanged, true);
+    postNotification(obj, AXObjectCacheImpl::AXTextChanged);
     if (parentAlreadyExists)
         obj->notifyIfIgnoredValueChanged();
 }
@@ -713,31 +713,27 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
     m_notificationsToPost.clear();
 }
 
-void AXObjectCacheImpl::postNotification(LayoutObject* layoutObject, AXNotification notification, bool postToElement)
+void AXObjectCacheImpl::postNotification(LayoutObject* layoutObject, AXNotification notification)
 {
     if (!layoutObject)
         return;
 
     m_modificationCount++;
-    postNotification(get(layoutObject), notification, postToElement);
+    postNotification(get(layoutObject), notification);
 }
 
-void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification, bool postToElement)
+void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification)
 {
     if (!node)
         return;
 
     m_modificationCount++;
-    postNotification(get(node), notification, postToElement);
+    postNotification(get(node), notification);
 }
 
-void AXObjectCacheImpl::postNotification(AXObject* object, AXNotification notification, bool postToElement)
+void AXObjectCacheImpl::postNotification(AXObject* object, AXNotification notification)
 {
     m_modificationCount++;
-
-    if (object && !postToElement)
-        object = object->observableObject();
-
     if (!object)
         return;
 
@@ -748,21 +744,24 @@ void AXObjectCacheImpl::postNotification(AXObject* object, AXNotification notifi
 
 void AXObjectCacheImpl::checkedStateChanged(Node* node)
 {
-    postNotification(node, AXObjectCacheImpl::AXCheckedStateChanged, true);
+    postNotification(node, AXObjectCacheImpl::AXCheckedStateChanged);
 }
 
 void AXObjectCacheImpl::selectedChildrenChanged(Node* node)
 {
-    // postToElement is false so that you can pass in any child of an element and it will go up the parent tree
-    // to find the container which should send out the notification.
-    postNotification(node, AXSelectedChildrenChanged, false);
+    selectedChildrenChanged(get(node));
 }
 
 void AXObjectCacheImpl::selectedChildrenChanged(LayoutObject* layoutObject)
 {
-    // postToElement is false so that you can pass in any child of an element and it will go up the parent tree
-    // to find the container which should send out the notification.
-    postNotification(layoutObject, AXSelectedChildrenChanged, false);
+    selectedChildrenChanged(get(layoutObject));
+}
+
+void AXObjectCacheImpl::selectedChildrenChanged(AXObject* obj)
+{
+    while (obj && obj->roleValue() != ListBoxRole)
+        obj = obj->parentObject();
+    postNotification(obj, AXSelectedChildrenChanged);
 }
 
 void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
@@ -788,7 +787,7 @@ void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* layoutObject)
     // allows an AX notification to be sent when a page has its first layout, rather than when the
     // document first loads.
     if (AXObject* obj = getOrCreate(layoutObject))
-        postNotification(obj, AXLayoutComplete, true);
+        postNotification(obj, AXLayoutComplete);
 }
 
 void AXObjectCacheImpl::handleAriaExpandedChange(Node* node)
@@ -827,7 +826,7 @@ void AXObjectCacheImpl::handleAttributeChanged(const QualifiedName& attrName, El
     if (attrName == aria_activedescendantAttr)
         handleActiveDescendantChanged(element);
     else if (attrName == aria_valuenowAttr || attrName == aria_valuetextAttr)
-        postNotification(element, AXObjectCacheImpl::AXValueChanged, true);
+        postNotification(element, AXObjectCacheImpl::AXValueChanged);
     else if (attrName == aria_labelAttr || attrName == aria_labeledbyAttr || attrName == aria_labelledbyAttr)
         textChanged(element);
     else if (attrName == aria_checkedAttr)
@@ -839,9 +838,9 @@ void AXObjectCacheImpl::handleAttributeChanged(const QualifiedName& attrName, El
     else if (attrName == aria_hiddenAttr)
         childrenChanged(element->parentNode());
     else if (attrName == aria_invalidAttr)
-        postNotification(element, AXObjectCacheImpl::AXInvalidStatusChanged, true);
+        postNotification(element, AXObjectCacheImpl::AXInvalidStatusChanged);
     else
-        postNotification(element, AXObjectCacheImpl::AXAriaAttributeChanged, true);
+        postNotification(element, AXObjectCacheImpl::AXAriaAttributeChanged);
 }
 
 void AXObjectCacheImpl::labelChanged(Element* element)
@@ -865,7 +864,7 @@ void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* layoutObject)
     if (AXObject* obj = get(layoutObject)) {
         if (!obj->needsToUpdateChildren()) {
             obj->setNeedsToUpdateChildren();
-            postNotification(layoutObject, AXChildrenChanged, true);
+            postNotification(layoutObject, AXChildrenChanged);
         }
     }
 }
@@ -992,22 +991,25 @@ void AXObjectCacheImpl::handleFocusedUIElementChanged(Node*, Node* newFocusedNod
 
 void AXObjectCacheImpl::handleInitialFocus()
 {
-    postNotification(&m_document, AXObjectCache::AXFocusedUIElementChanged, true);
+    postNotification(&m_document, AXObjectCache::AXFocusedUIElementChanged);
 }
 
 void AXObjectCacheImpl::handleEditableTextContentChanged(Node* node)
 {
-    postNotification(node, AXObjectCache::AXValueChanged, false);
+    AXObject* obj = get(node);
+    while (obj && !obj->isNativeTextControl() && !obj->isNonNativeTextControl())
+        obj = obj->parentObject();
+    postNotification(obj, AXObjectCache::AXValueChanged);
 }
 
 void AXObjectCacheImpl::handleTextFormControlChanged(Node* node)
 {
-    postNotification(node, AXObjectCache::AXValueChanged, false);
+    handleEditableTextContentChanged(node);
 }
 
 void AXObjectCacheImpl::handleValueChanged(Node* node)
 {
-    postNotification(node, AXObjectCache::AXValueChanged, true);
+    postNotification(node, AXObjectCache::AXValueChanged);
 }
 
 void AXObjectCacheImpl::handleUpdateActiveMenuOption(LayoutMenuList* menuList, int optionIndex)
@@ -1018,12 +1020,12 @@ void AXObjectCacheImpl::handleUpdateActiveMenuOption(LayoutMenuList* menuList, i
 
 void AXObjectCacheImpl::handleLoadComplete(Document* document)
 {
-    postNotification(getOrCreate(document), AXObjectCache::AXLoadComplete, true);
+    postNotification(getOrCreate(document), AXObjectCache::AXLoadComplete);
 }
 
 void AXObjectCacheImpl::handleLayoutComplete(Document* document)
 {
-    postNotification(getOrCreate(document), AXObjectCache::AXLayoutComplete, true);
+    postNotification(getOrCreate(document), AXObjectCache::AXLayoutComplete);
 }
 
 void AXObjectCacheImpl::handleScrolledToAnchor(const Node* anchorNode)

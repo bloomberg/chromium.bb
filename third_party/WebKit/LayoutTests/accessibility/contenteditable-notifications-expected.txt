@@ -5,13 +5,18 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS Got notification: SelectedTextChanged
 PASS Got notification: SelectedTextChanged
-PASS Got notification: SelectedTextChanged
 PASS Got notification: ValueChanged
 PASS Got notification: SelectedTextChanged
 PASS Got notification: ValueChanged
-PASS Got notification: SelectedTextChanged
 PASS Got notification: ValueChanged
 PASS Got notification: SelectedTextChanged
+PASS Got notification: ValueChanged
+PASS Got notification: ValueChanged
+PASS Got notification: SelectedTextChanged
+PASS Got notification: ValueChanged
+PASS Got notification: ValueChanged
+PASS Got notification: SelectedTextChanged
+PASS Got notification: ValueChanged
 PASS successfullyParsed is true
 
 TEST COMPLETE

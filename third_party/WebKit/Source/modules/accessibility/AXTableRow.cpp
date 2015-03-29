@@ -72,12 +72,6 @@ bool AXTableRow::isTableRow() const
     return true;
 }
 
-AXObject* AXTableRow::observableObject() const
-{
-    // This allows the table to be the one who sends notifications about tables.
-    return parentTable();
-}
-
 bool AXTableRow::computeAccessibilityIsIgnored() const
 {
     AXObjectInclusion decision = defaultObjectInclusion();

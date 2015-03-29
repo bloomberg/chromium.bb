@@ -127,7 +127,7 @@ void AXMenuList::didUpdateActiveOption(int optionIndex)
         }
     }
 
-    cache->postNotification(this, AXObjectCacheImpl::AXMenuListValueChanged, true);
+    cache->postNotification(this, AXObjectCacheImpl::AXMenuListValueChanged);
 }
 
 } // namespace blink

@@ -162,7 +162,6 @@ protected:
     virtual bool needsToUpdateChildren() const override { return m_childrenDirty; }
     virtual void setNeedsToUpdateChildren() override { m_childrenDirty = true; }
     virtual void clearChildren() override;
-    virtual AXObject* observableObject() const override;
 
     // Properties of the object's owning document or page.
     virtual double estimatedLoadingProgress() const override;
@@ -199,7 +198,6 @@ private:
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
-    bool layoutObjectIsObservable(LayoutObject*) const;
     LayoutObject* layoutParentObject() const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
     bool isSVGImage() const;

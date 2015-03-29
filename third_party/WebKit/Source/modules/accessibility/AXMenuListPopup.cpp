@@ -145,12 +145,12 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
     AXObjectCacheImpl* cache = axObjectCache();
     if (m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_children.size())) {
         RefPtr<AXObject> previousChild = m_children[m_activeIndex].get();
-        cache->postNotification(previousChild.get(), AXObjectCacheImpl::AXMenuListItemUnselected, true);
+        cache->postNotification(previousChild.get(), AXObjectCacheImpl::AXMenuListItemUnselected);
     }
 
     RefPtr<AXObject> child = m_children[optionIndex].get();
-    cache->postNotification(child.get(), AXObjectCacheImpl::AXFocusedUIElementChanged, true);
-    cache->postNotification(child.get(), AXObjectCacheImpl::AXMenuListItemSelected, true);
+    cache->postNotification(child.get(), AXObjectCacheImpl::AXFocusedUIElementChanged);
+    cache->postNotification(child.get(), AXObjectCacheImpl::AXMenuListItemSelected);
     m_activeIndex = optionIndex;
 }
 

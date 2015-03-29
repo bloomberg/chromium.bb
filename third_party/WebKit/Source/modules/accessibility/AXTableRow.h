@@ -65,7 +65,6 @@ protected:
 private:
     int m_rowIndex;
 
-    virtual AXObject* observableObject() const override final;
     virtual bool computeAccessibilityIsIgnored() const override final;
 };
 

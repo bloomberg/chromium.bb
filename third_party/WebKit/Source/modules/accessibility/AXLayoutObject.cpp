@@ -1560,17 +1560,6 @@ void AXLayoutObject::clearChildren()
     m_childrenDirty = false;
 }
 
-AXObject* AXLayoutObject::observableObject() const
-{
-    // Find the object going up the parent chain that is used in accessibility to monitor certain notifications.
-    for (LayoutObject* layoutObject = m_layoutObject; layoutObject && layoutObject->node(); layoutObject = layoutObject->parent()) {
-        if (layoutObjectIsObservable(layoutObject))
-            return axObjectCache()->getOrCreate(layoutObject);
-    }
-
-    return 0;
-}
-
 //
 // Properties of the object's owning document or page.
 //
@@ -1741,7 +1730,7 @@ void AXLayoutObject::handleActiveDescendantChanged()
     AXLayoutObject* activedescendant = toAXLayoutObject(activeDescendant());
 
     if (activedescendant && shouldNotifyActiveDescendant())
-        toAXObjectCacheImpl(doc.axObjectCache())->postNotification(m_layoutObject, AXObjectCacheImpl::AXActiveDescendantChanged, true);
+        toAXObjectCacheImpl(doc.axObjectCache())->postNotification(m_layoutObject, AXObjectCacheImpl::AXActiveDescendantChanged);
 }
 
 void AXLayoutObject::handleAriaExpandedChanged()
@@ -1770,7 +1759,7 @@ void AXLayoutObject::handleAriaExpandedChanged()
 
     // Post that the row count changed.
     if (containerParent)
-        axObjectCache()->postNotification(containerParent, AXObjectCacheImpl::AXRowCountChanged, true);
+        axObjectCache()->postNotification(containerParent, AXObjectCacheImpl::AXRowCountChanged);
 
     // Post that the specific row either collapsed or expanded.
     AccessibilityExpanded expanded = isExpanded();
@@ -1782,7 +1771,7 @@ void AXLayoutObject::handleAriaExpandedChanged()
         if (expanded == ExpandedCollapsed)
             notification = AXObjectCacheImpl::AXRowCollapsed;
 
-        axObjectCache()->postNotification(this, notification, true);
+        axObjectCache()->postNotification(this, notification);
     }
 }
 
@@ -2030,24 +2019,6 @@ AXObject* AXLayoutObject::accessibilityImageMapHitTest(HTMLAreaElement* area, co
     }
 
     return 0;
-}
-
-bool AXLayoutObject::layoutObjectIsObservable(LayoutObject* layoutObject) const
-{
-    // AX clients will listen for AXValueChange on a text control.
-    if (layoutObject->isTextControl())
-        return true;
-
-    // AX clients will listen for AXSelectedChildrenChanged on listboxes.
-    Node* node = layoutObject->node();
-    if (nodeHasRole(node, "listbox") || (layoutObject->isBoxModelObject() && toLayoutBoxModelObject(layoutObject)->isListBox()))
-        return true;
-
-    // Textboxes should send out notifications.
-    if (nodeHasRole(node, "textbox"))
-        return true;
-
-    return false;
 }
 
 LayoutObject* AXLayoutObject::layoutParentObject() const

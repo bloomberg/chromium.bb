@@ -38,7 +38,7 @@ if (window.testRunner && window.accessibilityController) {
             else if (notification == "SelectedTextChanged")
                 selectedTextChangedCount++;
 
-            if (valueChangedCount == 3 && selectedTextChangedCount == 6) {
+            if (valueChangedCount == 8 && selectedTextChangedCount == 6) {
                 textbox.style.display = "none";
                 finishJSTest();
             }
@@ -46,7 +46,7 @@ if (window.testRunner && window.accessibilityController) {
 
         eventSender.keyDown("leftArrow", []);
         eventSender.keyDown("leftArrow", []);
-        eventSender.keyDown("leftArrow", []);
+        eventSender.keyDown("w", []);
         eventSender.keyDown("x", []);
         eventSender.keyDown("y", []);
         eventSender.keyDown("z", []);

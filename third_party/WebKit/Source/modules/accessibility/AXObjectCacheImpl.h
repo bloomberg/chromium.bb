@@ -134,6 +134,7 @@ public:
 
     void childrenChanged(AXObject*);
     void selectedChildrenChanged(LayoutObject*);
+    void selectedChildrenChanged(AXObject*);
 
     void handleActiveDescendantChanged(Node*);
     void handleAriaRoleChanged(Node*);
@@ -153,9 +154,9 @@ public:
     // as long as the modification count hasn't changed.
     int modificationCount() const { return m_modificationCount; }
 
-    void postNotification(LayoutObject*, AXNotification, bool postToElement);
-    void postNotification(Node*, AXNotification, bool postToElement);
-    void postNotification(AXObject*, AXNotification, bool postToElement);
+    void postNotification(LayoutObject*, AXNotification);
+    void postNotification(Node*, AXNotification);
+    void postNotification(AXObject*, AXNotification);
 
 protected:
     void postPlatformNotification(AXObject*, AXNotification);

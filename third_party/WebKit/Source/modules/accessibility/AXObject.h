@@ -557,7 +557,6 @@ public:
     virtual void setNeedsToUpdateChildren() { }
     virtual void clearChildren();
     virtual void detachFromParent() { m_parent = 0; }
-    virtual AXObject* observableObject() const { return 0; }
     virtual AXObject* scrollBar(AccessibilityOrientation) { return 0; }
 
     // Properties of the object's owning document or page.

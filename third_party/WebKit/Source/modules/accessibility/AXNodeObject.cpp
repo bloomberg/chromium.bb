@@ -160,7 +160,7 @@ void AXNodeObject::changeValueByStep(bool increase)
 
     setValue(String::number(value));
 
-    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged, true);
+    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged);
 }
 
 bool AXNodeObject::computeAccessibilityIsIgnored() const
@@ -1848,7 +1848,7 @@ void AXNodeObject::childrenChanged()
     if (!node() && !layoutObject())
         return;
 
-    axObjectCache()->postNotification(this, AXObjectCacheImpl::AXChildrenChanged, true);
+    axObjectCache()->postNotification(this, AXObjectCacheImpl::AXChildrenChanged);
 
     // Go up the accessibility parent chain, but only if the element already exists. This method is
     // called during layout, minimal work should be done.
@@ -1862,12 +1862,12 @@ void AXNodeObject::childrenChanged()
 
         // If this element supports ARIA live regions, then notify the AT of changes.
         if (parent->isLiveRegion())
-            axObjectCache()->postNotification(parent, AXObjectCacheImpl::AXLiveRegionChanged, true);
+            axObjectCache()->postNotification(parent, AXObjectCacheImpl::AXLiveRegionChanged);
 
         // If this element is an ARIA text box or content editable, post a "value changed" notification on it
         // so that it behaves just like a native input element or textarea.
         if (isNonNativeTextControl())
-            axObjectCache()->postNotification(parent, AXObjectCacheImpl::AXValueChanged, true);
+            axObjectCache()->postNotification(parent, AXObjectCacheImpl::AXValueChanged);
     }
 }
 
@@ -1877,7 +1877,7 @@ void AXNodeObject::selectionChanged()
     // focused (to handle form controls, ARIA text boxes and contentEditable),
     // or the web area if the selection is just in the document somewhere.
     if (isFocused() || isWebArea())
-        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXSelectedTextChanged, true);
+        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXSelectedTextChanged);
     else
         AXObject::selectionChanged(); // Calls selectionChanged on parent.
 }
@@ -1893,12 +1893,12 @@ void AXNodeObject::textChanged()
             continue;
 
         if (parent->isLiveRegion())
-            cache->postNotification(parentNode, AXObjectCacheImpl::AXLiveRegionChanged, true);
+            cache->postNotification(parentNode, AXObjectCacheImpl::AXLiveRegionChanged);
 
         // If this element is an ARIA text box or content editable, post a "value changed" notification on it
         // so that it behaves just like a native input element or textarea.
         if (parent->isNonNativeTextControl())
-            cache->postNotification(parentNode, AXObjectCacheImpl::AXValueChanged, true);
+            cache->postNotification(parentNode, AXObjectCacheImpl::AXValueChanged);
     }
 }
 
@@ -2000,7 +2000,7 @@ void AXNodeObject::changeValueByPercent(float percentChange)
     value += range * (percentChange / 100);
     setValue(String::number(value));
 
-    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged, true);
+    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged);
 }
 
 } // namespace blink
