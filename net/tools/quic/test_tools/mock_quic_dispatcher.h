@@ -9,7 +9,6 @@
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -20,7 +19,7 @@ namespace test {
 class MockQuicDispatcher : public QuicDispatcher {
  public:
   MockQuicDispatcher(const QuicConfig& config,
-                     const QuicCryptoServerConfig& crypto_config,
+                     const QuicCryptoServerConfig* crypto_config,
                      PacketWriterFactory* packet_writer_factory,
                      QuicConnectionHelperInterface* helper);
 

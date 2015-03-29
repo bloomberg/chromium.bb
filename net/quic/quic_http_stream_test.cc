@@ -196,7 +196,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
         Return(QuicBandwidth::Zero()));
-    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _)).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
     helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
                                            &random_generator_));
     TestPacketWriterFactory writer_factory(socket);

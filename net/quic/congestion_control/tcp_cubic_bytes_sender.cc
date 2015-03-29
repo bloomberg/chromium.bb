@@ -49,14 +49,16 @@ TcpCubicBytesSender::TcpCubicBytesSender(
       slowstart_threshold_(std::numeric_limits<uint64>::max()),
       last_cutback_exited_slowstart_(false),
       clock_(clock) {
+  // Disable the ack train mode in hystart when pacing is enabled, since it
+  // may be falsely triggered.
+  hybrid_slow_start_.set_ack_train_detection(false);
 }
 
 TcpCubicBytesSender::~TcpCubicBytesSender() {
 }
 
 void TcpCubicBytesSender::SetFromConfig(const QuicConfig& config,
-                                        Perspective perspective,
-                                        bool using_pacing) {
+                                        Perspective perspective) {
   if (perspective == Perspective::IS_SERVER) {
     if (config.HasReceivedConnectionOptions() &&
         ContainsQuicTag(config.ReceivedConnectionOptions(), kIW10)) {
@@ -67,11 +69,6 @@ void TcpCubicBytesSender::SetFromConfig(const QuicConfig& config,
         ContainsQuicTag(config.ReceivedConnectionOptions(), kMIN1)) {
       // Min CWND experiment.
       min_congestion_window_ = kMaxSegmentSize;
-    }
-    if (using_pacing) {
-      // Disable the ack train mode in hystart when pacing is enabled, since it
-      // may be falsely triggered.
-      hybrid_slow_start_.set_ack_train_detection(false);
     }
   }
 }

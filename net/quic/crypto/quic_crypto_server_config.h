@@ -336,6 +336,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // Returns true if this config has a |proof_source_|.
   bool HasProofSource() const;
 
+  // Returns the number of configs this object owns.
+  int NumberOfConfigs() const;
+
  private:
   friend class test::QuicCryptoServerConfigPeer;
 

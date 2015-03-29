@@ -69,11 +69,11 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
 
   // Due to the way delete_sessions_closure_ is registered, the Dispatcher must
-  // live until epoll_server Shutdown. |supported_versions| specifies the list
+  // live until server Shutdown. |supported_versions| specifies the std::list
   // of supported QUIC versions. Takes ownership of |packet_writer_factory|,
   // which is used to create per-connection writers.
   QuicDispatcher(const QuicConfig& config,
-                 const QuicCryptoServerConfig& crypto_config,
+                 const QuicCryptoServerConfig* crypto_config,
                  const QuicVersionVector& supported_versions,
                  PacketWriterFactory* packet_writer_factory,
                  QuicConnectionHelperInterface* helper);
@@ -167,7 +167,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   const QuicConfig& config() const { return config_; }
 
-  const QuicCryptoServerConfig& crypto_config() const { return crypto_config_; }
+  const QuicCryptoServerConfig* crypto_config() const {
+    return crypto_config_;
+  }
 
   QuicFramer* framer() { return &framer_; }
 
@@ -210,7 +212,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   const QuicConfig& config_;
 
-  const QuicCryptoServerConfig& crypto_config_;
+  const QuicCryptoServerConfig* crypto_config_;
 
   // The list of connections waiting to write.
   WriteBlockedList write_blocked_list_;

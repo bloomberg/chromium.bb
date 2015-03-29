@@ -38,8 +38,7 @@ class NET_EXPORT_PRIVATE TcpCubicBytesSender : public SendAlgorithmInterface {
 
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config,
-                     Perspective perspective,
-                     bool using_pacing) override;
+                     Perspective perspective) override;
   bool ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params,
       bool max_bandwidth_resumption) override;

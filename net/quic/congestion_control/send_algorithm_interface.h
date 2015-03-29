@@ -40,8 +40,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual ~SendAlgorithmInterface() {}
 
   virtual void SetFromConfig(const QuicConfig& config,
-                             Perspective perspective,
-                             bool using_pacing) = 0;
+                             Perspective perspective) = 0;
 
   // Sets the number of connections to emulate when doing congestion control,
   // particularly for congestion avoidance.  Can be set any time.

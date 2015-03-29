@@ -23,7 +23,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
   QuicServerDispatchPacketTest()
       : crypto_config_("blah", QuicRandom::GetInstance()),
         dispatcher_(config_,
-                    crypto_config_,
+                    &crypto_config_,
                     new QuicDispatcher::DefaultPacketWriterFactory(),
                     new QuicEpollConnectionHelper(&eps_)) {
     dispatcher_.InitializeWithWriter(new QuicDefaultPacketWriter(1234));

@@ -178,6 +178,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // fires.
   QuicTime::Delta GetFecTimeout(QuicPacketSequenceNumber sequence_number);
 
+  // Sets the encrypter to use for the encryption level.
+  void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
+
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);
 

@@ -22,7 +22,7 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
   QuicChromeServerDispatchPacketTest()
       : crypto_config_("blah", QuicRandom::GetInstance()),
         dispatcher_(config_,
-                    crypto_config_,
+                    &crypto_config_,
                     new tools::QuicDispatcher::DefaultPacketWriterFactory(),
                     new net::test::MockHelper) {
     dispatcher_.InitializeWithWriter(nullptr);

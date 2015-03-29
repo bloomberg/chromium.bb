@@ -14,7 +14,6 @@
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 #include "net/quic/congestion_control/prr_sender.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_protocol.h"
@@ -41,8 +40,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config,
-                     Perspective perspective,
-                     bool using_pacing) override;
+                     Perspective perspective) override;
   bool ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params,
       bool max_bandwidth_resumption) override;

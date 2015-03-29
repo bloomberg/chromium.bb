@@ -21,10 +21,8 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
 PacingSender::~PacingSender() {}
 
 void PacingSender::SetFromConfig(const QuicConfig& config,
-                                 Perspective perspective,
-                                 bool using_pacing) {
-  DCHECK(using_pacing);
-  sender_->SetFromConfig(config, perspective, using_pacing);
+                                 Perspective perspective) {
+  sender_->SetFromConfig(config, perspective);
 }
 
 bool PacingSender::ResumeConnectionState(

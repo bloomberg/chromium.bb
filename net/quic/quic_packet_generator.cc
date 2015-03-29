@@ -420,7 +420,7 @@ QuicByteCount QuicPacketGenerator::max_packet_length() const {
 }
 
 void QuicPacketGenerator::set_max_packet_length(QuicByteCount length) {
-  packet_creator_.set_max_packet_length(length);
+  packet_creator_.SetMaxPacketLength(length);
 }
 
 QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(
@@ -456,6 +456,11 @@ void QuicPacketGenerator::SetConnectionIdLength(uint32 length) {
 
 void QuicPacketGenerator::set_encryption_level(EncryptionLevel level) {
   packet_creator_.set_encryption_level(level);
+}
+
+void QuicPacketGenerator::SetEncrypter(EncryptionLevel level,
+                                       QuicEncrypter* encrypter) {
+  packet_creator_.SetEncrypter(level, encrypter);
 }
 
 }  // namespace net

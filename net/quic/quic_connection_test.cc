@@ -1577,9 +1577,9 @@ TEST_P(QuicConnectionTest, RecordSentTimeBeforePacketSent) {
 
   // Now pause during the write, and check the results.
   actual_recorded_send_time = QuicTime::Zero();
-  const QuicTime::Delta kWritePauseTimeDelta =
+  const QuicTime::Delta write_pause_time_delta =
       QuicTime::Delta::FromMilliseconds(5000);
-  SetWritePauseTimeDelta(kWritePauseTimeDelta);
+  SetWritePauseTimeDelta(write_pause_time_delta);
   expected_recorded_send_time = clock_.Now();
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
@@ -1602,7 +1602,7 @@ TEST_P(QuicConnectionTest, FECSending) {
           connection_.version(), kIncludeVersion,
           PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_SEQUENCE_NUMBER,
           IN_FEC_GROUP, &payload_length);
-  creator_->set_max_packet_length(length);
+  creator_->SetMaxPacketLength(length);
 
   // Send 4 protected data packets, which should also trigger 1 FEC packet.
   EXPECT_CALL(*send_algorithm_,
@@ -1622,7 +1622,7 @@ TEST_P(QuicConnectionTest, FECQueueing) {
       connection_.version(), kIncludeVersion,
       PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_SEQUENCE_NUMBER,
       IN_FEC_GROUP, &payload_length);
-  creator_->set_max_packet_length(length);
+  creator_->SetMaxPacketLength(length);
   EXPECT_TRUE(creator_->IsFecEnabled());
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -2873,7 +2873,7 @@ TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilManyPacketSent) {
 
 TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
   // SetFromConfig is always called after construction from InitializeSession.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
   connection_.SetFromConfig(config);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -2903,7 +2903,7 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
 
 TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
   // SetFromConfig is always called after construction from InitializeSession.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
   config.set_max_undecryptable_packets(100);
   connection_.SetFromConfig(config);
@@ -3051,7 +3051,7 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
 
   // SetFromConfig sets the initial timeouts before negotiation.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
   connection_.SetFromConfig(config);
   // Subtract a second from the idle timeout on the client side.
@@ -3163,7 +3163,7 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
 
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
   connection_.SetFromConfig(config);
   EXPECT_FALSE(QuicConnectionPeer::IsSilentCloseEnabled(&connection_));
@@ -3205,7 +3205,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSendSilentClose) {
   // Same test as above, but complete a handshake which enables silent close,
   // causing no connection close packet to be sent.
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
 
   // Create a handshake message that also enables silent close.
@@ -3284,7 +3284,7 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
       connection_.version(), kIncludeVersion,
       PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_SEQUENCE_NUMBER,
       NOT_IN_FEC_GROUP, &payload_length);
-  creator_->set_max_packet_length(length);
+  creator_->SetMaxPacketLength(length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
@@ -3308,7 +3308,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
           connection_.version(), kIncludeVersion,
           PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_SEQUENCE_NUMBER,
           NOT_IN_FEC_GROUP, &payload_length);
-  creator_->set_max_packet_length(length);
+  creator_->SetMaxPacketLength(length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(7);
@@ -3322,7 +3322,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
 TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   // Set up a larger payload than will fit in one packet.
   const string payload(connection_.max_packet_length(), 'a');
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _)).Times(AnyNumber());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
 
   // Now send some packets with no truncation.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
@@ -3672,14 +3672,14 @@ TEST_P(QuicConnectionTest, UpdateEntropyForReceivedPackets) {
   // Make 4th packet my least unacked, and update entropy for 2, 3 packets.
   QuicPacketCreatorPeer::SetSequenceNumber(&peer_creator_, 5);
   QuicPacketEntropyHash six_packet_entropy_hash = 0;
-  QuicPacketEntropyHash kRandomEntropyHash = 129u;
+  QuicPacketEntropyHash random_entropy_hash = 129u;
   QuicStopWaitingFrame frame = InitStopWaitingFrame(4);
-  frame.entropy_hash = kRandomEntropyHash;
+  frame.entropy_hash = random_entropy_hash;
   if (ProcessStopWaitingPacket(&frame)) {
     six_packet_entropy_hash = 1 << 6;
   }
 
-  EXPECT_EQ((kRandomEntropyHash + (1 << 5) + six_packet_entropy_hash),
+  EXPECT_EQ((random_entropy_hash + (1 << 5) + six_packet_entropy_hash),
             outgoing_ack()->entropy_hash);
 }
 
@@ -3691,16 +3691,16 @@ TEST_P(QuicConnectionTest, UpdateEntropyHashUptoCurrentPacket) {
   ProcessDataPacket(22, 1, kEntropyFlag);
   EXPECT_EQ(66u, outgoing_ack()->entropy_hash);
   QuicPacketCreatorPeer::SetSequenceNumber(&peer_creator_, 22);
-  QuicPacketEntropyHash kRandomEntropyHash = 85u;
+  QuicPacketEntropyHash random_entropy_hash = 85u;
   // Current packet is the least unacked packet.
   QuicPacketEntropyHash ack_entropy_hash;
   QuicStopWaitingFrame frame = InitStopWaitingFrame(23);
-  frame.entropy_hash = kRandomEntropyHash;
+  frame.entropy_hash = random_entropy_hash;
   ack_entropy_hash = ProcessStopWaitingPacket(&frame);
-  EXPECT_EQ((kRandomEntropyHash + ack_entropy_hash),
+  EXPECT_EQ((random_entropy_hash + ack_entropy_hash),
             outgoing_ack()->entropy_hash);
   ProcessDataPacket(25, 1, kEntropyFlag);
-  EXPECT_EQ((kRandomEntropyHash + ack_entropy_hash + (1 << (25 % 8))),
+  EXPECT_EQ((random_entropy_hash + ack_entropy_hash + (1 << (25 % 8))),
             outgoing_ack()->entropy_hash);
 }
 
@@ -4334,7 +4334,7 @@ TEST_P(QuicConnectionTest, NetworkChangeVisitorConfigCallbackChangesFecState) {
 
   // Verify that sending a config with a new initial rtt changes fec timeout.
   // Create and process a config with a non-zero initial RTT.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
   config.SetInitialRoundTripTimeUsToSend(300000);
   connection_.SetFromConfig(config);

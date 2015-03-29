@@ -218,7 +218,7 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   if (header.public_header.version_flag) {
     os << " version: ";
     for (size_t i = 0; i < header.public_header.versions.size(); ++i) {
-      os << header.public_header.versions[0] << " ";
+      os << header.public_header.versions[i] << " ";
     }
   }
   os << ", fec_flag: " << header.fec_flag

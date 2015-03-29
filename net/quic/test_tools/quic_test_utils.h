@@ -473,10 +473,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MockSendAlgorithm();
   ~MockSendAlgorithm() override;
 
-  MOCK_METHOD3(SetFromConfig,
+  MOCK_METHOD2(SetFromConfig,
                void(const QuicConfig& config,
-                    Perspective perspective,
-                    bool using_pacing));
+                    Perspective perspective));
   MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
   MOCK_METHOD1(SetMaxCongestionWindow,
                void(QuicByteCount max_congestion_window));

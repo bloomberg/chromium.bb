@@ -625,7 +625,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
       // than the GetMinStreamFrameSize.
       QuicFramer::GetMinStreamFrameSize(1, 0, false, NOT_IN_FEC_GROUP) + 3 +
       QuicFramer::GetMinStreamFrameSize(1, 0, true, NOT_IN_FEC_GROUP) + 1;
-  creator_->set_max_packet_length(length);
+  creator_->SetMaxPacketLength(length);
   delegate_.SetCanWriteAnything();
   {
      InSequence dummy;

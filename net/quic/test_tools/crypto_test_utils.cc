@@ -17,6 +17,7 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 
@@ -411,20 +412,24 @@ CommonCertSets* CryptoTestUtils::MockCommonCertSets(StringPiece cert,
 void CryptoTestUtils::CompareClientAndServerKeys(
     QuicCryptoClientStream* client,
     QuicCryptoServerStream* server) {
+  QuicFramer* client_framer =
+      QuicConnectionPeer::GetFramer(client->session()->connection());
+  QuicFramer* server_framer =
+      QuicConnectionPeer::GetFramer(server->session()->connection());
   const QuicEncrypter* client_encrypter(
-      client->session()->connection()->encrypter(ENCRYPTION_INITIAL));
+      QuicFramerPeer::GetEncrypter(client_framer, ENCRYPTION_INITIAL));
   const QuicDecrypter* client_decrypter(
       client->session()->connection()->decrypter());
   const QuicEncrypter* client_forward_secure_encrypter(
-      client->session()->connection()->encrypter(ENCRYPTION_FORWARD_SECURE));
+      QuicFramerPeer::GetEncrypter(client_framer, ENCRYPTION_FORWARD_SECURE));
   const QuicDecrypter* client_forward_secure_decrypter(
       client->session()->connection()->alternative_decrypter());
   const QuicEncrypter* server_encrypter(
-      server->session()->connection()->encrypter(ENCRYPTION_INITIAL));
+      QuicFramerPeer::GetEncrypter(server_framer, ENCRYPTION_INITIAL));
   const QuicDecrypter* server_decrypter(
       server->session()->connection()->decrypter());
   const QuicEncrypter* server_forward_secure_encrypter(
-      server->session()->connection()->encrypter(ENCRYPTION_FORWARD_SECURE));
+      QuicFramerPeer::GetEncrypter(server_framer, ENCRYPTION_FORWARD_SECURE));
   const QuicDecrypter* server_forward_secure_decrypter(
       server->session()->connection()->alternative_decrypter());
 

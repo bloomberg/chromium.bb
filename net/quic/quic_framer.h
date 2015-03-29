@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_FRAMER_H_
 #define NET_QUIC_QUIC_FRAMER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -346,7 +347,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Changes the encrypter used for level |level| to |encrypter|. The function
   // takes ownership of |encrypter|.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
-  const QuicEncrypter* encrypter(EncryptionLevel level) const;
 
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(EncryptionLevel level,
@@ -460,6 +460,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   // The Append* methods attempt to write the provided header or frame using the
   // |writer|, and return true if successful.
+
+  // If header.public_header.version_flag is set, the version in the
+  // packet will be set -- but it will be set from quic_version_ not
+  // header.public_header.versions.
   bool AppendPacketHeader(const QuicPacketHeader& header,
                           QuicDataWriter* writer);
   bool AppendTypeByte(const QuicFrame& frame,

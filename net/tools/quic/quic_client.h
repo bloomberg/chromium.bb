@@ -207,7 +207,7 @@ class QuicClient : public EpollCallbackInterface,
   // A packet writer factory that always returns the same writer
   class DummyPacketWriterFactory : public QuicConnection::PacketWriterFactory {
    public:
-    DummyPacketWriterFactory(QuicPacketWriter* writer);
+    explicit DummyPacketWriterFactory(QuicPacketWriter* writer);
     ~DummyPacketWriterFactory() override;
 
     QuicPacketWriter* Create(QuicConnection* connection) const override;

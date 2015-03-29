@@ -59,7 +59,7 @@ class TestServerSession : public QuicServerSession {
 class TestDispatcher : public QuicDispatcher {
  public:
   explicit TestDispatcher(const QuicConfig& config,
-                          const QuicCryptoServerConfig& crypto_config,
+                          const QuicCryptoServerConfig* crypto_config,
                           EpollServer* eps)
       : QuicDispatcher(config,
                        crypto_config,
@@ -121,7 +121,7 @@ class QuicDispatcherTest : public ::testing::Test {
       : helper_(&eps_),
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
-        dispatcher_(config_, crypto_config_, &eps_),
+        dispatcher_(config_, &crypto_config_, &eps_),
         time_wait_list_manager_(nullptr),
         session1_(nullptr),
         session2_(nullptr) {

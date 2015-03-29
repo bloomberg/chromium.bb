@@ -1739,7 +1739,7 @@ void QuicConnection::OnRetransmissionTimeout() {
 
 void QuicConnection::SetEncrypter(EncryptionLevel level,
                                   QuicEncrypter* encrypter) {
-  framer_.SetEncrypter(level, encrypter);
+  packet_generator_.SetEncrypter(level, encrypter);
   if (level == ENCRYPTION_FORWARD_SECURE) {
     has_forward_secure_encrypter_ = true;
     first_required_forward_secure_packet_ =
@@ -1750,10 +1750,6 @@ void QuicConnection::SetEncrypter(EncryptionLevel level,
         3 * sent_packet_manager_.EstimateMaxPacketsInFlight(
             max_packet_length());
   }
-}
-
-const QuicEncrypter* QuicConnection::encrypter(EncryptionLevel level) const {
-  return framer_.encrypter(level);
 }
 
 void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {

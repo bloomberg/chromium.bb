@@ -15,6 +15,7 @@
 #include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_socket_address_coder.h"
+#include "net/quic/quic_utils.h"
 
 using base::StringPiece;
 using std::map;
@@ -745,7 +746,10 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
 
   if (header.public_header.version_flag) {
     DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
-    writer->WriteUInt32(QuicVersionToQuicTag(quic_version_));
+    QuicTag tag = QuicVersionToQuicTag(quic_version_);
+    writer->WriteUInt32(tag);
+    DVLOG(1) << "version = " << quic_version_
+               << ", tag = '" << QuicUtils::TagToString(tag) << "'";
   }
 
   if (!AppendPacketSequenceNumber(header.public_header.sequence_number_length,
@@ -1607,13 +1611,6 @@ void QuicFramer::SetEncrypter(EncryptionLevel level,
   DCHECK_GE(level, 0);
   DCHECK_LT(level, NUM_ENCRYPTION_LEVELS);
   encrypter_[level].reset(encrypter);
-}
-
-const QuicEncrypter* QuicFramer::encrypter(EncryptionLevel level) const {
-  DCHECK_GE(level, 0);
-  DCHECK_LT(level, NUM_ENCRYPTION_LEVELS);
-  DCHECK(encrypter_[level].get() != nullptr);
-  return encrypter_[level].get();
 }
 
 QuicEncryptedPacket* QuicFramer::EncryptPacket(

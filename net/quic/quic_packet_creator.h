@@ -9,6 +9,7 @@
 #ifndef NET_QUIC_QUIC_PACKET_CREATOR_H_
 #define NET_QUIC_QUIC_PACKET_CREATOR_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -191,11 +192,12 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
     return max_packet_length_;
   }
 
-  void set_max_packet_length(QuicByteCount length) {
-    // |max_packet_length_| should not be changed mid-packet or mid-FEC group.
-    DCHECK(fec_group_.get() == nullptr && queued_frames_.empty());
-    max_packet_length_ = length;
-  }
+  // Sets the encrypter to use for the encryption level and updates the max
+  // plaintext size.
+  void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
+
+  // Sets the maximum packet length.
+  void SetMaxPacketLength(QuicByteCount length);
 
   // Returns current max number of packets covered by an FEC group.
   size_t max_packets_per_fec_group() const {
@@ -265,6 +267,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // packet_size_ is mutable because it's just a cache of the current size.
   // packet_size should never be read directly, use PacketSize() instead.
   mutable size_t packet_size_;
+  mutable size_t max_plaintext_size_;
   QuicFrames queued_frames_;
   scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;
 

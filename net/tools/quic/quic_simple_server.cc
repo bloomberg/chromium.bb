@@ -145,7 +145,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   CustomPacketWriterFactory* factory = new CustomPacketWriterFactory();
   dispatcher_.reset(
       new QuicDispatcher(config_,
-                         crypto_config_,
+                         &crypto_config_,
                          supported_versions_,
                          factory,
                          &helper_));

@@ -1466,6 +1466,11 @@ bool QuicCryptoServerConfig::HasProofSource() const {
   return proof_source_ != nullptr;
 }
 
+int QuicCryptoServerConfig::NumberOfConfigs() const {
+  base::AutoLock locked(configs_lock_);
+  return configs_.size();
+}
+
 HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
     const Config& config,
     StringPiece token,

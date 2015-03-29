@@ -477,7 +477,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Changes the encrypter used for level |level| to |encrypter|. The function
   // takes ownership of |encrypter|.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
-  const QuicEncrypter* encrypter(EncryptionLevel level) const;
 
   // SetDefaultEncryptionLevel sets the encryption level that will be applied
   // to new packets.

@@ -57,5 +57,11 @@ void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
   framer1->alternative_decrypter_latch_ = framer2_latch;
 }
 
+// static.
+QuicEncrypter* QuicFramerPeer::GetEncrypter(QuicFramer* framer,
+                                            EncryptionLevel level) {
+  return framer->encrypter_[level].get();
+}
+
 }  // namespace test
 }  // namespace net

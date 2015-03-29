@@ -1417,9 +1417,13 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   client_->client()->session()->connection()->set_debug_visitor(&visitor);
   EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
       .Times(1);
+  // We must pause the server's thread in order to call WritePacket without
+  // race conditions.
+  server_thread_->Pause();
   server_writer_->WritePacket(packet->data(), packet->length(),
                               server_address_.address(),
                               client_->client()->client_address());
+  server_thread_->Resume();
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1473,9 +1477,13 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   client_->client()->session()->connection()->set_debug_visitor(&visitor);
   EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
       .Times(1);
+  // We must pause the server's thread in order to call WritePacket without
+  // race conditions.
+  server_thread_->Pause();
   server_writer_->WritePacket(packet->data(), packet->length(),
                               server_address_.address(),
                               client_->client()->client_address());
+  server_thread_->Resume();
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));

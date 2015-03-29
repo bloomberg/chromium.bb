@@ -163,7 +163,7 @@ QuicPacketWriter* QuicDispatcher::PacketWriterFactoryAdapter::Create(
 }
 
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
-                               const QuicCryptoServerConfig& crypto_config,
+                               const QuicCryptoServerConfig* crypto_config,
                                const QuicVersionVector& supported_versions,
                                PacketWriterFactory* packet_writer_factory,
                                QuicConnectionHelperInterface* helper)
@@ -323,7 +323,7 @@ void QuicDispatcher::DeleteSessions() {
 }
 
 void QuicDispatcher::OnCanWrite() {
-  // We got an EPOLLOUT: the socket should not be blocked.
+  // The socket is now writable.
   writer_->SetWritable();
 
   // Give all the blocked writers one chance to write, until we're blocked again
@@ -404,10 +404,10 @@ QuicServerSession* QuicDispatcher::CreateQuicSession(
   QuicConnection* connection = new QuicConnection(
       connection_id, client_address, helper_.get(), connection_writer_factory_,
       /* owns_writer= */ true, Perspective::IS_SERVER,
-      crypto_config_.HasProofSource(), supported_versions_);
+      crypto_config_->HasProofSource(), supported_versions_);
 
   QuicServerSession* session = new QuicServerSession(config_, connection, this);
-  session->InitializeSession(&crypto_config_);
+  session->InitializeSession(crypto_config_);
   return session;
 }
 

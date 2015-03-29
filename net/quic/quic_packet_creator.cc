@@ -76,12 +76,12 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       should_fec_protect_(false),
       fec_group_number_(0),
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
-      max_packet_length_(kDefaultMaxPacketSize),
       max_packets_per_fec_group_(kDefaultMaxPacketsPerFecGroup),
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
       next_sequence_number_length_(PACKET_1BYTE_SEQUENCE_NUMBER),
       sequence_number_length_(next_sequence_number_length_),
       packet_size_(0) {
+  SetMaxPacketLength(kDefaultMaxPacketSize);
   framer_->set_fec_builder(this);
 }
 
@@ -94,6 +94,19 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
     DCHECK_NE(0u, header.fec_group);
     fec_group_->Update(encryption_level_, header, payload);
   }
+}
+
+void QuicPacketCreator::SetEncrypter(EncryptionLevel level,
+                                     QuicEncrypter* encrypter) {
+  framer_->SetEncrypter(level, encrypter);
+  max_plaintext_size_ = framer_->GetMaxPlaintextSize(max_packet_length_);
+}
+
+void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
+  // |max_packet_length_| should not be changed mid-packet or mid-FEC group.
+  DCHECK(fec_group_.get() == nullptr && queued_frames_.empty());
+  max_packet_length_ = length;
+  max_plaintext_size_ = framer_->GetMaxPlaintextSize(max_packet_length_);
 }
 
 void QuicPacketCreator::set_max_packets_per_fec_group(
@@ -329,11 +342,9 @@ size_t QuicPacketCreator::ExpansionOnNewFrame() const {
 }
 
 size_t QuicPacketCreator::BytesFree() const {
-  const size_t max_plaintext_size =
-      framer_->GetMaxPlaintextSize(max_packet_length_);
-  DCHECK_GE(max_plaintext_size, PacketSize());
-  return max_plaintext_size - min(max_plaintext_size, PacketSize()
-                                  + ExpansionOnNewFrame());
+  DCHECK_GE(max_plaintext_size_, PacketSize());
+  return max_plaintext_size_ - min(max_plaintext_size_, PacketSize()
+                                   + ExpansionOnNewFrame());
 }
 
 size_t QuicPacketCreator::PacketSize() const {
@@ -363,14 +374,12 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
 
   MaybeAddPadding();
 
-  size_t max_plaintext_size =
-      framer_->GetMaxPlaintextSize(max_packet_length_);
-  DCHECK_GE(max_plaintext_size, packet_size_);
+  DCHECK_GE(max_plaintext_size_, packet_size_);
   // ACK Frames will be truncated due to length only if they're the only frame
-  // in the packet, and if packet_size_ was set to max_plaintext_size. If
+  // in the packet, and if packet_size_ was set to max_plaintext_size_. If
   // truncation due to length occurred, then GetSerializedFrameLength will have
   // returned all bytes free.
-  bool possibly_truncated_by_length = packet_size_ == max_plaintext_size &&
+  bool possibly_truncated_by_length = packet_size_ == max_plaintext_size_ &&
       queued_frames_.size() == 1 &&
       queued_frames_.back().type == ACK_FRAME;
   char buffer[kMaxPacketSize];

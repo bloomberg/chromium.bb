@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_FRAMER_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_FRAMER_PEER_H_
 
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -29,6 +30,8 @@ class QuicFramerPeer {
   // SwapCrypters exchanges the state of the crypters of |framer1| with
   // |framer2|.
   static void SwapCrypters(QuicFramer* framer1, QuicFramer* framer2);
+
+  static QuicEncrypter* GetEncrypter(QuicFramer* framer, EncryptionLevel level);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);

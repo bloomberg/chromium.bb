@@ -173,7 +173,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
                                               kUsableRecieveBufferFraction);
     }
   }
-  send_algorithm_->SetFromConfig(config, perspective_, using_pacing_);
+  send_algorithm_->SetFromConfig(config, perspective_);
 
   if (network_change_visitor_ != nullptr) {
     network_change_visitor_->OnCongestionWindowChange();

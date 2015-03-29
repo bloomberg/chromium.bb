@@ -117,7 +117,6 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   SpdyHeaderBlock response_headers_;
-  EpollServer eps_;
   StrictMock<MockConnection>* connection_;
   StrictMock<MockSession> session_;
   scoped_ptr<QuicSpdyServerStreamPeer> stream_;

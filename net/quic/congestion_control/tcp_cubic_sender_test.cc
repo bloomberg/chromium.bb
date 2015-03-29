@@ -207,52 +207,6 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
             sender_->BandwidthEstimate());
 }
 
-TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
-  sender_->SetNumEmulatedConnections(1);
-  EXPECT_EQ(kMaxTcpCongestionWindow * kDefaultTCPMSS,
-            sender_->GetSlowStartThreshold());
-
-  // Make sure that we fall out of slow start when we send ACK train longer
-  // than half the RTT, in this test case 30ms, which is more than 30 calls to
-  // Ack2Packets in one round.
-  // Since we start at 10 packet first round will be 5 second round 10 etc
-  // Hence we should pass 30 at 65 = 5 + 10 + 20 + 30
-  const int kNumberOfAcks = 65;
-  for (int i = 0; i < kNumberOfAcks; ++i) {
-    // Send our full send window.
-    SendAvailableSendWindow();
-    AckNPackets(2);
-  }
-  QuicByteCount expected_send_window =
-      kDefaultWindowTCP + (kDefaultTCPMSS * 2 * kNumberOfAcks);
-  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
-
-  // We should now have fallen out of slow start.
-  // Testing Reno phase.
-  // We should need 140(65*2+10) ACK:ed packets before increasing window by
-  // one.
-  for (int i = 0; i < 69; ++i) {
-    SendAvailableSendWindow();
-    AckNPackets(2);
-    EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
-  }
-  SendAvailableSendWindow();
-  AckNPackets(2);
-  QuicByteCount expected_ss_tresh = expected_send_window;
-  expected_send_window += kDefaultTCPMSS;
-  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
-  EXPECT_EQ(expected_ss_tresh, sender_->GetSlowStartThreshold());
-  EXPECT_EQ(140u, sender_->slowstart_threshold());
-
-  // Now RTO and ensure slow start gets reset.
-  EXPECT_TRUE(sender_->hybrid_slow_start().started());
-  sender_->OnRetransmissionTimeout(true);
-  EXPECT_FALSE(sender_->hybrid_slow_start().started());
-  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
-  EXPECT_EQ(expected_send_window / 2 / kDefaultTCPMSS,
-            sender_->slowstart_threshold());
-}
-
 TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   sender_->SetNumEmulatedConnections(1);
   const int kNumberOfAcks = 10;
@@ -566,8 +520,7 @@ TEST_F(TcpCubicSenderTest, ConfigureInitialWindow) {
   QuicTagVector options;
   options.push_back(kIW10);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  sender_->SetFromConfig(config, Perspective::IS_SERVER,
-                         /* using_pacing= */ false);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
   EXPECT_EQ(10u, sender_->congestion_window());
 }
 
@@ -578,19 +531,9 @@ TEST_F(TcpCubicSenderTest, ConfigureMinimumWindow) {
   QuicTagVector options;
   options.push_back(kMIN1);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  sender_->SetFromConfig(config, Perspective::IS_SERVER,
-                         /* using_pacing= */ false);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
   sender_->OnRetransmissionTimeout(true);
   EXPECT_EQ(1u, sender_->congestion_window());
-}
-
-TEST_F(TcpCubicSenderTest, DisableAckTrainDetectionWithPacing) {
-  EXPECT_TRUE(sender_->hybrid_slow_start().ack_train_detection());
-
-  QuicConfig config;
-  sender_->SetFromConfig(config, Perspective::IS_SERVER,
-                         /* using_pacing= */ true);
-  EXPECT_FALSE(sender_->hybrid_slow_start().ack_train_detection());
 }
 
 TEST_F(TcpCubicSenderTest, 2ConnectionCongestionAvoidanceAtEndOfRecovery) {

@@ -642,7 +642,7 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
   const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
                           + GetEncryptionOverhead();
   for (size_t i = overhead; i < overhead + 100; ++i) {
-    creator_.set_max_packet_length(i);
+    creator_.SetMaxPacketLength(i);
     const bool should_have_room = i > overhead + GetStreamFrameOverhead(
         NOT_IN_FEC_GROUP);
     ASSERT_EQ(should_have_room, creator_.HasRoomForStreamFrame(
@@ -884,7 +884,7 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   }
   // A string larger than fits into a frame.
   size_t payload_length;
-  creator_.set_max_packet_length(GetPacketLengthForOneStream(
+  creator_.SetMaxPacketLength(GetPacketLengthForOneStream(
       client_framer_.version(),
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
       creator_.connection_id_length(),
@@ -958,7 +958,7 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithLargePacketSize) {
   if (!GetParam().version_serialization) {
     creator_.StopSendingVersion();
   }
-  creator_.set_max_packet_length(kMaxPacketSize);
+  creator_.SetMaxPacketLength(kMaxPacketSize);
 
   // Serialized length of ack frame with 2000 nack ranges should be limited by
   // the number of nack ranges that can be fit in an ack frame.
@@ -1001,7 +1001,7 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithSmallPacketSize) {
   if (!GetParam().version_serialization) {
     creator_.StopSendingVersion();
   }
-  creator_.set_max_packet_length(500u);
+  creator_.SetMaxPacketLength(500u);
 
   const size_t max_plaintext_size =
       client_framer_.GetMaxPlaintextSize(creator_.max_packet_length());
