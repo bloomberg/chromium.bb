@@ -33,6 +33,11 @@
       'generated_src_dirs': [
         '<(output_dir)/',
       ],
+      # Ensure that the targets depending on this one are rebuilt if the sources
+      # of this one are modified.
+      'additional_input_paths': [
+        '<(source_file)',
+      ],
     },
   },
   'actions': [
