@@ -1441,7 +1441,6 @@ crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.h
 # Will be converted to requestMediaKeySystemAccess() tests.
 crbug.com/425186 media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
 
-crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Failure ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
