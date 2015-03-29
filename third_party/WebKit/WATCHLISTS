@@ -82,6 +82,10 @@
     'loader': {
       'filepath': 'Source/core/loader',
     },
+    'notifications': {
+      'filepath': 'Source/modules/notifications' \
+                  '|public/platform/modules/notifications'
+    },
     'owners': {
       'filepath': 'OWNERS',
     },
@@ -93,6 +97,10 @@
     },
     'public_api': {
       'filepath': 'public'
+    },
+    'push_messaging': {
+      'filepath': 'Source/modules/push_messaging' \
+                  '|public/platform/modules/push_messaging'
     },
     'scheduler': {
       'filepath': 'Source/platform/scheduler' \
@@ -408,6 +416,7 @@
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
+    'push_messaging': [ 'johnme+watch@chromium.org', 'peter+watch@chromium.org' ],
     'client_hints': [ 'yoav@yoav.ws' ],
     'scheduler': [ 'scheduler-bugs@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
@@ -426,6 +435,7 @@
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'navigator_content_utils': [ 'gyuyoung.kim@webkit.org' ],
+    'notifications': [ 'peter+watch@chromium.org' ],
     'geolocation': [ 'mvanouwerkerk+watch@chromium.org',
                      'timvolodine@chromium.org',
                      'mlamouri+watch-blink@chromium.org' ],
