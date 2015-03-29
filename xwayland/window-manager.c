@@ -734,17 +734,10 @@ weston_wm_create_surface(struct wl_listener *listener, void *data)
 }
 
 static void
-weston_wm_window_activate(struct wl_listener *listener, void *data)
+weston_wm_send_focus_window(struct weston_wm *wm,
+			    struct weston_wm_window *window)
 {
-	struct weston_surface *surface = data;
-	struct weston_wm_window *window = NULL;
-	struct weston_wm *wm =
-		container_of(listener, struct weston_wm, activate_listener);
 	xcb_client_message_event_t client_message;
-
-	if (surface) {
-		window = get_wm_window(surface);
-	}
 
 	if (window) {
 		uint32_t values[1];
@@ -775,6 +768,21 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 				     XCB_NONE,
 				     XCB_TIME_CURRENT_TIME);
 	}
+}
+
+static void
+weston_wm_window_activate(struct wl_listener *listener, void *data)
+{
+	struct weston_surface *surface = data;
+	struct weston_wm_window *window = NULL;
+	struct weston_wm *wm =
+		container_of(listener, struct weston_wm, activate_listener);
+
+	if (surface) {
+		window = get_wm_window(surface);
+	}
+
+	weston_wm_send_focus_window(wm, window);
 
 	if (wm->focus_window) {
 		if (wm->focus_window->frame)
@@ -1185,7 +1193,8 @@ weston_wm_window_create(struct weston_wm *wm,
 
 	geometry_cookie = xcb_get_geometry(wm->conn, id);
 
-	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
+	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE |
+                    XCB_EVENT_MASK_FOCUS_CHANGE;
 	xcb_change_window_attributes(wm->conn, id, XCB_CW_EVENT_MASK, values);
 
 	window->wm = wm;
@@ -1884,6 +1893,16 @@ weston_wm_handle_leave(struct weston_wm *wm, xcb_generic_event_t *event)
 	weston_wm_window_set_cursor(wm, window->frame_id, XWM_CURSOR_LEFT_PTR);
 }
 
+static void
+weston_wm_handle_focus_in(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_focus_in_event_t *focus = (xcb_focus_in_event_t *) event;
+	/* Do not let X clients change the focus behind the compositor's
+	 * back. Reset the focus to the old one if it changed. */
+	if (!wm->focus_window || focus->event != wm->focus_window->id)
+		weston_wm_send_focus_window(wm, wm->focus_window);
+}
+
 static int
 weston_wm_handle_event(int fd, uint32_t mask, void *data)
 {
@@ -1950,6 +1969,9 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		case XCB_CLIENT_MESSAGE:
 			weston_wm_handle_client_message(wm, event);
+			break;
+		case XCB_FOCUS_IN:
+			weston_wm_handle_focus_in(wm, event);
 			break;
 		}
 
