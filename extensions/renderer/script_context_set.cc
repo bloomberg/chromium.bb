@@ -204,6 +204,7 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
 void ScriptContextSet::DispatchOnUnloadEventAndRemove(
     std::set<ScriptContext*>* out,
     ScriptContext* context) {
+  context->DispatchOnUnloadEvent();
   Remove(context);  // deleted asynchronously
   out->insert(context);
 }
