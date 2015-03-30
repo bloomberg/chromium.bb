@@ -177,7 +177,10 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
             return;
         }
 
-        if (results == null) {
+        if (results == null
+                || (results.getData() == null
+                           && (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2
+                                      || results.getClipData() == null))) {
             // If we have a successful return but no data, then assume this is the camera returning
             // the photo that we requested.
             // If the uri is a file, we need to convert it to the absolute path or otherwise
@@ -218,8 +221,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         }
 
         if (ContentResolver.SCHEME_FILE.equals(results.getData().getScheme())) {
-            nativeOnFileSelected(mNativeSelectFileDialog,
-                    results.getData().getSchemeSpecificPart(), "");
+            nativeOnFileSelected(
+                    mNativeSelectFileDialog, results.getData().getSchemeSpecificPart(), "");
             return;
         }
 
