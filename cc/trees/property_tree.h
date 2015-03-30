@@ -87,6 +87,11 @@ struct CC_EXPORT TransformNodeData {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::Vector2dF scroll_offset;
 
+  // We scroll snap where possible, but this has an effect on scroll
+  // compensation: the snap is yet more scrolling that must be compensated for.
+  // This value stores the snapped amount for this purpose.
+  gfx::Vector2dF scroll_snap;
+
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;
     is_invertible = to_parent.IsInvertible();

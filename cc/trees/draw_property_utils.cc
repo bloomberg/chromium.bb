@@ -77,7 +77,7 @@ void CalculateVisibleRects(
           MathUtil::MapEnclosingClippedRect(content_to_target,
                                             layer_content_rect);
       gfx::Rect clip_rect_in_target_space;
-      if (target_node->id > clip_node->id) {
+      if (target_node->id > clip_node->data.transform_id) {
         clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
                 clip_to_target, clip_node->data.combined_clip));

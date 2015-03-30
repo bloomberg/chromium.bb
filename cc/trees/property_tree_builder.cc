@@ -11,6 +11,7 @@
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
 
@@ -33,6 +34,7 @@ struct DataForRecursion {
   bool in_subtree_of_page_scale_application_layer;
   bool should_flatten;
   const gfx::Transform* device_transform;
+  gfx::Vector2dF scroll_compensation_adjustment;
 };
 
 static Layer* GetTransformParent(const DataForRecursion& data, Layer* layer) {
@@ -141,24 +143,30 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
       parent_offset += to_parent.To2dTranslation();
     } else if (!is_fixed) {
       parent_offset = transform_parent->offset_to_transform_parent();
-    } else if (data_from_ancestor.transform_tree_parent !=
-               data_from_ancestor.transform_fixed_parent) {
-      gfx::Vector2dF fixed_offset = data_from_ancestor.transform_tree_parent
-                                        ->offset_to_transform_parent();
-      gfx::Transform parent_to_parent;
-      data_from_ancestor.transform_tree->ComputeTransform(
-          data_from_ancestor.transform_tree_parent->transform_tree_index(),
-          data_from_ancestor.transform_fixed_parent->transform_tree_index(),
-          &parent_to_parent);
+    } else {
+      if (data_from_ancestor.transform_tree_parent !=
+          data_from_ancestor.transform_fixed_parent) {
+        gfx::Vector2dF fixed_offset = data_from_ancestor.transform_tree_parent
+                                          ->offset_to_transform_parent();
+        gfx::Transform parent_to_parent;
+        data_from_ancestor.transform_tree->ComputeTransform(
+            data_from_ancestor.transform_tree_parent->transform_tree_index(),
+            data_from_ancestor.transform_fixed_parent->transform_tree_index(),
+            &parent_to_parent);
 
-      fixed_offset += parent_to_parent.To2dTranslation();
-      parent_offset += fixed_offset;
+        fixed_offset += parent_to_parent.To2dTranslation();
+        parent_offset += fixed_offset;
+      }
+      parent_offset += data_from_ancestor.scroll_compensation_adjustment;
     }
   }
 
   if (layer->IsContainerForFixedPositionLayers() || is_root)
     data_for_children->transform_fixed_parent = layer;
   data_for_children->transform_tree_parent = layer;
+
+  if (layer->IsContainerForFixedPositionLayers() || is_fixed)
+    data_for_children->scroll_compensation_adjustment = gfx::Vector2dF();
 
   if (!requires_node) {
     data_for_children->should_flatten |= layer->should_flatten_transform();
@@ -232,6 +240,9 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   // Flattening (if needed) will be handled by |node|.
   layer->set_should_flatten_transform_from_property_tree(false);
+
+  data_for_children->scroll_compensation_adjustment +=
+      layer->ScrollCompensationAdjustment() - node->data.scroll_snap;
 }
 
 void AddOpacityNodeIfNeeded(const DataForRecursion& data_from_ancestor,

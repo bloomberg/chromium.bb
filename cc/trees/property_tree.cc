@@ -311,20 +311,22 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   rounded.RoundTranslationComponents();
   gfx::Transform delta = node->data.from_target;
   delta *= rounded;
-  gfx::Transform inverse_delta(gfx::Transform::kSkipInitialization);
-  bool invertible_delta = delta.GetInverse(&inverse_delta);
 
-  // The delta should be a translation, modulo floating point error, and should
-  // therefore be invertible.
-  DCHECK(invertible_delta);
+  DCHECK(delta.IsIdentityOr2DTranslation());
+
+  gfx::Vector2dF translation = delta.To2dTranslation();
 
   // Now that we have our scroll delta, we must apply it to each of our
   // combined, to/from matrices.
-  node->data.to_parent.PreconcatTransform(delta);
-  node->data.to_target.PreconcatTransform(delta);
-  node->data.from_target.ConcatTransform(inverse_delta);
-  node->data.to_screen.PreconcatTransform(delta);
-  node->data.from_screen.ConcatTransform(inverse_delta);
+  node->data.to_parent.Translate(translation.x(), translation.y());
+  node->data.to_target.Translate(translation.x(), translation.y());
+  node->data.from_target.matrix().postTranslate(-translation.x(),
+                                                -translation.y(), 0);
+  node->data.to_screen.Translate(translation.x(), translation.y());
+  node->data.from_screen.matrix().postTranslate(-translation.x(),
+                                                -translation.y(), 0);
+
+  node->data.scroll_snap = translation;
 }
 
 }  // namespace cc
