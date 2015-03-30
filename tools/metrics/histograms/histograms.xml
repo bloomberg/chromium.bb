@@ -23386,6 +23386,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.LoadTime" units="milliseconds">
+  <owner>fserb@chromium.org</owner>
+  <summary>
+    Histogram of the time, in milliseconds, it took for the NTP to load all of
+    its tiles since navigation start.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.MobilePromo" enum="NewTabPageMobilePromo">
   <obsolete>
     Deprecated on M33 with the change to native NTP.
@@ -23452,9 +23460,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The number of tiles for which we relied on external tiles as a fallback
     because a local screenshot was not available to be used as a thumbnail.
     External tiles are those for which the visuals are handled by the page
-    itself, not by the iframe. Recorded before changing focus away from the NTP,
-    be it bynavigating to a URL, switching tabs, changing the active window or
-    closing the tab/shutting down Chrome.
+    itself, not by the iframe. Recorded before reloading the suggestions,
+    navigating to a URL, switching tabs, changing the active window, or closing
+    the tab/shutting down Chrome.
   </summary>
 </histogram>
 
@@ -23463,9 +23471,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of external tiles that are displayed on the NTP. External tiles
     are those for which the visuals are handled by the page itself, not by the
-    iframe. Recorded before changing focus away from the NTP, be it by
-    navigating to a URL, switching tabs, changing the active window or closing
-    the tab/shutting down Chrome.
+    iframe. Recorded before reloading the suggestions, navigating to a URL,
+    switching tabs, changing the active window or closing the tab/shutting down
+    Chrome.
   </summary>
 </histogram>
 
@@ -23474,9 +23482,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of tiles for which we displayed a gray tile with the domain name
     as a fallback because a local screenshot was not available to be used as a
-    thumbnail. Recorded before changing focus away from the NTP, be it by
-    navigating to a URL, switching tabs, changing the active window or closing
-    the tab/shutting down Chrome.
+    thumbnail. Recorded before reloading the suggestions, navigating to a URL,
+    switching tabs, changing the active window or closing the tab/shutting down
+    Chrome.
   </summary>
 </histogram>
 
@@ -23485,8 +23493,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of tiles for which no thumbnail was specified, but a domain was
     so we displayed a gray tile with the domain name in it. Recorded before
-    changing focus away from the NTP, be it by navigating to a URL, switching
-    tabs, changing the active window or closing the tab/shutting down Chrome.
+    reloading the suggestions, navigating to a URL, switching tabs, changing the
+    active window or closing the tab/shutting down Chrome.
   </summary>
 </histogram>
 
@@ -23507,9 +23515,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of tiles for which we attempted to use a local screenshot as a
-    thumbnail. Recorded before changing focus away from the NTP, be it by
-    navigating to a URL, switching tabs, changing the active window or closing
-    the tab/shutting down Chrome.
+    thumbnail. Recorded before reloading the suggestions, navigating to a URL,
+    switching tabs, changing the active window or closing the tab/shutting down
+    Chrome.
   </summary>
 </histogram>
 
@@ -23518,9 +23526,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of thumbnails for which a local screenshot was not available so
     we were not able to display them on the Most Visited section of the NTP.
-    Recorded before changing focus away from the NTP, be it by navigating to a
-    URL, switching tabs, changing the active window or closing the tab/shutting
-    down Chrome.
+    Recorded before reloading the suggestions, navigating to a URL, switching
+    tabs, changing the active window or closing the tab/shutting down Chrome.
   </summary>
 </histogram>
 
@@ -23528,9 +23535,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of tiles for which we attempted to use a local screenshot as a
-    thumbnail. Recorded before changing focus away from the NTP, be it by
-    navigating to a URL, switching tabs, changing the active window or closing
-    the tab/shutting down Chrome.
+    thumbnail. Recorded before reloading the suggestions, navigating to a URL,
+    switching tabs, changing the active window or closing the tab/shutting down
+    Chrome.
   </summary>
 </histogram>
 
@@ -23538,9 +23545,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of tiles that are displayed on the NTP, no matter if they are
-    thumbnails, gray tiles, or external tiles. Recorded before changing focus
-    away from the NTP, be it by navigating to a URL, switching tabs, changing
-    the active window or closing the tab/shutting down Chrome.
+    thumbnails, gray tiles, or external tiles. Recorded before reloading the
+    suggestions, navigating to a URL, switching tabs, changing the active window
+    or closing the tab/shutting down Chrome.
   </summary>
 </histogram>
 

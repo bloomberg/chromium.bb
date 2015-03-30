@@ -43,7 +43,10 @@ enum NTPLoggingEventType {
   // The user moused over an NTP tile or title.
   NTP_MOUSEOVER = 9,
 
-  NTP_EVENT_TYPE_LAST = NTP_MOUSEOVER
+  // A NTP Tile has finished loading (successfully or failing).
+  NTP_TILE_LOADED = 10,
+
+  NTP_EVENT_TYPE_LAST = NTP_TILE_LOADED
 };
 
 #endif  // CHROME_COMMON_NTP_LOGGING_EVENTS_H_

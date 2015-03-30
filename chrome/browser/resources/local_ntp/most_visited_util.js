@@ -42,7 +42,9 @@ var NTP_LOGGING_EVENT_TYPE = {
   // The visuals of that tile's fallback are handled externally.
   NTP_EXTERNAL_TILE_FALLBACK: 8,
   // The user moused over an NTP tile or title.
-  NTP_MOUSEOVER: 9
+  NTP_MOUSEOVER: 9,
+  // A NTP Tile has finished loading (successfully or failing).
+  NTP_TILE_LOADED: 10,
 };
 
 /**

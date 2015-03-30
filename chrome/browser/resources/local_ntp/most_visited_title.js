@@ -17,3 +17,8 @@ window.addEventListener('DOMContentLoaded', function() {
             data.provider));
   });
 });
+
+window.addEventListener('load', function() {
+  chrome.embeddedSearch.newTabPage.logEvent(
+      NTP_LOGGING_EVENT_TYPE.NTP_TILE_LOADED);
+});

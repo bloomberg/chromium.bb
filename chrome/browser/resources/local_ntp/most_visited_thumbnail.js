@@ -54,6 +54,7 @@ window.addEventListener('DOMContentLoaded', function() {
         link.appendChild(blocker);
         link.appendChild(image);
         displayLink(link);
+        logEvent(NTP_LOGGING_EVENT_TYPE.NTP_TILE_LOADED);
       };
       image.onerror = function() {
         // If no external thumbnail fallback (etfb), and have domain.
@@ -65,6 +66,7 @@ window.addEventListener('DOMContentLoaded', function() {
           logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE_FALLBACK);
         }
         logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ERROR);
+        logEvent(NTP_LOGGING_EVENT_TYPE.NTP_TILE_LOADED);
       };
       image.src = src;
     }

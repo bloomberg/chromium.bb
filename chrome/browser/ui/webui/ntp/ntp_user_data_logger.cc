@@ -93,38 +93,42 @@ void NTPUserDataLogger::EmitNtpStatistics() {
   UMA_HISTOGRAM_COUNTS("NewTabPage.NumberOfMouseOvers", number_of_mouseovers_);
   number_of_mouseovers_ = 0;
 
-  // Only log the following statistics if at least one tile is recorded. This
-  // check is required because the statistics are emitted whenever the user
-  // changes tab away from the NTP. However, if the user comes back to that NTP
-  // later the statistics are not regenerated (i.e. they are all 0). If we log
-  // them again we get a strong bias.
-  if (number_of_tiles_ > 0) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "NewTabPage.SuggestionsType",
-        has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
-        SUGGESTIONS_TYPE_COUNT);
-    has_server_side_suggestions_ = false;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
-    number_of_tiles_ = 0;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
-                            number_of_thumbnail_tiles_);
-    number_of_thumbnail_tiles_ = 0;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTiles",
-                            number_of_gray_tiles_);
-    number_of_gray_tiles_ = 0;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTiles",
-                            number_of_external_tiles_);
-    number_of_external_tiles_ = 0;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailErrors",
-                            number_of_thumbnail_errors_);
-    number_of_thumbnail_errors_ = 0;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTileFallbacks",
-                            number_of_gray_tile_fallbacks_);
-    number_of_gray_tile_fallbacks_ = 0;
-    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
-                            number_of_external_tile_fallbacks_);
-    number_of_external_tile_fallbacks_ = 0;
-  }
+  // We only send statistics once per page.
+  // And we don't send if there are no tiles recorded.
+  if (has_emitted_ || !number_of_tiles_)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.SuggestionsType",
+      has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
+      SUGGESTIONS_TYPE_COUNT);
+  has_server_side_suggestions_ = false;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
+  number_of_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
+                          number_of_thumbnail_tiles_);
+  number_of_thumbnail_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTiles",
+                          number_of_gray_tiles_);
+  number_of_gray_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTiles",
+                          number_of_external_tiles_);
+  number_of_external_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailErrors",
+                          number_of_thumbnail_errors_);
+  number_of_thumbnail_errors_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTileFallbacks",
+                          number_of_gray_tile_fallbacks_);
+  number_of_gray_tile_fallbacks_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
+                          number_of_external_tile_fallbacks_);
+  number_of_external_tile_fallbacks_ = 0;
+  UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.LoadTime",
+                             load_time_,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromSeconds(60), 100);
+  load_time_ = base::TimeDelta::FromMilliseconds(0);
+  has_emitted_ = true;
 }
 
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
@@ -162,6 +166,12 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
       break;
     case NTP_MOUSEOVER:
       number_of_mouseovers_++;
+      break;
+    case NTP_TILE_LOADED:
+      // The time at which the last tile has loaded (title, thumbnail or single)
+      // is a good proxy for the total load time of the NTP, therefore we keep
+      // the max as the load time.
+      load_time_ = std::max(load_time_, time);
       break;
     default:
       NOTREACHED();
@@ -237,5 +247,6 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       number_of_thumbnail_errors_(0),
       number_of_gray_tile_fallbacks_(0),
       number_of_external_tile_fallbacks_(0),
-      number_of_mouseovers_(0) {
+      number_of_mouseovers_(0),
+      has_emitted_(false) {
 }

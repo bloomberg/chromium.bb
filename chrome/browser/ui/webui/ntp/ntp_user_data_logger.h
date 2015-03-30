@@ -98,6 +98,12 @@ class NTPUserDataLogger
   // Total number of mouseovers for this NTP session.
   size_t number_of_mouseovers_;
 
+  // Time from navigation start it took to load the NTP in milliseconds.
+  base::TimeDelta load_time_;
+
+  // Whether we have already emitted NTP stats for this web contents.
+  bool has_emitted_;
+
   // The URL of this New Tab Page - varies based on NTP version.
   GURL ntp_url_;
 
