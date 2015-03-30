@@ -23,6 +23,7 @@ body.safe-browsing {
 }
 
 button {
+  -webkit-user-select: none;
   background: rgb(76, 142, 250);
   border: 0;
   border-radius: 2px;
