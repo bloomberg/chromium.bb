@@ -458,6 +458,12 @@
       <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_NO_NAME" desc="Message for network connection error where the network name is unavailable">
         Failed to connect to network: <ph name="details">$1<ex>Unrecognized error</ex></ph>
       </message>
+      <message name="IDS_NETWORK_VPN_CONNECTION_LOST_TITLE" desc="Title for network notification when VPN connection is lost">
+        VPN disconnected
+      </message>
+      <message name="IDS_NETWORK_VPN_CONNECTION_LOST_BODY" desc="Message for network notification when VPN connection is lost">
+        Connection to <ph name="name">$1<ex>Google VPN</ex></ph> has been lost
+      </message>
       <message name="IDS_NETWORK_OUT_OF_CREDITS_TITLE" desc="Title for network out of data error notification">
         Network Connection Error
       </message>

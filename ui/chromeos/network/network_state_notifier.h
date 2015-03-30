@@ -28,13 +28,15 @@ namespace ui {
 
 class NetworkConnect;
 
-// This class has two purposes:
+// This class provides user notifications in the following cases:
 // 1. ShowNetworkConnectError() gets called after any user initiated connect
 //    failure. This will handle displaying an error notification.
 //    TODO(stevenjb): convert this class to use the new MessageCenter
 //    notification system.
 // 2. It observes NetworkState changes to generate notifications when a
 //    Cellular network is out of credits.
+// 3. Generates a notification when VPN is disconnected not as a result of
+//    user's action.
 class UI_CHROMEOS_EXPORT NetworkStateNotifier
     : public chromeos::NetworkConnectionObserver,
       public chromeos::NetworkStateHandlerObserver {
@@ -45,9 +47,12 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   // NetworkConnectionObserver
   void ConnectFailed(const std::string& service_path,
                      const std::string& error_name) override;
+  void DiconnectRequested(const std::string& service_path) override;
 
   // NetworkStateHandlerObserver
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void NetworkConnectionStateChanged(
+      const chromeos::NetworkState* network) override;
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
 
   // Show a connection error notification. If |error_name| matches an error
@@ -83,11 +88,13 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
       const std::string& error_name,
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
+  void ShowVpnDisconnectedNotification(const chromeos::NetworkState* vpn);
 
   // Returns true if the default network changed.
   bool UpdateDefaultNetwork(const chromeos::NetworkState* network);
 
   // Helper methods to update state and check for notifications.
+  void UpdateVpnConnectionState(const chromeos::NetworkState* vpn);
   void UpdateCellularOutOfCredits(const chromeos::NetworkState* cellular);
   void UpdateCellularActivating(const chromeos::NetworkState* cellular);
 
@@ -99,6 +106,7 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   bool did_show_out_of_credits_;
   base::Time out_of_credits_notify_time_;
   std::set<std::string> cellular_activating_;
+  bool need_vpn_disconnection_notify_;
   base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
