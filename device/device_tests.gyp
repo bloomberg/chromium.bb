@@ -78,6 +78,23 @@
             'battery/battery_status_manager_linux_unittest.cc',
           ],
         }],
+        ['OS=="android"', {
+          'dependencies!': [
+            '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
+            'usb/usb.gyp:device_usb',
+            'serial/serial.gyp:device_serial',
+            'serial/serial.gyp:device_serial_test_util',
+            'hid/hid.gyp:device_hid',
+          ],
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+          'sources/': [
+            ['exclude', '(^|/)hid'],
+            ['exclude', '(^|/)serial'],
+            ['exclude', '(^|/)usb'],
+          ],
+        }],
         ['OS=="mac"', {
           'link_settings': {
             'libraries': [
@@ -122,5 +139,22 @@
         }],
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'device_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'device_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'device_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
   ],
 }

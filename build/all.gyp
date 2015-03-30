@@ -108,8 +108,6 @@
             '../chrome/tools/profile_reset/jtl_compiler.gyp:*',
             '../cc/blink/cc_blink_tests.gyp:*',
             '../cc/cc_tests.gyp:*',
-            '../device/bluetooth/bluetooth.gyp:*',
-            '../device/device_tests.gyp:*',
             '../device/usb/usb.gyp:*',
             '../gin/gin.gyp:*',
             '../gpu/gpu.gyp:*',
@@ -148,6 +146,12 @@
             '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
             '<(libjpeg_gyp_path):*',
+          ],
+        }],
+        ['OS!="ios"', {
+          'dependencies': [
+            '../device/bluetooth/bluetooth.gyp:*',
+            '../device/device_tests.gyp:*',
           ],
         }],
         ['use_openssl==0 and (OS=="mac" or OS=="ios" or OS=="win")', {
