@@ -10,21 +10,35 @@ class Code(object):
   """
   def __init__(self, indent_size=2, comment_length=80):
     self._code = []
-    self._indent_level = 0
     self._indent_size = indent_size
     self._comment_length = comment_length
+    self._line_prefixes = []
 
-  def Append(self, line='', substitute=True, indent_level=None):
+  def Append(self, line='',
+             substitute=True,
+             indent_level=None,
+             new_line=True,
+             strip_right=True):
     """Appends a line of code at the current indent level or just a newline if
-    line is not specified. Trailing whitespace is stripped.
+    line is not specified.
 
     substitute: indicated whether this line should be affected by
     code.Substitute().
+    new_line: whether this should be added as a new line, or should be appended
+        to the last line of the code.
+    strip_right: whether or not trailing whitespace should be stripped.
     """
-    if indent_level is None:
-      indent_level = self._indent_level
-    self._code.append(Line(((' ' * indent_level) + line).rstrip(),
-                      substitute=substitute))
+
+    prefix = indent_level * ' ' if indent_level else ''.join(
+        self._line_prefixes)
+
+    if strip_right:
+      line = line.rstrip()
+
+    if not new_line and self._code:
+      self._code[-1].value += line
+    else:
+      self._code.append(Line(prefix + line, substitute=substitute))
     return self
 
   def IsEmpty(self):
@@ -32,7 +46,7 @@ class Code(object):
     """
     return not bool(self._code)
 
-  def Concat(self, obj):
+  def Concat(self, obj, new_line=True):
     """Concatenate another Code object onto this one. Trailing whitespace is
     stripped.
 
@@ -43,6 +57,9 @@ class Code(object):
     if not isinstance(obj, Code):
       raise TypeError(type(obj))
     assert self is not obj
+    if not obj._code:
+      return self
+
     for line in obj._code:
       try:
         # line % () will fail if any substitution tokens are left in line
@@ -52,6 +69,9 @@ class Code(object):
         raise TypeError('Unsubstituted value when concatting\n' + line.value)
       except ValueError:
         raise ValueError('Stray % character when concatting\n' + line.value)
+    first_line = obj._code.pop(0)
+    self.Append(first_line.value, first_line.substitute, new_line=new_line)
+    for line in obj._code:
       self.Append(line.value, line.substitute)
 
     return self
@@ -63,14 +83,16 @@ class Code(object):
       self.Concat(code).Append()
     return self
 
-  def Sblock(self, line=None):
+  def Sblock(self, line=None, line_prefix=None, new_line=True):
     """Starts a code block.
 
-    Appends a line of code and then increases the indent level.
+    Appends a line of code and then increases the indent level. If |line_prefix|
+    is present, it will be treated as the extra prefix for the code block.
+    Otherwise, the prefix will be the default indent level.
     """
     if line is not None:
-      self.Append(line)
-    self._indent_level += self._indent_size
+      self.Append(line, new_line=new_line)
+    self._line_prefixes.append(line_prefix or ' ' * self._indent_size)
     return self
 
   def Eblock(self, line=None):
@@ -80,12 +102,13 @@ class Code(object):
     # TODO(calamity): Decide if type checking is necessary
     #if not isinstance(line, basestring):
     #  raise TypeError
-    self._indent_level -= self._indent_size
+    self._line_prefixes.pop()
     if line is not None:
       self.Append(line)
     return self
 
-  def Comment(self, comment, comment_prefix='// ', wrap_indent=0):
+  def Comment(self, comment, comment_prefix='// ',
+              wrap_indent=0, new_line=True):
     """Adds the given string as a comment.
 
     Will split the comment if it's too long. Use mainly for variable length
@@ -108,12 +131,17 @@ class Code(object):
       return line, comment
 
     # First line has the full maximum length.
-    max_len = self._comment_length - self._indent_level - len(comment_prefix)
+    if not new_line and self._code:
+      max_len = self._comment_length - len(self._code[-1].value) - 1
+    else:
+      max_len = (self._comment_length - len(''.join(self._line_prefixes)) -
+                 len(comment_prefix))
     line, comment = trim_comment(comment, max_len)
-    self.Append(comment_prefix + line, substitute=False)
+    self.Append(comment_prefix + line, substitute=False, new_line=new_line)
 
     # Any subsequent lines be subject to the wrap indent.
-    max_len = max_len - wrap_indent
+    max_len = (self._comment_length - len(''.join(self._line_prefixes)) -
+               len(comment_prefix) - wrap_indent)
     while len(comment):
       line, comment = trim_comment(comment, max_len)
       self.Append(comment_prefix + (' ' * wrap_indent) + line, substitute=False)

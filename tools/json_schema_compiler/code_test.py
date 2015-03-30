@@ -48,7 +48,7 @@ class CodeTest(unittest.TestCase):
         .Append('1')
       .Eblock('1')
     )
-    self.assertEquals(
+    self.assertMultiLineEqual(
       '1\n'
       '  2\n'
       '    2\n'
@@ -168,6 +168,37 @@ class CodeTest(unittest.TestCase):
     self.assertEquals('90\n'
         '// 20% of 80%s',
         d.Render())
+
+  def testLinePrefixes(self):
+    c = Code()
+    c.Sblock(line='/**', line_prefix=' * ')
+    c.Sblock('@typedef {{')
+    c.Append('foo: bar,')
+    c.Sblock('baz: {')
+    c.Append('x: y')
+    c.Eblock('}')
+    c.Eblock('}}')
+    c.Eblock(line=' */')
+    output = c.Render()
+    self.assertMultiLineEqual(
+        '/**\n'
+        ' * @typedef {{\n'
+        ' *   foo: bar,\n'
+        ' *   baz: {\n'
+        ' *     x: y\n'
+        ' *   }\n'
+        ' * }}\n'
+        ' */',
+        output)
+
+  def testSameLineAppendAndConcat(self):
+    c = Code()
+    c.Append('This is a line.')
+    c.Append('This too.', new_line=False)
+    d = Code()
+    d.Append('And this.')
+    c.Concat(d, new_line=False)
+    self.assertEquals('This is a line.This too.And this.', c.Render())
 
 if __name__ == '__main__':
   unittest.main()

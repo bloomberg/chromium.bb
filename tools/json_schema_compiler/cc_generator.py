@@ -507,7 +507,7 @@ class _Generator(object):
         # std::vector to create the values.
         (c.Append(code %
             self._GenerateCreateValueFromType(type_, enum_list_var, False))
-          .Eblock('}'))
+          .Append('}'))
         return c
 
     c.Append(code % self._GenerateCreateValueFromType(type_, var, is_ptr))

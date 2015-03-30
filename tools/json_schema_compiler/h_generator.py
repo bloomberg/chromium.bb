@@ -289,7 +289,7 @@ class _Generator(object):
       .Append()
       .Concat(self._GenerateEventNameConstant(event))
       .Concat(self._GenerateCreateCallbackArguments(event))
-      .Eblock('}  // namespace %s' % event_namespace)
+      .Append('}  // namespace %s' % event_namespace)
     )
     return c
 

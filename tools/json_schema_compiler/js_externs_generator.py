@@ -86,11 +86,11 @@ class _Generator(object):
     Returns an empty code object if the object has no documentation.
     """
     c = Code()
-    c.Append('/**')
+    c.Sblock(line='/**', line_prefix=' * ')
 
     if js_type.description:
       for line in js_type.description.splitlines():
-        c.Comment(line, comment_prefix = ' * ')
+        c.Append(line)
 
     is_constructor = self._IsTypeConstructor(js_type)
     if is_constructor:
@@ -98,7 +98,7 @@ class _Generator(object):
     else:
       c.Concat(self._GenerateTypedef(js_type.properties))
 
-    c.Append(' */')
+    c.Eblock(' */')
 
     var = 'var ' + js_type.simple_name
     if is_constructor: var += ' = function() {}'
@@ -112,23 +112,41 @@ class _Generator(object):
     """
     if not properties: return Code()
 
-    lines = []
-    lines.append('@typedef {{')
-    for field, prop in properties.items():
-      js_type = self._TypeToJsType(prop.type_)
-      if prop.optional:
-        js_type = '(%s|undefined)' % js_type
-      lines.append('  %s: %s,' % (field, js_type))
+    c = Code()
+    c.Append('@typedef {')
+    c.Concat(self._GenerateObjectDefinition(properties), new_line=False)
+    c.Append('}', new_line=False)
+    return c
 
-    # Remove last trailing comma.
-    # TODO(devlin): This will be unneeded, if when
-    # https://github.com/google/closure-compiler/issues/796 is fixed.
-    lines[-1] = lines[-1][:-1]
-    lines.append('}}')
-    # TODO(tbreisacher): Add '@see <link to documentation>'.
+  def _GenerateObjectDefinition(self, properties):
+    """Given an OrderedDict of properties, returns a Code containing the
+       description of an object.
+    """
+    if not properties: return ''
 
     c = Code()
-    c.Append('\n'.join([' * ' + line for line in lines]))
+    c.Sblock('{')
+    type_descriptions = []
+    first = True
+    for field, prop in properties.items():
+      # Avoid trailing comma.
+      # TODO(devlin): This will be unneeded, if/when
+      # https://github.com/google/closure-compiler/issues/796 is fixed.
+      if not first:
+        c.Append(',', new_line=False)
+      first = False
+      js_type = self._TypeToJsType(prop.type_)
+      if prop.optional:
+        js_type = (Code().
+                       Append('(').
+                       Concat(js_type, new_line=False).
+                       Append('|undefined)', new_line=False))
+      c.Append('%s: ' % field, strip_right=False)
+      c.Concat(js_type, new_line=False)
+
+    c.Eblock('}')
+    # TODO(tbreisacher): Add '@see <link to documentation>'.
+
     return c
 
   def _GenerateFunctionJsDoc(self, function):
@@ -137,75 +155,91 @@ class _Generator(object):
     Returns an empty code object if the object has no documentation.
     """
     c = Code()
-    c.Append('/**')
+    c.Sblock(line='/**', line_prefix=' * ')
 
-    lines = []
     if function.description:
-      for line in function.description.splitlines():
-        c.Comment(line, comment_prefix=' * ')
+      c.Comment(function.description, comment_prefix='')
+
+    def append_field(c, tag, js_type, name, optional, description):
+      c.Append('@%s {' % tag)
+      c.Concat(js_type, new_line=False)
+      if optional:
+        c.Append('=', new_line=False)
+      c.Append('} %s' % name, new_line=False)
+      if description:
+        c.Comment(' %s' % description, comment_prefix='',
+                  wrap_indent=4, new_line=False)
 
     for param in function.params:
-      js_type = self._TypeToJsType(param.type_)
-      if param.optional:
-        js_type += '='
-      lines.append('@param {%s} %s %s' % (js_type,
-                                          param.name,
-                                          param.description or ''))
+      append_field(c, 'param', self._TypeToJsType(param.type_), param.name,
+                   param.optional, param.description)
 
     if function.callback:
-      lines.append('@param {%s} %s %s' % (
-          self._FunctionToJsFunction(function.callback),
-          function.callback.name,
-          function.callback.description or ''))
+      append_field(c, 'param', self._FunctionToJsFunction(function.callback),
+                   function.callback.name, function.callback.optional,
+                   function.callback.description)
 
     if function.returns:
-      lines.append('@return {%s} %s' % (self._TypeToJsType(function.returns),
-                                        function.returns.description or ''))
+      append_field(c, 'return', self._TypeToJsType(function.returns),
+                   '', False, function.returns.description)
 
     if function.deprecated:
-      lines.append('@deprecated %s' % function.deprecated)
+      c.Append('@deprecated %s' % function.deprecated)
 
-    for line in lines:
-      c.Comment(line, comment_prefix=' * ', wrap_indent=4);
-
-    c.Append(' */')
+    c.Eblock(' */')
     return c
 
   def _FunctionToJsFunction(self, function):
     """Converts a model.Function to a JS type (i.e., function([params])...)"""
-    params = ', '.join(
-        [self._TypeToJsType(param.type_) for param in function.params])
-    return_type = (
-        self._TypeToJsType(function.returns) if function.returns else 'void')
-    optional = '=' if function.optional else ''
-    return 'function(%s):%s%s' % (params, return_type, optional)
+    c = Code()
+    c.Append('function(')
+    for i, param in enumerate(function.params):
+      c.Concat(self._TypeToJsType(param.type_), new_line=False)
+      if i is not len(function.params) - 1:
+        c.Append(', ', new_line=False, strip_right=False)
+    c.Append('):', new_line=False)
+
+    if function.returns:
+      c.Concat(self._TypeToJsType(function.returns), new_line=False)
+    else:
+      c.Append('void', new_line=False)
+
+    return c
 
   def _TypeToJsType(self, js_type):
     """Converts a model.Type to a JS type (number, Array, etc.)"""
+    c = Code()
     if js_type.property_type in (PropertyType.INTEGER, PropertyType.DOUBLE):
-      return 'number'
+      c.Append('number')
     elif js_type.property_type is PropertyType.OBJECT:
-      return 'Object'
+      c = self._GenerateObjectDefinition(js_type.properties)
     elif js_type.property_type is PropertyType.ARRAY:
-      return '!Array<%s>' % self._TypeToJsType(js_type.item_type)
+      (c.Append('!Array<').
+           Concat(self._TypeToJsType(js_type.item_type), new_line=False).
+           Append('>', new_line=False))
     elif js_type.property_type is PropertyType.REF:
       ref_type = js_type.ref_type
       # Enums are defined as chrome.fooAPI.MyEnum, but types are defined simply
       # as MyType.
       if self._namespace.types[ref_type].property_type is PropertyType.ENUM:
         ref_type = '!chrome.%s.%s' % (self._namespace.name, ref_type)
-      return ref_type
+      c.Append(ref_type)
     elif js_type.property_type is PropertyType.CHOICES:
-      return '(%s)' % '|'.join(
-          [self._TypeToJsType(choice) for choice in js_type.choices])
+      c.Append('(')
+      for i, choice in enumerate(js_type.choices):
+        c.Concat(self._TypeToJsType(choice), new_line=False)
+        if i is not len(js_type.choices) - 1:
+          c.Append('|', new_line=False)
+      c.Append(')', new_line=False)
     elif js_type.property_type is PropertyType.FUNCTION:
-      return self._FunctionToJsFunction(js_type.function)
+      c = self._FunctionToJsFunction(js_type.function)
     elif js_type.property_type is PropertyType.ANY:
-      return '*'
+      c.Append('*')
     elif js_type.property_type.is_fundamental:
-      return js_type.property_type.name
+      c.Append(js_type.property_type.name)
     else:
-      return '?' # TODO(tbreisacher): Make this more specific.
+      c.Append('?') # TODO(tbreisacher): Make this more specific.
+    return c
 
   def _GenerateFunction(self, function):
     """Generates the code representing a function, including its documentation.

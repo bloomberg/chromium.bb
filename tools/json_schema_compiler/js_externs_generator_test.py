@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import idl_schema
+import json_parse
 from js_externs_generator import JsExternsGenerator
 from datetime import datetime
 import model
@@ -12,7 +13,7 @@ import unittest
 
 # The contents of a fake idl file.
 fake_idl = """
-// Copyright %s The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,14 +135,121 @@ chrome.fakeApi.returnString = function() {};
 """ % datetime.now().year
 
 
+fake_json = """// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "fakeJson",
+    "description": "Fake JSON API Stuff",
+    "functions": [ {
+      "name": "funcWithInlineObj",
+      "type": "function",
+      "parameters": [
+        {
+          "type": "object",
+          "name": "inlineObj",
+          "description": "Evil inline object! With a super duper duper long\
+ string description that causes problems!",
+          "properties": {
+            "foo": {
+              "type": "boolean",
+              "optional": "true",
+              "description": "The foo."
+            },
+            "bar": {
+              "type": "integer",
+              "description": "The bar."
+            },
+            "baz": {
+              "type": "object",
+              "description": "Inception object.",
+              "properties": {
+                "depth": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "parameters": [
+            {
+              "type": "object",
+              "name": "returnObj",
+              "properties": {
+                "str": { "type": "string"}
+              }
+            }
+          ],
+          "description": "The callback to this heinous method"
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "str": { "type": "string" },
+          "int": { "type": "number" }
+        }
+      }
+    } ]
+  }
+]"""
+
+json_expected = """// Copyright %s The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/** @fileoverview Externs generated from namespace: fakeJson */
+
+/**
+ * @const
+ */
+chrome.fakeJson = {};
+
+/**
+ * @param {{
+ *   foo: (boolean|undefined),
+ *   bar: number,
+ *   baz: {
+ *     depth: number
+ *   }
+ * }} inlineObj Evil inline object! With a super duper duper long string
+ *     description that causes problems!
+ * @param {function({
+ *   str: string
+ * }):void} callback The callback to this heinous method
+ * @return {{
+ *   str: string,
+ *   int: number
+ * }}
+ */
+chrome.fakeJson.funcWithInlineObj = function(inlineObj, callback) {};
+""" % datetime.now().year
+
+
 class JsExternGeneratorTest(unittest.TestCase):
-  def testBasic(self):
-    self.maxDiff = None # Lets us see the full diff when inequal.
-    filename = 'fake_api.idl'
-    api_def = idl_schema.Process(fake_idl, filename)
+  def _GetNamespace(self, fake_content, filename, is_idl):
+    """Returns a namespace object for the given content"""
+    api_def = (idl_schema.Process(fake_content, filename) if is_idl
+        else json_parse.Parse(fake_content))
     m = model.Model()
-    namespace = m.AddNamespace(api_def[0], filename)
+    return m.AddNamespace(api_def[0], filename)
+
+  def setUp(self):
+    self.maxDiff = None # Lets us see the full diff when inequal.
+
+  def testBasic(self):
+    namespace = self._GetNamespace(fake_idl, 'fake_api.idl', True)
     self.assertMultiLineEqual(expected_output,
+                              JsExternsGenerator().Generate(namespace).Render())
+
+  def testJsonWithInlineObjects(self):
+    namespace = self._GetNamespace(fake_json, 'fake_api.json', False)
+    self.assertMultiLineEqual(json_expected,
                               JsExternsGenerator().Generate(namespace).Render())
 
 
