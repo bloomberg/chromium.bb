@@ -943,15 +943,15 @@ public:
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
 
-    enum GCReasonForTracing {
+    enum GCReason {
         IdleGC,
         PreciseGC,
         ConservativeGC,
         ForcedGCForTesting,
-        NumberOfGCReasonForTracing
+        NumberOfGCReason
     };
-    static const char* gcReasonForTracingString(GCReasonForTracing);
-    static void collectGarbage(ThreadState::StackState, ThreadState::GCType, GCReasonForTracing);
+    static const char* gcReasonString(GCReason);
+    static void collectGarbage(ThreadState::StackState, ThreadState::GCType, GCReason);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
 
