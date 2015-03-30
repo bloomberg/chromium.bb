@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_permission_manager.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "content/public/browser/permission_type.h"
 
 namespace chromecast {
