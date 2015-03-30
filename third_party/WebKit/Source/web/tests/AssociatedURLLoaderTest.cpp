@@ -614,8 +614,15 @@ TEST_F(AssociatedURLLoaderTest, UntrustedCheckMethods)
     CheckMethodFails("TrAcE");
 }
 
+// This test is flaky on Windows. See <http://crbug.com/471645>.
+#if OS(WIN)
+#define MAYBE_UntrustedCheckHeaders DISABLED_UntrustedCheckHeaders
+#else
+#define MAYBE_UntrustedCheckHeaders UntrustedCheckHeaders
+#endif
+
 // Test that untrusted loads can't use a forbidden header field.
-TEST_F(AssociatedURLLoaderTest, UntrustedCheckHeaders)
+TEST_F(AssociatedURLLoaderTest, MAYBE_UntrustedCheckHeaders)
 {
     // Check non-token header fails.
     CheckHeaderFails("foo()");
