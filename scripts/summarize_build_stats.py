@@ -413,10 +413,13 @@ class CLStatsEngine(object):
     submitted_changes = {k: v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action == constants.CL_ACTION_SUBMITTED
                                 for a in v)}
+
+    # Count changes that were submitted, unless they were non-manifest changes
+    # which were submitted with no testing.
     submitted_patches = {
         k: v for k, v, in self.per_patch_actions.iteritems()
         if any(a.action == constants.CL_ACTION_SUBMITTED and
-               a.build_config == constants.CQ_MASTER for a in v)}
+               a.reason != constants.STRATEGY_NONMANIFEST for a in v)}
 
     patch_handle_times = [
         clactions.GetCLHandlingTime(patch, actions) for
