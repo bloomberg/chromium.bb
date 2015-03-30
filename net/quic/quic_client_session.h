@@ -139,7 +139,6 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
       const CryptoHandshakeMessage& message) override;
   void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message) override;
-  bool GetSSLInfo(SSLInfo* ssl_info) const override;
 
   // QuicClientSessionBase methods:
   void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
@@ -155,6 +154,9 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   bool OnPacket(const QuicEncryptedPacket& packet,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
+
+  // Gets the SSL connection information.
+  bool GetSSLInfo(SSLInfo* ssl_info) const;
 
   // Performs a crypto handshake with the server.
   int CryptoConnect(bool require_confirmation,

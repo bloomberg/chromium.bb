@@ -717,11 +717,6 @@ bool QuicSession::HasDataToWrite() const {
          connection_->HasQueuedData();
 }
 
-bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void QuicSession::PostProcessAfterData() {
   STLDeleteElements(&closed_streams_);
 

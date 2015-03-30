@@ -33,7 +33,6 @@ class ReliableQuicStreamPeer;
 
 class IPEndPoint;
 class QuicSession;
-class SSLInfo;
 
 // All this does right now is send data to subclasses via the sequencer.
 class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
@@ -106,9 +105,6 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   bool headers_decompressed() const { return headers_decompressed_; }
 
   const IPEndPoint& GetPeerAddress();
-
-  // Gets the SSL connection information.
-  bool GetSSLInfo(SSLInfo* ssl_info);
 
  protected:
   // Sets priority_ to priority.  This should only be called before bytes are

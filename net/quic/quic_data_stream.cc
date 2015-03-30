@@ -127,10 +127,6 @@ const IPEndPoint& QuicDataStream::GetPeerAddress() {
   return session()->peer_address();
 }
 
-bool QuicDataStream::GetSSLInfo(SSLInfo* ssl_info) {
-  return session()->GetSSLInfo(ssl_info);
-}
-
 uint32 QuicDataStream::ProcessHeaderData() {
   if (decompressed_headers_.empty()) {
     return 0;

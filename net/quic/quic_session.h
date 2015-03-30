@@ -28,7 +28,6 @@ namespace net {
 class QuicCryptoStream;
 class QuicFlowController;
 class ReliableQuicStream;
-class SSLInfo;
 class VisitorShim;
 
 namespace test {
@@ -196,9 +195,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool goaway_sent() const {
     return goaway_sent_;
   }
-
-  // Gets the SSL connection information.
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) const;
 
   QuicErrorCode error() const { return error_; }
 
