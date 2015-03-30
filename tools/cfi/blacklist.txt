@@ -1,0 +1,45 @@
+# STL allocators (T *allocator<T *>::allocate(size_type, const void*)).
+# The type signature mandates a cast from uninitialized void* to T*.
+fun:*8allocateEmPKv
+
+# std::get_temporary_buffer
+fun:_ZSt20get_temporary_buffer*
+
+# STL address-of magic.
+fun:*__addressof*
+
+# WTF allocators.
+fun:*allocate*Backing*
+
+# WTF::ThreadSpecific
+fun:*ThreadSpecific*
+
+# Mesa contains several bad casts.
+src:*third_party/mesa*
+
+# Deliberate bad cast to derived class to hide functions.
+type:*BlockRefType*
+type:*SkAutoTUnref*
+
+#############################################################################
+# Base class's constructor accesses a derived class.
+
+fun:*DoublyLinkedListNode*
+
+# RenderFrameObserverTracker<T>::RenderFrameObserverTracker()
+fun:*content*RenderFrameObserverTracker*RenderFrame*
+
+# RenderViewObserverTracker<T>::RenderViewObserverTracker()
+fun:*content*RenderViewObserverTracker*RenderView*
+
+fun:*RefCountedGarbageCollected*makeKeepAlive*
+fun:*ThreadSafeRefCountedGarbageCollected*makeKeepAlive*
+
+#############################################################################
+# Base class's destructor accesses a derived class.
+
+fun:*DatabaseContext*contextDestroyed*
+
+# FIXME: Cannot handle template function LifecycleObserver<>::setContext,
+# so exclude source file for now. 
+src:*LifecycleObserver.h*

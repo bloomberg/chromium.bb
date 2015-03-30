@@ -653,6 +653,13 @@
       # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
       'cfi_vptr%': 0,
 
+      # Control Flow Integrity for casts.
+      # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
+      'cfi_derived_cast%': 0,
+      'cfi_unrelated_cast%': 0,
+
+      'cfi_blacklist%': '<(PRODUCT_DIR)/../../tools/cfi/blacklist.txt',
+
       # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
       'mac_views_browser%': 0,
 
@@ -1224,6 +1231,9 @@
     'video_hole%': '<(video_hole)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
+    'cfi_derived_cast%': '<(cfi_derived_cast)',
+    'cfi_unrelated_cast%': '<(cfi_unrelated_cast)',
+    'cfi_blacklist%': '<(cfi_blacklist)',
     'mac_views_browser%': '<(mac_views_browser)',
 
     # Use system protobuf instead of bundled one.
@@ -2398,7 +2408,7 @@
          'use_seccomp_bpf%': 0,
       }],
 
-      ['cfi_vptr==1', {
+      ['cfi_vptr==1 or cfi_derived_cast==1 or cfi_unrelated_cast==1', {
         'use_lto%': 1,
       }],
     ],
@@ -6057,6 +6067,74 @@
             'xcode_settings':  {
               'OTHER_LDFLAGS': [
                 '-fsanitize=cfi-vptr',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
+    ['cfi_derived_cast==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fsanitize=cfi-derived-cast',
+            ],
+            'ldflags': [
+              '-fsanitize=cfi-derived-cast',
+            ],
+            'xcode_settings': {
+              'OTHER_CFLAGS': [
+                '-fsanitize=cfi-derived-cast',
+              ],
+            },
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-fsanitize=cfi-derived-cast',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
+    ['cfi_unrelated_cast==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fsanitize=cfi-unrelated-cast',
+            ],
+            'ldflags': [
+              '-fsanitize=cfi-unrelated-cast',
+            ],
+            'xcode_settings': {
+              'OTHER_CFLAGS': [
+                '-fsanitize=cfi-unrelated-cast',
+              ],
+            },
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-fsanitize=cfi-unrelated-cast',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
+    ['cfi_vptr==1 or cfi_derived_cast==1 or cfi_unrelated_cast==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fsanitize-blacklist=<(cfi_blacklist)',
+            ],
+            'xcode_settings': {
+              'OTHER_CFLAGS': [
+                '-fsanitize-blacklist=<(cfi_blacklist)',
               ],
             },
           }],
