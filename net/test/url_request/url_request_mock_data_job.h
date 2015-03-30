@@ -25,6 +25,8 @@ class URLRequestMockDataJob : public URLRequestJob {
 
   void Start() override;
   bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int GetResponseCode() const override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();
@@ -46,6 +48,7 @@ class URLRequestMockDataJob : public URLRequestJob {
                                          int repeat_count);
 
  private:
+  void GetResponseInfoConst(HttpResponseInfo* info) const;
   ~URLRequestMockDataJob() override;
 
   void StartAsync();

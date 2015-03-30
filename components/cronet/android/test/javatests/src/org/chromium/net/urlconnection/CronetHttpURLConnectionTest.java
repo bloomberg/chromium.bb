@@ -499,9 +499,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             assertEquals(data, responseData.substring(dataLength * i,
                     dataLength * (i + 1)));
         }
-        // TODO(xunjieli): Enable after crbug.com/463720 is fixed.
-        // assertEquals(200, connection.getResponseCode());
-        // assertEquals("OK", connection.getResponseMessage());
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
     }
 
     @SmallTest
@@ -571,9 +570,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             assertEquals(data, responseData.substring(dataLength * i,
                     dataLength * (i + 1)));
         }
-        // TODO(xunjieli): Enable after crbug.com/463720 is fixed.
-        // assertEquals(200, connection.getResponseCode());
-        // assertEquals("OK", connection.getResponseMessage());
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
     }
 
     @SmallTest

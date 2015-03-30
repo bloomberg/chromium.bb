@@ -7,9 +7,12 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_filter.h"
 
 namespace net {
@@ -108,6 +111,31 @@ bool URLRequestMockDataJob::ReadRawData(IOBuffer* buf,
   memcpy(buf->data(), data_.c_str() + data_offset_, *bytes_read);
   data_offset_ += *bytes_read;
   return true;
+}
+
+int URLRequestMockDataJob::GetResponseCode() const {
+  net::HttpResponseInfo info;
+  GetResponseInfoConst(&info);
+  return info.headers->response_code();
+}
+
+// Public virtual version.
+void URLRequestMockDataJob::GetResponseInfo(HttpResponseInfo* info) {
+  // Forward to private const version.
+  GetResponseInfoConst(info);
+}
+
+// Private const version.
+void URLRequestMockDataJob::GetResponseInfoConst(HttpResponseInfo* info) const {
+  // Send back mock headers.
+  std::string raw_headers;
+  raw_headers.append(
+      "HTTP/1.1 200 OK\n"
+      "Content-type: text/plain\n");
+  raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
+                                        static_cast<int>(data_.length())));
+  info->headers = new HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+      raw_headers.c_str(), static_cast<int>(raw_headers.length())));
 }
 
 void URLRequestMockDataJob::StartAsync() {
