@@ -269,11 +269,6 @@ bool TtsSpeakFunction::RunAsync() {
   // the behavior more predictable and easier to write unit tests for too.
   SendResponse(true);
 
-  UtteranceContinuousParameters continuous_params;
-  continuous_params.rate = rate;
-  continuous_params.pitch = pitch;
-  continuous_params.volume = volume;
-
   Utterance* utterance = new Utterance(GetProfile());
   utterance->set_text(text);
   utterance->set_voice_name(voice_name);
@@ -281,7 +276,7 @@ bool TtsSpeakFunction::RunAsync() {
   utterance->set_src_url(source_url());
   utterance->set_lang(lang);
   utterance->set_gender(gender);
-  utterance->set_continuous_parameters(continuous_params);
+  utterance->set_continuous_parameters(rate, pitch, volume);
   utterance->set_can_enqueue(can_enqueue);
   utterance->set_required_event_types(required_event_types);
   utterance->set_desired_event_types(desired_event_types);

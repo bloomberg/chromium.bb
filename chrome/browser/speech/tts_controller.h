@@ -172,8 +172,12 @@ class Utterance {
   }
   TtsGenderType gender() const { return gender_; }
 
-  void set_continuous_parameters(const UtteranceContinuousParameters& params) {
-    continuous_parameters_ = params;
+  void set_continuous_parameters(const double rate,
+                                 const double pitch,
+                                 const double volume) {
+    continuous_parameters_.rate = rate;
+    continuous_parameters_.pitch = pitch;
+    continuous_parameters_.volume = volume;
   }
   const UtteranceContinuousParameters& continuous_parameters() {
     return continuous_parameters_;

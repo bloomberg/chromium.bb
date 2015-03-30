@@ -120,12 +120,9 @@ void TtsMessageFilter::OnSpeak(const TtsUtteranceRequest& request) {
   utterance->set_lang(request.lang);
   utterance->set_voice_name(request.voice);
   utterance->set_can_enqueue(true);
-
-  UtteranceContinuousParameters params;
-  params.rate = request.rate;
-  params.pitch = request.pitch;
-  params.volume = request.volume;
-  utterance->set_continuous_parameters(params);
+  utterance->set_continuous_parameters(request.rate,
+                                       request.pitch,
+                                       request.volume);
 
   utterance->set_event_delegate(this);
 
