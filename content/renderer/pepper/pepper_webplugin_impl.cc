@@ -170,6 +170,7 @@ void PepperWebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {
 void PepperWebPluginImpl::updateGeometry(
     const WebRect& window_rect,
     const WebRect& clip_rect,
+    const WebRect& unobscured_rect,
     const WebVector<WebRect>& cut_outs_rects,
     bool is_visible) {
   plugin_rect_ = window_rect;

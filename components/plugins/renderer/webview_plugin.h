@@ -81,9 +81,10 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // Coordinates are relative to the containing window.
   virtual void updateGeometry(
-      const blink::WebRect& frame_rect,
+      const blink::WebRect& window_rect,
       const blink::WebRect& clip_rect,
-      const blink::WebVector<blink::WebRect>& cut_out_rects,
+      const blink::WebRect& unobscured_rect,
+      const blink::WebVector<blink::WebRect>& cut_outs_rects,
       bool is_visible);
 
   virtual void updateFocus(bool foucsed, blink::WebFocusType focus_type);

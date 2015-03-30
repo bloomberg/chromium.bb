@@ -157,13 +157,14 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 }
 
 // Coordinates are relative to the containing window.
-void WebViewPlugin::updateGeometry(const WebRect& frame_rect,
+void WebViewPlugin::updateGeometry(const WebRect& window_rect,
                                    const WebRect& clip_rect,
-                                   const WebVector<WebRect>& cut_out_rects,
+                                   const WebRect& unobscured_rect,
+                                   const WebVector<WebRect>& cut_outs_rects,
                                    bool is_visible) {
-  if (static_cast<gfx::Rect>(frame_rect) != rect_) {
-    rect_ = frame_rect;
-    WebSize newSize(frame_rect.width, frame_rect.height);
+  if (static_cast<gfx::Rect>(window_rect) != rect_) {
+    rect_ = window_rect;
+    WebSize newSize(window_rect.width, window_rect.height);
     web_view_->resize(newSize);
   }
 }

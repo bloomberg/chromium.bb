@@ -425,11 +425,11 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
   return false;
 }
 
-void BrowserPlugin::updateGeometry(
-    const WebRect& window_rect,
-    const WebRect& clip_rect,
-    const WebVector<WebRect>& cut_outs_rects,
-    bool is_visible) {
+void BrowserPlugin::updateGeometry(const WebRect& window_rect,
+                                   const WebRect& clip_rect,
+                                   const WebRect& unobscured_rect,
+                                   const WebVector<WebRect>& cut_outs_rects,
+                                   bool is_visible) {
   int old_width = view_rect_.width();
   int old_height = view_rect_.height();
   view_rect_ = window_rect;

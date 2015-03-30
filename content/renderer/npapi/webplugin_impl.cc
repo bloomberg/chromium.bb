@@ -312,17 +312,19 @@ void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
   delegate_->Paint(canvas, paint_rect);
 }
 
-void WebPluginImpl::updateGeometry(
-    const WebRect& window_rect, const WebRect& clip_rect,
-    const WebVector<WebRect>& cutout_rects, bool is_visible) {
+void WebPluginImpl::updateGeometry(const WebRect& window_rect,
+                                   const WebRect& clip_rect,
+                                   const WebRect& unobscured_rect,
+                                   const WebVector<WebRect>& cut_outs_rects,
+                                   bool is_visible) {
   WebPluginGeometry new_geometry;
   new_geometry.window = window_;
   new_geometry.window_rect = window_rect;
   new_geometry.clip_rect = clip_rect;
   new_geometry.visible = is_visible;
   new_geometry.rects_valid = true;
-  for (size_t i = 0; i < cutout_rects.size(); ++i)
-    new_geometry.cutout_rects.push_back(cutout_rects[i]);
+  for (size_t i = 0; i < cut_outs_rects.size(); ++i)
+    new_geometry.cutout_rects.push_back(cut_outs_rects[i]);
 
   // Only send DidMovePlugin if the geometry changed in some way.
   if (window_ && (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
