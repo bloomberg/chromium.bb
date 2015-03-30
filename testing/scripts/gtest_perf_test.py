@@ -11,6 +11,10 @@ import sys
 import common
 
 
+def IsWindows():
+  return sys.platform == 'cygwin' or sys.platform.startswith('win')
+
+
 def main_run(args):
   filter_tests = []
   if args.filter_file:
@@ -18,6 +22,8 @@ def main_run(args):
 
   perf_id = args.properties.get('perf-id')
   script_args = args.args
+  if IsWindows():
+    script_args[0] += '.exe'
   test_suite = script_args[0]
 
   with common.temporary_file() as tempfile_path:
