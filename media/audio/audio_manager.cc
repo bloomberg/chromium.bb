@@ -74,7 +74,7 @@ class AudioManagerHelper : public base::PowerObserver {
         FROM_HERE,
         base::Bind(&AudioManagerHelper::UpdateLastAudioThreadTimeTick,
                    base::Unretained(this)),
-        max_hung_task_time_ / 2);
+        max_hung_task_time_ / 10);
   }
 
   AudioLogFactory* fake_log_factory() { return &fake_log_factory_; }
