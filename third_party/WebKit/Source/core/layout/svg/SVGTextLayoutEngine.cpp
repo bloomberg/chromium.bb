@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-
 #include "core/layout/svg/SVGTextLayoutEngine.h"
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
@@ -28,6 +27,7 @@
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGTextContentElement.h"
 
 // Set to a value > 0 to dump the text fragments
 #define DUMP_TEXT_FRAGMENTS 0

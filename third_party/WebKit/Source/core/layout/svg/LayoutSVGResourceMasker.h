@@ -24,17 +24,12 @@
 #include "core/svg/SVGMaskElement.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/ImageBuffer.h"
-
-#include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
 
 class SkPicture;
-class AffineTransform;
 
 namespace blink {
 
+class AffineTransform;
 class GraphicsContext;
 
 class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {

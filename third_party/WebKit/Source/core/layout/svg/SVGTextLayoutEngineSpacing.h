@@ -20,7 +20,6 @@
 #ifndef SVGTextLayoutEngineSpacing_h
 #define SVGTextLayoutEngineSpacing_h
 
-#include "core/layout/svg/SVGTextMetrics.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/unicode/Unicode.h"
 

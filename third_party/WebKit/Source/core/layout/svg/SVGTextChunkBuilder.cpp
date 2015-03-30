@@ -18,12 +18,12 @@
  */
 
 #include "config.h"
-
 #include "core/layout/svg/SVGTextChunkBuilder.h"
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGTextContentElement.h"
 
 namespace blink {
 

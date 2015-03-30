@@ -22,6 +22,7 @@
 
 #include "core/layout/style/SVGLayoutStyleDefs.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace blink {
 

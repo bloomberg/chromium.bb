@@ -18,10 +18,8 @@
  */
 
 #include "config.h"
-
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 
-#include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 

@@ -21,6 +21,8 @@
 #define SVGTextChunkBuilder_h
 
 #include "core/layout/svg/SVGTextChunk.h"
+#include "platform/transforms/AffineTransform.h"
+#include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
 namespace blink {

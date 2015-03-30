@@ -22,6 +22,7 @@
 
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
 #include "wtf/Vector.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace blink {
 

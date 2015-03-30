@@ -20,10 +20,6 @@
 #include "config.h"
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
 
-#include "wtf/text/CString.h"
-
-#include <stdio.h>
-
 namespace blink {
 
 SVGTextLayoutAttributes::SVGTextLayoutAttributes(LayoutSVGInlineText* context)
