@@ -602,7 +602,6 @@ if (is_linux) {
     testonly = true
     deps = [
       # components_browsertests  TODO(GYP)
-      # nacl_loader_unittests  TODO(GYP)
 
       "//base:base_unittests",  # PASSES (*) 2/25/2015
       "//cc:cc_unittests",  # PASSES 2/25/2015
@@ -658,5 +657,9 @@ if (is_linux) {
       # Note:
       # (*) Fails but failures match GYP build at time of testing.
     ]
+
+    if (enable_nacl) {
+      deps += [ "//components/nacl:nacl_loader_unittests" ]  # PASSES 3/28/2015
+    }
   }
 }

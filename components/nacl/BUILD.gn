@@ -154,12 +154,15 @@ if (enable_nacl) {
 
   test("nacl_loader_unittests") {
     sources = [
+      "loader/nacl_ipc_adapter_unittest.cc",
+      "loader/nacl_validation_query_unittest.cc",
       "loader/run_all_unittests.cc",
     ]
 
     deps = [
       ":nacl",
       "//base/test:test_support",
+      "//ipc:test_support",
       "//testing/gtest",
     ]
   }
