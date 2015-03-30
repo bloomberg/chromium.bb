@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/services/html_viewer/ax_provider_impl.h"
+#include "mojo/services/html_viewer/touch_handler.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -152,6 +153,8 @@ class HTMLDocument : public blink::WebViewClient,
 
   // Set if the content will never be displayed.
   bool is_headless_;
+
+  scoped_ptr<TouchHandler> touch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };

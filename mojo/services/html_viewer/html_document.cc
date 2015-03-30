@@ -154,7 +154,10 @@ void HTMLDocument::OnViewManagerDisconnected(ViewManager* view_manager) {
 }
 
 void HTMLDocument::Load(URLResponsePtr response) {
+  DCHECK(!web_view_);
+
   web_view_ = blink::WebView::create(this);
+  touch_handler_.reset(new TouchHandler(web_view_));
   web_layer_tree_view_impl_->set_widget(web_view_);
   ConfigureSettings(web_view_->settings());
   web_view_->setMainFrame(blink::WebLocalFrame::create(this));
@@ -320,6 +323,14 @@ void HTMLDocument::OnViewDestroyed(View* view) {
 }
 
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
+  if ((event->action == mojo::EVENT_TYPE_POINTER_DOWN ||
+       event->action == mojo::EVENT_TYPE_POINTER_UP ||
+       event->action == mojo::EVENT_TYPE_POINTER_CANCEL ||
+       event->action == mojo::EVENT_TYPE_POINTER_MOVE) &&
+      event->pointer_data->kind == mojo::POINTER_KIND_TOUCH) {
+    touch_handler_->OnTouchEvent(*event);
+    return;
+  }
   scoped_ptr<blink::WebInputEvent> web_event =
       event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
