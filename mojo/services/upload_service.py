@@ -37,8 +37,6 @@ root_path = os.path.realpath(
             os.path.realpath(__file__)),
         os.pardir,
         os.pardir))
-version = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root_path)
-version = version.strip()
 
 find_depot_tools_path = os.path.join(root_path, "tools", "find_depot_tools.py")
 find_depot_tools = imp.load_source("find_depot_tools", find_depot_tools_path)
@@ -46,6 +44,31 @@ find_depot_tools = imp.load_source("find_depot_tools", find_depot_tools_path)
 depot_tools_path = find_depot_tools.add_depot_tools_to_path()
 gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
 
+def get_version_name(custom_build):
+  if custom_build:
+    branch = subprocess.check_output(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root_path).strip()
+    try:
+      base = subprocess.check_output(
+          ["git", "config", "--get", "branch." + branch + ".base"],
+          cwd=root_path).strip()
+      issue = subprocess.check_output(
+          ["git", "config", "--get", "branch." + branch + ".rietveldissue"],
+          cwd=root_path).strip()
+      patchset = subprocess.check_output(
+          ["git", "config", "--get", "branch." + branch + ".rietveldpatchset"],
+          cwd=root_path).strip()
+    except subprocess.CalledProcessError:
+      return None
+
+    if not base or not issue or not patchset:
+      return None
+    else:
+      return "custom_build_base_%s_issue_%s_patchset_%s" % (base, issue,
+                                                            patchset)
+  else:
+    return subprocess.check_output(["git", "rev-parse", "HEAD"],
+                                   cwd=root_path).strip()
 
 def gsutil_cp(source, dest, dry_run):
   if dry_run:
@@ -54,8 +77,9 @@ def gsutil_cp(source, dest, dry_run):
     subprocess.check_call([gsutil_exe, "cp", source, dest])
 
 
-def upload_mojoms(service, absolute_mojom_directory_path, dry_run):
-  dest = "gs://mojo/" + service + "/" + version + "/" + "mojoms.zip"
+def upload_mojoms(version_name, service, absolute_mojom_directory_path,
+                  dry_run):
+  dest = "gs://mojo/" + service + "/" + version_name + "/" + "mojoms.zip"
 
   with tempfile.NamedTemporaryFile() as mojom_zip_file:
     with zipfile.ZipFile(mojom_zip_file, 'w') as z:
@@ -67,8 +91,8 @@ def upload_mojoms(service, absolute_mojom_directory_path, dry_run):
     gsutil_cp(mojom_zip_file.name, dest, dry_run)
 
 
-def upload_binary(service, binary_dir, platform, dry_run):
-  dest_dir = "gs://mojo/" + service + "/" + version + "/" + platform + "/"
+def upload_binary(version_name, service, binary_dir, platform, dry_run):
+  dest_dir = "gs://mojo/" + service + "/" + version_name + "/" + platform + "/"
   should_zip = service in SERVICES_WITH_ZIPPED_BINARIES
   binary_name = service + ".mojo"
   absolute_binary_path = os.path.join(root_path, binary_dir, binary_name)
@@ -116,7 +140,11 @@ def main():
            "to the repo root, e.g. out/android_Release")
   parser.add_argument("service",
                       help="The service to be uploaded (one of %s)" % SERVICES)
-
+  parser.add_argument(
+      "--custom-build", action="store_true",
+      help="Indicates that this is a build with change that is not committed. "
+           "The change must be uploaded to Rietveld. The script needs to be "
+           "run from the branch associated with the change.")
   args = parser.parse_args()
 
   if args.service not in SERVICES:
@@ -124,22 +152,30 @@ def main():
     print SERVICES
     return 1
 
+  version_name = get_version_name(args.custom_build)
+  if args.custom_build and not version_name:
+    print ("When uploading a custom build, the corresponding change to source "
+           "code must be uploaded to Rietveld. Besides, this script needs to "
+           "be run from the branch associated with the change.")
+    return 1
+
   if args.service in MOJOMS_IN_DIR:
     script_dir = os.path.dirname(os.path.realpath(__file__))
     absolute_mojom_directory_path = os.path.join(script_dir,
                                                  MOJOMS_IN_DIR[args.service])
-    upload_mojoms(args.service, absolute_mojom_directory_path, args.dry_run)
+    upload_mojoms(version_name, args.service, absolute_mojom_directory_path,
+                  args.dry_run)
 
   if args.linux_x64_binary_dir:
-    upload_binary(args.service, args.linux_x64_binary_dir,
+    upload_binary(version_name, args.service, args.linux_x64_binary_dir,
                   "linux-x64", args.dry_run)
 
   if args.android_arm_binary_dir:
-    upload_binary(args.service, args.android_arm_binary_dir,
+    upload_binary(version_name, args.service, args.android_arm_binary_dir,
                   "android-arm", args.dry_run)
 
   if not args.dry_run:
-    print "Uploaded artifacts for version %s" % (version, )
+    print "Uploaded artifacts for version %s" % (version_name, )
   else:
     print "No artifacts uploaded (dry run)"
   return 0
