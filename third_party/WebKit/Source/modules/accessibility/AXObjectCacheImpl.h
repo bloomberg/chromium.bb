@@ -87,6 +87,8 @@ public:
     virtual void handleEditableTextContentChanged(Node*) override;
     virtual void handleValueChanged(Node*) override;
     virtual void handleUpdateActiveMenuOption(LayoutMenuList*, int optionIndex) override;
+    virtual void didShowMenuListPopup(LayoutMenuList*) override;
+    virtual void didHideMenuListPopup(LayoutMenuList*) override;
     virtual void handleLoadComplete(Document*) override;
     virtual void handleLayoutComplete(Document*) override;
 

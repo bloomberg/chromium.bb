@@ -1018,6 +1018,18 @@ void AXObjectCacheImpl::handleUpdateActiveMenuOption(LayoutMenuList* menuList, i
         axMenuList->didUpdateActiveOption(optionIndex);
 }
 
+void AXObjectCacheImpl::didShowMenuListPopup(LayoutMenuList* menuList)
+{
+    if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
+        axMenuList->didShowPopup();
+}
+
+void AXObjectCacheImpl::didHideMenuListPopup(LayoutMenuList* menuList)
+{
+    if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
+        axMenuList->didHidePopup();
+}
+
 void AXObjectCacheImpl::handleLoadComplete(Document* document)
 {
     postNotification(getOrCreate(document), AXObjectCache::AXLoadComplete);

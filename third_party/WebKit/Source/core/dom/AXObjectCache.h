@@ -103,8 +103,11 @@ public:
     virtual void handleTextFormControlChanged(Node*) = 0;
     virtual void handleValueChanged(Node*) = 0;
     virtual void handleUpdateActiveMenuOption(LayoutMenuList*, int optionIndex) = 0;
+    virtual void didShowMenuListPopup(LayoutMenuList*) = 0;
+    virtual void didHideMenuListPopup(LayoutMenuList*) = 0;
     virtual void handleLoadComplete(Document*) = 0;
     virtual void handleLayoutComplete(Document*) = 0;
+
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) = 0;
 

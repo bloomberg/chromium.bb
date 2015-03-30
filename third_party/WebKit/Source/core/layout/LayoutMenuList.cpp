@@ -349,6 +349,9 @@ void LayoutMenuList::showPopup()
     IntSize size = pixelSnappedIntRect(frameRect()).size();
     HTMLSelectElement* select = selectElement();
     m_popup->show(quad, size, select->optionToListIndex(select->selectedIndex()));
+    if (AXObjectCache* cache = document().existingAXObjectCache())
+        cache->didShowMenuListPopup(this);
+
 }
 
 void LayoutMenuList::hidePopup()
@@ -571,6 +574,8 @@ int LayoutMenuList::selectedIndex() const
 void LayoutMenuList::popupDidHide()
 {
     m_popupIsVisible = false;
+    if (AXObjectCache* cache = document().existingAXObjectCache())
+        cache->didHideMenuListPopup(this);
 }
 
 bool LayoutMenuList::itemIsSeparator(unsigned listIndex) const

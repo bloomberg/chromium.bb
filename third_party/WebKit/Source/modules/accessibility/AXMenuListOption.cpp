@@ -27,6 +27,7 @@
 #include "modules/accessibility/AXMenuListOption.h"
 
 #include "core/html/HTMLOptionElement.h"
+#include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
@@ -74,6 +75,9 @@ bool AXMenuListOption::isOffScreen() const
 
 bool AXMenuListOption::isSelected() const
 {
+    AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(parentObject());
+    if (parent && !parent->isOffScreen())
+        return parent->activeChild() == this;
     return toHTMLOptionElement(m_element)->selected();
 }
 

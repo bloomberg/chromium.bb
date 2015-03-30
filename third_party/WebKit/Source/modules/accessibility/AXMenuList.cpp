@@ -60,6 +60,18 @@ bool AXMenuList::press() const
     return true;
 }
 
+void AXMenuList::clearChildren()
+{
+    if (m_children.isEmpty())
+        return;
+
+    // There's no reason to clear our AXMenuListPopup child. If we get a
+    // call to clearChildren, it's because the options might have changed,
+    // so call it on our popup.
+    ASSERT(m_children.size() == 1);
+    m_children[0]->clearChildren();
+}
+
 void AXMenuList::addChildren()
 {
     m_haveChildren = true;
@@ -113,9 +125,6 @@ bool AXMenuList::canSetFocusAttribute() const
 
 void AXMenuList::didUpdateActiveOption(int optionIndex)
 {
-    RefPtrWillBeRawPtr<Document> document(m_layoutObject->document());
-    AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
-
     const auto& childObjects = children();
     if (!childObjects.isEmpty()) {
         ASSERT(childObjects.size() == 1);
@@ -127,7 +136,28 @@ void AXMenuList::didUpdateActiveOption(int optionIndex)
         }
     }
 
-    cache->postNotification(this, AXObjectCacheImpl::AXMenuListValueChanged);
+    axObjectCache()->postNotification(this, AXObjectCacheImpl::AXMenuListValueChanged);
+}
+
+void AXMenuList::didShowPopup()
+{
+    if (children().size() != 1)
+        return;
+
+    AXMenuListPopup* popup = toAXMenuListPopup(children()[0].get());
+    popup->didShow();
+}
+
+void AXMenuList::didHidePopup()
+{
+    if (children().size() != 1)
+        return;
+
+    AXMenuListPopup* popup = toAXMenuListPopup(children()[0].get());
+    popup->didHide();
+
+    if (node() && node()->focused())
+        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
 }
 
 } // namespace blink
