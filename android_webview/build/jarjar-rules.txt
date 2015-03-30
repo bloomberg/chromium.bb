@@ -1,4 +1,0 @@
-rule org.chromium.** com.android.@0
-rule com.google.** com.android.org.chromium.@0
-rule com.googlecode.** com.android.org.chromium.@0
-rule javax.annotation.** com.android.org.chromium.@0

@@ -1854,11 +1854,6 @@
           }],
         ],
       }],
-      ['android_webview_build==1', {
-        # When building the WebView in the Android tree, jarjar will remap all
-        # the class names, so the JNI generator needs to know this.
-        'jni_generator_jarjar_file': '../android_webview/build/jarjar-rules.txt',
-      }],
       ['OS=="linux" and target_arch!="mipsel"', {
         'clang%': 1,
       }],  # OS=="mac"
