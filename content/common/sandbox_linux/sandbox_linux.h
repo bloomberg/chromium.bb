@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/sandbox_linux.h"
 
@@ -118,13 +117,6 @@ class LinuxSandbox {
   // Limit the address space of the current process (and its children).
   // to make some vulnerabilities harder to exploit.
   bool LimitAddressSpace(const std::string& process_type);
-
-  // Returns a file descriptor to proc. The file descriptor is no longer valid
-  // after the sandbox has been sealed.
-  int proc_fd() const {
-    DCHECK_NE(-1, proc_fd_);
-    return proc_fd_;
-  }
 
 #if defined(ANY_OF_AMTLU_SANITIZER)
   __sanitizer_sandbox_arguments* sanitizer_args() const {

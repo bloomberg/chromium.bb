@@ -186,12 +186,7 @@ void LinuxSandbox::EngageNamespaceSandbox() {
   // Note: this requires SealSandbox() to be called later in this process to be
   // safe, as this class is keeping a file descriptor to /proc/.
   CHECK(sandbox::Credentials::DropFileSystemAccess(proc_fd_));
-
-  // We do not drop CAP_SYS_ADMIN because we need it to place each child process
-  // in its own PID namespace later on.
-  std::vector<sandbox::Credentials::Capability> caps;
-  caps.push_back(sandbox::Credentials::Capability::SYS_ADMIN);
-  CHECK(sandbox::Credentials::SetCapabilities(proc_fd_, caps));
+  CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd_));
 
   // This needs to happen after moving to a new user NS, since doing so involves
   // writing the UID/GID map.

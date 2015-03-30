@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_SERVICES_NAMESPACE_SANDBOX_H_
 #define SANDBOX_LINUX_SERVICES_NAMESPACE_SANDBOX_H_
 
-#include <sys/types.h>
-
 #include <string>
 #include <vector>
 
@@ -37,8 +35,6 @@ namespace sandbox {
 //    Credentials::DropAllCapabilities().
 class SANDBOX_EXPORT NamespaceSandbox {
  public:
-  static const int kDefaultExitCode = 1;
-
   // Launch a new process inside its own user/PID/network namespaces (depending
   // on kernel support). Requires at a minimum that user namespaces are
   // supported (use Credentials::CanCreateProcessInNewUserNS to check this).
@@ -50,38 +46,6 @@ class SANDBOX_EXPORT NamespaceSandbox {
                                      const base::LaunchOptions& options);
   static base::Process LaunchProcess(const std::vector<std::string>& argv,
                                      const base::LaunchOptions& options);
-
-  // Forks a process in its own PID namespace. The child process is the init
-  // process inside of the PID namespace, so if the child needs to fork further,
-  // it should call CreateInitProcessReaper, which turns the init process into a
-  // reaper process.
-  //
-  // Otherwise, the child should setup handlers for signals which should
-  // terminate the process using InstallDefaultTerminationSignalHandlers or
-  // InstallTerminationSignalHandler. This works around the fact that init
-  // processes ignore such signals unless they have an explicit handler set.
-  //
-  // This function requries CAP_SYS_ADMIN. If |drop_capabilities_in_child| is
-  // true, then capabilities are dropped in the child.
-  static pid_t ForkInNewPidNamespace(bool drop_capabilities_in_child);
-
-  // Installs a signal handler for:
-  //
-  // SIGHUP, SIGINT, SIGABRT, SIGQUIT, SIGPIPE, SIGTERM, SIGUSR1, SIGUSR2
-  //
-  // that exits with kDefaultExitCode. These are signals whose default action is
-  // to terminate the program (apart from SIGILL, SIGFPE, and SIGSEGV, which
-  // will still terminate the process if e.g. an illegal instruction is
-  // encountered, etc.).
-  //
-  // If any of these already had a signal handler installed, this function will
-  // not override them.
-  static void InstallDefaultTerminationSignalHandlers();
-
-  // Installs a signal handler for |sig| which exits with |exit_code|. If a
-  // signal handler was already present for |sig|, does nothing and returns
-  // false.
-  static bool InstallTerminationSignalHandler(int sig, int exit_code);
 
   // Returns whether the namespace sandbox created a new user, PID, and network
   // namespace. In particular, InNewUserNamespace should return true iff the

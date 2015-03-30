@@ -36,8 +36,6 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
-#include "sandbox/linux/services/credentials.h"
-#include "sandbox/linux/services/namespace_sandbox.h"
 
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
@@ -48,14 +46,6 @@ namespace {
 // NOP function. See below where this handler is installed.
 void SIGCHLDHandler(int signal) {
 }
-
-// On Linux, when a process is the init process of a PID namespace, it cannot be
-// terminated by signals like SIGTERM or SIGINT, since they are ignored unless
-// we register a handler for them. In the handlers, we exit with this special
-// exit code that GetTerminationStatus understands to mean that we were
-// terminated by an external signal.
-const int kKilledExitCode = 0x80;
-const int kUnexpectedExitCode = 0x81;
 
 int LookUpFd(const base::GlobalDescriptors::Mapping& fd_mapping, uint32_t key) {
   for (size_t index = 0; index < fd_mapping.size(); ++index) {
@@ -114,7 +104,7 @@ bool Zygote::ProcessRequests() {
   struct sigaction action;
   memset(&action, 0, sizeof(action));
   action.sa_handler = &SIGCHLDHandler;
-  PCHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+  CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
 
   if (UsingSUIDSandbox() || UsingNSSandbox()) {
     // Let the ZygoteHost know we are ready to go.
@@ -315,11 +305,6 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
     // Time to forget about this process.
     process_info_map_.erase(real_pid);
   }
-
-  if (WIFEXITED(*exit_code) && WEXITSTATUS(*exit_code) == kKilledExitCode) {
-    *status = base::TERMINATION_STATUS_PROCESS_WAS_KILLED;
-  }
-
   return true;
 }
 
@@ -390,33 +375,12 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CHECK_NE(pid, 0);
   } else {
     CreatePipe(&read_pipe, &write_pipe);
-    if (sandbox_flags_ & kSandboxLinuxPIDNS &&
-        sandbox_flags_ & kSandboxLinuxUserNS) {
-      pid = sandbox::NamespaceSandbox::ForkInNewPidNamespace(
-          /*drop_capabilities_in_child=*/true);
-    } else {
-      pid = fork();
-    }
+    // This is roughly equivalent to a fork(). We are using ForkWithFlags mainly
+    // to give it some more diverse test coverage.
+    pid = base::ForkWithFlags(SIGCHLD, nullptr, nullptr);
   }
 
   if (pid == 0) {
-    // If the process is the init process inside a PID namespace, it must have
-    // explicit signal handlers.
-    if (getpid() == 1) {
-      for (const int sig : {SIGINT, SIGTERM}) {
-        sandbox::NamespaceSandbox::InstallTerminationSignalHandler(
-            sig, kKilledExitCode);
-      }
-
-      static const int kUnexpectedSignals[] = {
-          SIGHUP, SIGQUIT, SIGABRT, SIGPIPE, SIGUSR1, SIGUSR2,
-      };
-      for (const int sig : kUnexpectedSignals) {
-        sandbox::NamespaceSandbox::InstallTerminationSignalHandler(
-            sig, kUnexpectedExitCode);
-      }
-    }
-
     // In the child process.
     write_pipe.reset();
 
