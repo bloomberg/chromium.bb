@@ -140,7 +140,7 @@
           },  
           {
             "title": "DevTools Extensions API",
-            "href": "/devtools/docs/integrating",
+            "href": "/extensions/devtools",
             "items": [
               {
                 "title": "Sample DevTools Extensions",
