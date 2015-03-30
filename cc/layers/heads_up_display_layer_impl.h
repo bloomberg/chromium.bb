@@ -77,7 +77,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void UpdateHudContents();
   void DrawHudContents(SkCanvas* canvas);
 
-  int MeasureText(SkPaint* paint, const std::string& text, int size) const;
   void DrawText(SkCanvas* canvas,
                 SkPaint* paint,
                 const std::string& text,
