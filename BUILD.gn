@@ -45,6 +45,7 @@ group("gn_all") {
     "//chrome/test:sync_integration_tests",
     "//chrome/test:unit_tests",
     "//chrome/test/chromedriver:chromedriver_unittests",
+    "//components:components_browsertests",
     "//components:components_unittests",
     "//components/policy:policy_templates",
     "//content/shell:content_shell",
@@ -422,6 +423,7 @@ group("gn_all") {
       "//chrome/test:interactive_ui_tests",  # TODO(GYP)
       "//chrome/test:sync_integration_tests",  # TODO(GYP)
       "//chrome/test:unit_tests",  # TODO(GYP)
+      "//components:components_browsertests",  # TODO(GYP)
       "//components:components_unittests",  # TODO(GYP)
       "//content/test:content_browsertests",  # TODO(GYP)
       "//content/test:content_perftests",  # TODO(GYP)
