@@ -235,7 +235,7 @@ class CodeGeneratorV8(CodeGeneratorBase):
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
 
-        template_context = interface_context(interface)
+        template_context = interface_context(interface, component)
         # Add the include for interface itself
         if IdlType(interface_name).is_typed_array:
             template_context['header_includes'].add('core/dom/DOMTypedArray.h')
@@ -255,9 +255,9 @@ class CodeGeneratorV8(CodeGeneratorBase):
         interfaces_info = self.info_provider.interfaces_info
         header_template = self.jinja_env.get_template('dictionary_v8.h')
         cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
+        interface_info = interfaces_info[dictionary_name]
         template_context = v8_dictionary.dictionary_context(
             dictionary, interfaces_info)
-        interface_info = interfaces_info[dictionary_name]
         include_paths = interface_info.get('dependencies_include_paths')
         # Add the include for interface itself
         if interface_info['include_path']:

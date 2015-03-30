@@ -73,7 +73,7 @@ INTERFACE_CPP_INCLUDES = frozenset([
 ])
 
 
-def interface_context(interface):
+def interface_context(interface, component):
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
     header_includes = set(INTERFACE_H_INCLUDES)
@@ -93,6 +93,8 @@ def interface_context(interface):
         is_event_target = inherits_interface(interface.name, 'EventTarget')
 
     extended_attributes = interface.extended_attributes
+
+    header_includes.add('%s/%sExport.h' % (component.lower(), component.capitalize()))
 
     is_array_buffer_or_view = interface.idl_type.is_array_buffer_or_view
     is_typed_array_type = interface.idl_type.is_typed_array
@@ -169,6 +171,7 @@ def interface_context(interface):
         'cpp_class': cpp_class_name,
         'cpp_class_or_partial': cpp_class_name_or_partial,
         'event_target_inheritance': 'InheritFromEventTarget' if is_event_target else 'NotInheritFromEventTarget',
+        'exported': '%s_EXPORT ' % component.upper() if len(interface.partial_interfaces) > 0 else '',
         'gc_type': this_gc_type,
         # FIXME: Remove 'EventTarget' special handling, http://crbug.com/383699
         'has_access_check_callbacks': (is_check_security and

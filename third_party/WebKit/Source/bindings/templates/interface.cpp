@@ -659,7 +659,7 @@ static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
 {##############################################################################}
 {% block initialize_event %}
 {% if has_event_constructor %}
-bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info)
+{{exported}}bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     Dictionary::ConversionContext conversionContext(exceptionState);
     {% if parent_interface %}{# any Event interface except Event itself #}

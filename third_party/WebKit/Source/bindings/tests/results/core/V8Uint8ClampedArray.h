@@ -13,6 +13,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/heap/Handle.h"
 
