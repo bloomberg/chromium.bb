@@ -355,6 +355,8 @@ TEST_F(AnimationAnimationPlayerTest, PlayRewindsToStart)
     EXPECT_EQ(AnimationPlayer::Running, player->playStateInternal());
     player->play();
     EXPECT_EQ(0, player->currentTimeInternal());
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    simulateFrame(10);
     EXPECT_EQ(AnimationPlayer::Running, player->playStateInternal());
 }
 

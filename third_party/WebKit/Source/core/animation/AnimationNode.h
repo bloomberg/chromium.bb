@@ -96,7 +96,7 @@ public:
     double iterationDuration() const;
     double activeDurationInternal() const;
     double startTimeInternal() const { return m_startTime; }
-    double endTimeInternal() const { return startTimeInternal() + specifiedTiming().startDelay + activeDurationInternal() + specifiedTiming().endDelay; }
+    double endTimeInternal() const { return std::max(startTimeInternal(), startTimeInternal() + specifiedTiming().startDelay + activeDurationInternal() + specifiedTiming().endDelay); }
 
     const AnimationPlayer* player() const { return m_player; }
     AnimationPlayer* player() { return m_player; }

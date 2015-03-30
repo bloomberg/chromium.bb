@@ -534,10 +534,13 @@ void AnimationPlayer::play()
     if (!m_content)
         return;
     double currentTime = this->currentTimeInternal();
-    if (m_playbackRate > 0 && (currentTime < 0 || currentTime >= sourceEnd()))
+    if (m_playbackRate > 0 && (currentTime < 0 || currentTime >= sourceEnd())) {
+        m_startTime = nullValue();
         setCurrentTimeInternal(0, TimingUpdateOnDemand);
-    else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd()))
+    } else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd())) {
+        m_startTime = nullValue();
         setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
+    }
 }
 
 void AnimationPlayer::reverse()
