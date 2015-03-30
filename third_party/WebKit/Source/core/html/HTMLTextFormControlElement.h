@@ -142,7 +142,7 @@ private:
     TextFieldSelectionDirection computeSelectionDirection() const;
 
     virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override final;
-    virtual void dispatchBlurEvent(Element* newFocusedElement) override final;
+    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override final;
     void scheduleSelectEvent();
 
     // Returns true if user-editable value is empty. Used to check placeholder visibility.

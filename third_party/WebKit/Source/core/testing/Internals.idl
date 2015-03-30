@@ -273,6 +273,7 @@
     DOMString textSurroundingNode(Node node, long x, long y, unsigned long maxLength);
 
     void setFocused(boolean focused);
+    void setInitialFocus(boolean reverse);
 
     [TypeChecking=Interface] boolean ignoreLayoutWithPendingStylesheets(Document document);
 

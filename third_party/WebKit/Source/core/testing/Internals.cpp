@@ -2181,6 +2181,12 @@ void Internals::setFocused(bool focused)
     frame()->page()->focusController().setFocused(focused);
 }
 
+void Internals::setInitialFocus(bool reverse)
+{
+    frame()->document()->setFocusedElement(nullptr);
+    frame()->page()->focusController().setInitialFocus(reverse ? WebFocusTypeBackward : WebFocusTypeForward);
+}
+
 bool Internals::ignoreLayoutWithPendingStylesheets(Document* document)
 {
     ASSERT(document);

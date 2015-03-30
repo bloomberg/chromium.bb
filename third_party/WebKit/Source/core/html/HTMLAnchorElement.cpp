@@ -96,6 +96,13 @@ void HTMLAnchorElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusT
     HTMLElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 
+void HTMLAnchorElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
+{
+    if (type != WebFocusTypePage)
+        m_wasFocusedByMouse = false;
+    HTMLElement::dispatchBlurEvent(newFocusedElement, type);
+}
+
 bool HTMLAnchorElement::isMouseFocusable() const
 {
     if (isLink())

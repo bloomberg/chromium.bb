@@ -54,6 +54,7 @@ private:
     virtual bool supportsFocus() const override;
     virtual bool shouldHaveFocusAppearance() const override final;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
+    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override;
     virtual bool isMouseFocusable() const override;
     virtual bool isKeyboardFocusable() const override;
     virtual bool isURLAttribute(const Attribute&) const override;

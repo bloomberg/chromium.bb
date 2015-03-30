@@ -380,7 +380,7 @@ public:
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType);
-    virtual void dispatchBlurEvent(Element* newFocusedElement);
+    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType);
     virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType);
     void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement);
 

@@ -316,6 +316,7 @@ public:
     String textSurroundingNode(Node*, int x, int y, unsigned long maxLength);
 
     void setFocused(bool);
+    void setInitialFocus(bool);
 
     bool ignoreLayoutWithPendingStylesheets(Document*);
 

@@ -1024,14 +1024,14 @@ void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusT
     HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedElement, type);
 }
 
-void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement)
+void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
 {
     // We only need to fire change events here for menu lists, because we fire
     // change events for list boxes whenever the selection change is actually made.
     // This matches other browsers' behavior.
     if (usesMenuList())
         dispatchInputAndChangeEventForMenuList();
-    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement);
+    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type);
 }
 
 void HTMLSelectElement::deselectItemsWithoutValidation(HTMLElement* excludeElement)

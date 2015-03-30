@@ -174,6 +174,13 @@ void SVGAElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType ty
     SVGGraphicsElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 
+void SVGAElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
+{
+    if (type != WebFocusTypePage)
+        m_wasFocusedByMouse = false;
+    SVGGraphicsElement::dispatchBlurEvent(newFocusedElement, type);
+}
+
 bool SVGAElement::isURLAttribute(const Attribute& attribute) const
 {
     return attribute.name().localName() == hrefAttr || SVGGraphicsElement::isURLAttribute(attribute);

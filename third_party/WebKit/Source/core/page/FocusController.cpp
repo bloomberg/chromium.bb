@@ -148,7 +148,7 @@ FocusNavigationScope FocusNavigationScope::ownedByShadowInsertionPoint(HTMLShado
 
 static inline void dispatchBlurEvent(const Document& document, Element& focusedElement)
 {
-    focusedElement.dispatchBlurEvent(nullptr);
+    focusedElement.dispatchBlurEvent(nullptr, WebFocusTypePage);
     if (focusedElement == document.focusedElement()) {
         focusedElement.dispatchFocusOutEvent(EventTypeNames::focusout, nullptr);
         if (focusedElement == document.focusedElement())

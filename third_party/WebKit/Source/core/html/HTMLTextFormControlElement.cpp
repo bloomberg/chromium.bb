@@ -88,12 +88,12 @@ void HTMLTextFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, 
     HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedElement, type);
 }
 
-void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement)
+void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
 {
     if (supportsPlaceholder())
         updatePlaceholderVisibility(false);
     handleBlurEvent();
-    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement);
+    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type);
 }
 
 void HTMLTextFormControlElement::defaultEventHandler(Event* event)

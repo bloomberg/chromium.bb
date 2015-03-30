@@ -2350,7 +2350,7 @@ void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
     EventDispatcher::dispatchEvent(*this, FocusEventDispatchMediator::create(event.release()));
 }
 
-void Element::dispatchBlurEvent(Element* newFocusedElement)
+void Element::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
 {
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::blur, false, false, document().domWindow(), 0, newFocusedElement);
     EventDispatcher::dispatchEvent(*this, BlurEventDispatchMediator::create(event.release()));

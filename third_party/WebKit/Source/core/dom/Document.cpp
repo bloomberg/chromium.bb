@@ -3425,7 +3425,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
         // If page lost focus, blur event will have already been dispatched
         if (page() && (page()->focusController().isFocused())) {
-            oldFocusedElement->dispatchBlurEvent(newFocusedElement.get());
+            oldFocusedElement->dispatchBlurEvent(newFocusedElement.get(), type);
 
             if (m_focusedElement) {
                 // handler shifted focus

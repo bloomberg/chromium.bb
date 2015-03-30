@@ -597,9 +597,11 @@ void HTMLFormControlElement::setCustomValidity(const String& error)
     setNeedsValidityCheck();
 }
 
-void HTMLFormControlElement::dispatchBlurEvent(Element* newFocusedElement)
+void HTMLFormControlElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
 {
-    HTMLElement::dispatchBlurEvent(newFocusedElement);
+    if (type != WebFocusTypePage)
+        m_wasFocusedByMouse = false;
+    HTMLElement::dispatchBlurEvent(newFocusedElement, type);
     hideVisibleValidationMessage();
 }
 
