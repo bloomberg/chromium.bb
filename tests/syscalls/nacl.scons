@@ -165,7 +165,7 @@ env.AddNodeToTestSuite(node,
                        'run_mem_test')
 
 nonstable_env = env.Clone()
-if nonstable_env.AllowNonStableBitcode():
+if nonstable_env.SetNonStableBitcodeIfAllowed():
   if nonstable_env.Bit('bitcode'):
     # sysbrk_test.cc has an external reference to "end", a symbol
     # defined by the native linker, which is disallowed by PNaCl's

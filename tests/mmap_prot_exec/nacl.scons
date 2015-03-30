@@ -16,7 +16,7 @@ if env.Bit('host_mac'):
 if env.Bit('tests_use_irt'):
   nexe_command_line += ['-i']
 
-if not env.AllowNonStableBitcode():
+if not env.SetNonStableBitcodeIfAllowed():
   Return()
 if env.Bit('bitcode'):
   # mmap_prot_exec.c has an external reference to "etext", a symbol

@@ -9,7 +9,7 @@ if env['TOOLCHAIN_FEATURE_VERSION'] < 4:
   # In old versions of the PNaCl toolchain, computed gotos are left as
   # "indirectbr" and "blockaddress", which are not allowed by PNaCl's
   # stable ABI.
-  if not env.AllowNonStableBitcode():
+  if not env.SetNonStableBitcodeIfAllowed():
     Return()
   if env.Bit('bitcode'):
     env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])

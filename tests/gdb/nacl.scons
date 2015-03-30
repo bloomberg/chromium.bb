@@ -34,7 +34,7 @@ if env.Bit('build_arm') or env.Bit('build_mips32'):
 
 # Disable finalization (which would strip debug metadata), but allow
 # the sandbox translator where it makes sense.
-if not env.AllowNonStableBitcode(allow_sb_translator=True):
+if not env.SetNonStableBitcodeIfAllowed(allow_sb_translator=True):
   Return()
 
 # We need -O0 to make stepping predictable and read local variables/function

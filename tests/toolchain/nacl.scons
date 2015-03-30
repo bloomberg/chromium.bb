@@ -139,7 +139,7 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
 nonstable_env = env.Clone()
 if env.Bit('bitcode'):
   nonstable_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
-if nonstable_env.AllowNonStableBitcode():
+if nonstable_env.SetNonStableBitcodeIfAllowed():
   # Consider llvm.frameaddress and llvm.returnaddress non-stable,
   # since we may want to hide return and stack addresses in the future.
   AddIntrinsicTest(nonstable_env, 'frame_addresses.c', '0'),
@@ -288,7 +288,7 @@ else:
   zerocost_eh_env = base_eh_env
 # Zero-cost C++ exception handling is not currently supported in
 # PNaCl's stable ABI.
-if zerocost_eh_env.AllowNonStableBitcode():
+if zerocost_eh_env.SetNonStableBitcodeIfAllowed():
   EH_ENVIRONMENTS_TO_TRY.extend(
       [('noopt_frame', MakeEnv(zerocost_eh_env, False, True)),
        ('noopt_noframe', MakeEnv(zerocost_eh_env, False, False)),
@@ -369,7 +369,7 @@ exc_env['BASE_LINKFLAGS'] = ''
 # le32 instead of biased.
 exc_env['NACL_SDK_LIB'] = ''
 
-if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
+if exc_env.Bit('bitcode') and exc_env.SetNonStableBitcodeIfAllowed():
   # Test what happens when all objects are bitcode w/ bitcode linking.
   exc_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
   exc_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
@@ -479,8 +479,8 @@ debug_env.Append(CFLAGS=['-g', '-O0'])
 debug_env.Append(CCFLAGS=['-g', '-O0'])
 debug_env.Append(LINKFLAGS=['-O0'])
 # This requires preserving nonstable bitcode debug metadata.
-if ((env.Bit('bitcode') and debug_env.AllowNonStableBitcode())
-    or env.Bit('nacl_clang')):
+if ((debug_env.Bit('bitcode') and debug_env.SetNonStableBitcodeIfAllowed())
+    or debug_env.Bit('nacl_clang')):
   dwarf_local_var_nexe = debug_env.ComponentProgram(
       'dwarf_local_var',
       ['dwarf_local_var.c',

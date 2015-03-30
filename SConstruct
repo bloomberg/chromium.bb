@@ -2969,7 +2969,7 @@ def UnderWindowsCoverage(env):
 
 nacl_env.AddMethod(UnderWindowsCoverage)
 
-def AllowNonStableBitcode(env, allow_sb_translator=False):
+def SetNonStableBitcodeIfAllowed(env, allow_sb_translator=False):
   """ This modifies the environment to allow features that aren't part
       of PNaCl's stable ABI.  If tests using these features should be
       skipped entirely, this returns False.  Otherwise, on success, it
@@ -2988,7 +2988,7 @@ def AllowNonStableBitcode(env, allow_sb_translator=False):
   env.SetBits('nonstable_bitcode')
   return True
 
-nacl_env.AddMethod(AllowNonStableBitcode)
+nacl_env.AddMethod(SetNonStableBitcodeIfAllowed)
 
 
 def AllowInlineAssembly(env):
