@@ -40,8 +40,8 @@ class AudioServiceImpl : public AudioService,
   // chromeos::CrasAudioHandler::AudioObserver overrides.
   void OnOutputNodeVolumeChanged(uint64_t id, int volume) override;
   void OnInputNodeGainChanged(uint64_t id, int gain) override;
-  void OnOutputMuteChanged() override;
-  void OnInputMuteChanged() override;
+  void OnOutputMuteChanged(bool mute_on) override;
+  void OnInputMuteChanged(bool mute_on) override;
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;
   void OnActiveInputNodeChanged() override;
@@ -49,6 +49,7 @@ class AudioServiceImpl : public AudioService,
  private:
   void NotifyDeviceChanged();
   void NotifyLevelChanged(uint64_t id, int level);
+  void NotifyMuteChanged(bool is_input, bool is_muted);
 
   bool FindDevice(uint64_t id, chromeos::AudioDevice* device);
   uint64_t GetIdFromStr(const std::string& id_str);
@@ -196,16 +197,16 @@ void AudioServiceImpl::OnOutputNodeVolumeChanged(uint64_t id, int volume) {
   NotifyLevelChanged(id, volume);
 }
 
-void AudioServiceImpl::OnOutputMuteChanged() {
-  NotifyDeviceChanged();
+void AudioServiceImpl::OnOutputMuteChanged(bool mute_on) {
+  NotifyMuteChanged(false, mute_on);
 }
 
 void AudioServiceImpl::OnInputNodeGainChanged(uint64_t id, int gain) {
   NotifyLevelChanged(id, gain);
 }
 
-void AudioServiceImpl::OnInputMuteChanged() {
-  NotifyDeviceChanged();
+void AudioServiceImpl::OnInputMuteChanged(bool mute_on) {
+  NotifyMuteChanged(true, mute_on);
 }
 
 void AudioServiceImpl::OnAudioNodesChanged() {
@@ -227,6 +228,15 @@ void AudioServiceImpl::NotifyDeviceChanged() {
 void AudioServiceImpl::NotifyLevelChanged(uint64_t id, int level) {
   FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
                     OnLevelChanged(base::Uint64ToString(id), level));
+
+  // Notify DeviceChanged event for backward compatibility.
+  // TODO(jennyz): remove this code when the old version of hotrod retires.
+  NotifyDeviceChanged();
+}
+
+void AudioServiceImpl::NotifyMuteChanged(bool is_input, bool is_muted) {
+  FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
+                    OnMuteChanged(is_input, is_muted));
 
   // Notify DeviceChanged event for backward compatibility.
   // TODO(jennyz): remove this code when the old version of hotrod retires.

@@ -247,9 +247,13 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   void OnAudioNodesChanged() override { ++audio_nodes_changed_count_; }
 
-  void OnOutputMuteChanged() override { ++output_mute_changed_count_; }
+  void OnOutputMuteChanged(bool /* mute_on */) override {
+    ++output_mute_changed_count_;
+  }
 
-  void OnInputMuteChanged() override { ++input_mute_changed_count_; }
+  void OnInputMuteChanged(bool /* mute_on */) override {
+    ++input_mute_changed_count_;
+  }
 
   void OnOutputNodeVolumeChanged(uint64 /* node_id */,
                                  int /* volume */) override {

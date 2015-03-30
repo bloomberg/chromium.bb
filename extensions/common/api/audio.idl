@@ -78,5 +78,10 @@ namespace audio {
     // |id|: id of the audio node.
     // |level|: new sound level of the node(volume for output, gain for input).
     static void OnLevelChanged(DOMString id, long level);
+
+    // Fired when the mute state of the audio input or output changes.
+    // |isInput|: true indicating audio input; false indicating audio output.
+    // |isMuted|: new value of mute state.
+    static void OnMuteChanged(boolean isInput, boolean isMuted);
   };
 };

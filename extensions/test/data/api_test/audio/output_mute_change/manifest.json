@@ -1,0 +1,13 @@
+{
+  "name": "chrome.audio.OnOutputMuteChanged",
+  "version": "1.0",
+  "description": "browser test for chrome.audio.OnOutputMuteChanged event",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "audio"
+  ]
+}

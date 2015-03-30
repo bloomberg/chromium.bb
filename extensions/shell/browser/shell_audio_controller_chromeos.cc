@@ -39,13 +39,15 @@ void ShellAudioController::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                                      int /* volume */) {
 }
 
-void ShellAudioController::OnOutputMuteChanged() {}
+void ShellAudioController::OnOutputMuteChanged(bool /* mute_on */) {
+}
 
 void ShellAudioController::OnInputNodeGainChanged(uint64_t /* node_id */,
                                                   int /* gain */) {
 }
 
-void ShellAudioController::OnInputMuteChanged() {}
+void ShellAudioController::OnInputMuteChanged(bool /* mute_on */) {
+}
 
 void ShellAudioController::OnAudioNodesChanged() {
   VLOG(1) << "Audio nodes changed";

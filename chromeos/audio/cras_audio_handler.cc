@@ -66,10 +66,10 @@ void CrasAudioHandler::AudioObserver::OnInputNodeGainChanged(
     int /* gain */) {
 }
 
-void CrasAudioHandler::AudioObserver::OnOutputMuteChanged() {
+void CrasAudioHandler::AudioObserver::OnOutputMuteChanged(bool /* mute_on */) {
 }
 
-void CrasAudioHandler::AudioObserver::OnInputMuteChanged() {
+void CrasAudioHandler::AudioObserver::OnInputMuteChanged(bool /* mute_on */) {
 }
 
 void CrasAudioHandler::AudioObserver::OnAudioNodesChanged() {
@@ -367,7 +367,8 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
     }
   }
 
-  FOR_EACH_OBSERVER(AudioObserver, observers_, OnOutputMuteChanged());
+  FOR_EACH_OBSERVER(AudioObserver, observers_,
+                    OnOutputMuteChanged(output_mute_on_));
 }
 
 void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
@@ -380,7 +381,8 @@ void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
 
 void CrasAudioHandler::SetInputMute(bool mute_on) {
   SetInputMuteInternal(mute_on);
-  FOR_EACH_OBSERVER(AudioObserver, observers_, OnInputMuteChanged());
+  FOR_EACH_OBSERVER(AudioObserver, observers_,
+                    OnInputMuteChanged(input_mute_on_));
 }
 
 void CrasAudioHandler::SetActiveOutputNode(uint64_t node_id, bool notify) {

@@ -99,7 +99,7 @@ void VolumeController::OnOutputNodeVolumeChanged(uint64_t node_id, int volume) {
       audio_handler->IsOutputMuted());
 }
 
-void VolumeController::OnOutputMuteChanged() {
+void VolumeController::OnOutputMuteChanged(bool /* mute_on */) {
   CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
   extensions::DispatchVolumeChangedEvent(
       audio_handler->GetOutputVolumePercent(),

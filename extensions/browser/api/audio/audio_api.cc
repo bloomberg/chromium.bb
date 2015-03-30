@@ -37,7 +37,7 @@ AudioService* AudioAPI::GetService() const {
 }
 
 void AudioAPI::OnDeviceChanged() {
-  if (browser_context_ && EventRouter::Get(browser_context_)) {
+  if (EventRouter::Get(browser_context_)) {
     scoped_ptr<Event> event(new Event(
         audio::OnDeviceChanged::kEventName,
         scoped_ptr<base::ListValue>(new base::ListValue())));
@@ -46,10 +46,20 @@ void AudioAPI::OnDeviceChanged() {
 }
 
 void AudioAPI::OnLevelChanged(const std::string& id, int level) {
-  if (browser_context_ && EventRouter::Get(browser_context_)) {
+  if (EventRouter::Get(browser_context_)) {
     scoped_ptr<base::ListValue> args = audio::OnLevelChanged::Create(id, level);
     scoped_ptr<Event> event(
         new Event(audio::OnLevelChanged::kEventName, args.Pass()));
+    EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  }
+}
+
+void AudioAPI::OnMuteChanged(bool is_input, bool is_muted) {
+  if (EventRouter::Get(browser_context_)) {
+    scoped_ptr<base::ListValue> args =
+        audio::OnMuteChanged::Create(is_input, is_muted);
+    scoped_ptr<Event> event(
+        new Event(audio::OnMuteChanged::kEventName, args.Pass()));
     EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   }
 }

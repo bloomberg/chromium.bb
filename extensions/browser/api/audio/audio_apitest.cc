@@ -135,6 +135,71 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
+
+IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraSpeaker1);
+  audio_nodes.push_back(kHDMIOutput);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+
+  // Verify the jabra speaker is the active output device.
+  AudioDevice device;
+  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
+  EXPECT_EQ(device.id, kJabraSpeaker1.id);
+
+  // Mute the output.
+  cras_audio_handler_->SetOutputMute(true);
+  EXPECT_TRUE(cras_audio_handler_->IsOutputMuted());
+
+  // Loads background app.
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+  ASSERT_TRUE(LoadApp("api_test/audio/output_mute_change"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  // Un-mute the output.
+  cras_audio_handler_->SetOutputMute(false);
+  EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
+
+  // Verify the background app got the OnMuteChanged event
+  // with the expected output un-muted state.
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraMic1);
+  audio_nodes.push_back(kUSBCameraMic);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+
+  // Set the jabra mic to be the active input device.
+  AudioDevice jabra_mic(kJabraMic1);
+  cras_audio_handler_->SwitchToDevice(jabra_mic, true);
+  EXPECT_EQ(kJabraMic1.id, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Un-mute the input.
+  cras_audio_handler_->SetInputMute(false);
+  EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
+
+  // Loads background app.
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+  ASSERT_TRUE(LoadApp("api_test/audio/input_mute_change"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  // Mute the input.
+  cras_audio_handler_->SetInputMute(true);
+  EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
+
+  // Verify the background app got the OnMuteChanged event
+  // with the expected input muted state.
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", result_listener.message());
+}
+
 #endif  // OS_CHROMEOS
 
 }  // namespace extensions

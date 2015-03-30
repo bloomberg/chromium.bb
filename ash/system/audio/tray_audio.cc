@@ -113,7 +113,7 @@ void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
   PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
-void TrayAudio::OnOutputMuteChanged() {
+void TrayAudio::OnOutputMuteChanged(bool /* mute_on */) {
   if (tray_view())
       tray_view()->SetVisible(GetInitialVisibility());
 

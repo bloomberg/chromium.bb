@@ -40,13 +40,13 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     virtual void OnOutputNodeVolumeChanged(uint64_t node_id, int volume);
 
     // Called when output mute state changed.
-    virtual void OnOutputMuteChanged();
+    virtual void OnOutputMuteChanged(bool mute_on);
 
     // Called when active input node's gain changed.
     virtual void OnInputNodeGainChanged(uint64_t node_id, int gain);
 
     // Called when input mute state changed.
-    virtual void OnInputMuteChanged();
+    virtual void OnInputMuteChanged(bool mute_on);
 
     // Called when audio nodes changed.
     virtual void OnAudioNodesChanged();

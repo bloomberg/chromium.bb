@@ -1224,15 +1224,15 @@ void SystemTrayDelegateChromeOS::OnOutputNodeVolumeChanged(uint64_t node_id,
   GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
 }
 
-void SystemTrayDelegateChromeOS::OnOutputMuteChanged() {
-  GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged();
+void SystemTrayDelegateChromeOS::OnOutputMuteChanged(bool mute_on) {
+  GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged(mute_on);
 }
 
 void SystemTrayDelegateChromeOS::OnInputNodeGainChanged(uint64_t /* node_id */,
                                                         int /* gain */) {
 }
 
-void SystemTrayDelegateChromeOS::OnInputMuteChanged() {
+void SystemTrayDelegateChromeOS::OnInputMuteChanged(bool /* mute_on */) {
 }
 
 void SystemTrayDelegateChromeOS::OnAudioNodesChanged() {

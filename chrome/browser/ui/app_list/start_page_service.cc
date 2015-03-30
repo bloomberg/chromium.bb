@@ -217,7 +217,7 @@ class StartPageService::AudioStatus
   }
 
   // chromeos::CrasAudioHandler::AudioObserver:
-  void OnInputMuteChanged() override { CheckAndUpdate(); }
+  void OnInputMuteChanged(bool /* mute_on */) override { CheckAndUpdate(); }
 
   void OnActiveInputNodeChanged() override { CheckAndUpdate(); }
 

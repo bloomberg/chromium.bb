@@ -19,7 +19,7 @@ class AudioObserver {
   virtual void OnOutputNodeVolumeChanged(uint64_t node_id, double volume) = 0;
 
   // Called when output mute state changed.
-  virtual void OnOutputMuteChanged() = 0;
+  virtual void OnOutputMuteChanged(bool mute_on) = 0;
 
   // Called when audio nodes changed.
   virtual void OnAudioNodesChanged() = 0;

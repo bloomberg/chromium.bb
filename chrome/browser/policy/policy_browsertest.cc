@@ -503,7 +503,9 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
-  void OnOutputMuteChanged() override { ++output_mute_changed_count_; }
+  void OnOutputMuteChanged(bool /* mute_on */) override {
+    ++output_mute_changed_count_;
+  }
 
  private:
   int output_mute_changed_count_;
