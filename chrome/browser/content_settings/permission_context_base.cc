@@ -104,6 +104,15 @@ void PermissionContextBase::DecidePermission(
     return;
   }
 
+  // The Web MIDI API is not available for origin with non secure schemes.
+  // Access to the MIDI API is blocked.
+  if (permission_type_ == CONTENT_SETTINGS_TYPE_MIDI_SYSEX &&
+      !requesting_origin.SchemeIsSecure()) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_BLOCK);
+    return;
+  }
+
   ContentSetting content_setting =
       profile_->GetHostContentSettingsMap()
           ->GetContentSettingAndMaybeUpdateLastUsage(

@@ -178,10 +178,35 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(CONTENT_SETTING_ASK, setting);
   }
 
+  void TestRequestPermissionNonSecureUrl(ContentSettingsType type) {
+    TestPermissionContext permission_context(profile(), type);
+    GURL url("http://www.google.com");
+    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+
+    const PermissionRequestID id(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        -1, GURL());
+    permission_context.RequestPermission(
+        web_contents(),
+        id, url, true,
+        base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                   base::Unretained(&permission_context)));
+
+    EXPECT_TRUE(permission_context.permission_set());
+    EXPECT_FALSE(permission_context.permission_granted());
+    EXPECT_TRUE(permission_context.tab_context_updated());
+
+    ContentSetting setting =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(
+            url.GetOrigin(), url.GetOrigin(), type, std::string());
+    EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  }
+
   void TestGrantAndRevoke_TestContent(ContentSettingsType type,
                                       ContentSetting expected_default) {
     TestPermissionContext permission_context(profile(), type);
-    GURL url("http://www.google.com");
+    GURL url("https://www.google.com");
     content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
     const PermissionRequestID id(
@@ -257,7 +282,13 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
 #endif
 }
 
+// Simulates non-secure requesting URL.
+// Web MIDI permission should be denied for non-secure origin.
 // Simulates granting and revoking of permissions.
+TEST_F(PermissionContextBaseTests, TestNonSecureRequestingUrl) {
+  TestRequestPermissionNonSecureUrl(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+}
+
 TEST_F(PermissionContextBaseTests, TestGrantAndRevoke) {
   TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
