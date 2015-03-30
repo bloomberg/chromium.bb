@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.password_manager.Credential;
+import org.chromium.chrome.browser.signin.AccountManagementFragment;
 
 /**
  * An infobar offers the user the ability to choose credentials for
@@ -27,6 +29,7 @@ import org.chromium.chrome.browser.password_manager.Credential;
  */
 public class AccountChooserInfoBar extends InfoBar {
     private final Credential[] mCredentials;
+    private final ImageView[] mAvatarViews;
 
     /**
      * Creates and shows the infobar wich allows user to choose credentials for login.
@@ -52,6 +55,7 @@ public class AccountChooserInfoBar extends InfoBar {
                 null /* message to show */);
         setNativeInfoBar(nativeInfoBar);
         mCredentials = credentials.clone();
+        mAvatarViews = new ImageView[mCredentials.length];
     }
 
 
@@ -95,8 +99,13 @@ public class AccountChooserInfoBar extends InfoBar {
                 if (convertView == null) {
                     convertView = (LinearLayout) LayoutInflater.from(getContext()).inflate(
                         R.layout.account_chooser_infobar_item, parent, false);
+                } else {
+                    int oldPosition = (int) convertView.getTag();
+                    mAvatarViews[oldPosition] = null;
                 }
+                convertView.setTag(position);
                 ImageView avatarView = (ImageView) convertView.findViewById(R.id.profile_image);
+                mAvatarViews[position] = avatarView;
                 TextView usernameView = (TextView) convertView.findViewById(R.id.username);
                 TextView smallTextView = (TextView) convertView.findViewById(R.id.display_name);
                 Credential credential = getItem(position);
@@ -105,9 +114,12 @@ public class AccountChooserInfoBar extends InfoBar {
                         ? credential.getFederation()
                         : credential.getDisplayName();
                 smallTextView.setText(smallText);
-                // TODO(melandory): View should show proper avatar. Temporarily the view shows
-                // blue man icon.
-                avatarView.setImageResource(R.drawable.account_management_no_picture);
+                Bitmap avatar = credential.getAvatar();
+                if (avatar != null) {
+                    avatarView.setImageBitmap(avatar);
+                } else {
+                    avatarView.setImageResource(R.drawable.account_management_no_picture);
+                }
                 final int currentCredentialIndex = credential.getIndex();
                 final int credentialType = credential.getType();
                 convertView.setOnClickListener(new View.OnClickListener() {
@@ -120,6 +132,17 @@ public class AccountChooserInfoBar extends InfoBar {
                 return convertView;
             }
         };
+    }
+
+    @CalledByNative
+    private void imageFetchComplete(int index, Bitmap avatarBitmap) {
+        avatarBitmap = AccountManagementFragment.makeRoundUserPicture(avatarBitmap);
+        if (index >= 0 && index < mCredentials.length) {
+            mCredentials[index].setBitmap(avatarBitmap);
+        }
+        if (index >= 0 && index < mAvatarViews.length && mAvatarViews[index] != null) {
+            mAvatarViews[index].setImageBitmap(avatarBitmap);
+        }
     }
 
     /**
