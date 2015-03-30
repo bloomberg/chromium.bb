@@ -173,7 +173,7 @@ void CreateImage(bool use_i444,
   // Pad the Y, U and V planes' height out to compensate.
   // Assuming macroblocks are 16x16, aligning the planes' strides above also
   // macroblock aligned them.
-  COMPILE_ASSERT(kMacroBlockSize == 16, macroblock_size_not_16);
+  static_assert(kMacroBlockSize == 16, "macroblock_size_not_16");
   const int y_rows = ((image->h - 1) & ~(kMacroBlockSize-1)) + kMacroBlockSize;
   const int uv_rows = y_rows >> image->y_chroma_shift;
 
