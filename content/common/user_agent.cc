@@ -156,8 +156,8 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
-std::string BuildUserAgentFromProduct(const std::string& product) {
-  const char kUserAgentPlatform[] =
+std::string getUserAgentPlatform() {
+    return
 #if defined(OS_WIN)
       "";
 #elif defined(OS_MACOSX)
@@ -169,10 +169,28 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
 #else
       "Unknown; ";
 #endif
+}
 
+std::string BuildUserAgentFromProduct(const std::string& product) {
   std::string os_info;
   base::StringAppendF(
-      &os_info, "%s%s", kUserAgentPlatform, BuildOSCpuInfo().c_str());
+      &os_info,
+      "%s%s",
+      getUserAgentPlatform().c_str(),
+      BuildOSCpuInfo().c_str());
+  return BuildUserAgentFromOSAndProduct(os_info, product);
+}
+
+std::string BuildUserAgentFromProductAndExtraOSInfo(
+    const std::string& product,
+    const std::string& extra_os_info) {
+  std::string os_info;
+  base::StringAppendF(
+      &os_info,
+      "%s%s%s",
+      getUserAgentPlatform().c_str(),
+      BuildOSCpuInfo().c_str(),
+      extra_os_info.c_str());
   return BuildUserAgentFromOSAndProduct(os_info, product);
 }
 

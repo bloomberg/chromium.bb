@@ -1618,7 +1618,7 @@ public class AwSettingsTest extends AwTestBase {
     // defined in Android CTS tests:
     //
     // Mozilla/5.0 (Linux;[ U;] Android <version>;[ <language>-<country>;]
-    // [<devicemodel>;] Build/<buildID>) AppleWebKit/<major>.<minor> (KHTML, like Gecko)
+    // [<devicemodel>;] Build/<buildID>; wv) AppleWebKit/<major>.<minor> (KHTML, like Gecko)
     // Version/<major>.<minor>[ Mobile] Safari/<major>.<minor>
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
@@ -1632,7 +1632,8 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(actualUserAgentString, AwSettings.getDefaultUserAgent());
         final String patternString =
                 "Mozilla/5\\.0 \\(Linux;( U;)? Android ([^;]+);( (\\w+)-(\\w+);)?"
-                + "\\s?(.*)\\sBuild/(.+)\\) AppleWebKit/(\\d+)\\.(\\d+) \\(KHTML, like Gecko\\) "
+                + "\\s?(.*)\\sBuild/(.+); wv\\) "
+                + "AppleWebKit/(\\d+)\\.(\\d+) \\(KHTML, like Gecko\\) "
                 + "Version/\\d+\\.\\d Chrome/\\d+\\.\\d+\\.\\d+\\.\\d+"
                 + "( Mobile)? Safari/(\\d+)\\.(\\d+)";
         final Pattern userAgentExpr = Pattern.compile(patternString);

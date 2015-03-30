@@ -12,6 +12,8 @@
 namespace android_webview {
 
 std::string GetUserAgent();
+// extra text to be put into the OS section of the user agent text
+std::string GetExtraOSUserAgentInfo();
 
 class AwContentClient : public content::ContentClient {
  public:
