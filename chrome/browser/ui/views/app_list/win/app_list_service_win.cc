@@ -72,17 +72,6 @@ void AppListService::InitAll(Profile* initial_profile,
 
 namespace {
 
-// Migrate chrome::kAppLauncherIsEnabled pref to
-// chrome::kAppLauncherHasBeenEnabled pref.
-void MigrateAppLauncherEnabledPref() {
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs->HasPrefPath(prefs::kAppLauncherIsEnabled)) {
-    prefs->SetBoolean(prefs::kAppLauncherHasBeenEnabled,
-                      prefs->GetBoolean(prefs::kAppLauncherIsEnabled));
-    prefs->ClearPref(prefs::kAppLauncherIsEnabled);
-  }
-}
-
 int GetAppListIconIndex() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   return dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
@@ -298,8 +287,6 @@ void AppListServiceWin::SetAppListNextPaintCallback(void (*callback)()) {
 
 void AppListServiceWin::Init(Profile* initial_profile) {
   ScheduleWarmup();
-
-  MigrateAppLauncherEnabledPref();
   AppListServiceViews::Init(initial_profile);
 }
 

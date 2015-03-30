@@ -573,7 +573,7 @@ TEST_F(PromoResourceServiceTest, AppLauncherPromoTest) {
                   933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
                   1000, 200, 100, 3600, 400, 30);
   promo_test.InitPromoFromJson(true);
-  local_state_.Get()->SetBoolean(prefs::kAppLauncherIsEnabled, true);
+  local_state_.Get()->SetBoolean(prefs::kAppLauncherHasBeenEnabled, true);
   EXPECT_FALSE(promo_test.promo().CanShow());
 }
 #endif

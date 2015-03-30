@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -406,16 +407,11 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
 }
 
 bool NotificationPromo::CheckAppLauncher() const {
-#if !defined(ENABLE_APP_LIST)
-  return true;
-#else
   bool is_app_launcher_promo = false;
   if (!promo_payload_->GetBoolean("is_app_launcher_promo",
                                   &is_app_launcher_promo))
     return true;
-  return !is_app_launcher_promo ||
-         !prefs_->GetBoolean(prefs::kAppLauncherIsEnabled);
-#endif  // !defined(ENABLE_APP_LIST)
+  return !is_app_launcher_promo || !IsAppLauncherEnabled();
 }
 
 bool NotificationPromo::CanShow() const {

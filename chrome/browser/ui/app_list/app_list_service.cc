@@ -141,7 +141,6 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kLastAppListAppLaunchPing, 0);
   registry->RegisterIntegerPref(prefs::kAppListAppLaunchCount, 0);
   registry->RegisterStringPref(prefs::kAppListProfile, std::string());
-  registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, false);
   registry->RegisterBooleanPref(prefs::kAppLauncherHasBeenEnabled, false);
   registry->RegisterIntegerPref(prefs::kAppListEnableMethod,
                                 ENABLE_NOT_RECORDED);

@@ -2183,12 +2183,6 @@ const char kAppListEnableMethod[] = "app_list.how_enabled";
 // The time that the app launcher was enabled. Cleared when UMA is recorded.
 const char kAppListEnableTime[] = "app_list.when_enabled";
 
-// TODO(calamity): remove this pref since app launcher will always be
-// installed.
-// Local state caching knowledge of whether the app launcher is installed.
-const char kAppLauncherIsEnabled[] =
-    "apps.app_launcher.should_show_apps_page";
-
 // Integer representing the version of the app launcher shortcut installed on
 // the system. Incremented, e.g., when embedded icons change.
 const char kAppLauncherShortcutVersion[] = "apps.app_launcher.shortcut_version";
