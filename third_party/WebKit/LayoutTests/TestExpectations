@@ -170,8 +170,8 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageO
 crbug.com/310679 [ Mac ] virtual/slimmingpaint/fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] virtual/slimmingpaint/fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
-crbug.com/412088 [ Mac Win7 ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
-crbug.com/412088 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ ImageOnlyFailure ]
+crbug.com/471405 [ Mac Win7 ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
+crbug.com/471405 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ ImageOnlyFailure ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
