@@ -116,9 +116,18 @@ content::WebUIDataSource* CreateOobeUIDataSource(
       IDR_GAIA_AUTH_AUTHENTICATOR_JS : IDR_GAIA_AUTH_HOST_JS);
 
   // Serve deferred resources.
-  source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);
-  source->AddResourcePath(kEnrollmentCSSPath, IDR_OOBE_ENROLLMENT_CSS);
-  source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
+  source->AddResourcePath(kEnrollmentHTMLPath,
+                          is_webview_signin_enabled
+                              ? IDR_OOBE_ENROLLMENT_WEBVIEW_HTML
+                              : IDR_OOBE_ENROLLMENT_HTML);
+  source->AddResourcePath(kEnrollmentCSSPath,
+                          is_webview_signin_enabled
+                              ? IDR_OOBE_ENROLLMENT_WEBVIEW_CSS
+                              : IDR_OOBE_ENROLLMENT_CSS);
+  source->AddResourcePath(kEnrollmentJSPath,
+                          is_webview_signin_enabled
+                              ? IDR_OOBE_ENROLLMENT_WEBVIEW_JS
+                              : IDR_OOBE_ENROLLMENT_JS);
 
   if (display_type == OobeUI::kOobeDisplay) {
     source->AddResourcePath(kCustomElementsHTMLPath, IDR_CUSTOM_ELEMENTS_HTML);

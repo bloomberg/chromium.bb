@@ -159,7 +159,8 @@ void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
   }
 }
 
-void EnrollmentScreen::OnLoginDone(const std::string& user) {
+void EnrollmentScreen::OnLoginDone(const std::string& user,
+                                   const std::string& auth_code) {
   elapsed_timer_.reset(new base::ElapsedTimer());
   enrolling_user_domain_ = gaia::ExtractDomainName(user);
 
@@ -168,9 +169,19 @@ void EnrollmentScreen::OnLoginDone(const std::string& user) {
 
   actor_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
-  enrollment_helper_->EnrollUsingProfile(
-      ProfileHelper::GetSigninProfile(),
-      shark_controller_ != NULL /* fetch_additional_token */);
+  if (auth_code.empty()) {
+    enrollment_helper_->EnrollUsingProfile(
+        ProfileHelper::GetSigninProfile(),
+        shark_controller_ != NULL /* fetch_additional_token */);
+  } else {
+    if (shark_controller_) {
+      // TODO(dzhioev): add shark controller support. http://crbug.com/471744
+      NOTIMPLEMENTED();
+      OnOtherError(EnterpriseEnrollmentHelper::OTHER_ERROR_FATAL);
+      return;
+    }
+    enrollment_helper_->EnrollUsingAuthCode(auth_code);
+  }
 }
 
 void EnrollmentScreen::OnRetry() {

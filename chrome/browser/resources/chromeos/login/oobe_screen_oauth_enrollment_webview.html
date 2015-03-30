@@ -1,0 +1,50 @@
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<div id="oauth-enrollment" class="step no-logo hidden" hidden>
+  <div id="oauth-enroll-cancel-button" class="oauth-enroll-button"></div>
+  <div id="oauth-enroll-step-contents">
+    <div id="oauth-enroll-step-signin">
+      <div id="oauth-enroll-auth-view-container"></div>
+    </div>
+    <div id="oauth-enroll-step-working">
+      <div class="oauth-enroll-step-content">
+        <span class="oauth-enroll-step-icon">
+          <span class="spinner"></span>
+        </span>
+        <span class="oauth-enroll-step-message">
+          <span i18n-content="oauthEnrollWorking"></span>
+        </span>
+      </div>
+    </div>
+    <div id="oauth-enroll-step-error">
+      <div class="oauth-enroll-step-content">
+        <span class="oauth-enroll-step-icon">
+          <img src="chrome://theme/IDR_ENROLL_FAILURE">
+        </span>
+        <span class="oauth-enroll-step-message">
+          <span id="oauth-enroll-error-message"></span>
+          <p>
+            <a id="oauth-enroll-error-retry" class="oauth-enroll-link" href="#"
+                i18n-content="oauthEnrollRetry"></a>
+          </p>
+        </span>
+      </div>
+    </div>
+    <div id="oauth-enroll-step-success">
+      <div class="oauth-enroll-step-content">
+        <span class="oauth-enroll-step-icon">
+          <img src="chrome://theme/IDR_ENROLL_SUCCESS">
+        </span>
+        <span class="oauth-enroll-step-message">
+          <span i18n-content="oauthEnrollSuccess"></span>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div id="oauth-saml-notice-container">
+    <span id="oauth-saml-notice-message"></span>
+  </div>
+  <div id="oauth-enrollment-controls" class="step-controls"></div>
+</div>

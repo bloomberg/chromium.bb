@@ -425,9 +425,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
     /**
      * Invoked when the authFlow property is changed no the gaia host.
-     * @param {Event} e Property change event.
      */
-    onAuthFlowChange_: function(e) {
+    onAuthFlowChange_: function() {
       var isSAML = this.isSAML();
 
       if (isSAML) {

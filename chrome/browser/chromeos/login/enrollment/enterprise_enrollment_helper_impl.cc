@@ -107,6 +107,17 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingProfile(
   }
 }
 
+void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
+    const std::string& auth_code) {
+  DCHECK(!started_);
+  started_ = true;
+  oauth_fetchers_.push_back(new policy::PolicyOAuth2TokenFetcher(
+      auth_code, g_browser_process->system_request_context(),
+      base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
+                 weak_ptr_factory_.GetWeakPtr(), 0)));
+  oauth_fetchers_[0]->Start();
+}
+
 void EnterpriseEnrollmentHelperImpl::EnrollUsingToken(
     const std::string& token) {
   DCHECK(!started_);
@@ -115,14 +126,6 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingToken(
 }
 
 void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
-  if (!profile_) {
-    callback.Run();
-    return;
-  }
-  auth_clear_callbacks_.push_back(callback);
-  if (browsing_data_remover_)
-    return;
-
   for (size_t i = 0; i < oauth_fetchers_.size(); ++i) {
     // Do not revoke the additional token if enrollment has finished
     // successfully.
@@ -136,6 +139,16 @@ void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
       (new TokenRevoker())->Start(oauth_fetchers_[i]->oauth2_refresh_token());
   }
   oauth_fetchers_.clear();
+
+  // TODO(dzhioev): clear partition storage of <webview>, if <webview> was used
+  // for authentication.
+  if (!profile_) {
+    callback.Run();
+    return;
+  }
+  auth_clear_callbacks_.push_back(callback);
+  if (browsing_data_remover_)
+    return;
 
   browsing_data_remover_ =
       BrowsingDataRemover::CreateForUnboundedRange(profile_);
@@ -374,7 +387,10 @@ void EnterpriseEnrollmentHelperImpl::UMA(policy::MetricEnrollment sample) {
 
 void EnterpriseEnrollmentHelperImpl::OnBrowsingDataRemoverDone() {
   browsing_data_remover_->RemoveObserver(this);
-  browsing_data_remover_ = NULL;
+
+  // BrowsingDataRemover deletes itself.
+  browsing_data_remover_ = nullptr;
+
   auth_data_cleared_ = true;
 
   std::vector<base::Closure> callbacks_to_run;

@@ -39,6 +39,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   // Overridden from EnterpriseEnrollmentHelper:
   void EnrollUsingProfile(Profile* profile,
                           bool fetch_additional_token) override;
+  void EnrollUsingAuthCode(const std::string& auth_code) override;
   void EnrollUsingToken(const std::string& token) override;
   void ClearAuth(const base::Closure& callback) override;
 

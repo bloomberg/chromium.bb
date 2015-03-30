@@ -76,7 +76,8 @@ class EnrollmentScreen
   void EnrollHost(const std::string& auth_token) override;
 
   // EnrollmentScreenActor::Controller implementation:
-  void OnLoginDone(const std::string& user) override;
+  void OnLoginDone(const std::string& user,
+                   const std::string& auth_code) override;
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;

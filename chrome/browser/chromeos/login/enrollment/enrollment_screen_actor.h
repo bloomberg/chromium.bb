@@ -28,7 +28,8 @@ class EnrollmentScreenActor {
    public:
     virtual ~Controller() {}
 
-    virtual void OnLoginDone(const std::string& user) = 0;
+    virtual void OnLoginDone(const std::string& user,
+                             const std::string& auth_code) = 0;
     virtual void OnRetry() = 0;
     virtual void OnCancel() = 0;
     virtual void OnConfirmationClosed() = 0;

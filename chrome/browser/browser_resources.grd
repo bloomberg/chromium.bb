@@ -65,6 +65,9 @@
         <structure name="IDR_OOBE_ENROLLMENT_HTML" file="resources\chromeos\login\oobe_screen_oauth_enrollment.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_ENROLLMENT_CSS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_ENROLLMENT_JS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.js" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_OOBE_ENROLLMENT_WEBVIEW_HTML" file="resources\chromeos\login\oobe_screen_oauth_enrollment_webview.html" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_OOBE_ENROLLMENT_WEBVIEW_CSS" file="resources\chromeos\login\oobe_screen_oauth_enrollment_webview.css" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_OOBE_ENROLLMENT_WEBVIEW_JS" file="resources\chromeos\login\oobe_screen_oauth_enrollment_webview.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_KEYBOARD_UTILS_JS" file="resources\chromeos\keyboard\keyboard_utils.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_HTML" file="resources\chromeos\login\custom_elements.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_JS" file="resources\chromeos\login\custom_elements.js" flattenhtml="true" type="chrome_html" />

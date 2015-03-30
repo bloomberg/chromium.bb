@@ -41,6 +41,17 @@ PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
       failed_(false),
       callback_(callback) {}
 
+PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
+    const std::string& auth_code,
+    net::URLRequestContextGetter* system_context_getter,
+    const TokenCallback& callback)
+    : auth_code_(auth_code),
+      system_context_getter_(system_context_getter),
+      retry_count_(0),
+      failed_(false),
+      callback_(callback) {
+}
+
 PolicyOAuth2TokenFetcher::~PolicyOAuth2TokenFetcher() {}
 
 void PolicyOAuth2TokenFetcher::Start() {
@@ -49,9 +60,16 @@ void PolicyOAuth2TokenFetcher::Start() {
 }
 
 void PolicyOAuth2TokenFetcher::StartFetchingRefreshToken() {
-  refresh_token_fetcher_.reset(new GaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, auth_context_getter_.get()));
-  refresh_token_fetcher_->StartCookieForOAuthLoginTokenExchange(std::string());
+  if (auth_code_.empty()) {
+    refresh_token_fetcher_.reset(new GaiaAuthFetcher(
+        this, GaiaConstants::kChromeSource, auth_context_getter_.get()));
+    refresh_token_fetcher_->StartCookieForOAuthLoginTokenExchange(
+        std::string());
+  } else {
+    refresh_token_fetcher_.reset(new GaiaAuthFetcher(
+        this, GaiaConstants::kChromeSource, system_context_getter_.get()));
+    refresh_token_fetcher_->StartAuthCodeForOAuth2TokenExchange(auth_code_);
+  }
 }
 
 void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {

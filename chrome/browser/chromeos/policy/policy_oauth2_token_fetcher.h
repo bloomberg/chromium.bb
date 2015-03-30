@@ -44,6 +44,10 @@ class PolicyOAuth2TokenFetcher
                            net::URLRequestContextGetter* system_context_getter,
                            const TokenCallback& callback);
 
+  PolicyOAuth2TokenFetcher(const std::string& auth_code,
+                           net::URLRequestContextGetter* system_context_getter,
+                           const TokenCallback& callback);
+
   ~PolicyOAuth2TokenFetcher() override;
 
   // Starts process of minting device management service OAuth2 access token.
@@ -89,6 +93,9 @@ class PolicyOAuth2TokenFetcher
   // Passes |token| and |error| to the |callback_|.
   void ForwardPolicyToken(const std::string& token,
                           const GoogleServiceAuthError& error);
+
+  // Auth code which is used to retreive a refresh token.
+  const std::string auth_code_;
 
   scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;

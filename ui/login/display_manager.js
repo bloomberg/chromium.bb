@@ -405,7 +405,8 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_NEW_OOBE) {
         chrome.send('switchToNewOobe');
       } else if (name == ACCELERATOR_TOGGLE_WEBVIEW_SIGNIN) {
-        if (currentStepId == SCREEN_GAIA_SIGNIN)
+        if (currentStepId == SCREEN_GAIA_SIGNIN ||
+            currentStepId == SCREEN_OOBE_ENROLLMENT)
           chrome.send('toggleWebviewSignin');
       } else if (name == ACCELERATOR_TOGGLE_EASY_BOOTSTRAP) {
         if (currentStepId == SCREEN_GAIA_SIGNIN)

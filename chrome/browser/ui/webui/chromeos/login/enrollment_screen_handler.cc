@@ -483,7 +483,7 @@ void EnrollmentScreenHandler::OnFrameError(
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);
 
-  if (reason == "cancel" || reason == "autocancel")
+  if (reason == "cancel")
     controller_->OnCancel();
   else if (reason == "done")
     controller_->OnConfirmationClosed();
@@ -491,10 +491,12 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
     NOTREACHED();
 }
 
-void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
+void EnrollmentScreenHandler::HandleCompleteLogin(
+    const std::string& user,
+    const std::string& auth_code) {
   observe_network_failure_ = false;
   DCHECK(controller_);
-  controller_->OnLoginDone(gaia::SanitizeEmail(user));
+  controller_->OnLoginDone(gaia::SanitizeEmail(user), auth_code);
 }
 
 void EnrollmentScreenHandler::HandleRetry() {

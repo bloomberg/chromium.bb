@@ -66,11 +66,6 @@ class EnterpriseEnrollmentHelper {
 
   virtual ~EnterpriseEnrollmentHelper();
 
-  // Starts enterprise enrollment using |token|.
-  // EnrollUsingToken can be called only once during this object's lifetime, and
-  // only if EnrollUsingProfile was not called before.
-  virtual void EnrollUsingToken(const std::string& token) = 0;
-
   // Starts enterprise enrollment using |profile|. First tries to fetch an
   // authentication token using the |profile|, then tries to enroll the device
   // with the received token.
@@ -79,9 +74,21 @@ class EnterpriseEnrollmentHelper {
   // If enrollment fails, you should clear authentication data in |profile| by
   // calling ClearAuth before destroying |this|.
   // EnrollUsingProfile can be called only once during this object's lifetime,
-  // and only if EnrollUsingToken was not called before.
+  // and only if neither of EnrollUsing* was called before.
   virtual void EnrollUsingProfile(Profile* profile,
                                   bool fetch_additional_token) = 0;
+
+  // Starts enterprise enrollment using |auth_code|. First tries to exchange the
+  // auth code to authentication token, then tries to enroll the device with the
+  // received token.
+  // EnrollUsingAuthCode can be called only once during this object's lifetime,
+  // and only if neither of EnrollUsing* methods was called before.
+  virtual void EnrollUsingAuthCode(const std::string& auth_code) = 0;
+
+  // Starts enterprise enrollment using |token|.
+  // EnrollUsingToken can be called only once during this object's lifetime, and
+  // only if neither of EnrollUsing* was called before.
+  virtual void EnrollUsingToken(const std::string& token) = 0;
 
   // Clears authentication data from the profile (if EnrollUsingProfile was
   // used) and revokes fetched tokens.

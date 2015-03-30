@@ -60,15 +60,25 @@ cr.define('cr.login', function() {
    * @const
    */
   var SUPPORTED_PARAMS = [
-    'gaiaUrl',       // Gaia url to use;
-    'gaiaPath',      // Gaia path to use without a leading slash;
-    'hl',            // Language code for the user interface;
-    'email',         // Pre-fill the email field in Gaia UI;
-    'service',       // Name of Gaia service;
-    'continueUrl',   // Continue url to use;
-    'frameUrl',      // Initial frame URL to use. If empty defaults to gaiaUrl.
-    'constrained',   // Whether the extension is loaded in a constrained window;
-    'clientId'       // Chrome client id;
+    'gaiaUrl',          // Gaia url to use.
+    'gaiaPath',         // Gaia path to use without a leading slash.
+    'hl',               // Language code for the user interface.
+    'email',            // Pre-fill the email field in Gaia UI.
+    'service',          // Name of Gaia service.
+    'continueUrl',      // Continue url to use.
+    'frameUrl',         // Initial frame URL to use. If empty defaults to
+                        // gaiaUrl.
+    'constrained',      // Whether the extension is loaded in a constrained
+                        // window.
+    'clientId',         // Chrome client id.
+    'needPassword',     // Whether the host is interested in getting a password.
+                        // If this set to |false|, |confirmPasswordCallback| is
+                        // not called before dispatching |authCopleted|.
+                        // Default is |true|.
+    'flow',             // One of 'default', 'enterprise', or 'theftprotection'.
+    'enterpriseDomain', // Domain in which hosting device is (or should be)
+                        // enrolled.
+    'emailDomain'       // Value used to prefill domain for email.
   ];
 
   /**
@@ -183,6 +193,7 @@ cr.define('cr.login', function() {
     // http. Otherwise, block insecure content as long as gaia is https.
     this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
         this.idpOrigin_.indexOf('https://') == 0;
+    this.needPassword = !('needPassword' in data) || data.needPassword;
 
     this.webview_.src = this.reloadUrl_;
   };
@@ -204,7 +215,7 @@ cr.define('cr.login', function() {
       if (data.clientId)
         url = appendParam(url, 'client_id', data.clientId);
       if (data.enterpriseDomain)
-        url = appendParam(url, 'managedomain', data.enterpriseDomain);
+        url = appendParam(url, 'manageddomain', data.enterpriseDomain);
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
       url = appendParam(url, 'service', data.service || SERVICE_ID);
@@ -215,6 +226,10 @@ cr.define('cr.login', function() {
       url = appendParam(url, 'Email', data.email);
     if (this.isConstrainedWindow_)
       url = appendParam(url, 'source', CONSTRAINED_FLOW_SOURCE);
+    if (data.flow)
+      url = appendParam(url, 'flow', data.flow);
+    if (data.emailDomain)
+      url = appendParam(url, 'emaildomain', data.emailDomain);
     return url;
   };
 
@@ -338,6 +353,9 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onMessageFromWebview_ = function(e) {
+    if (!this.isWebviewEvent_(e))
+      return;
+
     // The event origin does not have a trailing slash.
     if (e.origin != this.idpOrigin_.substring(0, this.idpOrigin_.length - 1)) {
       return;
@@ -534,6 +552,18 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Returns |true| if event |e| was sent from the hosted webview.
+   * @private
+   */
+  Authenticator.prototype.isWebviewEvent_ = function(e) {
+    // Note: <webview> prints error message to console if |contentWindow| is not
+    // defined.
+    // TODO(dzhioev): remove the message. http://crbug.com/469522
+    var webviewWindow = this.webview_.contentWindow;
+    return !!webviewWindow && webviewWindow === e.source;
+  };
+
+  /**
    * The current auth flow of the hosted auth page.
    * @type {AuthFlow}
    */
@@ -546,6 +576,7 @@ cr.define('cr.login', function() {
   return {
     // TODO(guohui, xiyuan): Rename GaiaAuthHost to Authenticator once the old
     // iframe-based flow is deprecated.
-    GaiaAuthHost: Authenticator
+    GaiaAuthHost: Authenticator,
+    Authenticator: Authenticator
   };
 });

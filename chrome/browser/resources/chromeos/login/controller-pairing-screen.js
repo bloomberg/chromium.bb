@@ -43,7 +43,6 @@ Polymer('controller-pairing-screen', (function() {
     initialize: function() {
       this.context.set(CONTEXT_KEY_CONTROLS_DISABLED, true);
       this.commitContextChanges();
-      this.gaiaHost_ = new cr.login.GaiaAuthHost(this.$.gaiaFrame);
     },
 
     pageChanged: function(oldPage, newPage) {
