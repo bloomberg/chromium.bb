@@ -30,7 +30,8 @@ TtsPlatformImplAndroid::TtsPlatformImplAndroid()
 
 TtsPlatformImplAndroid::~TtsPlatformImplAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  Java_TtsPlatformImpl_destroy(env, java_ref_.obj());
+  if (java_ref_.obj())
+    Java_TtsPlatformImpl_destroy(env, java_ref_.obj());
 }
 
 bool TtsPlatformImplAndroid::PlatformImplAvailable() {
@@ -43,6 +44,9 @@ bool TtsPlatformImplAndroid::Speak(
     const std::string& lang,
     const VoiceData& voice,
     const UtteranceContinuousParameters& params) {
+  if (!java_ref_.obj())
+    return false;
+
   JNIEnv* env = AttachCurrentThread();
   jboolean success = Java_TtsPlatformImpl_speak(
       env, java_ref_.obj(),
@@ -59,6 +63,9 @@ bool TtsPlatformImplAndroid::Speak(
 }
 
 bool TtsPlatformImplAndroid::StopSpeaking() {
+  if (!java_ref_.obj())
+    return false;
+
   JNIEnv* env = AttachCurrentThread();
   Java_TtsPlatformImpl_stop(env, java_ref_.obj());
   utterance_id_ = 0;
@@ -79,6 +86,9 @@ bool TtsPlatformImplAndroid::IsSpeaking() {
 
 void TtsPlatformImplAndroid::GetVoices(
     std::vector<VoiceData>* out_voices) {
+  if (!java_ref_.obj())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   if (!Java_TtsPlatformImpl_isInitialized(env, java_ref_.obj()))
     return;
