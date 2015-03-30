@@ -344,7 +344,6 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
   static const char kExclude[] = "exclude";  // Hosts to exclude
   static const char kDisableCompression[] = "no-compress";
   static const char kDisableAltProtocols[] = "no-alt-protocols";
-  static const char kForceAltProtocols[] = "force-alt-protocols";
   static const char kSingleDomain[] = "single-domain";
 
   static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
@@ -391,11 +390,6 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
     }
     if (option == kDisableAltProtocols) {
       globals->use_alternate_protocols.set(false);
-      continue;
-    }
-    if (option == kForceAltProtocols) {
-      net::AlternateProtocolInfo pair(443, net::NPN_SPDY_3, 1);
-      net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
       continue;
     }
     if (option == kSingleDomain) {

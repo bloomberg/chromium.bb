@@ -19,7 +19,6 @@
 
 namespace net {
 
-//-----------------------------------------------------------------------------
 HttpNetworkLayer::HttpNetworkLayer(HttpNetworkSession* session)
     : session_(session),
       suspended_(false) {
@@ -39,8 +38,6 @@ HttpNetworkLayer::~HttpNetworkLayer() {
 #endif
 }
 
-//-----------------------------------------------------------------------------
-
 // static
 HttpTransactionFactory* HttpNetworkLayer::CreateFactory(
     HttpNetworkSession* session) {
@@ -48,14 +45,6 @@ HttpTransactionFactory* HttpNetworkLayer::CreateFactory(
 
   return new HttpNetworkLayer(session);
 }
-
-// static
-void HttpNetworkLayer::ForceAlternateProtocol() {
-  AlternateProtocolInfo pair(443, NPN_SPDY_3, 1);
-  HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
-}
-
-//-----------------------------------------------------------------------------
 
 int HttpNetworkLayer::CreateTransaction(RequestPriority priority,
                                         scoped_ptr<HttpTransaction>* trans) {

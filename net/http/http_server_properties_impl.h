@@ -70,12 +70,6 @@ class NET_EXPORT HttpServerPropertiesImpl
   // unittests.
   static std::string GetFlattenedSpdyServer(const HostPortPair& host_port_pair);
 
-  // Debugging to simulate presence of an AlternateProtocol.
-  // If we don't have an alternate protocol in the map for any given host/port
-  // pair, force this ProtocolPortPair.
-  static void ForceAlternateProtocol(const AlternateProtocolInfo& pair);
-  static void DisableForcedAlternateProtocol();
-
   // Returns the canonical host suffix for |host|, or std::string() if none
   // exists.
   std::string GetCanonicalSuffix(const std::string& host);

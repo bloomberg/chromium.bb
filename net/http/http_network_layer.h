@@ -38,10 +38,6 @@ class NET_EXPORT HttpNetworkLayer
   // when network session is shared.
   static HttpTransactionFactory* CreateFactory(HttpNetworkSession* session);
 
-  // Forces an alternate protocol of SPDY/3 on port 443.
-  // TODO(rch): eliminate this method.
-  static void ForceAlternateProtocol();
-
   // HttpTransactionFactory methods:
   int CreateTransaction(RequestPriority priority,
                         scoped_ptr<HttpTransaction>* trans) override;

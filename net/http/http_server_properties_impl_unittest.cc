@@ -391,37 +391,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 }
 
-TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
-  // Test forced alternate protocols.
-
-  AlternateProtocolInfo default_protocol(1234, NPN_SPDY_3, 1);
-  HttpServerPropertiesImpl::ForceAlternateProtocol(default_protocol);
-
-  // Verify the forced protocol.
-  HostPortPair test_host_port_pair("foo", 80);
-  EXPECT_TRUE(HasAlternativeService(test_host_port_pair));
-  AlternativeService alternative_service =
-      impl_.GetAlternativeService(test_host_port_pair);
-  EXPECT_EQ(default_protocol.port, alternative_service.port);
-  EXPECT_EQ(default_protocol.protocol, alternative_service.protocol);
-
-  // Verify the real protocol overrides the forced protocol.
-  alternative_service = AlternativeService(NPN_SPDY_3, "foo", 443);
-  impl_.SetAlternativeService(test_host_port_pair, alternative_service, 1.0);
-  ASSERT_TRUE(HasAlternativeService(test_host_port_pair));
-  alternative_service = impl_.GetAlternativeService(test_host_port_pair);
-  EXPECT_EQ(443, alternative_service.port);
-  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
-
-  // Turn off the static, forced alternate protocol so that tests don't
-  // have this state.
-  HttpServerPropertiesImpl::DisableForcedAlternateProtocol();
-
-  // Verify the forced protocol is off.
-  HostPortPair test_host_port_pair2("bar", 80);
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair2));
-}
-
 TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));

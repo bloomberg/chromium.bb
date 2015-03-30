@@ -137,23 +137,6 @@ void HttpServerPropertiesImpl::GetSpdyServerList(
   }
 }
 
-static const AlternateProtocolInfo* g_forced_alternate_protocol = NULL;
-
-// static
-void HttpServerPropertiesImpl::ForceAlternateProtocol(
-    const AlternateProtocolInfo& info) {
-  // Note: we're going to leak this.
-  if (g_forced_alternate_protocol)
-    delete g_forced_alternate_protocol;
-  g_forced_alternate_protocol = new AlternateProtocolInfo(info);
-}
-
-// static
-void HttpServerPropertiesImpl::DisableForcedAlternateProtocol() {
-  delete g_forced_alternate_protocol;
-  g_forced_alternate_protocol = NULL;
-}
-
 base::WeakPtr<HttpServerProperties> HttpServerPropertiesImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -247,12 +230,6 @@ AlternativeService HttpServerPropertiesImpl::GetAlternativeService(
       it->second.probability >= alternate_protocol_probability_threshold_)
     return AlternativeService(it->second.protocol, origin.host(),
                               it->second.port);
-
-  UMA_HISTOGRAM_BOOLEAN("Net.ForceAlternativeService",
-                        g_forced_alternate_protocol != nullptr);
-  if (g_forced_alternate_protocol)
-    return AlternativeService(g_forced_alternate_protocol->protocol,
-                              origin.host(), g_forced_alternate_protocol->port);
 
   AlternativeService uninitialize_alternative_service;
   return uninitialize_alternative_service;
