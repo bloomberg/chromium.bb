@@ -1180,14 +1180,15 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 
 // The CDM owns the returned object and must call FileIO::Close() to release it.
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
-  if (allow_persistent_state_) {
-    return new CdmFileIOImpl(
-        client,
-        pp_instance(),
-        callback_factory_.NewCallback(&CdmAdapter::OnFirstFileRead));
+  if (!allow_persistent_state_) {
+    CDM_DLOG()
+        << "Cannot create FileIO because persistent state is not allowed.";
+    return nullptr;
   }
 
-  return nullptr;
+  return new CdmFileIOImpl(
+      client, pp_instance(),
+      callback_factory_.NewCallback(&CdmAdapter::OnFirstFileRead));
 }
 
 #if defined(OS_CHROMEOS)
