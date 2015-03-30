@@ -124,14 +124,14 @@ int HttpServer::GetLocalAddress(IPEndPoint* address) {
 
 void HttpServer::SetReceiveBufferSize(int connection_id, int32 size) {
   HttpConnection* connection = FindConnection(connection_id);
-  DCHECK(connection);
-  connection->read_buf()->set_max_buffer_size(size);
+  if (connection)
+    connection->read_buf()->set_max_buffer_size(size);
 }
 
 void HttpServer::SetSendBufferSize(int connection_id, int32 size) {
   HttpConnection* connection = FindConnection(connection_id);
-  DCHECK(connection);
-  connection->write_buf()->set_max_buffer_size(size);
+  if (connection)
+    connection->write_buf()->set_max_buffer_size(size);
 }
 
 void HttpServer::DoAcceptLoop() {
