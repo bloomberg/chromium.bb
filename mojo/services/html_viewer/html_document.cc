@@ -112,7 +112,8 @@ HTMLDocument::HTMLDocument(
       view_manager_client_factory_(shell_, this),
       compositor_thread_(compositor_thread),
       web_media_player_factory_(web_media_player_factory),
-      is_headless_(is_headless) {
+      is_headless_(is_headless),
+      device_pixel_ratio_(1.0) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   exported_services_.Bind(services.Pass());
@@ -176,7 +177,8 @@ void HTMLDocument::Load(URLResponsePtr response) {
 }
 
 void HTMLDocument::UpdateWebviewSizeFromViewSize() {
-  web_view_->setDeviceScaleFactor(root_->viewport_metrics().device_pixel_ratio);
+  device_pixel_ratio_ = root_->viewport_metrics().device_pixel_ratio;
+  web_view_->setDeviceScaleFactor(device_pixel_ratio_);
   const gfx::Size size_in_pixels(root_->bounds().width, root_->bounds().height);
   const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
       root_->viewport_metrics().device_pixel_ratio, size_in_pixels);
@@ -323,6 +325,14 @@ void HTMLDocument::OnViewDestroyed(View* view) {
 }
 
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
+  if (event->pointer_data) {
+    // Blink expects coordintes to be in DIPs.
+    event->pointer_data->x /= device_pixel_ratio_;
+    event->pointer_data->y /= device_pixel_ratio_;
+    event->pointer_data->screen_x /= device_pixel_ratio_;
+    event->pointer_data->screen_y /= device_pixel_ratio_;
+  }
+
   if ((event->action == mojo::EVENT_TYPE_POINTER_DOWN ||
        event->action == mojo::EVENT_TYPE_POINTER_UP ||
        event->action == mojo::EVENT_TYPE_POINTER_CANCEL ||

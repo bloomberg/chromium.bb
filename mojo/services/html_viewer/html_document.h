@@ -156,6 +156,8 @@ class HTMLDocument : public blink::WebViewClient,
 
   scoped_ptr<TouchHandler> touch_handler_;
 
+  float device_pixel_ratio_;
+
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };
 
