@@ -33,6 +33,10 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // WorkspaceLayoutManager.
 const char kAshDisableLockLayoutManager[] = "ash-disable-lock-layout-manager";
 
+// Disables the window backdrops normally used in maximize mode (TouchView).
+const char kAshDisableMaximizeModeWindowBackdrop[] =
+    "ash-disable-maximize-mode-window-backdrop";
+
 #if defined(OS_CHROMEOS)
 // Disable the support for WebContents to lock the screen orientation.
 const char kAshDisableScreenOrientationLock[] =

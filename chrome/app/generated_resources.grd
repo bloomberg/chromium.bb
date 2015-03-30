@@ -6151,6 +6151,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disable user gesture requirement for playing media elements. Activating this will allow autoplay to work.
       </message>
       <if expr="use_ash">
+        <message name="IDS_FLAGS_ASH_DISABLE_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used to disable window backdrops in TouchView.">
+          Disable window backdrops in TouchView
+        </message>
+        <message name="IDS_FLAGS_ASH_DISABLE_MAXIMIZE_MODE_WINDOW_BACKDROP_DESCRIPTION" desc="Description for the flag which can be used to disable window backdrops in TouchView.">
+          Disables the grey window backdrops used in TouchView (maximize mode) behind windows which cannot be maximized.
+        </message>
         <message name="IDS_FLAGS_ASH_DISABLE_SCREEN_ORIENTATION_LOCK_NAME" desc="Title for the flag which can be used to disable support for javascript locking rotation.">
           Disable Screen Orientation locking.
         </message>
