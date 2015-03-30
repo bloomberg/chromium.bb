@@ -297,7 +297,18 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
   if (debug_state.ShowMemoryStats())
     DrawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
 }
+int HeadsUpDisplayLayerImpl::MeasureText(SkPaint* paint,
+                                         const std::string& text,
+                                         int size) const {
+  const bool anti_alias = paint->isAntiAlias();
+  paint->setAntiAlias(true);
+  paint->setTextSize(size);
+  paint->setTypeface(typeface_.get());
+  SkScalar text_width = paint->measureText(text.c_str(), text.length());
 
+  paint->setAntiAlias(anti_alias);
+  return SkScalarCeilToInt(text_width);
+}
 void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
                                        SkPaint* paint,
                                        const std::string& text,
@@ -612,26 +623,29 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
   const int kGraphWidth = paint_time_counter->HistorySize();
   const int kGraphHeight = 40;
 
-  const int width = kGraphWidth + 2 * kPadding;
+  SkPaint paint = CreatePaint();
+
+  const std::string title = "Compositor frame time (ms)";
+  int title_text_width = MeasureText(&paint, title, kFontHeight);
+  int contents_width = std::max(title_text_width, kGraphWidth);
+
+  const int width = contents_width + 2 * kPadding;
   const int height =
       kFontHeight + kGraphHeight + 4 * kPadding + 2 + kFontHeight + kPadding;
   const int left = bounds().width() - width - right;
 
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
-  SkPaint paint = CreatePaint();
   DrawGraphBackground(canvas, &paint, area);
 
-  SkRect text_bounds = SkRect::MakeXYWH(
-      left + kPadding, top + kPadding, kGraphWidth, kFontHeight);
-  SkRect text_bounds2 = SkRect::MakeXYWH(left + kPadding,
-                                         text_bounds.bottom() + kPadding,
-                                         kGraphWidth,
-                                         kFontHeight);
-  SkRect graph_bounds = SkRect::MakeXYWH(left + kPadding,
+  SkRect text_bounds = SkRect::MakeXYWH(left + kPadding, top + kPadding,
+                                        contents_width, kFontHeight);
+  SkRect text_bounds2 =
+      SkRect::MakeXYWH(left + kPadding, text_bounds.bottom() + kPadding,
+                       contents_width, kFontHeight);
+  SkRect graph_bounds = SkRect::MakeXYWH(left + (width - kGraphWidth) / 2,
                                          text_bounds2.bottom() + 2 * kPadding,
-                                         kGraphWidth,
-                                         kGraphHeight);
+                                         kGraphWidth, kGraphHeight);
 
   const std::string value_text =
       base::StringPrintf("%.1f", paint_time_graph_.value);
@@ -639,8 +653,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
       "%.1f-%.1f", paint_time_graph_.min, paint_time_graph_.max);
 
   paint.setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
-  DrawText(canvas, &paint, "Compositor frame time(ms)", SkPaint::kLeft_Align,
-           kFontHeight, text_bounds.left(), text_bounds.bottom());
+  DrawText(canvas, &paint, title, SkPaint::kLeft_Align, kFontHeight,
+           text_bounds.left(), text_bounds.bottom());
   DrawText(canvas,
            &paint,
            value_text,
