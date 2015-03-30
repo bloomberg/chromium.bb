@@ -174,6 +174,8 @@ class TestDelegate : public NetworkingPrivateDelegate {
     } else {
       scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
       result->SetString(::onc::network_config::kGUID, guid);
+      result->SetString(::onc::network_config::kType,
+                        ::onc::network_config::kWiFi);
       success_callback.Run(result.Pass());
     }
   }

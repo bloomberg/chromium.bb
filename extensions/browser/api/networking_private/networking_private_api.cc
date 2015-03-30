@@ -146,10 +146,8 @@ bool NetworkingPrivateSetPropertiesFunction::RunAsync() {
       private_api::SetProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // TODO(stevenjb): Switch this back to params->properties.ToValue() once we
-  // introduce types to the IDL. crbug.com/470262.
   scoped_ptr<base::DictionaryValue> properties_dict(
-      params->properties.additional_properties.DeepCopy());
+      params->properties.ToValue());
 
   GetDelegate(browser_context())
       ->SetProperties(
@@ -180,10 +178,8 @@ bool NetworkingPrivateCreateNetworkFunction::RunAsync() {
       private_api::CreateNetwork::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // TODO(stevenjb): Switch this back to params->properties.ToValue() once we
-  // introduce types to the IDL. crbug.com/470262.
   scoped_ptr<base::DictionaryValue> properties_dict(
-      params->properties.additional_properties.DeepCopy());
+      params->properties.ToValue());
 
   GetDelegate(browser_context())
       ->CreateNetwork(

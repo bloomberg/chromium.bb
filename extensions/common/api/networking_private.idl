@@ -11,17 +11,148 @@
 // src/components/onc/docs/onc_spec.html</a>, or the 
 // <a href="http://www.chromium.org/chromium-os/chromiumos-design-docs/open-network-configuration">
 // Open Network Configuration</a> page at chromium.org.
-//
+// <br><br>
+// NOTE: Most dictionary properties and enum values use UpperCamelCase to match
+// the ONC spec instead of the JavaScript lowerCamelCase convention.
+// <br><br>
+// "State" properties describe just the ONC properties returned by
+// $(ref:networkingPrivate.getState) and $(ref:networkingPrivate.getNetworks).
+// <br><br>
+// "Config" properties describe just the ONC properties that can be configured
+// through this API. NOTE: Not all configuration properties are exposed at this 
+// time, only those currently required by the Chrome Settings UI.
+// TODO(stevenjb): Provide all configuration properties and types, 
+// crbug.com/380937.
+// <br><br>
 // TODO(stevenjb/pneubeck): Merge the ONC documentation with this document and
 // use it as the ONC specification.
 
 namespace networkingPrivate {
+  enum ActivationStateType {
+    Activated, Activating, NotActivated, PartiallyActivated
+  };
+
   enum CaptivePortalStatus {
     Unknown, Offline, Online, Portal, ProxyAuthRequired
   };
 
+  enum ConnectionStateType {
+    Connected, Connecting, NotConnected
+  };
+
+  enum IPConfigType {
+    DHCP, Static
+  };
+
   enum NetworkType {
     All, Bluetooth, Cellular, Ethernet, VPN, Wireless, WiFi, WiMAX
+  };
+
+  dictionary APNProperties {
+    DOMString? AccessPointName;
+    DOMString? Language;
+    DOMString? LocalizedName;
+    DOMString? Name;
+    DOMString? Password;
+    DOMString? Username;
+  };
+
+  dictionary CellularConfigProperties {
+    boolean? AutoConnect;
+    APNProperties? APN;
+  };
+
+  dictionary CellularStateProperties {
+    ActivationStateType? ActivationState;
+    DOMString? NetworkTechnology;
+    DOMString? RoamingState;
+    long? SignalStrength;
+  };
+
+  dictionary EthernetStateProperties {
+    DOMString Authentication;
+  };
+
+  dictionary IPConfigProperties {
+    DOMString? Gateway;
+    DOMString? IPAddress;
+    DOMString[]? NameServers;
+    long? RoutingPrefix;
+    DOMString? Type;
+    DOMString? WebProxyAutoDiscoveryUrl;
+  };
+
+  dictionary IPSecProperties {
+    DOMString AuthenticationType;
+  };
+
+  dictionary ThirdPartyVPNProperties {
+    DOMString ExtensionID;
+  };
+    
+  dictionary VPNConfigProperties {
+    boolean? AutoConnect;
+    DOMString? Host;
+    ThirdPartyVPNProperties? ThirdPartyVPN;
+    DOMString? Type;
+  };
+
+  dictionary VPNStateProperties {
+    DOMString Type;
+    IPSecProperties? IPsec;
+    ThirdPartyVPNProperties? ThirdPartyVPN;
+  };
+
+  dictionary WiFiConfigProperties {
+    boolean? AutoConnect;
+    DOMString? HexSSID;
+    boolean? HiddenSSID;
+    DOMString? Passphrase;
+    DOMString? SSID;
+    DOMString? Security;
+  };
+
+  dictionary WiFiStateProperties {
+    DOMString Security;
+    long? SignalStrength;
+  };
+
+  dictionary WiMaxConfigProperties {
+    boolean? AutoConnect;
+  };
+
+  dictionary WiMAXStateProperties {
+    long? SignalStrength;
+  };
+
+  dictionary NetworkConfigProperties {
+    CellularConfigProperties? Cellular;
+    DOMString? GUID;
+    IPConfigType? IPAddressConfigType;
+    DOMString? Name;
+    IPConfigType? NameServersConfigType;
+    long? Priority;
+    IPConfigProperties? StaticIPConfig;
+    NetworkType? Type;
+    VPNConfigProperties? VPN;
+    WiFiConfigProperties? WiFi;
+    WiMaxConfigProperties? WiMAX;
+  };
+
+  dictionary NetworkStateProperties {
+    CellularStateProperties? Cellular;
+    boolean? Connectable;
+    ConnectionStateType? ConnectionState;
+    EthernetStateProperties? Ethernet;
+    DOMString? ErrorState;
+    DOMString GUID;
+    DOMString? Name;
+    long? Priority;
+    DOMString? Source;
+    NetworkType Type;
+    VPNStateProperties? VPN;
+    WiFiStateProperties? WiFi;
+    WiMAXStateProperties? WiMAX;
   };
 
   dictionary VerificationProperties {
@@ -83,8 +214,8 @@ namespace networkingPrivate {
   callback GetPropertiesCallback = void(object result);
   // TODO(stevenjb): Use ManagedNetworkProperties for |result| once defined.
   callback GetManagedPropertiesCallback = void(object result);
-  callback GetStatePropertiesCallback = void(object result);
-  callback GetNetworksCallback = void(object[] result);
+  callback GetStatePropertiesCallback = void(NetworkStateProperties result);
+  callback GetNetworksCallback = void(NetworkStateProperties[] result);
   callback GetEnabledNetworkTypesCallback = void(NetworkType[] result);
   callback CaptivePortalStatusCallback = void(CaptivePortalStatus result);
 
@@ -112,7 +243,7 @@ namespace networkingPrivate {
     // Type, Name, WiFi.Security. Additional properties are provided for visible
     // networks: ConnectionState, ErrorState, WiFi.SignalStrength,
     // Cellular.NetworkTechnology, Cellular.ActivationState,
-    // Cellular.RoamingState, Cellular.OutOfCredits.
+    // Cellular.RoamingState.
     // |networkGuid|: The GUID of the network to get properties for.
     // |callback|: Called immediately with the network state properties.
     static void getState(DOMString networkGuid,
@@ -123,7 +254,7 @@ namespace networkingPrivate {
     // |properties|: The properties to set.
     // |callback|: Called when the operation has completed.
     static void setProperties(DOMString networkGuid,
-                              object properties,
+                              NetworkConfigProperties properties,
                               optional VoidCallback callback);
 
     // Creates a new network configuration from properties. If a matching
@@ -134,7 +265,7 @@ namespace networkingPrivate {
     // |callback|: Called with the GUID for the new network configuration once
     //     the network has been created.
     static void createNetwork(boolean shared,
-                              object properties,
+                              NetworkConfigProperties properties,
                               optional StringCallback callback);
 
     // Forgets a network configuration by clearing any configured properties for

@@ -21,7 +21,6 @@ var NetworkUI = (function() {
      'EAP.EAP'],
     'Cellular.ActivationState',
     'Cellular.RoamingState',
-    'Cellular.OutOfCredits',
     'WiFi.SignalStrength'
   ];
 
