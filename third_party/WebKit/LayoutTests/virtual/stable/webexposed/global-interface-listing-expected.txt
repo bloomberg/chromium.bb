@@ -344,6 +344,19 @@ interface CSSUnknownRule
 interface CSSViewportRule
     getter style
     method constructor
+interface Cache
+    method constructor
+    method delete
+    method keys
+    method match
+    method put
+interface CacheStorage
+    method constructor
+    method delete
+    method has
+    method keys
+    method match
+    method open
 interface CanvasGradient
     method addColorStop
     method constructor

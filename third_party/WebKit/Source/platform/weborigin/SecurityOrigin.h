@@ -149,6 +149,7 @@ public:
     bool canAccessCookies() const { return !isUnique(); }
     bool canAccessPasswordManager() const { return !isUnique(); }
     bool canAccessFileSystem() const { return !isUnique(); }
+    bool canAccessCacheStorage() const { return !isUnique(); };
     Policy canShowNotifications() const;
 
     // Technically, we should always allow access to sessionStorage, but we

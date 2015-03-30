@@ -6,7 +6,7 @@
 
 [
     GarbageCollected,
-    Exposed=ServiceWorker,
+    Exposed=(Window,Worker),
     RuntimeEnabled=ServiceWorkerCache,
     TypeChecking=Interface,
 ] interface Cache {

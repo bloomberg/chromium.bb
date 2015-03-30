@@ -66,6 +66,7 @@ FullscreenUnprefixed status=test
 Geofencing status=experimental
 GeometryInterfaces status=test
 HTMLPopupMenu status=experimental
+GlobalCacheStorage status=experimental
 ImageColorProfiles
 ImageDataConstructor status=stable
 ImageRenderingPixelated status=stable
