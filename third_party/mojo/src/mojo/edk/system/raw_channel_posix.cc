@@ -244,8 +244,10 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(
 
     write_result = embedder::PlatformChannelSendmsgWithHandles(
         fd_.get(), iov, buffer_count, platform_handles, num_platform_handles);
-    for (size_t i = 0; i < num_platform_handles; i++)
-      platform_handles[i].CloseIfNecessary();
+    if (write_result >= 0) {
+      for (size_t i = 0; i < num_platform_handles; i++)
+        platform_handles[i].CloseIfNecessary();
+    }
   } else {
     std::vector<WriteBuffer::Buffer> buffers;
     write_buffer_no_lock()->GetBuffers(&buffers);
