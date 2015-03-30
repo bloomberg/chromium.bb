@@ -406,7 +406,9 @@ static size_t CheckReservedAtZero() {
 #if defined(ADDRESS_SANITIZER)
 // Do not install the SIGSEGV handler in ASan. This should make the NaCl
 // platform qualification test pass.
-static const char kAsanDefaultOptionsNaCl[] = "handle_segv=0";
+// detect_odr_violation=0: http://crbug.com/376306
+static const char kAsanDefaultOptionsNaCl[] =
+    "handle_segv=0:detect_odr_violation=0";
 
 // Override the default ASan options for the NaCl helper.
 // __asan_default_options should not be instrumented, because it is called
