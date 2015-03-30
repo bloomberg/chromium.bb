@@ -85,4 +85,32 @@ int sys_capset(cap_hdr* hdrp, const cap_data* datap) {
   return syscall(__NR_capset, hdrp, datap);
 }
 
+int sys_getresuid(uid_t* ruid, uid_t* euid, uid_t* suid) {
+#if defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL)
+  // On 32-bit x86 or 32-bit arm, getresuid supports 16bit values only.
+  // Use getresuid32 instead.
+  return syscall(__NR_getresuid32, ruid, euid, suid);
+#else
+  return syscall(__NR_getresuid, ruid, euid, suid);
+#endif
+}
+
+int sys_getresgid(gid_t* rgid, gid_t* egid, gid_t* sgid) {
+#if defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL)
+  // On 32-bit x86 or 32-bit arm, getresgid supports 16bit values only.
+  // Use getresgid32 instead.
+  return syscall(__NR_getresgid32, rgid, egid, sgid);
+#else
+  return syscall(__NR_getresgid, rgid, egid, sgid);
+#endif
+}
+
+int sys_chroot(const char* path) {
+  return syscall(__NR_chroot, path);
+}
+
+int sys_unshare(int flags) {
+  return syscall(__NR_unshare, flags);
+}
+
 }  // namespace sandbox

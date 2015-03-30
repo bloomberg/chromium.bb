@@ -56,6 +56,16 @@ SANDBOX_EXPORT int sys_capget(struct cap_hdr* hdrp, struct cap_data* datap);
 SANDBOX_EXPORT int sys_capset(struct cap_hdr* hdrp,
                               const struct cap_data* datap);
 
+// Some libcs do not expose getresuid/getresgid wrappers.
+SANDBOX_EXPORT int sys_getresuid(uid_t* ruid, uid_t* euid, uid_t* suid);
+SANDBOX_EXPORT int sys_getresgid(gid_t* rgid, gid_t* egid, gid_t* sgid);
+
+// Some libcs do not expose a chroot wrapper.
+SANDBOX_EXPORT int sys_chroot(const char* path);
+
+// Some libcs do not expose a unshare wrapper.
+SANDBOX_EXPORT int sys_unshare(int flags);
+
 }  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SERVICES_SYSCALL_WRAPPERS_H_

@@ -40,8 +40,8 @@ bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 bool GetRESIds(uid_t* resuid, gid_t* resgid) {
   uid_t ruid, euid, suid;
   gid_t rgid, egid, sgid;
-  PCHECK(getresuid(&ruid, &euid, &suid) == 0);
-  PCHECK(getresgid(&rgid, &egid, &sgid) == 0);
+  PCHECK(sys_getresuid(&ruid, &euid, &suid) == 0);
+  PCHECK(sys_getresgid(&rgid, &egid, &sgid) == 0);
   const bool uids_are_equal = (ruid == euid) && (ruid == suid);
   const bool gids_are_equal = (rgid == egid) && (rgid == sgid);
   if (!uids_are_equal || !gids_are_equal) return false;
@@ -53,7 +53,7 @@ bool GetRESIds(uid_t* resuid, gid_t* resgid) {
 const int kExitSuccess = 0;
 
 int ChrootToSelfFdinfo(void*) {
-  RAW_CHECK(chroot("/proc/self/fdinfo/") == 0);
+  RAW_CHECK(sys_chroot("/proc/self/fdinfo/") == 0);
 
   // CWD is essentially an implicit file descriptor, so be careful to not
   // leave it behind.
@@ -260,7 +260,7 @@ bool Credentials::MoveToNewUserNS() {
     DVLOG(1) << "uids or gids differ!";
     return false;
   }
-  int ret = unshare(CLONE_NEWUSER);
+  int ret = sys_unshare(CLONE_NEWUSER);
   if (ret) {
     const int unshare_errno = errno;
     VLOG(1) << "Looks like unprivileged CLONE_NEWUSER may not be available "
