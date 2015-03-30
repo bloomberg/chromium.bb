@@ -29,8 +29,8 @@ Polymer('oobe-screen', (function() {
      * reason: such name doesn't take much space in HTML data bindings, which
      * are used very often.
      * C binded to the native part of the context, that means that all the
-     * changes in the native part appear in C automticaly. Reverse is not true,
-     * you should use:
+     * changes in the native part appear in C automatically. Reverse is not
+     * true, you should use:
      *    this.context.set(...);
      *    this.context.commitContextChanges();
      * to send updates to the native part.
@@ -39,7 +39,7 @@ Polymer('oobe-screen', (function() {
     C: null,
 
     /**
-     * Called when the screen is beeing registered.
+     * Called when the screen is being registered.
      */
     initialize: doNothing,
 

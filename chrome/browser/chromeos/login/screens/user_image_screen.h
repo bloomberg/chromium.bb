@@ -110,7 +110,7 @@ class UserImageScreen : public UserImageModel,
   // Last user photo, if taken.
   gfx::ImageSkia user_photo_;
 
-  // If |true|, decoded photo should be immediately accepeted (i.e., both
+  // If |true|, decoded photo should be immediately accepted (i.e., both
   // HandleTakePhoto and HandleImageAccepted have already been called but we're
   // still waiting for  photo image decoding to finish.
   bool accept_photo_after_decoding_;

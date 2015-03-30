@@ -277,6 +277,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
+      $('oobe').classList.add('image-loading');
       var imageGrid = $('user-image-grid');
       imageGrid.updateAndFocus();
       chrome.send('onUserImageScreenShown');
@@ -287,6 +288,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     onBeforeHide: function() {
       $('user-image-grid').stopCamera();
+      $('oobe').classList.remove('image-loading');
     },
 
     /**
@@ -333,6 +335,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     hideCurtain: function() {
       this.classList.remove('loading');
+      $('oobe').classList.remove('image-loading');
       Oobe.getInstance().updateScreenSize(this);
     },
 

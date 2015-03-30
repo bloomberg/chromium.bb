@@ -1,0 +1,24 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/paper-spinner/paper-spinner.html">
+
+<polymer-element name="throbber-notice" attributes="text" noscript>
+  <template>
+    <style>
+      paper-spinner::shadow .circle {
+        border-color: #4285f4;
+      }
+
+      paper-spinner {
+        height: 36px;
+        width: 36px;
+      }
+      #spinner-container {
+        margin-bottom: 25px;
+      }
+    </style>
+    <div id="spinner-container" vertical layout center>
+      <paper-spinner active></paper-spinner>
+    </div>
+    <div>{{text}}</div>
+  </template>
+</polymer-element>

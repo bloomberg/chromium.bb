@@ -408,6 +408,15 @@
   <structure name="IDR_POLYMER_PAPER_SLIDER_PAPER_SLIDER_HTML"
              file="../../../third_party/polymer/components-chromium/paper-slider/paper-slider.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_SPINNER_PAPER_SPINNER_CSS"
+             file="../../../third_party/polymer/components-chromium/paper-spinner/paper-spinner.css"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_SPINNER_PAPER_SPINNER_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/paper-spinner/paper-spinner-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_PAPER_SPINNER_PAPER_SPINNER_HTML"
+             file="../../../third_party/polymer/components-chromium/paper-spinner/paper-spinner.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_POLYMER_LAYOUT_HTML"
              file="../../../third_party/polymer/components-chromium/polymer/layout.html"
              type="chrome_html" />

@@ -24,7 +24,7 @@ base::string16 GetChromeDeviceType();
 // (e.g. IDS_CHROMEBOOK, IDS_CHROMEBOX).
 int GetChromeDeviceTypeResourceId();
 
-// Returns the name of the Chrome device type to pass to the MinuteMaid param
+// Returns the name of the Chrome device type to pass to the new Gaia flow param
 // 'chrometype' (returns chromebox, chromebase or chromebook).
 std::string GetChromeDeviceTypeString();
 
