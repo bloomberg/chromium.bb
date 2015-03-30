@@ -196,7 +196,7 @@ ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
 }
 
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
-  ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
+  ContentViewCore* content_view_core = manager_->GetContentViewCore();
   JNIEnv* env = AttachCurrentThread();
   return JavaObjectWeakGlobalRef(
       env,

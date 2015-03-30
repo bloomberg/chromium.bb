@@ -70,7 +70,7 @@ BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
   return new BrowserMediaPlayerManager(rfh, audio_monitor);
 }
 
-ContentViewCoreImpl* BrowserMediaPlayerManager::GetContentViewCore() const {
+ContentViewCore* BrowserMediaPlayerManager::GetContentViewCore() const {
   return ContentViewCoreImpl::FromWebContents(web_contents());
 }
 

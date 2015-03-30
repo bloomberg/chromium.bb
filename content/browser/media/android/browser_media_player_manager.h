@@ -13,6 +13,7 @@
 #include "content/browser/android/content_video_view.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_player_messages_enums_android.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
@@ -56,7 +57,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       RenderFrameHost* rfh,
       MediaPlayersObserver* audio_monitor);
 
-  ContentViewCoreImpl* GetContentViewCore() const;
+  ContentViewCore* GetContentViewCore() const;
 
   ~BrowserMediaPlayerManager() override;
 

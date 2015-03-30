@@ -8,7 +8,8 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/media/android/remote/record_cast_action.h"
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/RemoteMediaPlayerBridge_jni.h"
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_resource_getter.h"
@@ -492,7 +493,7 @@ bool RemoteMediaPlayerBridge::IsMediaPlayableRemotely() const {
 base::android::ScopedJavaLocalRef<jstring> RemoteMediaPlayerBridge::GetTitle(
     JNIEnv* env, jobject obj) {
   base::string16 title;
-  content::ContentViewCoreImpl* core =
+  content::ContentViewCore* core =
       static_cast<RemoteMediaPlayerManager*>(manager())->GetContentViewCore();
   if (core) {
     content::WebContents* contents = core->GetWebContents();

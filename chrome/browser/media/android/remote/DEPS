@@ -8,9 +8,4 @@ specific_include_rules = {
   "remote_media_player_manager\.cc": [
     "+content/common/media/media_player_messages_android.h",
   ],
-
-  # TODO(aberent): Fix layering violation crbug.com/396828
-  "remote_media_player_bridge\.cc": [
-    "+content/browser/android/content_view_core_impl.h"
-  ],
 }
