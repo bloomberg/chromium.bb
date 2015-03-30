@@ -21,6 +21,33 @@ namespace media {
 
 namespace {
 
+static const FakeVideoCaptureDevice::FakeVideoCaptureDeviceType
+kCaptureTypes[] = {
+  FakeVideoCaptureDevice::USING_OWN_BUFFERS,
+  FakeVideoCaptureDevice::USING_CLIENT_BUFFERS,
+  // TODO(mcasas): Add FakeVideoCaptureDevice::USING_GPU_MEMORY_BUFFERS when
+  // implemented.
+};
+
+// This class is a Client::Buffer that allocates and frees the requested |size|.
+class MockBuffer : public VideoCaptureDevice::Client::Buffer {
+ public:
+  MockBuffer(int buffer_id, size_t size)
+      : id_(buffer_id),
+        size_(size),
+        data_(new uint8[size_]) {}
+  int id() const override { return id_; }
+  void* data() const override { return static_cast<void*>(data_); }
+  size_t size() const override { return size_; }
+
+ private:
+  ~MockBuffer() override { delete[] data_; }
+
+  const int id_;
+  const size_t size_;
+  uint8* const data_;
+};
+
 class MockClient : public VideoCaptureDevice::Client {
  public:
   MOCK_METHOD9(OnIncomingCapturedYuvData,
@@ -33,28 +60,37 @@ class MockClient : public VideoCaptureDevice::Client {
                      const VideoCaptureFormat& frame_format,
                      int clockwise_rotation,
                      const base::TimeTicks& timestamp));
-  MOCK_METHOD2(ReserveOutputBuffer,
-               scoped_refptr<Buffer>(VideoFrame::Format format,
-                                     const gfx::Size& dimensions));
-  MOCK_METHOD3(OnIncomingCapturedVideoFrame,
-               void(const scoped_refptr<Buffer>& buffer,
-                    const scoped_refptr<media::VideoFrame>& frame,
-                    const base::TimeTicks& timestamp));
   MOCK_METHOD1(OnError, void(const std::string& reason));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
-      : main_thread_(base::MessageLoopProxy::current()), frame_cb_(frame_cb) {}
+      : frame_cb_(frame_cb) {}
 
+  // Client virtual method for capturing using Device Buffers.
   void OnIncomingCapturedData(const uint8* data,
                               int length,
                               const VideoCaptureFormat& format,
                               int rotation,
-                              const base::TimeTicks& timestamp) override {
-    main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
+                              const base::TimeTicks& timestamp) {
+    frame_cb_.Run(format);
+  }
+
+  // Virtual methods for capturing using Client's Buffers.
+  scoped_refptr<Buffer> ReserveOutputBuffer(VideoFrame::Format format,
+                                            const gfx::Size& dimensions) {
+    EXPECT_EQ(format, VideoFrame::I420);
+    EXPECT_GT(dimensions.GetArea(), 0);
+    return make_scoped_refptr(
+        new MockBuffer(0, VideoFrame::AllocationSize(format, dimensions)));
+  }
+  void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<Buffer>& buffer,
+      const scoped_refptr<media::VideoFrame>& frame,
+      const base::TimeTicks& timestamp) {
+    VideoCaptureFormat format(frame->natural_size(), 30.0, PIXEL_FORMAT_I420);
+    frame_cb_.Run(format);
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };
 
@@ -76,10 +112,10 @@ class DeviceEnumerationListener :
 
 }  // namespace
 
-class FakeVideoCaptureDeviceTest : public testing::Test {
+class FakeVideoCaptureDeviceTest
+    : public testing::TestWithParam<
+          FakeVideoCaptureDevice::FakeVideoCaptureDeviceType>{
  protected:
-  typedef VideoCaptureDevice::Client Client;
-
   FakeVideoCaptureDeviceTest()
       : loop_(new base::MessageLoop()),
         client_(new MockClient(
@@ -92,8 +128,7 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
   void SetUp() override {
     EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_,_,_,_,_,_,_,_,_))
                .Times(0);
-    EXPECT_CALL(*client_, ReserveOutputBuffer(_,_)).Times(0);
-    EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_)).Times(0);
+    EXPECT_CALL(*client_, OnError(_)).Times(0);
   }
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
@@ -121,36 +156,37 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
   VideoCaptureDevice::Names names_;
-  scoped_ptr<base::MessageLoop> loop_;
+  const scoped_ptr<base::MessageLoop> loop_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<MockClient> client_;
   scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
   VideoCaptureFormat last_format_;
-  scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
+  const scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
-TEST_F(FakeVideoCaptureDeviceTest, Capture) {
-  scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
-
+TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
+  const scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
   ASSERT_FALSE(names->empty());
 
-  scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names->front()));
+  scoped_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(GetParam()));
   ASSERT_TRUE(device);
-
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, client_.Pass());
+
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
   EXPECT_EQ(last_format().frame_size.height(), 480);
-  EXPECT_EQ(last_format().frame_rate, 30);
+  EXPECT_EQ(last_format().frame_rate, 30.0);
   device->StopAndDeAllocate();
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        FakeVideoCaptureDeviceTest,
+                        testing::ValuesIn(kCaptureTypes));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
@@ -164,57 +200,20 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
     EXPECT_EQ(supported_formats[0].pixel_format, PIXEL_FORMAT_I420);
-    EXPECT_GE(supported_formats[0].frame_rate, 20);
+    EXPECT_GE(supported_formats[0].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[1].frame_size.width(), 640);
     EXPECT_EQ(supported_formats[1].frame_size.height(), 480);
     EXPECT_EQ(supported_formats[1].pixel_format, PIXEL_FORMAT_I420);
-    EXPECT_GE(supported_formats[1].frame_rate, 20);
+    EXPECT_GE(supported_formats[1].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[2].frame_size.width(), 1280);
     EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
     EXPECT_EQ(supported_formats[2].pixel_format, PIXEL_FORMAT_I420);
-    EXPECT_GE(supported_formats[2].frame_rate, 20);
+    EXPECT_GE(supported_formats[2].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[3].frame_size.width(), 1920);
     EXPECT_EQ(supported_formats[3].frame_size.height(), 1080);
     EXPECT_EQ(supported_formats[3].pixel_format, PIXEL_FORMAT_I420);
-    EXPECT_GE(supported_formats[3].frame_rate, 20);
+    EXPECT_GE(supported_formats[3].frame_rate, 20.0);
   }
-}
-
-// Disabled, http://crbug.com/407061 .
-TEST_F(FakeVideoCaptureDeviceTest, DISABLED_CaptureVariableResolution) {
-  scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
-
-  VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(640, 480);
-  capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  capture_params.resolution_change_policy =
-      RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT;
-
-  ASSERT_FALSE(names->empty());
-
-  scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names->front()));
-  ASSERT_TRUE(device);
-
-  // Configure the FakeVideoCaptureDevice to use all its formats as roster.
-  VideoCaptureFormats formats;
-  video_capture_device_factory_->GetDeviceSupportedFormats(names->front(),
-                                                           &formats);
-  static_cast<FakeVideoCaptureDevice*>(device.get())->
-      PopulateVariableFormatsRoster(formats);
-
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
-  int action_count = 200;
-
-  device->AllocateAndStart(capture_params, client_.Pass());
-
-  // We set TimeWait to 200 action timeouts and this should be enough for at
-  // least action_count/kFakeCaptureCapabilityChangePeriod calls.
-  for (int i = 0; i < action_count; ++i) {
-    WaitForCapturedFrame();
-  }
-  device->StopAndDeAllocate();
 }
 
 };  // namespace media

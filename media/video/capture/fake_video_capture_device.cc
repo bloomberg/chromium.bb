@@ -18,61 +18,72 @@
 namespace media {
 
 static const int kFakeCaptureBeepCycle = 10;  // Visual beep every 0.5s.
-static const int kFakeCaptureCapabilityChangePeriod = 30;
 
-FakeVideoCaptureDevice::FakeVideoCaptureDevice()
-    : capture_thread_("CaptureThread"),
+void DrawPacman(bool use_argb,
+                uint8_t* const data,
+                int frame_count,
+                int frame_interval,
+                const gfx::Size& frame_size) {
+  // |kN32_SkColorType| stands for the appropriiate RGBA/BGRA format.
+  const SkColorType colorspace =
+      use_argb ? kN32_SkColorType : kAlpha_8_SkColorType;
+  const SkImageInfo info = SkImageInfo::Make(frame_size.width(),
+                                             frame_size.height(),
+                                             colorspace,
+                                             kOpaque_SkAlphaType);
+  SkBitmap bitmap;
+  bitmap.setInfo(info);
+  bitmap.setPixels(data);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  SkCanvas canvas(bitmap);
+
+  // Equalize Alpha_8 that has light green background while RGBA has white.
+  if (use_argb) {
+    const SkRect full_frame = SkRect::MakeWH(frame_size.width(),
+                                             frame_size.height());
+    paint.setARGB(255, 0, 127, 0);
+    canvas.drawRect(full_frame, paint);
+  }
+  paint.setColor(SK_ColorGREEN);
+
+  // Draw a sweeping circle to show an animation.
+  const int end_angle = (3 * kFakeCaptureBeepCycle * frame_count % 361);
+  const int radius = std::min(frame_size.width(), frame_size.height()) / 4;
+  const SkRect rect = SkRect::MakeXYWH(frame_size.width() / 2 - radius,
+                                       frame_size.height() / 2 - radius,
+                                       2 * radius,
+                                       2 * radius);
+  canvas.drawArc(rect, 0, end_angle, true, paint);
+
+  // Draw current time.
+  const int elapsed_ms = frame_interval * frame_count;
+  const int milliseconds = elapsed_ms % 1000;
+  const int seconds = (elapsed_ms / 1000) % 60;
+  const int minutes = (elapsed_ms / 1000 / 60) % 60;
+  const int hours = (elapsed_ms / 1000 / 60 / 60) % 60;
+
+  const std::string time_string = base::StringPrintf("%d:%02d:%02d:%03d %d",
+      hours, minutes, seconds, milliseconds, frame_count);
+  canvas.scale(3, 3);
+  canvas.drawText(time_string.data(), time_string.length(), 30, 20, paint);
+}
+
+FakeVideoCaptureDevice::FakeVideoCaptureDevice(
+    FakeVideoCaptureDeviceType device_type)
+    : device_type_(device_type),
       frame_count_(0),
-      format_roster_index_(0) {}
+      weak_factory_(this) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!capture_thread_.IsRunning());
 }
 
 void FakeVideoCaptureDevice::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (capture_thread_.IsRunning()) {
-    NOTREACHED();
-    return;
-  }
 
-  capture_thread_.Start();
-  capture_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoCaptureDevice::OnAllocateAndStart,
-                 base::Unretained(this),
-                 params,
-                 base::Passed(&client)));
-}
-
-void FakeVideoCaptureDevice::StopAndDeAllocate() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!capture_thread_.IsRunning()) {
-    NOTREACHED();
-    return;
-  }
-  capture_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoCaptureDevice::OnStopAndDeAllocate,
-                 base::Unretained(this)));
-  capture_thread_.Stop();
-}
-
-void FakeVideoCaptureDevice::PopulateVariableFormatsRoster(
-    const VideoCaptureFormats& formats) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!capture_thread_.IsRunning());
-  format_roster_ = formats;
-  format_roster_index_ = 0;
-}
-
-void FakeVideoCaptureDevice::OnAllocateAndStart(
-    const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   client_ = client.Pass();
 
   // Incoming |params| can be none of the supported formats, so we get the
@@ -80,7 +91,7 @@ void FakeVideoCaptureDevice::OnAllocateAndStart(
   // the supported ones, when http://crbug.com/309554 is verified.
   DCHECK_EQ(params.requested_format.pixel_format, PIXEL_FORMAT_I420);
   capture_format_.pixel_format = params.requested_format.pixel_format;
-  capture_format_.frame_rate = 30;
+  capture_format_.frame_rate = 30.0;
   if (params.requested_format.frame_size.width() > 1280)
       capture_format_.frame_size.SetSize(1920, 1080);
   else if (params.requested_format.frame_size.width() > 640)
@@ -89,78 +100,46 @@ void FakeVideoCaptureDevice::OnAllocateAndStart(
     capture_format_.frame_size.SetSize(640, 480);
   else
     capture_format_.frame_size.SetSize(320, 240);
-  const size_t fake_frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
-  fake_frame_.reset(new uint8[fake_frame_size]);
 
-  capture_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoCaptureDevice::OnCaptureTask,
-                 base::Unretained(this)));
+  switch (device_type_) {
+    case USING_OWN_BUFFERS:
+      fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
+          VideoFrame::I420, capture_format_.frame_size)]);
+      BeepAndScheduleNextCapture(
+          base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
+                     weak_factory_.GetWeakPtr()));
+      break;
+    case USING_CLIENT_BUFFERS:
+      BeepAndScheduleNextCapture(
+          base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
+                     weak_factory_.GetWeakPtr()));
+      break;
+    case USING_GPU_MEMORY_BUFFERS:
+      BeepAndScheduleNextCapture(
+          base::Bind(&FakeVideoCaptureDevice::CaptureUsingGpuMemoryBuffers,
+                     weak_factory_.GetWeakPtr()));
+      break;
+    default:
+      client_->OnError("Unknown Fake Video Capture Device type.");
+  }
 }
 
-void FakeVideoCaptureDevice::OnStopAndDeAllocate() {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
+void FakeVideoCaptureDevice::StopAndDeAllocate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   client_.reset();
 }
 
-void FakeVideoCaptureDevice::OnCaptureTask() {
-  if (!client_)
-    return;
-
+void FakeVideoCaptureDevice::CaptureUsingOwnBuffers() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   const size_t frame_size =
       VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
   memset(fake_frame_.get(), 0, frame_size);
 
-  SkImageInfo info = SkImageInfo::MakeA8(capture_format_.frame_size.width(),
-                                         capture_format_.frame_size.height());
-  SkBitmap bitmap;
-  bitmap.installPixels(info, fake_frame_.get(), info.width());
-  SkCanvas canvas(bitmap);
-
-  // Draw a sweeping circle to show an animation.
-  int radius = std::min(capture_format_.frame_size.width(),
-                        capture_format_.frame_size.height()) / 4;
-  SkRect rect =
-      SkRect::MakeXYWH(capture_format_.frame_size.width() / 2 - radius,
-                       capture_format_.frame_size.height() / 2 - radius,
-                       2 * radius,
-                       2 * radius);
-
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-
-  // Only Y plane is being drawn and this gives 50% grey on the Y
-  // plane. The result is a light green color in RGB space.
-  paint.setAlpha(128);
-
-  int end_angle = (frame_count_ % kFakeCaptureBeepCycle * 360) /
-      kFakeCaptureBeepCycle;
-  if (!end_angle)
-    end_angle = 360;
-  canvas.drawArc(rect, 0, end_angle, true, paint);
-
-  // Draw current time.
-  int elapsed_ms = kFakeCaptureTimeoutMs * frame_count_;
-  int milliseconds = elapsed_ms % 1000;
-  int seconds = (elapsed_ms / 1000) % 60;
-  int minutes = (elapsed_ms / 1000 / 60) % 60;
-  int hours = (elapsed_ms / 1000 / 60 / 60) % 60;
-
-  std::string time_string =
-      base::StringPrintf("%d:%02d:%02d:%03d %d", hours, minutes,
-                         seconds, milliseconds, frame_count_);
-  canvas.scale(3, 3);
-  canvas.drawText(time_string.data(), time_string.length(), 30, 20,
-                  paint);
-
-  if (frame_count_ % kFakeCaptureBeepCycle == 0) {
-    // Generate a synchronized beep sound if there is one audio input
-    // stream created.
-    FakeAudioInputStream::BeepOnce();
-  }
-
-  frame_count_++;
+  DrawPacman(false  /* use_argb */,
+             fake_frame_.get(),
+             frame_count_,
+             kFakeCapturePeriodMs,
+             capture_format_.frame_size);
 
   // Give the captured frame to the client.
   client_->OnIncomingCapturedData(fake_frame_.get(),
@@ -168,29 +147,68 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
                                   capture_format_,
                                   0,
                                   base::TimeTicks::Now());
-  if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&
-      format_roster_.size() > 0U) {
-    Reallocate();
-  }
-  // Reschedule next CaptureTask.
-  capture_thread_.message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoCaptureDevice::OnCaptureTask,
-                 base::Unretained(this)),
-      base::TimeDelta::FromMilliseconds(kFakeCaptureTimeoutMs));
+  BeepAndScheduleNextCapture(
+      base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void FakeVideoCaptureDevice::Reallocate() {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
-  capture_format_ =
-      format_roster_.at(++format_roster_index_ % format_roster_.size());
-  DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_I420);
-  DVLOG(3) << "Reallocating FakeVideoCaptureDevice, new capture resolution "
-           << capture_format_.frame_size.ToString();
+void FakeVideoCaptureDevice::CaptureUsingClientBuffers() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  const size_t fake_frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
-  fake_frame_.reset(new uint8[fake_frame_size]);
+  const scoped_refptr<VideoCaptureDevice::Client::Buffer> capture_buffer =
+      client_->ReserveOutputBuffer(VideoFrame::I420,
+                                   capture_format_.frame_size);
+  DLOG_IF(ERROR, !capture_buffer) << "Couldn't allocate Capture Buffer";
+  if (!capture_buffer)
+    return;
+
+  uint8_t* const data_ptr = static_cast<uint8_t*>(capture_buffer->data());
+  memset(data_ptr, 0, capture_buffer->size());
+  DCHECK(data_ptr) << "Buffer has NO backing memory";
+
+  DrawPacman(false  /* use_argb */,
+             data_ptr,
+             frame_count_,
+             kFakeCapturePeriodMs,
+             capture_format_.frame_size);
+
+  scoped_refptr<VideoFrame> video_frame =
+      VideoFrame::WrapExternalPackedMemory(
+          VideoFrame::I420,
+          capture_format_.frame_size,
+          gfx::Rect(capture_format_.frame_size),
+          capture_format_.frame_size,
+          static_cast<uint8*>(capture_buffer->data()),
+          capture_buffer->size(),
+          base::SharedMemory::NULLHandle(),
+          0,
+          base::TimeDelta(),
+          base::Closure());
+
+  // Give the captured frame to the client.
+  client_->OnIncomingCapturedVideoFrame(capture_buffer,
+                                        video_frame,
+                                        base::TimeTicks::Now());
+  BeepAndScheduleNextCapture(
+      base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void FakeVideoCaptureDevice::CaptureUsingGpuMemoryBuffers() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  NOTIMPLEMENTED();
+}
+
+void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(
+    const base::Closure& next_capture) {
+  // Generate a synchronized beep sound every so many frames.
+  if (frame_count_++ % kFakeCaptureBeepCycle == 0)
+    FakeAudioInputStream::BeepOnce();
+
+  // Reschedule next CaptureTask.
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE, next_capture,
+      base::TimeDelta::FromMilliseconds(kFakeCapturePeriodMs));
 }
 
 }  // namespace media

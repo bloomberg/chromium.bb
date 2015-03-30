@@ -12,6 +12,7 @@
 
 #include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "media/video/capture/video_capture_device.h"
@@ -20,46 +21,45 @@ namespace media {
 
 class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
-  static const int kFakeCaptureTimeoutMs = 50;
+  enum FakeVideoCaptureDeviceType {
+    USING_OWN_BUFFERS,
+    USING_CLIENT_BUFFERS,
+    USING_GPU_MEMORY_BUFFERS,
+  };
 
-  FakeVideoCaptureDevice();
+  static int FakeCapturePeriodMs() { return kFakeCapturePeriodMs; }
+
+  explicit FakeVideoCaptureDevice(FakeVideoCaptureDeviceType device_type);
   ~FakeVideoCaptureDevice() override;
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+                        scoped_ptr<Client> client) override;
   void StopAndDeAllocate() override;
 
-  // Sets the formats to use sequentially when the device is configured as
-  // variable capture resolution. Works only before AllocateAndStart() or
-  // after StopAndDeallocate().
-  void PopulateVariableFormatsRoster(const VideoCaptureFormats& formats);
-
  private:
-  // Called on the |capture_thread_| only.
-  void OnAllocateAndStart(const VideoCaptureParams& params,
-                          scoped_ptr<Client> client);
-  void OnStopAndDeAllocate();
-  void OnCaptureTask();
-  void Reallocate();
+  static const int kFakeCapturePeriodMs = 50;
 
-  // |thread_checker_| is used to check that destructor, AllocateAndStart() and
-  // StopAndDeAllocate() are called in the correct thread that owns the object.
+  void CaptureUsingOwnBuffers();
+  void CaptureUsingClientBuffers();
+  void CaptureUsingGpuMemoryBuffers();
+  void BeepAndScheduleNextCapture(const base::Closure& next_capture);
+
+  // |thread_checker_| is used to check that all methods are called in the
+  // correct thread that owns the object.
   base::ThreadChecker thread_checker_;
 
-  base::Thread capture_thread_;
-  // The following members are only used on the |capture_thread_|.
+  const FakeVideoCaptureDeviceType device_type_;
+
   scoped_ptr<VideoCaptureDevice::Client> client_;
+  // |fake_frame_| is used for capturing on Own Buffers.
   scoped_ptr<uint8[]> fake_frame_;
   int frame_count_;
   VideoCaptureFormat capture_format_;
 
-  // When the device is allowed to change resolution, this vector holds the
-  // available ones, used sequentially restarting at the end. These two members
-  // are initialised in PopulateFormatRoster() before |capture_thread_| is
-  // running and are subsequently read-only in that thread.
-  std::vector<VideoCaptureFormat> format_roster_;
-  int format_roster_index_;
+  // FakeVideoCaptureDevice post tasks to itself for frame construction and
+  // needs to deal with asynchronous StopAndDeallocate().
+  base::WeakPtrFactory<FakeVideoCaptureDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureDevice);
 };

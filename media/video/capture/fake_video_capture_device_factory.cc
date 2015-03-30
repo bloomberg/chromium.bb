@@ -4,7 +4,10 @@
 
 #include "media/video/capture/fake_video_capture_device_factory.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "media/base/media_switches.h"
 #include "media/video/capture/fake_video_capture_device.h"
 
 namespace media {
@@ -16,10 +19,24 @@ FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
 scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::string option = base::CommandLine::ForCurrentProcess()->
+     GetSwitchValueASCII(switches::kUseFakeDeviceForMediaStream);
+
+  FakeVideoCaptureDevice::FakeVideoCaptureDeviceType fake_vcd_type;
+  if (option.empty())
+    fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS;
+  else if (base:: strcasecmp(option.c_str(), "gpu") == 0)
+    fake_vcd_type = FakeVideoCaptureDevice::USING_GPU_MEMORY_BUFFERS;
+  else
+    fake_vcd_type = FakeVideoCaptureDevice::USING_CLIENT_BUFFERS;
+
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
-    if (device_name.id().compare(possible_id) == 0)
-      return scoped_ptr<VideoCaptureDevice>(new FakeVideoCaptureDevice());
+    if (device_name.id().compare(possible_id) == 0) {
+      return scoped_ptr<VideoCaptureDevice>(
+          new FakeVideoCaptureDevice(fake_vcd_type));
+    }
   }
   return scoped_ptr<VideoCaptureDevice>();
 }
@@ -49,7 +66,7 @@ void FakeVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
     const VideoCaptureDevice::Name& device,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const int frame_rate = 1000 / FakeVideoCaptureDevice::kFakeCaptureTimeoutMs;
+  const int frame_rate = 1000 / FakeVideoCaptureDevice::FakeCapturePeriodMs();
   const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
                                        gfx::Size(640, 480),
                                        gfx::Size(1280, 720),

@@ -33,12 +33,11 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   ~VideoCaptureDeviceClient() override;
 
   // VideoCaptureDevice::Client implementation.
-  void OnIncomingCapturedData(
-      const uint8* data,
-      int length,
-      const media::VideoCaptureFormat& frame_format,
-      int rotation,
-      const base::TimeTicks& timestamp) override;
+  void OnIncomingCapturedData(const uint8* data,
+                              int length,
+                              const media::VideoCaptureFormat& frame_format,
+                              int rotation,
+                              const base::TimeTicks& timestamp) override;
   void OnIncomingCapturedYuvData(const uint8* y_data,
                                  const uint8* u_data,
                                  const uint8* v_data,
