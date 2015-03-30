@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/cocoa/base_view.h"
+#include "base/mac/mac_util.h"
 
 NSString* kViewDidBecomeFirstResponder =
     @"Chromium.kViewDidBecomeFirstResponder";
@@ -51,14 +52,18 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   }
 }
 
-- (void)viewDidEndLiveResize {
-  [super viewDidEndLiveResize];
+- (void)updateTrackingAreas {
+  [super updateTrackingAreas];
 
   // NSTrackingInVisibleRect doesn't work correctly with Lion's window resizing,
   // http://crbug.com/176725 / http://openradar.appspot.com/radar?id=2773401 .
   // Work around it by reinstalling the tracking area after window resize.
-  [self disableTracking];
-  [self enableTracking];
+  // This AppKit bug is fixed on Yosemite, so we only apply this workaround on
+  // 10.7 to 10.9.
+  if (base::mac::IsOSMavericksOrEarlier() && base::mac::IsOSLionOrLater()) {
+    [self disableTracking];
+    [self enableTracking];
+  }
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
