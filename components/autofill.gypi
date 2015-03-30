@@ -125,6 +125,8 @@
         'autofill/core/browser/autofill_download_manager.cc',
         'autofill/core/browser/autofill_download_manager.h',
         'autofill/core/browser/autofill_driver.h',
+        'autofill/core/browser/autofill_experiments.cc',
+        'autofill/core/browser/autofill_experiments.h',
         'autofill/core/browser/autofill_external_delegate.cc',
         'autofill/core/browser/autofill_external_delegate.h',
         'autofill/core/browser/autofill_field.cc',
@@ -231,6 +233,14 @@
         ],
       },
       'conditions': [
+        ['desktop_linux==1', {
+          # Controls whether Wallet cards can be saved to the local instance of
+          # chrome. TODO(estade): set to 0 for Linux before M43 branch,
+          # currently defined on Linux for ease of testing.
+          'defines': [ 'ENABLE_SAVE_WALLET_CARDS_LOCALLY=1' ],
+        }, {
+          'defines': [ 'ENABLE_SAVE_WALLET_CARDS_LOCALLY=1' ],
+        }],
         ['autofill_enable_sync == 1', {
           'defines': [
             'AUTOFILL_ENABLE_SYNC',

@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -320,6 +321,11 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       } else {
         ReceiveLoadedDbValues(h, result, &pending_server_creditcards_query_,
                               &server_credit_cards_);
+
+        // If the user has a saved unmasked server card and the experiment is
+        // disabled, force mask all cards back to the unsaved state.
+        if (!OfferStoreUnmaskedCards())
+          ResetFullServerCards();
       }
       break;
     default:
@@ -691,8 +697,8 @@ void PersonalDataManager::ResetFullServerCard(const std::string& guid) {
 
 void PersonalDataManager::ResetFullServerCards() {
   for (const CreditCard* card : server_credit_cards_) {
-    CreditCard card_copy = *card;
-    if (card_copy.record_type() == CreditCard::FULL_SERVER_CARD) {
+    if (card->record_type() == CreditCard::FULL_SERVER_CARD) {
+      CreditCard card_copy = *card;
       card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
       card_copy.SetNumber(card->LastFourDigits());
       UpdateServerCreditCard(card_copy);
@@ -976,8 +982,7 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  DCHECK(pref_service_);
-  return pref_service_->GetBoolean(prefs::kAutofillEnabled);
+  return ::autofill::IsAutofillEnabled(pref_service_);
 }
 
 std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {

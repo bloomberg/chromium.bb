@@ -14437,6 +14437,12 @@ Do you accept?
       <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION" desc="Description for the flag to enable the google profile information">
         Enables using Google information to populate the profile name and icon in the avatar menu.
       </message>
+      <message name="IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
+        Enable Wallet card saving checkbox
+      </message>
+      <message name="IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
+        Show the checkbox to offer local saving of a Wallet credit card downloaded from the server.
+      </message>
       <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME" desc="Name of the flag to make pages which failed to load while offline auto-reload">
         Enable Offline Auto-Reload Mode
       </message>

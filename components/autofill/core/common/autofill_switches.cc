@@ -15,6 +15,12 @@ const char kDisableCreditCardScan[]         = "disable-credit-card-scan";
 // selection, rather than autofilling on page load.
 const char kDisableFillOnAccountSelect[]    = "disable-fill-on-account-select";
 
+// Force hiding the local save checkbox in the autofill dialog box for getting
+// the full credit card number for a wallet card. The card will never be stored
+// locally.
+const char kDisableOfferStoreUnmaskedWalletCards[] =
+    "disable-offer-store-unmasked-wallet-cards";
+
 // Disables password generation when we detect that the user is going through
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
@@ -35,6 +41,11 @@ const char kEnableFillOnAccountSelect[]     = "enable-fill-on-account-select";
 // fields.
 const char kEnableFillOnAccountSelectNoHighlighting[] =
     "enable-fill-on-account-select-no-highlighting";
+
+// Force showing the local save checkbox in the autofill dialog box for getting
+// the full credit card number for a wallet card.
+const char kEnableOfferStoreUnmaskedWalletCards[] =
+    "enable-offer-store-unmasked-wallet-cards";
 
 // Enables password generation when we detect that the user is going through
 // account creation.

@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
@@ -814,7 +815,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return client_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  return ::autofill::IsAutofillEnabled(client_->GetPrefs());
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {

@@ -1230,6 +1230,15 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kMaxTilesForInterestAreaChoices)
   },
   {
+    "enable-offer-store-unmasked-wallet-cards",
+    IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS,
+    IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(
+        autofill::switches::kEnableOfferStoreUnmaskedWalletCards,
+        autofill::switches::kDisableOfferStoreUnmaskedWalletCards)
+  },
+  {
     "enable-offline-auto-reload",
     IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME,
     IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION,

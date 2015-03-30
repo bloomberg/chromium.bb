@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
@@ -211,12 +212,11 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
 }
 
 bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
-#if defined(ENABLE_SAVE_WALLET_CARDS_LOCALLY)
-  return !Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-              ->IsOffTheRecord();
-#else
-  return false;
-#endif
+  // Never offer to save for incognito.
+  if (Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+          ->IsOffTheRecord())
+    return false;
+  return autofill::OfferStoreUnmaskedCards();
 }
 
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
