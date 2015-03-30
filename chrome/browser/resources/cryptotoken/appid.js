@@ -14,9 +14,31 @@
  */
 function getOriginsFromJson(text) {
   try {
-    var urls = JSON.parse(text);
+    var urls, i;
+    var appIdData = JSON.parse(text);
+    if (Array.isArray(appIdData)) {
+      // Older format where it is a simple list of facets
+      urls = appIdData;
+    } else {
+      var trustedFacets = appIdData['trustedFacets'];
+      if (trustedFacets) {
+        var versionBlock;
+        for (i = 0; versionBlock = trustedFacets[i]; i++) {
+          if (versionBlock['version'] &&
+              versionBlock['version']['major'] == 1 &&
+              versionBlock['version']['minor'] == 0) {
+            urls = versionBlock['ids'];
+            break;
+          }
+        }
+      }
+      if (typeof urls == 'undefined') {
+        throw Error('Could not find trustedFacets for version 1.0');
+      }
+    }
     var origins = {};
-    for (var i = 0, url; url = urls[i]; i++) {
+    var url;
+    for (i = 0; url = urls[i]; i++) {
       var origin = getOriginFromUrl(url);
       if (origin) {
         origins[origin] = origin;
@@ -24,7 +46,7 @@ function getOriginsFromJson(text) {
     }
     return Object.keys(origins);
   } catch (e) {
-    console.log(UTIL_fmt('could not parse ' + text));
+    console.error(UTIL_fmt('could not parse ' + text));
     return [];
   }
 }

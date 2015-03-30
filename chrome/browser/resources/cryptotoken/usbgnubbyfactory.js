@@ -24,11 +24,13 @@ function UsbGnubbyFactory(gnubbies) {
  * @param {GnubbyDeviceId} which The device to open.
  * @param {boolean} forEnroll Whether this gnubby is being opened for enrolling.
  * @param {FactoryOpenCallback} cb Called with result of opening the gnubby.
- * @param {string=} logMsgUrl the url to post log messages to
+ * @param {string=} opt_appIdHash The base64-encoded hash of the app id for
+ *     which the gnubby being opened.
+ * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @override
  */
 UsbGnubbyFactory.prototype.openGnubby =
-    function(which, forEnroll, cb, logMsgUrl) {
+    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl) {
   var gnubby = new Gnubby();
   gnubby.open(which, function(rc) {
     if (rc) {

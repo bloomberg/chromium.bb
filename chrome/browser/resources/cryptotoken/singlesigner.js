@@ -104,21 +104,6 @@ SingleGnubbySigner.prototype.getDeviceId = function() {
 };
 
 /**
- * Attempts to open this signer's gnubby, if it's not already open.
- * (This is implicitly done by addChallenges.)
- */
-SingleGnubbySigner.prototype.open = function() {
-  if (this.state_ == SingleGnubbySigner.State.INIT) {
-    this.state_ = SingleGnubbySigner.State.OPENING;
-    DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
-        this.gnubbyId_,
-        this.forEnroll_,
-        this.openCallback_.bind(this),
-        this.logMsgUrl_);
-  }
-};
-
-/**
  * Closes this signer's gnubby, if it's held.
  */
 SingleGnubbySigner.prototype.close = function() {
@@ -158,7 +143,7 @@ SingleGnubbySigner.prototype.doSign = function(challenges) {
 
   switch (this.state_) {
     case SingleGnubbySigner.State.INIT:
-      this.open();
+      this.open_();
       break;
     case SingleGnubbySigner.State.OPENING:
       // The open has already commenced, so accept the challenges, but don't do
@@ -186,6 +171,27 @@ SingleGnubbySigner.prototype.doSign = function(challenges) {
       return false;
   }
   return true;
+};
+
+/**
+ * Attempts to open this signer's gnubby, if it's not already open.
+ * @private
+ */
+SingleGnubbySigner.prototype.open_ = function() {
+  var appIdHash;
+  if (this.challenges_.length) {
+    // Assume the first challenge's appId is representative of all of them.
+    appIdHash = B64_encode(this.challenges_[0].appIdHash);
+  }
+  if (this.state_ == SingleGnubbySigner.State.INIT) {
+    this.state_ = SingleGnubbySigner.State.OPENING;
+    DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
+        this.gnubbyId_,
+        this.forEnroll_,
+        this.openCallback_.bind(this),
+        appIdHash,
+        this.logMsgUrl_);
+  }
 };
 
 /**
@@ -326,6 +332,17 @@ SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
 };
 
 /**
+ * @param {number} code The result of a sign operation.
+ * @return {boolean} Whether the error indicates the key handle is invalid
+ *     for this gnubby.
+ */
+SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle = function(code) {
+  return (code == DeviceStatusCodes.WRONG_DATA_STATUS ||
+      code == DeviceStatusCodes.WRONG_LENGTH_STATUS ||
+      code == DeviceStatusCodes.INVALID_DATA_STATUS);
+};
+
+/**
  * Called with the result of a single sign operation.
  * @param {number} challengeIndex the index of the challenge just attempted
  * @param {number} code the result of the sign operation
@@ -342,10 +359,9 @@ SingleGnubbySigner.prototype.signCallback_ =
     return;
   }
 
-  // Cache wrong data or wrong length results, re-asking the gnubby to sign it
+  // Cache certain idempotent errors, re-asking the gnubby to sign it
   // won't produce different results.
-  if (code == DeviceStatusCodes.WRONG_DATA_STATUS ||
-      code == DeviceStatusCodes.WRONG_LENGTH_STATUS) {
+  if (SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle(code)) {
     if (challengeIndex < this.challenges_.length) {
       var challenge = this.challenges_[challengeIndex];
       if (!this.cachedError_.hasOwnProperty(challenge.keyHandle)) {
@@ -390,6 +406,7 @@ SingleGnubbySigner.prototype.signCallback_ =
 
     case DeviceStatusCodes.WRONG_DATA_STATUS:
     case DeviceStatusCodes.WRONG_LENGTH_STATUS:
+    case DeviceStatusCodes.INVALID_DATA_STATUS:
       if (this.challengeIndex_ < this.challenges_.length - 1) {
         this.doSign_(++this.challengeIndex_);
       } else if (this.forEnroll_) {
