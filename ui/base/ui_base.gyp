@@ -579,6 +579,7 @@
           ],
           'dependencies': [
             '../../cc/cc.gyp:cc',
+            '../android/ui_android.gyp:ui_java',
             'ui_base_jni_headers',
           ],
           'link_settings': {
@@ -586,11 +587,6 @@
               '-ljnigraphics',
             ],
           },
-        }],
-        ['OS=="android" and android_webview_build==0', {
-          'dependencies': [
-            '../android/ui_android.gyp:ui_java',
-          ],
         }],
         ['OS=="android" and use_aura==0', {
           'sources!': [

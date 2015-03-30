@@ -414,10 +414,9 @@ component("base") {
       "cursor/cursor_loader_win.h",
     ]
     deps += [ "//third_party/wtl" ]
-    cflags = [
-      "/wd4324",  # Structure was padded due to __declspec(align()), which is
-                  # uninteresting.
-    ]
+    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()), which is
+                            # uninteresting.
+
     ldflags = [
       "/DELAYLOAD:d2d1.dll",
       "/DELAYLOAD:d3d10_1.dll",
@@ -532,13 +531,10 @@ component("base") {
     deps += [
       "//cc",
       ":ui_base_jni_headers",
+      "//ui/android:ui_java",
     ]
 
     libs += [ "jnigraphics" ]
-  }
-
-  if (is_android && is_android_webview_build) {
-    deps += [ "//ui/android:ui_java" ]
   }
 
   if (is_android && !use_aura) {

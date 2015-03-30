@@ -55,14 +55,11 @@ component("shell_dialogs") {
   if (is_android) {
     deps += [
       "//ui/android",
+      "//ui/android:ui_java",
       "//ui/base:ui_base_jni_headers",
     ]
     include_dirs = [ "$root_gen_dir/ui" ]
     libs = [ "jnigraphics" ]
-
-    if (!is_android_webview_build) {
-      deps += [ "//ui/android:ui_java" ]
-    }
   }
 
   if (is_win) {

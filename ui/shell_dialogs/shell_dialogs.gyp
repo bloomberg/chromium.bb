@@ -61,6 +61,7 @@
           {
             'dependencies': [
               '../android/ui_android.gyp:ui_android',
+              '../android/ui_android.gyp:ui_java',
               '../base/ui_base.gyp:ui_base_jni_headers',
             ],
             'include_dirs': [
@@ -71,13 +72,6 @@
                 '-ljnigraphics',
               ],
             },
-          }
-        ],
-        ['OS=="android" and android_webview_build==0',
-          {
-            'dependencies': [
-              '../android/ui_android.gyp:ui_java',
-            ],
           }
         ],
         ['OS=="win"',

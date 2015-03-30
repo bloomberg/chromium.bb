@@ -232,7 +232,10 @@ component("gl") {
 
     libs = [ "android" ]
 
-    deps += [ ":gl_jni_headers" ]
+    deps += [
+      ":gl_jni_headers",
+      "//ui/android:ui_java",
+    ]
   }
   if (use_ozone) {
     sources += [
@@ -246,10 +249,6 @@ component("gl") {
       "//ui/ozone",
       "//ui/ozone:ozone_base",
     ]
-  }
-
-  if (is_android && !is_android_webview_build) {
-    deps += [ "//ui/android:ui_java" ]
   }
 }
 

@@ -360,6 +360,7 @@
           ],
           'dependencies': [
             'gfx_jni_headers',
+            '<(DEPTH)/base/base.gyp:base_java',
           ],
           'link_settings': {
             'libraries': [
@@ -382,11 +383,6 @@
         ['OS=="android" and use_aura==1', {
           'sources!': [
             'screen_android.cc',
-          ],
-        }],
-        ['OS=="android" and android_webview_build==0', {
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base_java',
           ],
         }],
         ['OS=="android" or OS=="ios"', {

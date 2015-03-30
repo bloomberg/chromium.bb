@@ -236,6 +236,7 @@
         ['OS=="android"', {
           'dependencies': [
             'gl_jni_headers',
+            '../android/ui_android.gyp:ui_java',
           ],
           'sources': [
             'gl_image_surface_texture.cc',
@@ -261,11 +262,6 @@
           'dependencies': [
             '../ozone/ozone.gyp:ozone',
             '../ozone/ozone.gyp:ozone_base',
-          ],
-        }],
-        ['OS=="android" and android_webview_build==0', {
-          'dependencies': [
-            '../android/ui_android.gyp:ui_java',
           ],
         }],
       ],

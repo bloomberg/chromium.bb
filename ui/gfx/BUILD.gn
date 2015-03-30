@@ -289,16 +289,15 @@ component("gfx") {
       sources -= [ "path.cc" ]
     }
 
-    if (!is_android_webview_build) {
-      deps += [ "//base:base_java" ]
-    }
-
     if (!is_debug) {
       configs -= [ "//build/config/compiler:optimize" ]
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
-    deps += [ ":gfx_jni_headers" ]
+    deps += [
+      ":gfx_jni_headers",
+      "//base:base_java",
+    ]
     libs = [
       "android",
       "jnigraphics",
