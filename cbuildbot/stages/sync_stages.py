@@ -1442,7 +1442,7 @@ class PreCQLauncherStage(SyncStage):
       self._ProcessExpiry(c, v[0], v[1], pool, current_db_time)
 
     # Submit changes that are ready to submit, if we can.
-    if tree_status.IsTreeOpen():
+    if tree_status.IsTreeOpen(throttled_ok=True):
       pool.SubmitNonManifestChanges(check_tree_open=False,
                                     reason=constants.STRATEGY_NONMANIFEST)
       pool.SubmitChanges(will_submit, check_tree_open=False,
