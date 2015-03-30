@@ -151,13 +151,7 @@
         <include name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_PIEX_LOADER_JS" file="image_loader/piex_loader.js" flattenhtml="true" type="BINDATA" />
         <!-- Internal resources. -->
-        <if expr="not _google_chrome">
-          <include name="IDR_IMAGE_LOADER_PIEX_LOADER_PNACL" file="image_loader/piex/piex.pexe.txt" type="BINDATA" />
-        </if>
-        <if expr="_google_chrome">
-          <!-- This entry overrides IDR_IMAGE_LOADER_PIEX_LOADER_PNACL with content of ../internal/piex/piex.pexe. -->
-          <include name="IDR_IMAGE_LOADER_PIEX_LOADER_PNACL" file="internal/piex/piex.pexe" type="BINDATA" />
-        </if>
+        <include name="IDR_IMAGE_LOADER_PIEX_LOADER_PNACL" file="image_loader/piex/piex.pexe.txt" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_PIEX_LOADER_MANIFEST" file="image_loader/piex/piex.nmf.txt" type="BINDATA" />
       </if>
     </includes>
