@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_udp_socket.idl modified Fri Feb 20 20:28:39 2015.
+// From ppb_udp_socket.idl modified Fri Mar 13 17:49:57 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -87,7 +87,7 @@ int32_t SetOption_1_0(PP_Resource udp_socket,
                       PP_UDPSocket_Option name,
                       struct PP_Var value,
                       struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket::SetOption()";
+  VLOG(4) << "PPB_UDPSocket::SetOption_1_0()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -99,7 +99,7 @@ int32_t SetOption_1_1(PP_Resource udp_socket,
                       PP_UDPSocket_Option name,
                       struct PP_Var value,
                       struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket::SetOption()";
+  VLOG(4) << "PPB_UDPSocket::SetOption_1_1()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_file_chooser_dev.idl modified Mon May  6 10:11:29 2013.
+// From dev/ppb_file_chooser_dev.idl modified Fri Feb  7 08:29:41 2014.
 
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -34,7 +34,7 @@ PP_Bool IsFileChooser(PP_Resource resource) {
 }
 
 int32_t Show_0_5(PP_Resource chooser, struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_FileChooser_Dev::Show()";
+  VLOG(4) << "PPB_FileChooser_Dev::Show_0_5()";
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();

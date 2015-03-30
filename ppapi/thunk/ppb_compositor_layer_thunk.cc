@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_compositor_layer.idl modified Thu Sep 18 11:36:39 2014.
+// From ppb_compositor_layer.idl modified Thu Jan 29 16:28:15 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -41,7 +41,7 @@ int32_t SetTexture_0_1(PP_Resource layer,
                        uint32_t texture,
                        const struct PP_Size* size,
                        struct PP_CompletionCallback cc) {
-  VLOG(4) << "PPB_CompositorLayer::SetTexture()";
+  VLOG(4) << "PPB_CompositorLayer::SetTexture_0_1()";
   EnterResource<PPB_CompositorLayer_API> enter(layer, cc, true);
   if (enter.failed())
     return enter.retval();

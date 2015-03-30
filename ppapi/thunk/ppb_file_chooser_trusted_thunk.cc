@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From trusted/ppb_file_chooser_trusted.idl modified Mon May  6 10:11:29 2013.
+// From trusted/ppb_file_chooser_trusted.idl modified Fri Feb  7 08:29:41 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -21,7 +21,7 @@ int32_t ShowWithoutUserGesture_0_5(PP_Resource chooser,
                                    PP_Bool save_as,
                                    struct PP_Var suggested_file_name,
                                    struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_FileChooserTrusted::ShowWithoutUserGesture()";
+  VLOG(4) << "PPB_FileChooserTrusted::ShowWithoutUserGesture_0_5()";
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();

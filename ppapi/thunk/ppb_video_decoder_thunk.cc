@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_video_decoder.idl modified Fri Nov  7 14:49:08 2014.
+// From ppb_video_decoder.idl modified Thu Jan 29 16:28:15 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -36,7 +36,7 @@ int32_t Initialize_0_1(PP_Resource video_decoder,
                        PP_VideoProfile profile,
                        PP_Bool allow_software_fallback,
                        struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_VideoDecoder::Initialize()";
+  VLOG(4) << "PPB_VideoDecoder::Initialize_0_1()";
   EnterResource<PPB_VideoDecoder_API> enter(video_decoder, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -73,7 +73,7 @@ int32_t Decode(PP_Resource video_decoder,
 int32_t GetPicture_0_1(PP_Resource video_decoder,
                        struct PP_VideoPicture_0_1* picture,
                        struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_VideoDecoder::GetPicture()";
+  VLOG(4) << "PPB_VideoDecoder::GetPicture_0_1()";
   EnterResource<PPB_VideoDecoder_API> enter(video_decoder, callback, true);
   if (enter.failed())
     return enter.retval();

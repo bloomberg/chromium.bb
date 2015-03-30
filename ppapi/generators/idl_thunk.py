@@ -360,7 +360,9 @@ def DefineMember(filenode, node, member, release, include_version, meta):
   """
   cgen = CGen()
   rtype, name, arrays, args = cgen.GetComponents(member, release, 'return')
-  log_body = '\"%s::%s()\";' % (node.GetName(), member.GetName())
+  log_body = '\"%s::%s()\";' % (node.GetName(),
+                                cgen.GetStructName(member, release,
+                                                   include_version))
   if len(log_body) > 69:  # Prevent lines over 80 characters.
     body = 'VLOG(4) <<\n'
     body += '    %s\n' % log_body
