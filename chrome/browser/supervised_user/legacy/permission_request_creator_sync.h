@@ -35,6 +35,7 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
                                     const SuccessCallback& callback) override;
 
  private:
+  // Note: Doesn't escape |data|. If you need it escaped, do it yourself!
   void CreateRequest(const std::string& prefix,
                      const std::string& data,
                      const SuccessCallback& callback);
