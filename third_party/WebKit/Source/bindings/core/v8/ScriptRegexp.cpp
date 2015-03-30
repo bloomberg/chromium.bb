@@ -40,7 +40,8 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Context::Scope contextScope(V8PerIsolateData::from(isolate)->ensureScriptRegexpContext());
+    v8::Local<v8::Context> context = V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
+    v8::Context::Scope contextScope(context);
     v8::TryCatch tryCatch;
 
     unsigned flags = v8::RegExp::kNone;
@@ -50,7 +51,7 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
         flags |= v8::RegExp::kMultiline;
 
     v8::Local<v8::RegExp> regex;
-    if (v8::RegExp::New(isolate->GetCurrentContext(), v8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags)).ToLocal(&regex))
+    if (v8::RegExp::New(context, v8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags)).ToLocal(&regex))
         m_regex.set(isolate, regex);
 }
 
@@ -70,13 +71,16 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Context::Scope contextScope(V8PerIsolateData::from(isolate)->ensureScriptRegexpContext());
+    v8::Local<v8::Context> context = V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
+    v8::Context::Scope contextScope(context);
     v8::TryCatch tryCatch;
 
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
-    v8::Local<v8::Function> exec = regex->Get(v8AtomicString(isolate, "exec")).As<v8::Function>();
+    v8::Local<v8::Value> exec;
+    if (!regex->Get(context, v8AtomicString(isolate, "exec")).ToLocal(&exec))
+        return -1;
     v8::Local<v8::Value> argv[] = { v8String(isolate, string.substring(startFrom)) };
-    v8::Local<v8::Value> returnValue = V8ScriptRunner::callInternalFunction(exec, regex, WTF_ARRAY_LENGTH(argv), argv, isolate);
+    v8::Local<v8::Value> returnValue = V8ScriptRunner::callInternalFunction(exec.As<v8::Function>(), regex, WTF_ARRAY_LENGTH(argv), argv, isolate);
 
     if (tryCatch.HasCaught())
         return -1;
@@ -93,13 +97,17 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
         return -1;
 
     v8::Local<v8::Array> result = returnValue.As<v8::Array>();
-    int matchOffset = result->Get(v8AtomicString(isolate, "index"))->ToInt32(isolate)->Value();
+    v8::Local<v8::Value> matchOffset;
+    if (!result->Get(context, v8AtomicString(isolate, "index")).ToLocal(&matchOffset))
+        return -1;
     if (matchLength) {
-        v8::Local<v8::String> match = result->Get(0).As<v8::String>();
-        *matchLength = match->Length();
+        v8::Local<v8::Value> match;
+        if (!result->Get(context, 0).ToLocal(&match))
+            return -1;
+        *matchLength = match.As<v8::String>()->Length();
     }
 
-    return matchOffset + startFrom;
+    return matchOffset.As<v8::Int32>()->Value() + startFrom;
 }
 
 } // namespace blink
