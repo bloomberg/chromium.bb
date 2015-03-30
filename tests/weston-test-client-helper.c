@@ -272,6 +272,71 @@ static const struct wl_keyboard_listener keyboard_listener = {
 };
 
 static void
+touch_handle_down(void *data, struct wl_touch *wl_touch,
+		  uint32_t serial, uint32_t time, struct wl_surface *surface,
+		  int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
+{
+	struct touch *touch = data;
+
+	touch->down_x = wl_fixed_to_int(x_w);
+	touch->down_y = wl_fixed_to_int(y_w);
+	touch->id = id;
+
+	fprintf(stderr, "test-client: got touch down %d %d, surf: %p, id: %d\n",
+		touch->down_x, touch->down_y, surface, id);
+}
+
+static void
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+		uint32_t serial, uint32_t time, int32_t id)
+{
+	struct touch *touch = data;
+	touch->up_id = id;
+
+	fprintf(stderr, "test-client: got touch up, id: %d\n", id);
+}
+
+static void
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+		    uint32_t time, int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
+{
+	struct touch *touch = data;
+	touch->x = wl_fixed_to_int(x_w);
+	touch->y = wl_fixed_to_int(y_w);
+
+	fprintf(stderr, "test-client: got touch motion, %d %d, id: %d\n",
+		touch->x, touch->y, id);
+}
+
+static void
+touch_handle_frame(void *data, struct wl_touch *wl_touch)
+{
+	struct touch *touch = data;
+
+	++touch->frame_no;
+
+	fprintf(stderr, "test-client: got touch frame (%d)\n", touch->frame_no);
+}
+
+static void
+touch_handle_cancel(void *data, struct wl_touch *wl_touch)
+{
+	struct touch *touch = data;
+
+	++touch->cancel_no;
+
+	fprintf(stderr, "test-client: got touch cancel (%d)\n", touch->cancel_no);
+}
+
+static const struct wl_touch_listener touch_listener = {
+	touch_handle_down,
+	touch_handle_up,
+	touch_handle_motion,
+	touch_handle_frame,
+	touch_handle_cancel,
+};
+
+static void
 surface_enter(void *data,
 	      struct wl_surface *wl_surface, struct wl_output *output)
 {
@@ -376,6 +441,7 @@ input_update_devices(struct input *input)
 {
 	struct pointer *pointer;
 	struct keyboard *keyboard;
+	struct touch *touch;
 
 	struct wl_seat *seat = input->wl_seat;
 	enum wl_seat_capability caps = input->caps;
@@ -404,6 +470,19 @@ input_update_devices(struct input *input)
 		wl_keyboard_destroy(input->keyboard->wl_keyboard);
 		free(input->keyboard);
 		input->keyboard = NULL;
+	}
+
+	if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {
+		touch = xzalloc(sizeof *touch);
+		touch->wl_touch = wl_seat_get_touch(seat);
+		wl_touch_set_user_data(touch->wl_touch, touch);
+		wl_touch_add_listener(touch->wl_touch, &touch_listener,
+					 touch);
+		input->touch = touch;
+	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->touch) {
+		wl_touch_destroy(input->touch->wl_touch);
+		free(input->touch);
+		input->touch = NULL;
 	}
 }
 

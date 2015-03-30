@@ -69,6 +69,7 @@ struct input {
 	struct wl_seat *wl_seat;
 	struct pointer *pointer;
 	struct keyboard *keyboard;
+	struct touch *touch;
 	char *seat_name;
 	enum wl_seat_capability caps;
 	struct wl_list link;
@@ -96,6 +97,18 @@ struct keyboard {
 		int rate;
 		int delay;
 	} repeat_info;
+};
+
+struct touch {
+	struct wl_touch *wl_touch;
+	int down_x;
+	int down_y;
+	int x;
+	int y;
+	int id;
+	int up_id; /* id of last wl_touch.up event */
+	int frame_no;
+	int cancel_no;
 };
 
 struct output {
