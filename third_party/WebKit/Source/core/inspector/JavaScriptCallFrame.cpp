@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include <v8-debug.h>
@@ -164,14 +163,13 @@ v8::Local<v8::Value> JavaScriptCallFrame::returnValue() const
     return m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "returnValue"));
 }
 
-ScriptValue JavaScriptCallFrame::evaluateWithExceptionDetails(ScriptState* scriptState, const String& expression, const ScriptValue& scopeExtension)
+v8::Local<v8::Value> JavaScriptCallFrame::evaluateWithExceptionDetails(v8::Local<v8::Value> expression, v8::Local<v8::Value> scopeExtension)
 {
-    ScriptState::Scope scriptScope(scriptState);
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> evalFunction = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "evaluate")));
     v8::Local<v8::Value> argv[] = {
-        v8String(m_debuggerContext.newLocal(m_isolate)->GetIsolate(), expression),
-        scopeExtension.isEmpty() ? v8::Handle<v8::Value>::Cast(v8::Undefined(m_isolate)) : scopeExtension.v8Value()
+        expression,
+        scopeExtension
     };
     v8::TryCatch tryCatch;
     v8::Local<v8::Value> result = V8ScriptRunner::callInternalFunction(evalFunction, callFrame, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
@@ -184,7 +182,7 @@ ScriptValue JavaScriptCallFrame::evaluateWithExceptionDetails(ScriptState* scrip
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), result);
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), v8::Undefined(m_isolate));
     }
-    return ScriptValue(scriptState, wrappedResult);
+    return wrappedResult;
 }
 
 v8::Local<v8::Value> JavaScriptCallFrame::restart()
@@ -197,17 +195,16 @@ v8::Local<v8::Value> JavaScriptCallFrame::restart()
     return result;
 }
 
-ScriptValue JavaScriptCallFrame::setVariableValue(ScriptState* scriptState, int scopeNumber, const String& variableName, const ScriptValue& newValue)
+v8::Local<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue)
 {
-    ScriptState::Scope scriptScope(scriptState);
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> setVariableValueFunction = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "setVariableValue")));
     v8::Local<v8::Value> argv[] = {
         v8::Local<v8::Value>(v8::Integer::New(m_isolate, scopeNumber)),
-        v8String(m_isolate, variableName),
-        newValue.v8Value()
+        variableName,
+        newValue
     };
-    return ScriptValue(scriptState, V8ScriptRunner::callInternalFunction(setVariableValueFunction, callFrame, WTF_ARRAY_LENGTH(argv), argv, m_isolate));
+    return V8ScriptRunner::callInternalFunction(setVariableValueFunction, callFrame, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
 }
 
 v8::Local<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)

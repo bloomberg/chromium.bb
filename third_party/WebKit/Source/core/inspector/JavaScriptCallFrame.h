@@ -41,8 +41,6 @@
 
 namespace blink {
 
-class ScriptValue;
-
 class JavaScriptCallFrame : public RefCountedWillBeGarbageCollectedFinalized<JavaScriptCallFrame>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -70,9 +68,9 @@ public:
     bool isAtReturn() const;
     v8::Local<v8::Value> returnValue() const;
 
-    ScriptValue evaluateWithExceptionDetails(ScriptState*, const String& expression, const ScriptValue& scopeExtension);
+    v8::Local<v8::Value> evaluateWithExceptionDetails(v8::Local<v8::Value> expression, v8::Local<v8::Value> scopeExtension);
     v8::Local<v8::Value> restart();
-    ScriptValue setVariableValue(ScriptState*, int scopeNumber, const String& variableName, const ScriptValue& newValue);
+    v8::Local<v8::Value> setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue);
 
     static v8::Local<v8::Object> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
