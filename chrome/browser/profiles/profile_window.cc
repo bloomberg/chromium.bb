@@ -306,6 +306,13 @@ void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
       std::string());
 }
 
+bool HasProfileSwitchTargets(Profile* profile) {
+  size_t min_profiles = profile->IsGuestSession() ? 1 : 2;
+  size_t number_of_profiles =
+      g_browser_process->profile_manager()->GetNumberOfProfiles();
+  return number_of_profiles < min_profiles;
+}
+
 void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
                                  ProfileManager::CreateCallback callback,
                                  ProfileMetrics::ProfileAdd metric) {

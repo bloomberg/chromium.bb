@@ -494,10 +494,10 @@ void ProfileChooserView::ShowBubble(
     views::BubbleBorder::BubbleAlignment border_alignment,
     Browser* browser) {
   // Don't start creating the view if it would be an empty fast user switcher.
-  // This is the case when there is 0 or 1 profiles (the current one).  It has
-  // to happen here to prevent the view system from creating an empty container.
+  // It has to happen here to prevent the view system from creating an empty
+  // container.
   if (view_mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER &&
-      g_browser_process->profile_manager()->GetNumberOfProfiles() <= 1) {
+      profiles::HasProfileSwitchTargets(browser->profile())) {
     return;
   }
 

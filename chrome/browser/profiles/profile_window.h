@@ -70,6 +70,12 @@ void SwitchToProfile(const base::FilePath& path,
 void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
                           ProfileManager::CreateCallback callback);
 
+// Returns true if |profile| has potential profile switch targets, ie there's at
+// least one other profile available to switch to, not counting guest. This is
+// the case when there are more than 1 profiles available or when there's only
+// one and the current window is a guest window.
+bool HasProfileSwitchTargets(Profile* profile);
+
 // Creates a new profile from the next available profile directory, and
 // opens a new browser window for the profile once it is ready. When the browser
 // is opened, |callback| will be run if it isn't null.
