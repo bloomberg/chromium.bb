@@ -241,7 +241,7 @@ function renderTheme() {
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
-    themeinfo.tileTitleColor = info.textColorRgba;
+    titleColor = info.textColorRgba;
   } else if (isThemeDark) {
     titleColor = NTP_DESIGN.titleColorAgainstDark;
   }
@@ -383,12 +383,13 @@ function onMostVisitedChange() {
  */
 function reloadTiles() {
   var pages = ntpApiHandle.mostVisited;
-  var iframe = $('mv-single').contentWindow;
-
+  var cmds = [];
   for (var i = 0; i < Math.min(MAX_NUM_TILES_TO_SHOW, pages.length); ++i) {
-    iframe.postMessage({cmd: 'tile', rid: pages[i].rid}, '*');
+    cmds.push({cmd: 'tile', rid: pages[i].rid});
   }
-  iframe.postMessage({cmd: 'show'}, '*');
+  cmds.push({cmd: 'show', maxVisible: numColumnsShown * NUM_ROWS});
+
+  $('mv-single').contentWindow.postMessage(cmds, '*');
 }
 
 
@@ -476,6 +477,8 @@ function updateContentWidth() {
  */
 function onResize() {
   updateContentWidth();
+  $('mv-single').contentWindow.postMessage(
+    {cmd: 'tilesVisible', maxVisible: numColumnsShown * NUM_ROWS}, '*');
 }
 
 

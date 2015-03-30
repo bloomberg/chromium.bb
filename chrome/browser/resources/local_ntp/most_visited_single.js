@@ -106,21 +106,39 @@ var countLoad = function() {
 
 /**
  * Handles postMessages coming from the host page to the iframe.
+ * Mostly, it dispatches every command to handleCommand.
+ **/
+var handlePostMessage = function(event) {
+  if (event.data instanceof Array) {
+    for (var i = 0; i < event.data.length; ++i) {
+      handleCommand(event.data[i]);
+    }
+  } else {
+    handleCommand(event.data);
+  }
+};
+
+
+/**
+ * Handles a single command coming from the host page to the iframe.
  * We try to keep the logic here to a minimum and just dispatch to the relevant
  * functions.
  **/
-var handlePostMessage = function(event) {
-  var cmd = event.data.cmd;
+var handleCommand = function(data) {
+  var cmd = data.cmd;
 
   if (cmd == 'tile') {
-    addTile(event.data);
+    addTile(data);
   } else if (cmd == 'show') {
     showTiles();
+    hideOverflowTiles(data);
     countLoad();
   } else if (cmd == 'updateTheme') {
-    updateTheme(event.data);
+    updateTheme(data);
+  } else if (cmd == 'tilesVisible') {
+    hideOverflowTiles(data);
   } else {
-    console.error('Unknown command: ' + event.data);
+    console.error('Unknown command: ' + JSON.stringify(data));
   }
 };
 
@@ -161,6 +179,30 @@ var updateTheme = function(info) {
 
 
 /**
+ * Hides extra tiles that don't fit on screen.
+ */
+var hideOverflowTiles = function(data) {
+  var tileAndEmptyTileList = document.querySelectorAll(
+      '#mv-tiles .mv-tile,#mv-tiles .mv-empty-tile');
+  for (var i = 0; i < tileAndEmptyTileList.length; ++i) {
+    tileAndEmptyTileList[i].classList.toggle('hidden', i >= data.maxVisible);
+  }
+};
+
+
+/**
+ * Removes all old instances of #mv-tiles that are pending for deletion.
+ */
+var removeAllOldTiles = function() {
+  var parent = document.querySelector('#most-visited');
+  var oldList = parent.querySelectorAll('.mv-tiles-old');
+  for (var i = 0; i < oldList.length; ++i) {
+    parent.removeChild(oldList[i]);
+  }
+};
+
+
+/**
  * Called when the host page has finished sending us tile information and
  * we are ready to show the new tiles and drop the old ones.
  */
@@ -178,10 +220,11 @@ var showTiles = function() {
   // Mark old tile DIV for removal after the transition animation is done.
   var old = parent.querySelector('#mv-tiles');
   if (old) {
-    old.id = 'mv-tiles-old';
+    old.removeAttribute('id');
+    old.classList.add('mv-tiles-old');
     cur.addEventListener('webkitTransitionEnd', function(ev) {
       if (ev.target === cur) {
-        parent.removeChild(old);
+        removeAllOldTiles();
       }
     });
   }
@@ -227,10 +270,9 @@ var addTile = function(args) {
  */
 var blacklistTile = function(tile) {
   tile.classList.add('blacklisted');
-  var sent = false;
-  tile.addEventListener('webkitTransitionEnd', function() {
-    if (sent) return;
-    sent = true;
+  tile.addEventListener('webkitTransitionEnd', function(ev) {
+    if (ev.propertyName != 'width') return;
+
     window.parent.postMessage({cmd: 'tileBlacklisted',
                                rid: Number(tile.getAttribute('data-rid'))},
                               DOMAIN_ORIGIN);
@@ -256,9 +298,11 @@ var renderTile = function(data) {
   tile.className = 'mv-tile';
   tile.setAttribute('data-rid', data.rid);
   var tooltip = queryArgs['removeTooltip'] || '';
-  tile.innerHTML = '<div class="mv-favicon"></div>' +
-    '<div class="mv-title"></div><div class="mv-thumb"></div>' +
-    '<div title="' + tooltip + '" class="mv-x"></div>';
+  var html = [];
+  html.push('<div class="mv-favicon"></div>');
+  html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
+  html.push('<div title="' + tooltip + '" class="mv-x"></div>');
+  tile.innerHTML = html.join('');
 
   tile.href = data.url;
   tile.title = data.title;
@@ -327,6 +371,7 @@ var renderTile = function(data) {
 
   var mvx = tile.querySelector('.mv-x');
   mvx.addEventListener('click', function(ev) {
+    removeAllOldTiles();
     blacklistTile(tile);
     ev.preventDefault();
     ev.stopPropagation();
