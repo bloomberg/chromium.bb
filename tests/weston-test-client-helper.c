@@ -372,12 +372,13 @@ static const struct weston_test_listener test_listener = {
 };
 
 static void
-seat_handle_capabilities(void *data, struct wl_seat *seat,
-			 enum wl_seat_capability caps)
+input_update_devices(struct input *input)
 {
-	struct input *input = data;
 	struct pointer *pointer;
 	struct keyboard *keyboard;
+
+	struct wl_seat *seat = input->wl_seat;
+	enum wl_seat_capability caps = input->caps;
 
 	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
 		pointer = xzalloc(sizeof *pointer);
@@ -407,6 +408,24 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 }
 
 static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+			 enum wl_seat_capability caps)
+{
+	struct input *input = data;
+
+	input->caps = caps;
+
+	/* we will create/update the devices only with the right (test) seat.
+	 * If we haven't discovered which seat is the test seat, just
+	 * store capabilities and bail out */
+	if(input->seat_name && strcmp(input->seat_name, "test-seat") == 0)
+		input_update_devices(input);
+
+	fprintf(stderr, "test-client: got seat %p capabilities: %x\n",
+		input, caps);
+}
+
+static void
 seat_handle_name(void *data, struct wl_seat *seat, const char *name)
 {
 	struct input *input = data;
@@ -414,7 +433,8 @@ seat_handle_name(void *data, struct wl_seat *seat, const char *name)
 	input->seat_name = strdup(name);
 	assert(input->seat_name && "No memory");
 
-	fprintf(stderr, "test-client: got seat name: %s\n", name);
+	fprintf(stderr, "test-client: got seat %p name: \'%s\'\n",
+		input, name);
 }
 
 static const struct wl_seat_listener seat_listener = {
@@ -486,10 +506,10 @@ handle_global(void *data, struct wl_registry *registry,
 	      uint32_t id, const char *interface, uint32_t version)
 {
 	struct client *client = data;
-	struct input *input;
 	struct output *output;
 	struct test *test;
 	struct global *global;
+	struct input *input;
 
 	global = xzalloc(sizeof *global);
 	global->name = id;
@@ -508,7 +528,7 @@ handle_global(void *data, struct wl_registry *registry,
 			wl_registry_bind(registry, id,
 					 &wl_seat_interface, version);
 		wl_seat_add_listener(input->wl_seat, &seat_listener, input);
-		client->input = input;
+		wl_list_insert(&client->inputs, &input->link);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		client->wl_shm =
 			wl_registry_bind(registry, id,
@@ -608,6 +628,34 @@ log_handler(const char *fmt, va_list args)
 	vfprintf(stderr, fmt, args);
 }
 
+static void
+input_destroy(struct input *inp)
+{
+	wl_list_remove(&inp->link);
+	wl_seat_destroy(inp->wl_seat);
+	free(inp);
+}
+
+/* find the test-seat and set it in client.
+ * Destroy other inputs */
+static void
+client_set_input(struct client *cl)
+{
+	struct input *inp, *inptmp;
+	wl_list_for_each_safe(inp, inptmp, &cl->inputs, link) {
+		assert(inp->seat_name && "BUG: input with no name");
+		if (strcmp(inp->seat_name, "test-seat") == 0) {
+			cl->input = inp;
+			input_update_devices(inp);
+		} else {
+			input_destroy(inp);
+		}
+	}
+
+	/* we keep only one input */
+	assert(wl_list_length(&cl->inputs) == 1);
+}
+
 struct client *
 client_create(int x, int y, int width, int height)
 {
@@ -621,16 +669,20 @@ client_create(int x, int y, int width, int height)
 	client->wl_display = wl_display_connect(NULL);
 	assert(client->wl_display);
 	wl_list_init(&client->global_list);
+	wl_list_init(&client->inputs);
 
 	/* setup registry so we can bind to interfaces */
 	client->wl_registry = wl_display_get_registry(client->wl_display);
 	wl_registry_add_listener(client->wl_registry, &registry_listener, client);
 
-	/* trigger global listener. Need to dispatch two times, because wl_shm
-	 * will emit new events after binding and we need them to arrive
-	 * before continuing */
-	wl_display_roundtrip(client->wl_display);
-	wl_display_roundtrip(client->wl_display);
+	/* this roundtrip makes sure we have all globals and we bound to them */
+	client_roundtrip(client);
+	/* this roundtrip makes sure we got all wl_shm.format and wl_seat.*
+	 * events */
+	client_roundtrip(client);
+
+	/* find the right input for us */
+	client_set_input(client);
 
 	/* must have WL_SHM_FORMAT_ARGB32 */
 	assert(client->has_argb);
@@ -643,6 +695,9 @@ client_create(int x, int y, int width, int height)
 
 	/* the output must be initialized */
 	assert(client->output->initialized == 1);
+
+	/* must have seat set */
+	assert(client->input);
 
 	/* initialize the client surface */
 	surface = xzalloc(sizeof *surface);

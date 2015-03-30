@@ -36,7 +36,14 @@ struct client {
 	struct wl_compositor *wl_compositor;
 	struct wl_shm *wl_shm;
 	struct test *test;
+	/* the seat that is actually used for input events */
 	struct input *input;
+	/* server can have more wl_seats. We need keep them all until we
+	 * find the one that we need. After that, the others
+	 * will be destroyed, so this list will have the length of 1.
+	 * If some day in the future we will need the other seats,
+	 * we can just keep them here. */
+	struct wl_list inputs;
 	struct output *output;
 	struct surface *surface;
 	int has_argb;
@@ -63,6 +70,8 @@ struct input {
 	struct pointer *pointer;
 	struct keyboard *keyboard;
 	char *seat_name;
+	enum wl_seat_capability caps;
+	struct wl_list link;
 };
 
 struct pointer {

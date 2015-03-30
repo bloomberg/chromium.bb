@@ -41,6 +41,7 @@ struct weston_test {
 	struct weston_compositor *compositor;
 	struct weston_layer layer;
 	struct weston_process process;
+	struct weston_seat seat;
 };
 
 struct weston_test_surface {
@@ -70,14 +71,7 @@ test_client_sigchld(struct weston_process *process, int status)
 static struct weston_seat *
 get_seat(struct weston_test *test)
 {
-	struct wl_list *seat_list;
-	struct weston_seat *seat;
-
-	seat_list = &test->compositor->seat_list;
-	assert(wl_list_length(seat_list) == 1);
-	seat = container_of(seat_list->next, struct weston_seat, link);
-
-	return seat;
+	return &test->seat;
 }
 
 static void
@@ -348,6 +342,14 @@ module_init(struct weston_compositor *ec,
 	if (wl_global_create(ec->wl_display, &weston_test_interface, 1,
 			     test, bind_test) == NULL)
 		return -1;
+
+	/* create our own seat */
+	weston_seat_init(&test->seat, ec, "test-seat");
+
+	/* add devices */
+	weston_seat_init_pointer(&test->seat);
+	weston_seat_init_keyboard(&test->seat, NULL);
+	weston_seat_init_touch(&test->seat);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_idle(loop, idle_launch_client, test);
