@@ -2214,6 +2214,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Duration of time taken to run Heap::collectGarbage().</summary>
 </histogram>
 
+<histogram name="BlinkGC.GCReason" enum="GCReason">
+  <owner>haraken@chromium.org</owner>
+  <summary>A type of Blink GC.</summary>
+</histogram>
+
 <histogram name="BlinkGC.PerformPendingSweep" units="milliseconds">
   <owner>haraken@chromium.org</owner>
   <summary>
@@ -51257,6 +51262,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="Internal server error"/>
   <int value="8" label="HTTP reponse code not OK"/>
   <int value="9" label="Unknown error"/>
+</enum>
+
+<enum name="GCReason" type="int">
+  <int value="0" label="Idle GC"/>
+  <int value="1" label="Precise GC"/>
+  <int value="2" label="Conservative GC"/>
+  <int value="3" label="Forced GC for testing"/>
 </enum>
 
 <enum name="GDataAuthResult" type="int">
