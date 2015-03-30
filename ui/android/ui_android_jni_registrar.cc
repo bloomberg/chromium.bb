@@ -14,7 +14,6 @@ namespace ui {
 
 static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
     {"ResourceManager", ui::ResourceManagerImpl::RegisterResourceManager},
-    {"ViewAndroid", ViewAndroid::RegisterViewAndroid},
     {"WindowAndroid", WindowAndroid::RegisterWindowAndroid},
 };
 

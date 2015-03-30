@@ -41,7 +41,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
                       WebContents* web_contents,
-                      ui::ViewAndroid* view_android,
+                      jobject view_android,
                       ui::WindowAndroid* window_android,
                       jobject java_bridge_retained_object_set);
 
@@ -333,7 +333,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // The Android view that can be used to add and remove decoration layers
   // like AutofillPopup.
-  ui::ViewAndroid* view_android_;
+  scoped_ptr<ui::ViewAndroid> view_android_;
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;

@@ -155,12 +155,12 @@ public class ContentViewCore
      * <p>This delegate handles the replacement of container views transparently so
      * that clients can safely hold to instances of this class.
      */
-    private class ContentViewAndroidDelegate implements ViewAndroidDelegate {
+    private static class ContentViewAndroidDelegate implements ViewAndroidDelegate {
         /**
          * Represents the position of an anchor view.
          */
         @VisibleForTesting
-        private class Position {
+        private static class Position {
             private final float mX;
             private final float mY;
             private final float mWidth;
@@ -174,11 +174,16 @@ public class ContentViewCore
             }
         }
 
+        private final Context mContext;
+        private final RenderCoordinates mRenderCoordinates;
+
         /**
          * The current container view. This view can be updated with
-         * {@link #updateCurrentContainerView()}.
+         * {@link #updateCurrentContainerView()}. This needs to be a WeakReference
+         * because ViewAndroidDelegate is held strongly native side, which otherwise
+         * indefinitely prevents Android WebView from being garbage collected.
          */
-        private ViewGroup mCurrentContainerView;
+        private WeakReference<ViewGroup> mCurrentContainerView;
 
         /**
          * List of anchor views stored in the order in which they were acquired mapped
@@ -186,11 +191,21 @@ public class ContentViewCore
          */
         private Map<View, Position> mAnchorViews = new LinkedHashMap<View, Position>();
 
+        ContentViewAndroidDelegate(
+                Context context, ViewGroup containerView, RenderCoordinates renderCoordinates) {
+            mContext = context;
+            mRenderCoordinates = renderCoordinates;
+            mCurrentContainerView = new WeakReference<>(containerView);
+        }
+
         @Override
         public View acquireAnchorView() {
             View anchorView = new View(mContext);
             mAnchorViews.put(anchorView, null);
-            mCurrentContainerView.addView(anchorView);
+            ViewGroup containerView = mCurrentContainerView.get();
+            if (containerView != null) {
+                containerView.addView(anchorView);
+            }
             return anchorView;
         }
 
@@ -209,7 +224,11 @@ public class ContentViewCore
                 // already been released.
                 return;
             }
-            assert view.getParent() == mCurrentContainerView;
+            ViewGroup containerView = mCurrentContainerView.get();
+            if (containerView == null) {
+                return;
+            }
+            assert view.getParent() == containerView;
 
             float scale = (float) DeviceDisplayInfo.create(mContext).getDIPScale();
 
@@ -218,23 +237,23 @@ public class ContentViewCore
             int topMargin = Math.round(mRenderCoordinates.getContentOffsetYPix() + y * scale);
             int scaledWidth = Math.round(width * scale);
             // ContentViewCore currently only supports these two container view types.
-            if (mCurrentContainerView instanceof FrameLayout) {
+            if (containerView instanceof FrameLayout) {
                 int startMargin;
-                if (ApiCompatibilityUtils.isLayoutRtl(mCurrentContainerView)) {
-                    startMargin = mCurrentContainerView.getMeasuredWidth()
-                            - Math.round((width + x) * scale);
+                if (ApiCompatibilityUtils.isLayoutRtl(containerView)) {
+                    startMargin =
+                            containerView.getMeasuredWidth() - Math.round((width + x) * scale);
                 } else {
                     startMargin = leftMargin;
                 }
-                if (scaledWidth + startMargin > mCurrentContainerView.getWidth()) {
-                    scaledWidth = mCurrentContainerView.getWidth() - startMargin;
+                if (scaledWidth + startMargin > containerView.getWidth()) {
+                    scaledWidth = containerView.getWidth() - startMargin;
                 }
                 FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                         scaledWidth, Math.round(height * scale));
                 ApiCompatibilityUtils.setMarginStart(lp, startMargin);
                 lp.topMargin = topMargin;
                 view.setLayoutParams(lp);
-            } else if (mCurrentContainerView instanceof android.widget.AbsoluteLayout) {
+            } else if (containerView instanceof android.widget.AbsoluteLayout) {
                 // This fixes the offset due to a difference in
                 // scrolling model of WebView vs. Chrome.
                 // TODO(sgurun) fix this to use mContainerViewAtCreation.getScroll[X/Y]()
@@ -248,14 +267,17 @@ public class ContentViewCore
                             scaledWidth, (int) (height * scale), leftMargin, topMargin);
                 view.setLayoutParams(lp);
             } else {
-                Log.e(TAG, "Unknown layout " + mCurrentContainerView.getClass().getName());
+                Log.e(TAG, "Unknown layout " + containerView.getClass().getName());
             }
         }
 
         @Override
         public void releaseAnchorView(View anchorView) {
             mAnchorViews.remove(anchorView);
-            mCurrentContainerView.removeView(anchorView);
+            ViewGroup containerView = mCurrentContainerView.get();
+            if (containerView != null) {
+                containerView.removeView(anchorView);
+            }
         }
 
         /**
@@ -263,14 +285,16 @@ public class ContentViewCore
          * this class delegates. Existing anchor views are transferred from the old to
          * the new container view.
          */
-        void updateCurrentContainerView() {
-            ViewGroup oldContainerView = mCurrentContainerView;
-            mCurrentContainerView = mContainerView;
+        void updateCurrentContainerView(ViewGroup containerView) {
+            ViewGroup oldContainerView = mCurrentContainerView.get();
+            mCurrentContainerView = new WeakReference<>(containerView);
             for (Entry<View, Position> entry : mAnchorViews.entrySet()) {
                 View anchorView = entry.getKey();
                 Position position = entry.getValue();
-                oldContainerView.removeView(anchorView);
-                mCurrentContainerView.addView(anchorView);
+                if (oldContainerView != null) {
+                    oldContainerView.removeView(anchorView);
+                }
+                containerView.addView(anchorView);
                 if (position != null) {
                     doSetAnchorViewPosition(anchorView,
                             position.mX, position.mY, position.mWidth, position.mHeight);
@@ -802,14 +826,10 @@ public class ContentViewCore
         assert windowNativePointer != 0;
         createViewAndroid(windowAndroid);
 
-        long viewAndroidNativePointer = mViewAndroid.getNativePointer();
-        assert viewAndroidNativePointer != 0;
-
         mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
 
         mNativeContentViewCore = nativeInit(
-                webContents, viewAndroidNativePointer, windowNativePointer,
-                mRetainedJavaScriptObjects);
+                webContents, mViewAndroid, windowNativePointer, mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
@@ -825,12 +845,13 @@ public class ContentViewCore
 
     @VisibleForTesting
     void createContentViewAndroidDelegate() {
-        mViewAndroidDelegate = new ContentViewAndroidDelegate();
+        mViewAndroidDelegate =
+                new ContentViewAndroidDelegate(mContext, mContainerView, mRenderCoordinates);
     }
 
     @VisibleForTesting
     void createViewAndroid(WindowAndroid windowAndroid) {
-        mViewAndroid = new ViewAndroid(windowAndroid, mViewAndroidDelegate);
+        mViewAndroid = new ViewAndroid(mViewAndroidDelegate);
     }
 
     /**
@@ -863,7 +884,7 @@ public class ContentViewCore
             mContainerView = containerView;
             mPositionObserver = new ViewPositionObserver(mContainerView);
             mContainerView.setClickable(true);
-            mViewAndroidDelegate.updateCurrentContainerView();
+            mViewAndroidDelegate.updateCurrentContainerView(mContainerView);
             for (ContainerViewObserver observer : mContainerViewObservers) {
                 observer.onContainerViewChanged(mContainerView);
             }
@@ -981,7 +1002,6 @@ public class ContentViewCore
         // in this class.
         mContentViewClient = new ContentViewClient();
         mWebContents = null;
-        if (mViewAndroid != null) mViewAndroid.destroy();
         mNativeContentViewCore = 0;
         mJavaScriptInterfaces.clear();
         mRetainedJavaScriptObjects.clear();
@@ -3069,8 +3089,8 @@ public class ContentViewCore
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
     }
 
-    private native long nativeInit(WebContents webContents,
-            long viewAndroidPtr, long windowAndroidPtr, HashSet<Object> retainedObjectSet);
+    private native long nativeInit(WebContents webContents, ViewAndroid viewAndroid,
+            long windowAndroidPtr, HashSet<Object> retainedObjectSet);
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
     ContentVideoViewClient getContentVideoViewClient() {
         return getContentViewClient().getContentVideoViewClient();

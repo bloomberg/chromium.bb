@@ -14,23 +14,19 @@ namespace ui {
 
 class WindowAndroid;
 
-// This class is the native counterpart for ViewAndroid. It is owned by the
-// Java ViewAndroid object.
+// This class is merely a holder of the Java object. It must be destroyed
+// explicitly.
 class UI_ANDROID_EXPORT ViewAndroid {
  public:
-  ViewAndroid(JNIEnv* env, jobject obj, WindowAndroid* window);
-
-  void Destroy(JNIEnv* env, jobject obj);
+  ViewAndroid(jobject obj, WindowAndroid* window);
+  ~ViewAndroid();
 
   WindowAndroid* GetWindowAndroid();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  static bool RegisterViewAndroid(JNIEnv* env);
-
  private:
-  ~ViewAndroid();
-  JavaObjectWeakGlobalRef weak_java_view_;
+  base::android::ScopedJavaGlobalRef<jobject> java_view_;
   WindowAndroid* window_android_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
