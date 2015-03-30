@@ -34,6 +34,9 @@ extern "C" {
 // executable itself.
 __declspec(dllimport) void TestDll_AddDllsFromRegistryToBlacklist();
 __declspec(dllimport) bool TestDll_AddDllToBlacklist(const wchar_t* dll_name);
+__declspec(dllimport) int TestDll_BlacklistSize();
+__declspec(dllimport) void TestDll_BlockedDll(size_t blocked_index);
+__declspec(dllimport) int TestDll_GetBlacklistIndex(const wchar_t* dll_name);
 __declspec(dllimport) bool TestDll_IsBlacklistInitialized();
 __declspec(dllimport) bool TestDll_RemoveDllFromBlacklist(
     const wchar_t* dll_name);
@@ -44,14 +47,77 @@ __declspec(dllimport) bool TestDll_SuccessfullyBlocked(
 
 namespace {
 
+struct TestData {
+  const wchar_t* dll_name;
+  const wchar_t* dll_beacon;
+} test_data[] = {
+    {kTestDllName2, kDll2Beacon},
+    {kTestDllName3, kDll3Beacon}
+};
+
 class BlacklistTest : public testing::Test {
  protected:
-  BlacklistTest() : override_manager_() {
+  BlacklistTest() : override_manager_(), num_initially_blocked_(0) {
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+  }
+
+  void CheckBlacklistedDllsNotLoaded() {
+    base::FilePath current_dir;
+    ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
+
+    for (int i = 0; i < arraysize(test_data); ++i) {
+      // Ensure that the dll has not been loaded both by inspecting the handle
+      // returned by LoadLibrary and by looking for an environment variable that
+      // is set when the DLL's entry point is called.
+      base::ScopedNativeLibrary dll_blacklisted(
+          current_dir.Append(test_data[i].dll_name));
+      EXPECT_FALSE(dll_blacklisted.is_valid());
+      EXPECT_EQ(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
+      dll_blacklisted.Reset(NULL);
+
+      // Ensure that the dll is recorded as blocked.
+      int array_size = 1 + num_initially_blocked_;
+      std::vector<const wchar_t*> blocked_dlls(array_size);
+      TestDll_SuccessfullyBlocked(&blocked_dlls[0], &array_size);
+      EXPECT_EQ(1 + num_initially_blocked_, array_size);
+      EXPECT_STREQ(test_data[i].dll_name, blocked_dlls[num_initially_blocked_]);
+
+      // Remove the DLL from the blacklist. Ensure that it loads and that its
+      // entry point was called.
+      EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(test_data[i].dll_name));
+      base::ScopedNativeLibrary dll(current_dir.Append(test_data[i].dll_name));
+      EXPECT_TRUE(dll.is_valid());
+      EXPECT_NE(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
+      dll.Reset(NULL);
+
+      ::SetEnvironmentVariable(test_data[i].dll_beacon, NULL);
+
+      // Ensure that the dll won't load even if the name has different
+      // capitalization.
+      base::string16 uppercase_name =
+          base::i18n::ToUpper(test_data[i].dll_name);
+      EXPECT_TRUE(TestDll_AddDllToBlacklist(uppercase_name.c_str()));
+      base::ScopedNativeLibrary dll_blacklisted_different_case(
+          current_dir.Append(test_data[i].dll_name));
+      EXPECT_FALSE(dll_blacklisted_different_case.is_valid());
+      EXPECT_EQ(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
+      dll_blacklisted_different_case.Reset(NULL);
+
+      EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(uppercase_name.c_str()));
+
+      // The blocked dll was removed, so the number of blocked dlls should
+      // return to what it originally was.
+      int num_blocked_dlls = 0;
+      TestDll_SuccessfullyBlocked(NULL, &num_blocked_dlls);
+      EXPECT_EQ(num_initially_blocked_, num_blocked_dlls);
+    }
   }
 
   scoped_ptr<base::win::RegKey> blacklist_registry_key_;
   registry_util::RegistryOverrideManager override_manager_;
+
+  // The number of dlls initially blocked by the blacklist.
+  int num_initially_blocked_;
 
  private:
   virtual void SetUp() {
@@ -61,6 +127,9 @@ class BlacklistTest : public testing::Test {
         new base::win::RegKey(HKEY_CURRENT_USER,
                               blacklist::kRegistryBeaconPath,
                               KEY_QUERY_VALUE | KEY_SET_VALUE));
+
+    // Find out how many dlls were blocked before the test starts.
+    TestDll_SuccessfullyBlocked(NULL, &num_initially_blocked_);
   }
 
   virtual void TearDown() {
@@ -68,21 +137,6 @@ class BlacklistTest : public testing::Test {
     TestDll_RemoveDllFromBlacklist(kTestDllName2);
     TestDll_RemoveDllFromBlacklist(kTestDllName3);
   }
-};
-
-struct TestData {
-  const wchar_t* dll_name;
-  const wchar_t* dll_beacon;
-} test_data[] = {
-    {kTestDllName2, kDll2Beacon},
-#if !defined(_WIN64)
-    // The third test dll is special in that it does not contain an export
-    // table. This prevents SafeGetImageInfo from extracting the name from there
-    // AND for some reason NtQueryVirtualMemory with MemorySectionName returns
-    // STATUS_ACCESS_VIOLATION in 64 bit builds for reasons still unknown.
-    // http://crbug.com/397137
-    {kTestDllName3, kDll3Beacon}
-#endif
 };
 
 TEST_F(BlacklistTest, Beacon) {
@@ -103,107 +157,62 @@ TEST_F(BlacklistTest, Beacon) {
 }
 
 TEST_F(BlacklistTest, AddAndRemoveModules) {
-  EXPECT_TRUE(blacklist::AddDllToBlacklist(L"foo.dll"));
+  EXPECT_TRUE(TestDll_AddDllToBlacklist(L"foo.dll"));
   // Adding the same item twice should be idempotent.
-  EXPECT_TRUE(blacklist::AddDllToBlacklist(L"foo.dll"));
-  EXPECT_TRUE(blacklist::RemoveDllFromBlacklist(L"foo.dll"));
-  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(L"foo.dll"));
+  EXPECT_TRUE(TestDll_AddDllToBlacklist(L"foo.dll"));
+  EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(L"foo.dll"));
+  EXPECT_FALSE(TestDll_RemoveDllFromBlacklist(L"foo.dll"));
 
   // Increase the blacklist size by 1 to include the NULL pointer
   // that marks the end.
-  int empty_spaces = blacklist::kTroublesomeDllsMaxCount - (
-      blacklist::BlacklistSize() + 1);
+  int empty_spaces =
+      blacklist::kTroublesomeDllsMaxCount - (TestDll_BlacklistSize() + 1);
   std::vector<base::string16> added_dlls;
   added_dlls.reserve(empty_spaces);
   for (int i = 0; i < empty_spaces; ++i) {
     added_dlls.push_back(base::IntToString16(i) + L".dll");
-    EXPECT_TRUE(blacklist::AddDllToBlacklist(added_dlls[i].c_str())) << i;
+    EXPECT_TRUE(TestDll_AddDllToBlacklist(added_dlls[i].c_str())) << i;
   }
-  EXPECT_FALSE(blacklist::AddDllToBlacklist(L"overflow.dll"));
+  EXPECT_FALSE(TestDll_AddDllToBlacklist(L"overflow.dll"));
   for (int i = 0; i < empty_spaces; ++i) {
-    EXPECT_TRUE(blacklist::RemoveDllFromBlacklist(added_dlls[i].c_str())) << i;
+    EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(added_dlls[i].c_str())) << i;
   }
-  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(added_dlls[0].c_str()));
-  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(
-    added_dlls[empty_spaces - 1].c_str()));
+  EXPECT_FALSE(TestDll_RemoveDllFromBlacklist(added_dlls[0].c_str()));
+  EXPECT_FALSE(
+      TestDll_RemoveDllFromBlacklist(added_dlls[empty_spaces - 1].c_str()));
 }
 
 TEST_F(BlacklistTest, SuccessfullyBlocked) {
-  // Ensure that we have at least 5 dlls to blacklist.
-  int blacklist_size = blacklist::BlacklistSize();
-  const int kDesiredBlacklistSize = 5;
-  for (int i = blacklist_size; i < kDesiredBlacklistSize; ++i) {
-    base::string16 new_dll_name(base::IntToString16(i) + L".dll");
-    EXPECT_TRUE(blacklist::AddDllToBlacklist(new_dll_name.c_str()));
+  // Add 5 news dlls to blacklist.
+  const int kDesiredBlacklistSize = 1;
+  std::vector<base::string16> dlls_to_block;
+  for (int i = 0; i < kDesiredBlacklistSize; ++i) {
+    dlls_to_block.push_back(base::IntToString16(i) + L".dll");
+    ASSERT_TRUE(TestDll_AddDllToBlacklist(dlls_to_block[i].c_str()));
   }
 
-  // Block 5 dlls, one at a time, starting from the end of the list, and
-  // ensuring SuccesfullyBlocked correctly passes the list of blocked dlls.
+  // Block the dlls, one at a time, and ensure SuccesfullyBlocked correctly
+  // passes the list of blocked dlls.
   for (int i = 0; i < kDesiredBlacklistSize; ++i) {
-    blacklist::BlockedDll(i);
+    TestDll_BlockedDll(TestDll_GetBlacklistIndex(dlls_to_block[i].c_str()));
 
     int size = 0;
-    blacklist::SuccessfullyBlocked(NULL, &size);
-    EXPECT_EQ(i + 1, size);
+    TestDll_SuccessfullyBlocked(NULL, &size);
+    ASSERT_EQ(num_initially_blocked_ + i + 1, size);
 
     std::vector<const wchar_t*> blocked_dlls(size);
-    blacklist::SuccessfullyBlocked(&(blocked_dlls[0]), &size);
-    EXPECT_EQ(i + 1, size);
+    TestDll_SuccessfullyBlocked(&(blocked_dlls[0]), &size);
+    ASSERT_EQ(num_initially_blocked_ + i + 1, size);
 
-    for (size_t j = 0; j < blocked_dlls.size(); ++j) {
-      EXPECT_EQ(blocked_dlls[j], blacklist::g_troublesome_dlls[j]);
+    for (int j = 0; j <= i; ++j) {
+      EXPECT_STREQ(blocked_dlls[num_initially_blocked_ + j],
+                   dlls_to_block[j].c_str());
     }
   }
-}
 
-void CheckBlacklistedDllsNotLoaded() {
-  base::FilePath current_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
-
-  for (int i = 0; i < arraysize(test_data); ++i) {
-    // Ensure that the dll has not been loaded both by inspecting the handle
-    // returned by LoadLibrary and by looking for an environment variable that
-    // is set when the DLL's entry point is called.
-    base::ScopedNativeLibrary dll_blacklisted(
-        current_dir.Append(test_data[i].dll_name));
-    EXPECT_FALSE(dll_blacklisted.is_valid());
-    EXPECT_EQ(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
-    dll_blacklisted.Reset(NULL);
-
-    // Ensure that the dll is recorded as blocked.
-    int array_size = 1;
-    const wchar_t* blocked_dll = NULL;
-    TestDll_SuccessfullyBlocked(&blocked_dll, &array_size);
-    EXPECT_EQ(1, array_size);
-    EXPECT_EQ(test_data[i].dll_name, base::string16(blocked_dll));
-
-    // Remove the DLL from the blacklist. Ensure that it loads and that its
-    // entry point was called.
-    EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(test_data[i].dll_name));
-    base::ScopedNativeLibrary dll(current_dir.Append(test_data[i].dll_name));
-    EXPECT_TRUE(dll.is_valid());
-    EXPECT_NE(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
-    dll.Reset(NULL);
-
-    ::SetEnvironmentVariable(test_data[i].dll_beacon, NULL);
-
-    // Ensure that the dll won't load even if the name has different
-    // capitalization.
-    base::string16 uppercase_name = base::i18n::ToUpper(test_data[i].dll_name);
-    EXPECT_TRUE(TestDll_AddDllToBlacklist(uppercase_name.c_str()));
-    base::ScopedNativeLibrary dll_blacklisted_different_case(
-        current_dir.Append(test_data[i].dll_name));
-    EXPECT_FALSE(dll_blacklisted_different_case.is_valid());
-    EXPECT_EQ(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
-    dll_blacklisted_different_case.Reset(NULL);
-
-    EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(uppercase_name.c_str()));
-
-    // The blocked dll was removed, so we shouldn't get anything returned
-    // here.
-    int num_blocked_dlls = 0;
-    TestDll_SuccessfullyBlocked(NULL, &num_blocked_dlls);
-    EXPECT_EQ(0, num_blocked_dlls);
+  // Remove the dlls from the blacklist now that we are done.
+  for (const auto& dll : dlls_to_block) {
+    EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(dll.c_str()));
   }
 }
 
@@ -221,7 +230,7 @@ TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
 
   int num_blocked_dlls = 0;
   TestDll_SuccessfullyBlocked(NULL, &num_blocked_dlls);
-  EXPECT_EQ(0, num_blocked_dlls);
+  EXPECT_EQ(num_initially_blocked_, num_blocked_dlls);
 
   // Add all DLLs to the blacklist then check they are blocked.
   for (int i = 0; i < arraysize(test_data); ++i) {

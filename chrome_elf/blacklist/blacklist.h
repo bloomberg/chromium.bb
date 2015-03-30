@@ -35,7 +35,7 @@ bool LeaveSetupBeacon();
 bool ResetBeacon();
 
 // Return the size of the current blacklist.
-int BlacklistSize();
+extern "C" int BlacklistSize();
 
 // Returns if true if the blacklist has been initialized.
 extern "C" bool IsBlacklistInitialized();
@@ -69,7 +69,7 @@ extern "C" void SuccessfullyBlocked(const wchar_t** blocked_dlls, int* size);
 extern "C" void AddDllsFromRegistryToBlacklist();
 
 // Record that the dll at the given index was blocked.
-void BlockedDll(size_t blocked_index);
+extern "C" void BlockedDll(size_t blocked_index);
 
 // Initializes the DLL blacklist in the current process. This should be called
 // before any undesirable DLLs might be loaded. If |force| is set to true, then
