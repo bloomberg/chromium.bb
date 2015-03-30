@@ -1042,25 +1042,19 @@ if (!is_ios && !is_android) {
   }
 }
 
-if (is_linux || is_mac) {
+if (is_linux) {
   static_library("epoll_server") {
     sources = [
       "tools/epoll_server/epoll_server.cc",
       "tools/epoll_server/epoll_server.h",
+      "tools/epoll_server/linux_epoll_server.cc",
     ]
-    if (is_mac) {
-      sources += [ "tools/epoll_server/darwin_epoll_server.cc" ]
-    } else {
-      sources += [ "tools/epoll_server/linux_epoll_server.cc" ]
-    }
     deps = [
       ":net",
       "//base",
     ]
   }
-}
 
-if (is_linux) {
   static_library("flip_in_mem_edsm_server_base") {
     testonly = true
     sources = [

@@ -122,10 +122,10 @@ QuicPacketWriter* QuicClient::DummyPacketWriterFactory::Create(
 
 bool QuicClient::CreateUDPSocket() {
   int address_family = server_address_.GetSockAddrFamily();
-  fd_ = QuicSocketUtils::CreateNonBlockingSocket(address_family, SOCK_DGRAM,
-                                                 IPPROTO_UDP);
+  fd_ = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
   if (fd_ < 0) {
-    return false;  // failure already logged
+    LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
+    return false;
   }
 
   int get_overflow = 1;
