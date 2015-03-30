@@ -62,6 +62,7 @@ struct input {
 	struct wl_seat *wl_seat;
 	struct pointer *pointer;
 	struct keyboard *keyboard;
+	char *seat_name;
 };
 
 struct pointer {
@@ -82,6 +83,10 @@ struct keyboard {
 	uint32_t mods_latched;
 	uint32_t mods_locked;
 	uint32_t group;
+	struct {
+		int rate;
+		int delay;
+	} repeat_info;
 };
 
 struct output {
@@ -90,6 +95,8 @@ struct output {
 	int y;
 	int width;
 	int height;
+	int scale;
+	int initialized;
 };
 
 struct surface {

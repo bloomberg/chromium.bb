@@ -249,12 +249,26 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *wl_keyboard,
 		mods_depressed, mods_latched, mods_locked, group);
 }
 
+static void
+keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
+			    int32_t rate, int32_t delay)
+{
+	struct keyboard *keyboard = data;
+
+	keyboard->repeat_info.rate = rate;
+	keyboard->repeat_info.delay = delay;
+
+	fprintf(stderr, "test-client: got keyboard repeat_info %d %d\n",
+		rate, delay);
+}
+
 static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_keymap,
 	keyboard_handle_enter,
 	keyboard_handle_leave,
 	keyboard_handle_key,
 	keyboard_handle_modifiers,
+	keyboard_handle_repeat_info,
 };
 
 static void
@@ -392,8 +406,20 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 }
 
+static void
+seat_handle_name(void *data, struct wl_seat *seat, const char *name)
+{
+	struct input *input = data;
+
+	input->seat_name = strdup(name);
+	assert(input->seat_name && "No memory");
+
+	fprintf(stderr, "test-client: got seat name: %s\n", name);
+}
+
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
+	seat_handle_name,
 };
 
 static void
@@ -429,9 +455,30 @@ output_handle_mode(void *data,
 	}
 }
 
+static void
+output_handle_scale(void *data,
+		    struct wl_output *wl_output,
+		    int scale)
+{
+	struct output *output = data;
+
+	output->scale = scale;
+}
+
+static void
+output_handle_done(void *data,
+		   struct wl_output *wl_output)
+{
+	struct output *output = data;
+
+	output->initialized = 1;
+}
+
 static const struct wl_output_listener output_listener = {
 	output_handle_geometry,
-	output_handle_mode
+	output_handle_mode,
+	output_handle_done,
+	output_handle_scale,
 };
 
 static void
@@ -454,24 +501,24 @@ handle_global(void *data, struct wl_registry *registry,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		client->wl_compositor =
 			wl_registry_bind(registry, id,
-					 &wl_compositor_interface, 1);
+					 &wl_compositor_interface, version);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		input = xzalloc(sizeof *input);
 		input->wl_seat =
 			wl_registry_bind(registry, id,
-					 &wl_seat_interface, 1);
+					 &wl_seat_interface, version);
 		wl_seat_add_listener(input->wl_seat, &seat_listener, input);
 		client->input = input;
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		client->wl_shm =
 			wl_registry_bind(registry, id,
-					 &wl_shm_interface, 1);
+					 &wl_shm_interface, version);
 		wl_shm_add_listener(client->wl_shm, &shm_listener, client);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		output = xzalloc(sizeof *output);
 		output->wl_output =
 			wl_registry_bind(registry, id,
-					 &wl_output_interface, 1);
+					 &wl_output_interface, version);
 		wl_output_add_listener(output->wl_output,
 				       &output_listener, output);
 		client->output = output;
@@ -479,7 +526,7 @@ handle_global(void *data, struct wl_registry *registry,
 		test = xzalloc(sizeof *test);
 		test->weston_test =
 			wl_registry_bind(registry, id,
-					 &weston_test_interface, 1);
+					 &weston_test_interface, version);
 		weston_test_add_listener(test->weston_test, &test_listener, test);
 		client->test = test;
 	} else if (strcmp(interface, "wl_drm") == 0) {
@@ -593,6 +640,9 @@ client_create(int x, int y, int width, int height)
 
 	/* must have an output */
 	assert(client->output);
+
+	/* the output must be initialized */
+	assert(client->output->initialized == 1);
 
 	/* initialize the client surface */
 	surface = xzalloc(sizeof *surface);
