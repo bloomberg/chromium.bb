@@ -398,8 +398,14 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
            if named_property_getter.is_enumerable else '0' %}
     {
         v8::NamedPropertyHandlerConfiguration config({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
+        {% if not named_property_getter.is_custom %}
+        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings));
+        {% endif %}
         {% if named_property_getter.do_not_check_security %}
         config.flags = v8::PropertyHandlerFlags::kAllCanRead;
+        {% endif %}
+        {% if not is_override_builtins and not named_property_getter.is_custom %}
+        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kNonMasking));
         {% endif %}
         functionTemplate->{{set_on_template}}()->SetHandler(config);
     }

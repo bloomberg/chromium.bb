@@ -12008,16 +12008,7 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     auto nameString = name.As<v8::String>();
-    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
-    if (v8CallBoolean(info.Holder()->HasRealNamedProperty(context, nameString)))
-        return;
-    v8::Local<v8::Value> namedPropertyValue;
-    if (info.Holder()->GetRealNamedPropertyInPrototypeChain(context, nameString).ToLocal(&namedPropertyValue))
-        return;
-
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(nameString);
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
@@ -12036,16 +12027,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 
 static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     auto nameString = name.As<v8::String>();
-    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
-    if (v8CallBoolean(info.Holder()->HasRealNamedProperty(context, nameString)))
-        return;
-    v8::Local<v8::Value> namedPropertyValue;
-    if (info.Holder()->GetRealNamedPropertyInPrototypeChain(context, nameString).ToLocal(&namedPropertyValue))
-        return;
-
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> propertyName(nameString);
     if (!propertyName.prepare())
@@ -12069,8 +12051,6 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
 
 static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    if (!name->IsString())
-        return;
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);
@@ -12092,8 +12072,6 @@ static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::Prope
 
 static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    if (!name->IsString())
-        return;
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
@@ -12630,6 +12608,8 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     }
     {
         v8::NamedPropertyHandlerConfiguration config(TestObjectV8Internal::namedPropertyGetterCallback, TestObjectV8Internal::namedPropertySetterCallback, TestObjectV8Internal::namedPropertyQueryCallback, TestObjectV8Internal::namedPropertyDeleterCallback, TestObjectV8Internal::namedPropertyEnumeratorCallback);
+        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings));
+        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kNonMasking));
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestObjectV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
