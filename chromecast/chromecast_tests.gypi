@@ -13,7 +13,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            '<(cast_internal_gyp):cast_tests_internal',
+            'internal/chromecast_internal.gyp:cast_tests_internal',
           ],
         }],
       ],

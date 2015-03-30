@@ -30,7 +30,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            '<(cast_internal_gyp):media_base_internal',
+            '../internal/chromecast_internal.gyp:media_base_internal',
           ],
         }, {
           'sources': [
@@ -120,7 +120,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            '<(cast_internal_gyp):cma_backend_internal',
+            '../internal/chromecast_internal.gyp:cma_backend_internal',
           ],
         }, {
           'sources': [

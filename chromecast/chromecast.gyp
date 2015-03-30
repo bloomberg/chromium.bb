@@ -68,7 +68,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            '<(cast_internal_gyp):crash_internal',
+            'internal/chromecast_internal.gyp:crash_internal',
           ],
         }, {
           'sources': [
@@ -271,7 +271,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            '<(cast_internal_gyp):cast_shell_internal',
+            'internal/chromecast_internal.gyp:cast_shell_internal',
           ],
         }, {
           'sources': [
@@ -411,7 +411,7 @@
           'conditions': [
             ['chromecast_branding=="Chrome"', {
               'dependencies': [
-                '<(cast_internal_gyp):cast_shell_android_internal'
+                'internal/chromecast_internal.gyp:cast_shell_android_internal'
               ],
             }, {
               'sources': [
@@ -552,7 +552,7 @@
           'conditions': [
             ['chromecast_branding=="Chrome"', {
               'dependencies': [
-                '<(cast_internal_gyp):cast_gfx_internal',
+                'internal/chromecast_internal.gyp:cast_gfx_internal',
               ],
             }, {
               'dependencies': [
