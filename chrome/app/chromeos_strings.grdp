@@ -4203,6 +4203,75 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">
     Type Ctrl+Alt+/ or Escape to hide
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ESC_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'esc' (Escape) key.">
+    esc
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BACK_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'back' key that when pressed the browser goes back to the previous page in the tab's browsing history.">
+    back
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FORWARD_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'forward' key that when pressed the browser goes forward to the next page in the tab's browsing history.">
+    forward
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'reload' key that when pressed the browser reloads the current page.">
+    reload
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FULL_SCREEN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'full screen' key that when pressed the active window will become full screen.">
+    full screen
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SWITCH_WIN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'switch window' key that when pressed an overview of all windows will be shown on screen.">
+    switch window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BRIGHT_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'bright down' key that turns the screen's brightness down.">
+    bright down
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BRIGHT_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'bright up' key that turns the screen's brightness up.">
+    bright up
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MUTE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'mute' key that mutes the system's sound.">
+    mute
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_VOL_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'volume down' key that turns the system's sound volume down.">
+    vol. down
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_VOL_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'volume up' key that turns the system's sound volume up">
+    vol. up
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_POWER_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'power' key.">
+    power
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BACKSPACE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'backspace' key.">
+    backspace
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TAB_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'tab' key.">
+    tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SEARCH_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'search' key.">
+    search
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ENTER_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'enter' key.">
+    enter
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SHIFT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'shift' key.">
+    shift
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CTRL_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'ctrl' key.">
+    ctrl
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ALT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'alt' key.">
+    alt
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_LEFT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'left' arrow key.">
+    left
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_RIGHT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'right' arrow key.">
+    right
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'up' arrow key.">
+    up
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'down' arrow key.">
+    down
+  </message>
   <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_SHELF_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last shelf item).">
     Last shelf item

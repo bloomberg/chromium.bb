@@ -100,6 +100,36 @@ var KEYCODE_TO_LABEL = {
   222: '\'',
 };
 
+/**
+ * Some key labels define actions (like for example 'vol. up' or 'mute').
+ * These labels should be localized. (crbug.com/471025).
+ */
+var LABEL_TO_LOCALIZED_LABEL_ID = {
+  'esc' : 'keyboardOverlayEscKeyLabel',
+  'back' : 'keyboardOverlayBackKeyLabel',
+  'forward' : 'keyboardOverlayForwardKeyLabel',
+  'reload' : 'keyboardOverlayReloadKeyLabel',
+  'full screen' : 'keyboardOverlayFullScreenKeyLabel',
+  'switch window' : 'keyboardOverlaySwitchWinKeyLabel',
+  'bright down' : 'keyboardOverlayBrightDownKeyLabel',
+  'bright up' : 'keyboardOverlayBrightUpKeyLabel',
+  'mute' : 'keyboardOverlayMuteKeyLabel',
+  'vol. down' : 'keyboardOverlayVolDownKeyLabel',
+  'vol. up' : 'keyboardOverlayVolUpKeyLabel',
+  'power' : 'keyboardOverlayPowerKeyLabel',
+  'backspace' : 'keyboardOverlayBackspaceKeyLabel',
+  'tab' : 'keyboardOverlayTabKeyLabel',
+  'search' : 'keyboardOverlaySearchKeyLabel',
+  'enter' : 'keyboardOverlayEnterKeyLabel',
+  'shift' : 'keyboardOverlayShiftKeyLabel',
+  'ctrl' : 'keyboardOverlayCtrlKeyLabel',
+  'alt' : 'keyboardOverlayAltKeyLabel',
+  'left' : 'keyboardOverlayLeftKeyLabel',
+  'right' : 'keyboardOverlayRightKeyLabel',
+  'up' : 'keyboardOverlayUpKeyLabel',
+  'down' : 'keyboardOverlayDownKeyLabel',
+};
+
 var IME_ID_PREFIX = '_comp_ime_';
 var EXTENSION_ID_LEN = 32;
 
@@ -420,6 +450,12 @@ function getKeyTextValue(keyData) {
     if (keyData.label == 'space') {
       return '';
     }
+    // some key labels define actions such as 'mute' or 'vol. up'. Those actions
+    // should be localized (crbug.com/471025).
+    var localizedLabel = LABEL_TO_LOCALIZED_LABEL_ID[keyData.label];
+    if (localizedLabel)
+      return loadTimeData.getString(localizedLabel);
+
     return keyData.label;
   }
 
