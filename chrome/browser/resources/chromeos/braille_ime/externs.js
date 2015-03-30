@@ -8,6 +8,6 @@
  */
 
 /**
- * @type {Object}
+ * @type {Storage}
  */
 var localStorage;

@@ -177,6 +177,7 @@
         'common/page_selection_test.unitjs',
         'common/selection_util_test.unitjs',
         'common/spannable_test.unitjs',
+        'common/string_util_test.unitjs',
         'chromevox/injected/event_watcher_test.unitjs',
         'chromevox/injected/live_regions_test.unitjs',
         'chromevox/injected/user_commands_test.unitjs',

@@ -1,0 +1,32 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
+
+/**
+ * Test fixture.
+ * @constructor
+ * @extends {ChromeVoxUnitTestBase}
+ */
+function StringUtilUnitTest() {
+  ChromeVoxUnitTestBase.call(this);
+}
+
+StringUtilUnitTest.prototype = {
+  __proto__: ChromeVoxUnitTestBase.prototype,
+
+  /** @override */
+  closureModuleDeps: [
+    'StringUtil',
+  ],
+};
+
+TEST_F('StringUtilUnitTest', 'longestCommonPrefixLength', function() {
+  var lcpl = StringUtil.longestCommonPrefixLength;
+  assertEquals(0, lcpl('', ''));
+  assertEquals(0, lcpl('', 'hello'));
+  assertEquals(0, lcpl('hello', ''));
+  assertEquals(1, lcpl('hi', 'hello'));
+});

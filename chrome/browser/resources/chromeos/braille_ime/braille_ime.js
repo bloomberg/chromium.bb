@@ -18,7 +18,7 @@
  *   Sent on focus/blur to inform ChromeVox of the type of the current field.
  *   In the latter case (blur), context is null.
  * {type: 'reset'}
- *   Sent when the {code onReset} IME event fires.
+ *   Sent when the {@code onReset} IME event fires.
  * {type: 'brailleDots', dots: number}
  *   Sent when the user typed a braille cell using the standard keyboard.
  *   ChromeVox treats this similarly to entering braille input using the
@@ -184,7 +184,7 @@ BrailleIme.prototype = {
    * @private
    */
   onFocus_: function(context) {
-    this.log_('onFocus', JSON.stringify(context));
+    this.log_('onFocus', context);
     this.sendInputContext_(context);
   },
 
@@ -204,7 +204,7 @@ BrailleIme.prototype = {
    * @private
    */
   onInputContextUpdate_: function(context) {
-    this.log_('onInputContextUpdate', JSON.stringify(context));
+    this.log_('onInputContextUpdate', context);
     this.sendInputContext_(context);
   },
 
@@ -215,7 +215,6 @@ BrailleIme.prototype = {
    * @private
    */
   onKeyEvent_: function(engineID, event) {
-    this.log_('onKeyEvent', engineID + ', ' + JSON.stringify(event));
     var result = this.processKey_(event);
     if (result !== undefined) {
       chrome.input.ime.keyEventHandled(event.requestId, result);
@@ -257,14 +256,14 @@ BrailleIme.prototype = {
    * Outputs a log message to the console, only if {@link BrailleIme.DEBUG}
    * is set to true.
    * @param {string} func Name of the caller.
-   * @param {string} message Message to output.
+   * @param {Object|string=} message Message to output.
    * @private
    */
   log_: function(func, message) {
-    if (func === 'onKeyEvent') {
-      return;
-    }
     if (this.DEBUG) {
+      if (typeof(message) !== 'string') {
+        message = JSON.stringify(message);
+      }
       console.log('BrailleIme.' + func + ': ' + message);
     }
   },
@@ -341,8 +340,8 @@ BrailleIme.prototype = {
    * @private
    */
   onChromeVoxMessage_: function(message) {
-    this.log_('onChromeVoxMessage', JSON.stringify(message));
     message = /** @type {{type: string}} */ (message);
+    this.log_('onChromeVoxMessage', message);
     switch (message.type) {
       case 'replaceText':
         message =
@@ -372,8 +371,7 @@ BrailleIme.prototype = {
    */
   onChromeVoxDisconnect_: function() {
     this.port_ = null;
-    this.log_('onChromeVoxDisconnect',
-              JSON.stringify(chrome.runtime.lastError));
+    this.log_('onChromeVoxDisconnect', chrome.runtime.lastError);
   },
 
   /**
@@ -415,16 +413,12 @@ BrailleIme.prototype = {
    * @param {string} toInsert Text to insert at the cursor.
    */
   replaceText_: function(contextID, deleteBefore, toInsert) {
-    var addText = function() {
-      chrome.input.ime.commitText(
-          {contextID: contextID, text: toInsert});
-    }.bind(this);
+    var addText = chrome.input.ime.commitText.bind(
+        null, {contextID: contextID, text: toInsert}, function() {});
     if (deleteBefore > 0) {
-      var deleteText = function() {
-        chrome.input.ime.deleteSurroundingText(
-            {engineID: this.engineID_, contextID: contextID,
-             offset: -deleteBefore, length: deleteBefore}, addText);
-      }.bind(this);
+      var deleteText = chrome.input.ime.deleteSurroundingText.bind(null,
+          {engineID: this.engineID_, contextID: contextID,
+           offset: -deleteBefore, length: deleteBefore}, addText);
       // Make sure there's no non-zero length selection so that
       // deleteSurroundingText works correctly.
       chrome.input.ime.deleteSurroundingText(
