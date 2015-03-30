@@ -33,7 +33,11 @@ public class BitmapDynamicResource implements DynamicResource {
      * @param bitmap A bitmap to update this resource.
      */
     public void setBitmap(Bitmap bitmap) {
+        // Not updating bitmap is still bad, but better than a crash. We will still crash if there
+        // is no bitmap to start with. See http://crbug.com/471234 for more.
+        if (bitmap == null) return;
         mIsDirty = true;
+        if (mBitmap != null) mBitmap.recycle();
         mBitmap = bitmap;
         mSize.set(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
     }
