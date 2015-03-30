@@ -66,7 +66,10 @@ class _Generator(object):
     """ Given an Enum Type object, returns the Code for the enum's definition.
     """
     c = Code()
-    c.Append('/**').Append(' * @enum {string}').Append(' */')
+    (c.Sblock(line='/**', line_prefix=' * ')
+      .Append('@enum {string}')
+      .Append(self._GenerateSeeLink('type', js_type.simple_name))
+      .Eblock(' */'))
     c.Append('chrome.%s.%s = {' % (self._namespace.name, js_type.name))
     c.Append('\n'.join(
         ["  %s: '%s'," % (v.name, v.name) for v in js_type.enum_values]))
@@ -98,6 +101,7 @@ class _Generator(object):
     else:
       c.Concat(self._GenerateTypedef(js_type.properties))
 
+    c.Append(self._GenerateSeeLink('type', js_type.simple_name))
     c.Eblock(' */')
 
     var = 'var ' + js_type.simple_name
@@ -126,7 +130,6 @@ class _Generator(object):
 
     c = Code()
     c.Sblock('{')
-    type_descriptions = []
     first = True
     for field, prop in properties.items():
       # Avoid trailing comma.
@@ -145,7 +148,6 @@ class _Generator(object):
       c.Concat(js_type, new_line=False)
 
     c.Eblock('}')
-    # TODO(tbreisacher): Add '@see <link to documentation>'.
 
     return c
 
@@ -185,6 +187,8 @@ class _Generator(object):
 
     if function.deprecated:
       c.Append('@deprecated %s' % function.deprecated)
+
+    c.Append(self._GenerateSeeLink('method', function.name))
 
     c.Eblock(' */')
     return c
@@ -267,8 +271,13 @@ class _Generator(object):
        chrome.bookmarks.onChildrenReordered;
     """
     c = Code()
-    (c.Append('/** @type {!ChromeEvent} */')
-      .Append('chrome.%s.%s;' % (self._namespace.name, event.name)))
+    c.Sblock(line='/**', line_prefix=' * ')
+    if (event.description):
+      c.Comment(event.description, comment_prefix='')
+    c.Append('@type {!ChromeEvent}')
+    c.Append(self._GenerateSeeLink('event', event.name))
+    c.Eblock(' */')
+    c.Append('chrome.%s.%s;' % (self._namespace.name, event.name))
     return c
 
   def _GenerateNamespaceObject(self):
@@ -292,3 +301,15 @@ class _Generator(object):
     if function.callback:
       params.append(function.callback)
     return ', '.join(param.name for param in params)
+
+  def _GenerateSeeLink(self, object_type, object_name):
+    """Generates a @see link for a given API 'object' (type, method, or event).
+    """
+
+    # NOTE(devlin): This is kind of a hack. Some APIs will be hosted on
+    # developer.chrome.com/apps/ instead of /extensions/, and some APIs have
+    # '.'s in them (like app.window), which should resolve to 'app_window'.
+    # Luckily, the doc server has excellent url resolution, and knows exactly
+    # what we mean. This saves us from needing any complicated logic here.
+    return ('@see https://developer.chrome.com/extensions/%s#%s-%s' %
+                (self._namespace.name, object_type, object_name))

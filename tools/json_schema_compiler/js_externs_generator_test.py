@@ -62,6 +62,11 @@ namespace fakeApi {
 
     [deprecated="Use a new method."] static DOMString returnString();
   };
+
+  interface Events {
+    // Fired when we realize it's a trap!
+    static void onTrapDetected(Baz baz);
+  };
 };
 """
 
@@ -79,6 +84,7 @@ chrome.fakeApi = {};
 
 /**
  * @enum {string}
+ * @see https://developer.chrome.com/extensions/fakeApi#type-Greek
  */
 chrome.fakeApi.Greek = {
   ALPHA: 'ALPHA',
@@ -91,6 +97,7 @@ chrome.fakeApi.Greek = {
  * @typedef {{
  *   num: number
  * }}
+ * @see https://developer.chrome.com/extensions/fakeApi#type-Bar
  */
 var Bar;
 
@@ -109,6 +116,7 @@ var Bar;
  *   maybe: (number|undefined),
  *   choice: (string|!chrome.fakeApi.Greek|!Array<number>)
  * }}
+ * @see https://developer.chrome.com/extensions/fakeApi#type-Baz
  */
 var Baz;
 
@@ -117,6 +125,7 @@ var Baz;
  * comment! It goes onto multiple lines!
  * @param {Baz} baz The baz to use.
  * @param {function():void} callback
+ * @see https://developer.chrome.com/extensions/fakeApi#method-doSomething
  */
 chrome.fakeApi.doSomething = function(baz, callback) {};
 
@@ -124,14 +133,23 @@ chrome.fakeApi.doSomething = function(baz, callback) {};
  * @param {function(Baz, !chrome.fakeApi.Greek):void=} callback The callback
  *     which will most assuredly in all cases be called; that is, of course, iff
  *     such a callback was provided and is not at all null.
+ * @see https://developer.chrome.com/extensions/fakeApi#method-bazGreek
  */
 chrome.fakeApi.bazGreek = function(callback) {};
 
 /**
  * @return {string}
  * @deprecated Use a new method.
+ * @see https://developer.chrome.com/extensions/fakeApi#method-returnString
  */
 chrome.fakeApi.returnString = function() {};
+
+/**
+ * Fired when we realize it's a trap!
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/fakeApi#event-onTrapDetected
+ */
+chrome.fakeApi.onTrapDetected;
 """ % datetime.now().year
 
 
@@ -226,6 +244,7 @@ chrome.fakeJson = {};
  *   str: string,
  *   int: number
  * }}
+ * @see https://developer.chrome.com/extensions/fakeJson#method-funcWithInlineObj
  */
 chrome.fakeJson.funcWithInlineObj = function(inlineObj, callback) {};
 """ % datetime.now().year
