@@ -38,7 +38,6 @@ class Attribute;
 class DocumentType;
 class Element;
 class Node;
-class Range;
 
 typedef HashMap<AtomicString, AtomicString> Namespaces;
 
@@ -67,8 +66,7 @@ class MarkupAccumulator {
     WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Range* = nullptr, SerializationType = AsOwnerDocument);
-    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Position&, const Position&, SerializationType = AsOwnerDocument);
+    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Position& start, const Position& end, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     String serializeNodes(Node& targetNode, EChildrenOnly);

@@ -114,7 +114,7 @@ private:
 };
 
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes)
-    : MarkupAccumulator(nodes, ResolveAllURLs, nullptr)
+    : MarkupAccumulator(nodes, ResolveAllURLs, Position(), Position())
     , m_serializer(serializer)
     , m_document(&document)
 {

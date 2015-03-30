@@ -37,14 +37,13 @@ namespace blink {
 
 class ContainerNode;
 class Node;
-class Range;
 class StylePropertySet;
 
 class StyledMarkupAccumulator final : public MarkupAccumulator {
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
-    StyledMarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs, EAnnotateForInterchange, RawPtr<const Range>, Node* highestNodeToBeSerialized = nullptr);
+    StyledMarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
     Node* serializeNodes(Node* startNode, Node* pastEnd);
     void appendString(const String& s) { return MarkupAccumulator::appendString(s); }
     void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, RangeFullySelectsNode = DoesFullySelectNode);

@@ -44,8 +44,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, RawPtr<const Range> range, Node* highestNodeToBeSerialized)
-    : MarkupAccumulator(nodes, shouldResolveURLs, range)
+StyledMarkupAccumulator::StyledMarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
+    : MarkupAccumulator(nodes, shouldResolveURLs, start, end)
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {

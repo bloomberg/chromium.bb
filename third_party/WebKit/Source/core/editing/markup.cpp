@@ -267,7 +267,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
     if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))
         fullySelectedRoot = body;
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
-    StyledMarkupAccumulator accumulator(nullptr, shouldResolveURLs, shouldAnnotate, updatedRange, specialCommonAncestor);
+    StyledMarkupAccumulator accumulator(nullptr, shouldResolveURLs, shouldAnnotate, updatedRange->startPosition(), updatedRange->endPosition(), specialCommonAncestor);
     Node* pastEnd = updatedRange->pastLastNode();
 
     Node* startNode = updatedRange->firstNode();
@@ -441,7 +441,7 @@ String createMarkup(const Node* node, EChildrenOnly childrenOnly, EAbsoluteURLs 
     if (!node)
         return "";
 
-    MarkupAccumulator accumulator(nullptr, shouldResolveURLs);
+    MarkupAccumulator accumulator(nullptr, shouldResolveURLs, Position(), Position());
     return accumulator.serializeNodes(const_cast<Node&>(*node), childrenOnly);
 }
 
@@ -769,7 +769,7 @@ String createStyledMarkupForNavigationTransition(Node* node)
 {
     node->document().updateLayoutIgnorePendingStylesheets();
 
-    StyledMarkupAccumulator accumulator(0, ResolveAllURLs, AnnotateForNavigationTransition, nullptr, 0);
+    StyledMarkupAccumulator accumulator(0, ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
     accumulator.serializeNodes(node, NodeTraversal::nextSkippingChildren(*node));
 
     static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
