@@ -1559,6 +1559,10 @@ void ResourceDispatcherHostImpl::OnAudioRenderHostStreamStateChanged(
     int child_id,
     int route_id,
     bool is_playing) {
+  // The ResourceDispatcherHost may have already been shut down.
+  // See http://crbug.com/455098
+  if (!scheduler_)
+    return;
   scheduler_->OnAudibilityChanged(child_id, route_id, is_playing);
 }
 
