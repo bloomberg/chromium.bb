@@ -2806,6 +2806,39 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(grand_child3->drawable_content_rect().IsEmpty());
 }
 
+TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  root->AddChild(child);
+  child->AddChild(grand_child);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_matrix;
+  gfx::Transform child_scale_matrix;
+  child_scale_matrix.Scale(0.25f, 0.25f);
+  gfx::Transform grand_child_scale_matrix;
+  grand_child_scale_matrix.Scale(0.246f, 0.246f);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), child_scale_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), grand_child_scale_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+
+  child->SetMasksToBounds(true);
+  ExecuteCalculateDrawProperties(root.get());
+
+  // The visible rect is expanded to integer coordinates in target space before
+  // being projected back to layer space, where it is once again expanded to
+  // integer coordinates.
+  EXPECT_EQ(gfx::Rect(49, 49), grand_child->visible_rect_from_property_trees());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInUnclippedRenderSurface) {
   scoped_refptr<Layer> root = Layer::Create();
