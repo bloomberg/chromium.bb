@@ -1118,8 +1118,6 @@ Bug(gardener) [ Debug Linux ] media/video-controls-with-cast-rendering.html [ Im
 Bug(gardener) [ Debug Win7 ] media/video-controls-with-cast-rendering.html [ ImageOnlyFailure Pass ]
 crbug.com/390125 [ Release Linux ] media/video-frame-accurate-seek.html [ Failure ]
 crbug.com/390125 [ Debug Linux ] media/video-frame-accurate-seek.html [ Failure ]
-Bug(gardener) [ Debug Linux ] paint/images/image-backgrounds-not-antialiased.html [ Pass Timeout ]
-Bug(gardener) [ Debug Win7 ] paint/images/image-backgrounds-not-antialiased.html [ Pass Timeout ]
 crbug.com/309369 [ Release Linux ] perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309369 [ Release Mavericks ] perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309369 [ Release Win7 ] perf/accessibility-title-ui-element.html [ Pass Timeout ]
