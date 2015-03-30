@@ -409,12 +409,56 @@ TEST_P(OffDomainInclusionDetectorTest, NoEventForSameDomainInclusions) {
   }
 }
 
+TEST_P(OffDomainInclusionDetectorTest, NoEventForSameIPInclusions) {
+  for (content::ResourceType tested_type :
+       kResourceTypesObservedIfInMainFrame) {
+    SCOPED_TRACE(tested_type);
+
+    SimulateTestURLRequest("http://1.2.3.4/foo",
+                           "http://1.2.3.4/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
+
+    EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
+  }
+}
+
 TEST_P(OffDomainInclusionDetectorTest, OffDomainInclusionInMainFrame) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
     SimulateTestURLRequest("http://offdomain.com/foo",
+                           "http://mydomain.com/bar", tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
+
+    EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
+  }
+}
+
+TEST_P(OffDomainInclusionDetectorTest, OffIPIPInclusionInMainFrame) {
+  for (content::ResourceType tested_type :
+       kResourceTypesObservedIfInMainFrame) {
+    SCOPED_TRACE(tested_type);
+
+    SimulateTestURLRequest("http://1.2.3.4/foo",
+                           "http://5.6.7.8/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
+
+    EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
+  }
+}
+
+TEST_P(OffDomainInclusionDetectorTest, OffDomainIPInclusionInMainFrame) {
+  for (content::ResourceType tested_type :
+       kResourceTypesObservedIfInMainFrame) {
+    SCOPED_TRACE(tested_type);
+
+    SimulateTestURLRequest("http://1.2.3.4/foo",
                            "http://mydomain.com/bar",
                            tested_type,
                            true,    // is_main_frame

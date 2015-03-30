@@ -48,6 +48,7 @@ struct OffDomainInclusionDetector::OffDomainInclusionInfo {
   GURL main_frame_url;
 
   // Cache of the top-level domain contained in |main_frame_url|.
+  // This could be an IP address.
   std::string main_frame_domain;
 
  private:
@@ -180,14 +181,38 @@ void OffDomainInclusionDetector::BeginAnalysis(
     return;
   }
 
-  off_domain_inclusion_info->main_frame_domain =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          off_domain_inclusion_info->main_frame_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  if (!off_domain_inclusion_info->request_url.DomainIs(
-          off_domain_inclusion_info->main_frame_domain.c_str())) {
+  const bool main_frame_is_ip =
+      off_domain_inclusion_info->main_frame_url.HostIsIPAddress();
+  if (main_frame_is_ip) {
+    off_domain_inclusion_info->main_frame_domain =
+        off_domain_inclusion_info->main_frame_url.host();
+  } else {
+    off_domain_inclusion_info->main_frame_domain =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            off_domain_inclusion_info->main_frame_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  }
+  const bool request_is_ip =
+      off_domain_inclusion_info->request_url.HostIsIPAddress();
+
+  bool is_off_domain = false;
+  if (main_frame_is_ip && request_is_ip) {
+    // Both are IP addresses: compare them as strings
+    is_off_domain = off_domain_inclusion_info->main_frame_domain !=
+                    off_domain_inclusion_info->request_url.host();
+  } else if (!main_frame_is_ip && !request_is_ip) {
+    // Neither are: compare as domains
+    is_off_domain = !off_domain_inclusion_info->request_url.DomainIs(
+        off_domain_inclusion_info->main_frame_domain.c_str());
+  } else {
+    // Just one is an IP
+    is_off_domain = true;
+  }
+
+  if (is_off_domain) {
     // Upon detecting that |request_url| is an off-domain inclusion, compare it
     // against the inclusion whitelist.
+
     // Note: |request_url| sadly needs to be copied below as the scoped_ptr
     // currently owning it will be passed on to a temporary/unaccessible
     // scoped_ptr in the Reply Callback and a ConstRef of it therefore can't be
