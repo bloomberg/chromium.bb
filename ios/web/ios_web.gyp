@@ -15,6 +15,7 @@
       ],
       'dependencies': [
         'ios_web_core',
+        'user_agent',
         '../../base/base.gyp:base',
         '../../content/content.gyp:content_browser',
         '../../net/net.gyp:net',
@@ -101,16 +102,39 @@
         'web_state/js/crw_js_message_manager.mm',
         'web_state/js/page_script_util.h',
         'web_state/js/page_script_util.mm',
+        'web_state/ui/crw_context_menu_provider.h',
+        'web_state/ui/crw_context_menu_provider.mm',
+        'web_state/ui/crw_debug_web_view.h',
+        'web_state/ui/crw_debug_web_view.mm',
+        'web_state/ui/crw_simple_web_view_controller.h',
         'web_state/web_state_observer.cc',
         'web_state/web_state_observer_bridge.mm',
         'web_state/wk_web_view_ssl_error_util.h',
         'web_state/wk_web_view_ssl_error_util.mm',
+        'web_state/ui/crw_swipe_recognizer_provider.h',
+        'web_state/ui/crw_touch_tracking_recognizer.h',
+        'web_state/ui/crw_touch_tracking_recognizer.mm',
+        'web_state/ui/crw_ui_simple_web_view_controller.h',
+        'web_state/ui/crw_ui_simple_web_view_controller.mm',
+        'web_state/ui/crw_wk_simple_web_view_controller.h',
+        'web_state/ui/crw_wk_simple_web_view_controller.mm',
+        'web_state/ui/crw_wk_web_view_crash_detector.h',
+        'web_state/ui/crw_wk_web_view_crash_detector.mm',
+        'web_state/ui/web_view_js_utils.h',
+        'web_state/ui/web_view_js_utils.mm',
         'web_thread.cc',
         'web_thread_impl.cc',
         'web_thread_impl.h',
         'web_view_util.h',
         'web_view_util.mm',
       ],
+      'link_settings': {
+        'xcode_settings': {
+          'OTHER_LDFLAGS': [
+            '-weak_framework WebKit',
+          ]
+        },
+      },
     },
     # Target shared by ios_web and CrNet.
     {
@@ -175,6 +199,20 @@
         'public/test/test_web_thread_bundle.h',
         'test/test_web_thread.cc',
         'test/test_web_thread_bundle.cc',
+      ],
+    },
+    {
+      'target_name': 'user_agent',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base'
+      ],
+      'sources': [
+        'public/user_agent.h',
+        'public/user_agent.mm',
       ],
     },
   ],
