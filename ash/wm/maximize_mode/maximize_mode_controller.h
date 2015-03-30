@@ -64,7 +64,7 @@ class ASH_EXPORT MaximizeModeController :
   // unittests; the event blocker prevents keyboard input when running ChromeOS
   // on linux. http://crbug.com/362881
   // Turn the always maximize mode window manager on or off.
-  void EnableMaximizeModeWindowManager(bool enable);
+  void EnableMaximizeModeWindowManager(bool should_enable);
 
   // Test if the MaximizeModeWindowManager is enabled or not.
   bool IsMaximizeModeWindowManagerEnabled() const;

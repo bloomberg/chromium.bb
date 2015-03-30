@@ -97,7 +97,11 @@ MaximizeModeController::MaximizeModeController()
       touchview_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
       lid_is_closed_(false) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell* shell = Shell::GetInstance();
+  shell->AddShellObserver(this);
+  shell->metrics()->RecordUserMetricsAction(
+      ash::UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
+
 #if defined(OS_CHROMEOS)
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->
@@ -128,15 +132,24 @@ bool MaximizeModeController::CanEnterMaximizeMode() {
              switches::kAshEnableTouchViewTesting);
 }
 
-void MaximizeModeController::EnableMaximizeModeWindowManager(bool enable) {
-  if (enable && !maximize_mode_window_manager_.get()) {
+void MaximizeModeController::EnableMaximizeModeWindowManager(
+    bool should_enable) {
+  bool is_enabled = !!maximize_mode_window_manager_.get();
+  if (should_enable == is_enabled)
+    return;
+
+  Shell* shell = Shell::GetInstance();
+
+  if (should_enable) {
     maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
-    Shell::GetInstance()->OnMaximizeModeStarted();
-  } else if (!enable && maximize_mode_window_manager_.get()) {
+    shell->metrics()->RecordUserMetricsAction(ash::UMA_MAXIMIZE_MODE_ENABLED);
+    shell->OnMaximizeModeStarted();
+  } else {
     maximize_mode_window_manager_.reset();
-    Shell::GetInstance()->OnMaximizeModeEnded();
+    shell->metrics()->RecordUserMetricsAction(ash::UMA_MAXIMIZE_MODE_DISABLED);
+    shell->OnMaximizeModeEnded();
   }
 }
 

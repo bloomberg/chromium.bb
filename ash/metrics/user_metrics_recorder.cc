@@ -86,6 +86,16 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("Launcher_ClickOnApplistButton"));
       break;
+    case UMA_MAXIMIZE_MODE_DISABLED:
+      base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
+      break;
+    case UMA_MAXIMIZE_MODE_ENABLED:
+      base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));
+      break;
+    case UMA_MAXIMIZE_MODE_INITIALLY_DISABLED:
+      base::RecordAction(
+          base::UserMetricsAction("Touchview_Initially_Disabled"));
+      break;
     case ash::UMA_MOUSE_DOWN:
       base::RecordAction(base::UserMetricsAction("Mouse_Down"));
       break;
