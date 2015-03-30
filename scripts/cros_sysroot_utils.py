@@ -13,7 +13,6 @@ import sys
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 
 
@@ -24,6 +23,7 @@ def ParseArgs(argv):
     argv: array of arguments passed to the script.
   """
   parser = commandline.ArgumentParser(description=__doc__)
+  parser.set_defaults(out_file=None)
   subparser = parser.add_subparsers()
   wrapper = subparser.add_parser('create-wrappers')
   wrapper.add_argument('--sysroot', help='Path to the sysroot.', required=True)
@@ -41,6 +41,28 @@ def ParseArgs(argv):
   config.add_argument('--sysroot', help='Path to the sysroot.', required=True)
   config.set_defaults(command='generate-config')
 
+  makeconf = subparser.add_parser('generate-make-conf')
+  makeconf.add_argument('--sysroot', help='Sysroot to use.')
+  makeconf.add_argument('--out-file', dest='out_file',
+                        help='File to write the configuration into. If not '
+                        'specified, the configuration will be printed to '
+                        'stdout.')
+  makeconf.add_argument('--accepted-licenses',
+                        help='List of accepted licenses.')
+  makeconf.set_defaults(command='generate-make-conf')
+
+  binhost = subparser.add_parser('generate-binhosts')
+  binhost.add_argument('--sysroot', help='Sysroot to use.')
+  binhost.add_argument('--out-file', dest='out_file',
+                       help='File to write the configuration into. If not '
+                       'specified, the configuration will be printed to '
+                       'stdout.')
+  binhost.add_argument('--chrome-only', dest='chrome_only', action='store_true',
+                       help='Generate only the chrome binhost.')
+  binhost.add_argument('--local-only', dest='local_only', action='store_true',
+                       help='Use compatible local boards only.')
+  binhost.set_defaults(command='generate-binhosts')
+
   options = parser.parse_args(argv)
   options.Freeze()
   return options
@@ -55,6 +77,10 @@ def main(argv):
     cros_build_lib.SudoRunCommand(sys.argv, print_cmd=False)
     return
 
+  output = sys.stdout
+  if opts.out_file:
+    output = open(opts.out_file, 'w')
+
   if opts.command == 'create-wrappers':
     sysroot_lib.CreateAllWrappers(opts.sysroot, opts.toolchain,
                                   opts.friendlyname)
@@ -65,7 +91,11 @@ def main(argv):
     else:
       config = sysroot_lib.GenerateBoardConfig(opts.sysroot, board=opts.board)
 
-    if opts.out_file:
-      osutils.WriteFile(opts.out_file, config, makedirs=True)
-    else:
-      print(config)
+    output.write('\n' + config)
+  elif opts.command == 'generate-make-conf':
+    output.write('\n' + sysroot_lib.GenerateMakeConf(opts.sysroot,
+                                                     opts.accepted_licenses))
+  elif opts.command == 'generate-binhosts':
+    output.write('\n' + sysroot_lib.GenerateBinhostConf(opts.sysroot,
+                                                        opts.chrome_only,
+                                                        opts.local_only))

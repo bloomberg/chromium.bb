@@ -9,7 +9,9 @@ from __future__ import print_function
 import multiprocessing
 import os
 
+from chromite.cbuildbot import binhost
 from chromite.cbuildbot import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import toolchain
@@ -53,6 +55,26 @@ exec pkg-config "$@"
 _wrapper_dir = '/usr/local/bin'
 
 _CONFIGURATION_PATH = 'etc/make.conf.board_setup'
+
+_CHROME_BINHOST_SUFFIX = '-LATEST_RELEASE_CHROME_BINHOST.conf'
+
+_INTERNAL_BINHOST_DIR = os.path.join(
+    constants.SOURCE_ROOT, 'src/private-overlays/chromeos-partner-overlay/'
+    'chromeos/binhost/target')
+_EXTERNAL_BINHOST_DIR = os.path.join(
+    constants.SOURCE_ROOT, constants.CHROMIUMOS_OVERLAY_DIR,
+    'chromeos/binhost/target')
+
+_CHROMEOS_INTERNAL_BOTO_PATH = os.path.join(
+    constants.SOURCE_ROOT, 'src', 'private-overlays', 'chromeos-overlay',
+    'googlestorage_account.boto')
+
+_ARCH_MAPPING = {
+    'amd64': 'amd64-generic',
+    'x86': 'x86-generic',
+    'arm': 'arm-generic',
+    'mips': 'mipsel-o32-generic',
+}
 
 
 def CreateWrapper(command_name, template, **kwargs):
@@ -152,7 +174,7 @@ def _DictToKeyValue(dictionary):
 
 
 def GenerateBoardConfig(sysroot, board):
-  """Generate the sysroot configuration for a given board.
+  """Generates the sysroot configuration for a given board.
 
   Args:
     sysroot: path to the sysroot.
@@ -180,7 +202,7 @@ def GenerateBoardConfig(sysroot, board):
 
 
 def GenerateBrickConfig(sysroot, brick):
-  """Generate the sysroot configuration for a given brick.
+  """Generates the sysroot configuration for a given brick.
 
   Args:
     sysroot: path to the sysroot.
@@ -213,3 +235,188 @@ def WriteSysrootConfig(sysroot, config):
   """
   path = os.path.join(sysroot, _CONFIGURATION_PATH)
   osutils.WriteFile(path, config, makedirs=True)
+
+
+def GenerateMakeConf(sysroot, accepted_licenses=None):
+  """Generates the board specific make.conf.
+
+  Args:
+    sysroot: Path to a sysroot.
+    accepted_licenses: Licenses accepted by portage as a string.
+  """
+  config = ["""# AUTO-GENERATED FILE. DO NOT EDIT.
+
+# Source make.conf from each overlay."""]
+
+  overlay_list = GetStandardField(sysroot, 'BOARD_OVERLAY')
+  boto_config = ''
+  for overlay in overlay_list.splitlines():
+    make_conf = os.path.join(overlay, 'make.conf')
+    boto_file = os.path.join(overlay, 'googlestorage_account.boto')
+    if os.path.isfile(make_conf):
+      config.append('source %s' % make_conf)
+
+    if os.path.isfile(boto_file):
+      boto_config = boto_file
+
+  # If there is a boto file in the chromeos internal overlay, use it as it will
+  # have access to the most stuff.
+  if os.path.isfile(_CHROMEOS_INTERNAL_BOTO_PATH):
+    boto_config = _CHROMEOS_INTERNAL_BOTO_PATH
+
+  gs_fetch_binpkg = os.path.join(constants.SOURCE_ROOT, 'chromite', 'bin',
+                                 'gs_fetch_binpkg')
+  gsutil_cmd = '%s \\"${URI}\\" \\"${DISTDIR}/${FILE}\\"' % gs_fetch_binpkg
+  config.append('BOTO_CONFIG="%s"' % boto_config)
+  config.append('FETCHCOMMAND_GS="bash -c \'BOTO_CONFIG=%s %s\'"'
+                % (boto_config, gsutil_cmd))
+  config.append('RESUMECOMMAND_GS="$FETCHCOMMAND_GS"')
+
+  if accepted_licenses:
+    config.append('ACCEPT_LICENSE="%s"' % accepted_licenses)
+
+  return '\n'.join(config)
+
+
+def GenerateBinhostConf(sysroot, chrome_only=False, local_only=False):
+  """Returns the binhost configuration.
+
+  Args:
+    sysroot: path to the sysroot.
+    chrome_only: If True, generate only the binhost for chrome.
+    local_only: If True, use binary packages from local boards only.
+  """
+  board = GetStandardField(sysroot, 'BOARD_USE')
+  if local_only:
+    if not board:
+      return ''
+    # TODO(bsimonnet): Refactor cros_generate_local_binhosts into a function
+    # here and remove the following call.
+    local_binhosts = cros_build_lib.RunCommand(
+        [os.path.join(constants.CHROMITE_BIN_DIR,
+                      'cros_generate_local_binhosts'), '--board=%s' % board],
+        print_cmd=False, capture_output=True).output
+    return '\n'.join([local_binhosts,
+                      'PORTAGE_BINHOST="$LOCAL_BINHOST"'])
+
+  config = []
+  chrome_binhost = board and _ChromeBinhost(board)
+  preflight_binhost, preflight_binhost_internal = _PreflightBinhosts(sysroot,
+                                                                     board)
+
+  if chrome_only:
+    if chrome_binhost:
+      return '\n'.join(['source %s' % chrome_binhost,
+                        'PORTAGE_BINHOST="$LATEST_RELEASE_CHROME_BINHOST"'])
+    else:
+      return ''
+
+  config.append("""
+# FULL_BINHOST is populated by the full builders. It is listed first because it
+# is the lowest priority binhost. It is better to download packages from the
+# preflight binhost because they are fresher packages.
+PORTAGE_BINHOST="$FULL_BINHOST"
+""")
+
+  if preflight_binhost:
+    config.append("""
+# PREFLIGHT_BINHOST is populated by the preflight builders. If the same
+# package is provided by both the preflight and full binhosts, the package is
+# downloaded from the preflight binhost.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PREFLIGHT_BINHOST"
+""" % preflight_binhost)
+
+  if preflight_binhost_internal:
+    config.append("""
+# The internal PREFLIGHT_BINHOST is populated by the internal preflight
+# builders. It takes priority over the public preflight binhost.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PREFLIGHT_BINHOST"
+""" % preflight_binhost_internal)
+
+  if chrome_binhost:
+    config.append("""
+# LATEST_RELEASE_CHROME_BINHOST provides prebuilts for chromeos-chrome only.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
+""" % chrome_binhost)
+
+  return '\n'.join(config)
+
+
+def _ChromeBinhost(board):
+  """Gets the latest chrome binhost for |board|.
+
+  Args:
+    board: The board to use.
+  """
+  extra_useflags = os.environ.get('USE', '').split()
+  compat_id = binhost.CalculateCompatId(board, extra_useflags)
+  internal_config = binhost.PrebuiltMapping.GetFilename(
+      constants.SOURCE_ROOT, 'chrome')
+  external_config = binhost.PrebuiltMapping.GetFilename(
+      constants.SOURCE_ROOT, 'chromium', internal=False)
+  binhost_dirs = (_INTERNAL_BINHOST_DIR, _EXTERNAL_BINHOST_DIR)
+
+  if os.path.exists(internal_config):
+    pfq_configs = binhost.PrebuiltMapping.Load(internal_config)
+  elif os.path.exists(external_config):
+    pfq_configs = binhost.PrebuiltMapping.Load(external_config)
+  else:
+    return None
+
+  for key in pfq_configs.GetPrebuilts(compat_id):
+    for binhost_dir in binhost_dirs:
+      binhost_file = os.path.join(binhost_dir,
+                                  key.board + _CHROME_BINHOST_SUFFIX)
+      # Make sure the binhost file is not empty. We sometimes empty the file to
+      # force clients to use another binhost.
+      if _NotEmpty(binhost_file):
+        return binhost_file
+
+  return None
+
+
+def _PreflightBinhosts(sysroot, board=None):
+  """Returns the preflight binhost to use for |sysroot|
+
+  Args:
+    sysroot: Path to the sysroot.
+    board: Board name.
+  """
+  prefixes = []
+  arch = GetStandardField(sysroot, 'ARCH')
+  if arch in _ARCH_MAPPING:
+    prefixes.append(_ARCH_MAPPING[arch])
+
+  if board:
+    prefixes = [board, board.split('_')[0]] + prefixes
+
+  filenames = ['%s-PREFLIGHT_BINHOST.conf' % p for p in prefixes]
+
+  external = internal = None
+  for filename in filenames:
+    # The binhost file must exist and not be empty, both for internal and
+    # external binhosts.
+    # When a builder is deleted and no longer publishes prebuilts, we need
+    # developers to pick up the next set of prebuilts. Clearing the binhost
+    # files triggers this.
+    candidate = os.path.join(_INTERNAL_BINHOST_DIR, filename)
+    if not internal and _NotEmpty(candidate):
+      internal = candidate
+
+    candidate = os.path.join(_EXTERNAL_BINHOST_DIR, filename)
+    if not external and _NotEmpty(candidate):
+      external = candidate
+
+  return external, internal
+
+
+def _NotEmpty(filepath):
+  """Returns True if |filepath| is not empty.
+
+  Args:
+    filepath: path to a file.
+  """
+  return os.path.exists(filepath) and osutils.ReadFile(filepath).strip()
