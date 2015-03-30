@@ -133,7 +133,7 @@ Output.ROLE_INFO_ = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: '$name $role $value',
+      speak: '$name $value $role',
       braille: ''
     },
     alert: {
