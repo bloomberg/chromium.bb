@@ -76,7 +76,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
                            const base::string16& description,
                            const GURL& url);
 
-  JavaObjectWeakGlobalRef weak_java_observer_;
+  base::android::ScopedJavaGlobalRef<jobject> java_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsObserverProxy);
 };
