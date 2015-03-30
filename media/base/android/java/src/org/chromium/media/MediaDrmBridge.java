@@ -12,16 +12,15 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayDeque;
@@ -873,32 +872,47 @@ public class MediaDrmBridge {
         }
 
         private byte[] postRequest(String url, byte[] drmRequest) {
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(url + "&signedRequest=" + new String(drmRequest));
-
-            Log.d(TAG, "PostRequest:" + httpPost.getRequestLine());
+            HttpURLConnection urlConnection = null;
             try {
-                // Add data
-                httpPost.setHeader("Accept", "*/*");
-                httpPost.setHeader("User-Agent", "Widevine CDM v1.0");
-                httpPost.setHeader("Content-Type", "application/json");
+                URL request = new URL(url + "&signedRequest=" + new String(drmRequest));
+                urlConnection = (HttpURLConnection) request.openConnection();
+                urlConnection.setDoOutput(true);
+                urlConnection.setDoInput(true);
+                urlConnection.setUseCaches(false);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("User-Agent", "Widevine CDM v1.0");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
 
-                // Execute HTTP Post Request
-                HttpResponse response = httpClient.execute(httpPost);
-
-                byte[] responseBody;
-                int responseCode = response.getStatusLine().getStatusCode();
+                int responseCode = urlConnection.getResponseCode();
                 if (responseCode == 200) {
-                    responseBody = EntityUtils.toByteArray(response.getEntity());
+                    BufferedInputStream bis =
+                            new BufferedInputStream(urlConnection.getInputStream());
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    int read = 0;
+                    int bufferSize = 512;
+                    byte[] buffer = new byte[bufferSize];
+                    try {
+                        while (true) {
+                            read = bis.read(buffer);
+                            if (read == -1) break;
+                            bos.write(buffer, 0, read);
+                        }
+                    } finally {
+                        bis.close();
+                    }
+                    return bos.toByteArray();
                 } else {
                     Log.d(TAG, "Server returned HTTP error code " + responseCode);
                     return null;
                 }
-                return responseBody;
-            } catch (ClientProtocolException e) {
+            } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) urlConnection.disconnect();
             }
             return null;
         }
