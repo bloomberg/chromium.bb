@@ -2284,7 +2284,6 @@ _paladin_hwtest_boards = frozenset([
   'daisy',
   'link',
   'lumpy',
-  'peach_pit',
   'peppy',
   'stumpy',
   'wolf',
@@ -2416,7 +2415,6 @@ def ShardHWTestsBetweenBuilders(*args):
 # bvt-cq takes longer, so it usually makes sense to give it the faster board.
 ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
 ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
-ShardHWTestsBetweenBuilders('daisy-paladin', 'peach_pit-paladin')
 ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
 # Add a pre-cq config for every board.
