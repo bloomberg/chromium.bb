@@ -329,6 +329,25 @@ void Label::OnEnabledChanged() {
   RecalculateColors();
 }
 
+scoped_ptr<gfx::RenderText> Label::CreateRenderText(
+    const base::string16& text,
+    gfx::HorizontalAlignment alignment,
+    gfx::DirectionalityMode directionality,
+    gfx::ElideBehavior elide_behavior) {
+  scoped_ptr<gfx::RenderText> render_text(
+      render_text_->CreateInstanceOfSameType());
+  render_text->SetHorizontalAlignment(alignment);
+  render_text->SetDirectionalityMode(directionality);
+  render_text->SetElideBehavior(elide_behavior);
+  render_text->SetObscured(obscured());
+  render_text->SetMinLineHeight(line_height());
+  render_text->SetFontList(font_list());
+  render_text->set_shadows(shadows());
+  render_text->SetCursorEnabled(false);
+  render_text->SetText(text);
+  return render_text.Pass();
+}
+
 void Label::PaintText(gfx::Canvas* canvas) {
   MaybeBuildRenderTextLines();
   for (size_t i = 0; i < lines_.size(); ++i)
@@ -406,25 +425,6 @@ void Label::ResetLayout() {
   PreferredSizeChanged();
   SchedulePaint();
   lines_.clear();
-}
-
-scoped_ptr<gfx::RenderText> Label::CreateRenderText(
-    const base::string16& text,
-    gfx::HorizontalAlignment alignment,
-    gfx::DirectionalityMode directionality,
-    gfx::ElideBehavior elide_behavior) {
-  scoped_ptr<gfx::RenderText> render_text(
-      render_text_->CreateInstanceOfSameType());
-  render_text->SetHorizontalAlignment(alignment);
-  render_text->SetDirectionalityMode(directionality);
-  render_text->SetElideBehavior(elide_behavior);
-  render_text->SetObscured(obscured());
-  render_text->SetMinLineHeight(line_height());
-  render_text->SetFontList(font_list());
-  render_text->set_shadows(shadows());
-  render_text->SetCursorEnabled(false);
-  render_text->SetText(text);
-  return render_text.Pass();
 }
 
 void Label::MaybeBuildRenderTextLines() {

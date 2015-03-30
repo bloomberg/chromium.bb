@@ -136,6 +136,13 @@ class VIEWS_EXPORT Label : public View {
   void OnEnabledChanged() override;
 
  protected:
+  // Create a single RenderText instance to actually be painted.
+  virtual scoped_ptr<gfx::RenderText> CreateRenderText(
+      const base::string16& text,
+      gfx::HorizontalAlignment alignment,
+      gfx::DirectionalityMode directionality,
+      gfx::ElideBehavior elide_behavior);
+
   void PaintText(gfx::Canvas* canvas);
 
   SkColor disabled_color() const { return actual_disabled_color_; }
@@ -157,13 +164,6 @@ class VIEWS_EXPORT Label : public View {
   void Init(const base::string16& text, const gfx::FontList& font_list);
 
   void ResetLayout();
-
-  // Create a single RenderText instance to actually be painted.
-  scoped_ptr<gfx::RenderText> CreateRenderText(
-      const base::string16& text,
-      gfx::HorizontalAlignment alignment,
-      gfx::DirectionalityMode directionality,
-      gfx::ElideBehavior elide_behavior);
 
   // Set up |lines_| to actually be painted.
   void MaybeBuildRenderTextLines();
