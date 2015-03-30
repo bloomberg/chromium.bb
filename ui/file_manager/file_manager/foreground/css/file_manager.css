@@ -1000,7 +1000,7 @@ body[type='full-page'] .detail-name .detail-icon {
   display: flex;
   flex-direction: row;
   left: 0;
-  padding: 0 10px;
+  padding: 0 6px;
   position: absolute;
   right: 0;
 }
@@ -1012,8 +1012,8 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .thumbnail-bottom .filename-label {
+  -webkit-padding-end: 6px;
   flex: auto;
-  padding: 0 12px;
 }
 
 /* Styles specific for the grid view. */
@@ -1030,6 +1030,10 @@ body[type='full-page'] .detail-name .detail-icon {
   transition: box-shadow 220ms ease;
   vertical-align: top;  /* Prevent vertical spacing for wrapped inline box. */
   width: 180px;
+}
+
+.thumbnail-grid .thumbnail-item.directory {
+  height: 40px;
 }
 
 .thumbnail-grid .thumbnail-item .thumbnail {
@@ -1239,7 +1243,6 @@ li[renaming=''] .badge {
 
 /* Text box used for renaming in the thumbnail list. */
 .thumbnail-grid input.rename {
-  -webkit-margin-start: 10px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -1381,13 +1384,13 @@ li[renaming=''] .badge {
   width: 24px;
 }
 
-#list-container list li .detail-icon {
-  -webkit-margin-end: 10px;
+#list-container li .detail-icon {
+  -webkit-margin-end: 6px;
   height: 28px;
   width: 28px;
 }
 
-#list-container list li .detail-checkmark {
+#list-container li .detail-checkmark {
   background-image: -webkit-image-set(
       url(../images/files/ui/list_checked.png) 1x,
       url(../images/files/ui/2x/list_checked.png) 2x);
@@ -1398,7 +1401,7 @@ li[renaming=''] .badge {
   width: 28px;
 }
 
-body.check-select #list-container list li[selected] .detail-checkmark {
+body.check-select #list-container li[selected] .detail-checkmark {
   opacity: 1;
 }
 

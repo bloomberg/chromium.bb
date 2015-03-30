@@ -166,18 +166,6 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
       url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x);
 }
 
-[generic-thumbnail='folder'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/filetype_placeholder_folder.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_folder.png) 2x);
-}
-
-.shared[generic-thumbnail='folder'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/filetype_placeholder_folder_shared.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_folder_shared.png) 2x);
-}
-
 [generic-thumbnail='image'] {
   background-image: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_image.png) 1x,

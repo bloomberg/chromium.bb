@@ -422,6 +422,18 @@ function FileListModel(metadataModel) {
    * @private
    */
   this.isDescendingOrder_ = false;
+
+  /**
+   * The number of folders in the list.
+   * @private {number}
+   */
+  this.numFolders_ = 0;
+
+  /**
+   * The number of files in the list.
+   * @private {number}
+   */
+  this.numFiles_ = 0;
 }
 
 /**
@@ -464,6 +476,66 @@ FileListModel.prototype.prepareSort = function(field, callback) {
   // sort the file list and we want to start actual sorting as soon as possible
   // after we get the |this.isDescendingOrder_| value in sort().
   callback();
+};
+
+/**
+ * Removes and adds items to the model.
+ * @param {number} index The index of the item to update.
+ * @param {number} deleteCount The number of items to remove.
+ * @param {...*} var_args The items to add.
+ * @return {!Array} An array with the removed items.
+ * @override
+ */
+FileListModel.prototype.splice = function(index, deleteCount, var_args) {
+  for (var i = index; i < index + deleteCount; i++) {
+    if (i >= 0 && i < this.length) {
+      if (this.item(i).isDirectory)
+        this.numFolders_--;
+      else
+        this.numFiles_--;
+    }
+  }
+  for (var i = 2; i < arguments.length; i++) {
+    if (arguments[i].isDirectory)
+      this.numFolders_++;
+    else
+      this.numFiles_++;
+  }
+
+  cr.ui.ArrayDataModel.prototype.splice.apply(this, arguments);
+};
+
+/**
+ * @override
+ */
+FileListModel.prototype.replaceItem = function(oldItem, newItem) {
+  if (oldItem.isDirectory)
+    this.numFolders_--;
+  else
+    this.numFiles_--;
+
+  if (newItem.isDirectory)
+    this.numFolders_++;
+  else
+    this.numFiles_++;
+
+  cr.ui.ArrayDataModel.prototype.replaceItem.apply(this, arguments);
+};
+
+/**
+ * Returns the number of folders in this file list.
+ * @return {number} The number of folders.
+ */
+FileListModel.prototype.getFolderCount = function() {
+  return this.numFolders_;
+};
+
+/**
+ * Returns the number of files in this file list.
+ * @return {number} The number of files.
+ */
+FileListModel.prototype.getFileCount = function() {
+  return this.numFiles_;
 };
 
 /**

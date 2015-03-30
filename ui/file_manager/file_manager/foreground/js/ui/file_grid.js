@@ -123,7 +123,46 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
  * @override
  */
 FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
-  cr.ui.Grid.prototype.mergeItems.call(this, beginIndex, endIndex);
+  cr.ui.List.prototype.mergeItems.call(this, beginIndex, endIndex);
+
+  var afterFiller = this.afterFiller_;
+  var columns = this.columns;
+
+  for (var item = this.beforeFiller_.nextSibling; item != afterFiller;) {
+    var next = item.nextSibling;
+    if (isSpacer(item)) {
+      // Spacer found on a place it mustn't be.
+      this.removeChild(item);
+      item = next;
+      continue;
+    }
+    var index = item.listIndex;
+    var nextIndex = index + 1;
+
+    // Invisible pinned item could be outside of the
+    // [beginIndex, endIndex). Ignore it.
+    if (index >= beginIndex && nextIndex < endIndex &&
+        (nextIndex < this.dataModel.getFolderCount()
+            ? nextIndex % columns == 0
+            : (nextIndex - this.dataModel.getFolderCount()) % columns == 0)) {
+      if (isSpacer(next)) {
+        // Leave the spacer on its place.
+        item = next.nextSibling;
+      } else {
+        // Insert spacer.
+        var spacer = this.ownerDocument.createElement('div');
+        spacer.className = 'spacer';
+        this.insertBefore(spacer, next);
+        item = next;
+      }
+    } else
+      item = next;
+  }
+
+  function isSpacer(child) {
+    return child.classList.contains('spacer') &&
+           child != afterFiller;  // Must not be removed.
+  }
 
   // Make sure that grid item's selected attribute is updated just after the
   // mergeItems operation is done. This prevents shadow of selected grid items
@@ -142,6 +181,182 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
   this.endIndex_ = endIndex;
   if (this.listThumbnailLoader_ !== null)
     this.listThumbnailLoader_.setHighPriorityRange(beginIndex, endIndex);
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.getItemTop = function(index) {
+  if (index < this.dataModel.getFolderCount())
+    return Math.floor(index / this.columns) * this.getFolderItemHeight_();
+
+  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var indexInFiles = index - this.dataModel.getFolderCount();
+  return folderRows * this.getFolderItemHeight_() +
+      Math.floor(indexInFiles / this.columns) * this.getFileItemHeight_();
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.getItemRow = function(index) {
+  if (index < this.dataModel.getFolderCount())
+    return Math.floor(index / this.columns);
+
+  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var indexInFiles = index - this.dataModel.getFolderCount();
+  return folderRows + Math.floor(indexInFiles / this.columns);
+};
+
+/**
+ * Returns the column of an item which has given index.
+ * @param {number} index The item index.
+ */
+FileGrid.prototype.getItemColumn = function(index) {
+  if (index < this.dataModel.getFolderCount())
+    return index % this.columns;
+
+  var indexInFiles = index - this.dataModel.getFolderCount();
+  return indexInFiles % this.columns;
+};
+
+/**
+ * Return the item index which is placed at the given position.
+ * If there is no item in the given position, returns the index of the last item
+ * before the empty spaces.
+ * @param {number} row The row index.
+ * @param {number} column The column index.
+ */
+FileGrid.prototype.getItemIndex = function(row, column) {
+  if (row < 0)
+    return 0;
+  var folderCount = this.dataModel.getFolderCount();
+  var folderRows = Math.ceil(folderCount / this.columns);
+  if (row < folderRows)
+    return Math.min(row * this.columns + column, folderCount - 1);
+
+  return Math.min(folderCount + (row - folderRows) * this.columns + column,
+                  this.dataModel.length - 1);
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.getFirstItemInRow = function(row) {
+  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  if (row < folderRows)
+    return row * this.columns;
+
+  return this.dataModel.getFolderCount() + (row - folderRows) * this.columns;
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.scrollIndexIntoView = function(index) {
+  var dataModel = this.dataModel;
+  if (!dataModel || index < 0 || index >= dataModel.length)
+    return false;
+
+  var itemHeight = index < this.dataModel.getFolderCount() ?
+      this.getFolderItemHeight_() : this.getFileItemHeight_();
+  var scrollTop = this.scrollTop;
+  var top = this.getItemTop(index);
+  var clientHeight = this.clientHeight;
+
+  var computedStyle = window.getComputedStyle(this);
+  var paddingY = parseInt(computedStyle.paddingTop, 10) +
+                 parseInt(computedStyle.paddingBottom, 10);
+  var availableHeight = clientHeight - paddingY;
+
+  var self = this;
+  // Function to adjust the tops of viewport and row.
+  var scrollToAdjustTop = function() {
+      self.scrollTop = top;
+      return true;
+  };
+  // Function to adjust the bottoms of viewport and row.
+  var scrollToAdjustBottom = function() {
+      self.scrollTop = top + itemHeight - availableHeight;
+      return true;
+  };
+
+  // Check if the entire of given indexed row can be shown in the viewport.
+  if (itemHeight <= availableHeight) {
+    if (top < scrollTop)
+      return scrollToAdjustTop();
+    if (scrollTop + availableHeight < top + itemHeight)
+      return scrollToAdjustBottom();
+  } else {
+    if (scrollTop < top)
+      return scrollToAdjustTop();
+    if (top + itemHeight < scrollTop + availableHeight)
+      return scrollToAdjustBottom();
+  }
+  return false;
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.getItemsInViewPort = function(scrollTop, clientHeight) {
+  var beginRow = this.getRowForListOffset_(scrollTop);
+  var endRow = this.getRowForListOffset_(scrollTop + clientHeight - 1) + 1;
+  var beginIndex = this.getFirstItemInRow(beginRow);
+  var endIndex = Math.min(this.getFirstItemInRow(endRow),
+                          this.dataModel.length);
+  var result = {
+    first: beginIndex,
+    length: endIndex - beginIndex,
+    last: endIndex - 1
+  };
+  return result;
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
+  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var fileRows =  Math.ceil(this.dataModel.getFileCount() / this.columns);
+  var row = this.getItemRow(lastIndex - 1);
+  if (row < folderRows) {
+    return (folderRows - 1 - row) * this.getFolderItemHeight_() +
+        fileRows * this.getFileItemHeight_();
+  }
+  var rowInFiles = row - folderRows;
+  return (fileRows - 1 - rowInFiles) * this.getFileItemHeight_();
+};
+
+/**
+ * Returns the height of folder items in grid view.
+ * @return {number} The height of folder items.
+ */
+FileGrid.prototype.getFolderItemHeight_ = function() {
+  return 48;  // TODO(fukino): Read from DOM and cache it.
+};
+
+/**
+ * Returns the height of file items in grid view.
+ * @return {number} The height of file items.
+ */
+FileGrid.prototype.getFileItemHeight_ = function() {
+  return 188;  // TODO(fukino): Read from DOM and cache it.
+};
+
+/**
+ * Returns index of a row which contains the given y-position(offset).
+ * @param {number} offset The offset from the top of grid.
+ * @return {number} Row index corresponding to the given offset.
+ * @private
+ */
+FileGrid.prototype.getRowForListOffset_ = function(offset) {
+  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  if (offset < folderRows * this.getFolderItemHeight_())
+    return Math.floor(offset / this.getFolderItemHeight_());
+
+  var offsetInFiles = offset - folderRows * this.getFolderItemHeight_();
+  return folderRows + Math.floor(offsetInFiles / this.getFileItemHeight_());
 };
 
 /**
@@ -211,19 +426,28 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   }
   frame.appendChild(box);
 
-  var active_checkmark = li.ownerDocument.createElement('div');
-  active_checkmark.className = 'checkmark active';
-  frame.appendChild(active_checkmark);
-  var inactive_checkmark = li.ownerDocument.createElement('div');
-  inactive_checkmark.className = 'checkmark inactive';
-  frame.appendChild(inactive_checkmark);
+  var isDirectory = entry && entry.isDirectory;
+  if (!isDirectory) {
+    var active_checkmark = li.ownerDocument.createElement('div');
+    active_checkmark.className = 'checkmark active';
+    frame.appendChild(active_checkmark);
+    var inactive_checkmark = li.ownerDocument.createElement('div');
+    inactive_checkmark.className = 'checkmark inactive';
+    frame.appendChild(inactive_checkmark);
+  }
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
   var badge = li.ownerDocument.createElement('div');
   badge.className = 'badge';
   bottom.appendChild(badge);
-  bottom.appendChild(filelist.renderFileTypeIcon(li.ownerDocument, entry));
+  var detailIcon = filelist.renderFileTypeIcon(li.ownerDocument, entry);
+  if (isDirectory) {
+    var checkmark = li.ownerDocument.createElement('div');
+    checkmark.className = 'detail-checkmark';
+    detailIcon.appendChild(checkmark);
+  }
+  bottom.appendChild(detailIcon);
   bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
   frame.appendChild(bottom);
 
@@ -497,4 +721,28 @@ FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
 /** @override */
 FileGridSelectionController.prototype.handleKeyDown = function(e) {
   filelist.handleKeyDown.call(this, e);
+};
+
+/** @override */
+FileGridSelectionController.prototype.getIndexBelow = function(index) {
+  if (this.isAccessibilityEnabled())
+    return this.getIndexAfter(index);
+  if (index === this.getLastIndex())
+    return -1;
+
+  var row = this.grid_.getItemRow(index);
+  var col = this.grid_.getItemColumn(index);
+  return this.grid_.getItemIndex(row + 1, col);
+};
+
+/** @override */
+FileGridSelectionController.prototype.getIndexAbove = function(index) {
+  if (this.isAccessibilityEnabled())
+    return this.getIndexBefore(index);
+  if (index == 0)
+    return -1;
+
+  var row = this.grid_.getItemRow(index);
+  var col = this.grid_.getItemColumn(index);
+  return this.grid_.getItemIndex(row - 1, col);
 };
