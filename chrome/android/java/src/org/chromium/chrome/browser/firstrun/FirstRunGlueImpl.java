@@ -28,7 +28,7 @@ public class FirstRunGlueImpl implements FirstRunGlue {
 
     @Override
     public boolean isNeverUploadCrashDump(Context appContext) {
-        return !PrivacyPreferencesManager.getInstance(appContext).isUsageAndCrashReportingEnabled();
+        return PrivacyPreferencesManager.getInstance(appContext).isNeverUploadCrashDump();
     }
 
     @Override
