@@ -219,6 +219,7 @@ class WebsiteTest:
     action_chains = ActionChains(self.driver)
     action_chains.key_down(Keys.CONTROL).key_up(Keys.CONTROL).perform()
 
+    self.Wait(2)  # TODO(vabr): Detect when autofill finished.
     if self.autofill_expectation == WebsiteTest.AUTOFILLED:
       if password_element.get_attribute("value") != self.password:
         raise Exception("Error: autofilled password is different from the saved"
@@ -249,6 +250,7 @@ class WebsiteTest:
     logging.log(SCRIPT_DEBUG, "action: FillUsernameInto %s" % selector)
     username_element = self.WaitUntilDisplayed(selector)
 
+    self.Wait(2)  # TODO(vabr): Detect when autofill finished.
     if not self.username_not_auto:
       if self.autofill_expectation == WebsiteTest.AUTOFILLED:
         if username_element.get_attribute("value") != self.username:
