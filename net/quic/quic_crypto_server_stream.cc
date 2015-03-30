@@ -73,10 +73,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 
   validate_client_hello_cb_ = new ValidateCallback(this);
   return crypto_config_->ValidateClientHello(
-      message,
-      session()->connection()->peer_address(),
-      session()->connection()->clock(),
-      validate_client_hello_cb_);
+      message, session()->connection()->peer_address().address(),
+      session()->connection()->clock(), validate_client_hello_cb_);
 }
 
 void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
@@ -155,8 +153,8 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
   CryptoHandshakeMessage server_config_update_message;
   if (!crypto_config_->BuildServerConfigUpdateMessage(
           previous_source_address_tokens_,
-          session()->connection()->self_address(),
-          session()->connection()->peer_address(),
+          session()->connection()->self_address().address(),
+          session()->connection()->peer_address().address(),
           session()->connection()->clock(),
           session()->connection()->random_generator(),
           crypto_negotiated_params_, cached_network_params,
@@ -227,7 +225,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
 
   return crypto_config_->ProcessClientHello(
       result, session()->connection()->connection_id(),
-      session()->connection()->self_address(),
+      session()->connection()->self_address().address(),
       session()->connection()->peer_address(),
       session()->connection()->version(),
       session()->connection()->supported_versions(),

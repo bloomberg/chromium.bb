@@ -194,7 +194,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   void RunValidate(
       const CryptoHandshakeMessage& message,
       ValidateClientHelloResultCallback* cb) {
-    config_.ValidateClientHello(message, client_address_, &clock_, cb);
+    config_.ValidateClientHello(message, client_address_.address(), &clock_,
+                                cb);
   }
 
   void ShouldFailMentioning(const char* error_substr,
@@ -208,7 +209,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
                             const CryptoHandshakeMessage& message,
                             bool* called) {
     config_.ValidateClientHello(
-        message, client_address_, &clock_,
+        message, client_address_.address(), &clock_,
         new ValidateCallback(this, false, error_substr, called));
   }
 
@@ -216,7 +217,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
                                const ValidateCallback::Result& result,
                                bool should_succeed,
                                const char* error_substr) {
-    IPEndPoint server_ip;
+    IPAddressNumber server_ip;
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
         result, 1 /* ConnectionId */, server_ip, client_address_,
@@ -262,7 +263,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
       size_t expected_count) {
     const uint32* reject_reasons;
     size_t num_reject_reasons;
-    static_assert(sizeof(QuicTag) == sizeof(uint32), "header out of sync");
+    COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
     QuicErrorCode error_code = out_.GetTaglist(kRREJ, &reject_reasons,
                                                &num_reject_reasons);
     ASSERT_EQ(QUIC_NO_ERROR, error_code);

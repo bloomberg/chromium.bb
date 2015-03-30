@@ -12,7 +12,7 @@ namespace net {
 ProofSourceChromium::ProofSourceChromium() {
 }
 
-bool ProofSourceChromium::GetProof(const IPEndPoint& server_ip,
+bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
                                    const string& hostname,
                                    const string& server_config,
                                    bool ecdsa_ok,

@@ -119,7 +119,7 @@ TEST(ProofTest, DISABLED_Verify) {
   const vector<string>* certs;
   const vector<string>* first_certs;
   string error_details, signature, first_signature;
-  IPEndPoint server_ip;
+  IPAddressNumber server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
                                false /* no ECDSA */, &first_certs,

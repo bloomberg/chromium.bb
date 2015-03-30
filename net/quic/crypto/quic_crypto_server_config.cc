@@ -62,6 +62,13 @@ string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
   return hkdf.server_write_key().as_string();
 }
 
+IPAddressNumber DualstackIPAddress(const IPAddressNumber& ip) {
+  if (ip.size() == kIPv4AddressSize) {
+    return ConvertIPv4NumberToIPv6Number(ip);
+  }
+  return ip;
+}
+
 }  // namespace
 
 class ValidateClientHelloHelper {
@@ -159,7 +166,7 @@ class VerifyNonceIsValidAndUniqueCallback
 // static
 const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
-ClientHelloInfo::ClientHelloInfo(const IPEndPoint& in_client_ip,
+ClientHelloInfo::ClientHelloInfo(const IPAddressNumber& in_client_ip,
                                  QuicWallTime in_now)
     : client_ip(in_client_ip),
       now(in_now),
@@ -179,7 +186,7 @@ PrimaryConfigChangedCallback::~PrimaryConfigChangedCallback() {
 
 ValidateClientHelloResultCallback::Result::Result(
     const CryptoHandshakeMessage& in_client_hello,
-    IPEndPoint in_client_ip,
+    IPAddressNumber in_client_ip,
     QuicWallTime in_now)
     : client_hello(in_client_hello),
       info(in_client_ip, in_now),
@@ -475,7 +482,7 @@ void QuicCryptoServerConfig::GetConfigIds(vector<string>* scids) const {
 
 void QuicCryptoServerConfig::ValidateClientHello(
     const CryptoHandshakeMessage& client_hello,
-    IPEndPoint client_ip,
+    IPAddressNumber client_ip,
     const QuicClock* clock,
     ValidateClientHelloResultCallback* done_cb) const {
   const QuicWallTime now(clock->WallNow());
@@ -519,7 +526,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     QuicConnectionId connection_id,
-    const IPEndPoint& server_ip,
+    const IPAddressNumber& server_ip,
     const IPEndPoint& client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
@@ -771,7 +778,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   out->SetStringPiece(
       kSourceAddressTokenTag,
       NewSourceAddressToken(*requested_config.get(), info.source_address_tokens,
-                            client_address, rand, info.now, nullptr));
+                            client_address.address(), rand, info.now, nullptr));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -1045,8 +1052,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
 bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     const SourceAddressTokens& previous_source_address_tokens,
-    const IPEndPoint& server_ip,
-    const IPEndPoint& client_ip,
+    const IPAddressNumber& server_ip,
+    const IPAddressNumber& client_ip,
     const QuicClock* clock,
     QuicRandom* rand,
     const QuicCryptoNegotiatedParameters& params,
@@ -1085,7 +1092,7 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 }
 
 void QuicCryptoServerConfig::BuildRejection(
-    const IPEndPoint& server_ip,
+    const IPAddressNumber& server_ip,
     const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
@@ -1417,17 +1424,13 @@ void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
 string QuicCryptoServerConfig::NewSourceAddressToken(
     const Config& config,
     const SourceAddressTokens& previous_tokens,
-    const IPEndPoint& ip,
+    const IPAddressNumber& ip,
     QuicRandom* rand,
     QuicWallTime now,
     const CachedNetworkParameters* cached_network_params) const {
-  IPAddressNumber ip_address = ip.address();
-  if (ip.GetSockAddrFamily() == AF_INET) {
-    ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
-  }
   SourceAddressTokens source_address_tokens;
   SourceAddressToken* source_address_token = source_address_tokens.add_tokens();
-  source_address_token->set_ip(IPAddressToPackedString(ip_address));
+  source_address_token->set_ip(IPAddressToPackedString(DualstackIPAddress(ip)));
   source_address_token->set_timestamp(now.ToUNIXSeconds());
   if (cached_network_params != nullptr) {
     *(source_address_token->mutable_cached_network_parameters()) =
@@ -1509,7 +1512,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
 HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
     const Config& config,
     StringPiece token,
-    const IPEndPoint& ip,
+    const IPAddressNumber& ip,
     QuicWallTime now,
     CachedNetworkParameters* cached_network_params) const {
   string storage;
@@ -1524,11 +1527,8 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
     return SOURCE_ADDRESS_TOKEN_PARSE_FAILURE;
   }
 
-  IPAddressNumber ip_address = ip.address();
-  if (ip.GetSockAddrFamily() == AF_INET) {
-    ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
-  }
-  if (source_address_token.ip() != IPAddressToPackedString(ip_address)) {
+  if (source_address_token.ip() !=
+      IPAddressToPackedString(DualstackIPAddress(ip))) {
     // It's for a different IP address.
     return SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE;
   }
@@ -1556,7 +1556,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
 
 HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressTokens(
     const SourceAddressTokens& source_address_tokens,
-    const IPEndPoint& ip,
+    const IPAddressNumber& ip,
     QuicWallTime now,
     CachedNetworkParameters* cached_network_params) const {
   HandshakeFailureReason reason =
@@ -1576,13 +1576,10 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressTokens(
 
 HandshakeFailureReason QuicCryptoServerConfig::ValidateSingleSourceAddressToken(
     const SourceAddressToken& source_address_token,
-    const IPEndPoint& ip,
+    const IPAddressNumber& ip,
     QuicWallTime now) const {
-  IPAddressNumber ip_address = ip.address();
-  if (ip.GetSockAddrFamily() == AF_INET) {
-    ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
-  }
-  if (source_address_token.ip() != IPAddressToPackedString(ip_address)) {
+  if (source_address_token.ip() !=
+      IPAddressToPackedString(DualstackIPAddress(ip))) {
     // It's for a different IP address.
     return SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE;
   }

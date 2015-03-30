@@ -52,7 +52,7 @@ class QuicCryptoServerConfigPeer {
 
   string NewSourceAddressToken(string config_id,
                                SourceAddressTokens previous_tokens,
-                               const IPEndPoint& ip,
+                               const IPAddressNumber& ip,
                                QuicRandom* rand,
                                QuicWallTime now,
                                CachedNetworkParameters* cached_network_params) {
@@ -63,7 +63,7 @@ class QuicCryptoServerConfigPeer {
 
   HandshakeFailureReason ValidateSourceAddressToken(string config_id,
                                                     StringPiece srct,
-                                                    const IPEndPoint& ip,
+                                                    const IPAddressNumber& ip,
                                                     QuicWallTime now) {
     return ValidateSourceAddressToken(config_id, srct, ip, now, NULL);
   }
@@ -71,7 +71,7 @@ class QuicCryptoServerConfigPeer {
   HandshakeFailureReason ValidateSourceAddressToken(
       string config_id,
       StringPiece srct,
-      const IPEndPoint& ip,
+      const IPAddressNumber& ip,
       QuicWallTime now,
       CachedNetworkParameters* cached_network_params) {
     return server_config_->ValidateSourceAddressToken(
@@ -80,7 +80,7 @@ class QuicCryptoServerConfigPeer {
 
   HandshakeFailureReason ValidateSourceAddressTokens(string config_id,
                                                      StringPiece srct,
-                                                     const IPEndPoint& ip,
+                                                     const IPAddressNumber ip,
                                                      QuicWallTime now) {
     return ValidateSourceAddressTokens(config_id, srct, ip, now, NULL);
   }
@@ -88,7 +88,7 @@ class QuicCryptoServerConfigPeer {
   HandshakeFailureReason ValidateSourceAddressTokens(
       string config_id,
       StringPiece srct,
-      const IPEndPoint& ip,
+      const IPAddressNumber& ip,
       QuicWallTime now,
       CachedNetworkParameters* cached_network_params) {
     SourceAddressTokens tokens;
@@ -277,9 +277,9 @@ TEST(QuicCryptoServerConfigTest, GetOrbitIsCalledWithoutTheStrikeRegisterLock) {
 class SourceAddressTokenTest : public ::testing::Test {
  public:
   SourceAddressTokenTest()
-      : ip4_(IPEndPoint(Loopback4(), 1)),
-        ip4_dual_(ConvertIPv4NumberToIPv6Number(ip4_.address()), 1),
-        ip6_(IPEndPoint(Loopback6(), 2)),
+      : ip4_(Loopback4()),
+        ip4_dual_(ConvertIPv4NumberToIPv6Number(ip4_)),
+        ip6_(Loopback6()),
         original_time_(QuicWallTime::Zero()),
         rand_(QuicRandom::GetInstance()),
         server_(QuicCryptoServerConfig::TESTING, rand_),
@@ -304,19 +304,19 @@ class SourceAddressTokenTest : public ::testing::Test {
         server_.AddConfig(override_config_protobuf_.get(), original_time_));
   }
 
-  string NewSourceAddressToken(string config_id, const IPEndPoint& ip) {
+  string NewSourceAddressToken(string config_id, const IPAddressNumber& ip) {
     return NewSourceAddressToken(config_id, ip, NULL);
   }
 
   string NewSourceAddressToken(string config_id,
-                               const IPEndPoint& ip,
+                               const IPAddressNumber& ip,
                                const SourceAddressTokens& previous_tokens) {
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
                                        clock_.WallNow(), NULL);
   }
 
   string NewSourceAddressToken(string config_id,
-                               const IPEndPoint& ip,
+                               const IPAddressNumber& ip,
                                CachedNetworkParameters* cached_network_params) {
     SourceAddressTokens previous_tokens;
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
@@ -325,29 +325,30 @@ class SourceAddressTokenTest : public ::testing::Test {
 
   HandshakeFailureReason ValidateSourceAddressToken(string config_id,
                                                     StringPiece srct,
-                                                    const IPEndPoint& ip) {
+                                                    const IPAddressNumber& ip) {
     return ValidateSourceAddressToken(config_id, srct, ip, NULL);
   }
 
   HandshakeFailureReason ValidateSourceAddressToken(
       string config_id,
       StringPiece srct,
-      const IPEndPoint& ip,
+      const IPAddressNumber& ip,
       CachedNetworkParameters* cached_network_params) {
     return peer_.ValidateSourceAddressToken(
         config_id, srct, ip, clock_.WallNow(), cached_network_params);
   }
 
-  HandshakeFailureReason ValidateSourceAddressTokens(string config_id,
-                                                     StringPiece srct,
-                                                     const IPEndPoint& ip) {
+  HandshakeFailureReason ValidateSourceAddressTokens(
+      string config_id,
+      StringPiece srct,
+      const IPAddressNumber& ip) {
     return ValidateSourceAddressTokens(config_id, srct, ip, NULL);
   }
 
   HandshakeFailureReason ValidateSourceAddressTokens(
       string config_id,
       StringPiece srct,
-      const IPEndPoint& ip,
+      const IPAddressNumber& ip,
       CachedNetworkParameters* cached_network_params) {
     return peer_.ValidateSourceAddressTokens(
         config_id, srct, ip, clock_.WallNow(), cached_network_params);
@@ -356,9 +357,9 @@ class SourceAddressTokenTest : public ::testing::Test {
   const string kPrimary = "<primary>";
   const string kOverride = "Config with custom source address token key";
 
-  IPEndPoint ip4_;
-  IPEndPoint ip4_dual_;
-  IPEndPoint ip6_;
+  IPAddressNumber ip4_;
+  IPAddressNumber ip4_dual_;
+  IPAddressNumber ip6_;
 
   MockClock clock_;
   QuicWallTime original_time_;
@@ -568,8 +569,8 @@ TEST_F(SourceAddressTokenTest, DISABLED_SourceAddressTokenMultipleAddresses) {
 
   // Now create a token which is usable for both addresses.
   SourceAddressToken previous_token;
-  IPAddressNumber ip_address = ip6_.address();
-  if (ip6_.GetSockAddrFamily() == AF_INET) {
+  IPAddressNumber ip_address = ip6_;
+  if (ip6_.size() == kIPv4AddressSize) {
     ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
   }
   previous_token.set_ip(IPAddressToPackedString(ip_address));

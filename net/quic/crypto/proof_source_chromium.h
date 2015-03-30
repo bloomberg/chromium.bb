@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
   ~ProofSourceChromium() override {}
 
   // ProofSource interface
-  bool GetProof(const IPEndPoint& server_ip,
+  bool GetProof(const IPAddressNumber& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
                 bool ecdsa_ok,

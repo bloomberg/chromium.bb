@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE ProofSource {
   // used.
   //
   // This function may be called concurrently.
-  virtual bool GetProof(const IPEndPoint& server_ip,
+  virtual bool GetProof(const IPAddressNumber& server_ip,
                         const std::string& hostname,
                         const std::string& server_config,
                         bool ecdsa_ok,
