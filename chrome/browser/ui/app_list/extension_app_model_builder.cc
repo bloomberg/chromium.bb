@@ -50,9 +50,10 @@ ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
 }
 
 void ExtensionAppModelBuilder::InitializeWithService(
-    app_list::AppListSyncableService* service) {
+    app_list::AppListSyncableService* service,
+    app_list::AppListModel* model) {
   DCHECK(!service_ && !profile_);
-  model_ = service->model();
+  model_ = model;
   service_ = service;
   profile_ = service->profile();
   InitializePrefChangeRegistrars();

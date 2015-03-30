@@ -45,7 +45,8 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   ~ExtensionAppModelBuilder() override;
 
   // Initialize to use app-list sync and sets |service_| to |service|.
-  void InitializeWithService(app_list::AppListSyncableService* service);
+  void InitializeWithService(app_list::AppListSyncableService* service,
+                             app_list::AppListModel* model);
 
   // Initialize to use extension sync and sets |service_| to NULL. Used in
   // tests and when AppList sync is not enabled.

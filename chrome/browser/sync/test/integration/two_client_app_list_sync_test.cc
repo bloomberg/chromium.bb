@@ -63,7 +63,7 @@ void CheckAppInfoInPrefs(Profile* profile,
 
   for (auto id : expected_ids) {
     app_list::AppListItem* item =
-        service->model()->top_level_item_list()->FindItem(id);
+        service->GetModel()->top_level_item_list()->FindItem(id);
     ASSERT_TRUE(item);
     // Ensure local prefs matches the model data.
     scoped_ptr<app_list::AppListPrefs::AppListInfo> info =
@@ -530,7 +530,7 @@ class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
     bool res = TwoClientAppListSyncTest::SetupClients();
     app_list::AppListSyncableService* verifier_service =
         app_list::AppListSyncableServiceFactory::GetForProfile(verifier());
-    verifier_service->model()->SetFoldersEnabled(true);
+    verifier_service->GetModel()->SetFoldersEnabled(true);
     return res;
   }
 

@@ -314,8 +314,8 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     template_url_service_observer_.Add(template_url_service);
   }
 
-  model_ =
-      app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->model();
+  model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
+               ->GetModel();
 
 #if defined(USE_ASH)
   app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));

@@ -11,8 +11,6 @@
 #include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sync/api/string_ordinal.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
@@ -42,8 +40,7 @@ class ModelPrefUpdater;
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
                                public KeyedService,
-                               public DriveAppUninstallSyncService,
-                               public content::NotificationObserver {
+                               public DriveAppUninstallSyncService {
  public:
   struct SyncItem {
     SyncItem(const std::string& id,
@@ -80,9 +77,11 @@ class AppListSyncableService : public syncer::SyncableService,
   // Sets the name of the folder for OEM apps.
   void SetOemFolderName(const std::string& name);
 
+  // Gets the app list model, building it if it doesn't yet exist.
+  AppListModel* GetModel();
+
   Profile* profile() { return profile_; }
-  AppListModel* model() { return model_.get(); }
-  size_t GetNumSyncItemsForTest() const { return sync_items_.size(); }
+  size_t GetNumSyncItemsForTest();
   const std::string& GetOemFolderNameForTest() const {
     return oem_folder_name_;
   }
@@ -110,11 +109,6 @@ class AppListSyncableService : public syncer::SyncableService,
   // DriveAppUninstallSyncService
   void TrackUninstalledDriveApp(const std::string& drive_app_id) override;
   void UntrackUninstalledDriveApp(const std::string& drive_app_id) override;
-
-  // content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Builds the model once ExtensionService is ready.
   void BuildModel();
@@ -199,7 +193,6 @@ class AppListSyncableService : public syncer::SyncableService,
 
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
-  content::NotificationRegistrar registrar_;
   scoped_ptr<AppListModel> model_;
   scoped_ptr<ModelObserver> model_observer_;
   scoped_ptr<ModelPrefUpdater> model_pref_updater_;

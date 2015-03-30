@@ -58,33 +58,34 @@ bool SyncAppListHelper::AppListMatchesVerifier(Profile* profile) {
       AppListSyncableServiceFactory::GetForProfile(test_->verifier());
   // Note: sync item entries may not exist in verifier, but item lists should
   // match.
-  if (service->model()->top_level_item_list()->item_count() !=
-      verifier->model()->top_level_item_list()->item_count()) {
+  if (service->GetModel()->top_level_item_list()->item_count() !=
+      verifier->GetModel()->top_level_item_list()->item_count()) {
     LOG(ERROR) << "Model item count: "
-               << service->model()->top_level_item_list()->item_count()
+               << service->GetModel()->top_level_item_list()->item_count()
                << " != "
-               << verifier->model()->top_level_item_list()->item_count();
+               << verifier->GetModel()->top_level_item_list()->item_count();
     return false;
   }
   bool res = true;
-  for (size_t i = 0; i < service->model()->top_level_item_list()->item_count();
-       ++i) {
-    AppListItem* item1 = service->model()->top_level_item_list()->item_at(i);
-    AppListItem* item2 = verifier->model()->top_level_item_list()->item_at(i);
+  for (size_t i = 0;
+       i < service->GetModel()->top_level_item_list()->item_count(); ++i) {
+    AppListItem* item1 = service->GetModel()->top_level_item_list()->item_at(i);
+    AppListItem* item2 =
+        verifier->GetModel()->top_level_item_list()->item_at(i);
     if (item1->CompareForTest(item2))
       continue;
 
     LOG(ERROR) << "Item(" << i << "): " << item1->ToDebugString()
                << " != " << item2->ToDebugString();
     size_t index2;
-    if (!verifier->model()->top_level_item_list()->FindItemIndex(item1->id(),
-                                                                 &index2)) {
+    if (!verifier->GetModel()->top_level_item_list()->FindItemIndex(item1->id(),
+                                                                    &index2)) {
       LOG(ERROR) << " Item(" << i << "): " << item1->ToDebugString()
                  << " Not in verifier.";
     } else {
       LOG(ERROR) << " Item(" << i << "): " << item1->ToDebugString()
                  << " Has different verifier index: " << index2;
-      item2 = verifier->model()->top_level_item_list()->item_at(index2);
+      item2 = verifier->GetModel()->top_level_item_list()->item_at(index2);
       LOG(ERROR) << " Verifier Item(" << index2
                  << "): " << item2->ToDebugString();
     }
@@ -120,7 +121,7 @@ bool SyncAppListHelper::AllProfilesHaveSameAppListAsVerifier() {
 void SyncAppListHelper::MoveApp(Profile* profile, size_t from, size_t to) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  service->model()->top_level_item_list()->MoveItem(from, to);
+  service->GetModel()->top_level_item_list()->MoveItem(from, to);
 }
 
 void SyncAppListHelper::MoveAppToFolder(Profile* profile,
@@ -128,8 +129,8 @@ void SyncAppListHelper::MoveAppToFolder(Profile* profile,
                                         const std::string& folder_id) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  service->model()->MoveItemToFolder(
-      service->model()->top_level_item_list()->item_at(index), folder_id);
+  service->GetModel()->MoveItemToFolder(
+      service->GetModel()->top_level_item_list()->item_at(index), folder_id);
 }
 
 void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
@@ -137,12 +138,12 @@ void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
                                           const std::string& folder_id) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  AppListFolderItem* folder = service->model()->FindFolderItem(folder_id);
+  AppListFolderItem* folder = service->GetModel()->FindFolderItem(folder_id);
   if (!folder) {
     LOG(ERROR) << "Folder not found: " << folder_id;
     return;
   }
-  service->model()->MoveItemToFolder(
+  service->GetModel()->MoveItemToFolder(
       folder->item_list()->item_at(index_in_folder), "");
 }
 
@@ -152,17 +153,17 @@ void SyncAppListHelper::CopyOrdinalsToVerifier(Profile* profile,
       AppListSyncableServiceFactory::GetForProfile(profile);
   AppListSyncableService* verifier =
       AppListSyncableServiceFactory::GetForProfile(test_->verifier());
-  verifier->model()->top_level_item_list()->SetItemPosition(
-      verifier->model()->FindItem(id),
-      service->model()->FindItem(id)->position());
+  verifier->GetModel()->top_level_item_list()->SetItemPosition(
+      verifier->GetModel()->FindItem(id),
+      service->GetModel()->FindItem(id)->position());
 }
 
 void SyncAppListHelper::PrintAppList(Profile* profile) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  for (size_t i = 0; i < service->model()->top_level_item_list()->item_count();
-       ++i) {
-    AppListItem* item = service->model()->top_level_item_list()->item_at(i);
+  for (size_t i = 0;
+       i < service->GetModel()->top_level_item_list()->item_count(); ++i) {
+    AppListItem* item = service->GetModel()->top_level_item_list()->item_at(i);
     std::string label = base::StringPrintf("Item(%d): ", static_cast<int>(i));
     PrintItem(profile, item, label);
   }

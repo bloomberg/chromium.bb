@@ -44,7 +44,7 @@ ExtensionFunction::ResponseAction LauncherPagePushSubpageFunction::Run() {
       LauncherPageAPI::GetFactoryInstance()
           ->Get(browser_context())
           ->GetService();
-  app_list::AppListModel* model = service->model();
+  app_list::AppListModel* model = service->GetModel();
   model->PushCustomLauncherPageSubpage();
 
   return RespondNow(NoArguments());
@@ -77,7 +77,7 @@ ExtensionFunction::ResponseAction LauncherPageSetEnabledFunction::Run() {
       LauncherPageAPI::GetFactoryInstance()
           ->Get(browser_context())
           ->GetService();
-  app_list::AppListModel* model = service->model();
+  app_list::AppListModel* model = service->GetModel();
   model->SetCustomLauncherPageEnabled(params->enabled);
 
   return RespondNow(NoArguments());

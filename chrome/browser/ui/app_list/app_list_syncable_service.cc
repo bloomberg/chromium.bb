@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_prefs.h"
@@ -19,7 +18,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -181,11 +179,11 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
       : owner_(owner),
         adding_item_(NULL) {
     DVLOG(2) << owner_ << ": ModelObserver Added";
-    owner_->model()->AddObserver(this);
+    owner_->GetModel()->AddObserver(this);
   }
 
   ~ModelObserver() override {
-    owner_->model()->RemoveObserver(this);
+    owner_->GetModel()->RemoveObserver(this);
     DVLOG(2) << owner_ << ": ModelObserver Removed";
   }
 
@@ -244,20 +242,6 @@ AppListSyncableService::AppListSyncableService(
 
   oem_folder_name_ =
       l10n_util::GetStringUTF8(IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME);
-
-  // Note: model_observer_ is constructed after the initial sync changes are
-  // received in MergeDataAndStartSyncing(). Changes to the model before that
-  // will be synced after the initial sync occurs.
-  if (extension_system->extension_service() &&
-      extension_system->extension_service()->is_ready()) {
-    BuildModel();
-    return;
-  }
-
-  // The extensions for this profile have not yet all been loaded.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile));
 }
 
 AppListSyncableService::~AppListSyncableService() {
@@ -269,6 +253,9 @@ AppListSyncableService::~AppListSyncableService() {
 }
 
 void AppListSyncableService::BuildModel() {
+  // TODO(calamity): make this a DCHECK after a dev channel release.
+  CHECK(extension_system_->extension_service() &&
+        extension_system_->extension_service()->is_ready());
   // For now, use the AppListControllerDelegate associated with the native
   // desktop. TODO(stevenjb): Remove ExtensionAppModelBuilder controller
   // dependency and move the dependent methods from AppListControllerDelegate
@@ -283,7 +270,7 @@ void AppListSyncableService::BuildModel() {
   if (app_list::switches::IsAppListSyncEnabled()) {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
-    apps_builder_->InitializeWithService(this);
+    apps_builder_->InitializeWithService(this, model_.get());
   } else {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
@@ -294,6 +281,13 @@ void AppListSyncableService::BuildModel() {
 
   if (app_list::switches::IsDriveAppsInAppListEnabled())
     drive_app_provider_.reset(new DriveAppProvider(profile_, this));
+}
+
+size_t AppListSyncableService::GetNumSyncItemsForTest() {
+  // If the model isn't built yet, there will be no sync items.
+  GetModel();
+
+  return sync_items_.size();
 }
 
 void AppListSyncableService::ResetDriveAppProviderForTest() {
@@ -333,16 +327,6 @@ void AppListSyncableService::UntrackUninstalledDriveApp(
   DeleteSyncItem(sync_item);
 }
 
-void AppListSyncableService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED, type);
-  DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
-  registrar_.RemoveAll();
-  BuildModel();
-}
-
 const AppListSyncableService::SyncItem*
 AppListSyncableService::GetSyncItem(const std::string& id) const {
   SyncItemMap::const_iterator iter = sync_items_.find(id);
@@ -356,6 +340,13 @@ void AppListSyncableService::SetOemFolderName(const std::string& name) {
   AppListFolderItem* oem_folder = model_->FindFolderItem(kOemFolderId);
   if (oem_folder)
     model_->SetItemName(oem_folder, oem_folder_name_);
+}
+
+AppListModel* AppListSyncableService::GetModel() {
+  if (!apps_builder_)
+    BuildModel();
+
+  return model_.get();
 }
 
 void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
@@ -582,6 +573,9 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
+
+  // Ensure the model is built.
+  GetModel();
 
   sync_processor_ = sync_processor.Pass();
   sync_error_handler_ = error_handler.Pass();
