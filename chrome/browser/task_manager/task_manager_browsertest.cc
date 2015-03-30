@@ -778,7 +778,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
 // Checks that task manager counts a worker thread JS heap size.
 // http://crbug.com/241066
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
+// Disabled because this test is inherently flaky: http://crbug.com/259368
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_WebWorkerJSHeapMemory) {
   ShowTaskManager();
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   const int extra_timeout_ms = 500;
