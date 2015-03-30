@@ -282,8 +282,10 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         assertFalse(channel.isOpen());
         // Test that ChromiumUrlRequest caches information which is available
         // after the native request adapter has been destroyed.
-        assertEquals(-1, request.getHttpStatusCode());
-        assertEquals("", request.getHttpStatusText());
+        // Since the request is canceled after onResponseStarted, status code
+        // should be 200.
+        assertEquals(200, request.getHttpStatusCode());
+        assertEquals("OK", request.getHttpStatusText());
         checkAfterAdapterDestroyed(request);
     }
 
