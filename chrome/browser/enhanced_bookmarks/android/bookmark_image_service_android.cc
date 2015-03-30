@@ -248,7 +248,7 @@ void BookmarkImageServiceAndroid::BitmapFetcherHandler::Start(
 }
 
 void BookmarkImageServiceAndroid::BitmapFetcherHandler::OnFetchComplete(
-    const GURL url,
+    const GURL& url,
     const SkBitmap* bitmap) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

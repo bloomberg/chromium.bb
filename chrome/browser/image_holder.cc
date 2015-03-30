@@ -77,7 +77,7 @@ void ImageHolder::StartFetch() {
 }
 
 // Method inherited from BitmapFetcher delegate.
-void ImageHolder::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
+void ImageHolder::OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
   // TODO(petewil): Should I retry if a fetch fails?
   // Match the bitmap to the URL to put it into the image with the correct scale
   // factor.

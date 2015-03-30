@@ -20,7 +20,7 @@ class BitmapFetcherDelegate {
   // request succeeds.  |url| is the URL that was originally fetched so we can
   // match up the bitmap with a specific request.  |bitmap| may be NULL if the
   // image fails to be downloaded or decoded.
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) = 0;
+  virtual void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) = 0;
 
  protected:
   virtual ~BitmapFetcherDelegate() {}

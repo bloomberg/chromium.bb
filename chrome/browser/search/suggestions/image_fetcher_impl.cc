@@ -53,7 +53,7 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
   }
 }
 
-void ImageFetcherImpl::OnFetchComplete(const GURL image_url,
+void ImageFetcherImpl::OnFetchComplete(const GURL& image_url,
                                        const SkBitmap* bitmap) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

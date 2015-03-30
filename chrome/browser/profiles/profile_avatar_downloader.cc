@@ -44,7 +44,7 @@ void ProfileAvatarDownloader::Start() {
 }
 
 // BitmapFetcherDelegate overrides.
-void ProfileAvatarDownloader::OnFetchComplete(const GURL url,
+void ProfileAvatarDownloader::OnFetchComplete(const GURL& url,
                                               const SkBitmap* bitmap) {
   if (!bitmap || !cache_)
     return;

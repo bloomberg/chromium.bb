@@ -38,7 +38,7 @@ class ImageFetcherImpl : public ImageFetcher,
 
  private:
   // Inherited from BitmapFetcherDelegate. Runs on the UI thread.
-  void OnFetchComplete(const GURL image_url, const SkBitmap* bitmap) override;
+  void OnFetchComplete(const GURL& image_url, const SkBitmap* bitmap) override;
 
   typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >
       CallbackVector;

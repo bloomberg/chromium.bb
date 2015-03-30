@@ -163,7 +163,7 @@ void BitmapFetcherService::RemoveFetcher(const chrome::BitmapFetcher* fetcher) {
   NOTREACHED();  // RemoveFetcher should always result in removal.
 }
 
-void BitmapFetcherService::OnFetchComplete(const GURL url,
+void BitmapFetcherService::OnFetchComplete(const GURL& url,
                                            const SkBitmap* bitmap) {
   DCHECK(bitmap);  // can never be NULL, guaranteed by BitmapFetcher.
 

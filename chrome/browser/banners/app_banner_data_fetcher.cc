@@ -288,7 +288,7 @@ void AppBannerDataFetcher::OnDidCheckHasServiceWorker(
   Cancel();
 }
 
-void AppBannerDataFetcher::OnFetchComplete(const GURL url,
+void AppBannerDataFetcher::OnFetchComplete(const GURL& url,
                                            const SkBitmap* icon) {
   if (is_active_)
     ShowBanner(icon);

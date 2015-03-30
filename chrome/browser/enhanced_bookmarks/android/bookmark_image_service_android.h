@@ -70,7 +70,7 @@ class BookmarkImageServiceAndroid : public BookmarkImageService {
                int load_flags,
                bool update_bookmark,
                const GURL& page_url);
-    void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+    void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
    protected:
     ~BitmapFetcherHandler() override {}

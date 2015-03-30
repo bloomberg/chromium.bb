@@ -123,7 +123,7 @@ class AppBannerDataFetcher
   // Callbacks for data retrieval.
   void OnDidGetManifest(const content::Manifest& manifest);
   void OnDidCheckHasServiceWorker(bool has_service_worker);
-  void OnFetchComplete(const GURL url, const SkBitmap* icon) override;
+  void OnFetchComplete(const GURL& url, const SkBitmap* icon) override;
 
   // Shows a banner for the app, if the given |icon| is valid.
   virtual void ShowBanner(const SkBitmap* icon);

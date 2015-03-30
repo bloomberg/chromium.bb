@@ -25,7 +25,7 @@ void AccountAvatarFetcher::Start(
                      net::LOAD_MAYBE_USER_GESTURE);
 }
 
-void AccountAvatarFetcher::OnFetchComplete(const GURL /*url*/,
+void AccountAvatarFetcher::OnFetchComplete(const GURL& /*url*/,
                                            const SkBitmap* bitmap) {
   if (bitmap && delegate_)
     delegate_->UpdateAvatar(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));

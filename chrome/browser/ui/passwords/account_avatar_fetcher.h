@@ -36,7 +36,7 @@ class AccountAvatarFetcher : public chrome::BitmapFetcherDelegate {
   ~AccountAvatarFetcher() override;
 
   // chrome::BitmapFetcherDelegate:
-  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
   chrome::BitmapFetcher fetcher_;
   base::WeakPtr<AccountAvatarFetcherDelegate> delegate_;
