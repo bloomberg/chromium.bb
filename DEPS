@@ -153,7 +153,7 @@ deps = {
     Var('chromium_git') + '/external/google-safe-browsing/testing.git' + '@' + '9d7e8064f3ca2e45891470c9b5b1dce54af6a9d6',
 
   'src/third_party/cacheinvalidation/src':
-    Var('chromium_git') + '/external/google-cache-invalidation-api/src.git' + '@' + 'c91bd9d9fed06bf440be64f87b94a2effdb32bc4', # from svn revision 341
+    Var('chromium_git') + '/external/google-cache-invalidation-api/src.git' + '@' + '0fbfe801cca467fa986ebe08d34012342aa47e55', # from svn revision 342
 
   'src/third_party/leveldatabase/src':
     Var('chromium_git') + '/external/leveldb.git' + '@' + '251ebf5dc70129ad3c38193fe6c99a5b0ec6b9fa',
