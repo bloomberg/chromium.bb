@@ -7,13 +7,13 @@ package org.chromium.components.gcm_driver;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
+
+import org.chromium.base.PackageUtils;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -130,7 +130,7 @@ public class GoogleCloudMessagingV2 {
         if (Looper.getMainLooper() == Looper.myLooper()) {
             throw new IOException(ERROR_MAIN_THREAD);
         }
-        if (getGcmVersion() < 0) {
+        if (PackageUtils.getPackageVersion(mContext, GOOGLE_PLAY_SERVICES_PACKAGE) < 0) {
             throw new IOException("Google Play Services missing");
         }
         if (data == null) {
@@ -189,16 +189,5 @@ public class GoogleCloudMessagingV2 {
             }
         }
         intent.putExtra(INTENT_PARAM_APP, mAppPendingIntent);
-    }
-
-    private int getGcmVersion() {
-        PackageManager pm = mContext.getPackageManager();
-        try {
-            PackageInfo packageInfo = pm.getPackageInfo(GOOGLE_PLAY_SERVICES_PACKAGE, 0);
-            return packageInfo.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            // No problem
-        }
-        return -1;
     }
 }

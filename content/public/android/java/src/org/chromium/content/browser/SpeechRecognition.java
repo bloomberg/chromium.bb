@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
@@ -19,6 +18,7 @@ import android.speech.SpeechRecognizer;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.PackageUtils;
 import org.chromium.content_public.common.SpeechRecognitionErrorCode;
 
 import java.util.ArrayList;
@@ -185,14 +185,7 @@ public class SpeechRecognition {
 
             if (!service.packageName.equals(PROVIDER_PACKAGE_NAME)) continue;
 
-            int versionCode;
-            try {
-                versionCode = pm.getPackageInfo(service.packageName, 0).versionCode;
-            } catch (NameNotFoundException e) {
-                continue;
-            }
-
-            if (versionCode < PROVIDER_MIN_VERSION)
+            if (PackageUtils.getPackageVersion(context, service.packageName) < PROVIDER_MIN_VERSION)
                 continue;
 
             sRecognitionProvider = new ComponentName(service.packageName, service.name);
