@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
+#import "ui/base/cocoa/window_size_constants.h"
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
@@ -12,6 +14,35 @@ BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
 }
 
 BrowserFrameMac::~BrowserFrameMac() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrameMac, views::NativeWidgetMac implementation:
+
+void BrowserFrameMac::InitNativeWidget(
+    const views::Widget::InitParams& params) {
+  views::NativeWidgetMac::InitNativeWidget(params);
+
+  // Our content view draws on top of the titlebar area, but we want the window
+  // control buttons to draw on top of the content view.
+  // We do this by setting the content view's z-order below the buttons, and
+  // by giving the root view a layer so that the buttons get their own layers.
+  NSView* content_view = [GetNativeWindow() contentView];
+  NSView* root_view = [content_view superview];
+  [content_view removeFromSuperview];
+  [root_view setWantsLayer:YES];
+  [root_view addSubview:content_view positioned:NSWindowBelow relativeTo:nil];
+}
+
+gfx::NativeWindow BrowserFrameMac::CreateNSWindow(
+    const views::Widget::InitParams& params) {
+  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                          NSMiniaturizableWindowMask | NSResizableWindowMask;
+  return [[[NativeWidgetMacFramelessNSWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:style_mask
+                  backing:NSBackingStoreBuffered
+                    defer:YES] autorelease];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

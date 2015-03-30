@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/views/apps/native_widget_mac_frameless_nswindow.h"
+#import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
 #import "ui/base/cocoa/window_size_constants.h"
 
 AppWindowNativeWidgetMac::AppWindowNativeWidgetMac(views::Widget* widget)

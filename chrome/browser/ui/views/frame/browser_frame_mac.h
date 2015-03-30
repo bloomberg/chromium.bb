@@ -20,6 +20,9 @@ class BrowserFrameMac : public views::NativeWidgetMac,
  public:
   BrowserFrameMac(BrowserFrame* browser_frame, BrowserView* browser_view);
 
+  // Overridden from views::NativeWidgetMac:
+  void InitNativeWidget(const views::Widget::InitParams& params) override;
+
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;
   bool UseCustomFrame() const override;
@@ -30,6 +33,10 @@ class BrowserFrameMac : public views::NativeWidgetMac,
 
  protected:
   ~BrowserFrameMac() override;
+
+  // Overridden from views::NativeWidgetMac:
+  gfx::NativeWindow CreateNSWindow(
+      const views::Widget::InitParams& params) override;
 
   // Overridden from NativeBrowserFrame:
   int GetMinimizeButtonOffset() const override;

@@ -2110,6 +2110,8 @@
       'browser/ui/views/frame/native_browser_frame_factory.h',
       'browser/ui/views/frame/native_browser_frame_factory_chromeos.cc',
       'browser/ui/views/frame/native_browser_frame_factory_mac.cc',
+      'browser/ui/views/frame/native_widget_mac_frameless_nswindow.h',
+      'browser/ui/views/frame/native_widget_mac_frameless_nswindow.mm',
       'browser/ui/views/frame/opaque_browser_frame_view.cc',
       'browser/ui/views/frame/opaque_browser_frame_view.h',
       'browser/ui/views/frame/opaque_browser_frame_view_layout.cc',
@@ -2349,8 +2351,6 @@
       'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
       'browser/ui/views/apps/chrome_native_app_window_views_mac.h',
       'browser/ui/views/apps/chrome_native_app_window_views_mac.mm',
-      'browser/ui/views/apps/native_widget_mac_frameless_nswindow.h',
-      'browser/ui/views/apps/native_widget_mac_frameless_nswindow.mm',
     ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [
