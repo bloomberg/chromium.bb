@@ -20,13 +20,7 @@
 
 namespace autofill {
 
-CreditCard CreateCard() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2012");
-  credit_card.SetTypeForMaskedCard(kMasterCard);
-  return credit_card;
-}
+using base::ASCIIToUTF16;
 
 class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  public:
@@ -35,14 +29,19 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
   virtual ~TestCardUnmaskDelegate() {}
 
   // CardUnmaskDelegate implementation.
-  void OnUnmaskResponse(const UnmaskResponse& response) override {}
+  void OnUnmaskResponse(const UnmaskResponse& response) override {
+    response_ = response;
+  }
   void OnUnmaskPromptClosed() override {}
+
+  const UnmaskResponse& response() { return response_; }
 
   base::WeakPtr<TestCardUnmaskDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
  private:
+  UnmaskResponse response_;
   base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskDelegate);
@@ -71,7 +70,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   CardUnmaskPromptView* CreateAndShowView() override {
     return test_unmask_prompt_view_;
   }
-  void LoadRiskFingerprint() override {}
+  void LoadRiskFingerprint() override {
+    OnDidLoadRiskFingerprint("risk aversion");
+  }
   bool CanStoreLocally() const override { return can_store_locally_; }
 
   void set_can_store_locally(bool can) { can_store_locally_ = can; }
@@ -108,8 +109,23 @@ class CardUnmaskPromptControllerImplTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  TestCardUnmaskPromptController* controller() { return controller_.get(); }
-  TestCardUnmaskDelegate* delegate() { return delegate_.get(); }
+  void ShowPrompt() {
+    controller_->ShowPrompt(test::GetMaskedServerCard(),
+                            delegate_->GetWeakPtr());
+  }
+
+  void ShowPromptAmex() {
+    controller_->ShowPrompt(test::GetMaskedServerCardAmex(),
+                            delegate_->GetWeakPtr());
+  }
+
+  void ShowPromptAndSimulateResponse(bool should_store_pan) {
+    ShowPrompt();
+    controller_->OnUnmaskResponse(ASCIIToUTF16("444"),
+                                  ASCIIToUTF16("01"),
+                                  ASCIIToUTF16("2015"),
+                                  should_store_pan);
+  }
 
  protected:
   void SetImportCheckboxState(bool value) {
@@ -117,19 +133,20 @@ class CardUnmaskPromptControllerImplTest
         ->SetBoolean(prefs::kAutofillWalletImportStorageCheckboxState, value);
   }
 
- private:
   // This member must outlive the controller.
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   scoped_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
   scoped_ptr<TestCardUnmaskPromptController> controller_;
   scoped_ptr<TestCardUnmaskDelegate> delegate_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImplTest);
 };
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogShown) {
   base::HistogramTester histogram_tester;
-
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  ShowPrompt();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.UnmaskPrompt.Events",
@@ -137,10 +154,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogShown) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedNoAttempts) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  ShowPrompt();
   base::HistogramTester histogram_tester;
-
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -148,15 +164,11 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedNoAttempts) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
-  controller()->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
+  ShowPromptAndSimulateResponse(false);
+  controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
   base::HistogramTester histogram_tester;
 
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -167,15 +179,11 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskNonRetriable)
     {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
-  controller()->OnVerificationResult(AutofillClient::PERMANENT_FAILURE);
+  ShowPromptAndSimulateResponse(false);
+  controller_->OnVerificationResult(AutofillClient::PERMANENT_FAILURE);
   base::HistogramTester histogram_tester;
 
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -185,15 +193,11 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskNonRetriable)
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardFirstAttempt) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
+  ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
 
-  controller()->OnVerificationResult(AutofillClient::SUCCESS);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -201,20 +205,16 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardFirstAttempt) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
-  controller()->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("444"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
+  ShowPromptAndSimulateResponse(false);
+  controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
+  controller_->OnUnmaskResponse(ASCIIToUTF16("444"),
+                                ASCIIToUTF16("01"),
+                                ASCIIToUTF16("2015"),
+                                false /* should_store_pan */);
   base::HistogramTester histogram_tester;
 
-  controller()->OnVerificationResult(AutofillClient::SUCCESS);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -222,15 +222,11 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogSavedCardLocally) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 true /* should_store_pan */);
+  ShowPromptAndSimulateResponse(true);
   base::HistogramTester histogram_tester;
 
-  controller()->OnVerificationResult(AutofillClient::SUCCESS);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -239,14 +235,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogSavedCardLocally) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptIn) {
   SetImportCheckboxState(false);
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  ShowPromptAndSimulateResponse(true);
   base::HistogramTester histogram_tester;
-
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 true /* should_store_pan */);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -255,14 +246,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptIn) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptIn) {
   SetImportCheckboxState(false);
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
-
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -271,14 +257,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptIn) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptOut) {
   SetImportCheckboxState(true);
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
-
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -287,14 +268,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptOut) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
   SetImportCheckboxState(true);
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  ShowPromptAndSimulateResponse(true);
   base::HistogramTester histogram_tester;
-
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 true /* should_store_pan */);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -302,14 +278,10 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
-  controller()->set_can_store_locally(false);
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  controller_->set_can_store_locally(false);
+  ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
-
-  controller()->OnUnmaskResponse(
-      base::ASCIIToUTF16("123"), base::ASCIIToUTF16("01"),
-      base::ASCIIToUTF16("2015"), false /* should_store_pan */);
-  controller()->OnUnmaskDialogClosed();
+  controller_->OnUnmaskDialogClosed();
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
@@ -326,14 +298,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
+  ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
-
-  controller()->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.GetRealPanResult",
@@ -341,18 +308,68 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanTryAgainFailure) {
-  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("01"),
-                                 base::ASCIIToUTF16("2015"),
-                                 false /* should_store_pan */);
+  ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
 
-  controller()->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
+  controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.GetRealPanResult",
       AutofillMetrics::GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE, 1);
+}
+
+
+TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {
+  struct CvcCase {
+    const char* input;
+    bool valid;
+    // null when |valid| is false.
+    const char* canonicalized_input;
+  };
+  CvcCase cvc_cases[] = {
+    { "123", true, "123" },
+    { "123 ", true, "123" },
+    { " 1234 ", false  },
+    { "IOU", false  },
+  };
+
+  ShowPrompt();
+
+  for (size_t i = 0; i < arraysize(cvc_cases); ++i) {
+    EXPECT_EQ(cvc_cases[i].valid,
+              controller_->InputCvcIsValid(ASCIIToUTF16(cvc_cases[i].input)));
+    if (!cvc_cases[i].valid)
+      continue;
+
+    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_cases[i].input),
+                                  base::string16(), base::string16(), false);
+    EXPECT_EQ(ASCIIToUTF16(cvc_cases[i].canonicalized_input),
+              delegate_->response().cvc);
+  }
+
+  CvcCase cvc_cases_amex[] = {
+    { "123", false },
+    { "123 ", false },
+    { "1234", true, "1234" },
+    { "\t1234 ", true, "1234" },
+    { " 1234", true, "1234" },
+    { "IOU$", false  },
+  };
+
+  ShowPromptAmex();
+
+  for (size_t i = 0; i < arraysize(cvc_cases_amex); ++i) {
+    EXPECT_EQ(
+        cvc_cases_amex[i].valid,
+        controller_->InputCvcIsValid(ASCIIToUTF16(cvc_cases_amex[i].input)));
+    if (!cvc_cases_amex[i].valid)
+      continue;
+
+    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_cases_amex[i].input),
+                                  base::string16(), base::string16(), false);
+    EXPECT_EQ(ASCIIToUTF16(cvc_cases_amex[i].canonicalized_input),
+              delegate_->response().cvc);
+  }
 }
 
 }  // namespace autofill

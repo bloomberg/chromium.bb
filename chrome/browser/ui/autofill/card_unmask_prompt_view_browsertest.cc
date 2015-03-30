@@ -60,7 +60,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   }
 
   void LoadRiskFingerprint() override {
-    OnDidLoadRiskFingerprint(std::string("risk_data"));
+    OnDidLoadRiskFingerprint("risk_data");
   }
 
   base::WeakPtr<TestCardUnmaskPromptController> GetWeakPtr() {

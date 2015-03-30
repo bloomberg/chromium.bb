@@ -56,8 +56,8 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
 
 bool CardUnmaskPromptControllerImpl::AllowsRetry(
     AutofillClient::GetRealPanResult result) {
-  if (result == AutofillClient::NETWORK_ERROR
-      || result == AutofillClient::PERMANENT_FAILURE) {
+  if (result == AutofillClient::NETWORK_ERROR ||
+      result == AutofillClient::PERMANENT_FAILURE) {
     return false;
   }
   return true;
@@ -155,8 +155,8 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
   unmasking_number_of_attempts_++;
   card_unmask_view_->DisableAndWaitForVerification();
 
-  DCHECK(!cvc.empty());
-  pending_response_.cvc = cvc;
+  DCHECK(InputCvcIsValid(cvc));
+  base::TrimWhitespace(cvc, base::TRIM_ALL, &pending_response_.cvc);
   if (ShouldRequestExpirationDate()) {
     pending_response_.exp_month = exp_month;
     pending_response_.exp_year = exp_year;

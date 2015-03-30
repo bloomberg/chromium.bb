@@ -217,6 +217,14 @@ CreditCard GetMaskedServerCard() {
   return credit_card;
 }
 
+CreditCard GetMaskedServerCardAmex() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  test::SetCreditCardInfo(&credit_card, "Justin Thyme",
+                          "8431" /* Amex */, "9", "2020");
+  credit_card.SetTypeForMaskedCard(kAmericanExpressCard);
+  return credit_card;
+}
+
 void SetProfileInfo(AutofillProfile* profile,
     const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
