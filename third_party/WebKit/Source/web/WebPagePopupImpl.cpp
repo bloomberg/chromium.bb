@@ -386,18 +386,14 @@ void WebPagePopupImpl::resize(const WebSize& newSize)
     m_widgetClient->didInvalidateRect(WebRect(0, 0, newSize.width, newSize.height));
 }
 
-bool WebPagePopupImpl::handleKeyEvent(const WebKeyboardEvent&)
+bool WebPagePopupImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {
-    // The main WebView receives key events and forward them to this via handleKeyEvent().
-    ASSERT_NOT_REACHED();
-    return false;
+    return handleKeyEvent(PlatformKeyboardEventBuilder(event));
 }
 
-bool WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent&)
+bool WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent& event)
 {
-    // The main WebView receives key events and forward them to this via handleKeyEvent().
-    ASSERT_NOT_REACHED();
-    return false;
+    return handleKeyEvent(PlatformKeyboardEventBuilder(event));
 }
 
 bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
