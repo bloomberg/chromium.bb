@@ -136,6 +136,13 @@ IPC_STRUCT_MEMBER(base::string16, file_name)
 IPC_STRUCT_MEMBER(double, last_modified)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_Value)
+  // The serialized value being transferred.
+  IPC_STRUCT_MEMBER(std::string, bits)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
+IPC_STRUCT_END()
+
 // Used to set a value in an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The id any response should contain.
@@ -150,15 +157,13 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The index's id.
   IPC_STRUCT_MEMBER(int64, index_id)
   // The value to set.
-  IPC_STRUCT_MEMBER(std::string, value)
+  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
   // The key to set it on (may not be "valid"/set in some cases).
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   // Whether this is an add or a put.
   IPC_STRUCT_MEMBER(blink::WebIDBPutMode, put_mode)
   // The index ids and the list of keys for each index.
   IPC_STRUCT_MEMBER(std::vector<IndexKeys>, index_keys)
-  // Sideband data for any blob or file encoded in value.
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
 // Used to open both cursors and object cursors in IndexedDB.
@@ -254,9 +259,7 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
-  IPC_STRUCT_MEMBER(std::string, value)
-  // Sideband data for any blob or file encoded in value.
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
+  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
@@ -265,9 +268,7 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
-  IPC_STRUCT_MEMBER(std::string, value)
-  // Sideband data for any blob or file encoded in value.
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
+  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
@@ -276,28 +277,21 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, keys)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, primary_keys)
-  IPC_STRUCT_MEMBER(std::vector<std::string>, values)
-  // Sideband data for any blob or file encoded in value.
-  IPC_STRUCT_MEMBER(std::vector<std::vector<IndexedDBMsg_BlobOrFileInfo> >,
-                    blob_or_file_infos)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_Value>, values)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValue_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
-  IPC_STRUCT_MEMBER(std::string, value)
-  // Sideband data for any blob or file encoded in value.
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
+  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValueWithKey_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
-  IPC_STRUCT_MEMBER(std::string, value)
+  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
-  // Sideband data for any blob or file encoded in value.
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)

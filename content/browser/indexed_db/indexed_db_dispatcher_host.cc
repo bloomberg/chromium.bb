@@ -649,8 +649,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(
     const IndexedDBHostMsg_DatabasePut_Params& params) {
   std::vector<storage::BlobDataHandle*> handles;
-  for (size_t i = 0; i < params.blob_or_file_info.size(); ++i) {
-    const IndexedDBMsg_BlobOrFileInfo& info = params.blob_or_file_info[i];
+  for (size_t i = 0; i < params.value.blob_or_file_info.size(); ++i) {
+    const IndexedDBMsg_BlobOrFileInfo& info = params.value.blob_or_file_info[i];
     handles.push_back(parent_->blob_storage_context_->context()
                           ->GetBlobDataFromUUID(info.uuid)
                           .release());
@@ -679,13 +679,14 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
 
-  std::vector<IndexedDBBlobInfo> blob_info(params.blob_or_file_info.size());
+  std::vector<IndexedDBBlobInfo> blob_info(
+      params.value.blob_or_file_info.size());
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  for (size_t i = 0; i < params.blob_or_file_info.size(); ++i) {
-    const IndexedDBMsg_BlobOrFileInfo& info = params.blob_or_file_info[i];
+  for (size_t i = 0; i < params.value.blob_or_file_info.size(); ++i) {
+    const IndexedDBMsg_BlobOrFileInfo& info = params.value.blob_or_file_info[i];
     if (info.is_file) {
       base::FilePath path;
       if (!info.file_path.empty()) {
@@ -709,7 +710,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
 
   // TODO(alecflett): Avoid a copy here.
   IndexedDBValue value;
-  value.bits = params.value;
+  value.bits = params.value.bits;
   value.blob_info.swap(blob_info);
   connection->database()->Put(host_transaction_id,
                               params.object_store_id,
@@ -723,7 +724,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
       &parent_->database_dispatcher_host_->transaction_size_map_;
   // Size can't be big enough to overflow because it represents the
   // actual bytes passed through IPC.
-  (*map)[host_transaction_id] += params.value.size();
+  (*map)[host_transaction_id] += params.value.bits.size();
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(

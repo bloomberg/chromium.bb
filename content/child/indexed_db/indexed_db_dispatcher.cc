@@ -354,7 +354,7 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
   params.transaction_id = transaction_id;
   params.object_store_id = object_store_id;
 
-  params.value.assign(value.data(), value.data() + value.size());
+  params.value.bits.assign(value.data(), value.data() + value.size());
   params.key = key;
   params.put_mode = put_mode;
 
@@ -369,11 +369,11 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     }
   }
 
-  params.blob_or_file_info.resize(web_blob_info.size());
+  params.value.blob_or_file_info.resize(web_blob_info.size());
   for (size_t i = 0; i < web_blob_info.size(); ++i) {
     const WebBlobInfo& info = web_blob_info[i];
     IndexedDBMsg_BlobOrFileInfo& blob_or_file_info =
-        params.blob_or_file_info[i];
+        params.value.blob_or_file_info[i];
     blob_or_file_info.is_file = info.isFile();
     if (info.isFile()) {
       blob_or_file_info.file_path = info.filePath();
@@ -525,18 +525,16 @@ void IndexedDBDispatcher::OnSuccessStringList(
 }
 
 static void PrepareWebValueAndBlobInfo(
-    const std::string& value,
-    const std::vector<IndexedDBMsg_BlobOrFileInfo>& blob_info,
+    const IndexedDBMsg_Value& value,
     WebData* web_value,
     blink::WebVector<WebBlobInfo>* web_blob_info) {
-
-  if (value.empty())
+  if (value.bits.empty())
     return;
 
-  web_value->assign(&*value.begin(), value.size());
-  blink::WebVector<WebBlobInfo> local_blob_info(blob_info.size());
-  for (size_t i = 0; i < blob_info.size(); ++i) {
-    const IndexedDBMsg_BlobOrFileInfo& info = blob_info[i];
+  web_value->assign(&*value.bits.begin(), value.bits.size());
+  blink::WebVector<WebBlobInfo> local_blob_info(value.blob_or_file_info.size());
+  for (size_t i = 0; i < value.blob_or_file_info.size(); ++i) {
+    const IndexedDBMsg_BlobOrFileInfo& info = value.blob_or_file_info[i];
     if (info.is_file) {
       local_blob_info[i] = WebBlobInfo(WebString::fromUTF8(info.uuid.c_str()),
                                        info.file_path,
@@ -561,8 +559,7 @@ void IndexedDBDispatcher::OnSuccessValue(
     return;
   WebData web_value;
   WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(
-      params.value, params.blob_or_file_info, &web_value, &web_blob_info);
+  PrepareWebValueAndBlobInfo(params.value, &web_value, &web_blob_info);
   callbacks->onSuccess(web_value, web_blob_info);
   pending_callbacks_.Remove(params.ipc_callbacks_id);
   cursor_transaction_ids_.erase(params.ipc_callbacks_id);
@@ -577,8 +574,7 @@ void IndexedDBDispatcher::OnSuccessValueWithKey(
     return;
   WebData web_value;
   WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(
-      params.value, params.blob_or_file_info, &web_value, &web_blob_info);
+  PrepareWebValueAndBlobInfo(params.value, &web_value, &web_blob_info);
   callbacks->onSuccess(web_value,
                        web_blob_info,
                        WebIDBKeyBuilder::Build(params.primary_key),
@@ -616,8 +612,7 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   const IndexedDBKey& primary_key = p.primary_key;
   WebData web_value;
   WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(
-      p.value, p.blob_or_file_info, &web_value, &web_blob_info);
+  PrepareWebValueAndBlobInfo(p.value, &web_value, &web_blob_info);
 
   DCHECK(cursor_transaction_ids_.find(ipc_callbacks_id) !=
          cursor_transaction_ids_.end());
@@ -647,7 +642,6 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   int32 ipc_cursor_id = p.ipc_cursor_id;
   const IndexedDBKey& key = p.key;
   const IndexedDBKey& primary_key = p.primary_key;
-  const std::string& value = p.value;
 
   if (cursors_.find(ipc_cursor_id) == cursors_.end())
     return;
@@ -658,8 +652,7 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
 
   WebData web_value;
   WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(
-      value, p.blob_or_file_info, &web_value, &web_blob_info);
+  PrepareWebValueAndBlobInfo(p.value, &web_value, &web_blob_info);
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
                        WebIDBKeyBuilder::Build(primary_key),
                        web_value,
@@ -676,12 +669,9 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
   const std::vector<IndexedDBKey>& keys = p.keys;
   const std::vector<IndexedDBKey>& primary_keys = p.primary_keys;
   std::vector<WebData> values(p.values.size());
-  DCHECK_EQ(p.values.size(), p.blob_or_file_infos.size());
-  std::vector<WebVector<WebBlobInfo> > blob_infos(p.blob_or_file_infos.size());
-  for (size_t i = 0; i < p.values.size(); ++i) {
-    PrepareWebValueAndBlobInfo(
-        p.values[i], p.blob_or_file_infos[i], &values[i], &blob_infos[i]);
-  }
+  std::vector<WebVector<WebBlobInfo>> blob_infos(p.values.size());
+  for (size_t i = 0; i < p.values.size(); ++i)
+    PrepareWebValueAndBlobInfo(p.values[i], &values[i], &blob_infos[i]);
   std::map<int32, WebIDBCursorImpl*>::const_iterator cur_iter =
       cursors_.find(ipc_cursor_id);
   if (cur_iter == cursors_.end())
