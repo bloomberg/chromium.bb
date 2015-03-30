@@ -414,7 +414,7 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     RefPtrWillBeRawPtr<Range> range = Range::create(*indexPosition.document());
     range->setStart(innerEditorElement(), 0, ASSERT_NO_EXCEPTION);
     range->setEnd(indexPosition.containerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
-    return TextIterator::rangeLength(range.get());
+    return TextIterator::rangeLength(range->startPosition(), range->endPosition());
 }
 
 int HTMLTextFormControlElement::selectionStart() const

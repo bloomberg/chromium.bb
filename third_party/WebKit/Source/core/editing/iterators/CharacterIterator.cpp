@@ -88,7 +88,7 @@ CharacterIterator::CharacterIterator(const Range* range, TextIteratorBehaviorFla
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
-    , m_textIterator(range, behavior)
+    , m_textIterator(range->startPosition(), range->endPosition(), behavior)
 {
     initialize();
 }

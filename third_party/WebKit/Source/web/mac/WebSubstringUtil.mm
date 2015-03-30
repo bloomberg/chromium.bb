@@ -66,7 +66,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
     size_t length = range->endOffset() - range->startOffset();
 
     unsigned position = 0;
-    for (TextIterator it(range); !it.atEnd() && [string length] < length; it.advance()) {
+    for (TextIterator it(range->startPosition(), range->endPosition()); !it.atEnd() && [string length] < length; it.advance()) {
         unsigned numCharacters = it.length();
         if (!numCharacters)
             continue;

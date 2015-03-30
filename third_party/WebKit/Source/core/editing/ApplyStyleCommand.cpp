@@ -262,8 +262,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
     Node& scope = NodeTraversal::highestAncestorOrSelf(*visibleStart.deepEquivalent().deprecatedNode());
     RefPtrWillBeRawPtr<Range> startRange = Range::create(document(), firstPositionInNode(&scope), visibleStart.deepEquivalent().parentAnchoredEquivalent());
     RefPtrWillBeRawPtr<Range> endRange = Range::create(document(), firstPositionInNode(&scope), visibleEnd.deepEquivalent().parentAnchoredEquivalent());
-    int startIndex = TextIterator::rangeLength(startRange.get(), true);
-    int endIndex = TextIterator::rangeLength(endRange.get(), true);
+    int startIndex = TextIterator::rangeLength(startRange->startPosition(), startRange->endPosition(), true);
+    int endIndex = TextIterator::rangeLength(endRange->startPosition(), endRange->endPosition(), true);
 
     VisiblePosition paragraphStart(startOfParagraph(visibleStart));
     VisiblePosition nextParagraphStart(endOfParagraph(paragraphStart).next());

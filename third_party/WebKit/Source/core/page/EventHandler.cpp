@@ -517,7 +517,7 @@ bool EventHandler::handleMousePressEventTripleClick(const MouseEventWithHitTestR
 static int textDistance(const Position& start, const Position& end)
 {
     RefPtrWillBeRawPtr<Range> range = Range::create(*start.document(), start, end);
-    return TextIterator::rangeLength(range.get(), true);
+    return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
 }
 
 bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)

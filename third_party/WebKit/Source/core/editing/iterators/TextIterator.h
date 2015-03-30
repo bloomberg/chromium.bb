@@ -52,7 +52,6 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
 class CORE_EXPORT TextIterator {
     STACK_ALLOCATED();
 public:
-    explicit TextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
     TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     ~TextIterator();
@@ -100,7 +99,6 @@ public:
     // replaced elements. When |forSelectionPreservation| is set to true, it
     // also emits spaces for other non-text nodes using the
     // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
-    static int rangeLength(const Range*, bool forSelectionPreservation = false);
     static int rangeLength(const Position& start, const Position& end, bool forSelectionPreservation = false);
     static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
     static void subrange(Position& start, Position& end, int characterOffset, int characterCount);

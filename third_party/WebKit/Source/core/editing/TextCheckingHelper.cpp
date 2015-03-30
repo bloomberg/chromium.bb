@@ -144,7 +144,7 @@ void TextCheckingParagraph::invalidateParagraphRangeValues()
 int TextCheckingParagraph::rangeLength() const
 {
     ASSERT(m_checkingRange);
-    return TextIterator::rangeLength(paragraphRange().get());
+    return TextIterator::rangeLength(paragraphRange()->startPosition(), paragraphRange()->endPosition());
 }
 
 PassRefPtrWillBeRawPtr<Range> TextCheckingParagraph::paragraphRange() const
@@ -168,7 +168,7 @@ int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& ex
     range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), exceptionState);
     if (exceptionState.hadException())
         return 0;
-    return TextIterator::rangeLength(range.get());
+    return TextIterator::rangeLength(range->startPosition(), range->endPosition());
 }
 
 bool TextCheckingParagraph::isEmpty() const
@@ -199,7 +199,7 @@ int TextCheckingParagraph::checkingStart() const
 {
     ASSERT(m_checkingRange);
     if (m_checkingStart == -1)
-        m_checkingStart = TextIterator::rangeLength(offsetAsRange().get());
+        m_checkingStart = TextIterator::rangeLength(offsetAsRange()->startPosition(), offsetAsRange()->endPosition());
     return m_checkingStart;
 }
 
@@ -207,7 +207,7 @@ int TextCheckingParagraph::checkingEnd() const
 {
     ASSERT(m_checkingRange);
     if (m_checkingEnd == -1)
-        m_checkingEnd = checkingStart() + TextIterator::rangeLength(checkingRange().get());
+        m_checkingEnd = checkingStart() + TextIterator::rangeLength(checkingRange()->startPosition(), checkingRange()->endPosition());
     return m_checkingEnd;
 }
 
@@ -215,7 +215,7 @@ int TextCheckingParagraph::checkingLength() const
 {
     ASSERT(m_checkingRange);
     if (-1 == m_checkingLength)
-        m_checkingLength = TextIterator::rangeLength(checkingRange().get());
+        m_checkingLength = TextIterator::rangeLength(checkingRange()->startPosition(), checkingRange()->endPosition());
     return m_checkingLength;
 }
 

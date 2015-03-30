@@ -469,7 +469,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         RefPtrWillBeRawPtr<Range> forwardsScanRange(d.createRange());
         forwardsScanRange->setEndAfter(boundary, exceptionState);
         forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), exceptionState);
-        TextIterator forwardsIterator(forwardsScanRange.get());
+        TextIterator forwardsIterator(forwardsScanRange->startPosition(), forwardsScanRange->endPosition());
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             forwardsIterator.appendTextTo(characters);

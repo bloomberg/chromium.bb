@@ -1855,7 +1855,7 @@ int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& pos) const
     range->setStart(node, 0, IGNORE_EXCEPTION);
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 
-    return TextIterator::rangeLength(range.get());
+    return TextIterator::rangeLength(range->startPosition(), range->endPosition());
 }
 
 void AXLayoutObject::addInlineTextBoxChildren(bool force)

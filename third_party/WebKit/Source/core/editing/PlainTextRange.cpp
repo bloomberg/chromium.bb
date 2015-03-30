@@ -82,7 +82,8 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
     if (getRangeFor == ForSelection)
         behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
-    TextIterator it(rangeOfContents(const_cast<ContainerNode*>(&scope)).get(), behaviorFlags);
+    auto range = rangeOfContents(const_cast<ContainerNode*>(&scope));
+    TextIterator it(range->startPosition(), range->endPosition(), behaviorFlags);
 
     // FIXME: the atEnd() check shouldn't be necessary, workaround for <http://bugs.webkit.org/show_bug.cgi?id=6289>.
     if (!start() && !length() && it.atEnd()) {
@@ -174,11 +175,11 @@ PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& r
 
     RefPtrWillBeRawPtr<Range> testRange = Range::create(scope.document(), const_cast<ContainerNode*>(&scope), 0, range.startContainer(), range.startOffset());
     ASSERT(testRange->startContainer() == &scope);
-    size_t start = TextIterator::rangeLength(testRange.get());
+    size_t start = TextIterator::rangeLength(testRange->startPosition(), testRange->endPosition());
 
     testRange->setEnd(range.endContainer(), range.endOffset(), IGNORE_EXCEPTION);
     ASSERT(testRange->startContainer() == &scope);
-    size_t end = TextIterator::rangeLength(testRange.get());
+    size_t end = TextIterator::rangeLength(testRange->startPosition(), testRange->endPosition());
 
     return PlainTextRange(start, end);
 }

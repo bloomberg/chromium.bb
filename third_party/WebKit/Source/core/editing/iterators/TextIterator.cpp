@@ -77,38 +77,6 @@ static Node* nextInPreOrderCrossingShadowBoundaries(Node* rangeEndContainer, int
 
 // --------
 
-TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavior)
-    : m_startContainer(nullptr)
-    , m_startOffset(0)
-    , m_endContainer(nullptr)
-    , m_endOffset(0)
-    , m_positionNode(nullptr)
-    , m_textLength(0)
-    , m_needsAnotherNewline(false)
-    , m_textBox(0)
-    , m_remainingTextBox(0)
-    , m_firstLetterText(nullptr)
-    , m_lastTextNode(nullptr)
-    , m_lastTextNodeEndedWithCollapsedSpace(false)
-    , m_lastCharacter(0)
-    , m_sortedTextBoxesPosition(0)
-    , m_hasEmitted(false)
-    , m_emitsCharactersBetweenAllVisiblePositions(behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions)
-    , m_entersTextControls(behavior & TextIteratorEntersTextControls)
-    , m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText)
-    , m_handledFirstLetter(false)
-    , m_ignoresStyleVisibility(behavior & TextIteratorIgnoresStyleVisibility)
-    , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
-    , m_shouldStop(false)
-    , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
-    , m_entersOpenShadowRoots(behavior & TextIteratorEntersOpenShadowRoots)
-    , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
-    , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
-{
-    if (range)
-        initialize(range->startPosition(), range->endPosition());
-}
-
 TextIterator::TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
     : m_startContainer(nullptr)
     , m_startOffset(0)
@@ -137,6 +105,8 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
     , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
     , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
 {
+    ASSERT(start.isNotNull());
+    ASSERT(end.isNotNull());
     initialize(start, end);
 }
 
@@ -1110,18 +1080,6 @@ Position TextIterator::endPosition() const
     return createLegacyEditingPosition(endContainer(), endOffset());
 }
 
-int TextIterator::rangeLength(const Range* r, bool forSelectionPreservation)
-{
-    int length = 0;
-    TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
-    if (forSelectionPreservation)
-        behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
-    for (TextIterator it(r, behaviorFlags); !it.atEnd(); it.advance())
-        length += it.length();
-
-    return length;
-}
-
 int TextIterator::rangeLength(const Position& start, const Position& end, bool forSelectionPreservation)
 {
     int length = 0;
@@ -1173,7 +1131,7 @@ static String createPlainText(TextIterator& it)
 
 String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
 {
-    TextIterator it(r, behavior);
+    TextIterator it(r->startPosition(), r->endPosition(), behavior);
     return createPlainText(it);
 }
 

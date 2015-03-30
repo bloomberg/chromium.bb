@@ -1097,7 +1097,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtrWillBe
 
     RefPtrWillBeRawPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
 
-    return TextIterator::rangeLength(range.get(), true);
+    return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
 }
 
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)

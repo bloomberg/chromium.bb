@@ -85,7 +85,7 @@ void TextIteratorTest::SetUp()
 Vector<String> TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
     RefPtrWillBeRawPtr<Range> range = getBodyRange();
-    TextIterator iterator(range.get(), iteratorBehavior);
+    TextIterator iterator(range->startPosition(), range->endPosition(), iteratorBehavior);
     return iterateWithIterator(iterator);
 }
 
@@ -588,7 +588,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     Node* divNode = document().getElementById("div");
     RefPtrWillBeRawPtr<Range> range = Range::create(document(), divNode, 0, divNode, 3);
 
-    EXPECT_EQ(3, TextIterator::rangeLength(range.get()));
+    EXPECT_EQ(3, TextIterator::rangeLength(range->startPosition(), range->endPosition()));
 }
 
 TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
