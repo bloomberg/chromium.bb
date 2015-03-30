@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "chromecast/browser/cast_download_manager_delegate.h"
+#include "chromecast/browser/cast_permission_manager.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,6 +148,12 @@ content::PushMessagingService* CastBrowserContext::GetPushMessagingService() {
 content::SSLHostStateDelegate* CastBrowserContext::GetSSLHostStateDelegate() {
   NOTIMPLEMENTED();
   return NULL;
+}
+
+content::PermissionManager* CastBrowserContext::GetPermissionManager() {
+  if (!permission_manager_.get())
+    permission_manager_.reset(new CastPermissionManager());
+  return permission_manager_.get();
 }
 
 }  // namespace shell

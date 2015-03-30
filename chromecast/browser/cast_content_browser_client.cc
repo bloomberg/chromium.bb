@@ -253,26 +253,6 @@ CastContentBrowserClient::SelectClientCertificateOnIOThread(
   }
 }
 
-void CastContentBrowserClient::RequestPermission(
-    content::PermissionType permission,
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
-  LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
-  callback.Run(content::PermissionStatus::PERMISSION_STATUS_GRANTED);
-}
-
-content::PermissionStatus CastContentBrowserClient::GetPermissionStatus(
-    content::PermissionType permission,
-    content::BrowserContext* browser_context,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
-  return content::PermissionStatus::PERMISSION_STATUS_GRANTED;
-}
-
 bool CastContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,

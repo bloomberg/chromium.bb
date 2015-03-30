@@ -45,6 +45,7 @@ class CastBrowserContext : public content::BrowserContext {
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  content::PermissionManager* GetPermissionManager() override;
 
   net::URLRequestContextGetter* GetSystemRequestContext();
 
@@ -59,6 +60,7 @@ class CastBrowserContext : public content::BrowserContext {
   base::FilePath path_;
   scoped_ptr<CastResourceContext> resource_context_;
   scoped_ptr<CastDownloadManagerDelegate> download_manager_delegate_;
+  scoped_ptr<content::PermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserContext);
 };

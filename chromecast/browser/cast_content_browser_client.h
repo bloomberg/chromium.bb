@@ -71,18 +71,6 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       scoped_ptr<content::ClientCertificateDelegate> delegate) override;
-  void RequestPermission(
-      content::PermissionType permission,
-      content::WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      const base::Callback<void(content::PermissionStatus)>& callback) override;
-  content::PermissionStatus GetPermissionStatus(
-      content::PermissionType permission,
-      content::BrowserContext* browser_context,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) override;
   bool CanCreateWindow(
       const GURL& opener_url,
       const GURL& opener_top_level_frame_url,
