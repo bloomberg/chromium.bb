@@ -750,14 +750,6 @@ void DeprecatedPaintLayerCompositor::updateDirectCompositingReasons(DeprecatedPa
     layer->setCompositingReasons(m_compositingReasonFinder.directReasons(layer), CompositingReasonComboAllDirectReasons);
 }
 
-void DeprecatedPaintLayerCompositor::setOverlayLayer(GraphicsLayer* layer)
-{
-    ASSERT(rootGraphicsLayer());
-
-    if (layer->parent() != m_overflowControlsHostLayer.get())
-        m_overflowControlsHostLayer->addChild(layer);
-}
-
 bool DeprecatedPaintLayerCompositor::canBeComposited(const DeprecatedPaintLayer* layer) const
 {
     return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && !layer->subtreeIsInvisible();

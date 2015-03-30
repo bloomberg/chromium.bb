@@ -169,7 +169,7 @@ function _drawGrid(rulerAtRight, rulerAtBottom)
 
     context.save();
 
-    var pageFactor = pageZoomFactor * pageScaleFactor;
+    var pageFactor = pageZoomFactor;
     function zoom(x)
     {
         return Math.round(x * pageFactor);
@@ -323,9 +323,8 @@ function reset(resetData)
     window.viewportSize = resetData.viewportSize;
     window.deviceScaleFactor = resetData.deviceScaleFactor;
     window.pageZoomFactor = resetData.pageZoomFactor;
-    window.pageScaleFactor = resetData.pageScaleFactor;
-    window.scrollX = Math.round(resetData.scrollX * pageScaleFactor);
-    window.scrollY = Math.round(resetData.scrollY * pageScaleFactor);
+    window.scrollX = Math.round(resetData.scrollX);
+    window.scrollY = Math.round(resetData.scrollY);
 
     window.canvas = document.getElementById("canvas");
     window.context = canvas.getContext("2d");
@@ -471,11 +470,11 @@ function drawPath(commands, fillColor, outlineColor, bounds)
         var points = [];
 
         for (var i = 0; i < count; ++i) {
-            var x = Math.round(commands[commandsIndex++] * pageScaleFactor);
+            var x = Math.round(commands[commandsIndex++]);
             bounds.maxX = Math.max(bounds.maxX, x);
             bounds.minX = Math.min(bounds.minX, x);
 
-            var y = Math.round(commands[commandsIndex++] * pageScaleFactor);
+            var y = Math.round(commands[commandsIndex++]);
             bounds.maxY = Math.max(bounds.maxY, y);
             bounds.minY = Math.min(bounds.minY, y);
 

@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
 #include "core/dom/Node.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -272,13 +273,9 @@ void InspectorOverlayImpl::update()
     if (!view)
         return;
 
-    // Include scrollbars to avoid masking them by the gutter.
-    IntSize size = view->unscaledVisibleContentSize(IncludeScrollbars);
-    toLocalFrame(overlayPage()->mainFrame())->view()->resize(size);
-
-    // Clear canvas and paint things.
-    IntRect viewRect = view->visibleContentRect();
-    reset(size, viewRect.x(), viewRect.y());
+    IntRect visibleRect = enclosingIntRect(m_webViewImpl->page()->frameHost().pinchViewport().visibleRectInDocument());
+    toLocalFrame(overlayPage()->mainFrame())->view()->resize(visibleRect.size());
+    reset(visibleRect);
 
     drawNodeHighlight();
     drawQuadHighlight();
@@ -401,17 +398,14 @@ LocalFrame* InspectorOverlayImpl::overlayMainFrame()
     return toLocalFrame(overlayPage()->mainFrame());
 }
 
-void InspectorOverlayImpl::reset(const IntSize& viewportSize, int scrollX, int scrollY)
+void InspectorOverlayImpl::reset(const IntRect& visibleRect)
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
-    // TODO(bokan): |pageScaleFactor| was previously used to scale from CSS values but is unnecessary
-    // now that virtual-viewport is enabled. This can probably be removed.
-    resetData->setNumber("pageScaleFactor", 1);
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
-    resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
+    resetData->setObject("viewportSize", buildObjectForSize(visibleRect.size()));
     resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());
-    resetData->setNumber("scrollX", scrollX);
-    resetData->setNumber("scrollY", scrollY);
+    resetData->setNumber("scrollX", visibleRect.x());
+    resetData->setNumber("scrollY", visibleRect.y());
     evaluateInOverlay("reset", resetData.release());
 }
 

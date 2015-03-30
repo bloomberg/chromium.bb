@@ -4084,7 +4084,7 @@ void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
     if (!m_page->mainFrame()->isLocalFrame())
         return;
 
-    m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->setOverlayLayer(layer);
+    m_page->frameHost().pinchViewport().containerLayer()->addChild(layer);
 }
 
 Element* WebViewImpl::focusedElement() const

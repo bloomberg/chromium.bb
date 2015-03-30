@@ -29,6 +29,7 @@
 #include "config.h"
 #include "web/PageOverlay.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -83,7 +84,9 @@ void PageOverlay::update()
         platformLayer->setShouldScrollOnMainThread(true);
     }
 
-    FloatSize size(m_viewImpl->size());
+    FloatSize size;
+    if (m_viewImpl->page())
+        size = m_viewImpl->page()->frameHost().pinchViewport().visibleSize();
     if (size != m_layer->size()) {
         // Triggers re-adding to root layer to ensure that we are on top of
         // scrollbars.
@@ -98,7 +101,7 @@ void PageOverlay::update()
 void PageOverlay::paintWebFrame(GraphicsContext& gc)
 {
     WebGraphicsContextImpl contextWrapper(gc, *this, DisplayItem::PageOverlay);
-    m_overlay->paintPageOverlay(&contextWrapper, m_viewImpl->size());
+    m_overlay->paintPageOverlay(&contextWrapper, expandedIntSize(m_layer->size()));
 }
 
 void PageOverlay::paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
@@ -120,7 +123,9 @@ void PageOverlay::invalidateWebFrame()
         // FIXME: Is it important to just invalidate a smaller rect given that
         // this is not on a critical codepath? In order to do so, we'd
         // have to take scrolling into account.
-        const WebSize& size = m_viewImpl->size();
+        WebSize size = m_viewImpl->size();
+        if (m_viewImpl->page())
+            size = expandedIntSize(m_viewImpl->page()->frameHost().pinchViewport().visibleSize());
         WebRect damagedRect(0, 0, size.width, size.height);
         if (m_viewImpl->client())
             m_viewImpl->client()->didInvalidateRect(damagedRect);

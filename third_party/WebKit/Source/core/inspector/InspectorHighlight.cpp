@@ -100,7 +100,7 @@ protected:
     virtual FloatPoint translatePoint(const FloatPoint& point)
     {
         FloatPoint rendererPoint = m_shapeOutsideInfo.shapeToRendererPoint(point);
-        return m_view.contentsToRootFrame(roundedIntPoint(m_renderer.localToAbsolute(rendererPoint)));
+        return m_view.contentsToViewport(roundedIntPoint(m_renderer.localToAbsolute(rendererPoint)));
     }
 
 private:
@@ -135,12 +135,12 @@ Path quadToPath(const FloatQuad& quad)
     return quadPath;
 }
 
-void contentsQuadToRootFrame(const FrameView* view, FloatQuad& quad)
+void contentsQuadToViewport(const FrameView* view, FloatQuad& quad)
 {
-    quad.setP1(view->contentsToRootFrame(roundedIntPoint(quad.p1())));
-    quad.setP2(view->contentsToRootFrame(roundedIntPoint(quad.p2())));
-    quad.setP3(view->contentsToRootFrame(roundedIntPoint(quad.p3())));
-    quad.setP4(view->contentsToRootFrame(roundedIntPoint(quad.p4())));
+    quad.setP1(view->contentsToViewport(roundedIntPoint(quad.p1())));
+    quad.setP2(view->contentsToViewport(roundedIntPoint(quad.p2())));
+    quad.setP3(view->contentsToViewport(roundedIntPoint(quad.p3())));
+    quad.setP4(view->contentsToViewport(roundedIntPoint(quad.p4())));
 }
 
 const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths* paths, FloatQuad* bounds)
@@ -157,7 +157,7 @@ const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths*
 
     LayoutRect shapeBounds = shapeOutsideInfo->computedShapePhysicalBoundingBox();
     *bounds = layoutBox->localToAbsoluteQuad(FloatRect(shapeBounds));
-    contentsQuadToRootFrame(containingView, *bounds);
+    contentsQuadToViewport(containingView, *bounds);
 
     return shapeOutsideInfo;
 }
@@ -212,10 +212,10 @@ bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* paddi
     *border = renderer->localToAbsoluteQuad(FloatRect(borderBox));
     *margin = renderer->localToAbsoluteQuad(FloatRect(marginBox));
 
-    contentsQuadToRootFrame(containingView, *content);
-    contentsQuadToRootFrame(containingView, *padding);
-    contentsQuadToRootFrame(containingView, *border);
-    contentsQuadToRootFrame(containingView, *margin);
+    contentsQuadToViewport(containingView, *content);
+    contentsQuadToViewport(containingView, *padding);
+    contentsQuadToViewport(containingView, *border);
+    contentsQuadToViewport(containingView, *margin);
 
     return true;
 }
@@ -351,7 +351,7 @@ void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighligh
         FrameView* containingView = renderer->frameView();
         for (size_t i = 0; i < quads.size(); ++i) {
             if (containingView)
-                contentsQuadToRootFrame(containingView, quads[i]);
+                contentsQuadToViewport(containingView, quads[i]);
             appendQuad(quads[i], highlightConfig.content, highlightConfig.contentOutline);
         }
         return;

@@ -169,8 +169,6 @@ public:
 
     void updateDirectCompositingReasons(DeprecatedPaintLayer*);
 
-    void setOverlayLayer(GraphicsLayer*);
-
     bool inOverlayFullscreenVideo() const { return m_inOverlayFullscreenVideo; }
 
 private:
