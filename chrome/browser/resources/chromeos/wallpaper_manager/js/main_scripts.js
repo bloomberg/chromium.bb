@@ -27,6 +27,7 @@
 //<include src="util.js">
 //<include src="progress_manager.js">
 //<include src="wallpaper_directories.js">
+//<include src="wallpaper_categories_list.js">
 //<include src="wallpaper_images_grid.js">
 //<include src="wallpaper_manager.js">
 //<include src="main.js">

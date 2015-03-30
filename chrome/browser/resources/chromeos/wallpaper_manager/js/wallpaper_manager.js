@@ -760,50 +760,20 @@ function WallpaperManager(dialogDom) {
    */
   WallpaperManager.prototype.initCategoriesList_ = function() {
     this.categoriesList_ = $('categories-list');
-    cr.ui.List.decorate(this.categoriesList_);
-    // cr.ui.list calculates items in view port based on client height and item
-    // height. However, categories list is displayed horizontally. So we should
-    // not calculate visible items here. Sets autoExpands to true to show every
-    // item in the list.
-    // TODO(bshe): Use ul to replace cr.ui.list for category list.
-    this.categoriesList_.autoExpands = true;
+    wallpapers.WallpaperCategoriesList.decorate(this.categoriesList_);
 
-    var self = this;
-    this.categoriesList_.itemConstructor = function(entry) {
-      return self.renderCategory_(entry);
-    };
-
-    this.categoriesList_.selectionModel = new cr.ui.ListSingleSelectionModel();
     this.categoriesList_.selectionModel.addEventListener(
         'change', this.onCategoriesChange_.bind(this));
 
-    var categoriesDataModel = new cr.ui.ArrayDataModel([]);
     if (this.enableOnlineWallpaper_) {
       // Adds all category as first category.
-      categoriesDataModel.push(str('allCategoryLabel'));
+      this.categoriesList_.dataModel.push(str('allCategoryLabel'));
       for (var key in this.manifest_.categories) {
-        categoriesDataModel.push(this.manifest_.categories[key]);
+        this.categoriesList_.dataModel.push(this.manifest_.categories[key]);
       }
     }
     // Adds custom category as last category.
-    categoriesDataModel.push(str('customCategoryLabel'));
-    this.categoriesList_.dataModel = categoriesDataModel;
-  };
-
-  /**
-   * Constructs the element in categories list.
-   * @param {string} entry Text content of a category.
-   */
-  WallpaperManager.prototype.renderCategory_ = function(entry) {
-    var li = this.document_.createElement('li');
-    cr.defineProperty(li, 'custom', cr.PropertyKind.BOOL_ATTR);
-    li.custom = (entry == str('customCategoryLabel'));
-    cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
-    cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
-    var div = this.document_.createElement('div');
-    div.textContent = entry;
-    li.appendChild(div);
-    return li;
+    this.categoriesList_.dataModel.push(str('customCategoryLabel'));
   };
 
   /**
