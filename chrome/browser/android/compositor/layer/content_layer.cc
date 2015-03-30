@@ -72,7 +72,8 @@ void ContentLayer::SetProperties(int id,
   bool content_layer_draws = DoesLeafDrawContents(content_layer);
 
   scoped_refptr<ThumbnailLayer> static_layer =
-      tab_content_manager_->GetStaticLayer(id, !content_layer_draws);
+      tab_content_manager_->GetStaticLayer(
+          id, !(can_use_live_layer && content_layer_draws));
 
   ClipStaticLayer(static_layer, desired_bounds);
 
