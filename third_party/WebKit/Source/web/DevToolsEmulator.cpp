@@ -61,7 +61,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_embedderPreferCompositingToLCDTextEnabled(webViewImpl->page()->settings().preferCompositingToLCDTextEnabled())
     , m_embedderUseMobileViewport(webViewImpl->page()->settings().useMobileViewportStyle())
     , m_touchEventEmulationEnabled(false)
-    , m_doubleTapToZoomEnabled(false)
     , m_originalTouchEnabled(false)
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
@@ -123,16 +122,6 @@ void DevToolsEmulator::setScriptEnabled(bool enabled)
     m_embedderScriptEnabled = enabled;
     if (!m_scriptExecutionDisabled)
         m_webViewImpl->page()->settings().setScriptEnabled(enabled);
-}
-
-void DevToolsEmulator::setDoubleTapToZoomEnabled(bool enabled)
-{
-    m_doubleTapToZoomEnabled = enabled;
-}
-
-bool DevToolsEmulator::doubleTapToZoomEnabled() const
-{
-    return m_touchEventEmulationEnabled ? true : m_doubleTapToZoomEnabled;
 }
 
 void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& params)

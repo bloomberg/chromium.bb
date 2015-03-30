@@ -31,8 +31,6 @@ public:
     void setPreferCompositingToLCDTextEnabled(bool);
     void setUseMobileViewportStyle(bool);
     void setScriptEnabled(bool);
-    void setDoubleTapToZoomEnabled(bool);
-    bool doubleTapToZoomEnabled() const;
 
     // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
@@ -61,7 +59,6 @@ private:
     bool m_embedderUseMobileViewport;
 
     bool m_touchEventEmulationEnabled;
-    bool m_doubleTapToZoomEnabled;
     bool m_originalTouchEnabled;
     bool m_originalDeviceSupportsMouse;
     bool m_originalDeviceSupportsTouch;
