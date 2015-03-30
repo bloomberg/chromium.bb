@@ -18430,6 +18430,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.IPv6ConnectFailureMatch" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 03/2015. No longer tracked.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether the interface-enumeration IPv6 probe method failed given that the
@@ -18438,6 +18441,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.IPv6ConnectSuccessMatch" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 03/2015. No longer tracked.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether the interface-enumeration IPv6 probe method was successful given
@@ -19918,6 +19924,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.RenegotiationExtensionSupported">
+  <obsolete>
+    Deprecated 03/2015. No longer tracked.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     True if the HTTP request was sent to a server which supports the TLS

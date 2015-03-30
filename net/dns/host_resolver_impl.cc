@@ -2204,16 +2204,9 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
                                net_log.source().ToEventParametersCallback());
       bool rv6 = IsGloballyReachable(address, probe_net_log);
       probe_net_log.EndEvent(NetLog::TYPE_IPV6_REACHABILITY_CHECK);
-      if (rv6)
-        net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_SUPPORTED);
-
       if (rv6) {
-        UMA_HISTOGRAM_BOOLEAN("Net.IPv6ConnectSuccessMatch",
-            default_address_family_ == ADDRESS_FAMILY_UNSPECIFIED);
+        net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_SUPPORTED);
       } else {
-        UMA_HISTOGRAM_BOOLEAN("Net.IPv6ConnectFailureMatch",
-            default_address_family_ != ADDRESS_FAMILY_UNSPECIFIED);
-
         effective_address_family = ADDRESS_FAMILY_IPV4;
         effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
       }
