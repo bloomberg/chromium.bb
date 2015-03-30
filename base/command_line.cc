@@ -266,6 +266,10 @@ bool CommandLine::HasSwitch(const std::string& switch_string) const {
   return switches_.find(LowerASCIIOnWindows(switch_string)) != switches_.end();
 }
 
+bool CommandLine::HasSwitch(const char string_constant[]) const {
+  return HasSwitch(std::string(string_constant));
+}
+
 std::string CommandLine::GetSwitchValueASCII(
     const std::string& switch_string) const {
   StringType value = GetSwitchValueNative(switch_string);

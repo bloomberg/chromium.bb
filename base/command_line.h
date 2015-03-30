@@ -143,7 +143,10 @@ class BASE_EXPORT CommandLine {
 
   // Returns true if this command line contains the given switch.
   // (Switch names are case-insensitive).
+  // The second override provides an optimized version to avoid inlining the
+  // codegen for the string allocation.
   bool HasSwitch(const std::string& switch_string) const;
+  bool HasSwitch(const char switch_constant[]) const;
 
   // Returns the value associated with the given switch. If the switch has no
   // value or isn't present, this method returns the empty string.
