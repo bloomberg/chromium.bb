@@ -154,8 +154,6 @@ bool TransformTree::CombineTransformsBetween(int source_id,
     return true;
   }
 
-  bool all_are_invertible = true;
-
   // Flattening is defined in a way that requires it to be applied while
   // traversing downward in the tree. We first identify nodes that are on the
   // path from the source to the destination (this is traversing upward), and
@@ -186,13 +184,10 @@ bool TransformTree::CombineTransformsBetween(int source_id,
     if (node->data.flattens_inherited_transform)
       combined_transform.FlattenTo2d();
     combined_transform.PreconcatTransform(node->data.to_parent);
-
-    if (!node->data.is_invertible)
-      all_are_invertible = false;
   }
 
   transform->ConcatTransform(combined_transform);
-  return all_are_invertible;
+  return true;
 }
 
 bool TransformTree::CombineInversesBetween(int source_id,

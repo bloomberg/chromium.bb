@@ -271,4 +271,33 @@ TEST(PropertyTreeTest, MultiplicationOrder) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
 }
 
+TEST(PropertyTreeTest, ComputeTransformWithUninvertibleTransform) {
+  TransformTree tree;
+  TransformNode& root = *tree.Node(0);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
+
+  TransformNode child;
+  child.data.local.Scale(0, 0);
+  child.data.target_id = 0;
+
+  tree.Insert(child, 0);
+  tree.UpdateTransforms(1);
+
+  gfx::Transform expected;
+  expected.Scale(0, 0);
+
+  gfx::Transform transform;
+  gfx::Transform inverse;
+
+  bool success = tree.ComputeTransform(1, 0, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected, transform);
+
+  // To compute this would require inverting the 0 matrix, so we cannot
+  // succeed.
+  success = tree.ComputeTransform(0, 1, &inverse);
+  EXPECT_FALSE(success);
+}
+
 }  // namespace cc
