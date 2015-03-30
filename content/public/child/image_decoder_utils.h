@@ -7,9 +7,12 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
+
+namespace gfx {
+class Size;
+}
 
 namespace content {
 
