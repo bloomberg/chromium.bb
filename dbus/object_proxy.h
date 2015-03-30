@@ -316,6 +316,8 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // Known name owner of the well-known bus name represented by |service_name_|.
   std::string service_name_owner_;
 
+  std::set<DBusPendingCall*> pending_calls_;
+
   DISALLOW_COPY_AND_ASSIGN(ObjectProxy);
 };
 

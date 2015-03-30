@@ -418,6 +418,33 @@ TEST_F(EndToEndAsyncTest, TimeoutWithErrorCallback) {
   ASSERT_EQ(DBUS_ERROR_NO_REPLY, error_names_[0]);
 }
 
+TEST_F(EndToEndAsyncTest, CancelPendingCalls) {
+  const char* kHello = "hello";
+
+  // Create the method call.
+  MethodCall method_call("org.chromium.TestInterface", "Echo");
+  MessageWriter writer(&method_call);
+  writer.AppendString(kHello);
+
+  // Call the method.
+  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethod(&method_call, timeout_ms);
+
+  // Remove the object proxy before receiving the result.
+  // This results in cancelling the pending method call.
+  bus_->RemoveObjectProxy("org.chromium.TestService",
+                          ObjectPath("/org/chromium/TestObject"),
+                          base::Bind(&base::DoNothing));
+
+  // We shouldn't receive any responses. Wait for a while just to make sure.
+  run_loop_.reset(new base::RunLoop);
+  message_loop_.PostDelayedTask(FROM_HERE,
+                                run_loop_->QuitClosure(),
+                                TestTimeouts::tiny_timeout());
+  run_loop_->Run();
+  EXPECT_TRUE(response_strings_.empty());
+}
+
 // Tests calling a method that sends its reply asynchronously.
 TEST_F(EndToEndAsyncTest, AsyncEcho) {
   const char* kHello = "hello";

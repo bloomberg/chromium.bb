@@ -60,6 +60,7 @@ ObjectProxy::ObjectProxy(Bus* bus,
 }
 
 ObjectProxy::~ObjectProxy() {
+  DCHECK(pending_calls_.empty());
 }
 
 // Originally we tried to make |method_call| a const reference, but we
@@ -207,16 +208,21 @@ void ObjectProxy::Detach() {
   if (bus_->is_connected())
     bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this);
 
-  for (std::set<std::string>::iterator iter = match_rules_.begin();
-       iter != match_rules_.end(); ++iter) {
+  for (const auto& match_rule : match_rules_) {
     ScopedDBusError error;
-    bus_->RemoveMatch(*iter, error.get());
+    bus_->RemoveMatch(match_rule, error.get());
     if (error.is_set()) {
       // There is nothing we can do to recover, so just print the error.
-      LOG(ERROR) << "Failed to remove match rule: " << *iter;
+      LOG(ERROR) << "Failed to remove match rule: " << match_rule;
     }
   }
   match_rules_.clear();
+
+  for (auto* pending_call : pending_calls_) {
+    dbus_pending_call_cancel(pending_call);
+    dbus_pending_call_unref(pending_call);
+  }
+  pending_calls_.clear();
 }
 
 // static
@@ -277,7 +283,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
       data,
       &DeleteVoidPointer<OnPendingCallIsCompleteData>);
   CHECK(success) << "Unable to allocate memory";
-  dbus_pending_call_unref(pending_call);
+  pending_calls_.insert(pending_call);
 
   // It's now safe to unref the request message.
   dbus_message_unref(request_message);
@@ -297,6 +303,10 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
                                   start_time,
                                   response_message);
   bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, task);
+
+  // Remove the pending call from the set.
+  pending_calls_.erase(pending_call);
+  dbus_pending_call_unref(pending_call);
 }
 
 void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
