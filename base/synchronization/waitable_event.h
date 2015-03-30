@@ -81,8 +81,6 @@ class BASE_EXPORT WaitableEvent {
   // does not necessarily mean that max_time was exceeded.
   //
   // TimedWait can synchronise its own destruction like |Wait|.
-  //
-  // Passing a negative |max_time| is not supported.
   bool TimedWait(const TimeDelta& max_time);
 
 #if defined(OS_WIN)

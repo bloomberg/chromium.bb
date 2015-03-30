@@ -151,14 +151,14 @@ class SyncWaiter : public WaitableEvent::Waiter {
 };
 
 void WaitableEvent::Wait() {
-  bool result = TimedWait(TimeDelta::Max());
+  bool result = TimedWait(TimeDelta::FromSeconds(-1));
   DCHECK(result) << "TimedWait() should never fail with infinite timeout";
 }
 
 bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
-  DCHECK_GE(max_time, TimeDelta());
   base::ThreadRestrictions::AssertWaitAllowed();
   const TimeTicks end_time(TimeTicks::Now() + max_time);
+  const bool finite_time = max_time.ToInternalValue() >= 0;
 
   kernel_->lock_.Acquire();
   if (kernel_->signaled_) {
@@ -184,7 +184,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
   for (;;) {
     const TimeTicks current_time(TimeTicks::Now());
 
-    if (sw.fired() || current_time >= end_time) {
+    if (sw.fired() || (finite_time && current_time >= end_time)) {
       const bool return_value = sw.fired();
 
       // We can't acquire @lock_ before releasing the SyncWaiter lock (because
@@ -207,7 +207,12 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
       return return_value;
     }
 
-    sw.cv()->TimedWait(end_time - current_time);
+    if (finite_time) {
+      const TimeDelta max_wait(end_time - current_time);
+      sw.cv()->TimedWait(max_wait);
+    } else {
+      sw.cv()->Wait();
+    }
   }
 }
 

@@ -4,10 +4,10 @@
 
 #include "base/synchronization/waitable_event.h"
 
+#include <math.h>
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 
@@ -37,7 +37,7 @@ void WaitableEvent::Signal() {
 }
 
 bool WaitableEvent::IsSignaled() {
-  return TimedWait(TimeDelta());
+  return TimedWait(TimeDelta::FromMilliseconds(0));
 }
 
 void WaitableEvent::Wait() {
@@ -50,13 +50,13 @@ void WaitableEvent::Wait() {
 
 bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
   base::ThreadRestrictions::AssertWaitAllowed();
-  DCHECK_GE(max_time, TimeDelta());
+  DCHECK(max_time >= TimeDelta::FromMicroseconds(0));
   // Be careful here.  TimeDelta has a precision of microseconds, but this API
   // is in milliseconds.  If there are 5.5ms left, should the delay be 5 or 6?
   // It should be 6 to avoid returning too early.
-  DWORD timeout = saturated_cast<DWORD>(max_time.InMillisecondsRoundedUp());
-
-  DWORD result = WaitForSingleObject(handle_.Get(), timeout);
+  double timeout = ceil(max_time.InMillisecondsF());
+  DWORD result = WaitForSingleObject(handle_.Get(),
+                                     static_cast<DWORD>(timeout));
   switch (result) {
     case WAIT_OBJECT_0:
       return true;
