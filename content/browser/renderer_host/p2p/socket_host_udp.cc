@@ -39,13 +39,32 @@ const int kRecvSocketBufferSize = 65536;  // 64K
 //
 // This is caused by WSAENETRESET or WSAECONNRESET which means the
 // last send resulted in an "ICMP Port Unreachable" message.
+struct {
+  int code;
+  const char* name;
+} static const kTransientErrors[] {
+  {net::ERR_ADDRESS_UNREACHABLE, "net::ERR_ADDRESS_UNREACHABLE"},
+  {net::ERR_ADDRESS_INVALID, "net::ERR_ADDRESS_INVALID"},
+  {net::ERR_ACCESS_DENIED, "net::ERR_ACCESS_DENIED"},
+  {net::ERR_CONNECTION_RESET, "net::ERR_CONNECTION_RESET"},
+  {net::ERR_OUT_OF_MEMORY, "net::ERR_OUT_OF_MEMORY"},
+  {net::ERR_INTERNET_DISCONNECTED, "net::ERR_INTERNET_DISCONNECTED"}
+};
+
 bool IsTransientError(int error) {
-  return error == net::ERR_ADDRESS_UNREACHABLE ||
-         error == net::ERR_ADDRESS_INVALID ||
-         error == net::ERR_ACCESS_DENIED ||
-         error == net::ERR_CONNECTION_RESET ||
-         error == net::ERR_OUT_OF_MEMORY ||
-         error == net::ERR_INTERNET_DISCONNECTED;
+  for (const auto& transient_error : kTransientErrors) {
+    if (transient_error.code == error)
+      return true;
+  }
+  return false;
+}
+
+const char* GetTransientErrorName(int error) {
+  for (const auto& transient_error : kTransientErrors) {
+    if (transient_error.code == error)
+      return transient_error.name;
+  }
+  return "";
 }
 
 }  // namespace
@@ -342,7 +361,8 @@ void P2PSocketHostUdp::HandleSendResult(uint64 packet_id,
       return;
     }
     VLOG(0) << "sendto() has failed twice returning a "
-               " transient error. Dropping the packet.";
+               " transient error " << GetTransientErrorName(result)
+            << ". Dropping the packet.";
   }
 
   // UMA to track the histograms from 1ms to 1 sec for how long a packet spends
