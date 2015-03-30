@@ -66,6 +66,11 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // The url of the frame into which we are injecting.
   GURL url_;
 
+  // The URL of the frame's origin. This is usually identical to |url_|, but
+  // could be different for e.g. about:blank URLs. Do not use this value to make
+  // security decisions, to avoid race conditions (e.g. due to navigation).
+  GURL effective_url_;
+
   // The RenderView to which we send the response upon completion.
   content::RenderView* render_view_;
 

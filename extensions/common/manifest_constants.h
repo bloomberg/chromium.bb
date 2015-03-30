@@ -242,6 +242,7 @@ extern const char kAllURLOrActiveTabNeeded[];
 extern const char kAppsNotEnabled[];
 extern const char kBackgroundPermissionNeeded[];
 extern const char kBackgroundRequiredForPlatformApps[];
+extern const char kCannotAccessAboutUrl[];
 extern const char kCannotAccessChromeUrl[];
 extern const char kCannotAccessExtensionUrl[];
 extern const char kCannotAccessPage[];

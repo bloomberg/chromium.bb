@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/values.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
@@ -29,6 +30,8 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
       render_view_(content::RenderView::FromWebView(web_frame->view())),
       results_(new base::ListValue()),
       finished_(false) {
+  effective_url_ = ScriptContext::GetEffectiveDocumentURL(
+      web_frame, url_, params.match_about_blank);
 }
 
 ProgrammaticScriptInjector::~ProgrammaticScriptInjector() {
@@ -127,8 +130,14 @@ void ProgrammaticScriptInjector::OnWillNotInject(InjectFailureReason reason) {
   std::string error;
   switch (reason) {
     case NOT_ALLOWED:
-      error = ErrorUtils::FormatErrorMessage(manifest_errors::kCannotAccessPage,
-                                             url_.spec());
+      if (url_.SchemeIs(url::kAboutScheme)) {
+        error = ErrorUtils::FormatErrorMessage(
+            manifest_errors::kCannotAccessAboutUrl, url_.spec(),
+            effective_url_.GetOrigin().spec());
+      } else {
+        error = ErrorUtils::FormatErrorMessage(
+            manifest_errors::kCannotAccessPage, url_.spec());
+      }
       break;
     case EXTENSION_REMOVED:  // no special error here.
     case WONT_INJECT:
