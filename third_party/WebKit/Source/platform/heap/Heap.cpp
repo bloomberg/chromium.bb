@@ -39,10 +39,10 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
-#include "wtf/AddressSpaceRandomization.h"
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/LeakAnnotations.h"
+#include "wtf/PageAllocator.h"
 #include "wtf/PassOwnPtr.h"
 #if ENABLE(GC_PROFILING)
 #include "platform/TracedValue.h"
@@ -110,11 +110,6 @@ static bool vTableInitialized(void* objectPointer)
     return !!(*reinterpret_cast<Address*>(objectPointer));
 }
 
-static Address roundToBlinkPageBoundary(void* base)
-{
-    return reinterpret_cast<Address>((reinterpret_cast<uintptr_t>(base) + blinkPageOffsetMask) & blinkPageBaseMask);
-}
-
 static size_t roundToOsPageSize(size_t size)
 {
     return (size + WTF::kSystemPageSize - 1) & ~(WTF::kSystemPageSize - 1);
@@ -141,13 +136,7 @@ public:
 
     void release()
     {
-#if OS(POSIX)
-        int err = munmap(m_base, m_size);
-        RELEASE_ASSERT(!err);
-#else
-        bool success = VirtualFree(m_base, 0, MEM_RELEASE);
-        RELEASE_ASSERT(success);
-#endif
+        WTF::freePages(m_base, m_size);
     }
 
     WARN_UNUSED_RETURN bool commit()
@@ -256,87 +245,12 @@ private:
 
     static PageMemoryRegion* allocate(size_t size, unsigned numPages)
     {
-        // Compute a random blink page aligned address for the page memory
-        // region and attempt to get the memory there.
-        Address randomAddress = reinterpret_cast<Address>(WTF::getRandomPageBase());
-        Address alignedRandomAddress = roundToBlinkPageBoundary(randomAddress);
-
-#if OS(POSIX)
-        Address base = static_cast<Address>(mmap(alignedRandomAddress, size, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0));
-        if (base == roundToBlinkPageBoundary(base))
-            return new PageMemoryRegion(base, size, numPages);
-
-        // We failed to get a blink page aligned chunk of memory.
-        // Unmap the chunk that we got and fall back to overallocating
-        // and selecting an aligned sub part of what we allocate.
-        if (base != MAP_FAILED) {
-            int error = munmap(base, size);
-            RELEASE_ASSERT(!error);
-        }
-        size_t allocationSize = size + blinkPageSize;
-        for (int attempt = 0; attempt < 10; ++attempt) {
-            base = static_cast<Address>(mmap(alignedRandomAddress, allocationSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0));
-            if (base != MAP_FAILED)
-                break;
-            randomAddress = reinterpret_cast<Address>(WTF::getRandomPageBase());
-            alignedRandomAddress = roundToBlinkPageBoundary(randomAddress);
-        }
-        RELEASE_ASSERT(base != MAP_FAILED);
-
-        Address end = base + allocationSize;
-        Address alignedBase = roundToBlinkPageBoundary(base);
-        Address regionEnd = alignedBase + size;
-
-        // If the allocated memory was not blink page aligned release
-        // the memory before the aligned address.
-        if (alignedBase != base)
-            MemoryRegion(base, alignedBase - base).release();
-
-        // Free the additional memory at the end of the page if any.
-        if (regionEnd < end)
-            MemoryRegion(regionEnd, end - regionEnd).release();
-
-        return new PageMemoryRegion(alignedBase, size, numPages);
-#else
-        Address base = static_cast<Address>(VirtualAlloc(alignedRandomAddress, size, MEM_RESERVE, PAGE_NOACCESS));
-        if (base) {
-            ASSERT(base == alignedRandomAddress);
-            return new PageMemoryRegion(base, size, numPages);
-        }
-
-        // We failed to get the random aligned address that we asked
-        // for. Fall back to overallocating. On Windows it is
-        // impossible to partially release a region of memory
-        // allocated by VirtualAlloc. To avoid wasting virtual address
-        // space we attempt to release a large region of memory
-        // returned as a whole and then allocate an aligned region
-        // inside this larger region.
-        size_t allocationSize = size + blinkPageSize;
-        for (int attempt = 0; attempt < 3; ++attempt) {
-            base = static_cast<Address>(VirtualAlloc(0, allocationSize, MEM_RESERVE, PAGE_NOACCESS));
-            RELEASE_ASSERT(base);
-            VirtualFree(base, 0, MEM_RELEASE);
-
-            Address alignedBase = roundToBlinkPageBoundary(base);
-            base = static_cast<Address>(VirtualAlloc(alignedBase, size, MEM_RESERVE, PAGE_NOACCESS));
-            if (base) {
-                ASSERT(base == alignedBase);
-                return new PageMemoryRegion(alignedBase, size, numPages);
-            }
-        }
-
-        // We failed to avoid wasting virtual address space after
-        // several attempts.
-        base = static_cast<Address>(VirtualAlloc(0, allocationSize, MEM_RESERVE, PAGE_NOACCESS));
+        // Round size up to the allocation granularity.
+        size = (size + WTF::kPageAllocationGranularityOffsetMask) & WTF::kPageAllocationGranularityBaseMask;
+        Address base = static_cast<Address>(WTF::allocPages(nullptr, size, blinkPageSize));
         RELEASE_ASSERT(base);
-
-        // FIXME: If base is by accident blink page size aligned
-        // here then we can create two pages out of reserved
-        // space. Do this.
-        Address alignedBase = roundToBlinkPageBoundary(base);
-
-        return new PageMemoryRegion(alignedBase, size, numPages);
-#endif
+        WTF::setSystemPagesInaccessible(base, size);
+        return new PageMemoryRegion(base, size, numPages);
     }
 
     bool m_isLargePage;
