@@ -14,7 +14,8 @@ class FakeAccountReconcilor : public AccountReconcilor {
  public:
   FakeAccountReconcilor(ProfileOAuth2TokenService* token_service,
                         SigninManagerBase* signin_manager,
-                        SigninClient* client);
+                        SigninClient* client,
+                        GaiaCookieManagerService* cookie_manager_service);
 
   // Helper function to be used with KeyedService::SetTestingFactory().
   static KeyedService* Build(content::BrowserContext* context);

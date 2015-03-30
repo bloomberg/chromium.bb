@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_account_id_helper.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -23,43 +24,25 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
 
 SigninManager::SigninManager(SigninClient* client,
                              ProfileOAuth2TokenService* token_service,
-                             AccountTrackerService* account_tracker_service)
+                             AccountTrackerService* account_tracker_service,
+                             GaiaCookieManagerService* cookie_manager_service)
     : SigninManagerBase(client),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       client_(client),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
+      cookie_manager_service_(cookie_manager_service),
       signin_manager_signed_in_(false),
       user_info_fetched_by_account_tracker_(false),
       weak_pointer_factory_(this) {}
-
-void SigninManager::AddMergeSessionObserver(
-    MergeSessionHelper::Observer* observer) {
-  merge_session_observer_list_.AddObserver(observer);
-}
-
-void SigninManager::RemoveMergeSessionObserver(
-    MergeSessionHelper::Observer* observer) {
-  merge_session_observer_list_.RemoveObserver(observer);
-}
-
-void SigninManager::MergeSessionCompleted(const std::string& account_id,
-                                          const GoogleServiceAuthError& error) {
-  FOR_EACH_OBSERVER(MergeSessionHelper::Observer, merge_session_observer_list_,
-                    MergeSessionCompleted(account_id, error));
-}
-
-void SigninManager::GetCheckConnectionInfoCompleted(bool succeeded) {
-  FOR_EACH_OBSERVER(MergeSessionHelper::Observer, merge_session_observer_list_,
-                    GetCheckConnectionInfoCompleted(succeeded));
-}
 
 SigninManager::~SigninManager() {}
 
@@ -247,11 +230,6 @@ void SigninManager::Initialize(PrefService* local_state) {
 
 void SigninManager::Shutdown() {
   account_tracker_service_->RemoveObserver(this);
-  if (merge_session_helper_) {
-    merge_session_helper_->CancelAll();
-    merge_session_helper_->RemoveObserver(this);
-  }
-
   local_state_pref_registrar_.RemoveAll();
   account_id_helper_.reset();
   SigninManagerBase::Shutdown();
@@ -337,18 +315,7 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
   if (!IsAuthenticated())
     return;
 
-  // Don't execute two MergeSessionHelpers. New account takes priority.
-  if (merge_session_helper_) {
-    if (merge_session_helper_->is_running())
-      merge_session_helper_->CancelAll();
-    merge_session_helper_->RemoveObserver(this);
-  }
-
-  merge_session_helper_.reset(new MergeSessionHelper(
-      token_service_, GaiaConstants::kChromeSource,
-      client_->GetURLRequestContext(), this));
-
-  merge_session_helper_->LogIn(GetAuthenticatedAccountId());
+  cookie_manager_service_->AddAccountToCookie(GetAuthenticatedAccountId());
 }
 
 void SigninManager::CompletePendingSignin() {

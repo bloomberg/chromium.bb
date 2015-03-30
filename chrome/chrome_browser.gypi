@@ -2571,6 +2571,8 @@
       'browser/signin/chrome_signin_client.h',
       'browser/signin/chrome_signin_client_factory.cc',
       'browser/signin/chrome_signin_client_factory.h',
+      'browser/signin/gaia_cookie_manager_service_factory.cc',
+      'browser/signin/gaia_cookie_manager_service_factory.h',
       'browser/signin/local_auth.cc',
       'browser/signin/local_auth.h',
       'browser/signin/profile_identity_provider.cc',

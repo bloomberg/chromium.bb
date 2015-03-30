@@ -6,10 +6,9 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_TRACKER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/merge_session_helper.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 
 class AccountReconcilor;
 class ProfileOAuth2TokenService;
@@ -44,13 +43,17 @@ class SigninClient;
 // OAuth2TokenService - Maintains and manages OAuth2 tokens for the accounts
 // connected to this profile.
 //
+// GaiaCookieManagerService - Responsible for adding or removing cookies from
+// the cookie jar from the browser process. A single source of information about
+// GAIA cookies in the cookie jar that are fetchable via /ListAccounts.
+//
 // ProfileSyncService - Provides the external API for interacting with the
 // sync framework. Listens for notifications for tokens to know when to startup
 // sync, and provides an Observer interface to notify the UI layer of changes
 // in sync state so they can be reflected in the UI.
 class SigninTracker : public SigninManagerBase::Observer,
                       public OAuth2TokenService::Observer,
-                      public MergeSessionHelper::Observer {
+                      public GaiaCookieManagerService::Observer {
  public:
   class Observer {
    public:
@@ -60,7 +63,7 @@ class SigninTracker : public SigninManagerBase::Observer,
     // The signin attempt succeeded.
     virtual void SigninSuccess() = 0;
 
-    // The signed in account has been merged into the content area cookie jar.
+    // The signed in account has been added into the content area cookie jar.
     // This will be called only after a call to SigninSuccess().
     virtual void MergeSessionComplete(const GoogleServiceAuthError& error) = 0;
   };
@@ -73,6 +76,7 @@ class SigninTracker : public SigninManagerBase::Observer,
   SigninTracker(ProfileOAuth2TokenService* token_service,
                 SigninManagerBase* signin_manager,
                 AccountReconcilor* account_reconcilor,
+                GaiaCookieManagerService* cookie_manager_service,
                 SigninClient* client,
                 Observer* observer);
   ~SigninTracker() override;
@@ -88,14 +92,16 @@ class SigninTracker : public SigninManagerBase::Observer,
   // Initializes this by adding notifications and observers.
   void Initialize();
 
-  // MergeSessionHelper::Observer implementation.
-  void MergeSessionCompleted(const std::string& account_id,
-                             const GoogleServiceAuthError& error) override;
+  // GaiaCookieManagerService::Observer implementation.
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override;
 
   // The classes whose collective signin status we are tracking.
   ProfileOAuth2TokenService* token_service_;
   SigninManagerBase* signin_manager_;
   AccountReconcilor* account_reconcilor_;
+  GaiaCookieManagerService* cookie_manager_service_;
 
   // The client associated with this instance.
   SigninClient* client_;

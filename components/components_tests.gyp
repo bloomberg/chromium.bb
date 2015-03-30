@@ -436,6 +436,7 @@
     ],
     'signin_unittest_sources': [
       'signin/core/browser/account_tracker_service_unittest.cc',
+      'signin/core/browser/gaia_cookie_manager_service_unittest.cc',
       'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
       'signin/core/browser/refresh_token_annotation_request_unittest.cc',
       'signin/core/browser/signin_error_controller_unittest.cc',

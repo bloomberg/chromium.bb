@@ -260,13 +260,6 @@ void SigninManagerAndroid::ClearLastSignedInUser() {
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 }
 
-void SigninManagerAndroid::MergeSessionCompleted(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  merge_session_helper_->RemoveObserver(this);
-  merge_session_helper_.reset();
-}
-
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);

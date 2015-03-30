@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "google_apis/gaia/merge_session_helper.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
 class AccountReconcilor;
 class GoogleServiceAuthError;
@@ -25,18 +25,19 @@ class GoogleServiceAuthError;
 @end
 
 // C++ class to monitor merge session status in Objective C type.
-class MergeSessionObserverBridge : public MergeSessionHelper::Observer {
+class MergeSessionObserverBridge : public GaiaCookieManagerService::Observer {
  public:
   MergeSessionObserverBridge(id<MergeSessionObserverBridgeDelegate> delegate,
-                             AccountReconcilor* account_reconcilor);
+                             GaiaCookieManagerService* cookie_manager_service);
   ~MergeSessionObserverBridge() override;
 
-  void MergeSessionCompleted(const std::string& account_id,
-                             const GoogleServiceAuthError& error) override;
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override;
 
  private:
   id<MergeSessionObserverBridgeDelegate> delegate_;
-  AccountReconcilor* account_reconcilor_;
+  GaiaCookieManagerService* cookie_manager_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionObserverBridge);
 };

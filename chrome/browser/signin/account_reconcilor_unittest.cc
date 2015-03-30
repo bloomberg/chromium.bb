@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -45,7 +46,8 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
 
   MockAccountReconcilor(ProfileOAuth2TokenService* token_service,
                         SigninManagerBase* signin_manager,
-                        SigninClient* client);
+                        SigninClient* client,
+                        GaiaCookieManagerService* cookie_manager_service);
   ~MockAccountReconcilor() override {}
 
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
@@ -58,7 +60,8 @@ KeyedService* MockAccountReconcilor::Build(content::BrowserContext* context) {
   AccountReconcilor* reconcilor = new MockAccountReconcilor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile));
+      ChromeSigninClientFactory::GetForProfile(profile),
+      GaiaCookieManagerServiceFactory::GetForProfile(profile));
   reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }
@@ -66,10 +69,12 @@ KeyedService* MockAccountReconcilor::Build(content::BrowserContext* context) {
 MockAccountReconcilor::MockAccountReconcilor(
     ProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
-    SigninClient* client)
+    SigninClient* client,
+    GaiaCookieManagerService* cookie_manager_service)
     : testing::StrictMock<AccountReconcilor>(token_service,
                                              signin_manager,
-                                             client) {}
+                                             client,
+                                             cookie_manager_service) {}
 
 }  // namespace
 
@@ -93,8 +98,8 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
 
   MockAccountReconcilor* GetMockReconcilor();
 
-  void SimulateMergeSessionCompleted(
-      MergeSessionHelper::Observer* observer,
+  void SimulateAddAccountToCookieCompleted(
+      GaiaCookieManagerService::Observer* observer,
       const std::string& account_id,
       const GoogleServiceAuthError& error);
 
@@ -142,7 +147,7 @@ void AccountReconcilorTest::SetUp() {
       GaiaConstants::kReconcilorSource);
   get_check_connection_info_url_ =
       GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
-          GaiaConstants::kReconcilorSource);
+          GaiaConstants::kChromeSource);
 
   SetFakeResponse(get_check_connection_info_url().spec(), "[]",
       net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -190,11 +195,11 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
   return mock_reconcilor_;
 }
 
-void AccountReconcilorTest::SimulateMergeSessionCompleted(
-    MergeSessionHelper::Observer* observer,
+void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
+    GaiaCookieManagerService::Observer* observer,
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  observer->MergeSessionCompleted(account_id, error);
+  observer->OnAddAccountToCookieCompleted(account_id, error);
 }
 
 void AccountReconcilorTest::SimulateCookieContentSettingsChanged(
@@ -211,7 +216,6 @@ TEST_F(AccountReconcilorTest, Basic) {
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
-  ASSERT_EQ(token_service(), reconcilor->token_service());
 }
 
 #if !defined(OS_CHROMEOS)
@@ -487,8 +491,8 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookie) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateMergeSessionCompleted(reconcilor, "other@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "other@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   histogram_tester()->ExpectUniqueSample(
@@ -518,8 +522,8 @@ TEST_P(AccountReconcilorTest, StartReconcileRemoveFromCookie) {
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 
   base::RunLoop().RunUntilIdle();
-  SimulateMergeSessionCompleted(reconcilor, "user@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   histogram_tester()->ExpectUniqueSample(
@@ -551,7 +555,7 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateMergeSessionCompleted(
+  SimulateAddAccountToCookieCompleted(
       reconcilor, "other@gmail.com", GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
@@ -578,7 +582,7 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateMergeSessionCompleted(
+  SimulateAddAccountToCookieCompleted(
       reconcilor, "third@gmail.com", GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
@@ -619,11 +623,11 @@ TEST_P(AccountReconcilorTest, StartReconcileBadPrimary) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateMergeSessionCompleted(reconcilor, "other@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "other@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateMergeSessionCompleted(reconcilor, "user@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   histogram_tester()->ExpectUniqueSample(
@@ -677,12 +681,12 @@ TEST_P(AccountReconcilorTest, StartReconcileWithSessionInfoExpiredDefault) {
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 
   base::RunLoop().RunUntilIdle();
-  SimulateMergeSessionCompleted(reconcilor, "user@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
-TEST_F(AccountReconcilorTest, MergeSessionCompletedWithBogusAccount) {
+TEST_F(AccountReconcilorTest, AddAccountToCookieCompletedWithBogusAccount) {
   signin_manager()->SetAuthenticatedUsername("user@gmail.com");
   token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
 
@@ -703,12 +707,12 @@ TEST_F(AccountReconcilorTest, MergeSessionCompletedWithBogusAccount) {
   base::RunLoop().RunUntilIdle();
 
   // If an unknown account id is sent, it should not upset the state.
-  SimulateMergeSessionCompleted(reconcilor, "bogus@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "bogus@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 
-  SimulateMergeSessionCompleted(reconcilor, "user@gmail.com",
-                                GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+                                      GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 

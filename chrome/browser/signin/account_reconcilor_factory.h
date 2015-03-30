@@ -9,7 +9,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 
-class AccountReconcilor;
 class Profile;
 
 // Singleton that owns all AccountReconcilors and associates them with

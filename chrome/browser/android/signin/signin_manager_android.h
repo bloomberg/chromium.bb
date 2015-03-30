@@ -14,9 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "google_apis/gaia/merge_session_helper.h"
 
-class GoogleServiceAuthError;
 class Profile;
 
 namespace policy {
@@ -31,7 +29,7 @@ class CloudPolicyClient;
 //
 // This class implements parts of the sign-in flow, to make sure that policy
 // is available before sign-in completes.
-class SigninManagerAndroid : public MergeSessionHelper::Observer {
+class SigninManagerAndroid {
  public:
   SigninManagerAndroid(JNIEnv* env, jobject obj);
 
@@ -67,7 +65,7 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env, jobject obj);
 
  private:
-  ~SigninManagerAndroid() override;
+  ~SigninManagerAndroid();
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   void OnPolicyRegisterDone(const std::string& dm_token,
@@ -80,11 +78,6 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   void ClearLastSignedInUser();
 
   void OnSigninAllowedPrefChanged();
-
-  // MergeSessionHelper::Observer implementation.
-  void MergeSessionCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
 
   Profile* profile_;
 
@@ -101,9 +94,6 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   // for the policy dialog, when |username_| corresponds to a managed account.
   std::string username_;
 #endif
-
-  // Helper to merge the signed into account into the cookie jar session.
-  scoped_ptr<MergeSessionHelper> merge_session_helper_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

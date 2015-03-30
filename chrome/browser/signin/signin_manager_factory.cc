@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +22,7 @@ SigninManagerFactory::SigninManagerFactory()
         "SigninManager",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ChromeSigninClientFactory::GetInstance());
+  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(AccountTrackerServiceFactory::GetInstance());
 }
@@ -152,7 +154,8 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
   service = new SigninManager(
       client,
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      AccountTrackerServiceFactory::GetForProfile(profile));
+      AccountTrackerServiceFactory::GetForProfile(profile),
+      GaiaCookieManagerServiceFactory::GetForProfile(profile));
 #endif
   service->Initialize(g_browser_process->local_state());
   FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));

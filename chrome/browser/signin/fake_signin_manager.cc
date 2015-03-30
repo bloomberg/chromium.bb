@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -42,7 +43,8 @@ FakeSigninManager::FakeSigninManager(Profile* profile)
     : SigninManager(
           ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          AccountTrackerServiceFactory::GetForProfile(profile)) {}
+          AccountTrackerServiceFactory::GetForProfile(profile),
+          GaiaCookieManagerServiceFactory::GetForProfile(profile)) {}
 
 FakeSigninManager::~FakeSigninManager() {
 }

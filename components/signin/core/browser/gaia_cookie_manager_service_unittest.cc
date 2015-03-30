@@ -10,9 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/merge_session_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,67 +21,59 @@
 
 namespace {
 
-class MockObserver : public MergeSessionHelper::Observer {
+class MockObserver : public GaiaCookieManagerService::Observer {
  public:
-  explicit MockObserver(MergeSessionHelper* helper) : helper_(helper) {
+  explicit MockObserver(GaiaCookieManagerService* helper) : helper_(helper) {
     helper_->AddObserver(this);
   }
 
-  ~MockObserver() {
-    helper_->RemoveObserver(this);
-  }
+  ~MockObserver() { helper_->RemoveObserver(this); }
 
-  MOCK_METHOD2(MergeSessionCompleted,
-               void(const std::string&,
-                    const GoogleServiceAuthError& ));
+  MOCK_METHOD2(OnAddAccountToCookieCompleted,
+               void(const std::string&, const GoogleServiceAuthError&));
   MOCK_METHOD1(GetCheckConnectionInfoCompleted, void(bool));
 
  private:
-  MergeSessionHelper* helper_;
+  GaiaCookieManagerService* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-// Counts number of InstrumentedMergeSessionHelper created.
+// Counts number of InstrumentedGaiaCookieManagerService created.
 // We can EXPECT_* to be zero at the end of our unit tests
 // to make sure everything is properly deleted.
 
 int total = 0;
 
-class InstrumentedMergeSessionHelper : public MergeSessionHelper {
+class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
-  InstrumentedMergeSessionHelper(
+  InstrumentedGaiaCookieManagerService(
       OAuth2TokenService* token_service,
-      net::URLRequestContextGetter* request_context) :
-    MergeSessionHelper(token_service, GaiaConstants::kChromeSource,
-                       request_context, NULL) {
+      SigninClient* signin_client)
+      : GaiaCookieManagerService(token_service,
+                                 GaiaConstants::kChromeSource,
+                                 signin_client) {
     total++;
   }
 
-  virtual ~InstrumentedMergeSessionHelper() {
-    total--;
-  }
+  virtual ~InstrumentedGaiaCookieManagerService() { total--; }
 
   MOCK_METHOD0(StartFetching, void());
   MOCK_METHOD0(StartLogOutUrlFetch, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InstrumentedMergeSessionHelper);
+  DISALLOW_COPY_AND_ASSIGN(InstrumentedGaiaCookieManagerService);
 };
 
-class MergeSessionHelperTest : public testing::Test {
+class GaiaCookieManagerServiceTest : public testing::Test {
  public:
-   MergeSessionHelperTest()
-       : no_error_(GoogleServiceAuthError::NONE),
-         error_(GoogleServiceAuthError::SERVICE_ERROR),
-         canceled_(GoogleServiceAuthError::REQUEST_CANCELED),
-         request_context_getter_(new net::TestURLRequestContextGetter(
-             base::MessageLoopProxy::current())) {}
+  GaiaCookieManagerServiceTest()
+      : no_error_(GoogleServiceAuthError::NONE),
+        error_(GoogleServiceAuthError::SERVICE_ERROR),
+        canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {}
 
   OAuth2TokenService* token_service() { return &token_service_; }
-  net::URLRequestContextGetter* request_context() {
-    return request_context_getter_.get();
-  }
+  SigninClient* signin_client() { return &signin_client_; }
 
   void SimulateUbertokenFailure(UbertokenConsumer* consumer,
                                 const GoogleServiceAuthError& error) {
@@ -101,18 +94,16 @@ class MergeSessionHelperTest : public testing::Test {
     consumer->OnURLFetchComplete(NULL);
   }
 
-  void SimulateGetCheckConnctionInfoSuccess(
-      net::TestURLFetcher* fetcher,
-      const std::string& data) {
+  void SimulateGetCheckConnctionInfoSuccess(net::TestURLFetcher* fetcher,
+                                            const std::string& data) {
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(200);
     fetcher->SetResponseString(data);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  void SimulateGetCheckConnctionInfoResult(
-      net::URLFetcher* fetcher,
-      const std::string& result) {
+  void SimulateGetCheckConnctionInfoResult(net::URLFetcher* fetcher,
+                                           const std::string& result) {
     net::TestURLFetcher* test_fetcher =
         static_cast<net::TestURLFetcher*>(fetcher);
     test_fetcher->set_status(net::URLRequestStatus());
@@ -134,112 +125,121 @@ class MergeSessionHelperTest : public testing::Test {
   GoogleServiceAuthError no_error_;
   GoogleServiceAuthError error_;
   GoogleServiceAuthError canceled_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  TestSigninClient signin_client_;
 };
 
-} // namespace
+}  // namespace
 
 using ::testing::_;
 
-TEST_F(MergeSessionHelperTest, Success) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, Success) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching());
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
 
-  helper.LogIn("acc1@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token");
 }
 
-TEST_F(MergeSessionHelperTest, FailedMergeSession) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching());
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      error()));
 
-  helper.LogIn("acc1@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
   SimulateMergeSessionFailure(&helper, error());
 }
 
-TEST_F(MergeSessionHelperTest, FailedUbertoken) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, FailedUbertoken) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching());
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      error()));
 
-  helper.LogIn("acc1@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
   SimulateUbertokenFailure(&helper, error());
 }
 
-TEST_F(MergeSessionHelperTest, ContinueAfterSuccess) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, ContinueAfterSuccess) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", no_error()));
-  EXPECT_CALL(observer, MergeSessionCompleted("acc2@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
 
-  helper.LogIn("acc1@gmail.com");
-  helper.LogIn("acc2@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
+  helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateMergeSessionSuccess(&helper, "token2");
 }
 
-TEST_F(MergeSessionHelperTest, ContinueAfterFailure1) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, ContinueAfterFailure1) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", error()));
-  EXPECT_CALL(observer, MergeSessionCompleted("acc2@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
 
-  helper.LogIn("acc1@gmail.com");
-  helper.LogIn("acc2@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
+  helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionFailure(&helper, error());
   SimulateMergeSessionSuccess(&helper, "token2");
 }
 
-TEST_F(MergeSessionHelperTest, ContinueAfterFailure2) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, ContinueAfterFailure2) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", error()));
-  EXPECT_CALL(observer, MergeSessionCompleted("acc2@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
 
-  helper.LogIn("acc1@gmail.com");
-  helper.LogIn("acc2@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
+  helper.AddAccountToCookie("acc2@gmail.com");
   SimulateUbertokenFailure(&helper, error());
   SimulateMergeSessionSuccess(&helper, "token2");
 }
 
-TEST_F(MergeSessionHelperTest, AllRequestsInMultipleGoes) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, AllRequestsInMultipleGoes) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(4);
-  EXPECT_CALL(observer, MergeSessionCompleted(_, no_error())).Times(4);
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted(_, no_error())).Times(4);
 
-  helper.LogIn("acc1@gmail.com");
-  helper.LogIn("acc2@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
+  helper.AddAccountToCookie("acc2@gmail.com");
 
   SimulateMergeSessionSuccess(&helper, "token1");
 
-  helper.LogIn("acc3@gmail.com");
+  helper.AddAccountToCookie("acc3@gmail.com");
 
   SimulateMergeSessionSuccess(&helper, "token2");
   SimulateMergeSessionSuccess(&helper, "token3");
 
-  helper.LogIn("acc4@gmail.com");
+  helper.AddAccountToCookie("acc4@gmail.com");
 
   SimulateMergeSessionSuccess(&helper, "token4");
 }
 
-TEST_F(MergeSessionHelperTest, LogOut) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, LogOut) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts;
@@ -249,8 +249,10 @@ TEST_F(MergeSessionHelperTest, LogOut) {
 
   EXPECT_CALL(helper, StartLogOutUrlFetch());
   EXPECT_CALL(helper, StartFetching()).Times(2);
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", no_error()));
-  EXPECT_CALL(observer, MergeSessionCompleted("acc3@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
+                                                      no_error()));
 
   helper.LogOut("acc2@gmail.com", current_accounts);
   SimulateLogoutSuccess(&helper);
@@ -258,8 +260,8 @@ TEST_F(MergeSessionHelperTest, LogOut) {
   SimulateMergeSessionSuccess(&helper, "token3");
 }
 
-TEST_F(MergeSessionHelperTest, PendingSigninThenSignout) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, PendingSigninThenSignout) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts;
@@ -267,16 +269,18 @@ TEST_F(MergeSessionHelperTest, PendingSigninThenSignout) {
   current_accounts.push_back("acc3@gmail.com");
 
   // From the first Signin.
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
 
   // From the sign out and then re-sign in.
   EXPECT_CALL(helper, StartLogOutUrlFetch());
-  EXPECT_CALL(observer, MergeSessionCompleted("acc3@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
+                                                      no_error()));
 
   // Total sign in 2 times, not enforcing ordered sequences.
   EXPECT_CALL(helper, StartFetching()).Times(2);
 
-  helper.LogIn("acc1@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
   helper.LogOut("acc2@gmail.com", current_accounts);
 
   SimulateMergeSessionSuccess(&helper, "token1");
@@ -284,27 +288,29 @@ TEST_F(MergeSessionHelperTest, PendingSigninThenSignout) {
   SimulateMergeSessionSuccess(&helper, "token3");
 }
 
-TEST_F(MergeSessionHelperTest, CancelSignIn) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts;
 
   EXPECT_CALL(helper, StartFetching());
-  EXPECT_CALL(observer, MergeSessionCompleted("acc2@gmail.com", canceled()));
-  EXPECT_CALL(observer, MergeSessionCompleted("acc1@gmail.com", no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      canceled()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
   EXPECT_CALL(helper, StartLogOutUrlFetch());
 
-  helper.LogIn("acc1@gmail.com");
-  helper.LogIn("acc2@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
+  helper.AddAccountToCookie("acc2@gmail.com");
   helper.LogOut("acc2@gmail.com", current_accounts);
 
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateLogoutSuccess(&helper);
 }
 
-TEST_F(MergeSessionHelperTest, DoubleSignout) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
+TEST_F(GaiaCookieManagerServiceTest, DoubleSignout) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts1;
@@ -317,12 +323,14 @@ TEST_F(MergeSessionHelperTest, DoubleSignout) {
   current_accounts2.push_back("acc3@gmail.com");
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
-  EXPECT_CALL(observer, MergeSessionCompleted("acc3@gmail.com", canceled()));
-  EXPECT_CALL(observer,
-      MergeSessionCompleted("acc1@gmail.com", no_error())).Times(2);
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
+                                                      canceled()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()))
+      .Times(2);
   EXPECT_CALL(helper, StartLogOutUrlFetch());
 
-  helper.LogIn("acc1@gmail.com");
+  helper.AddAccountToCookie("acc1@gmail.com");
   helper.LogOut("acc2@gmail.com", current_accounts1);
   helper.LogOut("acc3@gmail.com", current_accounts2);
 
@@ -331,9 +339,9 @@ TEST_F(MergeSessionHelperTest, DoubleSignout) {
   SimulateMergeSessionSuccess(&helper, "token1");
 }
 
-TEST_F(MergeSessionHelperTest, ExternalCcResultFetcher) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
-  MergeSessionHelper::ExternalCcResultFetcher result_fetcher(&helper);
+TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
   MockObserver observer(&helper);
   EXPECT_CALL(observer, GetCheckConnectionInfoCompleted(true));
   result_fetcher.Start();
@@ -341,13 +349,14 @@ TEST_F(MergeSessionHelperTest, ExternalCcResultFetcher) {
   // Simulate a successful completion of GetCheckConnctionInfo.
   net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
   ASSERT_TRUE(NULL != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(fetcher,
+  SimulateGetCheckConnctionInfoSuccess(
+      fetcher,
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"},"
       " {\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
 
   // Simulate responses for the two connection URLs.
-  MergeSessionHelper::ExternalCcResultFetcher::URLToTokenAndFetcher fetchers =
-      result_fetcher.get_fetcher_map_for_testing();
+  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
+      fetchers = result_fetcher.get_fetcher_map_for_testing();
   ASSERT_EQ(2u, fetchers.size());
   ASSERT_EQ(1u, fetchers.count(GURL("http://www.yt.com")));
   ASSERT_EQ(1u, fetchers.count(GURL("http://www.bl.com")));
@@ -361,9 +370,9 @@ TEST_F(MergeSessionHelperTest, ExternalCcResultFetcher) {
   ASSERT_EQ("bl:bl_result,yt:yt_result", result_fetcher.GetExternalCcResult());
 }
 
-TEST_F(MergeSessionHelperTest, ExternalCcResultFetcherTimeout) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
-  MergeSessionHelper::ExternalCcResultFetcher result_fetcher(&helper);
+TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTimeout) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
   MockObserver observer(&helper);
   EXPECT_CALL(observer, GetCheckConnectionInfoCompleted(false));
   result_fetcher.Start();
@@ -371,12 +380,13 @@ TEST_F(MergeSessionHelperTest, ExternalCcResultFetcherTimeout) {
   // Simulate a successful completion of GetCheckConnctionInfo.
   net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
   ASSERT_TRUE(NULL != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(fetcher,
+  SimulateGetCheckConnctionInfoSuccess(
+      fetcher,
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"},"
       " {\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
 
-  MergeSessionHelper::ExternalCcResultFetcher::URLToTokenAndFetcher fetchers =
-      result_fetcher.get_fetcher_map_for_testing();
+  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
+      fetchers = result_fetcher.get_fetcher_map_for_testing();
   ASSERT_EQ(2u, fetchers.size());
   ASSERT_EQ(1u, fetchers.count(GURL("http://www.yt.com")));
   ASSERT_EQ(1u, fetchers.count(GURL("http://www.bl.com")));
@@ -394,19 +404,20 @@ TEST_F(MergeSessionHelperTest, ExternalCcResultFetcherTimeout) {
   ASSERT_EQ(0u, fetchers.size());
 }
 
-TEST_F(MergeSessionHelperTest, ExternalCcResultFetcherTruncate) {
-  InstrumentedMergeSessionHelper helper(token_service(), request_context());
-  MergeSessionHelper::ExternalCcResultFetcher result_fetcher(&helper);
+TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
   net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
   ASSERT_TRUE(NULL != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(fetcher,
+  SimulateGetCheckConnctionInfoSuccess(
+      fetcher,
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"}]");
 
-  MergeSessionHelper::ExternalCcResultFetcher::URLToTokenAndFetcher fetchers =
-      result_fetcher.get_fetcher_map_for_testing();
+  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
+      fetchers = result_fetcher.get_fetcher_map_for_testing();
   ASSERT_EQ(1u, fetchers.size());
   ASSERT_EQ(1u, fetchers.count(GURL("http://www.yt.com")));
 

@@ -36,18 +36,17 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/merge_session_helper.h"
 #include "net/cookies/canonical_cookie.h"
 
+class GaiaCookieManagerService;
+class GoogleServiceAuthError;
 class PrefService;
 class ProfileOAuth2TokenService;
 class SigninAccountIdHelper;
 class SigninClient;
 
 class SigninManager : public SigninManagerBase,
-                      public AccountTrackerService::Observer,
-                      public MergeSessionHelper::Observer {
+                      public AccountTrackerService::Observer {
  public:
   // The callback invoked once the OAuth token has been fetched during signin,
   // but before the profile transitions to the "signed-in" state. This allows
@@ -64,7 +63,8 @@ class SigninManager : public SigninManagerBase,
 
   SigninManager(SigninClient* client,
                 ProfileOAuth2TokenService* token_service,
-                AccountTrackerService* account_tracker_service);
+                AccountTrackerService* account_tracker_service,
+                GaiaCookieManagerService* cookie_manager_service);
   ~SigninManager() override;
 
   // Returns true if the username is allowed based on the policy string.
@@ -133,10 +133,6 @@ class SigninManager : public SigninManagerBase,
   // ignored).
   bool IsSignoutProhibited() const;
 
-  // Add or remove observers for the merge session notification.
-  void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
-  void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
-
  protected:
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
@@ -174,13 +170,6 @@ class SigninManager : public SigninManagerBase,
   void OnAccountUpdated(const AccountTrackerService::AccountInfo& info)
       override;
   void OnAccountUpdateFailed(const std::string& account_id) override;
-
-  // MergeSessionHelper::Observer implementation. SigninManager controls the
-  // lifetime if the MergeSessionHelper, so SigninManager takes responsibility
-  // for propogating these notifications.
-  void MergeSessionCompleted(const std::string& account_id,
-                             const GoogleServiceAuthError& error) override;
-  void GetCheckConnectionInfoCompleted(bool succeeded) override;
 
   // Called when a new request to re-authenticate a user is in progress.
   // Will clear in memory data but leaves the db as such so when the browser
@@ -223,18 +212,15 @@ class SigninManager : public SigninManagerBase,
   // outlive this object.
   AccountTrackerService* account_tracker_service_;
 
+  // Object used to use the token to push a GAIA cookie into the cookie jar.
+  GaiaCookieManagerService* cookie_manager_service_;
+
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).
   PrefChangeRegistrar local_state_pref_registrar_;
 
   // Helper object to listen for changes to the signin allowed preference.
   BooleanPrefMember signin_allowed_;
-
-  // Helper to merge signed in account into the content area.
-  scoped_ptr<MergeSessionHelper> merge_session_helper_;
-
-  // Observers of the |merge_session_helper_| across reset()s.
-  ObserverList<MergeSessionHelper::Observer, true> merge_session_observer_list_;
 
   // Two gate conditions for when PostSignedIn should be called. Verify
   // that the SigninManager has reached OnSignedIn() and the AccountTracker

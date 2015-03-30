@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "google_apis/gaia/merge_session_helper.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
@@ -21,7 +21,6 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #endif  // ENABLE_SERVICE_DISCOVERY
 
-class AccountReconcilor;
 class PrinterHandler;
 class PrintSystemTaskProxy;
 
@@ -47,7 +46,7 @@ class PrintPreviewHandler
 #endif
       public ui::SelectFileDialog::Listener,
       public printing::PrintViewManagerObserver,
-      public MergeSessionHelper::Observer {
+      public GaiaCookieManagerService::Observer {
  public:
   PrintPreviewHandler();
   ~PrintPreviewHandler() override;
@@ -64,9 +63,10 @@ class PrintPreviewHandler
   // PrintViewManagerObserver implementation.
   void OnPrintDialogShown() override;
 
-  // MergeSessionHelper::Observer implementation.
-  void MergeSessionCompleted(const std::string& account_id,
-                             const GoogleServiceAuthError& error) override;
+  // GaiaCookieManagerService::Observer implementation.
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override;
 
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const base::FilePath& default_path);
@@ -316,8 +316,8 @@ class PrintPreviewHandler
 
   // Register/unregister from notifications of changes done to the GAIA
   // cookie.
-  void RegisterForMergeSession();
-  void UnregisterForMergeSession();
+  void RegisterForGaiaCookieChanges();
+  void UnregisterForGaiaCookieChanges();
 
   // The underlying dialog object.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
@@ -343,9 +343,9 @@ class PrintPreviewHandler
   // Holds token service to get OAuth2 access tokens.
   scoped_ptr<AccessTokenService> token_service_;
 
-  // Pointer to reconcilor so that print preview can listen for GAIA cookie
-  // changes.
-  AccountReconcilor* reconcilor_;
+  // Pointer to cookie manager service so that print preview can listen for GAIA
+  // cookie changes.
+  GaiaCookieManagerService* gaia_cookie_manager_service_;
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>

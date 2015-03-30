@@ -20,11 +20,11 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class GaiaAuthFetcher;
@@ -38,13 +38,14 @@ class CanonicalCookie;
 class AccountReconcilor : public KeyedService,
                           public content_settings::Observer,
                           public GaiaAuthConsumer,
-                          public MergeSessionHelper::Observer,
+                          public GaiaCookieManagerService::Observer,
                           public OAuth2TokenService::Observer,
                           public SigninManagerBase::Observer {
  public:
   AccountReconcilor(ProfileOAuth2TokenService* token_service,
                     SigninManagerBase* signin_manager,
-                    SigninClient* client);
+                    SigninClient* client,
+                    GaiaCookieManagerService* cookie_manager_service);
   ~AccountReconcilor() override;
 
   void Initialize(bool start_reconcile_if_tokens_available);
@@ -56,13 +57,6 @@ class AccountReconcilor : public KeyedService,
 
   // KeyedService implementation.
   void Shutdown() override;
-
-  // Add or remove observers for the merge session notification.
-  void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
-  void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
-
-  ProfileOAuth2TokenService* token_service() { return token_service_; }
-  SigninClient* client() { return client_; }
 
  protected:
   // Used during GetAccountsFromCookie.
@@ -115,7 +109,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileWithSessionInfoExpiredDefault);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
-                           MergeSessionCompletedWithBogusAccount);
+                           AddAccountToCookieCompletedWithBogusAccount);
 
   // Register and unregister with dependent services.
   void RegisterForCookieChanges();
@@ -124,8 +118,8 @@ class AccountReconcilor : public KeyedService,
   void UnregisterWithSigninManager();
   void RegisterWithTokenService();
   void UnregisterWithTokenService();
-  void RegisterWithMergeSessionHelper();
-  void UnregisterWithMergeSessionHelper();
+  void RegisterWithCookieManagerService();
+  void UnregisterWithCookieManagerService();
   void RegisterWithContentSettings();
   void UnregisterWithContentSettings();
 
@@ -164,8 +158,9 @@ class AccountReconcilor : public KeyedService,
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
 
   // Overriden from MergeSessionHelper::Observer.
-  void MergeSessionCompleted(const std::string& account_id,
-                             const GoogleServiceAuthError& error) override;
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override;
   void GetCheckConnectionInfoCompleted(bool succeeded) override;
 
   // Overriden from OAuth2TokenService::Observer.
@@ -189,10 +184,12 @@ class AccountReconcilor : public KeyedService,
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;
 
-  MergeSessionHelper merge_session_helper_;
+  // The GaiaCookieManagerService associated with this reconcilor.
+  GaiaCookieManagerService* cookie_manager_service_;
+
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   bool registered_with_token_service_;
-  bool registered_with_merge_session_helper_;
+  bool registered_with_cookie_manager_service_;
   bool registered_with_content_settings_;
 
   // True while the reconcilor is busy checking or managing the accounts in

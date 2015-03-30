@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/fake_account_tracker_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -52,7 +53,8 @@ KeyedService* SigninManagerBuild(content::BrowserContext* context) {
   service = new SigninManager(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      AccountTrackerServiceFactory::GetForProfile(profile));
+      AccountTrackerServiceFactory::GetForProfile(profile),
+      GaiaCookieManagerServiceFactory::GetForProfile(profile));
   service->Initialize(NULL);
   return service;
 }
@@ -158,7 +160,8 @@ class SigninManagerTest : public testing::Test {
     naked_manager_.reset(new SigninManager(
         ChromeSigninClientFactory::GetInstance()->GetForProfile(profile()),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
-        AccountTrackerServiceFactory::GetForProfile(profile())));
+        AccountTrackerServiceFactory::GetForProfile(profile()),
+        GaiaCookieManagerServiceFactory::GetForProfile(profile())));
 
     manager_ = naked_manager_.get();
     manager_->AddObserver(&test_observer_);

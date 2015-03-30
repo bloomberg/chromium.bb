@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -15,6 +16,7 @@ AccountReconcilorFactory::AccountReconcilorFactory()
         "AccountReconcilor",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ChromeSigninClientFactory::GetInstance());
+  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
 }
@@ -39,7 +41,8 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
   AccountReconcilor* reconcilor = new AccountReconcilor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile));
+      ChromeSigninClientFactory::GetForProfile(profile),
+      GaiaCookieManagerServiceFactory::GetForProfile(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }

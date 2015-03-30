@@ -5,23 +5,22 @@
 #include "components/signin/ios/browser/merge_session_observer_bridge.h"
 
 #include "base/logging.h"
-#include "components/signin/core/browser/account_reconcilor.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 MergeSessionObserverBridge::MergeSessionObserverBridge(
     id<MergeSessionObserverBridgeDelegate> delegate,
-    AccountReconcilor* account_reconcilor)
-    : delegate_(delegate), account_reconcilor_(account_reconcilor) {
+    GaiaCookieManagerService* cookie_manager_service)
+    : delegate_(delegate), cookie_manager_service_(cookie_manager_service) {
   DCHECK(delegate);
-  DCHECK(account_reconcilor);
-  account_reconcilor_->AddMergeSessionObserver(this);
+  DCHECK(cookie_manager_service);
+  cookie_manager_service_->AddObserver(this);
 }
 
 MergeSessionObserverBridge::~MergeSessionObserverBridge() {
-  account_reconcilor_->RemoveMergeSessionObserver(this);
+  cookie_manager_service_->RemoveObserver(this);
 }
 
-void MergeSessionObserverBridge::MergeSessionCompleted(
+void MergeSessionObserverBridge::OnAddAccountToCookieCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   [delegate_ onMergeSessionCompleted:account_id error:error];
