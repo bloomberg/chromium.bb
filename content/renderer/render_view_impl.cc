@@ -724,9 +724,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
-  webview()->settings()->setAllowConnectingInsecureWebSocket(
-      command_line.HasSwitch(switches::kAllowInsecureWebSocketFromHttpsOrigin));
-
   RenderFrameProxy* proxy = NULL;
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);

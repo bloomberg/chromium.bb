@@ -1836,15 +1836,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSavePasswordBubble,
                               switches::kDisableSavePasswordBubble)
   },
-  // TODO(tyoshino): Remove this temporary flag and command line switch. See
-  // crbug.com/366483 for the target milestone.
-  {
-    "allow-insecure-websocket-from-https-origin",
-    IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_NAME,
-    IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kAllowInsecureWebSocketFromHttpsOrigin)
-  },
   {
     "enable-apps-file-associations",
     IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_NAME,
