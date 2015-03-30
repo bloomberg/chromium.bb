@@ -75,7 +75,7 @@ void SetDragImage(const GURL& url,
   // Render the image.
   scoped_ptr<gfx::Canvas> canvas(
       views::GetCanvasForDragImage(widget, prefsize));
-  button.Paint(canvas.get(), views::CullSet());
+  button.Paint(views::View::PaintContext(canvas.get(), views::CullSet()));
   drag_utils::SetDragImageOnDataObject(*canvas, press_point, data);
 }
 

@@ -975,9 +975,8 @@ void BookmarkBarView::ViewHierarchyChanged(
   }
 }
 
-void BookmarkBarView::PaintChildren(gfx::Canvas* canvas,
-                                    const views::CullSet& cull_set) {
-  View::PaintChildren(canvas, cull_set);
+void BookmarkBarView::PaintChildren(const PaintContext& context) {
+  View::PaintChildren(context);
 
   if (drop_info_.get() && drop_info_->valid &&
       drop_info_->location.operation != 0 && drop_info_->location.index != -1 &&
@@ -1011,6 +1010,7 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas,
                                h);
     indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
 
+    gfx::Canvas* canvas = context.canvas();
     // TODO(sky/glen): make me pretty!
     canvas->FillRect(indicator_bounds, kDropIndicatorColor);
   }

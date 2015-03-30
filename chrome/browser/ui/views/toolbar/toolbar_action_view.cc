@@ -107,11 +107,10 @@ void ToolbarActionView::ViewHierarchyChanged(
   MenuButton::ViewHierarchyChanged(details);
 }
 
-void ToolbarActionView::PaintChildren(gfx::Canvas* canvas,
-                                      const views::CullSet& cull_set) {
-  View::PaintChildren(canvas, cull_set);
-  view_controller_->PaintExtra(
-      canvas, GetLocalBounds(), GetCurrentWebContents());
+void ToolbarActionView::PaintChildren(const PaintContext& context) {
+  View::PaintChildren(context);
+  view_controller_->PaintExtra(context.canvas(), GetLocalBounds(),
+                               GetCurrentWebContents());
 }
 
 void ToolbarActionView::OnPaintBorder(gfx::Canvas* canvas) {

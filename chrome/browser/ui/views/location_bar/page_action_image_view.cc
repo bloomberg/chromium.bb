@@ -107,11 +107,11 @@ void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
   SetVisible(true);
 }
 
-void PageActionImageView::PaintChildren(gfx::Canvas* canvas,
-                                        const views::CullSet& cull_set) {
-  View::PaintChildren(canvas, cull_set);
+void PageActionImageView::PaintChildren(const PaintContext& context) {
+  View::PaintChildren(context);
   int tab_id = SessionTabHelper::IdForTab(GetCurrentWebContents());
   if (tab_id >= 0) {
+    gfx::Canvas* canvas = context.canvas();
     view_controller_->extension_action()->PaintBadge(
         canvas, GetLocalBounds(), tab_id);
   }

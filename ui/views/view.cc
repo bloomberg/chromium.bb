@@ -763,16 +763,17 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
   }
 }
 
-void View::Paint(gfx::Canvas* canvas, const CullSet& cull_set) {
+void View::Paint(const PaintContext& context) {
   if (!visible_)
     return;
   // The cull_set may allow us to skip painting without canvas construction or
   // even canvas rect intersection.
-  if (!cull_set.ShouldPaint(this))
+  if (!context.cull_set().ShouldPaint(this))
     return;
 
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
+  gfx::Canvas* canvas = context.canvas();
   gfx::ScopedCanvas scoped_canvas(canvas);
 
   // If the view is backed by a layer, it should paint with itself as the origin
@@ -821,7 +822,7 @@ void View::Paint(gfx::Canvas* canvas, const CullSet& cull_set) {
   // match the position we will be painting at and UpdateRootBounds() does the
   // wrong thing.
   if (!IsPaintRoot() || layer()) {
-    PaintChildren(canvas, cull_set);
+    PaintChildren(context);
     return;
   }
 
@@ -843,8 +844,7 @@ void View::Paint(gfx::Canvas* canvas, const CullSet& cull_set) {
   scoped_ptr<base::hash_set<intptr_t>> damaged_views(
       new base::hash_set<intptr_t>);
   bounds_tree_->AppendIntersectingRecords(canvas_bounds, damaged_views.get());
-  CullSet paint_root_cull_set(damaged_views.Pass());
-  PaintChildren(canvas, paint_root_cull_set);
+  PaintChildren(context.CloneWithNewCullSet(CullSet(damaged_views.Pass())));
 }
 
 void View::set_background(Background* b) {
@@ -1369,11 +1369,11 @@ void View::NativeViewHierarchyChanged() {
 
 // Painting --------------------------------------------------------------------
 
-void View::PaintChildren(gfx::Canvas* canvas, const CullSet& cull_set) {
+void View::PaintChildren(const PaintContext& context) {
   TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
   for (int i = 0, count = child_count(); i < count; ++i)
     if (!child_at(i)->layer())
-      child_at(i)->Paint(canvas, cull_set);
+      child_at(i)->Paint(context);
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
@@ -1488,7 +1488,7 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
     canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   if (!visible_)
     return;
-  Paint(canvas, CullSet());
+  Paint(PaintContext(canvas, CullSet()));
 }
 
 void View::OnDelegatedFrameDamage(

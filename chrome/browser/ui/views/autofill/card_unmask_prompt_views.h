@@ -80,8 +80,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     ~FadeOutView() override;
 
     // views::View
-    void PaintChildren(gfx::Canvas* canvas,
-                       const views::CullSet& cull_set) override;
+    void PaintChildren(const PaintContext& context) override;
     void OnPaint(gfx::Canvas* canvas) override;
 
     void set_fade_everything(bool fade_everything) {

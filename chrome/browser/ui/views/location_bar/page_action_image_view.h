@@ -57,8 +57,7 @@ class PageActionImageView : public ToolbarActionViewDelegateViews,
   static const char kViewClassName[];
 
   // Overridden from View.
-  void PaintChildren(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) override;
+  void PaintChildren(const PaintContext& context) override;
 
   // ToolbarActionViewDelegateViews:
   void UpdateState() override;

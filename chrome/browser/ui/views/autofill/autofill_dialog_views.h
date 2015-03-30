@@ -261,8 +261,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // views::View implementation.
     gfx::Size GetPreferredSize() const override;
     const char* GetClassName() const override;
-    void PaintChildren(gfx::Canvas* canvas,
-                       const views::CullSet& cull_set) override;
+    void PaintChildren(const PaintContext& context) override;
 
     void set_arrow_centering_anchor(
         const base::WeakPtr<views::View>& arrow_centering_anchor) {

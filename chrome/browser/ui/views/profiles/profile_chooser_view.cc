@@ -257,11 +257,10 @@ class EditableProfilePhoto : public views::LabelButton {
     views::LabelButton::OnPaint(canvas);
   }
 
-  void PaintChildren(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) override {
+  void PaintChildren(const PaintContext& context) override {
     // Display any children (the "change photo" overlay) as a circle.
-    canvas->ClipPath(circular_mask_, true);
-    View::PaintChildren(canvas, cull_set);
+    context.canvas()->ClipPath(circular_mask_, true);
+    View::PaintChildren(context);
   }
 
  private:

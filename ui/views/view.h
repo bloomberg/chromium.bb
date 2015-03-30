@@ -493,11 +493,30 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void SchedulePaint();
   virtual void SchedulePaintInRect(const gfx::Rect& r);
 
+  class PaintContext {
+   public:
+    PaintContext(gfx::Canvas* canvas, const CullSet& cull_set)
+        : canvas_(canvas), cull_set_(cull_set) {}
+
+    // TODO(danakj): Remove this once everything is painting to display lists.
+    gfx::Canvas* canvas() const { return canvas_; }
+
+    const CullSet& cull_set() const { return cull_set_; }
+
+    PaintContext CloneWithNewCullSet(const CullSet& new_cull_set) const {
+      return PaintContext(canvas_, new_cull_set);
+    }
+
+   private:
+    gfx::Canvas* canvas_;
+    const CullSet& cull_set_;
+  };
+
   // Called by the framework to paint a View. Performs translation and clipping
   // for View coordinates and language direction as required, allows the View
   // to paint itself via the various OnPaint*() event handlers and then paints
   // the hierarchy beneath it.
-  void Paint(gfx::Canvas* canvas, const CullSet& cull_set);
+  void Paint(const PaintContext& context);
 
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b);
@@ -1073,7 +1092,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Responsible for calling Paint() on child Views. Override to control the
   // order child Views are painted.
-  virtual void PaintChildren(gfx::Canvas* canvas, const CullSet& cull_set);
+  virtual void PaintChildren(const PaintContext& context);
 
   // Override to provide rendering in any part of the View's bounds. Typically
   // this is the "contents" of the view. If you override this method you will

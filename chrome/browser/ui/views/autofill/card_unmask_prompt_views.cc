@@ -442,13 +442,13 @@ CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
 }
 
 void CardUnmaskPromptViews::FadeOutView::PaintChildren(
-    gfx::Canvas* canvas,
-    const views::CullSet& cull_set) {
+    const PaintContext& context) {
   if (opacity_ > 0.99)
-    return views::View::PaintChildren(canvas, cull_set);
+    return views::View::PaintChildren(context);
 
+  gfx::Canvas* canvas = context.canvas();
   canvas->SaveLayerAlpha(0xff * opacity_);
-  views::View::PaintChildren(canvas, cull_set);
+  views::View::PaintChildren(context);
   canvas->Restore();
 }
 

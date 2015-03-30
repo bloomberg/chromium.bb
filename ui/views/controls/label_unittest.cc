@@ -305,14 +305,14 @@ TEST_F(LabelTest, TextChangeWithoutLayout) {
   label.SetBounds(0, 0, 200, 200);
 
   gfx::Canvas canvas(gfx::Size(200, 200), 1.0f, true);
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
   EXPECT_EQ(1u, label.lines_.size());
   EXPECT_EQ(ASCIIToUTF16("Example"), label.lines_[0]->GetDisplayText());
 
   label.SetText(ASCIIToUTF16("Altered"));
   // The altered text should be painted even though Layout() or SetBounds() are
   // not called.
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
   EXPECT_EQ(1u, label.lines_.size());
   EXPECT_EQ(ASCIIToUTF16("Altered"), label.lines_[0]->GetDisplayText());
 }
@@ -480,7 +480,7 @@ TEST_F(LabelTest, MultiLineSizingWithElide) {
 
   // Paint() doesn't change the preferred size.
   gfx::Canvas canvas;
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
   EXPECT_EQ(narrow_size.ToString(), label.GetPreferredSize().ToString());
 }
 
@@ -553,7 +553,7 @@ TEST_F(LabelTest, ResetRenderTextData) {
   EXPECT_EQ(0u, label.lines_.size());
 
   gfx::Canvas canvas(preferred_size, 1.0f, true);
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
   EXPECT_EQ(1u, label.lines_.size());
 
   // Label should recreate its RenderText object when it's invisible, to release
@@ -573,14 +573,14 @@ TEST_F(LabelTest, ResetRenderTextData) {
   label.SetVisible(true);
   EXPECT_EQ(0u, label.lines_.size());
 
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
   EXPECT_EQ(1u, label.lines_.size());
 
   // Changing layout just resets |lines_|. It'll recover next time it's drawn.
   label.SetBounds(0, 0, 10, 10);
   EXPECT_EQ(0u, label.lines_.size());
 
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
   EXPECT_EQ(1u, label.lines_.size());
 }
 
@@ -595,7 +595,7 @@ TEST_F(LabelTest, MultilineSupportedRenderText) {
   label.SizeToPreferredSize();
 
   gfx::Canvas canvas(label.GetPreferredSize(), 1.0f, true);
-  label.Paint(&canvas, CullSet());
+  label.Paint(View::PaintContext(&canvas, CullSet()));
 
   // There's only one 'line', RenderText itself supports multiple lines.
   EXPECT_EQ(1u, label.lines_.size());

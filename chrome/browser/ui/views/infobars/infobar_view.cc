@@ -239,8 +239,8 @@ void InfoBarView::ViewHierarchyChanged(
   SetBarTargetHeight(height);
 }
 
-void InfoBarView::PaintChildren(gfx::Canvas* canvas,
-                                const views::CullSet& cull_set) {
+void InfoBarView::PaintChildren(const PaintContext& context) {
+  gfx::Canvas* canvas = context.canvas();
   canvas->Save();
 
   // TODO(scr): This really should be the |fill_path_|, but the clipPath seems
@@ -251,7 +251,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas,
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
   canvas->ClipRect(gfx::Rect(0, arrow_height(), width(), bar_height()));
-  views::View::PaintChildren(canvas, cull_set);
+  views::View::PaintChildren(context);
   canvas->Restore();
 }
 

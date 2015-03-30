@@ -245,8 +245,7 @@ class TabStrip : public views::View,
 
   // views::View overrides:
   void Layout() override;
-  void PaintChildren(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) override;
+  void PaintChildren(const PaintContext& context) override;
   const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
   // NOTE: the drag and drop methods are invoked from FrameView. This is done
@@ -432,9 +431,7 @@ class TabStrip : public views::View,
   FindClosingTabResult FindClosingTab(const Tab* tab);
 
   // Paints all the tabs in |tabs_closing_map_[index]|.
-  void PaintClosingTabs(gfx::Canvas* canvas,
-                        int index,
-                        const views::CullSet& cull_set);
+  void PaintClosingTabs(int index, const PaintContext& context);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the
   // |stacked_layout_|.

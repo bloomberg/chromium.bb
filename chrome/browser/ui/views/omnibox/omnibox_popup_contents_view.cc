@@ -414,19 +414,19 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
                        width(), bottom_shadow_->height());
 }
 
-void OmniboxPopupContentsView::PaintChildren(gfx::Canvas* canvas,
-                                             const views::CullSet& cull_set) {
+void OmniboxPopupContentsView::PaintChildren(const PaintContext& context) {
   gfx::Rect contents_bounds = GetContentsBounds();
   contents_bounds.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0,
                         bottom_shadow_->height() - kBorderInterior);
 
+  gfx::Canvas* canvas = context.canvas();
   canvas->Save();
   canvas->sk_canvas()->clipRect(gfx::RectToSkRect(contents_bounds),
                                 SkRegion::kIntersect_Op,
                                 true /* doAntialias */);
   canvas->DrawColor(result_view_at(0)->GetColor(OmniboxResultView::NORMAL,
                                                 OmniboxResultView::BACKGROUND));
-  View::PaintChildren(canvas, cull_set);
+  View::PaintChildren(context);
   canvas->Restore();
 }
 

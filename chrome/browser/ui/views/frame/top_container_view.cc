@@ -19,8 +19,7 @@ const char* TopContainerView::GetClassName() const {
   return "TopContainerView";
 }
 
-void TopContainerView::PaintChildren(gfx::Canvas* canvas,
-                                     const views::CullSet& cull_set) {
+void TopContainerView::PaintChildren(const PaintContext& context) {
   if (browser_view_->immersive_mode_controller()->IsRevealed()) {
     // Top-views depend on parts of the frame (themes, window title,
     // window controls) being painted underneath them. Clip rect has already
@@ -28,7 +27,7 @@ void TopContainerView::PaintChildren(gfx::Canvas* canvas,
     views::View* frame = browser_view_->frame()->GetFrameView();
     // Use an empty CullSet as we're painting something outside of the normal
     // parent-child relationship that the CullSet would understand.
-    frame->Paint(canvas, views::CullSet());
+    frame->Paint(context.CloneWithNewCullSet(views::CullSet()));
   }
-  View::PaintChildren(canvas, cull_set);
+  View::PaintChildren(context);
 }

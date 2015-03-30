@@ -759,9 +759,9 @@ const char* AutofillDialogViews::NotificationArea::GetClassName() const {
 }
 
 void AutofillDialogViews::NotificationArea::PaintChildren(
-    gfx::Canvas* canvas,
-    const views::CullSet& cull_set) {
-  views::View::PaintChildren(canvas, views::CullSet());
+    const PaintContext& context) {
+  views::View::PaintChildren(context);
+  gfx::Canvas* canvas = context.canvas();
   if (HasArrow()) {
     DrawArrow(
         canvas,

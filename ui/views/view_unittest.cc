@@ -183,7 +183,8 @@ void PaintWidgetInRect(views::Widget* widget, const gfx::Rect& rect) {
   gfx::Canvas canvas(widget->GetRootView()->bounds().size(), image_scale,
                      is_opaque);
   canvas.ClipRect(rect);
-  widget->GetRootView()->Paint(&canvas, views::CullSet());
+  widget->GetRootView()->Paint(
+      views::View::PaintContext(&canvas, views::CullSet()));
 }
 
 }  // namespace
@@ -3378,17 +3379,17 @@ class BoundsTreeTestView : public View {
  public:
   BoundsTreeTestView() {}
 
-  void PaintChildren(gfx::Canvas* canvas, const CullSet& cull_set) override {
+  void PaintChildren(const PaintContext& context) override {
     // Save out a copy of the cull_set before calling the base implementation.
     last_cull_set_.clear();
-    if (cull_set.cull_set_) {
-      for (base::hash_set<intptr_t>::iterator it = cull_set.cull_set_->begin();
-           it != cull_set.cull_set_->end();
-           ++it) {
+    if (context.cull_set().cull_set_) {
+      for (base::hash_set<intptr_t>::iterator it =
+               context.cull_set().cull_set_->begin();
+           it != context.cull_set().cull_set_->end(); ++it) {
         last_cull_set_.insert(reinterpret_cast<View*>(*it));
       }
     }
-    View::PaintChildren(canvas, cull_set);
+    View::PaintChildren(context);
   }
 
   std::set<View*> last_cull_set_;

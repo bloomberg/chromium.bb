@@ -1217,19 +1217,22 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // inner shadow which should be drawn over the contents.
 }
 
-void LocationBarView::PaintChildren(gfx::Canvas* canvas,
-                                    const views::CullSet& cull_set) {
+void LocationBarView::PaintChildren(const PaintContext& context) {
   // Paint all the children except for the omnibox itself, which may need to be
   // clipped if it's animating in.
   for (int i = 0, count = child_count(); i < count; ++i) {
     views::View* child = child_at(i);
     if (!child->layer() && (child != omnibox_view_))
-      child->Paint(canvas, cull_set);
+      child->Paint(context);
   }
 
+  gfx::Canvas* canvas = context.canvas();
+
   {
+    // TODO(danakj): Paint already scopes its use of canvas, so this is
+    // redundant?
     gfx::ScopedCanvas scoped_canvas(canvas);
-    omnibox_view_->Paint(canvas, cull_set);
+    omnibox_view_->Paint(context);
   }
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
