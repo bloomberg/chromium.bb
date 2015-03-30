@@ -122,8 +122,9 @@ void LargeIconSource::SendFallbackIcon(const IconRequest& request) {
   }
   favicon_base::FallbackIconStyle style;
   style.background_color = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-  favicon_base::MatchFallbackIconTextColorAgainstBackgroundColor(&style);
-  style.roundness = 1.0;
+  style.text_color = SK_ColorWHITE;
+  style.font_size_ratio = 0.44;
+  style.roundness = 0;  // Square. Round corners can be applied by JavaScript.
   std::vector<unsigned char> bitmap_data =
       fallback_icon_service_->RenderFallbackIconBitmap(
           request.url, request.size, style);
