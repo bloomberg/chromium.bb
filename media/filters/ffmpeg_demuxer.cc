@@ -838,10 +838,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   // If no estimate is found, the stream entry will be kInfiniteDuration().
   std::vector<base::TimeDelta> start_time_estimates(format_context->nb_streams,
                                                     kInfiniteDuration());
-  if (format_context->packet_buffer &&
+  const AVFormatInternal* internal = format_context->internal;
+  if (internal && internal->packet_buffer &&
       format_context->start_time != static_cast<int64>(AV_NOPTS_VALUE)) {
-    struct AVPacketList* packet_buffer = format_context->packet_buffer;
-    while (packet_buffer != format_context->packet_buffer_end) {
+    struct AVPacketList* packet_buffer = internal->packet_buffer;
+    while (packet_buffer != internal->packet_buffer_end) {
       DCHECK_LT(static_cast<size_t>(packet_buffer->pkt.stream_index),
                 start_time_estimates.size());
       const AVStream* stream =
