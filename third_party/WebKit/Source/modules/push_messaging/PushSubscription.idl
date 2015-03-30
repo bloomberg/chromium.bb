@@ -12,4 +12,6 @@
     readonly attribute USVString endpoint;
     readonly attribute DOMString subscriptionId;
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
+
+    serializer = { attribute };
 };

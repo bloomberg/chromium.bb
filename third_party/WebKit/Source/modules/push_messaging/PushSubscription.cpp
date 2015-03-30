@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
@@ -49,6 +50,15 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
 
     webPushProvider->unregister(m_serviceWorkerRegistration->webRegistration(), new CallbackPromiseAdapter<bool, PushError>(resolver));
     return promise;
+}
+
+ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState)
+{
+    V8ObjectBuilder result(scriptState);
+    result.addString("endpoint", m_endpoint);
+    result.addString("subscriptionId", m_subscriptionId);
+
+    return result.scriptValue();
 }
 
 DEFINE_TRACE(PushSubscription)
