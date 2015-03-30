@@ -417,7 +417,7 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(rfh));
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       rfh->GetRenderViewHost());
-  dom_handler_->SetRenderViewHost(rvh);
+  dom_handler_->SetRenderFrameHost(render_frame_host_);
   emulation_handler_->SetRenderViewHost(rvh);
   input_handler_->SetRenderViewHost(rvh);
   network_handler_->SetRenderFrameHost(render_frame_host_);
@@ -439,7 +439,7 @@ void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(rvh));
   render_frame_host_ = nullptr;
-  dom_handler_->SetRenderViewHost(nullptr);
+  dom_handler_->SetRenderFrameHost(nullptr);
   emulation_handler_->SetRenderViewHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
   network_handler_->SetRenderFrameHost(nullptr);

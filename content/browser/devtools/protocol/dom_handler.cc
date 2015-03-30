@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
 namespace devtools {
@@ -20,7 +20,7 @@ DOMHandler::DOMHandler() : host_(nullptr) {
 DOMHandler::~DOMHandler() {
 }
 
-void DOMHandler::SetRenderViewHost(RenderViewHostImpl* host) {
+void DOMHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   host_ = host;
 }
 
