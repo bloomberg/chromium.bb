@@ -34,3 +34,4 @@ Android relocation packing tool details:
     Create a nativehelper/ScopedFd.h to satisfy inclusion from main.cc
     Create gyp build
     Create gn build (currently packer only; no unit tests)
+    Apply https://android-review.googlesource.com/#/c/143878/
