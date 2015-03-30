@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -139,7 +140,10 @@ TEST_F(WebDragDestTest, URL) {
       &result_url, &result_title, pboard, NO));
   EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, YES));
-  EXPECT_EQ("file://localhost/bin/sh", result_url.spec());
+  EXPECT_EQ(base::mac::IsOSYosemiteOrLater() ? "file:///bin/sh"
+                                             : "file://localhost/bin/sh",
+            result_url.spec());
+
   EXPECT_EQ("sh", base::UTF16ToUTF8(result_title));
   [pboard releaseGlobally];
 }
