@@ -2028,8 +2028,8 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
-          # GN: //content/public/android:content_shell_unit_tests
-          'target_name': 'content_shell_unit_tests',
+          # GN: //content/public/android:content_junit_tests
+          'target_name': 'content_junit_tests',
           'type': 'none',
           'dependencies': [
             'content.gyp:content_java',

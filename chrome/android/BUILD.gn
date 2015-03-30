@@ -452,8 +452,8 @@ android_apk("chrome_shell_test_apk") {
   android_manifest = "shell/javatests/AndroidManifest.xml"
 }
 
-# GYP: //chrome/chrome_tests.gypi:chrome_shell_unit_tests
-java_binary("chrome_shell_unit_tests") {
+# GYP: //chrome/chrome_tests.gypi:chrome_junit_tests
+java_binary("chrome_junit_tests") {
   testonly = true
   java_files = [ "android/junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java" ]
   main_class = "org.chromium.testing.local.JunitTestMain"

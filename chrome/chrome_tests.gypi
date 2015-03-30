@@ -2928,8 +2928,8 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
-          # GN: //chrome/android:chrome_shell_unit_tests
-          'target_name': 'chrome_shell_unit_tests',
+          # GN: //chrome/android:chrome_junit_tests
+          'target_name': 'chrome_junit_tests',
           'type': 'none',
           'dependencies': [
             'chrome_java',
