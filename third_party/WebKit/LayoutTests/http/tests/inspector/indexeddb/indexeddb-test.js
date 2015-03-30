@@ -1,4 +1,5 @@
 var initialize_IndexedDBTest = function() {
+InspectorTest.preloadPanel("resources");
 
 InspectorTest.dumpIndexedDBTree = function()
 {
@@ -97,7 +98,6 @@ InspectorTest.addIDBValue = function(frameId, databaseName, objectStoreName, val
 {
     InspectorTest.evaluateWithCallback(frameId, "addIDBValue", [databaseName, objectStoreName, value, key], callback)
 };
-
 };
 
 function dispatchCallback(callbackId)

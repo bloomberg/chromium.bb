@@ -2,6 +2,8 @@
 <html>
 <head>
 <script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/resources-test.js"></script>
+
 <script>
 
 function onload()
@@ -18,10 +20,10 @@ function onload()
 
 function test()
 {
-    InspectorTest.databaseModel.enable();
+    InspectorTest.databaseModel().enable();
     function run()
     {
-        var databases = InspectorTest.databaseModel.databases();
+        var databases = InspectorTest.databaseModel().databases();
         for (var i = 0; i < databases.length; ++i) {
             InspectorTest.addResult("Name: " + databases[i].name);
             InspectorTest.addResult("Version: " + databases[i].version);

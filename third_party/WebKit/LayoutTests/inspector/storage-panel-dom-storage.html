@@ -40,7 +40,7 @@ function test()
     }
 
     InspectorTest.runAfterPendingDispatches(function() {
-        var storages = InspectorTest.domStorageModel.storages();
+        var storages = InspectorTest.domStorageModel().storages();
         if (storages) {
             for (var i = 0; i < storages.length; i++) {
                 var storage = storages[i];
@@ -51,7 +51,7 @@ function test()
             InspectorTest.addResult("FAIL: no DOM storages found.");
 
         InspectorTest.runAfterPendingDispatches(function() {
-            var storages = InspectorTest.domStorageModel.storages();
+            var storages = InspectorTest.domStorageModel().storages();
             for (var i = 0; i < storages.length; i++) {
                 var storage = storages[i];
                 InspectorTest.addResult(name(storage) + " content: ");

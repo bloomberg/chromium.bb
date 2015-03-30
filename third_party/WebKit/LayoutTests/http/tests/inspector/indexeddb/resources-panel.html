@@ -77,7 +77,7 @@ function test()
 
     function databaseCreated()
     {
-        indexedDBModel = WebInspector.targetManager.mainTarget().indexedDBModel;
+        indexedDBModel = InspectorTest.indexedDBModel();
         indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, databaseLoaded);
         WebInspector.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
     }

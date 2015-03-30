@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/resources-test.js"></script>
 <script>
 
 function onload()
@@ -20,8 +21,8 @@ function test()
 {
     function callback()
     {
-        InspectorTest.domStorageModel.enable();
-        var storages = InspectorTest.domStorageModel.storages();
+        InspectorTest.domStorageModel().enable();
+        var storages = InspectorTest.domStorageModel().storages();
         for (var i = 0; i < storages.length; ++i) {
             InspectorTest.addResult("SecurityOrigin: " + storages[i].securityOrigin);
             InspectorTest.addResult("IsLocalStorage: " + storages[i].isLocalStorage);

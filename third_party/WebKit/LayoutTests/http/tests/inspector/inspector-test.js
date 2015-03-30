@@ -739,11 +739,8 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.cssModel = target.cssModel;
         InspectorTest.workerManager = target.workerManager;
         InspectorTest.powerProfiler = target.powerProfiler;
-        InspectorTest.databaseModel = target.databaseModel;
-        InspectorTest.domStorageModel = target.domStorageModel;
         InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
         InspectorTest.heapProfilerModel = target.heapProfilerModel;
-        InspectorTest.indexedDBModel = target.indexedDBModel;
         InspectorTest.layerTreeModel = target.layerTreeModel;
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;

@@ -56,7 +56,7 @@ function test()
             }
 
             var storage = null;
-            var storages = InspectorTest.domStorageModel.storages();
+            var storages = InspectorTest.domStorageModel().storages();
             for (var i = 0; i < storages.length; ++i) {
                 if (storages[i].isLocalStorage) {
                     storage = storages[i];
@@ -89,7 +89,7 @@ function test()
                     return;
                 }
                 InspectorTest.addResult("");
-                InspectorTest.addSniffer(InspectorTest.domStorageModel, "_domStorageItemAdded", itemAdded);
+                InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemAdded", itemAdded);
                 var command = "addItem('key" + index + "', 'value" + index + "');";
                 InspectorTest.addResult(command);
                 InspectorTest.evaluateInPage(command);
@@ -116,7 +116,7 @@ function test()
                     return;
                 }
                 InspectorTest.addResult("");
-                InspectorTest.addSniffer(InspectorTest.domStorageModel, "_domStorageItemRemoved", itemRemoved);
+                InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemRemoved", itemRemoved);
                 var command = "removeItem('key" + index + "');";
                 InspectorTest.addResult(command);
                 InspectorTest.evaluateInPage(command);
@@ -128,7 +128,7 @@ function test()
         function updateItemTest(next)
         {
             InspectorTest.addResult("");
-            InspectorTest.addSniffer(InspectorTest.domStorageModel, "_domStorageItemUpdated", itemUpdated);
+            InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemUpdated", itemUpdated);
             var command = "updateItem('key2', 'VALUE2');";
             InspectorTest.addResult(command);
             InspectorTest.evaluateInPage(command);
@@ -149,7 +149,7 @@ function test()
             }
 
             InspectorTest.addResult("");
-            InspectorTest.addSniffer(InspectorTest.domStorageModel, "_domStorageItemsCleared", itemsCleared);
+            InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemsCleared", itemsCleared);
             var command = "clear()";
             InspectorTest.addResult(command);
             InspectorTest.evaluateInPage(command);

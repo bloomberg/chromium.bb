@@ -76,4 +76,19 @@ InspectorTest.resourceMatchingURL = function(resourceURL)
     return result;
 }
 
+InspectorTest.databaseModel = function()
+{
+    return WebInspector.DatabaseModel.fromTarget(InspectorTest.mainTarget);
+}
+
+InspectorTest.domStorageModel = function()
+{
+    return WebInspector.DOMStorageModel.fromTarget(InspectorTest.mainTarget);
+}
+
+InspectorTest.indexedDBModel = function()
+{
+    return WebInspector.IndexedDBModel.fromTarget(InspectorTest.mainTarget);
+}
+
 }
