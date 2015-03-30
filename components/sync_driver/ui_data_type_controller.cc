@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/profiler/scoped_tracker.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
 #include "sync/api/sync_error.h"
@@ -119,6 +120,12 @@ void UIDataTypeController::Associate() {
   base::WeakPtrFactory<syncer::SyncMergeResult> weak_ptr_factory(
       &syncer_merge_result);
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate1"));
+
   // Connect |shared_change_processor_| to the syncer and get the
   // syncer::SyncableService associated with type().
   local_service_ = shared_change_processor_->Connect(
@@ -140,6 +147,11 @@ void UIDataTypeController::Associate() {
     return;
   }
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate2"));
   if (!shared_change_processor_->CryptoReadyIfNecessary()) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::CRYPTO_ERROR,
@@ -152,6 +164,11 @@ void UIDataTypeController::Associate() {
     return;
   }
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate3"));
   bool sync_has_nodes = false;
   if (!shared_change_processor_->SyncModelHasUserCreatedNodes(
           &sync_has_nodes)) {
@@ -166,6 +183,11 @@ void UIDataTypeController::Associate() {
     return;
   }
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate4"));
   base::TimeTicks start_time = base::TimeTicks::Now();
   syncer::SyncDataList initial_sync_data;
   syncer::SyncError error =
@@ -179,12 +201,22 @@ void UIDataTypeController::Associate() {
     return;
   }
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate5"));
   std::string datatype_context;
   if (shared_change_processor_->GetDataTypeContext(&datatype_context)) {
     local_service_->UpdateDataTypeContext(
         type(), syncer::SyncChangeProcessor::NO_REFRESH, datatype_context);
   }
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate6"));
   syncer_merge_result.set_num_items_before_association(
       initial_sync_data.size());
   // Passes a reference to |shared_change_processor_|.
@@ -203,6 +235,11 @@ void UIDataTypeController::Associate() {
     return;
   }
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::Associate7"));
   syncer_merge_result.set_num_items_after_association(
       shared_change_processor_->GetSyncCount());
 
@@ -235,6 +272,12 @@ void UIDataTypeController::StartDone(
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
+
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "471403 UIDataTypeController::StartDone"));
 
   if (!IsSuccessfulResult(start_result)) {
     StopModels();
