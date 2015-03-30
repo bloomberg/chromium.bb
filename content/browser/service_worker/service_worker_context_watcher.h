@@ -75,6 +75,10 @@ class ServiceWorkerContextWatcher
                        int process_id,
                        int thread_id,
                        const ErrorInfo& info) override;
+  void OnReportConsoleMessage(int64 version_id,
+                              int process_id,
+                              int thread_id,
+                              const ConsoleMessage& message) override;
   void OnRegistrationStored(int64 registration_id,
                             const GURL& pattern) override;
   void OnRegistrationDeleted(int64 registration_id,

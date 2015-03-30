@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/console_message_level.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -208,6 +209,23 @@ void ServiceWorkerContextWatcher::OnErrorReported(int64 version_id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(error_callback_, registration_id, version_id, info));
+}
+
+void ServiceWorkerContextWatcher::OnReportConsoleMessage(
+    int64 version_id,
+    int process_id,
+    int thread_id,
+    const ConsoleMessage& message) {
+  if (message.message_level != CONSOLE_MESSAGE_LEVEL_ERROR)
+    return;
+  int64 registration_id = kInvalidServiceWorkerRegistrationId;
+  if (ServiceWorkerVersionInfo* version = version_info_map_.get(version_id))
+    registration_id = version->registration_id;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(error_callback_, registration_id, version_id,
+                 ErrorInfo(message.message, message.line_number, -1,
+                           message.source_url)));
 }
 
 void ServiceWorkerContextWatcher::OnRegistrationStored(int64 registration_id,
