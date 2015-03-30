@@ -4,224 +4,133 @@
 
 """This module tests the cros deploy command."""
 
-# TODO(garnold) Add unit tests for the cros deploy command itself
-# (chromium:441551).
-
 from __future__ import print_function
 
-import json
-import os
-
+from chromite.cli import command_unittest
+from chromite.cli import deploy
 from chromite.cli.cros import cros_deploy
-from chromite.lib import cros_build_lib
+from chromite.lib import commandline
 from chromite.lib import cros_test_lib
-try:
-  import portage
-except ImportError:
-  if cros_build_lib.IsInsideChroot():
-    raise
 
 
-class ChromiumOSDeviceHandlerFake(object):
-  """Fake for chromite.lib.remote_access.ChomiumOSDeviceHandler."""
-
-  class RemoteAccessFake(object):
-    """Fake for chromite.lib.remote_access.RemoteAccess."""
-
-    def __init__(self):
-      self.remote_sh_output = None
-
-    def RemoteSh(self, *_args, **_kwargs):
-      return cros_build_lib.CommandResult(output=self.remote_sh_output)
-
-  def __init__(self):
-    self.agent = self.RemoteAccessFake()
+# pylint: disable=protected-access
 
 
-class DbApiFake(object):
-  """Fake for Portage dbapi."""
+class MockDeployCommand(command_unittest.MockCommand):
+  """Mock out the deploy command."""
+  TARGET = 'chromite.cli.cros.cros_deploy.DeployCommand'
+  TARGET_CLASS = cros_deploy.DeployCommand
+  COMMAND = 'deploy'
 
-  def __init__(self, pkgs):
-    self.pkg_db = {}
-    for cpv, slot, rdeps_raw, build_time in pkgs:
-      self.pkg_db[cpv] = {
-          'SLOT': slot, 'RDEPEND': rdeps_raw, 'BUILD_TIME': build_time}
+  def __init__(self, *args, **kwargs):
+    command_unittest.MockCommand.__init__(self, *args, **kwargs)
 
-  def cpv_all(self):
-    return self.pkg_db.keys()
-
-  def aux_get(self, cpv, keys):
-    pkg_info = self.pkg_db[cpv]
-    return [pkg_info[key] for key in keys]
+  def Run(self, inst):
+    command_unittest.MockCommand.Run(self, inst)
 
 
-class PortageTreeFake(object):
-  """Fake for Portage tree."""
+class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
+                     cros_test_lib.OutputTestCase):
+  """Test calling `cros deploy` with various arguments.
 
-  def __init__(self, dbapi):
-    self.dbapi = dbapi
+  These tests just check that arguments as specified on the command
+  line are properly passed through to deploy. Testing the
+  actual update flow should be done in the deploy unit tests.
+  """
 
+  DEVICE = '1.1.1.1'
+  PACKAGES = ['foo', 'bar']
 
-class TestInstallPackageScanner(cros_test_lib.MockTestCase):
-  """Test the update package scanner."""
-  _BOARD = 'foo_board'
-  _BUILD_ROOT = '/build/%s' % _BOARD
-  _VARTREE = [
-      ('foo/app1-1.2.3-r4', '0', 'foo/app2 !foo/app3', '1413309336'),
-      ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
-      ('foo/app4-2.0.0-r1', '0', 'foo/app1 foo/app5', '1413309336'),
-      ('foo/app5-3.0.7-r3', '0', '', '1413309336'),
-  ]
+  def SetupCommandMock(self, cmd_args):
+    """Setup comand mock."""
+    self.cmd_mock = MockDeployCommand(
+        cmd_args, base_args=['--cache-dir', self.tempdir])
+    self.StartPatcher(self.cmd_mock)
 
   def setUp(self):
-    """Patch imported modules."""
-    self.PatchObject(cros_build_lib, 'GetChoice', return_value=0)
-    self.device = ChromiumOSDeviceHandlerFake()
-    self.scanner = cros_deploy.InstallPackageScanner(self._BUILD_ROOT)
+    """Patches objects."""
+    self.cmd_mock = None
+    self.deploy_mock = self.PatchObject(deploy, 'Deploy', autospec=True)
+    self.run_inside_chroot_mock = self.PatchObject(
+        commandline, 'RunInsideChroot', autospec=True)
 
-  def SetupVartree(self, vartree_pkgs):
-    self.device.agent.remote_sh_output = json.dumps(vartree_pkgs)
+  def VerifyDeployParameters(self, device, packages, **kwargs):
+    """Verifies the arguments passed to Deployer.Run().
 
-  def SetupBintree(self, bintree_pkgs):
-    bintree = PortageTreeFake(DbApiFake(bintree_pkgs))
-    build_root = os.path.join(self._BUILD_ROOT, '')
-    portage_db = {build_root: {'bintree': bintree}}
-    self.PatchObject(portage, 'create_trees', return_value=portage_db)
+    This function helps verify that command line specifications are
+    parsed properly.
 
-  def ValidatePkgs(self, actual, expected, constraints=None):
-    # Containing exactly the same packages.
-    self.assertEquals(sorted(expected), sorted(actual))
-    # Packages appear in the right order.
-    if constraints is not None:
-      for needs, needed in constraints:
-        self.assertGreater(actual.index(needs), actual.index(needed))
+    Args:
+      device: expected device hostname.
+      packages: expected packages list.
+      kwargs: keyword arguments expected in the call to Deployer.Run().
+          Arguments unspecified here are checked against their default
+          value for `cros deploy`.
+    """
+    deploy_args, deploy_kwargs = self.deploy_mock.call_args
+    self.assertEqual(device, deploy_args[0].hostname)
+    self.assertListEqual(packages, deploy_args[1])
+    # `cros deploy` default options. Must match AddParser().
+    expected_kwargs = {
+        'board': None,
+        'brick': None,
+        'strip': True,
+        'emerge': True,
+        'root': '/',
+        'clean_binpkg': True,
+        'emerge_args': None,
+        'ssh_private_key': None,
+        'ping': True,
+        'dry_run': False,
+        'force': False,
+        'update': False,
+        'deep': False,
+        'deep_rev': False}
+    # Overwrite defaults with any variations in this test.
+    expected_kwargs.update(kwargs)
+    self.assertDictEqual(expected_kwargs, deploy_kwargs)
 
-  def testRunUpdatedVersion(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r4'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3', '1413309336'),
-        ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 1)
+  def testDefaults(self):
+    """Tests `cros deploy` default values."""
+    self.SetupCommandMock([self.DEVICE] + self.PACKAGES)
+    self.cmd_mock.inst.Run()
+    self.assertTrue(self.run_inside_chroot_mock.called)
+    self.VerifyDeployParameters(self.DEVICE, self.PACKAGES)
 
-  def testRunUpdatedBuildTime(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.3-r4'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
-        ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 1)
+  def testBrick(self):
+    """Tests command line --brick."""
+    self.SetupCommandMock([self.DEVICE, '--brick', '//foo'])
+    self.cmd_mock.inst.Run()
+    self.VerifyDeployParameters(self.DEVICE, [], brick='//foo')
 
-  def testRunExistingDepUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    app2 = 'foo/app2-4.5.8-r3'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
-        (app2, '0', '', '1413309350'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1, app2], constraints=[(app1, app2)])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 2)
+  def testImplicitBrick(self):
+    """Tests an implicit brick based on |curr_brick_locator|."""
+    self.SetupCommandMock([self.DEVICE])
+    self.cmd_mock.inst.curr_brick_locator = '//bar'
+    self.cmd_mock.inst.Run()
+    self.VerifyDeployParameters(self.DEVICE, [], brick='//bar')
 
-  def testRunMissingDepUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    app6 = 'foo/app6-1.0.0-r1'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3 foo/app6', '1413309350'),
-        ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
-        (app6, '0', '', '1413309350'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1, app6], constraints=[(app1, app6)])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 1)
+  def testBrickPriority(self):
+    """Tests that command line --brick takes precedence."""
+    self.SetupCommandMock([self.DEVICE, '--brick', '//foo'])
+    self.cmd_mock.inst.curr_brick_locator = '//bar'
+    self.cmd_mock.inst.Run()
+    self.VerifyDeployParameters(self.DEVICE, [], brick='//foo')
 
-  def testRunExistingRevDepUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    app4 = 'foo/app4-2.0.1-r3'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
-        (app4, '0', 'foo/app1 foo/app5', '1413309350'),
-        ('foo/app5-3.0.7-r3', '0', '', '1413309336'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1, app4], constraints=[(app4, app1)])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 2)
+  def testDeployError(self):
+    """Tests that DeployErrors are caught and logged."""
+    with self.OutputCapturer():
+      self.SetupCommandMock([self.DEVICE])
+      self.deploy_mock.side_effect = deploy.DeployError
+      with self.assertRaises(SystemExit):
+        self.cmd_mock.inst.Run()
+    self.AssertOutputContainsError(check_stderr=True)
 
-  def testRunMissingRevDepNotUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    app6 = 'foo/app6-1.0.0-r1'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
-        (app6, '0', 'foo/app1', '1413309350'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 1)
-
-  def testRunTransitiveDepsUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    app2 = 'foo/app2-4.5.8-r3'
-    app4 = 'foo/app4-2.0.0-r1'
-    app5 = 'foo/app5-3.0.8-r2'
-    self.SetupBintree([
-        (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
-        (app2, '0', '', '1413309350'),
-        (app4, '0', 'foo/app1 foo/app5', '1413309350'),
-        (app5, '0', '', '1413309350'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1, app2, app4, app5],
-                      constraints=[(app1, app2), (app4, app1), (app4, app5)])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 4)
-
-  def testRunDisjunctiveDepsExistingUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    self.SetupBintree([
-        (app1, '0', '|| ( foo/app6 foo/app2 ) !foo/app3', '1413309350'),
-        ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 1)
-
-  def testRunDisjunctiveDepsDefaultUpdated(self):
-    self.SetupVartree(self._VARTREE)
-    app1 = 'foo/app1-1.2.5-r2'
-    app7 = 'foo/app7-1.0.0-r1'
-    self.SetupBintree([
-        (app1, '0', '|| ( foo/app6 foo/app7 ) !foo/app3', '1413309350'),
-        (app7, '0', '', '1413309350'),
-    ])
-    installs, listed, num_updates = self.scanner.Run(
-        self.device, '/', ['app1'], True, True, True)
-    self.ValidatePkgs(installs, [app1, app7], constraints=[(app1, app7)])
-    self.ValidatePkgs(listed, [app1])
-    self.assertEquals(num_updates, 1)
+  def testDeployErrorDebug(self):
+    """Tests that DeployErrors are passed through with --debug."""
+    with self.OutputCapturer():
+      self.SetupCommandMock([self.DEVICE, '--debug'])
+      self.deploy_mock.side_effect = deploy.DeployError
+      with self.assertRaises(deploy.DeployError):
+        self.cmd_mock.inst.Run()
+    self.AssertOutputContainsError(check_stderr=True)
