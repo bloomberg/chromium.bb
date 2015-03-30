@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "cc/blink/web_blend_mode.h"
 #include "cc/blink/web_filter_operations_impl.h"
 #include "cc/resources/clip_display_item.h"
 #include "cc/resources/clip_path_display_item.h"
@@ -19,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/gfx/transform.h"
@@ -82,14 +80,6 @@ void WebDisplayItemListImpl::appendTransformItem(const SkMatrix44& matrix) {
 
 void WebDisplayItemListImpl::appendEndTransformItem() {
   display_item_list_->AppendItem(cc::EndTransformDisplayItem::Create());
-}
-
-// TODO(pdr): Remove this once the blink-side callers have been removed.
-void WebDisplayItemListImpl::appendCompositingItem(
-    float opacity,
-    SkXfermode::Mode xfermode,
-    SkColorFilter* color_filter) {
-  appendCompositingItem(opacity, xfermode, nullptr, color_filter);
 }
 
 void WebDisplayItemListImpl::appendCompositingItem(

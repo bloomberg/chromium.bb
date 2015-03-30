@@ -8,10 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/resources/display_item_list.h"
-#include "third_party/WebKit/public/platform/WebBlendMode.h"
-#include "third_party/WebKit/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/public/platform/WebDisplayItemList.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -23,6 +20,12 @@ class SkMatrix44;
 class SkPath;
 class SkPicture;
 class SkRRect;
+
+namespace blink {
+class WebFilterOperations;
+struct WebFloatRect;
+struct WebRect;
+}
 
 namespace cc_blink {
 
@@ -47,10 +50,6 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   virtual void appendEndFloatClipItem();
   virtual void appendTransformItem(const SkMatrix44& matrix);
   virtual void appendEndTransformItem();
-  // TODO(pdr): Remove this once the blink-side callers have been removed.
-  virtual void appendCompositingItem(float opacity,
-                                     SkXfermode::Mode,
-                                     SkColorFilter*);
   virtual void appendCompositingItem(float opacity,
                                      SkXfermode::Mode,
                                      SkRect* bounds,
