@@ -375,7 +375,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
             buffer = response->createDrainingStream();
         // If the response body type is stream, read the all data and create the
         // blob handle and dispatch the put batch asynchronously.
-        buffer->readAllAndCreateBlobHandle(response->internalContentTypeForBuffer(), new AsyncPutBatch(resolver, this, request, response));
+        buffer->readAllAndCreateBlobHandle(response->internalMIMEType(), new AsyncPutBatch(resolver, this, request, response));
         return promise;
     }
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));

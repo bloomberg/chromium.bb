@@ -158,7 +158,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
     for (auto& it : response.httpHeaderFields())
         responseData->headerList()->append(it.key, it.value);
     responseData->setURL(response.url());
-    responseData->setContentTypeForBuffer(response.mimeType());
+    responseData->setMIMEType(response.mimeType());
 
     FetchResponseData* taintedResponse = responseData;
     switch (m_request->tainting()) {

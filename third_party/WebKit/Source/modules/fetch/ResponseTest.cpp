@@ -301,8 +301,8 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
     }
     BlobHandleCreatorClient* client1 = new BlobHandleCreatorClient();
     BlobHandleCreatorClient* client2 = new BlobHandleCreatorClient();
-    EXPECT_TRUE(response->internalBuffer()->readAllAndCreateBlobHandle(response->internalContentTypeForBuffer(), client1));
-    EXPECT_TRUE(clonedResponse->internalBuffer()->readAllAndCreateBlobHandle(clonedResponse->internalContentTypeForBuffer(), client2));
+    EXPECT_TRUE(response->internalBuffer()->readAllAndCreateBlobHandle(response->internalMIMEType(), client1));
+    EXPECT_TRUE(clonedResponse->internalBuffer()->readAllAndCreateBlobHandle(clonedResponse->internalMIMEType(), client2));
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->write(DOMArrayBuffer::create("piyo", 4));
     EXPECT_FALSE(client1->blobHandle());
@@ -368,8 +368,8 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
     EXPECT_FALSE(exceptionState.hadException());
     BlobHandleCreatorClient* client1 = new BlobHandleCreatorClient();
     BlobHandleCreatorClient* client2 = new BlobHandleCreatorClient();
-    EXPECT_TRUE(response->internalBuffer()->readAllAndCreateBlobHandle(response->internalContentTypeForBuffer(), client1));
-    EXPECT_TRUE(clonedResponse->internalBuffer()->readAllAndCreateBlobHandle(clonedResponse->internalContentTypeForBuffer(), client2));
+    EXPECT_TRUE(response->internalBuffer()->readAllAndCreateBlobHandle(response->internalMIMEType(), client1));
+    EXPECT_TRUE(clonedResponse->internalBuffer()->readAllAndCreateBlobHandle(clonedResponse->internalMIMEType(), client2));
     buffer->write(DOMArrayBuffer::create("foobar", 6));
     buffer->write(DOMArrayBuffer::create("piyo", 4));
     EXPECT_FALSE(client1->blobHandle());

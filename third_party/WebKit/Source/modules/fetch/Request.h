@@ -72,7 +72,7 @@ private:
 
     PassRefPtr<BlobDataHandle> blobDataHandle() const override;
     BodyStreamBuffer* buffer() const override;
-    String contentTypeForBuffer() const override;
+    String mimeType() const override;
 
     const Member<FetchRequestData> m_request;
     const Member<Headers> m_headers;

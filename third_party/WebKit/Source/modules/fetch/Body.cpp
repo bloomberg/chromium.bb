@@ -282,9 +282,9 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
 
     if (m_stream) {
         ASSERT(m_streamSource);
-        m_streamSource->createDrainingStream()->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
+        m_streamSource->createDrainingStream()->readAllAndCreateBlobHandle(mimeType(), new BlobHandleReceiver(this));
     } else if (buffer()) {
-        buffer()->readAllAndCreateBlobHandle(contentTypeForBuffer(), new BlobHandleReceiver(this));
+        buffer()->readAllAndCreateBlobHandle(mimeType(), new BlobHandleReceiver(this));
     } else {
         readAsyncFromBlob(blobDataHandle());
     }
@@ -305,7 +305,12 @@ void Body::readAsyncFromBlob(PassRefPtr<BlobDataHandle> handle)
         if (blobHandle->size() != kuint64max) {
             // If the size of |blobHandle| is set correctly, creates Blob from
             // it.
-            m_resolver->resolve(Blob::create(blobHandle));
+            if (blobHandle->type() != mimeType()) {
+                // A new BlobDataHandle is created to override the Blob's type.
+                m_resolver->resolve(Blob::create(BlobDataHandle::create(blobHandle->uuid(), mimeType(), blobHandle->size())));
+            } else {
+                m_resolver->resolve(Blob::create(blobHandle));
+            }
             m_resolver.clear();
             return;
         }
@@ -468,6 +473,7 @@ void Body::didFinishLoading()
         OwnPtr<BlobData> blobData = BlobData::create();
         RefPtr<DOMArrayBuffer> buffer = m_loader->arrayBufferResult();
         blobData->appendBytes(buffer->data(), buffer->byteLength());
+        blobData->setContentType(mimeType());
         const size_t length = blobData->length();
         m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), length)));
         break;

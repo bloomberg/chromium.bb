@@ -31,6 +31,7 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
     request->m_referrer.setURL(webRequest.referrer());
     request->setMode(webRequest.mode());
     request->setCredentials(webRequest.credentialsMode());
+    request->setMIMEType(request->m_headerList->extractMIMEType());
     return request;
 }
 
@@ -50,6 +51,7 @@ FetchRequestData* FetchRequestData::clone() const
     request->m_mode = m_mode;
     request->m_credentials = m_credentials;
     request->m_responseTainting = m_responseTainting;
+    request->m_mimeType = m_mimeType;
     return request;
 }
 

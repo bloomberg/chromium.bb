@@ -91,7 +91,7 @@ private:
     // FIXME: We should seek a cleaner way to handle the data.
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() const = 0;
     virtual BodyStreamBuffer* buffer() const = 0;
-    virtual String contentTypeForBuffer() const = 0;
+    virtual String mimeType() const = 0;
 
     void didFinishLoadingViaStream(PassRefPtr<DOMArrayBuffer>);
 

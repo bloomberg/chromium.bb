@@ -44,16 +44,16 @@ public:
     FetchHeaderList* headerList() const { return m_headerList.get(); }
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     BodyStreamBuffer* buffer() const { return m_buffer; }
-    String contentTypeForBuffer() const;
+    String mimeType() const;
     PassRefPtr<BlobDataHandle> internalBlobDataHandle() const;
     BodyStreamBuffer* internalBuffer() const;
-    String internalContentTypeForBuffer() const;
+    String internalMIMEType() const;
 
     void setURL(const KURL& url) { m_url = url; }
     void setStatus(unsigned short status) { m_status = status; }
     void setStatusMessage(AtomicString statusMessage) { m_statusMessage = statusMessage; }
     void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
-    void setContentTypeForBuffer(const String& contentType) { m_contentTypeForBuffer = contentType; }
+    void setMIMEType(const String& type) { m_mimeType = type; }
 
     // If the type is Default, replaces |m_buffer| and sets |m_blobDataHandle|
     // to nullptr. If the type is Basic or CORS, replaces |m_buffer| and sets
@@ -77,7 +77,7 @@ private:
     RefPtr<BlobDataHandle> m_blobDataHandle;
     Member<FetchResponseData> m_internalResponse;
     Member<BodyStreamBuffer> m_buffer;
-    String m_contentTypeForBuffer;
+    String m_mimeType;
 };
 
 } // namespace blink

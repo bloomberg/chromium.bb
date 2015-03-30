@@ -59,11 +59,11 @@ public:
 
     PassRefPtr<BlobDataHandle> blobDataHandle() const override;
     BodyStreamBuffer* buffer() const override;
-    String contentTypeForBuffer() const override;
+    String mimeType() const override;
 
     PassRefPtr<BlobDataHandle> internalBlobDataHandle() const;
     BodyStreamBuffer* internalBuffer() const;
-    String internalContentTypeForBuffer() const;
+    String internalMIMEType() const;
 
     DECLARE_VIRTUAL_TRACE();
 

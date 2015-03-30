@@ -212,9 +212,7 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
 
     // "8. Set |r|'s MIME type to the result of extracting a MIME type
     // from |r|'s response's header list."
-    String type;
-    if (r->m_response->headerList()->get("Content-Type", type))
-        r->m_response->setContentTypeForBuffer(type);
+    r->m_response->setMIMEType(r->m_response->headerList()->extractMIMEType());
 
     // "9. Return |r|."
     return r;
@@ -348,9 +346,9 @@ BodyStreamBuffer* Response::buffer() const
     return m_response->buffer();
 }
 
-String Response::contentTypeForBuffer() const
+String Response::mimeType() const
 {
-    return m_response->contentTypeForBuffer();
+    return m_response->mimeType();
 }
 
 PassRefPtr<BlobDataHandle> Response::internalBlobDataHandle() const
@@ -363,9 +361,9 @@ BodyStreamBuffer* Response::internalBuffer() const
     return m_response->internalBuffer();
 }
 
-String Response::internalContentTypeForBuffer() const
+String Response::internalMIMEType() const
 {
-    return m_response->internalContentTypeForBuffer();
+    return m_response->internalMIMEType();
 }
 
 DEFINE_TRACE(Response)

@@ -617,4 +617,102 @@ test(function() {
       });
   }, 'Request throw error test');
 
+// Tests for MIME types.
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST', body: new Blob([''])});
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, '');
+          assert_equals(req.headers.get('Content-Type'), null);
+        });
+  }, 'MIME type for Blob');
+
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           body: new Blob([''], {type: 'Text/Plain'})});
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/plain');
+          assert_equals(req.headers.get('Content-Type'), 'text/plain');
+        });
+  }, 'MIME type for Blob with non-empty type');
+
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST', body: new FormData()});
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type.indexOf('multipart/form-data; boundary='),
+                        0);
+          assert_equals(req.headers.get('Content-Type')
+                          .indexOf('multipart/form-data; boundary='),
+                        0);
+        });
+  }, 'MIME type for FormData');
+
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST', body: ''});
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/plain;charset=utf-8');
+          assert_equals(req.headers.get('Content-Type'),
+                        'text/plain;charset=UTF-8');
+        });
+  }, 'MIME type for USVString');
+
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           body: new Blob([''], {type: 'Text/Plain'}),
+                           headers: [['Content-Type', 'Text/Html']]});
+    req = req.clone();
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(req.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type with clone');
+
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           body: new Blob([''], {type: 'Text/Plain'})});
+    req.headers.set('Content-Type', 'Text/Html');
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/plain');
+          assert_equals(req.headers.get('Content-Type'), 'Text/Html');
+        });
+  },
+  'MIME type unchanged if headers are modified after Request() constructor');
+
+// The following two tests follow different code paths in Body::readAsync().
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           body: new Blob([''], {type: 'Text/Plain'}),
+                           headers: [['Content-Type', 'Text/Html']]});
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(req.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type (1)');
+
+promise_test(function(t) {
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           body: new Blob([''], {type: 'Text/Plain'}),
+                           headers: [['Content-Type', 'Text/Html']]});
+    req.body.cancel();
+    return req.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(req.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type (2)');
+
 done();

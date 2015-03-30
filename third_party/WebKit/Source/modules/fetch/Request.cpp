@@ -200,7 +200,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     }
     // "22. Set |r|'s MIME type to the result of extracting a MIME type from
     // |r|'s request's header list."
-    // FIXME: We don't have MIME type in Request object yet.
+    r->m_request->setMIMEType(r->m_request->headerList()->extractMIMEType());
 
     // "23. Return |r|."
     return r;
@@ -385,14 +385,13 @@ PassRefPtr<BlobDataHandle> Request::blobDataHandle() const
 
 BodyStreamBuffer* Request::buffer() const
 {
+    // We don't support BodyStreamBuffer for Request yet.
     return nullptr;
 }
 
-String Request::contentTypeForBuffer() const
+String Request::mimeType() const
 {
-    // We don't support BodyStreamBuffer for Request yet.
-    ASSERT_NOT_REACHED();
-    return String();
+    return m_request->mimeType();
 }
 
 DEFINE_TRACE(Request)

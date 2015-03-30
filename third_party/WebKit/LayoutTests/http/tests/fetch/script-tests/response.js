@@ -371,11 +371,108 @@ promise_test(function(t) {
     res.body.cancel();
     var clone = res.clone();
     return Promise.all([res.blob(), clone.blob()]).then(function(r) {
-        assert_equals(r[0].type, 'text/plain;charset=UTF-8', 'cloned type');
-        assert_equals(r[1].type, 'text/plain;charset=UTF-8', 'original type');
+        assert_equals(r[0].type, 'text/plain;charset=utf-8', 'cloned type');
+        assert_equals(r[1].type, 'text/plain;charset=utf-8', 'original type');
         assert_equals(r[0].size, 0, 'original size');
         assert_equals(r[1].size, 0, 'cloned size');
       });
   }, 'Cancel and Clone on Response');
+
+// Tests for MIME types.
+promise_test(function(t) {
+    var res = new Response(new Blob(['']));
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, '');
+          assert_equals(res.headers.get('Content-Type'), null);
+        });
+  }, 'MIME type for Blob');
+
+promise_test(function(t) {
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}));
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/plain');
+          assert_equals(res.headers.get('Content-Type'), 'text/plain');
+        });
+  }, 'MIME type for Blob with non-empty type');
+
+promise_test(function(t) {
+    var res = new Response(new FormData());
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type.indexOf('multipart/form-data; boundary='),
+                        0);
+          assert_equals(res.headers.get('Content-Type')
+                          .indexOf('multipart/form-data; boundary='),
+                        0);
+        });
+  }, 'MIME type for FormData');
+
+promise_test(function(t) {
+    var res = new Response('');
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/plain;charset=utf-8');
+          assert_equals(res.headers.get('Content-Type'),
+                        'text/plain;charset=UTF-8');
+        });
+  }, 'MIME type for USVString');
+
+promise_test(function(t) {
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}),
+                           {headers: [['Content-Type', 'Text/Html']]});
+    res = res.clone();
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type with clone');
+
+promise_test(function(t) {
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}));
+    res.headers.set('Content-Type', 'Text/Html');
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/plain');
+          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
+        });
+  },
+  'MIME type unchanged if headers are modified after Response() constructor');
+
+// The following three tests follow different code paths in Body::readAsync().
+promise_test(function(t) {
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}),
+                           {headers: [['Content-Type', 'Text/Html']]});
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type (1)');
+
+promise_test(function(t) {
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}),
+                           {headers: [['Content-Type', 'Text/Html']]});
+    res.body.cancel();
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type (2)');
+
+promise_test(function(t) {
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}),
+                           {headers: [['Content-Type', 'Text/Html']]});
+    res.body.cancel();
+    res = res.clone();
+    return res.blob()
+      .then(function(blob) {
+          assert_equals(blob.type, 'text/html');
+          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
+        });
+  }, 'Extract a MIME type (3)');
 
 done();

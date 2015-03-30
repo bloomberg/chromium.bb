@@ -27,7 +27,7 @@ public:
     void append(const String&, const String&);
     void set(const String&, const String&);
     // FIXME: Implement parse()
-    // FIXME: Implement extractMIMEType()
+    String extractMIMEType() const;
 
     size_t size() const;
     void remove(const String&);

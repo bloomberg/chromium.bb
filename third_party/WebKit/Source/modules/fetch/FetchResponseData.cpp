@@ -139,7 +139,7 @@ FetchResponseData* FetchResponseData::createBasicFilteredResponse()
     }
     response->m_blobDataHandle = m_blobDataHandle;
     response->m_buffer = m_buffer;
-    response->m_contentTypeForBuffer = m_contentTypeForBuffer;
+    response->m_mimeType = m_mimeType;
     response->m_internalResponse = this;
     return response;
 }
@@ -167,7 +167,7 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse()
     }
     response->m_blobDataHandle = m_blobDataHandle;
     response->m_buffer = m_buffer;
-    response->m_contentTypeForBuffer = m_contentTypeForBuffer;
+    response->m_mimeType = m_mimeType;
     response->m_internalResponse = this;
     return response;
 }
@@ -182,9 +182,9 @@ FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
     return response;
 }
 
-String FetchResponseData::contentTypeForBuffer() const
+String FetchResponseData::mimeType() const
 {
-    return m_contentTypeForBuffer;
+    return m_mimeType;
 }
 
 PassRefPtr<BlobDataHandle> FetchResponseData::internalBlobDataHandle() const
@@ -203,12 +203,12 @@ BodyStreamBuffer* FetchResponseData::internalBuffer() const
     return m_buffer;
 }
 
-String FetchResponseData::internalContentTypeForBuffer() const
+String FetchResponseData::internalMIMEType() const
 {
     if (m_internalResponse) {
-        return m_internalResponse->contentTypeForBuffer();
+        return m_internalResponse->mimeType();
     }
-    return m_contentTypeForBuffer;
+    return m_mimeType;
 }
 
 FetchResponseData* FetchResponseData::clone()
@@ -224,7 +224,7 @@ FetchResponseData* FetchResponseData::clone()
     newResponse->m_statusMessage = m_statusMessage;
     newResponse->m_headerList = m_headerList->clone();
     newResponse->m_blobDataHandle = m_blobDataHandle;
-    newResponse->m_contentTypeForBuffer = m_contentTypeForBuffer;
+    newResponse->m_mimeType = m_mimeType;
 
     switch (m_type) {
     case BasicType:
