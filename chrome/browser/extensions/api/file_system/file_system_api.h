@@ -10,11 +10,18 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if defined(OS_CHROMEOS)
+namespace file_manager {
+class Volume;
+}  // namespace file_manager
+#endif
 
 namespace extensions {
 class ExtensionPrefs;
@@ -250,15 +257,16 @@ class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
   FileSystemRequestFileSystemFunction();
 
  protected:
-  ~FileSystemRequestFileSystemFunction() override {}
+  ~FileSystemRequestFileSystemFunction() override;
 
   // AsyncExtensionFunction overrides.
   ExtensionFunction::ResponseAction Run() override;
 
  private:
   ChromeExtensionFunctionDetails chrome_details_;
-
 #if defined(OS_CHROMEOS)
+  base::WeakPtr<file_manager::Volume> volume_;
+
   // Requests user consent for accessing the volume identified by |name|.
   void RequestConsent(const std::string& display_name,
                       bool writable,

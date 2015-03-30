@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -84,11 +85,11 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
     DCHECK(volume_manager);
 
     bool is_under_downloads = false;
-    const std::vector<file_manager::VolumeInfo> volumes =
-        volume_manager->GetVolumeInfoList();
-    for (size_t i = 0; i < volumes.size(); ++i) {
-      if (volumes[i].type == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY &&
-          volumes[i].mount_path.IsParent(path)) {
+    const std::vector<base::WeakPtr<file_manager::Volume>> volumes =
+        volume_manager->GetVolumeList();
+    for (const auto& volume : volumes) {
+      if (volume->type() == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY &&
+          volume->mount_path().IsParent(path)) {
         is_under_downloads = true;
         break;
       }
@@ -178,23 +179,23 @@ bool FileManagerPrivateRemoveMountFunction::RunAsync() {
   set_log_on_completion(true);
 
   using file_manager::VolumeManager;
-  using file_manager::VolumeInfo;
-  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  using file_manager::Volume;
+  VolumeManager* const volume_manager = VolumeManager::Get(GetProfile());
   DCHECK(volume_manager);
 
-  VolumeInfo volume_info;
-  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
+  base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeById(params->volume_id);
+  if (!volume.get())
     return false;
 
   // TODO(tbarzic): Send response when callback is received, it would make more
   // sense than remembering issued unmount requests in file manager and showing
   // errors for them when MountCompleted event is received.
-  switch (volume_info.type) {
+  switch (volume->type()) {
     case file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
     case file_manager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE: {
       DiskMountManager::GetInstance()->UnmountPath(
-          volume_info.mount_path.value(),
-          chromeos::UNMOUNT_OPTIONS_NONE,
+          volume->mount_path().value(), chromeos::UNMOUNT_OPTIONS_NONE,
           DiskMountManager::UnmountPathCallback());
       break;
     }
@@ -203,8 +204,8 @@ bool FileManagerPrivateRemoveMountFunction::RunAsync() {
           chromeos::file_system_provider::Service::Get(GetProfile());
       DCHECK(service);
       // TODO(mtomasz): Pass a more detailed error than just a bool.
-      if (!service->RequestUnmount(volume_info.extension_id,
-                                   volume_info.file_system_id)) {
+      if (!service->RequestUnmount(volume->extension_id(),
+                                   volume->file_system_id())) {
         return false;
       }
       break;
@@ -222,20 +223,20 @@ bool FileManagerPrivateGetVolumeMetadataListFunction::RunAsync() {
   if (args_->GetSize())
     return false;
 
-  const std::vector<file_manager::VolumeInfo>& volume_info_list =
-      file_manager::VolumeManager::Get(GetProfile())->GetVolumeInfoList();
+  const std::vector<base::WeakPtr<file_manager::Volume>>& volume_list =
+      file_manager::VolumeManager::Get(GetProfile())->GetVolumeList();
 
   std::string log_string;
   std::vector<linked_ptr<file_manager_private::VolumeMetadata> > result;
-  for (size_t i = 0; i < volume_info_list.size(); ++i) {
+  for (const auto& volume : volume_list) {
     linked_ptr<file_manager_private::VolumeMetadata> volume_metadata(
         new file_manager_private::VolumeMetadata);
-    file_manager::util::VolumeInfoToVolumeMetadata(
-        GetProfile(), volume_info_list[i], volume_metadata.get());
+    file_manager::util::VolumeToVolumeMetadata(GetProfile(), *volume.get(),
+                                               volume_metadata.get());
     result.push_back(volume_metadata);
     if (!log_string.empty())
       log_string += ", ";
-    log_string += volume_info_list[i].mount_path.AsUTF8Unsafe();
+    log_string += volume->mount_path().AsUTF8Unsafe();
   }
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());

@@ -12,7 +12,7 @@
 
 namespace file_manager {
 
-struct VolumeInfo;
+class Volume;
 
 // Observer interface of volume related events.
 class VolumeManagerObserver {
@@ -35,11 +35,11 @@ class VolumeManagerObserver {
 
   // Fired when a volume is mounted.
   virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info) = 0;
+                               const Volume& volume) = 0;
 
   // Fired when a volume is unmounted.
   virtual void OnVolumeUnmounted(chromeos::MountError error_code,
-                                 const VolumeInfo& volume_info) = 0;
+                                 const Volume& volume) = 0;
 
   // Fired when formatting a device is started (or failed to start).
   virtual void OnFormatStarted(

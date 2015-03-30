@@ -40,15 +40,15 @@ struct SelectedFileInfo;
 
 namespace file_manager {
 
-struct VolumeInfo;
+class Volume;
 
 namespace util {
 
-// Converts the |volume_info| to VolumeMetadata to communicate with JavaScript
-// via private API.
-void VolumeInfoToVolumeMetadata(
+// Converts the |volume| to VolumeMetadata to communicate with JavaScript via
+// private API.
+void VolumeToVolumeMetadata(
     Profile* profile,
-    const VolumeInfo& volume_info,
+    const Volume& volume,
     extensions::api::file_manager_private::VolumeMetadata* volume_metadata);
 
 // Returns the local FilePath associated with |url|. If the file isn't of the

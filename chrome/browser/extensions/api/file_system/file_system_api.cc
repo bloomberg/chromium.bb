@@ -1026,6 +1026,9 @@ FileSystemRequestFileSystemFunction::FileSystemRequestFileSystemFunction()
     : chrome_details_(this) {
 }
 
+FileSystemRequestFileSystemFunction::~FileSystemRequestFileSystemFunction() {
+}
+
 ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   using extensions::api::file_system::RequestFileSystem::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -1054,7 +1057,7 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   }
 
   using file_manager::VolumeManager;
-  using file_manager::VolumeInfo;
+  using file_manager::Volume;
   VolumeManager* const volume_manager =
       VolumeManager::Get(chrome_details_.GetProfile());
   DCHECK(volume_manager);
@@ -1066,11 +1069,9 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
     return RespondNow(Error(kRequiresFileSystemWriteError));
   }
 
-  VolumeInfo volume_info;
-  if (!volume_manager->FindVolumeInfoById(params->options.volume_id,
-                                          &volume_info)) {
+  volume_ = volume_manager->FindVolumeById(params->options.volume_id);
+  if (!volume_.get())
     return RespondNow(Error(kVolumeNotFoundError));
-  }
 
   const GURL site = extensions::util::GetSiteForExtensionId(
       extension_id(), chrome_details_.GetProfile());
@@ -1082,10 +1083,10 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   DCHECK(backend);
 
   base::FilePath virtual_path;
-  if (!backend->GetVirtualPath(volume_info.mount_path, &virtual_path))
+  if (!backend->GetVirtualPath(volume_->mount_path(), &virtual_path))
     return RespondNow(Error(kSecurityError));
 
-  if (writable && (volume_info.is_read_only))
+  if (writable && (volume_->is_read_only()))
     return RespondNow(Error(kSecurityError));
 
   chromeos::KioskAppManager::App app_info;
@@ -1099,17 +1100,17 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived,
-                   this, volume_info.volume_id, writable, true /* granted */));
+                   this, volume_->volume_id(), writable, true /* granted */));
   } else {
     // TODO(mtomasz): Create a better display name, which is the most meaningful
     // to the user.
-    const std::string display_name = !volume_info.volume_label.empty()
-                                         ? volume_info.volume_label
-                                         : volume_info.volume_id;
+    const std::string display_name = !volume_->volume_label().empty()
+                                         ? volume_->volume_label()
+                                         : volume_->volume_id();
     RequestConsent(
         display_name, writable,
         base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived,
-                   this, volume_info.volume_id, writable));
+                   this, volume_->volume_id(), writable));
   }
 
   return RespondLater();
@@ -1131,7 +1132,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
     bool writable,
     bool granted) {
   using file_manager::VolumeManager;
-  using file_manager::VolumeInfo;
+  using file_manager::Volume;
 
   if (!granted) {
     SetError(kSecurityError);
@@ -1139,18 +1140,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
     return;
   }
 
-  // The volume may be unmounted and remounted by the time we reach this logic.
-  // As for now, fetch the volume again, in case it's gone by the time the
-  // permission is granted.
-  // TODO(mtomasz): Add a unique identifier to VolumeInfo to guarantee that the
-  // permissions are granted to exactly that volume which was plugged in when
-  // the dialog was shown.
-  VolumeManager* const volume_manager =
-      VolumeManager::Get(chrome_details_.GetProfile());
-  DCHECK(volume_manager);
-
-  VolumeInfo volume_info;
-  if (!volume_manager->FindVolumeInfoById(volume_id, &volume_info)) {
+  if (!volume_.get()) {
     SetError(kVolumeNotFoundError);
     SendResponse(false);
     return;
@@ -1166,7 +1156,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
   DCHECK(backend);
 
   base::FilePath virtual_path;
-  if (!backend->GetVirtualPath(volume_info.mount_path, &virtual_path)) {
+  if (!backend->GetVirtualPath(volume_->mount_path(), &virtual_path)) {
     SetError(kSecurityError);
     SendResponse(false);
     return;
@@ -1205,16 +1195,16 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
 
   // Read-only permisisons.
   policy->GrantReadFile(render_view_host()->GetProcess()->GetID(),
-                        volume_info.mount_path);
+                        volume_->mount_path());
   policy->GrantReadFileSystem(render_view_host()->GetProcess()->GetID(),
                               file_system_id);
 
   // Additional write permissions.
   if (writable) {
     policy->GrantCreateReadWriteFile(render_view_host()->GetProcess()->GetID(),
-                                     volume_info.mount_path);
+                                     volume_->mount_path());
     policy->GrantCopyInto(render_view_host()->GetProcess()->GetID(),
-                          volume_info.mount_path);
+                          volume_->mount_path());
     policy->GrantWriteFileSystem(render_view_host()->GetProcess()->GetID(),
                                  file_system_id);
     policy->GrantDeleteFromFileSystem(render_view_host()->GetProcess()->GetID(),

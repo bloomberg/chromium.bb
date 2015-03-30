@@ -7,6 +7,7 @@
 #include <sys/statvfs.h>
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -384,16 +385,17 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using file_manager::VolumeManager;
-  using file_manager::VolumeInfo;
-  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  using file_manager::Volume;
+  VolumeManager* const volume_manager = VolumeManager::Get(GetProfile());
   if (!volume_manager)
     return false;
 
-  VolumeInfo volume_info;
-  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
+  base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeById(params->volume_id);
+  if (!volume.get())
     return false;
 
-  if (volume_info.type == file_manager::VOLUME_TYPE_GOOGLE_DRIVE) {
+  if (volume->type() == file_manager::VOLUME_TYPE_GOOGLE_DRIVE) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system) {
@@ -413,15 +415,11 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     uint64* remaining_size = new uint64(0);
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
-        base::Bind(&GetSizeStatsOnBlockingPool,
-                   volume_info.mount_path.value(),
-                   total_size,
-                   remaining_size),
-        base::Bind(&FileManagerPrivateGetSizeStatsFunction::
-                       GetSizeStatsCallback,
-                   this,
-                   base::Owned(total_size),
-                   base::Owned(remaining_size)));
+        base::Bind(&GetSizeStatsOnBlockingPool, volume->mount_path().value(),
+                   total_size, remaining_size),
+        base::Bind(
+            &FileManagerPrivateGetSizeStatsFunction::GetSizeStatsCallback, this,
+            base::Owned(total_size), base::Owned(remaining_size)));
   }
   return true;
 }
@@ -498,17 +496,18 @@ bool FileManagerPrivateFormatVolumeFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using file_manager::VolumeManager;
-  using file_manager::VolumeInfo;
-  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  using file_manager::Volume;
+  VolumeManager* const volume_manager = VolumeManager::Get(GetProfile());
   if (!volume_manager)
     return false;
 
-  VolumeInfo volume_info;
-  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
+  base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeById(params->volume_id);
+  if (!volume)
     return false;
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
-      volume_info.mount_path.AsUTF8Unsafe());
+      volume->mount_path().AsUTF8Unsafe());
   SendResponse(true);
   return true;
 }

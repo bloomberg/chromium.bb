@@ -129,9 +129,9 @@ class EventRouter : public KeyedService,
   void OnDeviceAdded(const std::string& device_path) override;
   void OnDeviceRemoved(const std::string& device_path) override;
   void OnVolumeMounted(chromeos::MountError error_code,
-                       const VolumeInfo& volume_info) override;
+                       const Volume& volume) override;
   void OnVolumeUnmounted(chromeos::MountError error_code,
-                         const VolumeInfo& volume_info) override;
+                         const Volume& volume) override;
   void OnFormatStarted(const std::string& device_path, bool success) override;
   void OnFormatCompleted(const std::string& device_path, bool success) override;
 
@@ -182,7 +182,7 @@ class EventRouter : public KeyedService,
   void DispatchMountCompletedEvent(
       extensions::api::file_manager_private::MountCompletedEventType event_type,
       chromeos::MountError error,
-      const VolumeInfo& volume_info);
+      const Volume& volume);
 
   // If needed, opens a file manager window for the removable device mounted at
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out

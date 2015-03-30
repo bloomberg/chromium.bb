@@ -246,9 +246,9 @@ bool ShouldSendProgressEvent(bool always, base::Time* last_time) {
 bool ShouldShowNotificationForVolume(
     Profile* profile,
     const DeviceEventRouter& device_event_router,
-    const VolumeInfo& volume_info) {
-  if (volume_info.type != VOLUME_TYPE_MTP &&
-      volume_info.type != VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
+    const Volume& volume) {
+  if (volume.type() != VOLUME_TYPE_MTP &&
+      volume.type() != VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
     return false;
   }
 
@@ -857,7 +857,7 @@ void EventRouter::OnDeviceRemoved(const std::string& device_path) {
 }
 
 void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
-                                  const VolumeInfo& volume_info) {
+                                  const Volume& volume) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
   // happen at shutdown. This should be removed after removing Drive mounting
@@ -867,32 +867,29 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
     return;
 
   DispatchMountCompletedEvent(
-      file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT,
-      error_code,
-      volume_info);
+      file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT, error_code,
+      volume);
 }
 
 void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
-                                    const VolumeInfo& volume_info) {
+                                    const Volume& volume) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DispatchMountCompletedEvent(
-      file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT,
-      error_code,
-      volume_info);
+      file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT, error_code,
+      volume);
 }
 
 void EventRouter::DispatchMountCompletedEvent(
     file_manager_private::MountCompletedEventType event_type,
     chromeos::MountError error,
-    const VolumeInfo& volume_info) {
+    const Volume& volume) {
   // Build an event object.
   file_manager_private::MountCompletedEvent event;
   event.event_type = event_type;
   event.status = MountErrorToMountCompletedStatus(error);
-  util::VolumeInfoToVolumeMetadata(
-      profile_, volume_info, &event.volume_metadata);
-  event.should_notify = ShouldShowNotificationForVolume(
-      profile_, *device_event_router_, volume_info);
+  util::VolumeToVolumeMetadata(profile_, volume, &event.volume_metadata);
+  event.should_notify =
+      ShouldShowNotificationForVolume(profile_, *device_event_router_, volume);
   BroadcastEvent(profile_,
                  file_manager_private::OnMountCompleted::kEventName,
                  file_manager_private::OnMountCompleted::Create(event));

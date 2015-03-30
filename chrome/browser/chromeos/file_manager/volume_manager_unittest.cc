@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
@@ -92,19 +93,19 @@ class LoggingObserver : public VolumeManagerObserver {
   }
 
   void OnVolumeMounted(chromeos::MountError error_code,
-                       const VolumeInfo& volume_info) override {
+                       const Volume& volume) override {
     Event event;
     event.type = Event::VOLUME_MOUNTED;
-    event.device_path = volume_info.source_path.AsUTF8Unsafe();
+    event.device_path = volume.source_path().AsUTF8Unsafe();
     event.mount_error = error_code;
     events_.push_back(event);
   }
 
   void OnVolumeUnmounted(chromeos::MountError error_code,
-                         const VolumeInfo& volume_info) override {
+                         const Volume& volume) override {
     Event event;
     event.type = Event::VOLUME_UNMOUNTED;
-    event.device_path = volume_info.source_path.AsUTF8Unsafe();
+    event.device_path = volume.source_path().AsUTF8Unsafe();
     event.mount_error = error_code;
     events_.push_back(event);
   }
@@ -743,23 +744,25 @@ TEST_F(VolumeManagerTest, ExternalStorageDisabledPolicyMultiProfile) {
   secondary.volume_manager()->RemoveObserver(&secondary_observer);
 }
 
-TEST_F(VolumeManagerTest, GetVolumeInfoList) {
+TEST_F(VolumeManagerTest, GetVolumeList) {
   volume_manager()->Initialize();  // Adds "Downloads"
-  std::vector<VolumeInfo> info_list = volume_manager()->GetVolumeInfoList();
-  ASSERT_EQ(1u, info_list.size());
-  EXPECT_EQ("downloads:Downloads", info_list[0].volume_id);
-  EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, info_list[0].type);
+  std::vector<base::WeakPtr<Volume>> volume_list =
+      volume_manager()->GetVolumeList();
+  ASSERT_EQ(1u, volume_list.size());
+  EXPECT_EQ("downloads:Downloads", volume_list[0]->volume_id());
+  EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, volume_list[0]->type());
 }
 
-TEST_F(VolumeManagerTest, FindVolumeInfoById) {
+TEST_F(VolumeManagerTest, FindVolumeById) {
   volume_manager()->Initialize();  // Adds "Downloads"
-  VolumeInfo volume_info;
-  ASSERT_FALSE(volume_manager()->FindVolumeInfoById(
-      "nonexistent", &volume_info));
-  ASSERT_TRUE(volume_manager()->FindVolumeInfoById(
-      "downloads:Downloads", &volume_info));
-  EXPECT_EQ("downloads:Downloads", volume_info.volume_id);
-  EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, volume_info.type);
+  base::WeakPtr<Volume> bad_volume =
+      volume_manager()->FindVolumeById("nonexistent");
+  ASSERT_FALSE(bad_volume.get());
+  base::WeakPtr<Volume> good_volume =
+      volume_manager()->FindVolumeById("downloads:Downloads");
+  ASSERT_TRUE(good_volume.get());
+  EXPECT_EQ("downloads:Downloads", good_volume->volume_id());
+  EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, good_volume->type());
 }
 
 TEST_F(VolumeManagerTest, ArchiveSourceFiltering) {
@@ -785,9 +788,9 @@ TEST_F(VolumeManagerTest, ArchiveSourceFiltering) {
           "/archive/1",
           chromeos::MOUNT_TYPE_ARCHIVE,
           chromeos::disks::MOUNT_CONDITION_NONE));
-  VolumeInfo volume_info;
-  ASSERT_TRUE(volume_manager()->FindVolumeInfoById("archive:1", &volume_info));
-  EXPECT_EQ("/archive/1", volume_info.mount_path.AsUTF8Unsafe());
+  base::WeakPtr<Volume> volume = volume_manager()->FindVolumeById("archive:1");
+  ASSERT_TRUE(volume.get());
+  EXPECT_EQ("/archive/1", volume->mount_path().AsUTF8Unsafe());
   EXPECT_EQ(2u, observer.events().size());
 
   // Mount a zip archive in the previous zip archive.
@@ -799,8 +802,10 @@ TEST_F(VolumeManagerTest, ArchiveSourceFiltering) {
           "/archive/2",
           chromeos::MOUNT_TYPE_ARCHIVE,
           chromeos::disks::MOUNT_CONDITION_NONE));
-  ASSERT_TRUE(volume_manager()->FindVolumeInfoById("archive:2", &volume_info));
-  EXPECT_EQ("/archive/2", volume_info.mount_path.AsUTF8Unsafe());
+  base::WeakPtr<Volume> second_volume =
+      volume_manager()->FindVolumeById("archive:2");
+  ASSERT_TRUE(second_volume.get());
+  EXPECT_EQ("/archive/2", second_volume->mount_path().AsUTF8Unsafe());
   EXPECT_EQ(3u, observer.events().size());
 
   // A zip file is mounted from other profile. It must be ignored in the current
@@ -813,7 +818,9 @@ TEST_F(VolumeManagerTest, ArchiveSourceFiltering) {
           "/archive/3",
           chromeos::MOUNT_TYPE_ARCHIVE,
           chromeos::disks::MOUNT_CONDITION_NONE));
-  EXPECT_FALSE(volume_manager()->FindVolumeInfoById("archive:3", &volume_info));
+  base::WeakPtr<Volume> third_volume =
+      volume_manager()->FindVolumeById("archive:3");
+  ASSERT_FALSE(third_volume.get());
   EXPECT_EQ(3u, observer.events().size());
 }
 
@@ -844,9 +851,8 @@ TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
   ASSERT_EQ(1u, observer.events().size());
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, observer.events()[0].type);
 
-  VolumeInfo volume_info;
-  ASSERT_TRUE(volume_manager()->FindVolumeInfoById("mtp:model", &volume_info));
-  EXPECT_EQ(VOLUME_TYPE_MTP, volume_info.type);
+  base::WeakPtr<Volume> volume = volume_manager()->FindVolumeById("mtp:model");
+  EXPECT_EQ(VOLUME_TYPE_MTP, volume->type());
 
   // Non MTP events from storage monitor are ignored.
   volume_manager()->OnRemovableStorageAttached(non_mtp_info);
@@ -858,7 +864,7 @@ TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
   EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED,
             observer.events()[1].type);
 
-  EXPECT_FALSE(volume_manager()->FindVolumeInfoById("mtp:model", &volume_info));
+  EXPECT_FALSE(volume.get());
 }
 
 }  // namespace file_manager
