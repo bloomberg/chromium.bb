@@ -63,34 +63,34 @@ function test()
     InspectorTest.runTestSuite([
         function testGeolocationUnavailable(next)
         {
-            InspectorTest.PageAgent.setGeolocationOverride();
+            InspectorTest.EmulationAgent.setGeolocationOverride();
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overrideGeolocation()");
         },
 
         function testOverridenGeolocation(next)
         {
-            InspectorTest.PageAgent.setGeolocationOverride(50, 100, 95);
+            InspectorTest.EmulationAgent.setGeolocationOverride(50, 100, 95);
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overrideGeolocation()");
         },
 
         function testInvalidParam(next)
         {
-            InspectorTest.PageAgent.setGeolocationOverride(true, 100, 95);
+            InspectorTest.EmulationAgent.setGeolocationOverride(true, 100, 95);
             next();
         },
 
         function testInvalidGeolocation(next)
         {
-            InspectorTest.PageAgent.setGeolocationOverride(200, 300, 95);
+            InspectorTest.EmulationAgent.setGeolocationOverride(200, 300, 95);
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overrideGeolocation()");
         },
 
         function testTimestampOfOverridenPosition(next)
         {
-            InspectorTest.PageAgent.setGeolocationOverride(50, 100, 95);
+            InspectorTest.EmulationAgent.setGeolocationOverride(50, 100, 95);
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overridenTimestampGeolocation()");
         }

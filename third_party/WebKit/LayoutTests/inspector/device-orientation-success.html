@@ -34,12 +34,12 @@ function test()
         function setOverride(next)
         {
             InspectorTest.addConsoleSniffer(next);
-            InspectorTest.PageAgent.setDeviceOrientationOverride(20, 30, 40);
+            InspectorTest.DeviceOrientationAgent.setDeviceOrientationOverride(20, 30, 40);
         },
 
         function clearOverride(next)
         {
-            InspectorTest.PageAgent.clearDeviceOrientationOverride(next);
+            InspectorTest.DeviceOrientationAgent.clearDeviceOrientationOverride(next);
         }
     ]);
 }
