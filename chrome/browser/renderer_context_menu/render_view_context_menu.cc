@@ -212,8 +212,12 @@ const struct UmaEnumCommandIdPair {
     {59, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
     {60, IDC_SPELLPANEL_TOGGLE},
     {61, IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB},
+    {62, IDC_WRITING_DIRECTION_MENU},
+    {63, IDC_WRITING_DIRECTION_DEFAULT},
+    {64, IDC_WRITING_DIRECTION_LTR},
+    {65, IDC_WRITING_DIRECTION_RTL},
     // Add new items here and use |enum_id| from the next line.
-    {62, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
+    {66, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
