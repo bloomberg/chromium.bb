@@ -38,12 +38,12 @@ template <class T>
 class RenderViewObserverTracker {
  public:
   static T* Get(const RenderView* render_view) {
-    return render_view_map_.Get()[render_view];
+    return static_cast<T*>(render_view_map_.Get()[render_view]);
   }
 
   explicit RenderViewObserverTracker(const RenderView* render_view)
       : render_view_(render_view) {
-    render_view_map_.Get()[render_view] = static_cast<T*>(this);
+    render_view_map_.Get()[render_view] = this;
   }
   ~RenderViewObserverTracker() {
     render_view_map_.Get().erase(render_view_);
@@ -52,14 +52,15 @@ class RenderViewObserverTracker {
  private:
   const RenderView* render_view_;
 
-  static base::LazyInstance<std::map<const RenderView*, T*> >
-    render_view_map_;
+  static base::LazyInstance<
+      std::map<const RenderView*, RenderViewObserverTracker<T>*>>
+      render_view_map_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewObserverTracker<T>);
 };
 
 template <class T>
-base::LazyInstance<std::map<const RenderView*, T*> >
+base::LazyInstance<std::map<const RenderView*, RenderViewObserverTracker<T>*>>
     RenderViewObserverTracker<T>::render_view_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace content
