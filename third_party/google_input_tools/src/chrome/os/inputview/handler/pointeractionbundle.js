@@ -14,7 +14,6 @@
 goog.provide('i18n.input.chrome.inputview.handler.PointerActionBundle');
 
 goog.require('goog.Timer');
-goog.require('goog.dom');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.math.Coordinate');
@@ -35,7 +34,7 @@ goog.scope(function() {
 /**
  * The handler for long press.
  *
- * @param {i18n.input.chrome.inputview.elements.Element} view The view for this
+ * @param {!i18n.input.chrome.inputview.elements.Element} view The view for this
  *     pointer event.
  * @param {goog.events.EventTarget=} opt_parentEventTarget The parent event
  *     target.
@@ -50,7 +49,7 @@ i18n.input.chrome.inputview.handler.PointerActionBundle = function(view,
   /**
    * The target.
    *
-   * @type {i18n.input.chrome.inputview.elements.Element}
+   * @type {!i18n.input.chrome.inputview.elements.Element}
    */
   this.view = view;
 
@@ -156,6 +155,7 @@ PointerActionBundle.prototype.isFlickering_ = false;
  * @param {!Touch | !Event} e .
  */
 PointerActionBundle.prototype.handlePointerMove = function(e) {
+  var identifier = Util.getEventIdentifier(e);
   var direction = 0;
   var deltaX = this.swipeState_.previousX == 0 ? 0 : (e.pageX -
       this.swipeState_.previousX);
@@ -165,7 +165,7 @@ PointerActionBundle.prototype.handlePointerMove = function(e) {
   this.swipeState_.offsetY += deltaY;
   this.dispatchEvent(new i18n.input.chrome.inputview.events.DragEvent(
       this.view, direction, /** @type {!Node} */ (e.target),
-      e.pageX, e.pageY, deltaX, deltaY));
+      e.pageX, e.pageY, deltaX, deltaY, identifier));
 
   var minimumSwipeDist = PointerActionBundle.
       MINIMUM_SWIPE_DISTANCE_;
@@ -196,15 +196,14 @@ PointerActionBundle.prototype.handlePointerMove = function(e) {
     goog.Timer.clear(this.longPressTimer_);
     this.dispatchEvent(new i18n.input.chrome.inputview.events.SwipeEvent(
         this.view, direction, /** @type {!Node} */ (e.target),
-        e.pageX, e.pageY));
+        e.pageX, e.pageY, identifier));
     var currentTargetView = Util.getView(this.currentTarget_);
-    if (this.view) {
-      this.isFlickering_ = !this.isLongPressing_ && !!(this.view.pointerConfig.
-          flickerDirection & direction) && currentTargetView == this.view;
-    }
+    this.isFlickering_ = !this.isLongPressing_ && !!(this.view.pointerConfig.
+        flickerDirection & direction) && currentTargetView == this.view;
   }
 
-  this.maybeSwitchTarget_(e);
+  this.maybeSwitchTarget_(
+      new goog.math.Coordinate(e.pageX, e.pageY), identifier);
 };
 
 
@@ -212,12 +211,13 @@ PointerActionBundle.prototype.handlePointerMove = function(e) {
  * If the target is switched to a new one, sends out a pointer_over for the new
  * target and sends out a pointer_out for the old target.
  *
- * @param {!Touch | !Event | !goog.events.BrowserEvent} e .
+ * @param {!goog.math.Coordinate} pageOffset .
+ * @param {number} identifier .
  * @private
  */
-PointerActionBundle.prototype.maybeSwitchTarget_ = function(e) {
+PointerActionBundle.prototype.maybeSwitchTarget_ = function(pageOffset,
+    identifier) {
   if (!this.isFlickering_) {
-    var pageOffset = this.getPageOffset_(e);
     var actualTarget = document.elementFromPoint(pageOffset.x, pageOffset.y);
     var currentTargetView = Util.getView(this.currentTarget_);
     var actualTargetView = Util.getView(actualTarget);
@@ -226,13 +226,13 @@ PointerActionBundle.prototype.maybeSwitchTarget_ = function(e) {
         this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
             currentTargetView,
             i18n.input.chrome.inputview.events.EventType.POINTER_OUT,
-            this.currentTarget_, pageOffset.x, pageOffset.y));
+            this.currentTarget_, pageOffset.x, pageOffset.y, identifier));
       }
       if (actualTargetView) {
         this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
             actualTargetView,
             i18n.input.chrome.inputview.events.EventType.POINTER_OVER,
-            actualTarget, pageOffset.x, pageOffset.y));
+            actualTarget, pageOffset.x, pageOffset.y, identifier));
       }
       this.currentTarget_ = actualTarget;
     }
@@ -248,16 +248,17 @@ PointerActionBundle.prototype.maybeSwitchTarget_ = function(e) {
 PointerActionBundle.prototype.handlePointerUp = function(e) {
   goog.Timer.clear(this.longPressTimer_);
   var pageOffset = this.getPageOffset_(e);
+  var identifier = Util.getEventIdentifier(e);
   this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
       this.view, i18n.input.chrome.inputview.events.EventType.LONG_PRESS_END,
-      e.target, pageOffset.x, pageOffset.y));
+      e.target, pageOffset.x, pageOffset.y, identifier));
   if (this.isDBLClicking_) {
     this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
         this.view, i18n.input.chrome.inputview.events.EventType.
-        DOUBLE_CLICK_END, e.target, pageOffset.x, pageOffset.y));
+        DOUBLE_CLICK_END, e.target, pageOffset.x, pageOffset.y, identifier));
   } else if (!(this.isLongPressing_ && this.view.pointerConfig.
       longPressWithoutPointerUp)) {
-    this.maybeSwitchTarget_(e);
+    this.maybeSwitchTarget_(pageOffset, identifier);
     var view = Util.getView(this.currentTarget_);
     var target = this.currentTarget_;
     if (this.isFlickering_) {
@@ -271,12 +272,13 @@ PointerActionBundle.prototype.handlePointerUp = function(e) {
     // POINTER_UP event to keyboard to commit the selected accent character.
     this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
         view, i18n.input.chrome.inputview.events.EventType.POINTER_UP,
-        target, pageOffset.x, pageOffset.y, this.pointerUpTimeStamp_));
+        target, pageOffset.x, pageOffset.y, identifier,
+        this.pointerUpTimeStamp_));
   }
   if (Util.getView(this.currentTarget_) == this.view) {
     this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
         this.view, i18n.input.chrome.inputview.events.EventType.CLICK,
-        e.target, pageOffset.x, pageOffset.y));
+        e.target, pageOffset.x, pageOffset.y, identifier));
   }
   this.isDBLClicking_ = false;
   this.isLongPressing_ = false;
@@ -301,16 +303,17 @@ PointerActionBundle.prototype.cancelDoubleClick = function() {
 PointerActionBundle.prototype.handlePointerDown = function(e) {
   this.currentTarget_ = e.target;
   goog.Timer.clear(this.longPressTimer_);
-  if (e.type != goog.events.EventType.MOUSEDOWN) {
-    // Don't trigger long press for mouse event.
-    this.maybeTriggerKeyDownLongPress_(e);
+  var identifier = Util.getEventIdentifier(e);
+  if (e.type == goog.events.EventType.TOUCHSTART) {
+    this.maybeTriggerKeyDownLongPress_(e, identifier);
   }
-  this.maybeHandleDBLClick_(e);
+  this.maybeHandleDBLClick_(e, identifier);
   if (!this.isDBLClicking_) {
     var pageOffset = this.getPageOffset_(e);
     this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
         this.view, i18n.input.chrome.inputview.events.EventType.POINTER_DOWN,
-        e.target, pageOffset.x, pageOffset.y, this.pointerDownTimeStamp_));
+        e.target, pageOffset.x, pageOffset.y, identifier,
+        this.pointerDownTimeStamp_));
   }
 };
 
@@ -318,19 +321,11 @@ PointerActionBundle.prototype.handlePointerDown = function(e) {
 /**
  * Gets the page offset from the event which may be mouse event or touch event.
  *
- * @param {!goog.events.BrowserEvent | !Touch | !Event} e .
+ * @param {!goog.events.BrowserEvent} e .
  * @return {!goog.math.Coordinate} .
  * @private
  */
 PointerActionBundle.prototype.getPageOffset_ = function(e) {
-  if (e.pageX && e.pageY) {
-    return new goog.math.Coordinate(e.pageX, e.pageY);
-  }
-
-  if (!e.getBrowserEvent) {
-    return new goog.math.Coordinate(0, 0);
-  }
-
   var nativeEvt = e.getBrowserEvent();
   if (nativeEvt.pageX && nativeEvt.pageY) {
     return new goog.math.Coordinate(nativeEvt.pageX, nativeEvt.pageY);
@@ -354,13 +349,15 @@ PointerActionBundle.prototype.getPageOffset_ = function(e) {
  * Maybe triggers the long press timer when pointer down.
  *
  * @param {!goog.events.BrowserEvent} e The event.
+ * @param {number} identifier .
  * @private
  */
-PointerActionBundle.prototype.maybeTriggerKeyDownLongPress_ = function(e) {
+PointerActionBundle.prototype.maybeTriggerKeyDownLongPress_ = function(e,
+    identifier) {
   if (this.view && (this.view.pointerConfig.longPressWithPointerUp ||
       this.view.pointerConfig.longPressWithoutPointerUp)) {
     this.longPressTimer_ = goog.Timer.callOnce(
-        goog.bind(this.triggerLongPress_, this, e),
+        goog.bind(this.triggerLongPress_, this, e, identifier),
         this.view.pointerConfig.longPressDelay, this);
   }
 };
@@ -370,9 +367,10 @@ PointerActionBundle.prototype.maybeTriggerKeyDownLongPress_ = function(e) {
  * Maybe handle the double click.
  *
  * @param {!goog.events.BrowserEvent} e .
+ * @param {number} identifier .
  * @private
  */
-PointerActionBundle.prototype.maybeHandleDBLClick_ = function(e) {
+PointerActionBundle.prototype.maybeHandleDBLClick_ = function(e, identifier) {
   if (this.view && this.view.pointerConfig.dblClick) {
     var timeInMs = new Date().getTime();
     var interval = this.view.pointerConfig.dblClickDelay ||
@@ -381,7 +379,7 @@ PointerActionBundle.prototype.maybeHandleDBLClick_ = function(e) {
     if ((timeInMs - this.pointerDownTimeStamp_) < interval) {
       this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
           this.view, i18n.input.chrome.inputview.events.EventType.DOUBLE_CLICK,
-          e.target, nativeEvt.pageX, nativeEvt.pageY));
+          e.target, nativeEvt.pageX, nativeEvt.pageY, identifier));
       this.isDBLClicking_ = true;
     }
     this.pointerDownTimeStamp_ = timeInMs;
@@ -393,16 +391,17 @@ PointerActionBundle.prototype.maybeHandleDBLClick_ = function(e) {
  * Triggers long press event.
  *
  * @param {!goog.events.BrowserEvent} e The event.
+ * @param {number} identifier .
  * @private
  */
-PointerActionBundle.prototype.triggerLongPress_ = function(e) {
+PointerActionBundle.prototype.triggerLongPress_ = function(e, identifier) {
   var nativeEvt = e.getBrowserEvent();
   if (nativeEvt.touches.length > 1) {
     return;
   }
   this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
       this.view, i18n.input.chrome.inputview.events.EventType.LONG_PRESS,
-      e.target, nativeEvt.pageX, nativeEvt.pageY));
+      e.target, nativeEvt.pageX, nativeEvt.pageY, identifier));
   this.isLongPressing_ = true;
 };
 

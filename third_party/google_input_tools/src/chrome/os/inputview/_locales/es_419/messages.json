@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Agregar a diccionario personal"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Configuraci\u00f3n avanzada"
@@ -3000,10 +3011,10 @@
     "message": "Dise\u00f1o del teclado coreano"
   },
   "korean_settings_page": {
-    "message": "P\u00e1gina de configuraci\u00f3n de coreano"
+    "message": "P\u00e1gina de configuraci\u00f3n del m\u00e9todo de entrada coreano"
   },
   "korean_syllable_input": {
-    "message": "Ingreso de hangul uno por uno"
+    "message": "Ingresar una sola s\u00edlaba por vez"
   },
   "latam_spa_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado latinoamericano (espa\u00f1ol)"
@@ -3105,7 +3116,7 @@
     "message": "Mostrar men\u00fa desplegable de sugerencias mediante tecla de retroceso"
   },
   "show_hangul_candidate": {
-    "message": "Mostrar sugerencias en hangul"
+    "message": "Mostrar los candidatos en modo hangul"
   },
   "shrink_candidates": {
     "message": "reducir lista de candidatos"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Teclado t\u00e1ctil"
+    "message": "Teclado en pantalla"
   },
   "tr_tur_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado turco"

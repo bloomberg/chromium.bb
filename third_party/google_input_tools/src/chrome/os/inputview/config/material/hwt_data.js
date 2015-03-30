@@ -25,10 +25,8 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
   var viewIdPrefix = 'handwriting-k-';
 
   var spec = {};
-  spec[SpecNodeName.ID] = 'SingleQuote';
-  spec[SpecNodeName.TYPE] = ElementType.CHARACTER_KEY;
-  spec[SpecNodeName.CHARACTERS] = ['\''];
-  var singleQuoteKey = util.createKey(spec);
+  spec[SpecNodeName.ID] = 'FullHwtPlaceHolder';
+  var placeHolderKey = util.createKey(spec);
 
   spec[SpecNodeName.ID] = 'Comma';
   spec[SpecNodeName.TYPE] = ElementType.CHARACTER_KEY;
@@ -49,7 +47,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
   var spaceKey = i18n.input.chrome.inputview.content.util.createKey(spec);
 
   var keyList = [
-    singleQuoteKey,
+    placeHolderKey,
     commaKey,
     periodKey,
     util.createBackToKeyboardKey(),

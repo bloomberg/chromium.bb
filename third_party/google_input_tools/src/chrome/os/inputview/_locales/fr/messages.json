@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Ajouter au dictionnaire personnel"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Param\u00e8tres avanc\u00e9s"
@@ -3000,10 +3011,10 @@
     "message": "Disposition du clavier cor\u00e9en"
   },
   "korean_settings_page": {
-    "message": "Page des param\u00e8tres du cor\u00e9en"
+    "message": "Page des param\u00e8tres du mode de saisie du cor\u00e9en"
   },
   "korean_syllable_input": {
-    "message": "Saisie en hang\u00fbl un caract\u00e8re \u00e0 la fois"
+    "message": "Saisir une syllabe \u00e0 la fois"
   },
   "latam_spa_settings_page": {
     "message": "Page des param\u00e8tres du clavier latino-am\u00e9ricain (espagnol)"
@@ -3105,7 +3116,7 @@
     "message": "Afficher le menu d\u00e9roulant des suggestions en appuyant sur la touche Retour arri\u00e8re"
   },
   "show_hangul_candidate": {
-    "message": "Afficher les suggestions en hang\u00fbl"
+    "message": "Afficher les entr\u00e9es en mode hang\u00fbl"
   },
   "shrink_candidates": {
     "message": "r\u00e9duire la liste des propositions"
@@ -3147,7 +3158,7 @@
     "message": "tabulation"
   },
   "touch_keyboard": {
-    "message": "Clavier tactile"
+    "message": "Clavier \u00e0 l'\u00e9cran"
   },
   "tr_tur_settings_page": {
     "message": "Page des param\u00e8tres du clavier turc"

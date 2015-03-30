@@ -282,6 +282,10 @@ util.getVisibleCharacter = function(invisibleCharacter) {
  * @return {boolean} True if this is a letter key.
  */
 util.isLetterKey = function(characters) {
+  if (characters[0] == characters[1]) {
+    return false;
+  }
+
   if (characters[1] == util.toUpper(
       characters[0]) || characters[1] == util.
           toLower(characters[0])) {

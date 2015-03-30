@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "P\u0159idat do osobn\u00edho slovn\u00edku"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Roz\u0161\u00ed\u0159en\u00e1 nastaven\u00ed"
@@ -3000,10 +3011,10 @@
     "message": "Rozlo\u017een\u00ed korejsk\u00e9 kl\u00e1vesnice"
   },
   "korean_settings_page": {
-    "message": "Str\u00e1nka nastaven\u00ed pro korej\u0161tinu"
+    "message": "Str\u00e1nka nastaven\u00ed metody zad\u00e1v\u00e1n\u00ed korej\u0161tiny"
   },
   "korean_syllable_input": {
-    "message": "Zad\u00e1vat hangul po jednom"
+    "message": "Zad\u00e1vat po slabik\u00e1ch"
   },
   "latam_spa_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed latinoamerick\u00e9 kl\u00e1vesnice (\u0161pan\u011bl\u0161tina)"
@@ -3105,7 +3116,7 @@
     "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po stisknut\u00ed kl\u00e1vesy Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Zobrazovat n\u00e1vrhy korejsk\u00e9ho p\u00edsma"
+    "message": "Zobrazovat v\u00a0re\u017eimu korejsk\u00e9ho p\u00edsma kandid\u00e1ty"
   },
   "shrink_candidates": {
     "message": "sbalit seznam kandid\u00e1t\u016f"
@@ -3147,7 +3158,7 @@
     "message": "tabul\u00e1tor"
   },
   "touch_keyboard": {
-    "message": "Klepn\u011bte na kl\u00e1vesnici"
+    "message": "Softwarov\u00e1 kl\u00e1vesnice"
   },
   "tr_tur_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed tureck\u00e9 kl\u00e1vesnice"

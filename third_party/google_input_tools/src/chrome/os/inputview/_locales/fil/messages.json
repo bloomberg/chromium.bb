@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Idagdag sa personal na diksyunaryo"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Advanced"
@@ -3000,10 +3011,10 @@
     "message": "Layout ng Korean na Keyboard"
   },
   "korean_settings_page": {
-    "message": "Page ng Mga Setting ng Korean"
+    "message": "Page ng Mga Setting ng Pamamaraan ng Pag-input na Korean"
   },
   "korean_syllable_input": {
-    "message": "Paisa-isang pag-input ng hangul"
+    "message": "Maglagay ng paisa-isang pantig"
   },
   "latam_spa_settings_page": {
     "message": "Page ng Mga Setting ng Latin American na Keyboard (Spanish)"
@@ -3048,7 +3059,7 @@
     "message": "Auto-capitalization"
   },
   "physical_keyboard": {
-    "message": "Pisikal na Keyboard"
+    "message": "Pisikal na keyboard"
   },
   "pinyin_settings_page": {
     "message": "Page ng Mga Setting ng Pinyin"
@@ -3105,7 +3116,7 @@
     "message": "Ipakita ang dropdown ng suhestyon sa pamamagitan ng Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Ipakita ang mga suhestyon sa Hangul"
+    "message": "Ipakita ang mga kandidato sa Hangul mode"
   },
   "shrink_candidates": {
     "message": "paliitin ang listahan ng kandidato"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Touch Keyboard"
+    "message": "On-screen na keyboard"
   },
   "tr_tur_settings_page": {
     "message": "Page ng Mga Setting ng Turkish na Keyboard"

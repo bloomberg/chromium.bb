@@ -17,13 +17,13 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.DataSource');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
-goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
 goog.require('i18n.input.hwt.Canvas');
@@ -35,7 +35,6 @@ goog.scope(function() {
 var Canvas = i18n.input.hwt.Canvas;
 var Css = i18n.input.chrome.inputview.Css;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
-var FunctionalKey = i18n.input.chrome.inputview.elements.content.FunctionalKey;
 var Name = i18n.input.chrome.message.Name;
 var Type = i18n.input.chrome.message.Type;
 
@@ -108,7 +107,7 @@ CanvasView.INK_WIDTH_ = 6;
  * @type {string}
  * @private
  */
-CanvasView.INK_COLOR_ = '#37474f';
+CanvasView.INK_COLOR_ = '#3974df';
 
 
 /**
@@ -130,11 +129,11 @@ CanvasView.prototype.privacyDiv_;
 
 
 /**
- * The confirm button of privacy information.
+ * The "got it" confirm span for privacy info.
  *
- * @private {!FunctionalKey}
+ * @private {!Element}
  */
-CanvasView.prototype.confirmBtn_;
+CanvasView.prototype.confirmSpan_;
 
 
 /**
@@ -170,14 +169,14 @@ CanvasView.prototype.createDom = function() {
   this.privacyDiv_ = dom.createDom(goog.dom.TagName.DIV,
       Css.HANDWRITING_PRIVACY_INFO);
 
-  var textDiv = dom.createDom(goog.dom.TagName.DIV,
-      Css.HANDWRITING_PRIVACY_TEXT);
-  dom.setTextContent(textDiv,
+  var textSpan = dom.createDom(goog.dom.TagName.SPAN);
+  dom.setTextContent(textSpan,
       chrome.i18n.getMessage('HANDWRITING_PRIVACY_INFO'));
-  dom.appendChild(this.privacyDiv_, textDiv);
-  this.confirmBtn_ = new FunctionalKey(
-      '', ElementType.HWT_PRIVACY_GOT_IT, chrome.i18n.getMessage('GOT_IT'), '');
-  this.confirmBtn_.render(this.privacyDiv_);
+  dom.appendChild(this.privacyDiv_, textSpan);
+  this.confirmSpan_ = dom.createDom(goog.dom.TagName.SPAN,
+      Css.HANDWRITING_GOT_IT);
+  dom.setTextContent(this.confirmSpan_, chrome.i18n.getMessage('GOT_IT'));
+  dom.appendChild(this.privacyDiv_, this.confirmSpan_);
 
   // Shows or hide the privacy information.
   if (localStorage.getItem(Name.HWT_PRIVACY_INFO)) {
@@ -201,7 +200,8 @@ CanvasView.prototype.enterDocument = function() {
           [i18n.input.chrome.DataSource.EventType.CANDIDATES_BACK,
            Type.HWT_NETWORK_ERROR],
           this.onNetworkState_).
-      listen(this.adapter_, Type.HWT_PRIVACY_GOT_IT,
+      listen(this.confirmSpan_,
+          [goog.events.EventType.CLICK, goog.events.EventType.TOUCHEND],
           this.onConfirmPrivacyInfo_);
 };
 
@@ -241,7 +241,6 @@ CanvasView.prototype.resize = function(width, height) {
       Math.round((height - size.height) / 2) + 'px';
   this.privacyDiv_.style.left =
       Math.round((width - size.width) / 2) + 'px';
-  this.confirmBtn_.resize(100, 60);
 
   this.canvas_.setSize(height, width);
 };

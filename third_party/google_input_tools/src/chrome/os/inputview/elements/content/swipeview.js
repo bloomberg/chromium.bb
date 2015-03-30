@@ -16,7 +16,6 @@ goog.provide('i18n.input.chrome.inputview.elements.content.SwipeView');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
-goog.require('i18n.input.chrome.inputview.Accents');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
 goog.require('i18n.input.chrome.inputview.elements.Element');
@@ -39,7 +38,7 @@ var util = i18n.input.chrome.inputview.util;
 
 
 /**
- * The view for alt data.
+ * The view used to display the selection and deletion swipe tracks.
  *
  * @param {!i18n.input.chrome.inputview.Adapter} adapter .
  * @param {goog.events.EventTarget=} opt_eventTarget The parent event target.
@@ -61,7 +60,7 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
   /**
    * The swipe elements.
    *
-   * @private {!Array.<!Element>}
+   * @private {!Array<!Element>}
    */
   this.trackElements_ = [];
 
@@ -73,23 +72,26 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
   this.surroundingText_ = '';
 
   /**
-   * The index of focus in the surrounding text.
+   * The ending position of the selection in the surrounding text. This value
+   * indicates caret position if there is no selection.
    *
    * @private {number}
    */
   this.surroundingTextFocus_ = 0;
 
   /**
-   * The index of the anchor in the surrounding text.
+   * The beginning position of the selection in the surrounding text. This value
+   * indicates current caret position if there is no selection.
    *
    * @private {number}
    */
   this.surroundingTextAnchor_ = 0;
 
   /**
-   * Recent words that have been deleted.
+   * List of recent words that have been deleted in the order that they
+   * were deleted.
    *
-   * @private {Array.<string>}
+   * @private {!Array<string>}
    */
   this.deletedWords_ = [];
 
@@ -98,8 +100,45 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
    *
    * @private {!i18n.input.chrome.inputview.handler.PointerHandler}
    */
-  this.pointerHandler_ = new i18n.input.chrome.inputview.handler.
-      PointerHandler();
+  this.pointerHandler_ = new i18n.input.chrome.inputview.handler
+      .PointerHandler();
+
+  /**
+   * The cover element.
+   * Note: The reason we use a separate cover element instead of the view is
+   * because of the opacity. We can not reassign the opacity in child element.
+   *
+   * @private {!Element}
+   */
+  this.coverElement_;
+
+  /**
+   * The index of the alternative element which is highlighted.
+   *
+   * @private {number}
+   */
+  this.highlightIndex_ = SwipeView.INVALID_INDEX_;
+
+  /**
+   * The key which triggered this view to be shown.
+   *
+   * @type {!i18n.input.chrome.inputview.elements.content.SoftKey}
+   */
+  this.triggeredBy;
+
+  /**
+   * Whether finger movement is being tracked.
+   *
+   * @private {boolean}
+   */
+  this.tracking_ = false;
+
+  /**
+   * Whether to deploy the tracker on swipe events.
+   *
+   * @private {boolean}
+   */
+  this.armed_ = false;
 
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.SwipeView,
@@ -108,7 +147,7 @@ var SwipeView = i18n.input.chrome.inputview.elements.content.SwipeView;
 
 
 /**
- * The number of swipe elements.
+ * The number of swipe elements to display.
  *
  * @private {number}
  * @const
@@ -117,18 +156,17 @@ SwipeView.LENGTH_ = 7;
 
 
 /**
- * Index of highlighted accent. Use this index to represent no highlighted
- * accent.
+ * Index representing no swipe element currently being highlighted.
  *
  * @private {number}
  * @const
  */
-SwipeView.INVALIDINDEX_ = -1;
+SwipeView.INVALID_INDEX_ = -1;
 
 
 /**
- * The distance between finger to track view which will cancel the track
- * view.
+ * The maximum distance the users finger can move from the track view without
+ * dismissing it.
  *
  * @private {number}
  * @const
@@ -146,7 +184,7 @@ SwipeView.SEGMENT_WIDTH_ = 70;
 
 
 /**
- * The width of a large track segment
+ * The width of a large track segment.
  *
  * @private {number}
  * @const
@@ -164,49 +202,16 @@ SwipeView.MAX_SURROUNDING_TEXT_LENGTH_ = 100;
 
 
 /**
- * The cover element.
- * Note: The reason we use a separate cover element instead of the view is
- * because of the opacity. We can not reassign the opacity in child element.
+ * The string representation of &nbsp.
  *
- * @private {!Element}
+ * @private {string}
+ * @const
  */
-SwipeView.prototype.coverElement_;
+SwipeView.NBSP_CHAR_ = String.fromCharCode(160);
 
 
 /**
- * The index of the alternative element which is highlighted.
- *
- * @private {number}
- */
-SwipeView.prototype.highlightIndex_ = SwipeView.INVALIDINDEX_;
-
-
-/**
- * The key which trigger this alternative data view.
- *
- * @type {!i18n.input.chrome.inputview.elements.content.SoftKey}
- */
-SwipeView.prototype.triggeredBy;
-
-
-/**
- * Whether finger movement is being tracked.
- *
- * @private {boolean}
- */
-SwipeView.prototype.tracking_ = false;
-
-
-/**
- * Whether to deploy the tracker on swipe events.
- *
- * @private {boolean}
- */
-SwipeView.prototype.armed_ = false;
-
-
-/**
- * Whether the tracker will be deployed on future swipe events.
+ * Returns whether the tracker will be deployed on future swipe events.
  *
  * @return {boolean}
  */
@@ -216,7 +221,8 @@ SwipeView.prototype.isArmed = function() {
 
 
 /**
- * Callback when surrounding text is changed.
+ * Handles a SurroundingTextChanged event. Keeps track of text that has been
+ * deleted so that it can be restored if necessary.
  *
  * @param {!i18n.input.chrome.inputview.events.SurroundingTextChangedEvent} e .
  * @private
@@ -224,7 +230,8 @@ SwipeView.prototype.isArmed = function() {
 SwipeView.prototype.onSurroundingTextChanged_ = function(e) {
   if (this.adapter_.isPasswordBox()) {
     this.surroundingText_ = '';
-    this.surroundingTextAnchor_ = this.surroundingTextFocus_ = 0;
+    this.surroundingTextAnchor_ = 0;
+    this.surroundingTextFocus_ = 0;
     return;
   }
 
@@ -236,20 +243,25 @@ SwipeView.prototype.onSurroundingTextChanged_ = function(e) {
   var diff = '';
   if (util.isLetterDelete(oldText, text)) {
     diff = oldText.slice(-1);
+  // Check if the transformation from oldtext to text was a single letter being
+  // restored.
   } else if (util.isLetterRestore(oldText, text)) {
-    // Letter restore.
     // Handle blink bug where ctrl+delete deletes a space and inserts
     // a &nbsp.
     // Convert &nbsp to ' ' and remove from delete words since blink
     // did a minirestore for us.
     var letter = text[text.length - 1];
-    if (letter == String.fromCharCode(160) || letter == ' ') {
+    if (letter == SwipeView.NBSP_CHAR_ ||
+        letter == ' ') {
       var lastDelete = this.deletedWords_.pop();
-      var firstChar = lastDelete && lastDelete[0] || '';
-      if (firstChar == String.fromCharCode(160) || firstChar == ' ') {
+      var firstChar = (lastDelete && lastDelete[0]) || '';
+      if (firstChar == SwipeView.NBSP_CHAR_ ||
+          firstChar == ' ') {
         this.deletedWords_.push(lastDelete.slice(1));
       }
     }
+  // The current surrounding text may have been cut off since it exceeds
+  // the maximum surrounding text length.
   } else if (e.text.length == SwipeView.MAX_SURROUNDING_TEXT_LENGTH_ ||
       oldText.length == SwipeView.MAX_SURROUNDING_TEXT_LENGTH_) {
     // Check if a word was deleted from oldText.
@@ -272,97 +284,126 @@ SwipeView.prototype.onSurroundingTextChanged_ = function(e) {
 
 
 /**
- * Handles the swipe action.
+ * Handles swipe actions on the deletion track. Leftward swipes on the deletion
+ * track deletes words, while rightward swipes restore them.
+ *
+ * @param {!i18n.input.chrome.inputview.events.SwipeEvent} e The swipe event.
+ * @private
+ */
+SwipeView.prototype.swipeToDelete_ = function(e) {
+  // Cache whether we were tracking.
+  var alreadyTracking = this.tracking_;
+  var changed = this.highlightItem(e.x, e.y);
+  var direction = e.direction;
+  // Did not move segments.
+  if (!changed) {
+    // First gesture.
+    if (!alreadyTracking) {
+      // All previous deletions count as one now.
+      this.deletedWords_.reverse();
+      var word = this.deletedWords_.join('');
+      this.deletedWords_ = [word];
+      // Swiped right, cancel the deletion.
+      if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
+        word = this.deletedWords_.pop();
+        if (word) {
+          this.adapter_.commitText(word);
+        }
+      }
+    }
+    return;
+  }
+
+  if (direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
+    this.adapter_.sendKeyDownAndUpEvent(
+        '\u0008', KeyCodes.BACKSPACE, undefined, undefined, {
+          ctrl: true,
+          shift: false
+        });
+  } else if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
+    var word = this.deletedWords_.pop();
+    if (word) {
+      this.adapter_.commitText(word);
+    }
+    // Restore text we deleted before the track came up, but part of the
+    // same gesture.
+    if (this.isAtOrigin()) {
+      word = this.deletedWords_.pop();
+      if (word) {
+        this.adapter_.commitText(word);
+      }
+    }
+  }
+};
+
+
+/**
+ * Handles swipe actions on the selection track. Swipes cause an alternatation
+ * between selecting a word and moving the cursor to the next blank space in the
+ * direction of the swipe.
+ *
+ * @param {!i18n.input.chrome.inputview.events.SwipeEvent} e The swipe event.
+ * @private
+ */
+SwipeView.prototype.swipeToSelect_ = function(e) {
+  // Cache whether we were tracking as highlight may change this.
+  var alreadyTracking = this.tracking_;
+  var changed = this.highlightItem(e.x, e.y);
+  // First finger movement is onto the blank track. Ignore.
+  if (!alreadyTracking || !changed) {
+    return;
+  }
+  var index = this.getHighlightedIndex();
+  if (index == -1) {
+    console.error('Invalid track index.');
+    return;
+  }
+  // Alternate between selecting a word if the element index is odd, and
+  // navigating to the next blank space if it's even.
+  var selectWord = index % 2 == 1;
+  var direction = e.direction;
+  var code;
+  if (direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
+    code = KeyCodes.ARROW_LEFT;
+  } else if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
+    code = KeyCodes.ARROW_RIGHT;
+  } else {
+    return;
+  }
+  // If anchor == focus we are either at the end or the start of the word
+  // and no selection is in place.
+  if (this.surroundingTextAnchor_ == this.surroundingTextFocus_) {
+    // Do not move carat at all, as this will either have no effect or cause
+    // us to splice the word.
+    if (!selectWord) {
+      return;
+    }
+  }
+  this.adapter_.sendKeyDownAndUpEvent(
+      '', code, undefined, undefined, {
+        ctrl: selectWord,
+        shift: selectWord
+      });
+};
+
+
+/**
+ * Handles the swipe action. Swipes on the deletion track edits the surrounding
+ * text, while swipes on the selection track navigates it.
  *
  * @param {!i18n.input.chrome.inputview.events.SwipeEvent} e The swipe event.
  * @private
  */
 SwipeView.prototype.handleSwipeAction_ = function(e) {
-  var direction = e.direction;
   if (this.isVisible()) {
     if (e.view.type == ElementType.BACKSPACE_KEY) {
-      // Cache whether we were tracking.
-      var alreadyTracking = this.tracking_;
-      var changed = this.highlightItem(e.x, e.y);
-      // Did not move segments.
-      if (!changed) {
-        // First gesture.
-        if (!alreadyTracking) {
-          // All previous deletions count as one now.
-          this.deletedWords_.reverse();
-          var word = this.deletedWords_.join('');
-          this.deletedWords_ = [word];
-          // Swiped right, cancel the deletion.
-          if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
-            word = this.deletedWords_.pop();
-            if (word) {
-              this.adapter_.commitText(word);
-            }
-          }
-        }
-        return;
-      }
-
-      if (direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
-        this.adapter_.sendKeyDownAndUpEvent(
-            '\u0008', KeyCodes.BACKSPACE, undefined, undefined, {
-              ctrl: true,
-              shift: false
-            });
-      } else if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
-        var word = this.deletedWords_.pop();
-        if (word)
-          this.adapter_.commitText(word);
-        // Restore text we deleted before the track came up, but part of the
-        // same gesture.
-        if (this.isAtOrigin()) {
-          word = this.deletedWords_.pop();
-          if (word)
-            this.adapter_.commitText(word);
-        }
-      }
+      this.swipeToDelete_(e);
       return;
     }
     if (e.view.type == ElementType.SELECT_VIEW) {
-      // Cache whether we were tracking as highlight may change this.
-      var alreadyTracking = this.tracking_;
-      var changed = this.highlightItem(e.x, e.y);
-      // First finger movement is onto the blank track. Ignore.
-      if (!alreadyTracking)
-        return;
-      if (!changed)
-        return;
-      var index = this.getTrackIndex();
-      if (index == -1) {
-        console.error('Invalid track index.');
-        return;
-      }
-      var selectWord = index % 2 == 1;
-      var code;
-      if (direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
-        code = KeyCodes.ARROW_LEFT;
-      } else if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
-        code = KeyCodes.ARROW_RIGHT;
-      } else {
-        return;
-      }
-      // If anchor == focus we are either at the end or the start of the word
-      // and no selection is in place.
-      if (this.surroundingTextAnchor_ == this.surroundingTextFocus_) {
-        // Do not move carat at all, as this will either have no effect or cause
-        // us to splice the word.
-        if (!selectWord) {
-          return;
-        }
-      }
-      this.adapter_.sendKeyDownAndUpEvent(
-          '', code, undefined, undefined, {
-            ctrl: selectWord,
-            shift: selectWord
-          });
+      this.swipeToSelect_(e);
       return;
     }
-    return;
   }
 
   // User swiped on backspace key before swipeview was visible.
@@ -374,7 +415,7 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
     }
     if (e.direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
       var key = /** @type {!content.FunctionalKey} */ (e.view);
-      // Equiv to a longpress.
+      // Equivalent to a longpress.
       this.showDeletionTrack(key);
     }
     return;
@@ -400,8 +441,8 @@ SwipeView.prototype.handlePointerAction_ = function(e) {
           this.armed_ = true;
         }
         this.deletedWords_ = [];
-      } else if (e.type == EventType.POINTER_UP || e.type == EventType.
-          POINTER_OUT) {
+      } else if (e.type == EventType.POINTER_UP ||
+                 e.type == EventType.POINTER_OUT) {
         if (!this.isVisible()) {
           this.armed_ = false;
         }
@@ -453,14 +494,14 @@ SwipeView.prototype.createDom = function() {
 /** @override */
 SwipeView.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
-  this.getHandler().
-      listen(this.adapter_,
-          i18n.input.chrome.inputview.events.EventType.
-              SURROUNDING_TEXT_CHANGED,
-          this.onSurroundingTextChanged_).
-      listen(this.pointerHandler_, [
-        EventType.SWIPE], this.handleSwipeAction_).
-      listen(this.pointerHandler_, [
+  this.getHandler()
+      .listen(this.adapter_,
+          i18n.input.chrome.inputview.events.EventType
+              .SURROUNDING_TEXT_CHANGED,
+          this.onSurroundingTextChanged_)
+      .listen(this.pointerHandler_, [
+        EventType.SWIPE], this.handleSwipeAction_)
+      .listen(this.pointerHandler_, [
         EventType.LONG_PRESS,
         EventType.POINTER_UP,
         EventType.POINTER_DOWN,
@@ -470,7 +511,7 @@ SwipeView.prototype.enterDocument = function() {
 
 
 /**
- * Shows the swipe tracker.
+ * Shows the deletion swipe tracker.
  *
  * @param {number} x
  * @param {number} y
@@ -500,7 +541,7 @@ SwipeView.prototype.showDeletionTrack_ = function(x, y, width, height,
     this.highlightIndex_ = SwipeView.LENGTH_ - 1;
   }
   if (firstTrackWidth == 0) {
-    this.highlightIndex_ = SwipeView.INVALIDINDEX_;
+    this.highlightIndex_ = SwipeView.INVALID_INDEX_;
   }
   var ltr = this.ltr;
   var isFirstSegment = function(i) {
@@ -524,7 +565,7 @@ SwipeView.prototype.showDeletionTrack_ = function(x, y, width, height,
   }
   goog.style.setPosition(this.getElement(), x, y);
   // Highlight selected element if it's index is valid.
-  if (this.highlightIndex_ != SwipeView.INVALIDINDEX_) {
+  if (this.highlightIndex_ != SwipeView.INVALID_INDEX_) {
     var elem = this.trackElements_[this.highlightIndex_];
     this.setElementBackground_(elem, true);
   }
@@ -534,8 +575,8 @@ SwipeView.prototype.showDeletionTrack_ = function(x, y, width, height,
 
 
 /**
+ * Shows the selection swipe tracker.
  *
- * Shows the swipe tracker.
  * @param {number} x
  * @param {number} y
  * @param {number} width The width of a key.
@@ -552,7 +593,7 @@ SwipeView.prototype.showSelectionTrack_ = function(x, y, width, height,
   var totalWidth = ((2 * SwipeView.LENGTH_)) * width;
 
   this.ltr = true;
-  this.highlightIndex_ = SwipeView.INVALIDINDEX_;
+  this.highlightIndex_ = SwipeView.INVALID_INDEX_;
   if ((x + totalWidth) > screen.width) {
     // If not enough space at the right, then make it to the left.
     x -= totalWidth;
@@ -584,7 +625,7 @@ SwipeView.prototype.showSelectionTrack_ = function(x, y, width, height,
 
 
 /**
- * Shows the alt data view.
+ * Shows the deletion track.
  *
  * @param {!i18n.input.chrome.inputview.elements.content.SoftKey} key
  *   The key triggered this track view.
@@ -627,22 +668,23 @@ SwipeView.prototype.showSelectionTrack = function(x, y) {
 
 
 /**
- * Hides the alt data view.
+ * Hides the swipe view.
  */
 SwipeView.prototype.hide = function() {
   this.armed_ = false;
   this.trackElements_ = [];
   this.tracking_ = false;
-  if (this.triggeredBy)
+  if (this.triggeredBy) {
     this.triggeredBy.setHighlighted(false);
+  }
   goog.style.setElementShown(this.getElement(), false);
   goog.style.setElementShown(this.coverElement_, false);
-  this.highlightIndex_ = SwipeView.INVALIDINDEX_;
+  this.highlightIndex_ = SwipeView.INVALID_INDEX_;
 };
 
 
 /**
- * Whether the current track counter is at the first element.
+ * Returns whether the current track counter is at the first element.
  *
  * @return {boolean}
  */
@@ -699,17 +741,17 @@ SwipeView.prototype.clearAllHighlights_ =
 SwipeView.prototype.setElementBackground_ =
     function(element, highlight) {
   if (highlight) {
-    goog.dom.classlist.add(element, i18n.input.chrome.inputview.Css.
-        ELEMENT_HIGHLIGHT);
+    goog.dom.classlist.add(element, i18n.input.chrome.inputview.Css
+        .ELEMENT_HIGHLIGHT);
   } else {
-    goog.dom.classlist.remove(element, i18n.input.chrome.inputview.Css.
-        ELEMENT_HIGHLIGHT);
+    goog.dom.classlist.remove(element, i18n.input.chrome.inputview.Css
+        .ELEMENT_HIGHLIGHT);
   }
 };
 
 
 /**
- * Adds a alt data key into the view.
+ * Adds a swipable key into the view.
  *
  * @param {string=} opt_character The character.
  * @param {Css=} opt_icon_css
@@ -721,10 +763,11 @@ SwipeView.prototype.addKey_ = function(opt_character, opt_icon_css) {
   var character = opt_character &&
       i18n.input.chrome.inputview.util.getVisibleCharacter(opt_character);
   var keyElem;
-  if (character)
+  if (character) {
     keyElem = dom.createDom(goog.dom.TagName.DIV, Css.SWIPE_KEY, character);
-  else
+  } else {
     keyElem = dom.createDom(goog.dom.TagName.DIV, Css.SWIPE_KEY);
+  }
   if (opt_icon_css) {
     var child = dom.createDom(goog.dom.TagName.DIV, opt_icon_css);
     dom.appendChild(keyElem, child);
@@ -764,14 +807,17 @@ SwipeView.prototype.getCoverElement = function() {
 
 
 /**
- * The current index.
+ * Returns the index of the current highlighted swipe element.
+ *
  * @return {number}
  */
-SwipeView.prototype.getTrackIndex = function() {
-  if (this.highlightIndex_ == SwipeView.INVALIDINDEX_)
-    return SwipeView.INVALIDINDEX_;
-  if (this.ltr)
+SwipeView.prototype.getHighlightedIndex = function() {
+  if (this.highlightIndex_ == SwipeView.INVALID_INDEX_) {
+    return SwipeView.INVALID_INDEX_;
+  }
+  if (this.ltr) {
     return this.highlightIndex_;
+  }
   return this.trackElements_.length - this.highlightIndex_ - 1;
 };
 

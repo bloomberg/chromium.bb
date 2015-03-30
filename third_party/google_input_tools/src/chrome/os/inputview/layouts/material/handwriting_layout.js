@@ -49,7 +49,7 @@ goog.require('i18n.input.chrome.inputview.layouts.material.util');
   var canvasView = util.createCanvasView(spec);
   var panelView = util.createHandwritingLayout({
     'id': 'panelView',
-    'children': [canvasView, leftSideColumn, rightSideColumn]
+    'children': [leftSideColumn, canvasView, rightSideColumn]
   });
 
   // Keyboard view.

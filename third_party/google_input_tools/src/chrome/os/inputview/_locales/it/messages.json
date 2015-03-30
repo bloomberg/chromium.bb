@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Aggiungi al dizionario personale"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Avanzata"
@@ -3000,10 +3011,10 @@
     "message": "Layout tastiera Coreano"
   },
   "korean_settings_page": {
-    "message": "Pagina Impostazioni Coreano"
+    "message": "Pagina Impostazioni del metodo di immissione coreano"
   },
   "korean_syllable_input": {
-    "message": "Immissione di sillabe hangul una alla volta"
+    "message": "Inserisci una sillaba per volta"
   },
   "latam_spa_settings_page": {
     "message": "Pagina Impostazioni tastiera Latinoamericano (spagnolo)"
@@ -3105,7 +3116,7 @@
     "message": "Mostra menu suggerimenti tramite Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Mostra suggerimenti in hangul"
+    "message": "Mostra candidati in modalit\u00e0 hangul"
   },
   "shrink_candidates": {
     "message": "comprimi elenco candidati"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Tastiera virtuale"
+    "message": "Tastiera sullo schermo"
   },
   "tr_tur_settings_page": {
     "message": "Pagina Impostazioni tastiera Turco"

@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "\u52a0\u5165\u500b\u4eba\u5b57\u5178"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "\u9032\u968e"
@@ -3000,10 +3011,10 @@
     "message": "\u97d3\u6587\u9375\u76e4\u914d\u7f6e"
   },
   "korean_settings_page": {
-    "message": "\u97d3\u6587\u8a2d\u5b9a\u9801\u9762"
+    "message": "\u97d3\u6587\u8f38\u5165\u6cd5\u8a2d\u5b9a\u9801\u9762"
   },
   "korean_syllable_input": {
-    "message": "\u9010\u4e00\u8f38\u5165\u97d3\u6587\u62fc\u97f3\u5b57\u6bcd"
+    "message": "\u4e00\u6b21\u8f38\u5165\u4e00\u500b\u97f3\u7bc0"
   },
   "latam_spa_settings_page": {
     "message": "\u62c9\u4e01\u7f8e\u6d32\u6587\u9375\u76e4 (\u897f\u73ed\u7259\u6587) \u8a2d\u5b9a\u9801\u9762"
@@ -3105,7 +3116,7 @@
     "message": "\u6309\u4e0b Backspace \u9375\u6642\u986f\u793a\u5efa\u8b70\u5b57\u8a5e\u4e0b\u62c9\u5f0f\u9078\u55ae"
   },
   "show_hangul_candidate": {
-    "message": "\u986f\u793a\u97d3\u6587\u5efa\u8b70"
+    "message": "\u5728\u97d3\u6587\u6a21\u5f0f\u4e2d\u986f\u793a\u5019\u9078\u62fc\u97f3\u5b57\u6bcd"
   },
   "shrink_candidates": {
     "message": "\u6536\u5408\u5019\u9078\u5b57\u6e05\u55ae"
@@ -3147,7 +3158,7 @@
     "message": "Tab \u9375"
   },
   "touch_keyboard": {
-    "message": "\u89f8\u63a7\u9375\u76e4"
+    "message": "\u87a2\u5e55\u5c0f\u9375\u76e4"
   },
   "tr_tur_settings_page": {
     "message": "\u571f\u8033\u5176\u6587\u9375\u76e4\u8a2d\u5b9a\u9801\u9762"

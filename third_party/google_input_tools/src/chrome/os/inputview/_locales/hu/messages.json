@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Hozz\u00e1ad\u00e1s a szem\u00e9lyes sz\u00f3t\u00e1rhoz"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Halad\u00f3"
@@ -3000,10 +3011,10 @@
     "message": "Koreai billenty\u0171zetkioszt\u00e1s"
   },
   "korean_settings_page": {
-    "message": "Koreai be\u00e1ll\u00edt\u00e1sok oldala"
+    "message": "Koreai beviteli m\u00f3d be\u00e1ll\u00edt\u00e1si oldala"
   },
   "korean_syllable_input": {
-    "message": "Hangulbevitel egyes\u00e9vel"
+    "message": "Egyszerre egy sz\u00f3tag bevitele"
   },
   "latam_spa_settings_page": {
     "message": "Latin-amerikai (spanyol) billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -3105,7 +3116,7 @@
     "message": "A javaslatok leg\u00f6rd\u00fcl\u0151 men\u00fcje a Backspace billenty\u0171vel jelen\u00edthet\u0151 meg"
   },
   "show_hangul_candidate": {
-    "message": "Hanguljavaslatok megjelen\u00edt\u00e9se"
+    "message": "Tal\u00e1latok megjelen\u00edt\u00e9se Hangul m\u00f3dban"
   },
   "shrink_candidates": {
     "message": "javaslati lista \u00f6sszecsuk\u00e1sa"
@@ -3147,7 +3158,7 @@
     "message": "Tab"
   },
   "touch_keyboard": {
-    "message": "Billenty\u0171zet meg\u00e9rint\u00e9se"
+    "message": "K\u00e9perny\u0151-billenty\u0171zet"
   },
   "tr_tur_settings_page": {
     "message": "T\u00f6r\u00f6k billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"

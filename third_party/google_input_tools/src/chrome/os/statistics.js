@@ -13,7 +13,10 @@
 //
 goog.provide('i18n.input.chrome.Statistics');
 
+goog.require('i18n.input.chrome.TriggerType');
+
 goog.scope(function() {
+var TriggerType = i18n.input.chrome.TriggerType;
 
 
 
@@ -47,18 +50,23 @@ Statistics.LayoutTypes = {
 
 /**
  * The commit type for stats.
+ * Keep this in sync with the enum IMECommitType2 in histograms.xml file in
+ * chromium.
+ * For adding new items, please append it at the end.
  *
  * @enum {number}
  */
 Statistics.CommitTypes = {
   X_X0: 0, // User types X, and chooses X as top suggestion.
-  X_X1: 1, // User types X, and chooses X as non-top suggestion.
-  X_Y0: 2, // User types X, and chooses Y as top suggestion.
-  X_Y1: 3, // User types X, and chooses Y as non-top suggestion.
-  PREDICTION: 4,
-  REVERT: 5,
-  VOICE: 6,
-  MAX: 7
+  X_Y0: 1, // User types X, and chooses Y as top suggestion.
+  X_X1: 2, // User types X, and chooses X as 2nd suggestion.
+  X_Y1: 3, // User types X, and chooses Y as 2nd suggestion.
+  X_X2: 4, // User types X, and chooses X as 3rd/other suggestion.
+  X_Y2: 5, // User types X, and chooses Y as 3rd/other suggestion.
+  PREDICTION: 6,
+  REVERT: 7,
+  VOICE: 8,
+  MAX: 9
 };
 
 
@@ -186,30 +194,6 @@ Statistics.prototype.setAutoCorrectLevel = function(
 
 
 /**
- * Gets the commit target type based on the given source and target.
- *
- * @param {string} source .
- * @param {string} target .
- * @return {number} The target type number value.
- *     0: Source; 1: Correction; 2: Completion; 3: Prediction.
- * @private
- */
-Statistics.prototype.getTargetType_ = function(
-    source, target) {
-  if (source == target) {
-    return 0;
-  }
-  if (!source) {
-    return 3;
-  }
-  if (target.length > source.length) {
-    return 2;
-  }
-  return 1;
-};
-
-
-/**
  * Records that the controller session ended.
  */
 Statistics.prototype.recordSessionEnd = function() {
@@ -223,7 +207,7 @@ Statistics.prototype.recordSessionEnd = function() {
       // Milliseconds to minutes.
       var minutes = this.typingDuration_ / 60000;
       this.recordValue('InputMethod.VirtualKeyboard.WordsPerMinute',
-        Math.round(words / minutes), 100, 100);
+          Math.round(words / minutes), 100, 100);
     }
   }
   this.droppedKeys_ = 0;
@@ -240,9 +224,7 @@ Statistics.prototype.recordSessionEnd = function() {
  * @param {string} source .
  * @param {string} target .
  * @param {number} targetIndex The target index.
- * @param {number} triggerType The trigger type:
- *     0: BySpace; 1: ByReset; 2: ByCandidate; 3: BySymbolOrNumber;
- *     4: ByDoubleSpaceToPeriod; 5: ByRevert; 6: ByVoice.
+ * @param {!TriggerType} triggerType The trigger type.
  */
 Statistics.prototype.recordCommit = function(
     source, target, targetIndex, triggerType) {
@@ -251,9 +233,9 @@ Statistics.prototype.recordCommit = function(
   }
   var length = target.length;
   // Increment to include space.
-  if (triggerType == 0) {
+  if (triggerType == TriggerType.RESET) {
     length++;
-  } else if (triggerType == 5) {
+  } else if (triggerType == TriggerType.REVERT) {
     length -= this.lastCommitLength_;
   }
   this.lastCommitLength_ = length;
@@ -265,15 +247,19 @@ Statistics.prototype.recordCommit = function(
     commitType = CommitTypes.X_X0;
   } else if (targetIndex == 0 && source != target) {
     commitType = CommitTypes.X_Y0;
-  } else if (targetIndex > 0 && source == target) {
+  } else if (targetIndex == 1 && source == target) {
     commitType = CommitTypes.X_X1;
-  } else if (targetIndex > 0 && source != target) {
+  } else if (targetIndex == 1 && source != target) {
     commitType = CommitTypes.X_Y1;
-  } else if (!source && this.getTargetType_(source, target) == 3) {
+  } else if (targetIndex > 1 && source == target) {
+    commitType = CommitTypes.X_X2;
+  } else if (targetIndex > 1 && source != target) {
+    commitType = CommitTypes.X_Y2;
+  } else if (!source && source != target) {
     commitType = CommitTypes.PREDICTION;
-  } else if (triggerType == 5) {
+  } else if (triggerType == TriggerType.REVERT) {
     commitType = CommitTypes.REVERT;
-  } else if (triggerType == 6) {
+  } else if (triggerType == TriggerType.VOICE) {
     commitType = CommitTypes.VOICE;
   }
   if (commitType < 0) {
@@ -284,11 +270,12 @@ Statistics.prototype.recordCommit = function(
   // means Physical Keyboard.
   var name = this.isPhysicalKeyboard_ ?
       'InputMethod.PkCommit.' : 'InputMethod.Commit.';
+  var type = this.isPhysicalKeyboard_ ? 'Type' : 'Type2';
 
   var self = this;
   var record = function(suffix) {
     self.recordEnum(name + 'Index' + suffix, targetIndex + 1, 20);
-    self.recordEnum(name + 'Type' + suffix, commitType, CommitTypes.MAX);
+    self.recordEnum(name + type + suffix, commitType, CommitTypes.MAX);
   };
 
   record('');

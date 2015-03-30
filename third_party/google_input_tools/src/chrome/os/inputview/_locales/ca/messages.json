@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Afegeix al diccionari personal"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Avan\u00e7ada"
@@ -3000,10 +3011,10 @@
     "message": "Distribuci\u00f3 del teclat core\u00e0"
   },
   "korean_settings_page": {
-    "message": "P\u00e0gina de configuraci\u00f3 del core\u00e0"
+    "message": "P\u00e0gina de configuraci\u00f3 del m\u00e8tode d'introducci\u00f3 de core\u00e0"
   },
   "korean_syllable_input": {
-    "message": "Introducci\u00f3 de hangul d'un en un"
+    "message": "Introdueix una s\u00edl\u00b7laba cada vegada"
   },
   "latam_spa_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat llatinoameric\u00e0 (espanyol)"
@@ -3105,7 +3116,7 @@
     "message": "Mostra el men\u00fa desplegable de suggeriments amb la tecla de retroc\u00e9s"
   },
   "show_hangul_candidate": {
-    "message": "Mostra suggeriments d'hangul"
+    "message": "Mostrar els candidats en mode hangul"
   },
   "shrink_candidates": {
     "message": "redueix la llista de candidats"
@@ -3147,7 +3158,7 @@
     "message": "tabulador"
   },
   "touch_keyboard": {
-    "message": "Teclat t\u00e0ctil"
+    "message": "Teclat en pantalla"
   },
   "tr_tur_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat turc"

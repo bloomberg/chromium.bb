@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Add to personal dictionary"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Advanced"
@@ -3000,10 +3011,10 @@
     "message": "Korean Keyboard Layout"
   },
   "korean_settings_page": {
-    "message": "Korean Settings Page"
+    "message": "Korean Input Method Settings Page"
   },
   "korean_syllable_input": {
-    "message": "Input hangul one by one"
+    "message": "Input a syllable at a time"
   },
   "latam_spa_settings_page": {
     "message": "Latin American Keyboard (Spanish) Settings Page"
@@ -3048,7 +3059,7 @@
     "message": "Auto-capitalization"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "Physical keyboard"
   },
   "pinyin_settings_page": {
     "message": "Pinyin Settings Page"
@@ -3105,7 +3116,7 @@
     "message": "Show suggestion dropdown by Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Show candidates in Hangul mode"
   },
   "shrink_candidates": {
     "message": "shrink candidate list"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Touch Keyboard"
+    "message": "On-screen keyboard"
   },
   "tr_tur_settings_page": {
     "message": "Turkish Keyboard Settings Page"

@@ -17,9 +17,8 @@ goog.require('goog.Timer');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
-goog.require('goog.math.Coordinate');
-goog.require('i18n.input.chrome.inputview.events.PointerEvent');
 goog.require('i18n.input.chrome.inputview.handler.PointerActionBundle');
+goog.require('i18n.input.chrome.inputview.handler.Util');
 
 goog.scope(function() {
 
@@ -54,12 +53,11 @@ i18n.input.chrome.inputview.handler.PointerHandler = function(opt_target) {
   var target = opt_target || document;
   this.eventHandler_.
       listen(target, [goog.events.EventType.MOUSEDOWN,
-        goog.events.EventType.TOUCHSTART], this.onPointerDown_, true).
+          goog.events.EventType.TOUCHSTART], this.onPointerDown_, true).
       listen(document, goog.events.EventType.TOUCHEND, this.onPointerUp_, true).
       listen(document, goog.events.EventType.MOUSEUP, this.onPointerUp_, true).
-      listen(target, goog.events.EventType.TOUCHMOVE, this.onPointerMove_,
-          true).
-      listen(target, goog.events.EventType.MOUSEMOVE, this.onPointerMove_,
+      listen(target, [goog.events.EventType.TOUCHMOVE,
+          goog.events.EventType.MOUSEMOVE], this.onPointerMove_,
           true);
 };
 goog.inherits(i18n.input.chrome.inputview.handler.PointerHandler,
@@ -130,9 +128,6 @@ PointerHandler.prototype.getPointerActionBundle_ = function(view) {
 PointerHandler.prototype.onPointerDown_ = function(e) {
   var view = Util.getView(/** @type {!Node} */ (e.target));
   if (!view) {
-    this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
-        null, i18n.input.chrome.inputview.events.EventType.POINTER_DOWN,
-        e.target, 0, 0, new Date().getTime()));
     return;
   }
   var pointerActionBundle = this.getPointerActionBundle_(view);
@@ -224,7 +219,7 @@ PointerHandler.prototype.onPointerMove_ = function(e) {
       if (pointerActionBundle) {
         pointerActionBundle.handlePointerMove(touches[i]);
       }
-      if (view.pointerConfig.preventDefauat) {
+      if (view.pointerConfig.preventDefault) {
         shouldPreventDefault = true;
       }
       if (view.pointerConfig.stopEventPropagation) {

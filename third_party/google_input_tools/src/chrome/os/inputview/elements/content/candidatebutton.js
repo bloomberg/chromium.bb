@@ -121,5 +121,15 @@ CandidateButton.prototype.resize = function(width, height) {
 };
 
 
+/** @override */
+CandidateButton.prototype.setVisible = function(visible) {
+  var ret = CandidateButton.base(this, 'setVisible', visible);
+  if (this.type == ElementType.VOICE_BTN) {
+    var elem = this.getElement();
+    elem.style.webkitAnimation = (visible ? 'visible' : 'invisible') +
+        '-animation .4s ease';
+  }
+  return ret;
+};
 });  // goog.scope
 

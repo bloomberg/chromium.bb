@@ -13,17 +13,17 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.VoiceView');
 
+goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.async.Delay');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
-goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 goog.require('i18n.input.chrome.message.Name');
-goog.require('i18n.input.chrome.message.Type');
 goog.require('i18n.input.chrome.sounds.Sounds');
 
 
@@ -107,11 +107,11 @@ VoiceView.prototype.privacyDiv_;
 
 
 /**
- * The confirm button of privacy information.
+ * The "got it" confirm span for privacy info.
  *
- * @private {!FunctionalKey}
+ * @private {!Element}
  */
-VoiceView.prototype.confirmBtn_;
+VoiceView.prototype.confirmSpan_;
 
 
 /** @override */
@@ -136,13 +136,14 @@ VoiceView.prototype.createDom = function() {
   this.privacyDiv_ = dom.createDom(TagName.DIV,
       Css.VOICE_PRIVACY_INFO);
 
-  var textDiv = dom.createDom(TagName.DIV, Css.VOICE_PRIVACY_TEXT);
+  var textDiv = dom.createDom(TagName.SPAN);
   dom.setTextContent(textDiv,
       chrome.i18n.getMessage('VOICE_PRIVACY_INFO'));
   dom.appendChild(this.privacyDiv_, textDiv);
-  this.confirmBtn_ = new FunctionalKey('', ElementType.VOICE_PRIVACY_GOT_IT,
-      chrome.i18n.getMessage('GOT_IT'), '');
-  this.confirmBtn_.render(this.privacyDiv_);
+  this.confirmSpan_ = dom.createDom(goog.dom.TagName.SPAN,
+      Css.VOICE_GOT_IT);
+  dom.setTextContent(this.confirmSpan_, chrome.i18n.getMessage('GOT_IT'));
+  dom.appendChild(this.privacyDiv_, this.confirmSpan_);
   dom.appendChild(elem, this.privacyDiv_);
 
   // Shows or hides the privacy information.
@@ -158,10 +159,9 @@ VoiceView.prototype.createDom = function() {
 /** @override */
 VoiceView.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
-  this.getHandler().listen(this.adapter_, Type.VOICE_PRIVACY_GOT_IT,
+  this.getHandler().listen(this.confirmSpan_,
+      [goog.events.EventType.CLICK, goog.events.EventType.TOUCHEND],
       this.onConfirmPrivacyInfo_);
-
-
 };
 
 
@@ -175,7 +175,7 @@ VoiceView.prototype.start = function() {
   }
   if (this.isPrivacyAllowed_) {
     this.adapter_.sendVoiceViewStateChange(true);
-    this.animator_.start();
+    this.animator_.start(600);
   }
   this.setVisible(true);
 };
@@ -185,6 +185,12 @@ VoiceView.prototype.start = function() {
  * Stop recognition.
  */
 VoiceView.prototype.stop = function() {
+  // TODO(wuyingbing) This is a hack. Since "got it" link is a raw element.
+  // Click it will fire touch event then pass to controller to call stop.
+  // So stop it here. In future, should wrap "got it" link as content.Element.
+  if (!this.isPrivacyAllowed_) {
+    return;
+  }
   // invisible -> visible
   if (this.isVisible()) {
     this.soundController_.playSound(Sounds.VOICE_RECOG_END, true);
@@ -197,15 +203,27 @@ VoiceView.prototype.stop = function() {
 /** @override */
 VoiceView.prototype.setVisible = function(visible) {
   VoiceView.base(this, 'setVisible', visible);
+  var elem = this.getElement();
+  goog.style.setElementShown(elem, true);
+  elem.style.visibility = visible ? 'visible' : 'hidden';
+  elem.style.transition = visible ? '' : 'visibility 0.1s ease 0.4s';
   if (visible) {
-    goog.style.setElementShown(this.voicePanel_, true);
+    this.voicePanel_.style.transform = 'scale(1)';
+    this.voicePanel_.style.transition = 'transform 0.4s ease';
     goog.dom.classlist.add(this.maskElem_, Css.VOICE_MASK_OPACITY);
     goog.style.setElementShown(this.privacyDiv_, true);
   } else {
     goog.dom.classlist.remove(this.maskElem_, Css.VOICE_MASK_OPACITY);
-    goog.style.setElementShown(this.voicePanel_, false);
+    this.voicePanel_.style.transform = 'scale(0)';
+    this.voicePanel_.style.transition = 'transform 0.4s ease';
+    this.levelElement_.style.transform = 'scale(0)';
     goog.style.setElementShown(this.privacyDiv_, false);
   }
+  var enterKeys = this.getDomHelper().getElementsByClass(Css.ENTER_ICON);
+  var stylestr = 'grayscale(' + (visible ? 1 : 0) + ')';
+  goog.array.forEach(enterKeys, function(key) {
+    key.style.webkitFilter = stylestr;
+  });
   this.resize(this.width, this.height);
 };
 
@@ -220,7 +238,6 @@ VoiceView.prototype.resize = function(width, height) {
       Math.round((height - size.height) / 2) + 'px';
   this.privacyDiv_.style.left =
       Math.round((width - size.width) / 2) + 'px';
-  this.confirmBtn_.resize(100, 60);
 };
 
 
@@ -251,7 +268,7 @@ VoiceView.prototype.onConfirmPrivacyInfo_ = function() {
   localStorage.setItem(Name.VOICE_PRIVACY_INFO, 'true');
   this.isPrivacyAllowed_ = true;
   this.adapter_.sendVoiceViewStateChange(true);
-  this.animator_.start();
+  this.animator_.start(200);
   this.soundController_.playSound(Sounds.VOICE_RECOG_START, true);
   goog.dom.classlist.add(this.privacyDiv_, Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
   goog.dom.classlist.remove(this.maskElem_, Css.VOICE_OPACITY_NONE);

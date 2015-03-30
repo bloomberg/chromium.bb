@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Th\u00eam v\u00e0o t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "N\u00e2ng cao"
@@ -3000,10 +3011,10 @@
     "message": "B\u1ed1 c\u1ee5c b\u00e0n ph\u00edm ti\u1ebfng H\u00e0n"
   },
   "korean_settings_page": {
-    "message": "Trang c\u00e0i \u0111\u1eb7t ti\u1ebfng H\u00e0n"
+    "message": "Trang c\u00e0i \u0111\u1eb7t ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp ti\u1ebfng H\u00e0n"
   },
   "korean_syllable_input": {
-    "message": "Nh\u1eadp t\u1eebng ch\u1eef hangul m\u1ed9t"
+    "message": "Nh\u1eadp m\u1ed7i l\u1ea7n m\u1ed9t \u00e2m ti\u1ebft"
   },
   "latam_spa_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng M\u1ef9 La-tinh (ti\u1ebfng T\u00e2y Ban Nha)"
@@ -3105,7 +3116,7 @@
     "message": "Ch\u1ec9 hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng b\u1eb1ng ph\u00edm X\u00f3a l\u00f9i"
   },
   "show_hangul_candidate": {
-    "message": "Hi\u1ec3n th\u1ecb g\u1ee3i \u00fd b\u1eb1ng ti\u1ebfng Hangul"
+    "message": "Hi\u1ec3n th\u1ecb c\u00e1c \u1ee9ng vi\u00ean \u1edf ch\u1ebf \u0111\u1ed9 Hangul"
   },
   "shrink_candidates": {
     "message": "thu nh\u1ecf danh s\u00e1ch \u1ee9ng vi\u00ean"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "B\u00e0n ph\u00edm c\u1ea3m \u1ee9ng"
+    "message": "B\u00e0n ph\u00edm \u1ea3o"
   },
   "tr_tur_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ed5 Nh\u0129 K\u1ef3"

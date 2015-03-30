@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Tambahkan pada kamus peribadi"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Terperinci"
@@ -3000,10 +3011,10 @@
     "message": "Reka Letak Papan Kekunci Korea"
   },
   "korean_settings_page": {
-    "message": "Halaman Tetapan Korea"
+    "message": "Halaman Tetapan Kaedah Input Korea"
   },
   "korean_syllable_input": {
-    "message": "Input hangul satu persatu"
+    "message": "Masukkan satu suku kata pada satu-satu masa"
   },
   "latam_spa_settings_page": {
     "message": "Halaman Tetapan (Sepanyol) Papan Kekunci Amerika Latin"
@@ -3048,7 +3059,7 @@
     "message": "Auto-huruf besar"
   },
   "physical_keyboard": {
-    "message": "Papan Kekunci Fizikal"
+    "message": "Papan kekunci fizikal"
   },
   "pinyin_settings_page": {
     "message": "Halaman Tetapan Pinyin"
@@ -3105,7 +3116,7 @@
     "message": "Tunjukkan menu lungsur cadangan dengan Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Tunjukkan cadangan Hangul"
+    "message": "Tunjukkan calon dalam mod Hangul"
   },
   "shrink_candidates": {
     "message": "kecilkan senarai calon"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Papan Kekunci Sentuh"
+    "message": "Papan kekunci pada skrin"
   },
   "tr_tur_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Turki"

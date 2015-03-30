@@ -20,6 +20,7 @@ goog.require('goog.style');
 goog.require('goog.ui.Container');
 goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.BackspaceKey');
@@ -30,6 +31,7 @@ goog.require('i18n.input.chrome.inputview.elements.content.CompactKey');
 goog.require('i18n.input.chrome.inputview.elements.content.CompactKeyModel');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiKey');
 goog.require('i18n.input.chrome.inputview.elements.content.EnSwitcherKey');
+goog.require('i18n.input.chrome.inputview.elements.content.EnterKey');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 goog.require('i18n.input.chrome.inputview.elements.content.KeyboardView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuKey');
@@ -234,6 +236,14 @@ KeysetView.prototype.canvasView;
  * @type {!content.SpaceKey | !content.material.SpaceKey}
  */
 KeysetView.prototype.spaceKey;
+
+
+/**
+ * The backspace key.
+ *
+ * @type {!content.BackspaceKey}
+ */
+KeysetView.prototype.backspaceKey;
 
 
 /**
@@ -470,9 +480,6 @@ KeysetView.prototype.createElement_ = function(spec, opt_eventTarget) {
       SpecNodeName.WIDTH_IN_WEIGHT];
   var heightInWeight = spec[
       SpecNodeName.HEIGHT_IN_WEIGHT];
-  var width = spec[SpecNodeName.WIDTH];
-  var height = spec[SpecNodeName.HEIGHT];
-  var padding = spec[SpecNodeName.PADDING];
   var elem = null;
   switch (type) {
     case ElementType.SOFT_KEY_VIEW:
@@ -618,8 +625,11 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
       break;
     case ElementType.BACKSPACE_KEY:
       elem = new content.BackspaceKey(id, type, name, iconCssClass);
+      this.backspaceKey = elem;
       break;
     case ElementType.ENTER_KEY:
+      elem = new content.EnterKey(id, iconCssClass);
+      break;
     case ElementType.TAB_KEY:
     case ElementType.ARROW_UP:
     case ElementType.ARROW_DOWN:

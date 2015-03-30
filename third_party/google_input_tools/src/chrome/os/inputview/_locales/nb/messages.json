@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Legg til i den personlige ordboken"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Avansert"
@@ -3000,10 +3011,10 @@
     "message": "Koreansk tastaturoppsett"
   },
   "korean_settings_page": {
-    "message": "Innstillinger-side for koransk"
+    "message": "Innstillingsside for koreansk inndatametode"
   },
   "korean_syllable_input": {
-    "message": "Skriv inn ett og ett hangul-tegn"
+    "message": "Skriv \u00e9n stavelse om gangen"
   },
   "latam_spa_settings_page": {
     "message": "Innstillinger-side for latinamerikansk tastatur (spansk)"
@@ -3105,7 +3116,7 @@
     "message": "Vis rullegardinliste med forslag ved \u00e5 trykke p\u00e5 tilbaketasten"
   },
   "show_hangul_candidate": {
-    "message": "Vis foresl\u00e5tte hangul-tegn"
+    "message": "Vis kandidater i hangul-modus"
   },
   "shrink_candidates": {
     "message": "skjul kandidatlisten"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Touch-tastatur"
+    "message": "Skjermtastatur"
   },
   "tr_tur_settings_page": {
     "message": "Innstillinger-side for tyrkisk tastatur"

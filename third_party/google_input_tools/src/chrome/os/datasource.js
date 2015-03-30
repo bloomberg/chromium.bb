@@ -182,11 +182,12 @@ DataSource.prototype.setCorrectionLevel = function(level) {
 
 
 /**
- * Commits text to the data source.
+ * Changes frequency of word in the data source.
  *
- * @param {string} text The text to commit.
+ * @param {string} word The word to commit/change.
+ * @param {number} frequency The change in frequency.
  */
-DataSource.prototype.commitText = goog.functions.NULL;
+DataSource.prototype.changeWordFrequency = goog.functions.NULL;
 
 
 /**

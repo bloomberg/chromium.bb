@@ -147,12 +147,13 @@ SpaceKey.prototype.getCharacter = function() {
  * @param {boolean} visible True to set title visible.
  */
 SpaceKey.prototype.updateTitle = function(title, visible) {
-  if (this.textElem) {
-    this.text = title;
-    goog.dom.setTextContent(this.textElem, visible ? title : '');
-    goog.dom.classlist.add(this.textElem,
-        i18n.input.chrome.inputview.Css.TITLE);
+  if (this.iconCss_) {
+    return;
   }
+  this.text = title;
+  goog.dom.setTextContent(this.wrapper_, visible ? title : '');
+  goog.dom.classlist.add(this.wrapper_,
+      i18n.input.chrome.inputview.Css.TITLE);
 };
 
 

@@ -71,6 +71,8 @@ VerticalLayout.prototype.createDom = function() {
 
   goog.dom.classlist.add(this.getElement(),
       i18n.input.chrome.inputview.Css.VERTICAL_LAYOUT);
+
+  this.getElement()['view'] = null;
 };
 
 

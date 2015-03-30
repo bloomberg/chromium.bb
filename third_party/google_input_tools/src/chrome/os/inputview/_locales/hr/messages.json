@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Dodaj u osobni rje\u010dnik"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Napredno"
@@ -3000,10 +3011,10 @@
     "message": "Raspored korejske tipkovnice"
   },
   "korean_settings_page": {
-    "message": "Stranica postavki korejskog"
+    "message": "Stranica postavki korejskog na\u010dina unosa"
   },
   "korean_syllable_input": {
-    "message": "Unos hangula jedan po jedan znak"
+    "message": "Unos jednog po jednog sloga"
   },
   "latam_spa_settings_page": {
     "message": "Stranica postavki latinoameri\u010dke (\u0161panjolske) tipkovnice"
@@ -3105,7 +3116,7 @@
     "message": "Prika\u017ei padaju\u0107i izbornik prijedloga tipkom Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Prika\u017ei prijedloge za hangul"
+    "message": "Prikaz prijedloga u na\u010dinu hangul"
   },
   "shrink_candidates": {
     "message": "smanji popis kandidata"
@@ -3147,7 +3158,7 @@
     "message": "tabulator"
   },
   "touch_keyboard": {
-    "message": "Dodirna tipkovnica"
+    "message": "Tipkovnica na zaslonu"
   },
   "tr_tur_settings_page": {
     "message": "Stranica postavki turske tipkovnice"

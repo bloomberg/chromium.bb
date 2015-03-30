@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Pievienot personiskajai v\u0101rdn\u012bcai"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Papildu"
@@ -3000,10 +3011,10 @@
     "message": "Korejie\u0161u tastat\u016bras izk\u0101rtojums"
   },
   "korean_settings_page": {
-    "message": "Korejie\u0161u valodas iestat\u012bjumu lapa"
+    "message": "Korejie\u0161u valodas ievades metodes iestat\u012bjumu lapa"
   },
   "korean_syllable_input": {
-    "message": "Korejie\u0161u zilbju ievade pa vienai"
+    "message": "Ievade pa vienai zilbei"
   },
   "latam_spa_settings_page": {
     "message": "Lat\u012b\u0146amerik\u0101\u0146u tastat\u016bras (sp\u0101\u0146u valodas) iestat\u012bjumu lapa"
@@ -3105,7 +3116,7 @@
     "message": "Nospie\u017eot atpaka\u013catk\u0101pes tausti\u0146u, r\u0101d\u012bt nolai\u017eamo ierosin\u0101jumu izv\u0113lni"
   },
   "show_hangul_candidate": {
-    "message": "R\u0101d\u012bt ieteikumus korejie\u0161u valod\u0101"
+    "message": "R\u0101d\u012bt kandid\u0101tus korejie\u0161u valodas re\u017e\u012bm\u0101"
   },
   "shrink_candidates": {
     "message": "sa\u0161aurin\u0101t kandid\u0101tu sarakstu"
@@ -3147,7 +3158,7 @@
     "message": "tabul\u0101cijas tausti\u0146\u0161"
   },
   "touch_keyboard": {
-    "message": "Sk\u0101rientastat\u016bra"
+    "message": "Ekr\u0101na tastat\u016bra"
   },
   "tr_tur_settings_page": {
     "message": "Turku valodas tastat\u016bras iestat\u012bjumu lapa"

@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Prid\u0117ti prie asmeninio \u017eodyno"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "I\u0161pl\u0117stiniai"
@@ -3000,10 +3011,10 @@
     "message": "Kor\u0117jieti\u0161kos klaviat\u016bros i\u0161d\u0117stymas"
   },
   "korean_settings_page": {
-    "message": "Kor\u0117jie\u010di\u0173 k. nustatym\u0173 puslapis"
+    "message": "\u012evesties kor\u0117jie\u010di\u0173 k. metodo nustatym\u0173 puslapis"
   },
   "korean_syllable_input": {
-    "message": "\u012eveskite hangul simbolius po vien\u0105"
+    "message": "\u012eveskite po vien\u0105 skiemen\u012f vienu metu"
   },
   "latam_spa_settings_page": {
     "message": "Lotyn\u0173 amerikie\u010di\u0173 klaviat\u016bros (ispan\u0173 k.) nustatym\u0173 puslapis"
@@ -3105,7 +3116,7 @@
     "message": "Rodyti i\u0161skleid\u017eiam\u0105j\u012f pasi\u016blym\u0173 s\u0105ra\u0161\u0105, kai spaud\u017eiamas naikinimo klavi\u0161as"
   },
   "show_hangul_candidate": {
-    "message": "Rodyti hangul pasi\u016blymus"
+    "message": "Rodyti kandidatus Hangul re\u017eimu"
   },
   "shrink_candidates": {
     "message": "sutraukti variant\u0173 s\u0105ra\u0161\u0105"
@@ -3147,7 +3158,7 @@
     "message": "tabuliavimo klavi\u0161as"
   },
   "touch_keyboard": {
-    "message": "Jutiklin\u0117 klaviat\u016bra"
+    "message": "Ekrano klaviat\u016bra"
   },
   "tr_tur_settings_page": {
     "message": "Turki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"

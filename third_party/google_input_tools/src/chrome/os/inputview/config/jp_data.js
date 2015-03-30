@@ -97,12 +97,18 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
   var createData = function(keyCharacters, viewIdPrefix, keyCodes) {
     var keyList = [];
     keyList.push(util.createIMESwitchKey('Toggle', '英漢', Css.JP_IME_SWITCH));
+    // The keys shows the shift character in Default state. In material design,
+    // Only the first 11 keys will show shift character.
+    var keysShowShift = 11;
     goog.array.forEach(keyCharacters, function(c, i) {
       var spec = {};
       spec[SpecNodeName.ID] = keyIds[i];
       spec[SpecNodeName.TYPE] = ElementType.CHARACTER_KEY;
       spec[SpecNodeName.CHARACTERS] = c;
       spec[SpecNodeName.KEY_CODE] = keyCodes[i];
+      if (i < keysShowShift) {
+        spec[SpecNodeName.ENABLE_SHIFT_RENDERING] = true;
+      }
       var key = util.createKey(spec);
       keyList.push(key);
     });

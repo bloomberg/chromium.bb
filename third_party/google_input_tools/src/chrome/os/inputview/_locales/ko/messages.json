@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "\uac1c\uc778 \uc0ac\uc804\uc5d0 \ucd94\uac00"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "\uace0\uae09"
@@ -3000,10 +3011,10 @@
     "message": "\ud55c\uad6d\uc5b4 \ud0a4\ubcf4\ub4dc \ub808\uc774\uc544\uc6c3"
   },
   "korean_settings_page": {
-    "message": "\ud55c\uad6d\uc5b4 \uc124\uc815 \ud398\uc774\uc9c0"
+    "message": "\ud55c\uad6d\uc5b4 \uc785\ub825 \ubc29\ubc95 \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "korean_syllable_input": {
-    "message": "\ud55c\uae00 \uc790\ubaa8 \uc785\ub825"
+    "message": "\ud55c\ubc88\uc5d0 \ud55c \uc74c\uc808 \uc785\ub825"
   },
   "latam_spa_settings_page": {
     "message": "\ub77c\ud2f4 \uc544\uba54\ub9ac\uce74 \ud0a4\ubcf4\ub4dc(\uc2a4\ud398\uc778\uc5b4) \uc124\uc815 \ud398\uc774\uc9c0"
@@ -3105,7 +3116,7 @@
     "message": "\ubc31\uc2a4\ud398\uc774\uc2a4\ub97c \uc0ac\uc6a9\ud574 \ucd94\ucc9c \ub4dc\ub86d\ub2e4\uc6b4 \ud45c\uc2dc"
   },
   "show_hangul_candidate": {
-    "message": "\ud55c\uae00 \ucd94\ucc9c \ud56d\ubaa9 \ud45c\uc2dc"
+    "message": "\ud55c\uae00 \ubaa8\ub4dc\uc5d0\uc11c \ud6c4\ubcf4 \ud45c\uc2dc"
   },
   "shrink_candidates": {
     "message": "\ud6c4\ubcf4 \ubaa9\ub85d \uc228\uae30\uae30"

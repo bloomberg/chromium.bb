@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Tambahkan ke kamus pribadi"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Lanjutan"
@@ -3000,10 +3011,10 @@
     "message": "Tata Letak Keyboard Korea"
   },
   "korean_settings_page": {
-    "message": "Laman Setelan Korea"
+    "message": "Laman Setelan Metode Masukan Korea"
   },
   "korean_syllable_input": {
-    "message": "Masukan hangul satu per satu"
+    "message": "Masukkan satu suku kata dalam satu waktu"
   },
   "latam_spa_settings_page": {
     "message": "Laman Setelan Keyboard Amerika Latin (Spanyol)"
@@ -3048,7 +3059,7 @@
     "message": "Kapitalisasi otomatis"
   },
   "physical_keyboard": {
-    "message": "Keyboard Fisik"
+    "message": "Keyboard fisik"
   },
   "pinyin_settings_page": {
     "message": "Laman Setelan Pinyin"
@@ -3105,7 +3116,7 @@
     "message": "Tampilkan tarik-turun saran dengan Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Tampilkan saran Hangul"
+    "message": "Tampilkan kandidat dalam mode Hangul"
   },
   "shrink_candidates": {
     "message": "ciutkan daftar calon"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Keyboard Sentuh"
+    "message": "Keyboard di layar"
   },
   "tr_tur_settings_page": {
     "message": "Laman Setelan Keyboard Turki"

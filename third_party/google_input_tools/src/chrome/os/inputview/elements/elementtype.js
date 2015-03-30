@@ -78,6 +78,7 @@ i18n.input.chrome.inputview.elements.ElementType = {
   UNDO: 55,
   SWIPE_VIEW: 56,
   SELECT_VIEW: 57,
-  GESTURE_CANVAS_VIEW: 58
+  GESTURE_CANVAS_VIEW: 58,
+  KEYBOARD_CONTAINER_VIEW: 59
 };
 

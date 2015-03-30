@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Ongeza kwenye kamusi ya binafsi"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Mipangilio ya kina"
@@ -3000,10 +3011,10 @@
     "message": "Muundo wa Kibodi ya Kikorea"
   },
   "korean_settings_page": {
-    "message": "Ukurasa wa Mipangilio ya Kikorea"
+    "message": "Ukurasa wa Mipangilio ya Mbinu ya Kikorea ya Kuingiza Data"
   },
   "korean_syllable_input": {
-    "message": "Ingiza hangul moja baada ya nyingine"
+    "message": "Weka silabi moja kwa wakati"
   },
   "latam_spa_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi (Kihispania) ya Amerika ya Kusini"
@@ -3048,7 +3059,7 @@
     "message": "Uandikaji herufi kubwa kiotomatiki"
   },
   "physical_keyboard": {
-    "message": "Kibodi Halisi"
+    "message": "Kibodi halisi"
   },
   "pinyin_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Pinyin"
@@ -3105,7 +3116,7 @@
     "message": "Onyesha menyu kunjuzi ya mapendekezo kwa kutumia Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Onyesha mapendekezo ya Hangul"
+    "message": "Onyesha maneno yanayopendekezwa katika hali ya Hangul"
   },
   "shrink_candidates": {
     "message": "punguza orodha ya maneno yanayopendekezwa"
@@ -3147,7 +3158,7 @@
     "message": "kichupo"
   },
   "touch_keyboard": {
-    "message": "Gusa Kibodi"
+    "message": "Kibodi ya skrini"
   },
   "tr_tur_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kituruki"

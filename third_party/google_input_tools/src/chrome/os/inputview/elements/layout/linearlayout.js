@@ -14,6 +14,7 @@
 goog.provide('i18n.input.chrome.inputview.elements.layout.LinearLayout');
 
 goog.require('goog.dom.classlist');
+goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
@@ -75,6 +76,7 @@ LinearLayout.prototype.widthInWeight_ = 0;
 LinearLayout.prototype.createDom = function() {
   goog.base(this, 'createDom');
   goog.dom.classlist.add(this.getElement(), this.iconCssClass);
+  this.getElement()['view'] = null;
 };
 
 

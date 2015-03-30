@@ -39,7 +39,7 @@ var material = i18n.input.chrome.inputview.layouts.material;
 
   var data = {
     'layoutID': 'm-compactkbd-qwerty',
-    'widthInWeight': 15,
+    'widthInWeight': 11.15625,
     'children': [keyboardContainer]
   };
 

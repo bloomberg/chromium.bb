@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Adaug\u0103 \u00een dic\u021bionarul personal"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Set\u0103ri avansate"
@@ -3000,10 +3011,10 @@
     "message": "Aspect tastatur\u0103 coreean\u0103"
   },
   "korean_settings_page": {
-    "message": "Pagina de set\u0103ri pentru coreean\u0103"
+    "message": "Pagina de set\u0103ri pentru Metoda de introducere a textului \u00een coreean\u0103"
   },
   "korean_syllable_input": {
-    "message": "Introduci caractere hangul unul c\u00e2te unul"
+    "message": "Introdu c\u00e2te o silab\u0103 odat\u0103"
   },
   "latam_spa_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatur\u0103 America Latin\u0103 (spaniol\u0103)"
@@ -3105,7 +3116,7 @@
     "message": "Arat\u0103 lista drop-down cu sugestii la ap\u0103sarea pe tasta Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Afi\u0219eaz\u0103 sugestii \u00een Hangul"
+    "message": "Arat\u0103 sugestii \u00een modul Hangul"
   },
   "shrink_candidates": {
     "message": "restr\u00e2nge lista de sugestii"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "Tastatur\u0103 tactil\u0103"
+    "message": "Tastatur\u0103 pe ecran"
   },
   "tr_tur_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura turc\u0103"

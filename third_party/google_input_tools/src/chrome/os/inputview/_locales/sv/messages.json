@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "L\u00e4gg till i personlig ordlista"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Avancerat"
@@ -3000,10 +3011,10 @@
     "message": "Koreansk tangentbordslayout"
   },
   "korean_settings_page": {
-    "message": "Koreansk inst\u00e4llningssida"
+    "message": "Inst\u00e4llningssida f\u00f6r koreansk inmatningsmetod"
   },
   "korean_syllable_input": {
-    "message": "Hangulinmatning, en i taget"
+    "message": "Mata in en stavelse i taget"
   },
   "latam_spa_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r latinamerikanskt tangentbord (spanskt)"
@@ -3105,7 +3116,7 @@
     "message": "Visa f\u00f6rslag i rullgardinsmeny vid backsteg"
   },
   "show_hangul_candidate": {
-    "message": "Visa f\u00f6rslag med hangul-tecken"
+    "message": "Visa kandidater i Hangul-l\u00e4ge"
   },
   "shrink_candidates": {
     "message": "visa f\u00e4rre alternativ"
@@ -3147,7 +3158,7 @@
     "message": "tabb"
   },
   "touch_keyboard": {
-    "message": "Pektangentbord"
+    "message": "Sk\u00e4rmtangentbord"
   },
   "tr_tur_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r turkiskt tangentbord"

@@ -6,6 +6,7 @@
 {
   'variables': {
     'inputview_sources': [
+      'src/chrome/os/common.js',
       'src/chrome/os/datasource.js',
       'src/chrome/os/inputview/adapter.js',
       'src/chrome/os/inputview/candidatesinfo.js',
@@ -38,6 +39,7 @@
       'src/chrome/os/inputview/elements/content/emojikey.js',
       'src/chrome/os/inputview/elements/content/emojiview.js',
       'src/chrome/os/inputview/elements/content/enswitcherkey.js',
+      'src/chrome/os/inputview/elements/content/enterkey.js',
       'src/chrome/os/inputview/elements/content/expandedcandidateview.js',
       'src/chrome/os/inputview/elements/content/functionalkey.js',
       'src/chrome/os/inputview/elements/content/gaussianestimator.js',

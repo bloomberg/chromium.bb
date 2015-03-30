@@ -26,6 +26,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateButton');
 goog.require('i18n.input.chrome.inputview.elements.content.ToolbarButton');
+goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.Name');
 
 
@@ -38,6 +39,7 @@ var Type = i18n.input.chrome.inputview.elements.content.Candidate.Type;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var content = i18n.input.chrome.inputview.elements.content;
 var Name = i18n.input.chrome.message.Name;
+var util = i18n.input.chrome.inputview.util;
 
 
 
@@ -153,6 +155,22 @@ CandidateView.prototype.widthInWeight_ = 0;
 
 
 /**
+ * The width in weight of the backspace key.
+ *
+ * @private {number}
+ */
+CandidateView.prototype.backspaceWeight_ = 0;
+
+
+/**
+ * The width of the icon like voice/down/up arrow.
+ *
+ * @private {number}
+ */
+CandidateView.prototype.iconWidth_ = 120;
+
+
+/**
  * True if it is showing candidate.
  *
  * @type {boolean}
@@ -183,15 +201,6 @@ CandidateView.prototype.showingToolbar = false;
  * @private
  */
 CandidateView.WIDTH_FOR_THREE_CANDIDATES_ = 200;
-
-
-/**
- * The width of the icon at the right of the candidate view, it would be back
- * icon, hide candidates icon, or show candidates icon.
- *
- * @private {number}
- */
-CandidateView.ICON_WIDTH_ = 120;
 
 
 /**
@@ -283,12 +292,17 @@ CandidateView.prototype.showNumberRow = function() {
   goog.dom.classlist.remove(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
   var dom = this.getDomHelper();
-  var numberWidth = Math.floor((this.width - CandidateView.ICON_WIDTH_) / 10);
   dom.removeChildren(this.interContainer_);
+  var weightArray = [];
+  for (var i = 0; i < 10; i++) {
+    weightArray.push(1);
+  }
+  weightArray.push(this.widthInWeight_ - 10);
+  var values = util.splitValue(weightArray, this.width);
   for (var i = 0; i < 10; i++) {
     var candidateElem = new Candidate(String(i), goog.object.create(
         Name.CANDIDATE, String((i + 1) % 10)),
-        Type.NUMBER, this.height, false, numberWidth, this);
+        Type.NUMBER, this.height, false, values[i], this);
     candidateElem.render(this.interContainer_);
   }
   this.showingNumberRow = true;
@@ -332,11 +346,11 @@ CandidateView.prototype.showCandidates = function(candidates,
 CandidateView.prototype.addThreeCandidates_ = function(candidates) {
   goog.dom.classlist.add(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
+  this.interContainer_.style.width = 'auto';
   var num = Math.min(3, candidates.length);
-  var dom = this.getDomHelper();
   var width = CandidateView.WIDTH_FOR_THREE_CANDIDATES_;
   if (this.showingToolbar) {
-    width -= CandidateView.ICON_WIDTH_ / 3;
+    width -= this.iconWidth_ / 3;
   }
   for (var i = 0; i < num; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
@@ -368,9 +382,8 @@ CandidateView.prototype.clearCandidates = function() {
 CandidateView.prototype.addFullCandidates_ = function(candidates) {
   goog.dom.classlist.remove(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
-  var totalWidth = Math.floor(this.width - CandidateView.ICON_WIDTH_);
+  var totalWidth = Math.floor(this.width - this.iconWidth_);
   var w = 0;
-  var dom = this.getDomHelper();
   var i;
   for (i = 0; i < candidates.length; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
@@ -402,19 +415,32 @@ CandidateView.prototype.addFullCandidates_ = function(candidates) {
  * keyset view and it is used for alignment of number row.
  *
  * @param {number} widthInWeight .
+ * @param {number} backspaceWeight .
  */
-CandidateView.prototype.setWidthInWeight = function(widthInWeight) {
+CandidateView.prototype.setWidthInWeight = function(widthInWeight,
+    backspaceWeight) {
   this.widthInWeight_ = widthInWeight;
+  this.backspaceWeight_ = backspaceWeight;
 };
 
 
 /** @override */
 CandidateView.prototype.resize = function(width, height) {
+  if (this.backspaceWeight_ > 0) {
+    var weightArray = [];
+    var keys = Math.round(this.widthInWeight_ - this.backspaceWeight_);
+    for (var i = 0; i < keys; i++) {
+      weightArray.push(1);
+    }
+    weightArray.push(this.backspaceWeight_);
+    var values = util.splitValue(weightArray, width);
+    this.iconWidth_ = values[values.length - 1];
+  }
   goog.style.setSize(this.getElement(), width, height);
-  this.interContainer_.style.height = height + 'px';
+  goog.style.setSize(this.interContainer_, (width - this.iconWidth_), height);
   for (var i = 0; i < this.iconButtons_.length; i++) {
     var button = this.iconButtons_[i];
-    button.resize(CandidateView.ICON_WIDTH_, height);
+    button.resize(this.iconWidth_, height);
   }
 
   for (var i = 0; i < this.toolbarButtons_.length; i++) {
@@ -424,7 +450,7 @@ CandidateView.prototype.resize = function(width, height) {
 
   // Resets the candidates elements visibility.
   if (this.candidateCount > 0) {
-    var totalWidth = Math.floor(width - CandidateView.ICON_WIDTH_);
+    var totalWidth = Math.floor(width - this.iconWidth_);
     var w = 0;
     for (i = 0; i < this.candidateCount; i++) {
       if (w <= totalWidth) {
@@ -497,13 +523,17 @@ CandidateView.prototype.updateByKeyset = function(
       keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
       keyset == CandidateView.EMOJI_VIEW_CODE_)) {
     this.switchToIcon(IconType.BACK, true);
-  } else {
+  } else if (keyset != CandidateView.HANDWRITING_VIEW_CODE_ &&
+      keyset != CandidateView.EMOJI_VIEW_CODE_) {
     this.switchToIcon(IconType.VOICE,
         this.adapter_.isVoiceInputEnabled &&
         this.adapter_.contextType != 'password');
+  } else {
+    this.switchToIcon(IconType.VOICE, false);
   }
 
-  if (isPasswordBox && keyset.indexOf('compact') != -1) {
+  if (isPasswordBox && (keyset.indexOf('compact') != -1 &&
+      keyset.indexOf('compact.symbol') == -1)) {
     this.showNumberRow();
   } else {
     this.hideNumberRow();

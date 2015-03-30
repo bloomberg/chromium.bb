@@ -108,6 +108,7 @@ i18n.input.chrome.inputview.Css = {
   GLOBE_ICON: goog.getCssName('inputview-globe-icon'),
   HANDWRITING: goog.getCssName('inputview-handwriting'),
   HANDWRITING_BACK: goog.getCssName('inputview-handwriting-back'),
+  HANDWRITING_GOT_IT: goog.getCssName('inputview-handwriting-got-it'),
   HANDWRITING_LAYOUT: goog.getCssName('inputview-handwriting-layout'),
   HANDWRITING_NETWORK_ERROR:
       goog.getCssName('inputview-handwriting-network-error'),
@@ -118,8 +119,6 @@ i18n.input.chrome.inputview.Css = {
       goog.getCssName('inputview-handwriting-privacy-info'),
   HANDWRITING_PRIVACY_INFO_HIDDEN:
       goog.getCssName('inputview-handwriting-privacy-info-hidden'),
-  HANDWRITING_PRIVACY_TEXT:
-      goog.getCssName('inputview-handwriting-privacy-text'),
   HIDE_KEYBOARD_ICON: goog.getCssName('inputview-hide-keyboard-icon'),
   HINT_TEXT: goog.getCssName('inputview-hint-text'),
   HOLD: goog.getCssName('inputview-hold'),
@@ -156,6 +155,7 @@ i18n.input.chrome.inputview.Css = {
   MODIFIER_STATE_ICON: goog.getCssName('inputview-modifier-state-icon'),
   PAGE_DOWN_ICON: goog.getCssName('inputview-page-down-icon'),
   PAGE_UP_ICON: goog.getCssName('inputview-page-up-icon'),
+  PAGE_NAVI_INACTIVE: goog.getCssName('inputview-page-navi-inactive'),
   PASTE_ICON: goog.getCssName('inputview-paste-icon'),
   PINYIN: goog.getCssName('inputview-pinyin'),
   PORTRAIT: goog.getCssName('inputview-portrait'),
@@ -174,6 +174,8 @@ i18n.input.chrome.inputview.Css = {
   SPACE_GREY_BG: goog.getCssName('inputview-space-grey-bg'),
   SPECIAL_KEY_BG: goog.getCssName('inputview-special-key-bg'),
   SPECIAL_KEY_HIGHLIGHT: goog.getCssName('inputview-special-key-highlight'),
+  SPECIAL_KEY_DISABLE_BG_HIGHLIGHT: goog.getCssName(
+      'inputview-special-key-disable-bg-hl'),
   SPECIAL_KEY_NAME: goog.getCssName('inputview-special-key-name'),
   SWIPE_KEY: goog.getCssName('inputview-swipe-key'),
   SWIPE_SEPARATOR: goog.getCssName('inputview-swipe-separator'),
@@ -214,9 +216,8 @@ i18n.input.chrome.inputview.Css = {
   VOICE_OPACITY_NONE: goog.getCssName('inputview-voice-opacity-none'),
   VOICE_PANEL: goog.getCssName('inputview-voice-panel'),
   VOICE_PRIVACY_INFO: goog.getCssName('inputview-voice-privacy-info'),
-  VOICE_PRIVACY_TEXT: goog.getCssName('inputview-voice-privacy-text'),
+  VOICE_GOT_IT: goog.getCssName('inputview-voice-got-it'),
   VOICE_SEPARATOR: goog.getCssName('inputview-voice-separator'),
   VOICE_VIEW: goog.getCssName('inputview-voice-view'),
   WRAPPER: goog.getCssName('inputview-wrapper')
 };
-

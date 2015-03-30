@@ -20,6 +20,7 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuItem');
@@ -76,7 +77,7 @@ MenuView.Command = {
  * @type {number}
  * @private
  */
-MenuView.MAXIMAL_VISIBLE_IMES_ = 3;
+MenuView.MAXIMAL_VISIBLE_IMES_ = 4;
 
 
 /**
@@ -103,7 +104,7 @@ MenuView.paddingLeft_ = 0;
  * @type {number}
  * @private
  */
-MenuView.LIST_ITEM_HEIGHT_ = 50;
+MenuView.LIST_ITEM_HEIGHT_ = 45;
 
 
 /**
@@ -282,7 +283,6 @@ MenuView.prototype.addLayoutSwitcherItem_ = function(key, currentKeysetId,
   if (!isCompact && !enableCompactLayout) {
     return 0;
   }
-  var dom = this.getDomHelper();
   // Adds layout switcher.
   var layoutSwitcherItem;
   if (isCompact) {

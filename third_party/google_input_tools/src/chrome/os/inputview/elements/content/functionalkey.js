@@ -150,6 +150,16 @@ FunctionalKey.prototype.setHighlighted = function(highlight) {
 
 
 /**
+ * Some keys don't need background highlight, use this method to
+ * disable it.
+ */
+FunctionalKey.prototype.disableBackgroundHighlight = function() {
+  goog.dom.classlist.add(this.bgElem, i18n.input.chrome.inputview.Css.
+      SPECIAL_KEY_DISABLE_BG_HIGHLIGHT);
+};
+
+
+/**
  * Gets the chrome vox message.
  *
  * @return {string} .

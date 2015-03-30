@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u306b\u8ffd\u52a0"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "\u8a73\u7d30\u8a2d\u5b9a"
@@ -3000,10 +3011,10 @@
     "message": "\u97d3\u56fd\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u914d\u5217"
   },
   "korean_settings_page": {
-    "message": "\u97d3\u56fd\u8a9e\u8a2d\u5b9a\u30da\u30fc\u30b8"
+    "message": "\u97d3\u56fd\u8a9e\u5165\u529b\u65b9\u6cd5\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "korean_syllable_input": {
-    "message": "\u30cf\u30f3\u30b0\u30eb\u3092 1 \u6587\u5b57\u305a\u3064\u5165\u529b"
+    "message": "\u97f3\u7bc0\u5358\u4f4d\u3067\u5165\u529b"
   },
   "latam_spa_settings_page": {
     "message": "\u30e9\u30c6\u30f3\u30a2\u30e1\u30ea\u30ab\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30b9\u30da\u30a4\u30f3\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -3105,7 +3116,7 @@
     "message": "Backspace \u30ad\u30fc\u3067\u5019\u88dc\u3092\u30d7\u30eb\u30c0\u30a6\u30f3\u8868\u793a"
   },
   "show_hangul_candidate": {
-    "message": "\u30cf\u30f3\u30b0\u30eb\u5019\u88dc\u8868\u793a"
+    "message": "\u5019\u88dc\u3092\u30cf\u30f3\u30b0\u30eb\u30e2\u30fc\u30c9\u3067\u8868\u793a"
   },
   "shrink_candidates": {
     "message": "\u5019\u88dc\u306e\u6570\u3092\u6e1b\u3089\u3059"
@@ -3147,7 +3158,7 @@
     "message": "tab"
   },
   "touch_keyboard": {
-    "message": "\u30bf\u30c3\u30c1 \u30ad\u30fc\u30dc\u30fc\u30c9"
+    "message": "\u753b\u9762\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "tr_tur_settings_page": {
     "message": "\u30c8\u30eb\u30b3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"

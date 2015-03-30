@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Toevoegen aan persoonlijk woordenboek"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Geavanceerd"
@@ -3000,10 +3011,10 @@
     "message": "Koreaanse toetsenbordindeling"
   },
   "korean_settings_page": {
-    "message": "Pagina met instellingen voor Koreaans"
+    "message": "Pagina met instellingen voor Koreaanse invoermethode"
   },
   "korean_syllable_input": {
-    "message": "Hangul \u00e9\u00e9n voor \u00e9\u00e9n invoeren"
+    "message": "Voer \u00e9\u00e9n lettergreep per keer in"
   },
   "latam_spa_settings_page": {
     "message": "Pagina met instellingen voor Latijns-Amerikaans toetsenbord (Spaans)"
@@ -3105,7 +3116,7 @@
     "message": "Dropdown-menu met suggesties weergeven met Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Hangul-suggesties weergeven"
+    "message": "Kandidaten weergeven in Hangul-modus"
   },
   "shrink_candidates": {
     "message": "kandidatenlijst verkleinen"
@@ -3147,7 +3158,7 @@
     "message": "Tab"
   },
   "touch_keyboard": {
-    "message": "Toetsenbord met aanraakfunctionaliteit"
+    "message": "Schermtoetsenbord"
   },
   "tr_tur_settings_page": {
     "message": "Pagina met instellingen voor Turks toetsenbord"

@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "\u6dfb\u52a0\u5230\u4e2a\u4eba\u5b57\u5178"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "\u9ad8\u7ea7\u8bbe\u7f6e"
@@ -3000,10 +3011,10 @@
     "message": "\u97e9\u8bed\u952e\u76d8\u5e03\u5c40"
   },
   "korean_settings_page": {
-    "message": "\u97e9\u8bed\u8bbe\u7f6e\u9875\u9762"
+    "message": "\u97e9\u8bed\u8f93\u5165\u6cd5\u8bbe\u7f6e\u9875\u9762"
   },
   "korean_syllable_input": {
-    "message": "\u9010\u4e2a\u8f93\u5165\u97e9\u8bed\u5b57\u6bcd"
+    "message": "\u4e00\u6b21\u8f93\u5165\u4e00\u4e2a\u97f3\u8282"
   },
   "latam_spa_settings_page": {
     "message": "\u62c9\u7f8e\u8bed\u8a00\u952e\u76d8\uff08\u897f\u73ed\u7259\u8bed\uff09\u8bbe\u7f6e\u9875\u9762"
@@ -3048,7 +3059,7 @@
     "message": "\u81ea\u52a8\u5927\u5199"
   },
   "physical_keyboard": {
-    "message": "\u7269\u7406\u952e\u76d8"
+    "message": "\u5b9e\u4f53\u952e\u76d8"
   },
   "pinyin_settings_page": {
     "message": "\u62fc\u97f3\u8bbe\u7f6e\u9875\u9762"
@@ -3105,7 +3116,7 @@
     "message": "\u6309\u9000\u683c\u952e\u540e\u663e\u793a\u5efa\u8bae\u5b57\u8bcd\u4e0b\u62c9\u5217\u8868"
   },
   "show_hangul_candidate": {
-    "message": "\u663e\u793a\u97e9\u8bed\u5efa\u8bae"
+    "message": "\u4ee5\u97e9\u8bed\u5b57\u6bcd\u6a21\u5f0f\u663e\u793a\u5019\u9009\u5b57\u8bcd"
   },
   "shrink_candidates": {
     "message": "\u6536\u8d77\u5019\u9009\u5b57\u8bcd\u5217\u8868"
@@ -3147,7 +3158,7 @@
     "message": "Tab\u952e"
   },
   "touch_keyboard": {
-    "message": "\u89e6\u6478\u952e\u76d8"
+    "message": "\u5c4f\u5e55\u952e\u76d8"
   },
   "tr_tur_settings_page": {
     "message": "\u571f\u8033\u5176\u8bed\u952e\u76d8\u8bbe\u7f6e\u9875\u9762"

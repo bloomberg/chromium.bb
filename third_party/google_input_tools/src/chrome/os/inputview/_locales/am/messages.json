@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "\u12c8\u12f0 \u12e8\u130d\u120d \u1218\u12dd\u1308\u1260 \u1243\u120b\u1275 \u12a0\u12ad\u120d"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "\u12e8\u120b\u1240"
@@ -3000,10 +3011,10 @@
     "message": "\u12e8\u12ae\u122a\u12eb\u129b \u1241\u120d\u134d \u1230\u120c\u12f3 \u12a0\u1240\u121b\u1218\u1325"
   },
   "korean_settings_page": {
-    "message": "\u12e8\u12ae\u122d\u12eb\u129b \u1245\u1295\u1265\u122e\u127d \u1308\u133d"
+    "message": "\u12e8\u12ae\u122a\u12eb\u129b \u130d\u1264\u1275 \u1235\u120d\u1275 \u1245\u1295\u1265\u122e\u127d \u1308\u133d"
   },
   "korean_syllable_input": {
-    "message": "\u12e8\u1203\u1295\u1309\u120d \u12a0\u1295\u12f5 \u1260\u12a0\u1295\u12f5 \u130d\u1264\u1275"
+    "message": "\u1260\u12a0\u1295\u12f5 \u130a\u12dc \u12a0\u1295\u12f5 \u12ad\u134d\u1208-\u1243\u120d \u12eb\u1235\u1308\u1261"
   },
   "latam_spa_settings_page": {
     "message": "\u12e8\u120b\u1272\u1295 \u12a0\u121c\u122a\u12ab \u1241\u120d\u134d \u1230\u120c\u12f3 (\u1235\u1353\u1292\u123d\u129b) \u1245\u1295\u1265\u122e\u127d \u1308\u133d"
@@ -3105,7 +3116,7 @@
     "message": "\u1260Backspace \u12e8\u1325\u1246\u121b \u1270\u1246\u120d\u124b\u12ed\u1295 \u12a0\u1233\u12ed"
   },
   "show_hangul_candidate": {
-    "message": "\u12e8Hangul \u12a0\u1235\u1270\u12eb\u12e8\u1275 \u1325\u1246\u121b\u12ce\u127d\u1295 \u12a0\u1233\u12ed"
+    "message": "\u12a5\u1329\u12ce\u127d\u1295 \u1260\u1203\u1295\u1309\u120d \u1201\u1290\u1273 \u12eb\u1233\u12e9"
   },
   "shrink_candidates": {
     "message": "\u12e8\u12d5\u1329 \u12dd\u122d\u12dd\u122d\u1295 \u12d8\u122d\u130b"
@@ -3147,7 +3158,7 @@
     "message": "\u1275\u122d"
   },
   "touch_keyboard": {
-    "message": "\u12e8\u1295\u12aa \u1241\u120d\u134d \u1230\u120c\u12f3"
+    "message": "\u12e8\u121b\u12eb \u1308\u133d \u120b\u12ed \u1241\u120d\u134d \u1230\u120c\u12f3"
   },
   "tr_tur_settings_page": {
     "message": "\u12e8\u1271\u122d\u12ad\u129b \u1241\u120d\u134d \u1230\u120c\u12f3 \u1245\u1295\u1265\u122e\u127d \u1308\u133d"

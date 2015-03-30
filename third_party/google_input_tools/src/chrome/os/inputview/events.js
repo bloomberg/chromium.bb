@@ -110,11 +110,13 @@ goog.inherits(events.ConfigLoadedEvent, goog.events.Event);
  * @param {Node} target The event target.
  * @param {number} x .
  * @param {number} y .
+ * @param {number} identifier .
  * @param {number=} opt_timestamp The timestamp of a pointer event.
  * @constructor
  * @extends {goog.events.Event}
  */
-events.PointerEvent = function(view, type, target, x, y, opt_timestamp) {
+events.PointerEvent = function(view, type, target, x, y, identifier,
+    opt_timestamp) {
   goog.base(this, type, target);
 
   /**
@@ -139,6 +141,13 @@ events.PointerEvent = function(view, type, target, x, y, opt_timestamp) {
   this.y = y;
 
   /**
+   * The event identifier.
+   *
+   * @type {number}
+   */
+  this.identifier = identifier;
+
+  /**
    * The timestamp.
    *
    * @type {number}
@@ -157,12 +166,13 @@ goog.inherits(events.PointerEvent, goog.events.Event);
  * @param {Node} target The event target.
  * @param {number} x .
  * @param {number} y .
+ * @param {number} identifier .
  * @constructor
  * @extends {events.PointerEvent}
  */
-events.SwipeEvent = function(view, direction, target, x, y) {
+events.SwipeEvent = function(view, direction, target, x, y, identifier) {
   goog.base(this, view, events.EventType.SWIPE,
-      target, x, y);
+      target, x, y, identifier);
 
   /**
    * The direction.
@@ -185,12 +195,14 @@ goog.inherits(events.SwipeEvent, events.PointerEvent);
  * @param {number} y .
  * @param {number} deltaX The drag distance of x-coordinate.
  * @param {number} deltaY The drag distance of y-coordinate.
+ * @param {number} identifier .
  * @constructor
  * @extends {events.PointerEvent}
  */
-events.DragEvent = function(view, direction, target, x, y, deltaX, deltaY) {
+events.DragEvent = function(view, direction, target, x, y, deltaX, deltaY,
+    identifier) {
   goog.base(this, view, events.EventType.DRAG,
-      target, x, y);
+      target, x, y, identifier);
   /**
    * The direction
    *

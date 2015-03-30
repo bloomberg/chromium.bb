@@ -16,9 +16,10 @@ goog.provide('i18n.input.chrome.inputview.KeyboardContainer');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.i18n.bidi');
-goog.require('goog.ui.Container');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.GlobalFlags');
+goog.require('i18n.input.chrome.inputview.elements.Element');
+goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.AltDataView');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiView');
@@ -39,8 +40,8 @@ var EmojiView = i18n.input.chrome.inputview.elements.content.EmojiView;
 var HandwritingView = i18n.input.chrome.inputview.elements.content.
     HandwritingView;
 var KeysetView = i18n.input.chrome.inputview.elements.content.KeysetView;
-var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 var content = i18n.input.chrome.inputview.elements.content;
+var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 
 
 
@@ -49,12 +50,14 @@ var content = i18n.input.chrome.inputview.elements.content;
  *
  * @param {!i18n.input.chrome.inputview.Adapter} adapter .
  * @param {!i18n.input.chrome.sounds.SoundController} soundController .
+ * @param {goog.events.EventTarget=} opt_eventTarget The parent event target.
  * @constructor
- * @extends {goog.ui.Container}
+ * @extends {i18n.input.chrome.inputview.elements.Element}
  */
+// TODO(bshe): Move this file to elements/content
 i18n.input.chrome.inputview.KeyboardContainer =
-    function(adapter, soundController) {
-  goog.base(this);
+    function(adapter, soundController, opt_eventTarget) {
+  goog.base(this, '', ElementType.KEYBOARD_CONTAINER_VIEW, opt_eventTarget);
 
   /** @type {!content.CandidateView} */
   this.candidateView = new content.CandidateView(
@@ -100,7 +103,7 @@ i18n.input.chrome.inputview.KeyboardContainer =
   this.adapter_ = adapter;
 };
 goog.inherits(i18n.input.chrome.inputview.KeyboardContainer,
-    goog.ui.Container);
+    i18n.input.chrome.inputview.elements.Element);
 var KeyboardContainer = i18n.input.chrome.inputview.KeyboardContainer;
 
 
@@ -158,17 +161,6 @@ KeyboardContainer.prototype.createDom = function() {
 
 
 /** @override */
-KeyboardContainer.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
-
-  this.setFocusable(false);
-  this.setFocusableChildrenAllowed(false);
-};
-
-
-/**
- * Updates the whole keyboard.
- */
 KeyboardContainer.prototype.update = function() {
   this.currentKeysetView && this.currentKeysetView.update();
 };
@@ -233,7 +225,8 @@ KeyboardContainer.prototype.switchToKeyset = function(keyset, title,
       view.setVisible(true);
       view.update();
       if (view.spaceKey) {
-        view.spaceKey.updateTitle(title, !isPasswordBox);
+        view.spaceKey.updateTitle(title, !isPasswordBox &&
+            keyset != 'hwt' && keyset != 'emoji');
       }
       if (isA11yMode) {
         goog.dom.classlist.add(this.getElement(), Css.A11Y);
@@ -271,8 +264,8 @@ KeyboardContainer.prototype.switchToKeyset = function(keyset, title,
  * @param {number} widthPercent .
  * @param {number} candidateViewHeight .
  */
-KeyboardContainer.prototype.resize = function(width, height, widthPercent,
-    candidateViewHeight) {
+KeyboardContainer.prototype.setContainerSize = function(width, height,
+    widthPercent, candidateViewHeight) {
   if (!this.currentKeysetView) {
     return;
   }
@@ -296,8 +289,10 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
   h = this.currentKeysetView.disableCandidateView ? h :
       h - candidateViewHeight;
 
+  var backspaceWeight = this.currentKeysetView.backspaceKey ?
+      this.currentKeysetView.backspaceKey.getParent().getWidthInWeight() : 0;
   this.candidateView.setWidthInWeight(
-      this.currentKeysetView.getWidthInWeight());
+      this.currentKeysetView.getWidthInWeight(), backspaceWeight);
   this.candidateView.resize(w, candidateViewHeight);
   this.expandedCandidateView.resize(w, h);
   if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {

@@ -56,9 +56,9 @@ i18n.input.chrome.inputview.elements.content.ExpandedCandidateView = function(
   /**
    * The functional keys at the right.
    *
-   * @private {!Array.<FunctionalKey>}
+   * @private {!Object.<ElementType, FunctionalKey>}
    */
-  this.keys_ = [];
+  this.keys_ = {};
 
   /**
    * Key: page index.
@@ -200,7 +200,7 @@ ExpandedCandidateView.prototype.createKey_ = function(type, iconCss) {
   var key = new FunctionalKey('', type, '', iconCss, this);
   key.render(this.getElement());
   goog.dom.classlist.add(key.getElement(), Css.INLINE_DIV);
-  this.keys_.push(key);
+  this.keys_[type] = key;
   return key;
 };
 
@@ -310,6 +310,19 @@ ExpandedCandidateView.prototype.showCandidates = function(candidates,
     }
   }
   this.candidateStartIndex_ = i;
+  var pageDownKey = this.keys_[ElementType.CANDIDATES_PAGE_DOWN].getElement();
+  var pageUpKey = this.keys_[ElementType.CANDIDATES_PAGE_UP].getElement();
+  if (i >= candidates.length) {
+    goog.dom.classlist.add(pageDownKey, Css.PAGE_NAVI_INACTIVE);
+  } else {
+    goog.dom.classlist.remove(pageDownKey, Css.PAGE_NAVI_INACTIVE);
+  }
+
+  if (this.pageIndex_ > 0) {
+    goog.dom.classlist.remove(pageUpKey, Css.PAGE_NAVI_INACTIVE);
+  } else {
+    goog.dom.classlist.add(pageUpKey, Css.PAGE_NAVI_INACTIVE);
+  }
 };
 
 
@@ -326,8 +339,9 @@ ExpandedCandidateView.prototype.resize = function(width, height) {
     goog.style.setSize(line, Math.floor(width -
         ExpandedCandidateView.RIGHT_KEY_WIDTH_), this.heightPerCell_);
   }
-  for (var i = 0; i < this.keys_.length; i++) {
-    var key = this.keys_[i];
+  for (var type in this.keys_) {
+    type = /** @type {ElementType} */ (Number(type));
+    var key = this.keys_[type];
     key.resize(ExpandedCandidateView.RIGHT_KEY_WIDTH_, this.heightPerCell_);
   }
 };

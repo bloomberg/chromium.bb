@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "In pers\u00f6nliches W\u00f6rterbuch aufnehmen"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Erweitert"
@@ -3000,10 +3011,10 @@
     "message": "Koreanische Tastaturbelegung"
   },
   "korean_settings_page": {
-    "message": "Seite mit Einstellungen f\u00fcr Koreanisch"
+    "message": "Seite mit Einstellungen f\u00fcr die koreanische Eingabemethode"
   },
   "korean_syllable_input": {
-    "message": "Einzeleingabe von Hangul-Silben"
+    "message": "Jeweils eine Silbe eingeben"
   },
   "latam_spa_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr lateinamerikanische Tastatur (spanisch)"
@@ -3105,7 +3116,7 @@
     "message": "Drop-down-Liste mit Vorschl\u00e4gen per R\u00fccktaste einblenden"
   },
   "show_hangul_candidate": {
-    "message": "Hangul-Vorschl\u00e4ge anzeigen"
+    "message": "Kandidaten im Hangul-Modus ansehen"
   },
   "shrink_candidates": {
     "message": "Kandidatenliste minimieren"
@@ -3147,7 +3158,7 @@
     "message": "Tabulatortaste"
   },
   "touch_keyboard": {
-    "message": "Touchtastatur"
+    "message": "Bildschirmtastatur"
   },
   "tr_tur_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr t\u00fcrkische Tastatur"

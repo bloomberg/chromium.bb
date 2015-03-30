@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Prida\u0165 do osobn\u00e9ho slovn\u00edka"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Roz\u0161\u00edren\u00e9"
@@ -3000,10 +3011,10 @@
     "message": "K\u00f3rejsk\u00e9 rozlo\u017eenie kl\u00e1vesnice"
   },
   "korean_settings_page": {
-    "message": "Str\u00e1nka s nastaveniami k\u00f3rej\u010diny"
+    "message": "Str\u00e1nka s nastaveniami met\u00f3dy vstupu pre k\u00f3rej\u010dinu"
   },
   "korean_syllable_input": {
-    "message": "Postupn\u00e9 zad\u00e1vanie znakov Hangul po jednom"
+    "message": "Zad\u00e1vanie po jednej slabike"
   },
   "latam_spa_settings_page": {
     "message": "Str\u00e1nka s nastaveniami latinskoamerickej \u0161panielskej kl\u00e1vesnice"
@@ -3105,7 +3116,7 @@
     "message": "Zobrazi\u0165 rozba\u013eovaciu ponuku n\u00e1vrhov pomocou kl\u00e1vesa backspace"
   },
   "show_hangul_candidate": {
-    "message": "Zobrazenie n\u00e1vrhov v p\u00edsme Hangul"
+    "message": "Zobrazenie kandid\u00e1tov v re\u017eime Hangul"
   },
   "shrink_candidates": {
     "message": "zbali\u0165 zoznam kandid\u00e1tov"
@@ -3147,7 +3158,7 @@
     "message": "tabul\u00e1tor"
   },
   "touch_keyboard": {
-    "message": "Dotykov\u00e1 kl\u00e1vesnica"
+    "message": "Kl\u00e1vesnica na obrazovke"
   },
   "tr_tur_settings_page": {
     "message": "Str\u00e1nka s nastaveniami tureckej kl\u00e1vesnice"

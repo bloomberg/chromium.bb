@@ -44,6 +44,13 @@ i18n.input.chrome.inputview.elements.content.GestureCanvasView =
       ElementType.GESTURE_CANVAS_VIEW, opt_eventTarget);
 
   /**
+   * Flag used to indicate whether or not gesturing is currently occuring.
+   *
+   * @type {boolean}
+   */
+  this.isGesturing = false;
+
+  /**
    * Actual canvas for drawing the gesture trail.
    *
    * @private {!Element}
@@ -343,12 +350,23 @@ GestureCanvasView.prototype.resize = function(width, height) {
  * @param {!i18n.input.chrome.inputview.events.DragEvent} e Drag event to draw.
  */
 GestureCanvasView.prototype.addPoint = function(e) {
+  // Check if the last stroke was active before this point in order to determine
+  // if the user is gesturing. Only check the last stroke and not all the
+  // strokes because all previous strokes might be rendering/degrading, but that
+  // does not determine if the user is currently gesturing.
+  var was_active = this.latestStrokeActive_();
+
   if (this.strokeList_.length == 0) {
     this.strokeList_.push(new GestureStroke());
   }
 
   this.strokeList_[this.strokeList_.length - 1].points.push(
       this.createGesturePoint_(e));
+
+  // If the new point |e| activated the last stroke, set gesturing to true.
+  if (!was_active && this.latestStrokeActive_()) {
+    this.isGesturing = true;
+  }
 };
 
 
@@ -362,21 +380,16 @@ GestureCanvasView.prototype.clear = function() {
 
 
 /**
- * Returns true iff there is a stroke that is currently active.
+ * Returns true iff the last stroke is currently active.
  *
- * @return {boolean} Whether or not there was an active stroke.
+ * @return {boolean} Whether or not the last stroke is active.
+ * @private
  */
-GestureCanvasView.prototype.hasActiveStroke = function() {
-  for (var i = 0; i < this.strokeList_.length; i++) {
-    // TODO(stevet): Fix this approximation with a change that takes into
-    // account strokes that are still active because they are degrading, but the
-    // user has already finished the gesture (i.e. touched up).
-    if (this.strokeList_[i].isActive()) {
-      return true;
-    }
+GestureCanvasView.prototype.latestStrokeActive_ = function() {
+  if (this.strokeList_.length == 0) {
+    return false;
   }
-
-  return false;
+  return this.strokeList_[this.strokeList_.length - 1].isActive();
 };
 
 
@@ -392,6 +405,19 @@ GestureCanvasView.prototype.startStroke = function(e) {
 
   this.strokeList_[this.strokeList_.length - 1].points.push(
       this.createGesturePoint_(e));
+};
+
+
+/**
+ * Ends the current gesture.
+ *
+ * @param {!i18n.input.chrome.inputview.events.PointerEvent} e Final pointer
+ *     event to handle.
+ */
+GestureCanvasView.prototype.endStroke = function(e) {
+  // TODO(stevet): Ensure that this gets called even when the final touch event
+  //     is not on the client.
+  this.isGesturing = false;
 };
 
 

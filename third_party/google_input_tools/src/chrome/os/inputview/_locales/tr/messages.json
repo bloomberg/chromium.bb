@@ -1,6 +1,17 @@
 {
+  "add_to_dictionary": {
+    "message": "Add to dictionary"
+  },
   "add_to_personal_dictionary": {
     "message": "Ki\u015fisel s\u00f6zl\u00fc\u011fe ekle"
+  },
+  "add_word_to_dictionary": {
+    "message": "Add \"$1\" to dictionary",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "advanced": {
     "message": "Geli\u015fmi\u015f"
@@ -3000,10 +3011,10 @@
     "message": "Korece Klavye D\u00fczeni"
   },
   "korean_settings_page": {
-    "message": "Korece Ayarlar Sayfas\u0131"
+    "message": "Korece Giri\u015f Y\u00f6ntemi Ayarlar\u0131 Sayfas\u0131"
   },
   "korean_syllable_input": {
-    "message": "Hangul'u birer birer girin"
+    "message": "Her seferde tek hece girin"
   },
   "latam_spa_settings_page": {
     "message": "Latin Amerika Klavye (\u0130spanyolca) Ayarlar\u0131 Sayfas\u0131"
@@ -3048,7 +3059,7 @@
     "message": "Otomatik olarak b\u00fcy\u00fck harf yap"
   },
   "physical_keyboard": {
-    "message": "Fiziksel Klavye"
+    "message": "Fiziksel klavye"
   },
   "pinyin_settings_page": {
     "message": "Pinyin Ayarlar Sayfas\u0131"
@@ -3105,7 +3116,7 @@
     "message": "\u00d6neri a\u00e7\u0131l\u0131r listesini Geri tu\u015funa bas\u0131ld\u0131\u011f\u0131nda g\u00f6ster"
   },
   "show_hangul_candidate": {
-    "message": "Hangul \u00f6nerilerini g\u00f6ster"
+    "message": "Hangul modunda \u00f6nerileri g\u00f6ster"
   },
   "shrink_candidates": {
     "message": "\u00f6neri listesini daralt"
@@ -3147,7 +3158,7 @@
     "message": "sekme"
   },
   "touch_keyboard": {
-    "message": "Dokunmatik Klavye"
+    "message": "Dokunmatik klavye"
   },
   "tr_tur_settings_page": {
     "message": "T\u00fcrk\u00e7e Klavye Ayarlar\u0131 Sayfas\u0131"
