@@ -67,7 +67,7 @@ public class TabRedirectHandler {
         String chromePackageName = mContext.getPackageName();
         // If an intent is heading explicitly to Chrome, we should stay in Chrome.
         if (TextUtils.equals(chromePackageName, intent.getPackage())
-                || TextUtils.equals(chromePackageName, intent.getStringExtra(
+                || TextUtils.equals(chromePackageName, IntentUtils.safeGetStringExtra(intent,
                         Browser.EXTRA_APPLICATION_ID))) {
             mIsInitialIntentHeadingToChrome = true;
         }

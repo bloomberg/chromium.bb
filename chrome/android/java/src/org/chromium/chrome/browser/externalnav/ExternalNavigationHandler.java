@@ -20,6 +20,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
@@ -193,7 +194,8 @@ public class ExternalNavigationHandler {
         }
 
         boolean hasBrowserFallbackUrl = false;
-        String browserFallbackUrl = intent.getStringExtra(EXTRA_BROWSER_FALLBACK_URL);
+        String browserFallbackUrl = IntentUtils.safeGetStringExtra(
+                intent, EXTRA_BROWSER_FALLBACK_URL);
         if (browserFallbackUrl != null
                 && UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
             hasBrowserFallbackUrl = true;
