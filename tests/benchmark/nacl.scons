@@ -11,6 +11,10 @@ Import('env')
 # are benchmarks and need to run on real hardware.
 is_broken = env.Bit('running_on_valgrind') or env.UsingEmulator()
 
+# Increase the test timeout for Subzero.
+# https://code.google.com/p/nativeclient/issues/detail?id=4136
+timeout_override = 200 if env.Bit('use_sz') else 0
+
 libs = []
 if env.Bit('nacl_glibc'):
   # Needed for clock_gettime().
@@ -37,6 +41,7 @@ if 'TRUSTED_ENV' not in env:
 
 node = env.CommandSelLdrTestNacl(
     'benchmark_test.out', nexe, [env.GetPerfEnvDescription()],
+    time_error=timeout_override,
     # Don't hide output: We want the timings to be reported in the
     # Buildbot logs so that Buildbot records the "RESULT" lines.
     capture_output=False)

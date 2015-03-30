@@ -26,6 +26,7 @@ def RunSconsTests(status, context):
 
   arch = context['default_scons_platform']
 
+  flags_subzero = ['use_sz=1']
   flags_build = ['do_not_run_tests=1']
   flags_run = []
 
@@ -59,6 +60,9 @@ def RunSconsTests(status, context):
           SCons(context, parallel=True, args=['run_hello_world_test'])
     with Step('build_all ' + arch, status):
       SCons(context, parallel=True, args=flags_build)
+    if arch == 'x86-32':
+      with Step('build_all subzero ' + arch, status):
+        SCons(context, parallel=True, args=flags_build + flags_subzero)
 
   smoke_tests = ['small_tests', 'medium_tests']
   # Normal pexe-mode tests
@@ -67,6 +71,18 @@ def RunSconsTests(status, context):
   # Large tests cannot be run in parallel
   with Step('large_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=False, args=flags_run + ['large_tests'])
+  # Run small_tests, medium_tests, and large_tests with Subzero.
+  # TODO(stichnot): Move this to the sandboxed translator section
+  # along with the translate_fast flag once pnacl-sz.nexe is ready.
+  if arch == 'x86-32':
+    # Normal pexe-mode tests
+    with Step('smoke_tests subzero ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=True,
+            args=flags_run + flags_subzero + smoke_tests)
+    # Large tests cannot be run in parallel
+    with Step('large_tests subzero ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=False,
+            args=flags_run + flags_subzero + ['large_tests'])
 
   with Step('nonpexe_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True,
