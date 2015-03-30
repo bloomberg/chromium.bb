@@ -64,6 +64,7 @@ def _UpdateSdk(gs_ctx, sdk_dir, version):
   # Create the SDK dir, if it doesn't already exist.
   osutils.SafeMakedirs(sdk_dir)
 
+  logging.notice('Fetching files. This could take a few minutes...')
   # TOT is a special case, handle it first.
   if version.lower() == 'tot':
     # Init new repo.
@@ -185,7 +186,7 @@ class SdkCommand(command.CliCommand):
       logging.info('Update bootstrap...')
       _SelfUpdate(bootstrap_path)
 
-      logging.info('Updating SDK...')
+      logging.notice('Updating SDK...')
       _HandleUpdate(
           bootstrap_path, workspace_path, sdk_dir, self.options.update)
 
@@ -196,4 +197,4 @@ class SdkCommand(command.CliCommand):
     if version is None:
       cros_build_lib.Die('No valid SDK found.')
 
-    logging.info('Version: %s', version)
+    logging.notice('Version: %s', version)
