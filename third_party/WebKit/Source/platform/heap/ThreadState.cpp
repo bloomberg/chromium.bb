@@ -90,7 +90,6 @@ ThreadState::ThreadState()
     , m_safePointScopeMarker(nullptr)
     , m_atSafePoint(false)
     , m_interruptors()
-    , m_hasPendingIdleTask(false)
     , m_didV8GCAfterLastGC(false)
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
@@ -506,6 +505,8 @@ Mutex& ThreadState::globalRootsMutex()
 // These heuristics affect performance significantly.
 bool ThreadState::shouldScheduleIdleGC()
 {
+    if (gcState() != NoGCScheduled)
+        return false;
 #if ENABLE(OILPAN)
     // Trigger garbage collection on a 50% increase in size since the last GC,
     // but not for less than 512 KB.
@@ -520,6 +521,8 @@ bool ThreadState::shouldScheduleIdleGC()
 // These heuristics affect performance significantly.
 bool ThreadState::shouldSchedulePreciseGC()
 {
+    if (gcState() != NoGCScheduled)
+        return false;
 #if ENABLE(OILPAN)
     return false;
 #else
@@ -585,8 +588,6 @@ void ThreadState::performIdleGC(double deadlineSeconds)
 {
     ASSERT(isMainThread());
 
-    m_hasPendingIdleTask = false;
-
     if (gcState() != IdleGCScheduled)
         return;
 
@@ -611,10 +612,7 @@ void ThreadState::scheduleIdleGC()
         return;
     }
 
-    if (!m_hasPendingIdleTask) {
-        m_hasPendingIdleTask = true;
-        Scheduler::shared()->postNonNestableIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleGC, this));
-    }
+    Scheduler::shared()->postNonNestableIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleGC, this));
     setGCState(IdleGCScheduled);
 }
 
