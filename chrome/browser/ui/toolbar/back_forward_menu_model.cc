@@ -248,8 +248,9 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
     return;
   }
   requested_favicons_.insert(entry->GetUniqueID());
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      browser_->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(browser_->profile(),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
 

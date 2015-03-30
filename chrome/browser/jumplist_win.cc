@@ -396,8 +396,9 @@ void JumpList::StartLoadingFavicon() {
     return;
   }
 
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   task_id_ = favicon_service->GetFaviconImageForPageURL(
       url,
       base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),

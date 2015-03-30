@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_
 #define COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_
 
+#include <base/macros.h>
+
 class GURL;
 
 namespace gfx {
 class Image;
 }
+
+namespace favicon {
 
 // Interface that allows Favicon core code to interact with its driver (i.e.,
 // obtain information from it and give information to it). A concrete
@@ -60,5 +64,7 @@ class FaviconDriver {
  private:
   DISALLOW_COPY_AND_ASSIGN(FaviconDriver);
 };
+
+}  // namespace favicon
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_

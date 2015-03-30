@@ -33,7 +33,6 @@
 #include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
 
-class FaviconService;
 class GURL;
 class HistoryQuickProviderTest;
 class HistoryURLProvider;
@@ -47,6 +46,10 @@ class TestingProfile;
 namespace base {
 class FilePath;
 class Thread;
+}
+
+namespace favicon {
+class FaviconService;
 }
 
 namespace history {
@@ -512,7 +515,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   class BackendDelegate;
   friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
-  friend class ::FaviconService;
+  friend class favicon::FaviconService;
   friend class HistoryBackend;
   friend class HistoryQueryTest;
   friend class HistoryOperation;

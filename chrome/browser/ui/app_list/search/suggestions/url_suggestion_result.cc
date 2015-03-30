@@ -22,8 +22,9 @@
 namespace app_list {
 
 URLSuggestionResult::URLSuggestionResult(
-    Profile* profile, AppListControllerDelegate* list_controller,
-    FaviconService* favicon_service,
+    Profile* profile,
+    AppListControllerDelegate* list_controller,
+    favicon::FaviconService* favicon_service,
     suggestions::SuggestionsService* suggestions_service,
     const suggestions::ChromeSuggestion& suggestion)
     : profile_(profile),

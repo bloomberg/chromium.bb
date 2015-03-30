@@ -559,7 +559,7 @@ void RunFaviconCallbackAsync(
     const std::vector<favicon_base::FaviconRawBitmapResult>* results) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&FaviconService::FaviconResultsCallbackRunner,
+      base::Bind(&favicon::FaviconService::FaviconResultsCallbackRunner,
                  callback, base::Owned(results)));
 }
 

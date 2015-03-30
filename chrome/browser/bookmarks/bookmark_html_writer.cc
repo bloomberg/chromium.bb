@@ -458,8 +458,9 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
     // Filter out urls that we've already got favicon for.
     URLFaviconMap::const_iterator iter = favicons_map_->find(url);
     if (favicons_map_->end() == iter) {
-      FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS);
+      favicon::FaviconService* favicon_service =
+          FaviconServiceFactory::GetForProfile(
+              profile_, ServiceAccessType::EXPLICIT_ACCESS);
       favicon_service->GetRawFaviconForPageURL(
           GURL(url),
           favicon_base::FAVICON,

@@ -250,8 +250,9 @@ void SetFaviconImpl(Profile* profile,
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
 
     FaviconChangeObserver observer(model, node);
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    favicon::FaviconService* favicon_service =
+        FaviconServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (favicon_source == bookmarks_helper::FROM_UI) {
       favicon_service->SetFavicons(
           node->url(), icon_url, favicon_base::FAVICON, image);

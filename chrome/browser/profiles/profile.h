@@ -19,7 +19,6 @@
 class ChromeAppCacheService;
 class DevToolsNetworkController;
 class ExtensionSpecialStoragePolicy;
-class FaviconService;
 class HostContentSettingsMap;
 class PrefProxyConfigTracker;
 class PrefService;

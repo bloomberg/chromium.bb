@@ -4,7 +4,9 @@
 
 #include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -20,8 +22,9 @@ ChromeFaviconClientFactory::~ChromeFaviconClientFactory() {
 }
 
 // static
-FaviconClient* ChromeFaviconClientFactory::GetForProfile(Profile* profile) {
-  return static_cast<FaviconClient*>(
+favicon::FaviconClient* ChromeFaviconClientFactory::GetForProfile(
+    Profile* profile) {
+  return static_cast<favicon::FaviconClient*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 

@@ -224,9 +224,10 @@ KeyedService* BuildFallbackIconService(content::BrowserContext* context) {
 
 KeyedService* BuildFaviconService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new FaviconService(ChromeFaviconClientFactory::GetForProfile(profile),
-                            HistoryServiceFactory::GetForProfile(
-                                profile, ServiceAccessType::EXPLICIT_ACCESS));
+  return new favicon::FaviconService(
+      ChromeFaviconClientFactory::GetForProfile(profile),
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 KeyedService* BuildHistoryService(content::BrowserContext* context) {
