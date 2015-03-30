@@ -50,8 +50,6 @@ _NEGATIVE_FILTER = [
     # This test is flaky since it uses setTimeout.
     # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
     'ChromeDriverTest.testAlert',
-    # Enable per-browser when http://crbug.com/456324 is fixed.
-    'ChromeDriverTest.testEmulateNetworkConditionsOffline',
     # This test is too flaky on the bots, but seems to run perfectly fine
     # on developer workstations.
     'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
@@ -882,7 +880,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertGreaterEqual(actual_throughput_kbps, throughput_kbps / 1.5)
 
   def testEmulateNetworkConditionsOffline(self):
-    self._driver.SetNetworkConditions(5, 2048, 2048, offline=True)
+    # A workaround for crbug.com/177511; when setting offline, the throughputs
+    # must be 0.
+    self._driver.SetNetworkConditions(0, 0, 0, offline=True)
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     self.assertIn('is not available', self._driver.GetTitle())
 

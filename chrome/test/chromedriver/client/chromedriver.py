@@ -359,12 +359,12 @@ class ChromeDriver(object):
     self.ExecuteCommand(Command.SET_AUTO_REPORTING, {'enabled': enabled})
 
   def SetNetworkConditions(self, latency, download_throughput,
-                           upload_throughput):
+                           upload_throughput, offline=False):
     # Until http://crbug.com/456324 is resolved, we'll always set 'offline' to
     # False, as going "offline" will sever Chromedriver's connection to Chrome.
     params = {
         'network_conditions': {
-            'offline': False,
+            'offline': offline,
             'latency': latency,
             'download_throughput': download_throughput,
             'upload_throughput': upload_throughput
