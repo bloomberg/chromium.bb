@@ -100,7 +100,7 @@
         },
         {
           # cronet_static_small target has reduced binary size through using
-	  # ICU alternatives which requires file and ftp support be disabled.
+          # ICU alternatives which requires file and ftp support be disabled.
           'target_name': 'cronet_static_small',
           'defines': [
             'USE_ICU_ALTERNATIVES_ON_ANDROID=1',
@@ -116,7 +116,7 @@
           # cronet_static target depends on ICU and includes file and ftp support.
           'target_name': 'cronet_static',
           'dependencies': [
-	    '../base/base.gyp:base_i18n',
+            '../base/base.gyp:base_i18n',
             '../net/net.gyp:net',
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
@@ -168,7 +168,7 @@
         },
         { # cronet.jar implements HttpUrlRequest interface using Chromium stack
           # in native libcronet.so library.
-          'target_name': 'cronet',
+          'target_name': 'cronet_java',
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
@@ -207,7 +207,7 @@
           'target_name': 'cronet_sample_apk',
           'type': 'none',
           'dependencies': [
-            'cronet',
+            'cronet_java',
             'cronet_stub',
           ],
           'variables': {
@@ -240,7 +240,7 @@
           'target_name': 'cronet_sample_test_apk',
           'type': 'none',
           'dependencies': [
-            'cronet',
+            'cronet_java',
             'cronet_sample_apk_java',
             'cronet_stub',
             '../base/base.gyp:base_java_test_support',
@@ -311,7 +311,7 @@
           'target_name': 'cronet_test_apk',
           'type': 'none',
           'dependencies': [
-            'cronet',
+            'cronet_java',
           ],
           'variables': {
             'apk_name': 'CronetTest',
@@ -355,7 +355,7 @@
           'type': 'none',
           'dependencies': [
             'libcronet',
-            'cronet',
+            'cronet_java',
             'cronet_stub',
           ],
           'variables': {
@@ -387,7 +387,7 @@
             {
               'action_name': 'extracting from jars',
               'inputs':  [
-                '<(lib_java_dir)/<(java_lib)',
+                '<(lib_java_dir)/cronet_java.jar',
                 '<(lib_java_dir)/base_java.jar',
                 '<(lib_java_dir)/net_java.jar',
                 '<(lib_java_dir)/url_java.jar',

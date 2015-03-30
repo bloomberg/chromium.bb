@@ -24,11 +24,11 @@ Linux (Android Studio version 0.8.11 beta)
         in the selection list above the file hierarchy.
         Otherwise you won't see "libs".
     (c) Copy 'cronet.jar' and 'cronet_stub.jar' to "libs".
-    
+
     [Also note that it is possible to leave the '.jar' files
     in their original locations, though this seems to be
     somewhat discouraged by convention]
-     
+
 (4) Inform the IDE about the '.jar' files.
     (a) Select both files at once.
     (b) Bring up the context menu and choose "Add as Library".
@@ -44,18 +44,12 @@ Linux (Android Studio version 0.8.11 beta)
     (b) Copy armeabi and ameabi-v7a into jniLibs, which should
         contain only subdirectories, not directly a '.so' file
     (c) The IDE will automatically know about these.
- 
+
 (6) Click "Run".
 
 Troubleshooting:
 
-(I) If the project doesn't build, there are two typical problems:
-#1 - make sure that you have the correct 'cronet.jar'.
-There is one that is part of the Chromium build which 
-does not include org.chromium.base (and so will be missing PathUtil,
-at least) and one that is part of the cronet build.
-
-#2 - If you have vast swaths of red text (errors) in the edit window
+If you have vast swaths of red text (errors) in the edit window
 for CronetSampleActivity, you should confirm that the requisite
 jar files are present in 'build.gradle'. There are at least 2
 files which are named 'build.gradle'. Check them both.
@@ -64,7 +58,7 @@ You should observe the following lines [see footnote 1]
 dependencies {
    compile file('libs/cronet.jar')
    compile file('libs/cronet_stub.jar')
-}   
+}
 
 If absent, the lines may be added by hand to the gradle file
 which corresponds to the module named "app", and not the project
@@ -129,7 +123,7 @@ MacOS (Android Studio version 1.0.1)
     When you do this, it will say that the destination is
     "app/libs".  This is right.  If you prefer to see
     the file hierarchy as it really exists, you can change
-    the dropdown above the tree view from "android view" 
+    the dropdown above the tree view from "android view"
     to "project view". Or just keep in mind that assets = libs
     at this level of the hierarchy.
 
