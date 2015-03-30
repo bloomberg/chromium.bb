@@ -264,6 +264,8 @@ class SupervisedUserService : public KeyedService,
   std::string GetDebugPolicyProviderName() const override;
   bool UserMayLoad(const extensions::Extension* extension,
                    base::string16* error) const override;
+  bool UserMayModifySettings(const extensions::Extension* extension,
+                             base::string16* error) const override;
   bool MustRemainInstalled(const extensions::Extension* extension,
                            base::string16* error) const override;
 

@@ -504,6 +504,17 @@ bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
   return may_load;
 }
 
+bool SupervisedUserService::UserMayModifySettings(
+    const extensions::Extension* extension,
+    base::string16* error) const {
+  DCHECK(ProfileIsSupervised());
+  ExtensionState result = GetExtensionState(extension);
+  bool may_modify = (result == EXTENSION_ALLOWED);
+  if (!may_modify && error)
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
+  return may_modify;
+}
+
 // Note: Having MustRemainInstalled always say "true" for custodian-installed
 // extensions does NOT prevent remote uninstalls (which is a bit unexpected, but
 // exactly what we want).

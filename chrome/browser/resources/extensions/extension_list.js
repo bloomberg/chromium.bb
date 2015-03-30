@@ -678,7 +678,14 @@ cr.define('extensions', function() {
       var controlNode = row.querySelector('.enable-controls');
       var indicator =
           controlNode.querySelector('.controlled-extension-indicator');
-      var needsIndicator = isOK && !extension.userMayModify;
+      var needsIndicator = isOK &&
+                           !extension.userMayModify &&
+                           extension.policyText;
+      // TODO(treib): If userMayModify is false, but policyText is empty, that
+      // indicates this extension is controlled by something else than
+      // enterprise policy (such as the profile being supervised). For now, just
+      // don't show the indicator in this case. We should really handle this
+      // better though (ie use a different text and icon).
 
       if (needsIndicator && !indicator) {
         indicator = new cr.ui.ControlledIndicator();
