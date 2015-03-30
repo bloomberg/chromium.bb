@@ -170,6 +170,24 @@ private:
     size_t m_size;
 };
 
+// TODO(haraken): Like partitionOutOfMemoryWithLotsOfUncommitedPages(),
+// we should probably have a way to distinguish physical memory OOM from
+// virtual address space OOM.
+static NEVER_INLINE void blinkGCOutOfMemory()
+{
+#if OS(WIN)
+    // Crash at a special address (0x9b)
+    // to be easily distinguished on crash reports.
+    // This is because crash stack traces are inaccurate on Windows and
+    // blinkGCOutOfMemory might be not included in the stack traces.
+    reinterpret_cast<void(*)()>(0x9b)();
+#endif
+
+    // On non-Windows environment, IMMEDIATE_CRASH is sufficient
+    // because blinkGCOutOfMemory will appear in crash stack traces.
+    IMMEDIATE_CRASH();
+}
+
 // A PageMemoryRegion represents a chunk of reserved virtual address
 // space containing a number of blink heap pages. On Windows, reserved
 // virtual address space can only be given back to the system as a
@@ -248,7 +266,8 @@ private:
         // Round size up to the allocation granularity.
         size = (size + WTF::kPageAllocationGranularityOffsetMask) & WTF::kPageAllocationGranularityBaseMask;
         Address base = static_cast<Address>(WTF::allocPages(nullptr, size, blinkPageSize));
-        RELEASE_ASSERT(base);
+        if (!base)
+            blinkGCOutOfMemory();
         WTF::setSystemPagesInaccessible(base, size);
         return new PageMemoryRegion(base, size, numPages);
     }
