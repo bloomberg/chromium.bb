@@ -275,7 +275,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
       pending_call,
       &ObjectProxy::OnPendingCallIsCompleteThunk,
       data,
-      NULL);
+      &DeleteVoidPointer<OnPendingCallIsCompleteData>);
   CHECK(success) << "Unable to allocate memory";
   dbus_pending_call_unref(pending_call);
 
@@ -367,7 +367,6 @@ void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
                                 data->response_callback,
                                 data->error_callback,
                                 data->start_time);
-  delete data;
 }
 
 bool ObjectProxy::ConnectToNameOwnerChangedSignal() {

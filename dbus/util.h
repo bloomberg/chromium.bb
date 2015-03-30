@@ -23,6 +23,13 @@ CHROME_DBUS_EXPORT std::string GetAbsoluteMemberName(
     const std::string& interface_name,
     const std::string& member_name);
 
+// Similar to base::DeletePointer, but takes void* as an argument.
+// Used as DBusFreeFunction.
+template<typename T>
+void DeleteVoidPointer(void* memory) {
+  delete static_cast<T*>(memory);
+}
+
 }  // namespace dbus
 
 #endif  // DBUS_UTIL_H_
