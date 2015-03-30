@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "../src/compositor.h"
 #include "weston-test-server-protocol.h"
@@ -195,6 +196,44 @@ send_key(struct wl_client *client, struct wl_resource *resource,
 	notify_key(seat, 100, key, state, STATE_UPDATE_AUTOMATIC);
 }
 
+static void
+device_release(struct wl_client *client,
+	       struct wl_resource *resource, const char *device)
+{
+	struct weston_test *test = wl_resource_get_user_data(resource);
+	struct weston_seat *seat = get_seat(test);
+
+	if (strcmp(device, "pointer") == 0) {
+		weston_seat_release_pointer(seat);
+	} else if (strcmp(device, "keyboard") == 0) {
+		weston_seat_release_keyboard(seat);
+	} else if (strcmp(device, "touch") == 0) {
+		weston_seat_release_touch(seat);
+	} else if (strcmp(device, "seat") == 0) {
+		weston_seat_release(seat);
+	} else {
+		assert(0 && "Unsupported device");
+	}
+}
+
+static void
+device_add(struct wl_client *client,
+	   struct wl_resource *resource, const char *device)
+{
+	struct weston_test *test = wl_resource_get_user_data(resource);
+	struct weston_seat *seat = get_seat(test);
+
+	if (strcmp(device, "pointer") == 0) {
+		weston_seat_init_pointer(seat);
+	} else if (strcmp(device, "keyboard") == 0) {
+		weston_seat_init_keyboard(seat, NULL);
+	} else if (strcmp(device, "touch") == 0) {
+		weston_seat_init_touch(seat);
+	} else {
+		assert(0 && "Unsupported device");
+	}
+}
+
 #ifdef ENABLE_EGL
 static int
 is_egl_buffer(struct wl_resource *resource)
@@ -242,6 +281,8 @@ static const struct weston_test_interface test_implementation = {
 	send_button,
 	activate_surface,
 	send_key,
+	device_release,
+	device_add,
 	get_n_buffers,
 };
 

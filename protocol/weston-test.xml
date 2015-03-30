@@ -56,6 +56,12 @@
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </request>
+    <request name="device_release">
+      <arg name="device" type="string"/>
+    </request>
+    <request name="device_add">
+      <arg name="device" type="string"/>
+    </request>
     <event name="pointer_position">
       <arg name="x" type="fixed"/>
       <arg name="y" type="fixed"/>
