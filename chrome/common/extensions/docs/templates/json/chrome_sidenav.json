@@ -373,6 +373,20 @@
             "href": "/apps/chrome_apps_on_mobile"
           },
           {
+            "title": "Run Android Apps on Chrome OS",
+            "href": "/apps/getstarted_arc",
+            "items": [
+              {
+                "title": "Getting Started With ARC",
+                "href": "/apps/getstarted_arc"
+              },
+              {
+                "title": "Enable Play Services in Your ARC App",
+                "href": "/apps/arc_playservices"
+              }
+            ]
+          },
+          {
             "title": "Samples",
             "href": "/apps/samples"
           },
