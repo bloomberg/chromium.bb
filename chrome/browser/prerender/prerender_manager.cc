@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/predictor_database.h"
@@ -1080,22 +1079,6 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   if (GetMode() == PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP)
     histograms_->RecordConcurrency(active_prerenders_.size());
 
-  // Query the history to see if the URL being prerendered has ever been
-  // visited before.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  if (history_service) {
-    history_service->QueryURL(
-        url,
-        false,
-        base::Bind(&PrerenderManager::OnHistoryServiceDidQueryURL,
-                   base::Unretained(this),
-                   origin,
-                   experiment),
-        &query_url_tracker_);
-  }
-
   StartSchedulingPeriodicCleanups();
   return prerender_handle;
 }
@@ -1473,15 +1456,6 @@ void PrerenderManager::LoggedInPredictorDataReceived(
     scoped_ptr<LoggedInStateMap> new_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   logged_in_state_.swap(new_map);
-}
-
-void PrerenderManager::OnHistoryServiceDidQueryURL(
-    Origin origin,
-    uint8 experiment_id,
-    bool success,
-    const history::URLRow& url_row,
-    const history::VisitVector& /*visits*/) {
-  histograms_->RecordPrerenderPageVisitedStatus(origin, experiment_id, success);
 }
 
 void PrerenderManager::RecordNetworkBytes(Origin origin,

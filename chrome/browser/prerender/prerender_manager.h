@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_origin.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -283,12 +281,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                                   bool* lookup_result,
                                   bool* database_was_present,
                                   const base::Closure& result_cb);
-
-  void OnHistoryServiceDidQueryURL(Origin origin,
-                                   uint8 experiment_id,
-                                   bool success,
-                                   const history::URLRow& url_row,
-                                   const history::VisitVector& visits);
 
   Profile* profile() const { return profile_; }
 
@@ -582,8 +574,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<LoggedInStateMap> logged_in_state_;
 
   content::NotificationRegistrar notification_registrar_;
-
-  base::CancelableTaskTracker query_url_tracker_;
 
   // The number of bytes transferred over the network for the profile this
   // PrerenderManager is attached to.

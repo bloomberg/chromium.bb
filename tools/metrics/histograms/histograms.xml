@@ -28606,6 +28606,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.PageVisitedStatus" enum="Boolean">
+  <obsolete>
+    deprecated March 30, 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Indicates whether the user has ever visited (in the past) a URL for which a
