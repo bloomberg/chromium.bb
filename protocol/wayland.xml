@@ -1560,7 +1560,13 @@
     <!-- Version 3 additions -->
 
     <request name="release" type="destructor" since="3">
-      <description summary="release the pointer object"/>
+      <description summary="release the pointer object">
+        Using this request client can tell the server that it is not going to
+	use the pointer object anymore.
+
+	This request destroys the pointer proxy object, so user must not call
+	wl_pointer_destroy() after using this request.
+      </description>
     </request>
 
   </interface>
