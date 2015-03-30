@@ -208,12 +208,6 @@ void FetchManager::Loader::didFailRedirectCheck()
 
 void FetchManager::Loader::start()
 {
-    if (!executionContext()->isServiceWorkerGlobalScope()
-        && m_request->mode() == WebURLRequest::FetchRequestModeNoCORS) {
-        performNetworkError("no-cors is disabled for non-serviceworker.");
-        return;
-    }
-
     // "1. If |request|'s url contains a Known HSTS Host, modify it per the
     // requirements of the 'URI [sic] Loading and Port Mapping' chapter of HTTP
     // Strict Transport Security."
