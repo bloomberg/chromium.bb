@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -33,7 +34,7 @@ using std::vector;
 namespace net {
 namespace tools {
 
-const PollBits kEpollFlags = PollBits(NET_POLLIN | NET_POLLOUT | NET_POLLET);
+const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
@@ -307,16 +308,16 @@ bool QuicClient::WaitForEvents() {
 void QuicClient::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, fd_);
 
-  if (event->in_events & NET_POLLIN) {
+  if (event->in_events & EPOLLIN) {
     while (connected() && ReadAndProcessPacket()) {
     }
   }
-  if (connected() && (event->in_events & NET_POLLOUT)) {
+  if (connected() && (event->in_events & EPOLLOUT)) {
     writer_->SetWritable();
     session_->connection()->OnCanWrite();
   }
-  if (event->in_events & NET_POLLERR) {
-    DVLOG(1) << "NET_POLLERR";
+  if (event->in_events & EPOLLERR) {
+    DVLOG(1) << "Epollerr";
   }
 }
 

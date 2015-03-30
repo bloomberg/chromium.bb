@@ -76,8 +76,7 @@ SMConnection* SMAcceptorThread::FindOrMakeNewSMConnection() {
 }
 
 void SMAcceptorThread::InitWorker() {
-  epoll_server_.RegisterFD(acceptor_->listen_fd_, this,
-                           PollBits(NET_POLLIN | NET_POLLET));
+  epoll_server_.RegisterFD(acceptor_->listen_fd_, this, EPOLLIN | EPOLLET);
 }
 
 void SMAcceptorThread::HandleConnection(int server_fd,
@@ -198,7 +197,7 @@ void SMAcceptorThread::Run() {
 }
 
 void SMAcceptorThread::OnEvent(int fd, EpollEvent* event) {
-  if (event->in_events | NET_POLLIN) {
+  if (event->in_events | EPOLLIN) {
     VLOG(2) << ACCEPTOR_CLIENT_IDENT
             << "Acceptor: Accepting based upon epoll events";
     AcceptFromListenFD();

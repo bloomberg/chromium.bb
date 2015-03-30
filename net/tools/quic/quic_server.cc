@@ -8,6 +8,7 @@
 #include <features.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 
 #include "net/base/ip_endpoint.h"
@@ -44,7 +45,7 @@ namespace {
 // generated using `wget -p --save-headers <url>`
 std::string FLAGS_quic_in_memory_cache_dir = "";
 
-const PollBits kEpollFlags = PollBits(NET_POLLIN | NET_POLLOUT | NET_POLLET);
+const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 const char kSourceAddressTokenSecret[] = "secret";
 
 }  // namespace
@@ -215,8 +216,8 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, fd_);
   event->out_ready_mask = 0;
 
-  if (event->in_events & NET_POLLIN) {
-    DVLOG(1) << "NET_POLLIN";
+  if (event->in_events & EPOLLIN) {
+    DVLOG(1) << "EPOLLIN";
     bool read = true;
     while (read) {
       if (use_recvmmsg_) {
@@ -249,13 +250,13 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
       }
     }
   }
-  if (event->in_events & NET_POLLOUT) {
+  if (event->in_events & EPOLLOUT) {
     dispatcher_->OnCanWrite();
     if (dispatcher_->HasPendingWrites()) {
-      event->out_ready_mask |= NET_POLLOUT;
+      event->out_ready_mask |= EPOLLOUT;
     }
   }
-  if (event->in_events & NET_POLLERR) {
+  if (event->in_events & EPOLLERR) {
   }
 }
 
