@@ -1710,6 +1710,7 @@ crbug.com/410929 virtual/gpu/fast/canvas/check-stale-putImageData.html [ Pass Im
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/shadow-offset-1.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/toDataURL-alpha-stability.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/canvasDrawingIntoSelf.html [ Pass ImageOnlyFailure ]
 
 crbug.com/446420 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass ImageOnlyFailure ]
 crbug.com/446420 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass Crash ImageOnlyFailure ]
