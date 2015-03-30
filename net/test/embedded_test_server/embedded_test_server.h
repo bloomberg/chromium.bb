@@ -71,7 +71,7 @@ class HttpListenSocket : public TCPListenSocket {
 //   if (absolute_url.path() != "/test")
 //     return scoped_ptr<HttpResponse>();
 //
-//   scoped_ptr<HttpResponse> http_response(new HttpResponse());
+//   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
 //   http_response->set_code(test_server::SUCCESS);
 //   http_response->set_content("hello");
 //   http_response->set_content_type("text/plain");
