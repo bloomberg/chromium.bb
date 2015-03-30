@@ -4,16 +4,11 @@
 
 #include "chrome/browser/ui/android/infobars/account_chooser_infobar.h"
 
-#include "base/android/scoped_java_ref.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/account_chooser_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserInfoBar_jni.h"
-#include "ui/gfx/android/java_bitmap.h"
 
 namespace {
 
@@ -30,59 +25,6 @@ void AddElementsToJavaCredentialArray(
     env->SetObjectArrayElement(java_credentials_array.obj(), index,
                                java_credential.obj());
     index++;
-  }
-}
-
-class AvatarFetcherAndroid : public AccountAvatarFetcher {
- public:
-  AvatarFetcherAndroid(
-      const GURL& url,
-      int index,
-      const base::android::ScopedJavaGlobalRef<jobject>& java_infobar);
-
- private:
-  ~AvatarFetcherAndroid() override = default;
-  // chrome::BitmapFetcherDelegate:
-  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
-
-  int index_;
-  base::android::ScopedJavaGlobalRef<jobject> java_infobar_;
-
-  DISALLOW_COPY_AND_ASSIGN(AvatarFetcherAndroid);
-};
-
-AvatarFetcherAndroid::AvatarFetcherAndroid(
-    const GURL& url,
-    int index,
-    const base::android::ScopedJavaGlobalRef<jobject>& java_infobar)
-    : AccountAvatarFetcher(url, base::WeakPtr<AccountAvatarFetcherDelegate>()),
-      index_(index),
-      java_infobar_(java_infobar) {
-}
-
-void AvatarFetcherAndroid::OnFetchComplete(const GURL url,
-                                           const SkBitmap* bitmap) {
-  base::android::ScopedJavaLocalRef<jobject> java_bitmap =
-      gfx::ConvertToJavaBitmap(bitmap);
-  Java_AccountChooserInfoBar_imageFetchComplete(
-      base::android::AttachCurrentThread(), java_infobar_.obj(), index_,
-      java_bitmap.obj());
-  delete this;
-}
-
-void FetchAvatars(
-    const base::android::ScopedJavaGlobalRef<jobject>& java_infobar,
-    const std::vector<const autofill::PasswordForm*>& password_forms,
-    int index,
-    net::URLRequestContextGetter* request_context) {
-  for (auto password_form : password_forms) {
-    if (!password_form->avatar_url.is_valid())
-      continue;
-    // Fetcher deletes itself once fetching is finished.
-    auto fetcher = new AvatarFetcherAndroid(password_form->avatar_url, index,
-                                            java_infobar);
-    fetcher->Start(request_context);
-    ++index;
   }
 }
 
@@ -110,22 +52,9 @@ AccountChooserInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, java_credentials_array, GetDelegate()->federated_credentials_forms(),
       password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,
       GetDelegate()->local_credentials_forms().size());
-  base::android::ScopedJavaGlobalRef<jobject> java_infobar_global;
-  java_infobar_global.Reset(Java_AccountChooserInfoBar_show(
-      env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-      java_credentials_array.obj()));
-  base::android::ScopedJavaLocalRef<jobject> java_infobar(java_infobar_global);
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(this);
-  net::URLRequestContextGetter* request_context =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())
-          ->GetRequestContext();
-  FetchAvatars(java_infobar_global, GetDelegate()->local_credentials_forms(), 0,
-               request_context);
-  FetchAvatars(
-      java_infobar_global, GetDelegate()->federated_credentials_forms(),
-      GetDelegate()->local_credentials_forms().size(), request_context);
-  return java_infobar;
+  return Java_AccountChooserInfoBar_show(env, reinterpret_cast<intptr_t>(this),
+                                         GetEnumeratedIconId(),
+                                         java_credentials_array.obj());
 }
 
 void AccountChooserInfoBar::OnCredentialClicked(JNIEnv* env,
