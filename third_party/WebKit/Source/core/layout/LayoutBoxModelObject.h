@@ -138,13 +138,15 @@ public:
     // Insets from the border box to the inside of the border.
     LayoutRectOutsets borderInsets() const { return LayoutRectOutsets(-borderTop(), -borderRight(), -borderBottom(), -borderLeft()); }
 
+    bool hasBorderOrPadding() const { return style()->hasBorder() || style()->hasPadding(); }
+
     LayoutUnit borderAndPaddingStart() const { return borderStart() + paddingStart(); }
     LayoutUnit borderAndPaddingBefore() const { return borderBefore() + paddingBefore(); }
     LayoutUnit borderAndPaddingAfter() const { return borderAfter() + paddingAfter(); }
 
     LayoutUnit borderAndPaddingHeight() const { return borderTop() + borderBottom() + paddingTop() + paddingBottom(); }
     LayoutUnit borderAndPaddingWidth() const { return borderLeft() + borderRight() + paddingLeft() + paddingRight(); }
-    LayoutUnit borderAndPaddingLogicalHeight() const { return borderAndPaddingBefore() + borderAndPaddingAfter(); }
+    LayoutUnit borderAndPaddingLogicalHeight() const { return hasBorderOrPadding() ? borderAndPaddingBefore() + borderAndPaddingAfter() : LayoutUnit(0); }
     LayoutUnit borderAndPaddingLogicalWidth() const { return borderStart() + borderEnd() + paddingStart() + paddingEnd(); }
     LayoutUnit borderAndPaddingLogicalLeft() const { return style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop(); }
 

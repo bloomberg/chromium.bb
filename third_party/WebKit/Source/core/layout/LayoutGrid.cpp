@@ -1516,6 +1516,9 @@ LayoutUnit LayoutGrid::marginLogicalHeightForChild(const LayoutBox& child) const
 
 LayoutUnit LayoutGrid::computeMarginLogicalHeightForChild(const LayoutBox& child) const
 {
+    if (!child.styleRef().hasMargin())
+        return 0;
+
     LayoutUnit marginBefore;
     LayoutUnit marginAfter;
     child.computeMarginsForDirection(BlockDirection, this, child.containingBlockLogicalWidthForContent(), child.logicalHeight(), marginBefore, marginAfter,
@@ -1535,8 +1538,7 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
     if (childMarginLogicalHeight == 0)
         childMarginLogicalHeight = computeMarginLogicalHeightForChild(child);
 
-    LayoutUnit childLogicalHeight = childMarginLogicalHeight + intrinsicLogicalHeightForChild(child);
-    return gridAreaBreadthForChild - childLogicalHeight;
+    return gridAreaBreadthForChild - childMarginLogicalHeight;
 }
 
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
@@ -1550,16 +1552,16 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUn
         // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
         if (!hasOrthogonalWritingMode) {
-            LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child.logicalHeight();
-            LayoutUnit stretchedLogicalHeight = heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(gridAreaBreadthForChild, child);
-            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
-            LayoutUnit desiredLogicalContentHeight = desiredLogicalHeight - child.borderAndPaddingLogicalHeight();
+            LayoutUnit stretchedLogicalHeight = availableAlignmentSpaceForChildBeforeStretching(gridAreaBreadthForChild, child);
+            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, -1);
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-            if (desiredLogicalHeight != child.logicalHeight() || !child.hasOverrideHeight() || desiredLogicalContentHeight != child.overrideLogicalContentHeight()) {
-                child.setOverrideLogicalContentHeight(desiredLogicalContentHeight);
+            bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
+            if (childNeedsRelayout || !child.hasOverrideHeight())
+                child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
+            if (childNeedsRelayout) {
                 child.setLogicalHeight(0);
-                child.forceChildLayout();
+                child.setNeedsLayout();
             }
         }
     }
