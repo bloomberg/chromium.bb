@@ -83,22 +83,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   touch_device_list_.clear();
   touchscreen_ids_.clear();
 
-  // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
-  // not provide enough information to detect a touch device. As a result, the
-  // old version of query function (XListInputDevices) is used instead.
-  // If XInput2 is not supported, this will return null (with count of -1) so
-  // we assume there cannot be any touch devices.
-  // With XI2.1 or older, we allow only single touch devices.
-  const XDeviceList& dev_list =
-      DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
-  Atom xi_touchscreen = XInternAtom(display, XI_TOUCHSCREEN, false);
-  for (int i = 0; i < dev_list.count; i++) {
-    if (dev_list[i].type == xi_touchscreen) {
-      touch_device_lookup_[dev_list[i].id] = true;
-      touch_device_list_[dev_list[i].id] = false;
-    }
-  }
-
   if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
 
