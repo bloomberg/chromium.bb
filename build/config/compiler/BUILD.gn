@@ -165,7 +165,7 @@ config("compiler") {
     defines += [ "CR_CLANG_REVISION=" +
                  exec_script("//tools/clang/scripts/posix-print-revision.py",
                              [],
-                             "value") ]
+                             "trim string") ]
   }
 
   # Mac-specific compiler flags setup.
