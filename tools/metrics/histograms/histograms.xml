@@ -59298,6 +59298,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="100" label="LATENCY_TEST_DISALLOWED"/>
   <int value="105" label="DISABLED"/>
   <int value="106" label="SECURE_SCHEME_NOT_SUPPORTED"/>
+  <int value="107" label="DICTIONARY_USED_AFTER_DELETION"/>
 </enum>
 
 <enum name="SdchResponseCorruptionDetectionCauses" type="int">

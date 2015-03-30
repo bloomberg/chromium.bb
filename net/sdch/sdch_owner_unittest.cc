@@ -624,6 +624,48 @@ TEST_F(SdchOwnerTest, MemoryPressureReturnsSpace) {
       CreateAndAddDictionary(kMaxSizeForTesting, nullptr, base::Time::Now()));
 }
 
+// Confirm that use of a pinned dictionary after its removal works properly.
+TEST_F(SdchOwnerTest, PinRemoveUse) {
+  pref_store().SetInitializationCompleted();
+  sdch_owner().EnablePersistentStorage(&pref_store());
+
+  std::string server_hash_d1;
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d1,
+                                     base::Time::Now()));
+
+  scoped_ptr<SdchManager::DictionarySet> return_set(
+      sdch_manager().GetDictionarySet(
+          GURL(std::string(generic_url) + "/x.html")));
+  ASSERT_TRUE(return_set.get());
+  EXPECT_TRUE(return_set->GetDictionary(server_hash_d1));
+
+  const base::Value* result = nullptr;
+  const base::DictionaryValue* dict_result = nullptr;
+  ASSERT_TRUE(pref_store().GetValue("SDCH", &result));
+  ASSERT_TRUE(result->GetAsDictionary(&dict_result));
+  EXPECT_TRUE(dict_result->Get("dictionaries", &result));
+  EXPECT_TRUE(dict_result->Get("dictionaries." + server_hash_d1, &result));
+
+  sdch_manager().ClearData();
+
+  ASSERT_TRUE(pref_store().GetValue("SDCH", &result));
+  ASSERT_TRUE(result->GetAsDictionary(&dict_result));
+  EXPECT_TRUE(dict_result->Get("dictionaries", &result));
+  EXPECT_FALSE(dict_result->Get("dictionaries." + server_hash_d1, &result));
+
+  scoped_ptr<SdchManager::DictionarySet> return_set2(
+      sdch_manager().GetDictionarySet(
+          GURL(std::string(generic_url) + "/x.html")));
+  EXPECT_FALSE(return_set2.get());
+
+  sdch_manager().OnDictionaryUsed(server_hash_d1);
+
+  ASSERT_TRUE(pref_store().GetValue("SDCH", &result));
+  ASSERT_TRUE(result->GetAsDictionary(&dict_result));
+  EXPECT_TRUE(dict_result->Get("dictionaries", &result));
+  EXPECT_FALSE(dict_result->Get("dictionaries." + server_hash_d1, &result));
+}
+
 class SdchOwnerPersistenceTest : public ::testing::Test {
  public:
   SdchOwnerPersistenceTest() : pref_store_(new TestingPrefStore()) {

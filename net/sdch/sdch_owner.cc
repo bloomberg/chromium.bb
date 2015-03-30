@@ -498,19 +498,32 @@ void SdchOwner::OnDictionaryUsed(SdchManager* manager,
 
   base::Value* value = nullptr;
   bool success = pref_dictionary_map->Get(server_hash, &value);
-  DCHECK(success);
+  if (!success) {
+    // SdchManager::GetDictionarySet() pins the referenced dictionaries in
+    // memory past a possible deletion.  For this reason, OnDictionaryUsed()
+    // notifications may occur after SdchOwner thinks that dictionaries
+    // have been deleted.
+    SdchManager::SdchErrorRecovery(SDCH_DICTIONARY_USED_AFTER_DELETION);
+    return;
+  }
   base::DictionaryValue* specific_dictionary_map = nullptr;
   success = value->GetAsDictionary(&specific_dictionary_map);
-  DCHECK(success);
+  // TODO(rdsmith); Switch back to DCHECK() after http://crbug.com/454198 is
+  // resolved.
+  CHECK(success);
 
   double last_used_seconds_since_epoch = 0.0;
   success = specific_dictionary_map->GetDouble(kDictionaryLastUsedKey,
                                                &last_used_seconds_since_epoch);
-  DCHECK(success);
+  // TODO(rdsmith); Switch back to DCHECK() after http://crbug.com/454198 is
+  // resolved.
+  CHECK(success);
   int use_count = 0;
   success =
       specific_dictionary_map->GetInteger(kDictionaryUseCountKey, &use_count);
-  DCHECK(success);
+  // TODO(rdsmith); Switch back to DCHECK() after http://crbug.com/454198 is
+  // resolved.
+  CHECK(success);
 
   if (use_counts_at_load_.count(server_hash) == 0) {
     use_counts_at_load_[server_hash] = use_count;

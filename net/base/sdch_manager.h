@@ -236,7 +236,9 @@ class NET_EXPORT SdchManager {
                                   const GURL& dictionary_url);
 
   // Send out appropriate events notifying observers that a dictionary
-  // was successfully used to decode a request.
+  // was successfully used to decode a request.  Note that this can happen
+  // after a dictionary has been deleted from the SdchManager (because
+  // DictionarySets retain references to deleted dictionaries).
   void OnDictionaryUsed(const std::string& server_hash);
 
   // Get a handle to the available dictionaries that might be used

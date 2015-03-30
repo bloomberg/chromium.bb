@@ -33,7 +33,9 @@ class NET_EXPORT SdchObserver {
 
   // A SDCH encoded response was received and the specified dictionary
   // was used to decode it.  This notification only occurs for successful
-  // decodes.
+  // decodes.  Note that this notification may occur for dictionaries that
+  // have been deleted from the SdchManager, since DictionarySets retain
+  // references to deleted dictionaries.  Observers must handle this case.
   // TODO(rdsmith): Should this notification indicate how much
   // compression the dictionary provided?
   virtual void OnDictionaryUsed(SdchManager* manager,

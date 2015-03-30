@@ -128,6 +128,9 @@ SDCH_PROBLEM_CODE(DISABLED, 105)
 // SDCH over https is disabled.
 SDCH_PROBLEM_CODE(SECURE_SCHEME_NOT_SUPPORTED, 106)
 
+// A dictionary used notification occurred after dictionary deletion.
+SDCH_PROBLEM_CODE(DICTIONARY_USED_AFTER_DELETION, 107)
+
 // Used to bound histogram.
 SDCH_PROBLEM_CODE(MAX_PROBLEM_CODE, 110)
 
