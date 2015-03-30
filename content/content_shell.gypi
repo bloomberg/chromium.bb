@@ -333,7 +333,7 @@
             'copy_test_netscape_plugin',
           ],
         }],  # OS=="android"
-        ['os_posix == 1 and OS != "mac" and android_webview_build != 1', {
+        ['os_posix == 1 and OS != "mac"', {
           'dependencies': [
             '../components/components.gyp:breakpad_host',
           ],
@@ -661,15 +661,13 @@
           ],
         }],  # OS=="mac"
         ['OS=="android"', {
+          'dependencies': [
+            '../tools/imagediff/image_diff.gyp:image_diff#host',
+          ],
           'dependencies!': [
             '../tools/imagediff/image_diff.gyp:image_diff',
           ],
         }],  # OS=="android"
-        ['OS=="android" and android_webview_build==0', {
-          'dependencies': [
-            '../tools/imagediff/image_diff.gyp:image_diff#host',
-          ],
-        }],  # OS=="android" and android_webview_build==0
       ],
     },
     {
@@ -1024,13 +1022,6 @@
           'sources': [
             'shell/android/shell_library_loader.cc',
           ],
-          'conditions': [
-            ['android_webview_build==1', {
-              'ldflags': [
-                '-lgabi++',  # For rtti
-              ],
-            }],
-          ],
         },
         {
           'target_name': 'content_shell_java',
@@ -1085,6 +1076,7 @@
             '../net/net.gyp:net_java',
             '../third_party/mesa/mesa.gyp:osmesa_in_lib_dir',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
+            '../tools/imagediff/image_diff.gyp:image_diff#host',
             '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
@@ -1111,13 +1103,6 @@
               }],
             ],
           },
-          'conditions': [
-            ['android_webview_build==0', {
-              'dependencies': [
-                '../tools/imagediff/image_diff.gyp:image_diff#host',
-              ],
-            }],
-          ],
           'includes': [ '../build/java_apk.gypi' ],
         },
       ],

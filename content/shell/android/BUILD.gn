@@ -31,9 +31,6 @@ shared_library("libcontent_shell_content_view") {
   sources = [
     "shell_library_loader.cc",
   ]
-  if (is_android_webview_build) {
-    ldflags = [ "-lgabi++" ]
-  }
 }
 
 android_resources("content_shell_java_resources") {
@@ -134,10 +131,6 @@ android_apk("content_shell_apk") {
 
   # TODO(GYP)
   #'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
-
-  if (is_android_webview_build) {
-    # TODO(GYP)
-  }
 }
 
 android_library("content_shell_test_java") {

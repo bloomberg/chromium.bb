@@ -310,7 +310,7 @@ static_library("content_shell_lib") {
     #deps -= [ "copy_test_netscape_plugin" ]  TODO(GYP)
   }
 
-  if (is_posix && !is_mac && (!is_android || !is_android_webview_build)) {
+  if (is_posix && !is_mac) {
     deps += [ "//components/crash/browser" ]
   }
 
@@ -519,7 +519,7 @@ if (!is_android && !is_mac) {
       # TODO(GYP) lots of stuff from GYP file here.
     }
 
-    if (is_android && !is_android_webview_build) {
+    if (is_android) {
       # Some tests rely on this tool. It might be nicer if these tests relied on
       # image diff rather than having content shell depend on it.
       datadeps = [
