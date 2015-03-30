@@ -404,6 +404,10 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath();
 #endif
 
+    // For complex text we need to compute the glyph bounds as accents can extend outside the frameRect.
+    if (!canUseSimpleFontCodePath)
+        glyphOverflow.computeBounds = true;
+
     // Since we don't cache glyph overflows, we need to re-measure the run if
     // the style is linebox-contain: glyph.
 
