@@ -80,8 +80,8 @@ ScopedMIDIHDR CreateMIDIHDR(size_t size) {
 
 void SendShortMidiMessageInternal(HMIDIOUT midi_out_handle,
                                   const std::vector<uint8>& message) {
-  if (message.size() >= 4)
-    return;
+  DCHECK_LE(message.size(), static_cast<size_t>(3))
+      << "A short MIDI message should be up to 3 bytes.";
 
   DWORD packed_message = 0;
   for (size_t i = 0; i < message.size(); ++i)
@@ -94,8 +94,9 @@ void SendShortMidiMessageInternal(HMIDIOUT midi_out_handle,
 void SendLongMidiMessageInternal(HMIDIOUT midi_out_handle,
                                  const std::vector<uint8>& message) {
   // Implementation note:
-  // Sending long MIDI message can be performed synchronously or asynchronously
-  // depending on the driver. There are 2 options to support both cases:
+  // Sending a long MIDI message can be performed synchronously or
+  // asynchronously depending on the driver. There are 2 options to support both
+  // cases:
   // 1) Call midiOutLongMsg() API and wait for its completion within this
   //   function. In this approach, we can avoid memory copy by directly pointing
   //   |message| as the data buffer to be sent.
@@ -119,24 +120,23 @@ void SendLongMidiMessageInternal(HMIDIOUT midi_out_handle,
   }
 
   ScopedMIDIHDR midi_header(CreateMIDIHDR(message.size()));
-  for (size_t i = 0; i < message.size(); ++i)
-    midi_header->lpData[i] = static_cast<char>(message[i]);
+  std::copy(message.begin(), message.end(), midi_header->lpData);
 
-  MMRESULT result = midiOutPrepareHeader(
-      midi_out_handle, midi_header.get(), sizeof(*midi_header));
+  MMRESULT result = midiOutPrepareHeader(midi_out_handle, midi_header.get(),
+                                         sizeof(*midi_header));
   if (result != MMSYSERR_NOERROR) {
     DLOG(ERROR) << "Failed to prepare output buffer: "
                 << GetOutErrorMessage(result);
     return;
   }
 
-  result = midiOutLongMsg(
-      midi_out_handle, midi_header.get(), sizeof(*midi_header));
+  result =
+      midiOutLongMsg(midi_out_handle, midi_header.get(), sizeof(*midi_header));
   if (result != MMSYSERR_NOERROR) {
     DLOG(ERROR) << "Failed to output long message: "
                 << GetOutErrorMessage(result);
-    result = midiOutUnprepareHeader(
-        midi_out_handle, midi_header.get(), sizeof(*midi_header));
+    result = midiOutUnprepareHeader(midi_out_handle, midi_header.get(),
+                                    sizeof(*midi_header));
     DLOG_IF(ERROR, result != MMSYSERR_NOERROR)
         << "Failed to uninitialize output buffer: "
         << GetOutErrorMessage(result);
