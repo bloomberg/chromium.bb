@@ -8,9 +8,9 @@
 <!-- Please keep this in sync with the downstream android_webview manifest.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.webview">
-    <uses-sdk android:minSdkVersion="21"
-              android:targetSdkVersion="21">
+    package="{{package|default('com.android.webview')}}">
+    <uses-sdk android:minSdkVersion="{{minsdk|default(21)}}"
+              android:targetSdkVersion="{{targetsdk|default(21)}}">
     </uses-sdk>
 
     <uses-feature android:name="android.hardware.touchscreen"

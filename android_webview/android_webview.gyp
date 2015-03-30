@@ -388,7 +388,6 @@
           'variables': {
             'apk_name': 'SystemWebView',
             'android_sdk_jar': '../third_party/android_platform/webview/frameworks_5.1.0_r1.jar',
-            'android_manifest_path': 'apk/java/AndroidManifest.xml',
             'java_in_dir': 'glue/java',
             'resource_dir': 'apk/java/res',
           },
