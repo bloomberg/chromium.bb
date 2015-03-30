@@ -38,6 +38,8 @@ Current patches:
   Check the return value of init_get_bits in libavformat/oggparsedirac.c.
     If it fails, the GetBitContext is invalid and mustn't be used.
 
+  Change printf format specifier for enum from PRIu8 to %d in libavformat/mov.
+
   Misc things that were not documented
     Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
 
