@@ -22,28 +22,14 @@ var allTests = [
   function testLoadTabs() {
     var webViews = getAllWebViews();
     assertEq(2, webViews.length);
-
-    // Test spins up more quickly than the load; listen for the childrenChanged
-    // event.
-    function childrenChangedListener(evt) {
-      var subroot = webViews[1].firstChild;
-      assertEq(evt.target, subroot.parent);
-      assertEq(subroot, subroot.parent.children[0]);
-
-      var button = subroot.firstChild.firstChild;
-      assertEq(chrome.automation.RoleType.button, button.role);
-
-      var input = subroot.firstChild.lastChild.previousSibling;
-      assertEq(chrome.automation.RoleType.textField, input.role);
-      webViews[1].removeEventListener(
-          chrome.automation.EventType.childrenChanged,
-          childrenChangedListener), true;
-      chrome.test.succeed();
-    }
-    webViews[1].addEventListener(
-        chrome.automation.EventType.childrenChanged,
-        childrenChangedListener,
-        true);
+    var subroot = webViews[1].firstChild;
+    assertEq(webViews[1], subroot.parent);
+    assertEq(subroot, subroot.parent.children[0]);
+    var button = subroot.firstChild.firstChild;
+    assertEq(chrome.automation.RoleType.button, button.role);
+    var input = subroot.firstChild.lastChild.previousSibling;
+    assertEq(chrome.automation.RoleType.textField, input.role);
+    chrome.test.succeed();
   },
 
   function testSubevents() {

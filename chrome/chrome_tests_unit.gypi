@@ -939,7 +939,7 @@
       # Ash implies the app list is enabled (only disabled on mobile).
       'browser/ui/app_list/search/app_search_provider_unittest.cc',
       'browser/ui/app_list/search/history_unittest.cc',
-      'browser/ui/ash/accessibility/ax_tree_source_ash_unittest.cc',
+      'browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc',
       'browser/ui/ash/chrome_screenshot_grabber_unittest.cc',
       'browser/ui/ash/ime_controller_chromeos_unittest.cc',
       'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',

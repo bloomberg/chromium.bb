@@ -35,6 +35,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #endif
@@ -52,7 +53,6 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
@@ -213,8 +213,8 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
 
 void ChromeViewsDelegate::NotifyAccessibilityEvent(
     views::View* view, ui::AXEvent event_type) {
-#if defined(USE_ASH)
-  AutomationManagerAsh::GetInstance()->HandleEvent(
+#if defined(USE_AURA)
+  AutomationManagerAura::GetInstance()->HandleEvent(
       GetProfileForWindow(view->GetWidget()), view, event_type);
 #endif
 }

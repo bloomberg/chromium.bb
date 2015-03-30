@@ -1149,12 +1149,6 @@
     ],
     # Cross-platform ash sources.
     'chrome_browser_ui_ash_sources': [
-      'browser/ui/ash/accessibility/automation_manager_ash.cc',
-      'browser/ui/ash/accessibility/automation_manager_ash.h',
-      'browser/ui/ash/accessibility/ax_root_obj_wrapper.cc',
-      'browser/ui/ash/accessibility/ax_root_obj_wrapper.h',
-      'browser/ui/ash/accessibility/ax_tree_source_ash.cc',
-      'browser/ui/ash/accessibility/ax_tree_source_ash.h',
       'browser/ui/ash/app_list/app_list_controller_ash.cc',
       'browser/ui/ash/app_list/app_list_controller_ash.h',
       'browser/ui/ash/app_list/app_list_service_ash.cc',
@@ -1291,6 +1285,12 @@
     ],
     # Cross-platform aura sources.
     'chrome_browser_ui_aura_sources': [
+      'browser/ui/aura/accessibility/automation_manager_aura.cc',
+      'browser/ui/aura/accessibility/automation_manager_aura.h',
+      'browser/ui/aura/accessibility/ax_root_obj_wrapper.cc',
+      'browser/ui/aura/accessibility/ax_root_obj_wrapper.h',
+      'browser/ui/aura/accessibility/ax_tree_source_aura.cc',
+      'browser/ui/aura/accessibility/ax_tree_source_aura.h',
       'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',
       'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
       'browser/ui/aura/native_window_tracker_aura.cc',

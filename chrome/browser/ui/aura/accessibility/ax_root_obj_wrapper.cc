@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/accessibility/ax_root_obj_wrapper.h"
+#include "chrome/browser/ui/aura/accessibility/ax_root_obj_wrapper.h"
 
-#include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -45,19 +44,7 @@ views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
 
 void AXRootObjWrapper::GetChildren(
     std::vector<views::AXAuraObjWrapper*>* out_children) {
-  if (!ash::Shell::HasInstance())
-    return;
-
-  // Only on ash is there a notion of a root with children.
-  aura::Window::Windows children =
-      ash::Shell::GetInstance()->GetAllRootWindows();
-  for (size_t i = 0; i < children.size(); ++i) {
-    out_children->push_back(
-        views::AXAuraObjCache::GetInstance()->GetOrCreate(children[i]));
-  }
-
-  out_children->push_back(
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_));
+  views::AXAuraObjCache::GetInstance()->GetTopLevelWindows(out_children);
 }
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
