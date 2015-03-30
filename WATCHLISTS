@@ -19,7 +19,6 @@
   'WATCHLISTS': {
     'this_file': [],
     'depot_tools': [
-      'cmp-cc@chromium.org',
       'dpranke+depot_tools@chromium.org',
       'iannucci+depot_tools@chromium.org',
     ],
