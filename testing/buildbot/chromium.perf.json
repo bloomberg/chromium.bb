@@ -160,5 +160,50 @@
         "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
       }
     ]
+  },
+  "Win XP Perf (3)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
+  },
+  "Win 7 Perf (3)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
+  },
+  "Win 8 Perf (2)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
+  },
+  "Win 7 x64 Perf (2)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
+  },
+  "Win 7 Low-End Perf (2)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
   }
 }
