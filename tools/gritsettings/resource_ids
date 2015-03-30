@@ -45,6 +45,9 @@
   "content/app/resources/content_resources.grd": {
     "structures": [4700],
   },
+  "third_party/WebKit/public/blink_image_resources.grd": {
+    "structures": [4750],
+  },
   "ui/resources/ui_resources.grd": {
     "structures": [5500],
   },
