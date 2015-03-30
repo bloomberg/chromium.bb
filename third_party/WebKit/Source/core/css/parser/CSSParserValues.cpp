@@ -244,7 +244,8 @@ static void destroy(Vector<CSSParserValue, 4>& values)
     for (size_t i = 0; i < numValues; i++) {
         if (values[i].unit == CSSParserValue::Function)
             delete values[i].function;
-        else if (values[i].unit == CSSParserValue::ValueList)
+        else if (values[i].unit == CSSParserValue::ValueList
+            || values[i].unit == CSSParserValue::DimensionList)
             delete values[i].valueList;
     }
 }
