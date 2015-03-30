@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.util.Pair;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
@@ -18,6 +20,13 @@ import java.util.concurrent.TimeUnit;
  * Centralizes UMA data collection for Contextual Search. All calls must be made from the UI thread.
  */
 public class ContextualSearchUma {
+    // An invalid value for the number of taps remaining for the promo.  Must be negative.
+    public static final int PROMO_TAPS_REMAINING_INVALID = -1;
+
+    // Constants to use for the original selection gesture
+    private static final boolean LONG_PRESS = false;
+    private static final boolean TAP = true;
+
     // Constants used to log UMA "enum" histograms about the Contextual Search's preference state.
     private static final int PREFERENCE_UNINITIALIZED = 0;
     private static final int PREFERENCE_ENABLED = 1;
@@ -130,6 +139,31 @@ public class ContextualSearchUma {
     private static final int EXIT_MAXIMIZED_TO_EXPANDED_FLING = 8;
     private static final int EXIT_MAXIMIZED_TO_BOUNDARY = 9;
 
+    // Constants used to log UMA "enum" histograms with details about whether search results
+    // were seen, and what the original triggering gesture was.
+    private static final int RESULTS_SEEN_FROM_TAP = 0;
+    private static final int RESULTS_NOT_SEEN_FROM_TAP = 1;
+    private static final int RESULTS_SEEN_FROM_LONG_PRESS = 2;
+    private static final int RESULTS_NOT_SEEN_FROM_LONG_PRESS = 3;
+    private static final int RESULTS_BY_GESTURE_BOUNDARY = 4;
+
+    // Constants used to log UMA "enum" histograms with details about whether search results
+    // were seen, and what the original triggering gesture was.
+    private static final int PROMO_ENABLED_FROM_TAP = 0;
+    private static final int PROMO_DISABLED_FROM_TAP = 1;
+    private static final int PROMO_UNDECIDED_FROM_TAP = 2;
+    private static final int PROMO_ENABLED_FROM_LONG_PRESS = 3;
+    private static final int PROMO_DISABLED_FROM_LONG_PRESS = 4;
+    private static final int PROMO_UNDECIDED_FROM_LONG_PRESS = 5;
+    private static final int PROMO_BY_GESTURE_BOUNDARY = 6;
+
+    // Constants used to log UMA "enum" histograms with summary counts for SERP loading times.
+    private static final int PREFETCHED_PARIALLY_LOADED = 0;
+    private static final int PREFETCHED_FULLY_LOADED = 1;
+    private static final int NOT_PREFETCHED = 2;
+    private static final int PREFETCH_BOUNDARY = 3;
+
+
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
      */
@@ -161,6 +195,8 @@ public class ContextualSearchUma {
             return mHashCode;
         }
     }
+
+    // TODO(donnd): switch from using Maps to some method that does not require creation of a key.
 
     // Entry code map: first entry into CLOSED.
     private static final Map<StateChangeKey, Integer> ENTER_CLOSED_STATE_CHANGE_CODES;
@@ -340,14 +376,62 @@ public class ContextualSearchUma {
         EXIT_MAXIMIZED_TO_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
     }
 
+    // "Seen by gesture" code map: logged on first exit from expanded panel, or promo,
+    // broken down by gesture.
+    private static final Map<Pair<Boolean, Boolean>, Integer> SEEN_BY_GESTURE_CODES;
+    static {
+        final boolean unseen = false;
+        final boolean seen = true;
+        Map<Pair<Boolean, Boolean>, Integer> codes = new HashMap<Pair<Boolean, Boolean>, Integer>();
+        codes.put(new Pair<Boolean, Boolean>(seen, TAP), RESULTS_SEEN_FROM_TAP);
+        codes.put(new Pair<Boolean, Boolean>(unseen, TAP), RESULTS_NOT_SEEN_FROM_TAP);
+        codes.put(new Pair<Boolean, Boolean>(seen, LONG_PRESS), RESULTS_SEEN_FROM_LONG_PRESS);
+        codes.put(new Pair<Boolean, Boolean>(unseen, LONG_PRESS), RESULTS_NOT_SEEN_FROM_LONG_PRESS);
+        SEEN_BY_GESTURE_CODES = Collections.unmodifiableMap(codes);
+    }
+
+    // "Promo outcome by gesture" code map: logged on exit from promo, broken down by gesture.
+    private static final Map<Pair<Integer, Boolean>, Integer> PROMO_BY_GESTURE_CODES;
+    static {
+        Map<Pair<Integer, Boolean>, Integer> codes =
+                new HashMap<Pair<Integer, Boolean>, Integer>();
+        codes.put(new Pair<Integer, Boolean>(PREFERENCE_ENABLED, TAP), PROMO_ENABLED_FROM_TAP);
+        codes.put(new Pair<Integer, Boolean>(PREFERENCE_DISABLED, TAP), PROMO_DISABLED_FROM_TAP);
+        codes.put(new Pair<Integer, Boolean>(PREFERENCE_UNINITIALIZED, TAP),
+                PROMO_UNDECIDED_FROM_TAP);
+        codes.put(new Pair<Integer, Boolean>(PREFERENCE_ENABLED, LONG_PRESS),
+                PROMO_ENABLED_FROM_LONG_PRESS);
+        codes.put(new Pair<Integer, Boolean>(PREFERENCE_DISABLED, LONG_PRESS),
+                PROMO_DISABLED_FROM_LONG_PRESS);
+        codes.put(new Pair<Integer, Boolean>(PREFERENCE_UNINITIALIZED, LONG_PRESS),
+                PROMO_UNDECIDED_FROM_LONG_PRESS);
+        PROMO_BY_GESTURE_CODES = Collections.unmodifiableMap(codes);
+    }
+
     /**
      * Logs the state of the Contextual Search preference. This function should be called if the
      * Contextual Search feature is enabled, and will track the different preference settings
      * (disabled, enabled or uninitialized). Calling more than once is fine.
+     * This is deprecated; pass the number of taps remaining to logPreferenceState.
      */
+    @Deprecated
     public static void logPreferenceState() {
+        logPreferenceState(PROMO_TAPS_REMAINING_INVALID);
+    }
+
+    /**
+     * Logs the state of the Contextual Search preference. This function should be called if the
+     * Contextual Search feature is enabled, and will track the different preference settings
+     * (disabled, enabled or uninitialized). Calling more than once is fine.
+     * @param promoTapsRemaining The number of taps remaining, or -1 if not applicable.
+     */
+    public static void logPreferenceState(int promoTapsRemaining) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceState",
                 getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
+        if (promoTapsRemaining != PROMO_TAPS_REMAINING_INVALID) {
+            RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsRemaining",
+                    promoTapsRemaining);
+        }
     }
 
     /**
@@ -362,14 +446,30 @@ public class ContextualSearchUma {
 
     /**
      * Logs the outcome of a first run flow.
+     * This is deprecated; call logPromoOutcome instead.
      */
+    @Deprecated
     public static void logFirstRunFlowOutcome() {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunFlowOutcome",
                 getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
     }
 
     /**
-     * Logs the duration of a Contextual Search.
+     * Logs the outcome of the promo (first run flow).
+     * Logs multiple histograms; with and without the originating gesture.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     */
+    public static void logPromoOutcome(boolean wasTap) {
+        int preferenceCode = getPreferenceValue();
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunFlowOutcome",
+                preferenceCode, PREFERENCE_HISTOGRAM_BOUNDARY);
+        int preferenceByGestureCode = getPromoByGestureStateCode(preferenceCode, wasTap);
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPromoOutcomeByGesture",
+                preferenceByGestureCode, PROMO_BY_GESTURE_BOUNDARY);
+    }
+
+    /**
+     * Logs the duration of a Contextual Search panel being viewed by the user.
      * @param wereResultsSeen Whether search results were seen.
      * @param isChained Whether the Contextual Search ended with the start of another.
      * @param durationMs The duration of the contextual search in milliseconds.
@@ -388,22 +488,51 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs whether the first run flow's panel was seen during the contextual search. This should
-     * only be called when the user exits the contextual search still in the undecided state.
-     * @param wasPanelSeen Whether the first run flow's panel was seen.
+     * Log the duration of finishing loading the SERP after the panel is opened.
+     * @param wasPrefetch Whether the request was prefetch-enabled or not.
+     * @param durationMs The duration of loading the SERP till completely loaded, in milliseconds.
+     *        Note that this value will be 0 when the SERP is prefetched and the user waits a
+     *        while before opening the panel.
      */
-    public static void logFirstRunPanelSeen(boolean wasPanelSeen) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunPanelSeen",
-                wasPanelSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+    public static void logSearchPanelLoadDuration(boolean wasPrefetch, long durationMs) {
+        if (wasPrefetch) {
+            RecordHistogram.recordMediumTimesHistogram("Search.ContextualSearchDurationPrefetched",
+                    durationMs, TimeUnit.MILLISECONDS);
+        } else {
+            RecordHistogram.recordMediumTimesHistogram(
+                    "Search.ContextualSearchDurationNonPrefetched", durationMs,
+                    TimeUnit.MILLISECONDS);
+        }
+
+       // Also record a summary histogram with counts for each possibility.
+        int code = !wasPrefetch ? NOT_PREFETCHED
+                : (durationMs == 0 ? PREFETCHED_FULLY_LOADED : PREFETCHED_PARIALLY_LOADED);
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPrefetchSummary",
+                code, PREFETCH_BOUNDARY);
     }
 
     /**
-     * Logs whether search results were seen during the contextual search.
-     * @param wereResultsSeen Whether search results were seen.
+     * Logs whether the promo was seen.
+     * Logs multiple histograms, with and without the original triggering gesture.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
      */
-    public static void logResultsSeen(boolean wereResultsSeen) {
+    public static void logPromoSeen(boolean wasPanelSeen, boolean wasTap) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunPanelSeen",
+                wasPanelSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+        logHistogramByGesture(wasPanelSeen, wasTap, "Search.ContextualSearchPromoSeenByGesture");
+    }
+
+    /**
+     * Logs whether search results were seen.
+     * Logs multiple histograms; with and without the original triggering gesture.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     */
+    public static void logResultsSeen(boolean wasPanelSeen, boolean wasTap) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchResultsSeen",
-                wereResultsSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+                wasPanelSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+        logHistogramByGesture(wasPanelSeen, wasTap, "Search.ContextualSearchResultsSeenByGesture");
     }
 
     /**
@@ -528,6 +657,14 @@ public class ContextualSearchUma {
         }
     }
 
+    /**
+     * Gets the state-change code for the given parameters by doing a lookup in the given map.
+     * @param state The panel state.
+     * @param reason The reason the state changed.
+     * @param stateChangeCodes The map of state and reason to code.
+     * @param defaultCode The code to return if the given values are not found in the map.
+     * @return The code to write into an enum histogram, based on the given map.
+     */
     private static int getStateChangeCode(PanelState state, StateChangeReason reason,
             Map<StateChangeKey, Integer> stateChangeCodes, int defaultCode) {
         Integer code = stateChangeCodes.get(new StateChangeKey(state, reason));
@@ -537,6 +674,31 @@ public class ContextualSearchUma {
         return defaultCode;
     }
 
+    /**
+     * Gets the panel-seen code for the given parameters by doing a lookup in the seen-by-gesture
+     * map.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     * @return The code to write into a panel-seen histogram.
+     */
+    private static int getPanelSeenByGestureStateCode(boolean wasPanelSeen, boolean wasTap) {
+        return SEEN_BY_GESTURE_CODES.get(new Pair<Boolean, Boolean>(wasPanelSeen, wasTap));
+    }
+
+    /**
+     * Gets the promo-outcome code for the given parameter by doing a lookup in the
+     * promo-by-gesture map.
+     * @param preferenceValue The code for the current preference value.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     * @return The code to write into a promo-outcome histogram.
+     */
+    private static int getPromoByGestureStateCode(int preferenceValue, boolean wasTap) {
+        return PROMO_BY_GESTURE_CODES.get(new Pair<Integer, Boolean>(preferenceValue, wasTap));
+    }
+
+    /**
+     * @return The code for the Contextual Search preference.
+     */
     private static int getPreferenceValue() {
         PrefServiceBridge preferences = PrefServiceBridge.getInstance();
         if (preferences.isContextualSearchUninitialized()) {
@@ -545,5 +707,18 @@ public class ContextualSearchUma {
             return PREFERENCE_DISABLED;
         }
         return PREFERENCE_ENABLED;
+    }
+
+    /**
+     * Logs to a seen-by-gesture histogram of the given name.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
+     * @param histogramName The full name of the histogram to log to.
+     */
+    private static void logHistogramByGesture(boolean wasPanelSeen, boolean wasTap,
+            String histogramName) {
+        RecordHistogram.recordEnumeratedHistogram(histogramName,
+                getPanelSeenByGestureStateCode(wasPanelSeen, wasTap),
+                RESULTS_BY_GESTURE_BOUNDARY);
     }
 }

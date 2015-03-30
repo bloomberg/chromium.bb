@@ -111,4 +111,11 @@ public interface ContextualSearchPanelDelegate {
      * Gets whether a touch on the search content view has been done yet or not.
      */
     boolean didTouchSearchContentView();
+
+    /**
+     * Called when the SERP finishes loading, this records the duration of loading the SERP from
+     * the time the panel was opened until the present.
+     * @param wasPrefetch Whether the request was prefetch-enabled.
+     */
+    void onSearchResultsLoaded(boolean wasPrefetch);
 }

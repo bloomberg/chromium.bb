@@ -51,7 +51,10 @@ abstract class ContextualSearchPanelStateHandler {
     private boolean mHasExitedExpanded;
     private boolean mHasExitedMaximized;
     private boolean mIsSerpNavigation;
+    private boolean mWasActivatedByTap;
+    private boolean mIsSearchPanelFullyPreloaded;
     private long mSearchStartTimeNs;
+    private long mSearchViewStartTimeNs;
 
     // --------------------------------------------------------------------------------------------
     // Contextual Search Panel states
@@ -109,6 +112,7 @@ abstract class ContextualSearchPanelStateHandler {
                 && !isSameState;
         boolean isFirstExitFromMaximized = fromState == PanelState.MAXIMIZED && !mHasExitedMaximized
                 && !isSameState;
+        boolean isFirstSearchView = isFirstExitFromPeeking && toState != PanelState.CLOSED;
 
         if (isEndingSearch) {
             if (!mDidSearchInvolvePromo) {
@@ -118,13 +122,19 @@ abstract class ContextualSearchPanelStateHandler {
             }
             if (mIsPromoActive) {
                 // The user is exiting still in the promo, without choosing an option.
-                ContextualSearchUma.logFirstRunPanelSeen(mWasSearchContentViewSeen);
+                ContextualSearchUma.logPromoSeen(mWasSearchContentViewSeen, mWasActivatedByTap);
             } else {
-                ContextualSearchUma.logResultsSeen(mWasSearchContentViewSeen);
+                ContextualSearchUma.logResultsSeen(mWasSearchContentViewSeen, mWasActivatedByTap);
             }
         }
         if (isStartingSearch) {
             mSearchStartTimeNs = System.nanoTime();
+            mSearchViewStartTimeNs = 0;
+            mIsSearchPanelFullyPreloaded = false;
+            mWasActivatedByTap = reason == StateChangeReason.TEXT_SELECT_TAP;
+        }
+        if (isFirstSearchView) {
+            onSearchPanelFirstView();
         }
 
         // Log state changes. We only log the first transition to a state within a contextual
@@ -228,6 +238,35 @@ abstract class ContextualSearchPanelStateHandler {
         return mIsPromoActive;
     }
 
+    /**
+     * Records timing information when the search results have fully loaded.
+     * @param wasPrefetch Whether the request was prefetch-enabled.
+     */
+    void onSearchResultsLoaded(boolean wasPrefetch) {
+        if (mHasExpanded || mHasMaximized) {
+            // Already opened, log how long it took.
+            assert mSearchViewStartTimeNs != 0;
+            long durationMs = (System.nanoTime() - mSearchViewStartTimeNs) / 1000000;
+            logSearchPanelLoadDuration(wasPrefetch, durationMs);
+        } else {
+            // Not yet opened, wait till an open to log.
+            mIsSearchPanelFullyPreloaded = true;
+        }
+    }
+
+    /**
+     * Records timing information when the search panel has been viewed for the first time.
+     */
+    private void onSearchPanelFirstView() {
+        if (mIsSearchPanelFullyPreloaded) {
+            // Already fully pre-loaded, record a wait of 0 milliseconds.
+            logSearchPanelLoadDuration(true, 0);
+        } else {
+            // Start a loading timer.
+            mSearchViewStartTimeNs = System.nanoTime();
+        }
+    }
+
     // --------------------------------------------------------------------------------------------
     // Helpers
     // --------------------------------------------------------------------------------------------
@@ -259,5 +298,14 @@ abstract class ContextualSearchPanelStateHandler {
      */
     private boolean isOngoingContextualSearch() {
         return mPanelState != PanelState.UNDEFINED && mPanelState != PanelState.CLOSED;
+    }
+
+    /**
+     * Logs the duration the user waited for the search panel to fully load, once it was opened.
+     * @param wasPrefetch Whether the load included prefetch.
+     * @param durationMs The duration to log.
+     */
+    private void logSearchPanelLoadDuration(boolean wasPrefetch, long durationMs) {
+        ContextualSearchUma.logSearchPanelLoadDuration(wasPrefetch, durationMs);
     }
 }

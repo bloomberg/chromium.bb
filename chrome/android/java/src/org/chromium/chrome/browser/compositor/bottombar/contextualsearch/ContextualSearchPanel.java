@@ -449,4 +449,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     public boolean didTouchSearchContentView() {
         return mHasSearchContentViewBeenTouched;
     }
+
+    @Override
+    public void onSearchResultsLoaded(boolean wasPrefetch) {
+        super.onSearchResultsLoaded(wasPrefetch);
+    }
 }
