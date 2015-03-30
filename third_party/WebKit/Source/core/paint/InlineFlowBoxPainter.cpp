@@ -290,15 +290,14 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
     bool compositedMask = m_inlineFlowBox.layoutObject().hasLayer() && m_inlineFlowBox.boxModelObject()->layer()->hasCompositedMask();
     bool flattenCompositingLayers = m_inlineFlowBox.layoutObject().view()->frameView() && m_inlineFlowBox.layoutObject().view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
     SkXfermode::Mode compositeOp = SkXfermode::kSrcOver_Mode;
+    SkXfermode::Mode previousCompositeOp = paintInfo.context->compositeOperation();
     if (!compositedMask || flattenCompositingLayers) {
-        if ((maskBoxImage && m_inlineFlowBox.layoutObject().style()->maskLayers().hasImage()) || m_inlineFlowBox.layoutObject().style()->maskLayers().next())
+        if ((maskBoxImage && m_inlineFlowBox.layoutObject().style()->maskLayers().hasImage()) || m_inlineFlowBox.layoutObject().style()->maskLayers().next()) {
             pushTransparencyLayer = true;
-
-        compositeOp = SkXfermode::kDstIn_Mode;
-        if (pushTransparencyLayer) {
             paintInfo.context->setCompositeOperation(SkXfermode::kDstIn_Mode);
-            paintInfo.context->beginTransparencyLayer(1.0f);
-            compositeOp = SkXfermode::kSrcOver_Mode;
+            paintInfo.context->beginLayer(1.0f, SkXfermode::kDstIn_Mode);
+        } else {
+            compositeOp = SkXfermode::kDstIn_Mode;
         }
     }
 
@@ -327,8 +326,10 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         BoxPainter::paintNinePieceImage(*m_inlineFlowBox.boxModelObject(), paintInfo.context, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(), maskNinePieceImage, compositeOp);
     }
 
-    if (pushTransparencyLayer)
+    if (pushTransparencyLayer) {
         paintInfo.context->endLayer();
+        paintInfo.context->setCompositeOperation(previousCompositeOp);
+    }
 }
 
 LayoutRect InlineFlowBoxPainter::roundedFrameRectClampedToLineTopAndBottomIfNeeded() const

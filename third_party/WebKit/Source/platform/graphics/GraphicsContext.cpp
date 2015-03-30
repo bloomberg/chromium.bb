@@ -435,11 +435,6 @@ void GraphicsContext::concat(const SkMatrix& matrix)
     m_canvas->concat(matrix);
 }
 
-void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bounds)
-{
-    beginLayer(opacity, immutableState()->compositeOperation(), bounds);
-}
-
 void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const FloatRect* bounds, ColorFilter colorFilter, SkImageFilter* imageFilter)
 {
     if (contextDisabled())
@@ -1175,20 +1170,24 @@ void GraphicsContext::fillRect(const FloatRect& rect)
     if (contextDisabled())
         return;
 
-    SkRect r = rect;
-
-    drawRect(r, immutableState()->fillPaint());
+    drawRect(rect, immutableState()->fillPaint());
 }
 
-void GraphicsContext::fillRect(const FloatRect& rect, const Color& color)
+void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, SkXfermode::Mode xferMode)
 {
     if (contextDisabled())
         return;
 
-    SkRect r = rect;
+    if (color == fillColor() && xferMode == compositeOperation()) {
+        drawRect(rect, immutableState()->fillPaint());
+        return;
+    }
+
     SkPaint paint = immutableState()->fillPaint();
     paint.setColor(color.rgb());
-    drawRect(r, paint);
+    paint.setXfermodeMode(xferMode);
+
+    drawRect(rect, paint);
 }
 
 void GraphicsContext::fillBetweenRoundedRects(const FloatRect& outer, const FloatSize& outerTopLeft, const FloatSize& outerTopRight, const FloatSize& outerBottomLeft, const FloatSize& outerBottomRight,
@@ -1490,17 +1489,6 @@ void GraphicsContext::concatCTM(const AffineTransform& affine)
 void GraphicsContext::setCTM(const AffineTransform& affine)
 {
     setMatrix(affineTransformToSkMatrix(affine));
-}
-
-void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, SkXfermode::Mode op)
-{
-    if (contextDisabled())
-        return;
-
-    SkXfermode::Mode previousOperation = compositeOperation();
-    setCompositeOperation(op);
-    fillRect(rect, color);
-    setCompositeOperation(previousOperation);
 }
 
 void GraphicsContext::fillRoundedRect(const FloatRoundedRect& rect, const Color& color)

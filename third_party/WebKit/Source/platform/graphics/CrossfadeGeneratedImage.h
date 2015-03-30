@@ -56,7 +56,7 @@ protected:
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 
 private:
-    void drawCrossfade(GraphicsContext*);
+    void drawCrossfade(GraphicsContext*, SkXfermode::Mode);
 
     Image* m_fromImage;
     Image* m_toImage;

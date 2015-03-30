@@ -168,9 +168,9 @@ public:
     void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->setInterpolationQuality(quality); }
     InterpolationQuality imageInterpolationQuality() const { return immutableState()->interpolationQuality(); }
 
+    // Do not use these methods: they are deprecated/scheduled for removal.
     void setCompositeOperation(SkXfermode::Mode);
     SkXfermode::Mode compositeOperation() const;
-    // TODO(dshwang): remove these method. crbug.com/425656
     CompositeOperator compositeOperationDeprecated() const;
 
     // Specify the device scale factor which may change the way document markers
@@ -216,8 +216,7 @@ public:
     void strokeEllipse(const FloatRect&);
 
     void fillRect(const FloatRect&);
-    void fillRect(const FloatRect&, const Color&);
-    void fillRect(const FloatRect&, const Color&, SkXfermode::Mode);
+    void fillRect(const FloatRect&, const Color&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
     void fillRoundedRect(const FloatRect&, const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight, const Color&);
     void fillRoundedRect(const FloatRoundedRect&, const Color&);
 
@@ -284,7 +283,6 @@ public:
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
     // beginLayer()/endLayer() behaves like save()/restore() for only CTM and clip states.
-    void beginTransparencyLayer(float opacity, const FloatRect* = 0);
     // Apply SkXfermode::Mode when the layer is composited on the backdrop (i.e. endLayer()).
     // Don't change the current SkXfermode::Mode states.
     void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, SkImageFilter* = 0);

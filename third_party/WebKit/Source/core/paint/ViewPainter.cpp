@@ -88,14 +88,8 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
         LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutView, DisplayItem::BoxDecorationBackground, m_layoutView.viewRect());
         if (!recorder.canUseCachedDrawing()) {
             Color baseColor = m_layoutView.frameView()->baseBackgroundColor();
-            if (baseColor.alpha()) {
-                SkXfermode::Mode previousOperation = paintInfo.context->compositeOperation();
-                paintInfo.context->setCompositeOperation(SkXfermode::kSrc_Mode);
-                paintInfo.context->fillRect(paintRect, baseColor);
-                paintInfo.context->setCompositeOperation(previousOperation);
-            } else {
-                paintInfo.context->clearRect(paintRect);
-            }
+            paintInfo.context->fillRect(paintRect, baseColor, baseColor.alpha() ?
+                SkXfermode::kSrc_Mode : SkXfermode::kClear_Mode);
         }
     }
 }

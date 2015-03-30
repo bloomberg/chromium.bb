@@ -64,9 +64,8 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     picturePattern->setPatternSpaceTransform(patternTransform);
 
     GraphicsContextStateSaver saver(*destContext);
-    destContext->setCompositeOperation(compositeOp);
     destContext->setFillPattern(picturePattern);
-    destContext->fillRect(destRect);
+    destContext->fillRect(destRect, destContext->fillColor(), compositeOp);
 }
 
 } // namespace blink

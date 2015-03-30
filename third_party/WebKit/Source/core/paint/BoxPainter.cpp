@@ -203,7 +203,7 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
             paintRootBackgroundColor(m_layoutBox, paintInfo, rect, Color());
             skipBaseColor = true;
         }
-        context->beginTransparencyLayer(1);
+        context->beginLayer(1, context->compositeOperation());
     }
 
     Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
@@ -409,7 +409,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         // holding the text content.
         backgroundClipStateSaver.save();
         context->clip(maskRect);
-        context->beginTransparencyLayer(1);
+        context->beginLayer(1, context->compositeOperation());
 
         break;
     }
@@ -467,8 +467,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
 
     if (bgLayer.clip() == TextFillBox) {
         // Create the text mask layer.
-        context->setCompositeOperation(SkXfermode::kDstIn_Mode);
-        context->beginTransparencyLayer(1);
+        context->beginLayer(1, SkXfermode::kDstIn_Mode);
 
         // FIXME: Workaround for https://code.google.com/p/skia/issues/detail?id=1291.
         context->clearRect(maskRect);
@@ -476,7 +475,6 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
         PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0);
-        context->setCompositeOperation(SkXfermode::kSrcOver_Mode);
         if (box) {
             RootInlineBox& root = box->root();
             box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root.lineTop(), root.lineBottom());
@@ -523,7 +521,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
         allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
         paintInfo.context->setCompositeOperation(SkXfermode::kDstIn_Mode);
-        paintInfo.context->beginTransparencyLayer(1);
+        paintInfo.context->beginLayer(1, SkXfermode::kDstIn_Mode);
     }
 
     if (allMaskImagesLoaded) {
@@ -1624,7 +1622,8 @@ void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, c
 
         bool useTransparencyLayer = includesAdjacentEdges(commonColorEdgeSet) && commonColor.hasAlpha();
         if (useTransparencyLayer) {
-            graphicsContext->beginTransparencyLayer(static_cast<float>(commonColor.alpha()) / 255);
+            graphicsContext->beginLayer(static_cast<float>(commonColor.alpha()) / 255,
+                graphicsContext->compositeOperation());
             commonColor = Color(commonColor.red(), commonColor.green(), commonColor.blue());
         }
 

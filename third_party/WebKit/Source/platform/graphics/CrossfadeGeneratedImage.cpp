@@ -40,14 +40,14 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(Image* fromImage, Image* toImag
 {
 }
 
-void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
+void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context, SkXfermode::Mode xferMode)
 {
     float inversePercentage = 1 - m_percentage;
 
     IntSize fromImageSize = m_fromImage->size();
     IntSize toImageSize = m_toImage->size();
 
-    context->beginTransparencyLayer(1);
+    context->beginLayer(1, xferMode);
 
     // Draw the image we're fading away from.
     context->save();
@@ -81,14 +81,13 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
         return;
 
     GraphicsContextStateSaver stateSaver(*context);
-    context->setCompositeOperation(compositeOp);
     context->clip(dstRect);
     context->translate(dstRect.x(), dstRect.y());
     if (dstRect.size() != srcRect.size())
         context->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
     context->translate(-srcRect.x(), -srcRect.y());
 
-    drawCrossfade(context);
+    drawCrossfade(context, compositeOp);
 }
 
 void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect& srcRect)
@@ -97,7 +96,7 @@ void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect
     if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
         return;
 
-    drawCrossfade(context);
+    drawCrossfade(context, SkXfermode::kSrcOver_Mode);
 }
 
 } // namespace blink

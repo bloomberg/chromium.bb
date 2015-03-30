@@ -108,18 +108,15 @@ TEST(GraphicsContextTest, trackImageMask)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
-    context.beginTransparencyLayer(1);
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode);
     context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
-    context.setCompositeOperation(SkXfermode::kDstIn_Mode);
-    context.beginTransparencyLayer(1);
+    context.beginLayer(1, SkXfermode::kDstIn_Mode);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
-    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
     context.endLayer();
@@ -144,18 +141,15 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
-    context.beginTransparencyLayer(1);
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode);
     context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
-    context.setCompositeOperation(SkXfermode::kDstIn_Mode);
-    context.beginTransparencyLayer(1);
+    context.beginLayer(1, SkXfermode::kDstIn_Mode);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
-    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
     // We can't have an opaque mask actually, but we can pretend here like it would look if we did.

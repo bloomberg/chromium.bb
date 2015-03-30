@@ -101,10 +101,9 @@ void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, 
     if (!color.alpha())
         return;
 
-    SkXfermode::Mode previousOperation = ctxt->compositeOperation();
-    ctxt->setCompositeOperation(!color.hasAlpha() && op == SkXfermode::kSrcOver_Mode ? SkXfermode::kSrc_Mode : op);
-    ctxt->fillRect(dstRect, color);
-    ctxt->setCompositeOperation(previousOperation);
+    SkXfermode::Mode xferMode = !color.hasAlpha() && op == SkXfermode::kSrcOver_Mode ?
+        SkXfermode::kSrc_Mode : op;
+    ctxt->fillRect(dstRect, color, xferMode);
 }
 
 FloatRect Image::adjustForNegativeSize(const FloatRect& rect)

@@ -34,14 +34,13 @@ namespace blink {
 void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
 {
     GraphicsContextStateSaver stateSaver(*destContext);
-    destContext->setCompositeOperation(compositeOp);
     destContext->clip(destRect);
     destContext->translate(destRect.x(), destRect.y());
     if (destRect.size() != srcRect.size())
         destContext->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
     destContext->translate(-srcRect.x(), -srcRect.y());
     destContext->setFillGradient(m_gradient);
-    destContext->fillRect(FloatRect(FloatPoint(), m_size));
+    destContext->fillRect(FloatRect(FloatPoint(), m_size), destContext->fillColor(), compositeOp);
 }
 
 void GradientGeneratedImage::drawTile(GraphicsContext* context, const FloatRect& srcRect)

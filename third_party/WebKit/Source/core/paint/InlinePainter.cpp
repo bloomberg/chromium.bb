@@ -82,7 +82,8 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 
     GraphicsContext* graphicsContext = paintInfo.context;
     if (useTransparencyLayer) {
-        graphicsContext->beginTransparencyLayer(static_cast<float>(outlineColor.alpha()) / 255);
+        graphicsContext->beginLayer(static_cast<float>(outlineColor.alpha()) / 255,
+            graphicsContext->compositeOperation());
         outlineColor = Color(outlineColor.red(), outlineColor.green(), outlineColor.blue());
     }
 
