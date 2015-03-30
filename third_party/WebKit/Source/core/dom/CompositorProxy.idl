@@ -10,5 +10,10 @@
     RaisesException=Constructor,
     RuntimeEnabled=CompositorWorker,
 ] interface CompositorProxy {
+    [RaisesException] attribute double opacity;
+    [RaisesException] attribute double scrollLeft;
+    [RaisesException] attribute double scrollTop;
+    [RaisesException] attribute DOMMatrix transform;
+
     boolean supports(DOMString attribute);
 };

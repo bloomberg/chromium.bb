@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 
 namespace blink {
@@ -44,6 +45,30 @@ static CompositorProxy::Attributes attributeFlagForName(const String& attributeN
             attributeFlag = match->attribute;
     }
     return attributeFlag;
+}
+
+static bool isControlThread()
+{
+    return !isMainThread();
+}
+
+static bool isCallingCompositorFrameCallback()
+{
+    // TODO(sad): Check that the requestCompositorFrame callbacks are currently being called.
+    return true;
+}
+
+static bool raiseExceptionIfMutationNotAllowed(ExceptionState& exceptionState)
+{
+    if (!isControlThread()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "Cannot mutate a proxy attribute from the main page.");
+        return true;
+    }
+    if (!isCallingCompositorFrameCallback()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "Cannot mutate a proxy attribute outside of a requestCompositorFrame callback.");
+        return true;
+    }
+    return false;
 }
 
 static uint32_t attributesBitfieldFromNames(const Vector<String>& attributeArray)
@@ -95,7 +120,7 @@ CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t attributeFlags)
     : m_elementId(elementId)
     , m_bitfieldsSupported(attributeFlags)
 {
-    ASSERT(!isMainThread());
+    ASSERT(isControlThread());
     ASSERT(sanityCheckAttributeFlags(m_bitfieldsSupported));
 }
 
@@ -106,6 +131,90 @@ CompositorProxy::~CompositorProxy()
 bool CompositorProxy::supports(const String& attributeName) const
 {
     return !!(m_bitfieldsSupported & static_cast<uint32_t>(attributeFlagForName(attributeName)));
+}
+
+double CompositorProxy::opacity(ExceptionState& exceptionState) const
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return 0.0;
+    if (raiseExceptionIfNotMutable(Attributes::OPACITY, exceptionState))
+        return 0.0;
+    return m_opacity;
+}
+
+double CompositorProxy::scrollLeft(ExceptionState& exceptionState) const
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return 0.0;
+    if (raiseExceptionIfNotMutable(Attributes::SCROLL_LEFT, exceptionState))
+        return 0.0;
+    return m_scrollLeft;
+}
+
+double CompositorProxy::scrollTop(ExceptionState& exceptionState) const
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return 0.0;
+    if (raiseExceptionIfNotMutable(Attributes::SCROLL_TOP, exceptionState))
+        return 0.0;
+    return m_scrollTop;
+}
+
+DOMMatrix* CompositorProxy::transform(ExceptionState& exceptionState) const
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return nullptr;
+    if (raiseExceptionIfNotMutable(Attributes::TRANSFORM, exceptionState))
+        return nullptr;
+    return m_transform;
+}
+
+void CompositorProxy::setOpacity(double opacity, ExceptionState& exceptionState)
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return;
+    if (raiseExceptionIfNotMutable(Attributes::OPACITY, exceptionState))
+        return;
+    m_opacity = std::min(1., std::max(0., opacity));
+    m_mutatedAttributes |= static_cast<uint32_t>(Attributes::OPACITY);
+}
+
+void CompositorProxy::setScrollLeft(double scrollLeft, ExceptionState& exceptionState)
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return;
+    if (raiseExceptionIfNotMutable(Attributes::SCROLL_LEFT, exceptionState))
+        return;
+    m_scrollLeft = scrollLeft;
+    m_mutatedAttributes |= static_cast<uint32_t>(Attributes::SCROLL_LEFT);
+}
+
+void CompositorProxy::setScrollTop(double scrollTop, ExceptionState& exceptionState)
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return;
+    if (raiseExceptionIfNotMutable(Attributes::SCROLL_TOP, exceptionState))
+        return;
+    m_scrollTop = scrollTop;
+    m_mutatedAttributes |= static_cast<uint32_t>(Attributes::SCROLL_TOP);
+}
+
+void CompositorProxy::setTransform(DOMMatrix* transform, ExceptionState& exceptionState)
+{
+    if (raiseExceptionIfMutationNotAllowed(exceptionState))
+        return;
+    if (raiseExceptionIfNotMutable(Attributes::TRANSFORM, exceptionState))
+        return;
+    m_transform = transform;
+    m_mutatedAttributes |= static_cast<uint32_t>(Attributes::TRANSFORM);
+}
+
+bool CompositorProxy::raiseExceptionIfNotMutable(Attributes attribute, ExceptionState& exceptionState) const
+{
+    if (m_bitfieldsSupported & static_cast<uint32_t>(attribute))
+        return false;
+    exceptionState.throwDOMException(NoModificationAllowedError, "Attempted to mutate non-mutable attribute.");
+    return true;
 }
 
 } // namespace blink

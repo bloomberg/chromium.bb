@@ -529,8 +529,16 @@ interface CompositionEvent
     method getSegments
     method initCompositionEvent
 interface CompositorProxy
+    getter opacity
+    getter scrollLeft
+    getter scrollTop
+    getter transform
     method constructor
     method supports
+    setter opacity
+    setter scrollLeft
+    setter scrollTop
+    setter transform
 interface CompositorWorker
     getter onerror
     getter onmessage
