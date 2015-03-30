@@ -1634,7 +1634,7 @@ void CookieMonster::EnsureCookiesMapIsValid() {
 
   // Record how many duplicates were found in the database.
   // See InitializeHistograms() for details.
-  histogram_cookie_deletion_cause_->Add(num_duplicates_trimmed);
+  histogram_number_duplicate_db_cookies_->Add(num_duplicates_trimmed);
 }
 
 int CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
