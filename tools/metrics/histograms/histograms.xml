@@ -17960,6 +17960,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ForceAlternativeService" enum="BooleanForced">
+  <obsolete>
+    Data collection ended, corresponding feature removed.
+  </obsolete>
   <owner>bnc@chromium.org</owner>
   <summary>
     Track usage of alternative services forced by the force-alt-protocols
