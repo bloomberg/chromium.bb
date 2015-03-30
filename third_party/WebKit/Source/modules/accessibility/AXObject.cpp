@@ -236,6 +236,7 @@ AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     , m_cachedIsIgnored(false)
     , m_cachedIsInertOrAriaHidden(false)
     , m_cachedIsDescendantOfBarrenParent(false)
+    , m_cachedIsDescendantOfDisabledNode(false)
     , m_cachedLiveRegionRoot(0)
     , m_axObjectCache(axObjectCache)
 {
@@ -371,6 +372,7 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
     m_lastModificationCount = cache->modificationCount();
     m_cachedIsInertOrAriaHidden = computeIsInertOrAriaHidden();
     m_cachedIsDescendantOfBarrenParent = computeIsDescendantOfBarrenParent();
+    m_cachedIsDescendantOfDisabledNode = computeIsDescendantOfDisabledNode();
     m_cachedIsIgnored = computeAccessibilityIsIgnored();
     m_cachedLiveRegionRoot = isLiveRegion() ?
         this :
@@ -445,6 +447,26 @@ const AXObject* AXObject::ariaHiddenRoot() const
     }
 
     return 0;
+}
+
+bool AXObject::isDescendantOfDisabledNode() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedIsDescendantOfDisabledNode;
+}
+
+bool AXObject::computeIsDescendantOfDisabledNode() const
+{
+    const AtomicString& disabled = getAttribute(aria_disabledAttr);
+    if (equalIgnoringCase(disabled, "true"))
+        return true;
+    if (equalIgnoringCase(disabled, "false"))
+        return false;
+
+    if (AXObject* parent = parentObject())
+        return parent->isDescendantOfDisabledNode();
+
+    return false;
 }
 
 bool AXObject::lastKnownIsIgnoredValue()

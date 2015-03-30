@@ -730,7 +730,7 @@ bool AXNodeObject::isClickable() const
 
 bool AXNodeObject::isEnabled() const
 {
-    if (equalIgnoringCase(getAttribute(aria_disabledAttr), "true"))
+    if (isDescendantOfDisabledNode())
         return false;
 
     Node* node = this->node();

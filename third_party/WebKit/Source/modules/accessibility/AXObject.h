@@ -429,6 +429,8 @@ public:
     bool computeIsInertOrAriaHidden() const;
     bool isDescendantOfBarrenParent() const;
     bool computeIsDescendantOfBarrenParent() const;
+    bool isDescendantOfDisabledNode() const;
+    bool computeIsDescendantOfDisabledNode() const;
     bool lastKnownIsIgnoredValue();
     void setLastKnownIsIgnoredValue(bool);
 
@@ -648,6 +650,7 @@ protected:
     mutable bool m_cachedIsIgnored : 1;
     mutable bool m_cachedIsInertOrAriaHidden : 1;
     mutable bool m_cachedIsDescendantOfBarrenParent : 1;
+    mutable bool m_cachedIsDescendantOfDisabledNode : 1;
     mutable const AXObject* m_cachedLiveRegionRoot;
 
     AXObjectCacheImpl* m_axObjectCache;
