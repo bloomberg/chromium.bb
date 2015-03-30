@@ -151,6 +151,10 @@ input[type=checkbox] {
   margin-top: 39px;
 }
 
+#extended-reporting-opt-in label {
+  position: relative;
+}
+
 .nav-wrapper {
   margin-top: 51px;
 }
@@ -160,10 +164,6 @@ input[type=checkbox] {
   content: '';
   display: table;
   width: 100%;
-}
-
-#opt-in-label {
-  -webkit-margin-start: 32px;
 }
 
 .safe-browsing :-webkit-any(
@@ -210,31 +210,24 @@ input[type=checkbox] {
       url(images/2x/captive_portal_page_icon.png) 2x);
 }
 
-.styled-checkbox {
-  float: left;
-  height: 16px;
-  margin-top: .36em;
-  position: relative;
-  width: 16px;
-}
-
-[dir='rtl'] .styled-checkbox {
-  float: right;
-}
-
-.styled-checkbox label {
+.checkbox {
   background: transparent;
+  border: 1px solid white;
   border-radius: 2px;
+  display: block;
   height: 14px;
   left: 0;
   position: absolute;
   right: 0;
-  top: 0;
+  top: -1px;
   width: 14px;
 }
 
-.styled-checkbox .checkbox-tick {
+.checkbox::before {
   background: transparent;
+  border: 2px solid white;
+  border-right-width: 0;
+  border-top-width: 0;
   content: '';
   height: 4px;
   left: 2px;
@@ -245,27 +238,15 @@ input[type=checkbox] {
   width: 9px;
 }
 
-.safe-browsing-opt-in .styled-checkbox label {
-  border: white solid 1px;
+.ssl-opt-in .checkbox {
+  border-color: #696969;
 }
 
-.safe-browsing-opt-in .styled-checkbox .checkbox-tick {
-  border: white solid 1px;
-  border-right-width: 0;
-  border-top-width: 0;
+.ssl-opt-in .checkbox::before {
+  border-color: #696969;
 }
 
-.ssl-opt-in .styled-checkbox label {
-  border: #696969 solid 1px;
-}
-
-.ssl-opt-in .styled-checkbox .checkbox-tick {
-  border: #696969 solid 1px;
-  border-right-width: 0;
-  border-top-width: 0;
-}
-
-.styled-checkbox input[type=checkbox]:checked ~ .checkbox-tick {
+input[type=checkbox]:checked ~ .checkbox::before {
   opacity: 1;
 }
 
