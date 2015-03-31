@@ -602,7 +602,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
 
         // Don't ignore static text in editable text controls.
         for (AXObject* parent = parentObject(); parent; parent = parent->parentObject()) {
-            if (parent->roleValue() == TextFieldRole)
+            if (parent->roleValue() == TextFieldRole || parent->roleValue() == TextAreaRole)
                 return false;
         }
 
@@ -904,6 +904,7 @@ String AXLayoutObject::actionVerb() const
     case ToggleButtonRole:
         return queryString(WebLocalizedString::AXButtonActionVerb);
     case TextFieldRole:
+    case TextAreaRole:
         return queryString(WebLocalizedString::AXTextFieldActionVerb);
     case RadioButtonRole:
         return queryString(WebLocalizedString::AXRadioButtonActionVerb);

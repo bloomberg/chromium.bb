@@ -213,12 +213,12 @@ bool roleAllowsOrientation(AccessibilityRole role)
 
 bool roleAllowsReadonly(AccessibilityRole role)
 {
-    return role == GridRole || role == CellRole || role == TextFieldRole || role == ColumnHeaderRole || role == RowHeaderRole || role == TreeGridRole;
+    return role == GridRole || role == CellRole || role == TextAreaRole || role == TextFieldRole || role == ColumnHeaderRole || role == RowHeaderRole || role == TreeGridRole;
 }
 
 bool roleAllowsRequired(AccessibilityRole role)
 {
-    return role == ComboBoxRole || role == CellRole || role == ListBoxRole || role == RadioGroupRole || role == SpinButtonRole || role == TextFieldRole || role == TreeRole || role == ColumnHeaderRole || role == RowHeaderRole || role == TreeGridRole;
+    return role == ComboBoxRole || role == CellRole || role == ListBoxRole || role == RadioGroupRole || role == SpinButtonRole || role == TextAreaRole || role == TextFieldRole || role == TreeRole || role == ColumnHeaderRole || role == RowHeaderRole || role == TreeGridRole;
 }
 
 bool roleAllowsSort(AccessibilityRole role)
@@ -280,7 +280,9 @@ void fillWidgetProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPr
     }
 
     if (role == TextFieldRole)
-        properties->addItem(createProperty(AXWidgetAttributes::Multiline, createBooleanValue(axObject->isMultiline())));
+        properties->addItem(createProperty(AXWidgetAttributes::Multiline, createBooleanValue(false)));
+    else if (role == TextAreaRole)
+        properties->addItem(createProperty(AXWidgetAttributes::Multiline, createBooleanValue(true)));
 
     if (roleAllowsReadonly(role)) {
         properties->addItem(createProperty(AXWidgetAttributes::Readonly, createBooleanValue(axObject->isReadOnly())));
