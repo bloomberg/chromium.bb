@@ -98,7 +98,7 @@ static void i915_align_dimensions(struct gbm_device *gbm, uint32_t tiling_mode, 
 		*height = ALIGN(*height, height_alignment);
 	} else {
 		uint32_t w;
-		for (w = width_alignment; w < *width * bpp;  w <<= 1)
+		for (w = width_alignment; w < *width;  w <<= 1)
 			;
 		*width = w;
 		*height = ALIGN(*height, height_alignment);
