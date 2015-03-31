@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.ArrayMap;
@@ -14,7 +12,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockActivityDelegate;
@@ -91,7 +88,6 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate = new MockActivityDelegate();
         mTabDelegate = new MockTabDelegate();
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
     }
 
     @Override
@@ -135,6 +131,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
         mStorageDelegate.addEncodedTabState(1010, false, TAB_STATE_1010_ERFWORLD_RETARGETABLE);
         mStorageDelegate.addEncodedTabState(1011, false, TAB_STATE_1011_REDDIT);
@@ -174,6 +171,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
         mActivityDelegate.addTask(true, 1012, "http://incognito.com/ignored");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
         mStorageDelegate.addEncodedTabState(1010, false, TAB_STATE_1010_ERFWORLD_RETARGETABLE);
         mStorageDelegate.addEncodedTabState(1011, false, TAB_STATE_1011_REDDIT);
@@ -217,6 +215,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
 
         setupDocumentTabModel();
@@ -244,6 +243,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
         mStorageDelegate.addEncodedTabState(1011, false, TAB_STATE_1011_REDDIT);
 
@@ -276,6 +276,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
     public void testTasksSwipedAwayBeforeTabModelCreation() throws Exception {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
         setupDocumentTabModel();
 
@@ -293,6 +294,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
 
         setupDocumentTabModel();
@@ -319,6 +321,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
 
         setupDocumentTabModel();
@@ -346,6 +349,8 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
         mActivityDelegate.addTask(false, 1012, "http://digg.com");
         mActivityDelegate.addTask(false, 1013, "http://slashdot.org");
+
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
 
         setupDocumentTabModel();
         assertEquals(4, mTabModel.getCount());
@@ -386,6 +391,8 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1012, "http://digg.com");
         mActivityDelegate.addTask(false, 1013, "http://slashdot.org");
 
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
+
         Map<String, Object> data = new ArrayMap<String, Object>();
         data.put(DocumentTabModelImpl.PREF_LAST_SHOWN_TAB_ID_REGULAR, 1011);
         mContext.addSharedPreferences(DocumentTabModelImpl.PREF_PACKAGE, data);
@@ -422,26 +429,5 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         });
         assertEquals(0, mTabModel.getCount());
         assertEquals(TabModel.INVALID_TAB_INDEX, mTabModel.index());
-    }
-
-    /**
-     * Test that we don't add information about a Tab that's not valid for a DocumentActivity.
-     */
-    @SmallTest
-    public void testAddTab() throws Exception {
-        setupDocumentTabModel();
-        assertEquals(0, mTabModel.getCount());
-
-        Intent badIntent = new Intent();
-        badIntent.setData(Uri.parse("http://toteslegit.com"));
-        Tab badTab = new Tab(false, getInstrumentation().getTargetContext(), null);
-        mTabModel.addTab(badIntent, badTab);
-        assertEquals(0, mTabModel.getCount());
-
-        Intent legitIntent = new Intent();
-        legitIntent.setData(Uri.parse("document://11684?http://erfworld.com"));
-        Tab legitTab = new Tab(11684, false, getInstrumentation().getTargetContext(), null);
-        mTabModel.addTab(legitIntent, legitTab);
-        assertEquals(1, mTabModel.getCount());
     }
 }

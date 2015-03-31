@@ -878,11 +878,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
     @Override
     public void addTab(Intent intent, Tab tab) {
-        if (tab.getId() == Tab.INVALID_TAB_ID
-                || ActivityDelegate.getTabIdFromIntent(intent) != tab.getId()) {
-            return;
-        }
-
         int parentIndex = indexOf(tab.getParentId());
         int index = parentIndex == -1 ? getCount() : parentIndex + 1;
         addTab(tab, index, tab.getLaunchType());
@@ -891,10 +886,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
     @Override
     public void addTab(Tab tab, int index, TabLaunchType type) {
-        // TODO(dfalcantara): Prevent this method from being called directly instead of going
-        //                    through addTab(Intent intent, Tab tab).
-        if (tab.getId() == Tab.INVALID_TAB_ID) return;
-
         for (TabModelObserver obs : mObservers) obs.willAddTab(tab, type);
 
         if (index == TabModel.INVALID_TAB_INDEX) {
