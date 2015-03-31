@@ -187,6 +187,12 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/shapes",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/table",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
