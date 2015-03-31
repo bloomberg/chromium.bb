@@ -52,6 +52,7 @@ const struct Resource{
   { "images/close_2_active.png", IDR_CLOSE_2_P, "image/png" },
   { "images/close_2_white.png", IDR_CLOSE_2_MASK, "image/png" },
   { "images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png" },
+  { "images/close_4_button.png", IDR_CLOSE_4_BUTTON, "image/png" },
   { "images/google_logo.png", IDR_LOCAL_NTP_IMAGES_LOGO_PNG, "image/png" },
   { "images/white_google_logo.png",
     IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG, "image/png" },
