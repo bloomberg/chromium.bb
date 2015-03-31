@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# The following symbols (past the first five) are taken from the public headers.
+# A list of the latter should be available Makefile.sources/LIBDRM_FREEDRENO_H_FILES
+
+FUNCS=$(nm -D --format=bsd --defined-only ${1-.libs/libdrm_tegra.so} | awk '{print $3}'| while read func; do
+( grep -q "^$func$" || echo $func )  <<EOF
+__bss_start
+_edata
+_end
+_fini
+_init
+drm_tegra_bo_get_flags
+drm_tegra_bo_get_handle
+drm_tegra_bo_get_tiling
+drm_tegra_bo_map
+drm_tegra_bo_new
+drm_tegra_bo_ref
+drm_tegra_bo_set_flags
+drm_tegra_bo_set_tiling
+drm_tegra_bo_unmap
+drm_tegra_bo_unref
+drm_tegra_bo_wrap
+drm_tegra_close
+drm_tegra_new
+EOF
+done)
+
+test ! -n "$FUNCS" || echo $FUNCS
+test ! -n "$FUNCS"

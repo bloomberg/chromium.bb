@@ -21,3 +21,6 @@ libdrm_tegrainclude_HEADERS = tegra.h
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_tegra.pc
+
+TESTS = tegra-symbol-check
+EXTRA_DIST = $(TESTS)
