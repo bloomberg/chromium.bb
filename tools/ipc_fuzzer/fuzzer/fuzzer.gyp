@@ -24,6 +24,16 @@
         'rand_util.h',
         'rand_util.cc',
       ],
+      'conditions': [
+        ['asan==1', {
+          'cflags!': [
+            # Compiling fuzzer.cc with ASan takes too long, see
+            # http://crbug.com/360158.
+            '-fsanitize=address',
+            '-fsanitize-coverage=<(sanitizer_coverage)',
+          ],
+        }],
+      ],
       'include_dirs': [
         '../../..',
       ],
