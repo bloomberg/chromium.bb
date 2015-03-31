@@ -1737,7 +1737,14 @@ TEST(PermissionsTest, IsPrivilegeIncrease_DeclarativeWebRequest) {
                                        extension->GetType()));
 }
 
-TEST(PermissionsTest, PrinterProviderPermission) {
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_PrinterProviderPermission DISABLED_PrinterProviderPermission
+#else
+#define MAYBE_PrinterProviderPermission PrinterProviderPermission
+#endif
+// Failing on (official) Win trunk (http://crbug.com/471301).
+// TODO(tbarzic): Reenable this when the API goes stable.
+TEST(PermissionsTest, MAYBE_PrinterProviderPermission) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "printer_provider.json");
   APIPermissionSet apis;
