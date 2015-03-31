@@ -3777,7 +3777,6 @@ interface RelatedEvent
     getter relatedTarget
     method constructor
 interface Request
-    getter body
     getter bodyUsed
     getter credentials
     getter headers

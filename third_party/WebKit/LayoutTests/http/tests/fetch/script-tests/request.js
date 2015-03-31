@@ -689,7 +689,6 @@ promise_test(function(t) {
   },
   'MIME type unchanged if headers are modified after Request() constructor');
 
-// The following two tests follow different code paths in Body::readAsync().
 promise_test(function(t) {
     var req = new Request('http://localhost/',
                           {method: 'POST',
@@ -701,18 +700,5 @@ promise_test(function(t) {
           assert_equals(req.headers.get('Content-Type'), 'Text/Html');
         });
   }, 'Extract a MIME type (1)');
-
-promise_test(function(t) {
-    var req = new Request('http://localhost/',
-                          {method: 'POST',
-                           body: new Blob([''], {type: 'Text/Plain'}),
-                           headers: [['Content-Type', 'Text/Html']]});
-    req.body.cancel();
-    return req.blob()
-      .then(function(blob) {
-          assert_equals(blob.type, 'text/html');
-          assert_equals(req.headers.get('Content-Type'), 'Text/Html');
-        });
-  }, 'Extract a MIME type (2)');
 
 done();
