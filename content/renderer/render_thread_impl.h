@@ -25,7 +25,6 @@
 #include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
-#include "media/base/audio_hardware_config.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "ui/gfx/native_widget_types.h"
@@ -67,6 +66,7 @@ class MessageFilter;
 }
 
 namespace media {
+class AudioHardwareConfig;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -453,8 +453,6 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
   void OnNetworkTypeChanged(net::NetworkChangeNotifier::ConnectionType type);
   void OnGetAccessibilityTree();
-  void OnSetAudioHardwareConfig(const media::AudioParameters& input,
-                                const media::AudioParameters& output);
   void OnTempCrashWithData(const GURL& data);
   void OnUpdateTimezone();
   void OnMemoryPressure(
@@ -584,7 +582,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<ContextProviderCommandBuffer> gpu_va_context_provider_;
 
   scoped_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
-  media::AudioHardwareConfig audio_hardware_config_;
+  scoped_ptr<media::AudioHardwareConfig> audio_hardware_config_;
 
   HistogramCustomizer histogram_customizer_;
 
