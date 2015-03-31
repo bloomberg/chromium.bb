@@ -768,7 +768,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
 void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue)
 {
-    logToConsole("The 'referrer' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"no-referrer\", \"no-referrer-when-downgrade\", \"origin\", and \"unsafe-url\". Note that \"origin-when-cross-origin\" is not yet supported.");
+    logToConsole("The 'referrer' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"no-referrer\", \"no-referrer-when-downgrade\", \"origin\", \"origin-when-cross-origin\", and \"unsafe-url\".");
 }
 
 void ContentSecurityPolicy::reportReportOnlyInMeta(const String& header)

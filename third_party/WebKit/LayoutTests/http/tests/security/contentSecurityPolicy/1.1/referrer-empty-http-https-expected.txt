@@ -1,4 +1,4 @@
-CONSOLE ERROR: The 'referrer' Content Security Policy directive has the invalid value "". Valid values are "no-referrer", "no-referrer-when-downgrade", "origin", and "unsafe-url". Note that "origin-when-cross-origin" is not yet supported.
+CONSOLE ERROR: The 'referrer' Content Security Policy directive has the invalid value "". Valid values are "no-referrer", "no-referrer-when-downgrade", "origin", "origin-when-cross-origin", and "unsafe-url".
 Test that '' == never works correctly from HTTP to HTTPS.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -36,6 +36,7 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -323,6 +324,33 @@ TEST_F(DocumentTest, linkDefaultPresentation)
     EXPECT_EQ(link, document().linkDefaultPresentation());
     link->setAttribute(blink::HTMLNames::mediaAttr, "print");
     EXPECT_EQ(link, document().linkDefaultPresentation());
+}
+
+TEST_F(DocumentTest, referrerPolicyParsing)
+{
+    EXPECT_EQ(ReferrerPolicyDefault, document().referrerPolicy());
+
+    struct TestCase {
+        const char* policy;
+        ReferrerPolicy expected;
+    } tests[] = {
+        { "always", ReferrerPolicyAlways },
+        { "default", ReferrerPolicyNoReferrerWhenDowngrade },
+        { "never", ReferrerPolicyNever },
+        { "no-referrer", ReferrerPolicyNever },
+        { "no-referrer-when-downgrade", ReferrerPolicyNoReferrerWhenDowngrade },
+        { "not-a-real-policy", ReferrerPolicyDefault },
+        { "origin", ReferrerPolicyOrigin },
+        { "origin-when-crossorigin", ReferrerPolicyOriginWhenCrossOrigin },
+        { "unsafe-url", ReferrerPolicyAlways },
+    };
+
+    for (auto test : tests) {
+        document().setReferrerPolicy(ReferrerPolicyDefault);
+
+        document().processReferrerPolicy(test.policy);
+        EXPECT_EQ(test.expected, document().referrerPolicy()) << test.policy;
+    }
 }
 
 } // unnamed namespace

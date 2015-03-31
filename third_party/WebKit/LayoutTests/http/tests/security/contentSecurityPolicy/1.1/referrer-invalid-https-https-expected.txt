@@ -1,10 +1,10 @@
-CONSOLE ERROR: The 'referrer' Content Security Policy directive has the invalid value "invalid". Valid values are "no-referrer", "no-referrer-when-downgrade", "origin", and "unsafe-url". Note that "origin-when-cross-origin" is not yet supported.
-Test that invalid == never works correctly from HTTPS to HTTPS.
+CONSOLE ERROR: The 'referrer' Content Security Policy directive has the invalid value "invalid". Valid values are "no-referrer", "no-referrer-when-downgrade", "origin", "origin-when-cross-origin", and "unsafe-url".
+Test that invalid is ignored from HTTPS to HTTPS.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ReferrerTest.referrerResult is ""
+PASS ReferrerTest.referrerResult is "https://127.0.0.1:8443/security/contentSecurityPolicy/resources/referrer-test.php?policy=invalid&to=https"
 PASS successfullyParsed is true
 
 TEST COMPLETE
