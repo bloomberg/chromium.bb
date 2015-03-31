@@ -11,7 +11,6 @@
 namespace switches {
 
 GFX_EXPORT extern const char kAllowArbitraryScaleFactorInImageSkia[];
-GFX_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
 GFX_EXPORT extern const char kForceDeviceScaleFactor[];
 
 #if defined(OS_WIN)

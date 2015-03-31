@@ -248,13 +248,7 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
     params.subpixel_positioning = false;
   } else {
-    // Fontconfig doesn't support configuring subpixel positioning; check a
-    // flag.
-    params.subpixel_positioning =
-        actual_query.for_web_contents
-            ? base::CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kEnableWebkitTextSubpixelPositioning)
-            : actual_query.device_scale_factor > 1.0f;
+    params.subpixel_positioning = actual_query.device_scale_factor > 1.0f;
 
     // To enable subpixel positioning, we need to disable hinting.
     if (params.subpixel_positioning)

@@ -6,11 +6,6 @@
 
 namespace switches {
 
-// Enable text glyphs to have X-positions that aren't snapped to the pixel grid
-// in webkit renderers.
-const char kEnableWebkitTextSubpixelPositioning[] =
-    "enable-webkit-text-subpixel-positioning";
-
 // Overrides the device scale factor for the browser UI and the contents.
 const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 
