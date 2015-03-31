@@ -208,8 +208,6 @@ namespace hotword_internal {
 // Constants for the hotword field trial.
 const char kHotwordFieldTrialName[] = "VoiceTrigger";
 const char kHotwordFieldTrialDisabledGroupName[] = "Disabled";
-// Old preference constant.
-const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
 // String passed to indicate the training state has changed.
 const char kHotwordTrainingEnabled[] = "hotword_training_enabled";
 // Id of the hotword notification.
@@ -355,13 +353,6 @@ HotwordService::HotwordService(Profile* profile)
       base::Bind(base::IgnoreResult(
           &HotwordService::MaybeReinstallHotwordExtension),
                  weak_factory_.GetWeakPtr()));
-
-  // Clear the old user pref because it became unusable.
-  // TODO(rlp): Remove this code per crbug.com/358789.
-  if (profile_->GetPrefs()->HasPrefPath(
-          hotword_internal::kHotwordUnusablePrefName)) {
-    profile_->GetPrefs()->ClearPref(hotword_internal::kHotwordUnusablePrefName);
-  }
 
   SetAudioHistoryHandler(new HotwordAudioHistoryHandler(
       profile_, base::MessageLoop::current()->task_runner()));
