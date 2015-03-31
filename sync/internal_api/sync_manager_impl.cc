@@ -901,6 +901,7 @@ void SyncManagerImpl::OnIncomingInvalidation(
     scoped_ptr<InvalidationInterface> invalidation) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  allstatus_.IncrementNotificationsReceived();
   scheduler_->ScheduleInvalidationNudge(
       type,
       invalidation.Pass(),
