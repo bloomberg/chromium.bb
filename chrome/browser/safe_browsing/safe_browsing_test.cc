@@ -240,8 +240,8 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     return is_update_scheduled_;
   }
 
-  base::MessageLoop* SafeBrowsingMessageLoop() {
-    return database_manager()->safe_browsing_thread_->message_loop();
+  scoped_refptr<base::SequencedTaskRunner> SafeBrowsingTaskRunner() {
+    return database_manager()->safe_browsing_task_runner_;
   }
 
   const net::SpawnedTestServer& test_server() const {
@@ -391,14 +391,15 @@ class SafeBrowsingServerTestHelper
   void CheckStatusOnIOThread() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     safe_browsing_test_->UpdateSafeBrowsingStatus();
-    safe_browsing_test_->SafeBrowsingMessageLoop()->PostTask(FROM_HERE,
+    safe_browsing_test_->SafeBrowsingTaskRunner()->PostTask(
+        FROM_HERE,
         base::Bind(&SafeBrowsingServerTestHelper::CheckIsDatabaseReady, this));
   }
 
   // Checks status in SafeBrowsing Thread.
   void CheckIsDatabaseReady() {
-    EXPECT_EQ(base::MessageLoop::current(),
-              safe_browsing_test_->SafeBrowsingMessageLoop());
+    EXPECT_TRUE(safe_browsing_test_->SafeBrowsingTaskRunner()
+                    ->RunsTasksOnCurrentThread());
     safe_browsing_test_->CheckIsDatabaseReady();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&SafeBrowsingServerTestHelper::OnWaitForStatusUpdateDone,

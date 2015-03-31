@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -205,17 +204,6 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
 }
 
 TEST_F(SafeBrowsingDatabaseManagerTest, ServiceStopWithPendingChecks) {
-  // Force the "blocking pool" mode for the test. This allows test coverage
-  // for this behavior while that mode is still not the default. Additionally,
-  // it is currently required for this test to work - as RunUntilIdle() will
-  // not run tasks of the special spawned thread, but will for the worker pool.
-  // TODO(asvitkine): Clean up, when blocking pool mode is made the default.
-  base::FieldTrialList list(nullptr);
-  std::map<std::string, std::string> params;
-  params["SBThreadingMode"] = "BlockingPool2";
-  variations::AssociateVariationParams("LightSpeed", "X", params);
-  base::FieldTrialList::CreateFieldTrial("LightSpeed", "X");
-
   scoped_refptr<SafeBrowsingService> sb_service(
       SafeBrowsingService::CreateSafeBrowsingService());
   scoped_refptr<SafeBrowsingDatabaseManager> db_manager(
@@ -240,6 +228,4 @@ TEST_F(SafeBrowsingDatabaseManagerTest, ServiceStopWithPendingChecks) {
   // been posted to the safe browsing task runner. This should not crash.
   content::RunAllBlockingPoolTasksUntilIdle();
   base::RunLoop().RunUntilIdle();
-
-  variations::testing::ClearAllVariationParams();
 }

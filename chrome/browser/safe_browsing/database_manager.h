@@ -27,10 +27,6 @@
 class SafeBrowsingService;
 class SafeBrowsingDatabase;
 
-namespace base {
-class Thread;
-}
-
 namespace net {
 class URLRequestContext;
 class URLRequestContextGetter;
@@ -396,13 +392,6 @@ class SafeBrowsingDatabaseManager
 
   // Indicate if the unwanted software blacklist should be enabled.
   bool enable_unwanted_software_blacklist_;
-
-  // The SafeBrowsing thread that runs database operations.
-  //
-  // Note: Functions that run on this thread should run synchronously and return
-  // to the IO thread, not post additional tasks back to this thread, lest we
-  // cause a race condition at shutdown time that leads to a database leak.
-  scoped_ptr<base::Thread> safe_browsing_thread_;
 
   // The sequenced task runner for running safe browsing database operations.
   scoped_refptr<base::SequencedTaskRunner> safe_browsing_task_runner_;

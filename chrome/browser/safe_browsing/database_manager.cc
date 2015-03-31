@@ -15,8 +15,6 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -31,7 +29,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "url/url_constants.h"
@@ -663,27 +660,9 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
   if (enabled_)
     return;
 
-  // Use the blocking pool instead of a dedicated thread for safe browsing work,
-  // if specified by an experiment.
-  const bool use_blocking_pool =
-      variations::GetVariationParamValue("LightSpeed", "SBThreadingMode") ==
-      "BlockingPool2";
-  if (!use_blocking_pool) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455469 SafeBrowsingDatabaseManager::StartOnIOThread3"));
-    DCHECK(!safe_browsing_thread_.get());
-
-    safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
-    if (!safe_browsing_thread_->Start())
-      return;
-    safe_browsing_task_runner_ = safe_browsing_thread_->task_runner();
-  } else if (!safe_browsing_task_runner_) {
-    // Only get a new task runner if there isn't one already. If the service has
-    // previously been started and stopped, a task runner could already exist.
-
+  // Only get a new task runner if there isn't one already. If the service has
+  // previously been started and stopped, a task runner could already exist.
+  if (!safe_browsing_task_runner_) {
     // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
     // fixed.
     tracked_objects::ScopedTracker tracking_profile2(
@@ -774,22 +753,6 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
     safe_browsing_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SafeBrowsingDatabaseManager::OnCloseDatabase, this));
-  }
-
-  // Flush the database thread. Any in-progress database check results will be
-  // ignored and cleaned up below.
-  //
-  // Note that to avoid leaking the database, we rely on the fact that no new
-  // tasks will be added to the db thread between the call above and this one.
-  // See comments on the declaration of |safe_browsing_thread_|.
-  if (safe_browsing_thread_) {
-    // A ScopedAllowIO object is required to join the thread when calling Stop.
-    // See http://crbug.com/72696. Note that we call Stop() first to clear out
-    // any remaining tasks before clearing safe_browsing_thread_.
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
-    safe_browsing_thread_->Stop();
-    safe_browsing_thread_.reset();
-    safe_browsing_task_runner_ = nullptr;
   }
 
   // Delete pending checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
