@@ -5,7 +5,10 @@
 // Scripts that are conceptually part of core.js, but have UIWebView-specific
 // details/behaviors.
 
-goog.provide('__crweb.core_dynamic_ui');
+goog.provide('__crWeb.coreDynamic');
+
+goog.require('__crWeb.common');
+goog.require('__crWeb.message');
 
 /**
  * Namespace for this module.

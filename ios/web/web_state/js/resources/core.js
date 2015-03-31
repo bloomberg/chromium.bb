@@ -8,7 +8,11 @@
 // this.style because member identifiers are minified by default.
 // See http://goo.gl/FwOgy
 
-goog.provide('__crweb.core');
+goog.provide('__crWeb.core');
+
+goog.require('__crWeb.common');
+goog.require('__crWeb.coreDynamic');
+goog.require('__crWeb.message');
 
 /**
  * The Chrome object is populated in an anonymous object defined at
@@ -451,7 +455,7 @@ new function() {
 
   // Checks if |node| is an anchor to be opened in the current tab.
   var isInternaLink_ = function(node) {
-    if (!node instanceof HTMLAnchorElement)
+    if (!(node instanceof HTMLAnchorElement))
       return false;
 
     // Anchor with href='javascript://.....' will be opened in the current tab

@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('__crweb.dialog_overrides');
+goog.provide('__crWeb.dialogOverrides');
+
+goog.require('__crWeb.core');
+// window.open override for dialog suppression must be performed after the rest
+// of window.open overrides which are done in __crWeb.windowOpen module.
+goog.require('__crWeb.windowOpen');
 
 // Namespace for this module.
 __gCrWeb.dialogOverrides = {};
@@ -97,6 +102,7 @@ new function() {
     }
 
     // Install |stubNavigator| as |navigator|.
+    /** @suppress {const} */
     navigator = stubNavigator;
 
     // Returns the closure allowing to change |suppressDialogs| and

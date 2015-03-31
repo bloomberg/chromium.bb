@@ -4,7 +4,10 @@
 
 // This file provides common methods that can be shared by other JavaScripts.
 
-goog.provide('__crweb.common');
+goog.provide('__crWeb.common');
+
+goog.require('__crWeb.base');
+
 
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been

@@ -2,14 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('__crweb.window_open_wk');
+goog.provide('__crWeb.windowOpen');
 
 // WKWebView natively supports window.open so there is no need to install
-// JavaScript-based fix. CRWJSWindowOpenManager always injected as multiple
-// JS managers depend on it. The script does not have any content except
-// presenceBeacon.
-
-
-// Namespace for this module.
-__gCrWeb.windowOpen = {};
-
+// JavaScript-based fix. This file is required by __crWeb.dialogOverrides
+// module to support UIWebView.

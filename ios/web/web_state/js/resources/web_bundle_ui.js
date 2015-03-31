@@ -3,14 +3,9 @@
 // found in the LICENSE file.
 
 // Set of scripts required by web layer backed up by UIWebView.
-goog.provide('__crweb.web_bundle_ui');
+goog.provide('__crWeb.webBundle');
 
-goog.require('__crweb.base');
-goog.require('__crweb.common');
-goog.require('__crweb.core');
-goog.require('__crweb.core_dynamic_ui');
-goog.require('__crweb.console');
-goog.require('__crweb.dialog_overrides');
-goog.require('__crweb.message');
-goog.require('__crweb.message_dynamic_ui');
-goog.require('__crweb.window_open_ui');
+goog.require('__crWeb.console');
+goog.require('__crWeb.core');
+goog.require('__crWeb.dialogOverrides');
+goog.require('__crWeb.windowOpen');

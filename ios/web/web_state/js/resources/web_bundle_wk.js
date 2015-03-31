@@ -3,13 +3,8 @@
 // found in the LICENSE file.
 
 // Set of scripts required by web layer backed up by WKWebView.
-goog.provide('__crweb.web_bundle_wk');
+goog.provide('__crWeb.webBundle');
 
-goog.require('__crweb.base');
-goog.require('__crweb.common');
-goog.require('__crweb.core');
-goog.require('__crweb.core_dynamic_wk');
-goog.require('__crweb.console');
-goog.require('__crweb.dialog_overrides');
-goog.require('__crweb.message');
-goog.require('__crweb.message_dynamic_wk');
+goog.require('__crWeb.console');
+goog.require('__crWeb.core');
+goog.require('__crWeb.dialogOverrides');

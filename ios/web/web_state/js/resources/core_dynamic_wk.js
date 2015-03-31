@@ -5,7 +5,7 @@
 // Scripts that are conceptually part of core.js, but have WKWebView-specific
 // details/behaviors.
 
-goog.provide('__crweb.core_dynamic_wk');
+goog.provide('__crWeb.coreDynamic');
 
 /**
  * Namespace for this module.

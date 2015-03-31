@@ -4,7 +4,10 @@
 
 // Scripts for the message handler.
 
-goog.provide('__crweb.message');
+goog.provide('__crWeb.message');
+
+goog.require('__crWeb.common');
+goog.require('__crWeb.messageDynamic');
 
 /**
  * Namespace for this module.

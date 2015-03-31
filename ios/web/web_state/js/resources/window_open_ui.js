@@ -5,7 +5,9 @@
 // Scripts that are conceptually part of core.js, but have UIWebView-specific
 // details/behaviors.
 
-goog.provide('__crweb.window_open_ui');
+goog.provide('__crWeb.windowOpen');
+
+goog.require('__crWeb.core');
 
 // Namespace for this module.
 __gCrWeb.windowOpen = {};

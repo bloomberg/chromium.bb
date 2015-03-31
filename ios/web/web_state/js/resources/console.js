@@ -5,7 +5,9 @@
 // Scripts to allow page console.log() etc. output to be seen on the console
 // of the host application.
 
-goog.provide('__crweb.console');
+goog.provide('__crWeb.console');
+
+goog.require('__crWeb.message');
 
 /**
  * Namespace for this module.
