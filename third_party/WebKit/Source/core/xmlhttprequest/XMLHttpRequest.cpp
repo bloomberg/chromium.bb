@@ -23,7 +23,9 @@
 #include "config.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -317,9 +319,23 @@ private:
     FileReaderLoader m_loader;
 };
 
-PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
+PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ScriptState* scriptState)
 {
+    RefPtr<SecurityOrigin> securityOrigin;
+    ExecutionContext* context = scriptState->executionContext();
+    if (context->isDocument()) {
+        DOMWrapperWorld& world = scriptState->world();
+        securityOrigin = world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
+    }
     RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefWillBeNoop(new XMLHttpRequest(context, securityOrigin));
+    xmlHttpRequest->suspendIfNeeded();
+
+    return xmlHttpRequest.release();
+}
+
+PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context)
+{
+    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefWillBeNoop(new XMLHttpRequest(context, nullptr));
     xmlHttpRequest->suspendIfNeeded();
 
     return xmlHttpRequest.release();

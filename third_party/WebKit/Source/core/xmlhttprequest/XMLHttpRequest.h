@@ -51,6 +51,7 @@ class Document;
 class DocumentParser;
 class ExceptionState;
 class ReadableStream;
+class ScriptState;
 class SecurityOrigin;
 class SharedBuffer;
 class Stream;
@@ -71,7 +72,8 @@ class XMLHttpRequest final
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(XMLHttpRequest);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
-    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);
+    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ScriptState*);
+    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*);
     virtual ~XMLHttpRequest();
 
     // These exact numeric values are important because JS expects them.

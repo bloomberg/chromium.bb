@@ -26,6 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://xhr.spec.whatwg.org/#interface-xmlhttprequest
+
 enum XMLHttpRequestResponseType {
     "",
     "arraybuffer",
@@ -40,7 +42,8 @@ enum XMLHttpRequestResponseType {
 [
     WillBeGarbageCollected,
     ActiveDOMObject,
-    CustomConstructor(optional XMLHttpRequestOptions options),
+    Constructor,
+    ConstructorCallWith=ScriptState,
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler attributes

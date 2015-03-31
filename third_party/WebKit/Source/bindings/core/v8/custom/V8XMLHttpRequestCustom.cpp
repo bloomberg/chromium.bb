@@ -52,24 +52,6 @@
 
 namespace blink {
 
-void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
-
-    RefPtr<SecurityOrigin> securityOrigin;
-    if (context->isDocument()) {
-        DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
-        if (world.isIsolatedWorld())
-            securityOrigin = world.isolatedWorldSecurityOrigin();
-    }
-
-    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = XMLHttpRequest::create(context, securityOrigin);
-
-    v8::Handle<v8::Object> wrapper = info.Holder();
-    xmlHttpRequest->associateWithWrapper(info.GetIsolate(), xmlHttpRequest->wrapperTypeInfo(), wrapper);
-    info.GetReturnValue().Set(wrapper);
-}
-
 void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
