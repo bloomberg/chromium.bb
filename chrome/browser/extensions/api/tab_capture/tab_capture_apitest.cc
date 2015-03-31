@@ -95,9 +95,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
 }
 
 // Tests that tab capture video frames can be received in a VIDEO element.
-// Disabled due to flakiness. http://crbug.com/468606.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest,
-                       DISABLED_EndToEndWithoutRemoting) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndWithoutRemoting) {
   if (IsTooIntensiveForThisPlatform()) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
@@ -270,10 +268,14 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
+#else
+#define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
+#endif
 // Tests that a tab in incognito mode can be captured.
-// Disabled due to flakiness. http://crbug.com/468608.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest,
-                       DISABLED_CaptureInSplitIncognitoMode) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture",
                                   "start_tab_capture.html",
@@ -295,9 +297,14 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
       << message_;
 }
 
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TabIndicator DISABLED_TabIndicator
+#else
+#define MAYBE_TabIndicator TabIndicator
+#endif
 // Tests that the tab indicator (in the tab strip) is shown during tab capture.
-// Disabled due to flakiness. http://crbug.com/468608
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_TabIndicator) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
   ASSERT_EQ(TAB_MEDIA_STATE_NONE,
             chrome::GetTabMediaStateForContents(
                 browser()->tab_strip_model()->GetActiveWebContents()));
