@@ -2764,6 +2764,7 @@ interface MIDIOutputMap
     method keys
     method values
 interface MIDIPort
+    getter connection
     getter id
     getter manufacturer
     getter name

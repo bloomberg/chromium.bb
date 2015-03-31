@@ -183,7 +183,7 @@ MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const Str
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
-    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version, state)
+    : MIDIPort(access, id, manufacturer, name, TypeOutput, version, state)
     , m_portIndex(portIndex)
 {
 }

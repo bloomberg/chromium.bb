@@ -45,13 +45,14 @@ class MIDIPort : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDI
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIPort>);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    enum MIDIPortTypeCode {
-        MIDIPortTypeInput,
-        MIDIPortTypeOutput
+    enum TypeCode {
+        TypeInput,
+        TypeOutput
     };
 
     virtual ~MIDIPort() { }
 
+    String connection() const;
     String id() const { return m_id; }
     String manufacturer() const { return m_manufacturer; }
     String name() const { return m_name; }
@@ -75,19 +76,28 @@ public:
     virtual ExecutionContext* executionContext() const override final;
 
 protected:
-    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version, MIDIAccessor::MIDIPortState);
+    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, TypeCode, const String& version, MIDIAccessor::MIDIPortState);
 
 private:
+    enum ConnectionState {
+        ConnectionStateOpen,
+        ConnectionStateClosed,
+        ConnectionStatePending
+    };
+
     ScriptPromise accept(ScriptState*);
     ScriptPromise reject(ScriptState*, ExceptionCode, const String& message);
+
+    void setStates(MIDIAccessor::MIDIPortState, ConnectionState);
 
     String m_id;
     String m_manufacturer;
     String m_name;
-    MIDIPortTypeCode m_type;
+    TypeCode m_type;
     String m_version;
     Member<MIDIAccess> m_access;
     MIDIAccessor::MIDIPortState m_state;
+    ConnectionState m_connection;
 };
 
 } // namespace blink

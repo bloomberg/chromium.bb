@@ -46,7 +46,7 @@ MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String&
 }
 
 MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
-    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeInput, version, state)
+    : MIDIPort(access, id, manufacturer, name, TypeInput, version, state)
 {
 }
 

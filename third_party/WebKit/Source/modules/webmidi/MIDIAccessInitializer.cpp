@@ -96,13 +96,13 @@ ScriptPromise MIDIAccessInitializer::start()
 void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(m_accessor);
-    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeInput, version, state));
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::TypeInput, version, state));
 }
 
 void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(m_accessor);
-    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeOutput, version, state));
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::TypeOutput, version, state));
 }
 
 void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex, PortState state)
@@ -130,8 +130,8 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
         //  - AbortError
         //  - InvalidStateError
         //  - NotSupportedError
-        // FIXME: Do not rely on |error| string. Instead an enum representing
-        // an ExceptionCode should be defined and deliverred.
+        // TODO(toyoshim): Do not rely on |error| string. Instead an enum
+        // representing an ExceptionCode should be defined and deliverred.
         ExceptionCode ec = InvalidStateError;
         if (error == DOMException::getErrorName(SecurityError)) {
             ec = SecurityError;

@@ -40,24 +40,38 @@ namespace blink {
 
 using PortState = MIDIAccessor::MIDIPortState;
 
-MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version, PortState state)
+MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, TypeCode type, const String& version, PortState state)
     : m_id(id)
     , m_manufacturer(manufacturer)
     , m_name(name)
     , m_type(type)
     , m_version(version)
     , m_access(access)
+    , m_connection(ConnectionStateClosed)
 {
     ASSERT(access);
-    ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);
+    ASSERT(type == TypeInput || type == TypeOutput);
     ASSERT(state == PortState::MIDIPortStateDisconnected
         || state == PortState::MIDIPortStateConnected
         || state == PortState::MIDIPortStateOpened);
-    // FIXME: Remove following code once blink API has a real open and close
-    // operations.
+    // TODO(toyoshim): Remove following code once blink API has a real open and
+    // close operations.
     if (state == PortState::MIDIPortStateOpened)
         state = PortState::MIDIPortStateConnected;
     m_state = state;
+}
+
+String MIDIPort::connection() const
+{
+    switch (m_connection) {
+    case ConnectionStateOpen:
+        return "open";
+    case ConnectionStateClosed:
+        return "closed";
+    case ConnectionStatePending:
+        return "pending";
+    }
+    return emptyString();
 }
 
 String MIDIPort::state() const
@@ -66,11 +80,8 @@ String MIDIPort::state() const
     case PortState::MIDIPortStateDisconnected:
         return "disconnected";
     case PortState::MIDIPortStateConnected:
-        return "connected";
     case PortState::MIDIPortStateOpened:
-        return "opened";
-    default:
-        ASSERT_NOT_REACHED();
+        return "connected";
     }
     return emptyString();
 }
@@ -78,28 +89,26 @@ String MIDIPort::state() const
 String MIDIPort::type() const
 {
     switch (m_type) {
-    case MIDIPortTypeInput:
+    case TypeInput:
         return "input";
-    case MIDIPortTypeOutput:
+    case TypeOutput:
         return "output";
-    default:
-        ASSERT_NOT_REACHED();
     }
     return emptyString();
 }
 
 ScriptPromise MIDIPort::open(ScriptState* scriptState)
 {
+    // TODO(toyoshim): Implement the latest open() algorithm.
     switch (m_state) {
     case PortState::MIDIPortStateDisconnected:
         return reject(scriptState, InvalidStateError, "The port has been disconnected.");
     case PortState::MIDIPortStateConnected:
-        // FIXME: Add blink API to perform a real open operation.
-        setState(PortState::MIDIPortStateOpened);
-        // fall through
-    case PortState::MIDIPortStateOpened:
+        // TODO(toyoshim): Add blink API to perform a real open operation.
+        setStates(m_state, ConnectionStateOpen);
         return accept(scriptState);
-    default:
+    case PortState::MIDIPortStateOpened:
+        // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
         ASSERT_NOT_REACHED();
     }
     return reject(scriptState, InvalidStateError, "The port is in unknown state.");
@@ -107,16 +116,16 @@ ScriptPromise MIDIPort::open(ScriptState* scriptState)
 
 ScriptPromise MIDIPort::close(ScriptState* scriptState)
 {
+    // TODO(toyoshim): Implement the latest close() algorithm.
     switch (m_state) {
     case PortState::MIDIPortStateDisconnected:
         return reject(scriptState, InvalidStateError, "The port has been disconnected.");
-    case PortState::MIDIPortStateOpened:
-        // FIXME: Add blink API to perform a real close operation.
-        setState(PortState::MIDIPortStateConnected);
-        // fall through
     case PortState::MIDIPortStateConnected:
+        // TODO(toyoshim): Add blink API to perform a real close operation.
+        setStates(m_state, ConnectionStateClosed);
         return accept(scriptState);
-    default:
+    case PortState::MIDIPortStateOpened:
+        // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
         ASSERT_NOT_REACHED();
     }
     return reject(scriptState, InvalidStateError, "The port is in unknown state.");
@@ -124,10 +133,7 @@ ScriptPromise MIDIPort::close(ScriptState* scriptState)
 
 void MIDIPort::setState(PortState state)
 {
-    if (m_state == state)
-        return;
-    m_state = state;
-    dispatchEvent(MIDIConnectionEvent::create(this));
+    setStates(state, m_connection);
 }
 
 ExecutionContext* MIDIPort::executionContext() const
@@ -149,6 +155,15 @@ ScriptPromise MIDIPort::accept(ScriptState* scriptState)
 ScriptPromise MIDIPort::reject(ScriptState* scriptState, ExceptionCode ec, const String& message)
 {
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(ec, message));
+}
+
+void MIDIPort::setStates(PortState state, ConnectionState connection)
+{
+    if (m_state == state && m_connection == connection)
+        return;
+    m_state = state;
+    m_connection = connection;
+    dispatchEvent(MIDIConnectionEvent::create(this));
 }
 
 } // namespace blink

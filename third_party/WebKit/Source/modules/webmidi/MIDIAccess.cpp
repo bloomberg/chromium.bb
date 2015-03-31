@@ -56,7 +56,7 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
     m_accessor->setClient(this);
     for (size_t i = 0; i < ports.size(); ++i) {
         const MIDIAccessInitializer::PortDescriptor& port = ports[i];
-        if (port.type == MIDIPort::MIDIPortTypeInput) {
+        if (port.type == MIDIPort::TypeInput) {
             m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer, port.name, port.version, port.state));
         } else {
             m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id, port.manufacturer, port.name, port.version, port.state));

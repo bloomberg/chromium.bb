@@ -25,11 +25,11 @@ public:
         String id;
         String manufacturer;
         String name;
-        MIDIPort::MIDIPortTypeCode type;
+        MIDIPort::TypeCode type;
         String version;
         MIDIAccessor::MIDIPortState state;
 
-        PortDescriptor(const String& id, const String& manufacturer, const String& name, MIDIPort::MIDIPortTypeCode type, const String& version, MIDIAccessor::MIDIPortState state)
+        PortDescriptor(const String& id, const String& manufacturer, const String& name, MIDIPort::TypeCode type, const String& version, MIDIAccessor::MIDIPortState state)
             : id(id)
             , manufacturer(manufacturer)
             , name(name)
