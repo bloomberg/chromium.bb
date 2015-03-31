@@ -286,6 +286,8 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
       u_stride, v_stride, dst_y, dst_u, dst_v, base::TimeDelta(),
       base::Closure());
   DCHECK(video_frame.get());
+  video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                     frame_format.frame_rate);
 
   BrowserThread::PostTask(
       BrowserThread::IO,
