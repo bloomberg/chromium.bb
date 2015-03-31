@@ -99,9 +99,6 @@ class CrashReporterClient {
 
   // Invoked before attempting to write a minidump.
   virtual void RecordCrashDumpAttempt(bool is_real_crash);
-
-  // Invoked with the results of a minidump attempt.
-  virtual void RecordCrashDumpAttemptResult(bool is_real_crash, bool succeeded);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

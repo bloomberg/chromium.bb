@@ -30,8 +30,6 @@
             'target_name': 'browser_watcher_client',
             'type': 'static_library',
             'sources': [
-              'browser_watcher/crash_reporting_metrics_win.cc',
-              'browser_watcher/crash_reporting_metrics_win.h',
               'browser_watcher/watcher_client_win.cc',
               'browser_watcher/watcher_client_win.h',
               'browser_watcher/watcher_metrics_provider_win.cc',

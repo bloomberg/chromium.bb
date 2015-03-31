@@ -2744,9 +2744,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Chrome.BrowserCrashDumpAttempts">
-  <obsolete>
-    Deprecated as of 04/2015.
-  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total number of times the browser process has attempted to generate a
@@ -2756,9 +2753,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Chrome.BrowserDumpsWithCrash">
-  <obsolete>
-    Deprecated as of 04/2015.
-  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times the browser process has attempted to generate a crash
@@ -2767,9 +2761,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Chrome.BrowserDumpsWithNoCrash">
-  <obsolete>
-    Deprecated as of 04/2015.
-  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times the browser process has attempted to generate a crash
@@ -3745,31 +3736,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     stream exceeding the timeout threshold. This value is recorded per stream
     when it gets removed and used to investigate the audio glitch/skip problem
     on Chrome OS.
-  </summary>
-</histogram>
-
-<histogram name="CrashReport.BreakpadCrashDumpOutcome" enum="DumpOutcome">
-  <owner>erikwright@chromium.org</owner>
-  <owner>siggi@chromium.org</owner>
-  <summary>
-    Reports the result of an attempt to report a crash dump via Breakpad.
-    Success indicates only that the out-of-process crash reporter succesfully
-    generated a dump. The success or failure of the eventual upload is not
-    measured. This stability metric is logged from the first Chrome launch
-    post-dump.
-  </summary>
-</histogram>
-
-<histogram name="CrashReport.BreakpadDumpWithoutCrashOutcome"
-    enum="DumpOutcome">
-  <owner>erikwright@chromium.org</owner>
-  <owner>siggi@chromium.org</owner>
-  <summary>
-    Reports the result of an attempt to report a dump via Breakpad without
-    crashing. Success indicates only that the out-of-process crash reporter
-    succesfully generated a dump. The success or failure of the eventual upload
-    is not measured. This stability metric is logged from the first Chrome
-    launch post-dump.
   </summary>
 </histogram>
 
@@ -47575,12 +47541,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="Broken child map"/>
   <int value="6" label="Child entry count mismatch"/>
   <int value="7" label="Iterator error"/>
-</enum>
-
-<enum name="DumpOutcome" type="int">
-  <int value="0" label="Success"/>
-  <int value="1" label="Failure"/>
-  <int value="2" label="Unknown"/>
 </enum>
 
 <enum name="EAPInnerProtocol" type="int">

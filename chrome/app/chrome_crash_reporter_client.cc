@@ -4,11 +4,14 @@
 
 #include "chrome/app/chrome_crash_reporter_client.h"
 
+#include "base/atomicops.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -27,7 +30,6 @@
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/browser_watcher/crash_reporting_metrics_win.h"
 #include "policy/policy_constants.h"
 #endif
 
@@ -57,6 +59,19 @@ namespace {
 // This is the minimum version of google update that is required for deferred
 // crash uploads to work.
 const char kMinUpdateVersion[] = "1.3.21.115";
+
+// The value name prefix will be of the form {chrome-version}-{pid}-{timestamp}
+// (i.e., "#####.#####.#####.#####-########-########") which easily fits into a
+// 63 character buffer.
+const char kBrowserCrashDumpPrefixTemplate[] = "%s-%08x-%08x";
+const size_t kBrowserCrashDumpPrefixLength = 63;
+char g_browser_crash_dump_prefix[kBrowserCrashDumpPrefixLength + 1] = {};
+
+// These registry key to which we'll write a value for each crash dump attempt.
+HKEY g_browser_crash_dump_regkey = NULL;
+
+// A atomic counter to make each crash dump value name unique.
+base::subtle::Atomic32 g_browser_crash_dump_count = 0;
 #endif
 
 }  // namespace
@@ -188,39 +203,54 @@ int ChromeCrashReporterClient::GetResultCodeRespawnFailed() {
 }
 
 void ChromeCrashReporterClient::InitBrowserCrashDumpsRegKey() {
-#if !defined(NACL_WIN64)
-  if (GetCollectStatsConsent()){
-    crash_reporting_metrics_.reset(new browser_watcher::CrashReportingMetrics(
-        InstallUtil::IsChromeSxSProcess()
-            ? chrome::kBrowserCrashDumpAttemptsRegistryPathSxS
-            : chrome::kBrowserCrashDumpAttemptsRegistryPath));
+  DCHECK(g_browser_crash_dump_regkey == NULL);
+
+  base::win::RegKey regkey;
+  if (regkey.Create(HKEY_CURRENT_USER,
+                    chrome::kBrowserCrashDumpAttemptsRegistryPath,
+                    KEY_ALL_ACCESS) != ERROR_SUCCESS) {
+    return;
   }
-#endif
+
+  // We use the current process id and the current tick count as a (hopefully)
+  // unique combination for the crash dump value. There's a small chance that
+  // across a reboot we might have a crash dump signal written, and the next
+  // browser process might have the same process id and tick count, but crash
+  // before consuming the signal (overwriting the signal with an identical one).
+  // For now, we're willing to live with that risk.
+  if (base::strings::SafeSPrintf(g_browser_crash_dump_prefix,
+                                 kBrowserCrashDumpPrefixTemplate,
+                                 chrome::kChromeVersion,
+                                 ::GetCurrentProcessId(),
+                                 ::GetTickCount()) <= 0) {
+    NOTREACHED();
+    g_browser_crash_dump_prefix[0] = '\0';
+    return;
+  }
+
+  // Hold the registry key in a global for update on crash dump.
+  g_browser_crash_dump_regkey = regkey.Take();
 }
 
 void ChromeCrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
-#if !defined(NACL_WIN64)
-  if (!crash_reporting_metrics_)
+  // If we're not a browser (or the registry is unavailable to us for some
+  // reason) then there's nothing to do.
+  if (g_browser_crash_dump_regkey == NULL)
     return;
 
-  if (is_real_crash)
-    crash_reporting_metrics_->RecordCrashDumpAttempt();
-  else
-    crash_reporting_metrics_->RecordDumpWithoutCrashAttempt();
-#endif
-}
-
-void ChromeCrashReporterClient::RecordCrashDumpAttemptResult(bool is_real_crash,
-                                                             bool succeeded) {
-#if !defined(NACL_WIN64)
-  if (!crash_reporting_metrics_)
-    return;
-
-  if (is_real_crash)
-    crash_reporting_metrics_->RecordCrashDumpAttemptResult(succeeded);
-  else
-    crash_reporting_metrics_->RecordDumpWithoutCrashAttemptResult(succeeded);
-#endif
+  // Generate the final value name we'll use (appends the crash number to the
+  // base value name).
+  const size_t kMaxValueSize = 2 * kBrowserCrashDumpPrefixLength;
+  char value_name[kMaxValueSize + 1] = {};
+  if (base::strings::SafeSPrintf(
+          value_name, "%s-%x", g_browser_crash_dump_prefix,
+          base::subtle::NoBarrier_AtomicIncrement(&g_browser_crash_dump_count,
+                                                  1)) > 0) {
+    DWORD value_dword = is_real_crash ? 1 : 0;
+    ::RegSetValueExA(g_browser_crash_dump_regkey, value_name, 0, REG_DWORD,
+                     reinterpret_cast<BYTE*>(&value_dword),
+                     sizeof(value_dword));
+  }
 }
 
 bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(

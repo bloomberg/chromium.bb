@@ -78,10 +78,6 @@ void CrashReporterClient::InitBrowserCrashDumpsRegKey() {
 
 void CrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
 }
-
-void CrashReporterClient::RecordCrashDumpAttemptResult(bool is_real_crash,
-                                                       bool succeeded) {
-}
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

@@ -129,10 +129,11 @@ extern const wchar_t kMetroGetCurrentTabInfoMessage[];
 // Used by Metro Chrome to store activation state.
 extern const wchar_t kMetroRegistryPath[];
 extern const wchar_t kLaunchModeValue[];
-// Used to store crash report metrics using
-// content/browser_watcher/crash_reporting_metrics_win.h.
+// Used by the browser as a container in which to track unreported crash dump
+// attempts. The actual values (each representing one crash dump attempt) are
+// stored in a subkey named with the version number of the build. Each value
+// under the subkey represents an additional attempt.
 extern const wchar_t kBrowserCrashDumpAttemptsRegistryPath[];
-extern const wchar_t kBrowserCrashDumpAttemptsRegistryPathSxS[];
 // Registry location where the browser watcher stores browser exit codes.
 // This is picked up and stored in histograms by the browser on the subsequent
 // launch.

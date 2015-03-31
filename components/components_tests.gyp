@@ -73,7 +73,6 @@
       'bookmarks/managed/managed_bookmarks_tracker_unittest.cc',
     ],
     'browser_watcher_unittest_sources': [
-      'browser_watcher/crash_reporting_metrics_win_unittest.cc',
       'browser_watcher/endsession_watcher_window_win_unittest.cc',
       'browser_watcher/exit_code_watcher_win_unittest.cc',
       'browser_watcher/exit_funnel_win_unittest.cc',
