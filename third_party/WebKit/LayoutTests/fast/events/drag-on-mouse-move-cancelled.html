@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="text">
+TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT
+</p>
+<script>
+    description('Test for <a href="https://code.google.com/p/chromium/issues/detail?id=346473">bug' +
+                 '346473</a>: Text selection should happen even if mousemove event is cancelled,' +
+                 'since there is no default action specified for mousemove event in the spec which ' +
+                 'is to be prevented on defaultPrevent. To test manually try to select the text in ' +
+                 'the paragraph, selection should happen.');
+
+    var testElem = document.getElementById("text");
+    testElem.addEventListener("mousemove", function(event) {
+      event.preventDefault();
+    }, false);
+
+    var text_x = testElem.offsetLeft;
+    var text_y = testElem.offsetTop;
+
+    eventSender.mouseMoveTo(text_x, text_y);
+    eventSender.mouseDown();
+
+    // Create the selection
+    eventSender.mouseMoveTo(text_x + 10, text_y);
+    eventSender.mouseUp();
+
+    shouldBe('window.getSelection().getRangeAt(0).toString().length','1');
+</script>
+</body>
+</html>

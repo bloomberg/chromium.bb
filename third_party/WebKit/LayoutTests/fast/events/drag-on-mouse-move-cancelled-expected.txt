@@ -1,0 +1,10 @@
+Test for bug346473: Text selection should happen even if mousemove event is cancelled,since there is no default action specified for mousemove event in the spec which is to be prevented on defaultPrevent. To test manually try to select the text in the paragraph, selection should happen.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.getSelection().getRangeAt(0).toString().length is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT
