@@ -733,6 +733,11 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   if (!frame || frame->parent())
     return;
 
+  // If the main frame lives in a different process, don't do anything.
+  // Histogram data will be recorded by the real main frame.
+  if (frame->isWebRemoteFrame())
+    return;
+
   // Only dump for supported schemes.
   URLPattern::SchemeMasks scheme_type =
       GetSupportedSchemeType(frame->document().url());
