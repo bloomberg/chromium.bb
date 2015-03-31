@@ -79,6 +79,11 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   void GetFileInfo(const base::FilePath& file_path,
                    const GetFileInfoSuccessCallback& success_callback,
                    const ErrorCallback& error_callback) override;
+  void CreateDirectory(const base::FilePath& directory_path,
+                       const bool exclusive,
+                       const bool recursive,
+                       const CreateDirectorySuccessCallback& success_callback,
+                       const ErrorCallback& error_callback) override;
   void ReadDirectory(const base::FilePath& root,
                      const ReadDirectorySuccessCallback& success_callback,
                      const ErrorCallback& error_callback) override;
@@ -127,6 +132,11 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const base::FilePath& file_path,
       const GetFileInfoSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
+  virtual void CreateDirectoryInternal(
+      const std::vector<base::FilePath>& components,
+      const bool exclusive,
+      const CreateDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
   virtual void ReadDirectoryInternal(
       const base::FilePath& root,
       const ReadDirectorySuccessCallback& success_callback,
@@ -163,6 +173,24 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const DeleteDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
       const base::File::Info& file_info);
+
+  // Creates a single directory to |directory_path|. The caller must ensure that
+  // parent directory |directory_path.DirName()| already exists.
+  virtual void CreateSingleDirectory(
+      const base::FilePath& directory_path,
+      const bool exclusive,
+      const CreateDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
+
+  // Called when ReadDirectoryInternal() completes for filling cache as part of
+  // creating directories.
+  virtual void OnDidReadDirectoryToCreateDirectory(
+      const std::vector<base::FilePath>& components,
+      const bool exclusive,
+      const CreateDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const storage::AsyncFileUtil::EntryList& /* file_list */,
+      const bool has_more);
 
   // Called when ReadDirectory succeeds.
   virtual void OnDidReadDirectoryToDeleteDirectory(
@@ -217,6 +245,22 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   void OnDidGetFileInfo(const GetFileInfoSuccessCallback& success_callback,
                         const base::File::Info& file_info);
 
+  // Called when GetFileInfo() of |directory_path| succeeded at checking the
+  // path already exists.
+  void OnPathAlreadyExistsForCreateSingleDirectory(
+      const bool exclusive,
+      const CreateDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Info& file_info);
+
+  // Called when GetFileInfo() of |directory_path| failed to check the path
+  // already exists.
+  void OnPathDoesNotExistForCreateSingleDirectory(
+      const base::FilePath& directory_path,
+      const CreateDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Error error);
+
   // Called when GetFileInfo() succeeds. GetFileInfo() is invoked to
   // get the |dir_id| directory metadata details. |file_info| specifies the
   // |dir_id| directory details.
@@ -255,6 +299,26 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const base::FilePath& device_file_path,
       const CopyFileFromLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback,
+      const base::File::Error error);
+
+  // Called when CreateSignleDirectory() succeeds.
+  void OnDidCreateSingleDirectory(
+      const CreateDirectorySuccessCallback& success_callback);
+
+  // Called when parent directory |created_directory| is created as part of
+  // CreateDirectory.
+  void OnDidCreateParentDirectoryToCreateDirectory(
+      const base::FilePath& created_directory,
+      const std::vector<base::FilePath>& components,
+      const bool exclusive,
+      const CreateDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
+
+  // Called when it failed to create a parent directory. For creating parent
+  // directories, all errors should be reported as FILE_ERROR_FAILED. This
+  // method wraps error callbacks of creating parent directories.
+  void OnCreateParentDirectoryErrorToCreateDirectory(
+      const ErrorCallback& callback,
       const base::File::Error error);
 
   // Called when ReadDirectory() succeeds.

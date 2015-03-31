@@ -41,6 +41,14 @@ void TestMediaTransferProtocolManagerLinux::CloseStorage(
   callback.Run(true);
 }
 
+void TestMediaTransferProtocolManagerLinux::CreateDirectory(
+    const std::string& storage_handle,
+    const uint32 parent_id,
+    const std::string& directory_name,
+    const CreateDirectoryCallback& callback) {
+  callback.Run(true /* error */);
+}
+
 void TestMediaTransferProtocolManagerLinux::ReadDirectory(
     const std::string& storage_handle,
     const uint32 file_id,

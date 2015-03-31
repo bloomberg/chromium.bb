@@ -28,6 +28,10 @@ class TestMediaTransferProtocolManagerLinux
                    const OpenStorageCallback& callback) override;
   void CloseStorage(const std::string& storage_handle,
                     const CloseStorageCallback& callback) override;
+  void CreateDirectory(const std::string& storage_handle,
+                       const uint32 parent_id,
+                       const std::string& directory_name,
+                       const CreateDirectoryCallback& callback) override;
   void ReadDirectory(const std::string& storage_handle,
                      const uint32 file_id,
                      const size_t max_size,

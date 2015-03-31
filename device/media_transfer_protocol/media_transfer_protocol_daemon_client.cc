@@ -97,6 +97,22 @@ class MediaTransferProtocolDaemonClientImpl
                    error_callback));
   }
 
+  void CreateDirectory(const std::string& handle,
+                       const uint32 parent_id,
+                       const std::string& directory_name,
+                       const CreateDirectoryCallback& callback,
+                       const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kCreateDirectory);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(handle);
+    writer.AppendUint32(parent_id);
+    writer.AppendString(directory_name);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnCreateDirectory,
+                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+  }
+
   // MediaTransferProtocolDaemonClient override.
   void ReadDirectoryEntryIds(const std::string& handle,
                              uint32 file_id,
@@ -318,6 +334,16 @@ class MediaTransferProtocolDaemonClientImpl
   void OnCloseStorage(const CloseStorageCallback& callback,
                       const ErrorCallback& error_callback,
                       dbus::Response* response) {
+    if (!response) {
+      error_callback.Run();
+      return;
+    }
+    callback.Run();
+  }
+
+  void OnCreateDirectory(const CreateDirectoryCallback& callback,
+                         const ErrorCallback& error_callback,
+                         dbus::Response* response) {
     if (!response) {
       error_callback.Run();
       return;

@@ -54,6 +54,9 @@ class MediaTransferProtocolDaemonClient {
   // A callback to handle the result of CloseStorage.
   typedef base::Closure CloseStorageCallback;
 
+  // A callback to handle the result of CreateDirectory.
+  typedef base::Closure CreateDirectoryCallback;
+
   // A callback to handle the result of ReadDirectoryEntryIds.
   // The argument is a vector of file ids.
   typedef base::Callback<void(const std::vector<uint32>& file_ids)
@@ -112,6 +115,16 @@ class MediaTransferProtocolDaemonClient {
   virtual void CloseStorage(const std::string& handle,
                             const CloseStorageCallback& callback,
                             const ErrorCallback& error_callback) = 0;
+
+  // Calls CreateDirectory method. |callback| is called after the method call
+  // succeeds, otherwise, |error_callback| is called.
+  // |parent_id| is an id of the parent directory.
+  // |directory_name| is name of new directory.
+  virtual void CreateDirectory(const std::string& handle,
+                               const uint32 parent_id,
+                               const std::string& directory_name,
+                               const CreateDirectoryCallback& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // Calls ReadDirectoryEntryIds method. |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.

@@ -29,6 +29,9 @@ class MTPDeviceAsyncDelegate {
   typedef base::Callback<
       void(const base::File::Info& file_info)> GetFileInfoSuccessCallback;
 
+  // A callback to be called when CreateDirectory method call succeeds.
+  typedef base::Closure CreateDirectorySuccessCallback;
+
   // A callback to be called when ReadDirectory method call succeeds.
   typedef base::Callback<
       void(const storage::AsyncFileUtil::EntryList& file_list, bool has_more)>
@@ -91,6 +94,17 @@ class MTPDeviceAsyncDelegate {
   virtual void GetFileInfo(
       const base::FilePath& file_path,
       const GetFileInfoSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Creates a directory to |directory_path|. When |exclusive| is true, this
+  // returns base::File::FILE_ERROR_EXISTS if a directory already exists for
+  // |directory_path|. When |recursive| is true, the directory is created
+  // recursively to |directory_path|.
+  virtual void CreateDirectory(
+      const base::FilePath& directory_path,
+      const bool exclusive,
+      const bool recursive,
+      const CreateDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) = 0;
 
   // Enumerates the |root| directory contents and invokes the appropriate

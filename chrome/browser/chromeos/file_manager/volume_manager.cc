@@ -694,7 +694,7 @@ void VolumeManager::OnRemovableStorageAttached(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
                  base::Unretained(MTPDeviceMapService::GetInstance()),
-                 info.location(), fsid, !write_supported /* read_only  */));
+                 info.location(), fsid, !write_supported /* read_only */));
 
   linked_ptr<Volume> volume(
       Volume::CreateForMTP(path, label, !write_supported));

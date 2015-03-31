@@ -39,6 +39,10 @@ class MediaTransferProtocolManager {
   // The argument is true if there was an error.
   typedef base::Callback<void(bool error)> CloseStorageCallback;
 
+  // A callback to handle the result of CreateDirectory.
+  // The first argument is true if there was an error.
+  typedef base::Callback<void(bool error)> CreateDirectoryCallback;
+
   // A callback to handle the result of ReadDirectory.
   // The first argument is a vector of file entries.
   // The second argument is true if there are more file entries.
@@ -106,6 +110,12 @@ class MediaTransferProtocolManager {
   // Close |storage_handle| and runs |callback|.
   virtual void CloseStorage(const std::string& storage_handle,
                             const CloseStorageCallback& callback) = 0;
+
+  // Creates |directory_name| in |parent_id|.
+  virtual void CreateDirectory(const std::string& storage_handle,
+                               const uint32 parent_id,
+                               const std::string& directory_name,
+                               const CreateDirectoryCallback& callback) = 0;
 
   // Reads directory entries from |file_id| on |storage_handle| and runs
   // |callback|. |max_size| is a maximum number of files to be read.

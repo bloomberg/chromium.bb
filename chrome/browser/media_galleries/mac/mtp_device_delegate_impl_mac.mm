@@ -173,6 +173,15 @@ void MTPDeviceDelegateImplMac::GetFileInfo(
                  success_callback, error_callback));
 }
 
+void MTPDeviceDelegateImplMac::CreateDirectory(
+    const base::FilePath& directory_path,
+    const bool exclusive,
+    const bool recursive,
+    const CreateDirectorySuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 void MTPDeviceDelegateImplMac::ReadDirectory(
       const base::FilePath& root,
       const ReadDirectorySuccessCallback& success_callback,

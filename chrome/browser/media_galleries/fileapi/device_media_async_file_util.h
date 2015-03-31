@@ -115,6 +115,10 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   DeviceMediaAsyncFileUtil(const base::FilePath& profile_path,
                            MediaFileValidationType validation_type);
 
+  // Called when CreateDirectory method call succeeds. |callback| is invoked to
+  // complete the CreateDirectory request.
+  void OnDidCreateDirectory(const StatusCallback& callback);
+
   // Called when GetFileInfo method call succeeds. |file_info| contains the
   // file details of the requested url. |callback| is invoked to complete the
   // GetFileInfo request.

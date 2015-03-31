@@ -70,6 +70,13 @@ void OnDidCheckMediaForReadDirectory(
   callback.Run(base::File::FILE_OK, file_list, has_more);
 }
 
+// Called when CreateDirectory method call failed.
+void OnCreateDirectoryError(const AsyncFileUtil::StatusCallback& callback,
+                            base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(error);
+}
+
 // Called when ReadDirectory method call failed to enumerate the directory
 // objects. |callback| is invoked to notify the caller about the |error|
 // that occured while reading the directory objects.
@@ -330,8 +337,20 @@ void DeviceMediaAsyncFileUtil::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  if (!delegate) {
+    OnCreateDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (delegate->IsReadOnly()) {
+    OnCreateDirectoryError(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+  delegate->CreateDirectory(
+      url.path(), exclusive, recursive,
+      base::Bind(&DeviceMediaAsyncFileUtil::OnDidCreateDirectory,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&OnCreateDirectoryError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::GetFileInfo(
@@ -571,6 +590,13 @@ DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
   if (validation_type == APPLY_MEDIA_FILE_VALIDATION) {
     media_path_filter_wrapper_ = new MediaPathFilterWrapper;
   }
+}
+
+void DeviceMediaAsyncFileUtil::OnDidCreateDirectory(
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  callback.Run(base::File::FILE_OK);
 }
 
 void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(

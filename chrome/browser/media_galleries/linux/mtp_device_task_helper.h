@@ -31,6 +31,8 @@ class MTPDeviceTaskHelper {
   typedef MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback
       GetFileInfoSuccessCallback;
 
+  typedef base::Closure CreateDirectorySuccessCallback;
+
   // NOTE: The file names in the entry list have their file id appended at the
   // end. e.g. foo.jpg with file id 45 becomes foo.jpg,45.
   typedef base::Callback<void(const storage::AsyncFileUtil::EntryList& entries,
@@ -69,6 +71,12 @@ class MTPDeviceTaskHelper {
   void GetFileInfo(uint32 file_id,
                    const GetFileInfoSuccessCallback& success_callback,
                    const ErrorCallback& error_callback);
+
+  // Forwards CreateDirectory request to the MediaTransferProtocolManager.
+  void CreateDirectory(const uint32 parent_id,
+                       const std::string& directory_name,
+                       const CreateDirectorySuccessCallback& success_callback,
+                       const ErrorCallback& error_callback);
 
   // Dispatches the read directory request to the MediaTransferProtocolManager.
   //
@@ -151,6 +159,11 @@ class MTPDeviceTaskHelper {
                      const ErrorCallback& error_callback,
                      const MtpFileEntry& file_entry,
                      bool error) const;
+
+  // Called when CreateDirectory completes.
+  void OnCreateDirectory(const CreateDirectorySuccessCallback& success_callback,
+                         const ErrorCallback& error_callback,
+                         const bool error) const;
 
   // Query callback for ReadDirectory().
   //

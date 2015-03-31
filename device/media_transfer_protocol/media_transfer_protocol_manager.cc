@@ -159,6 +159,24 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void CreateDirectory(const std::string& storage_handle,
+                       const uint32 parent_id,
+                       const std::string& directory_name,
+                       const CreateDirectoryCallback& callback) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+      callback.Run(true /* error */);
+      return;
+    }
+    create_directory_callbacks_.push(callback);
+    mtp_client_->CreateDirectory(
+        storage_handle, parent_id, directory_name,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnCreateDirectory,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnCreateDirectoryError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // MediaTransferProtocolManager override.
   void ReadDirectory(const std::string& storage_handle,
                      const uint32 file_id,
@@ -286,6 +304,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // (callback, handle)
   typedef std::queue<std::pair<CloseStorageCallback, std::string>
                     > CloseStorageCallbackQueue;
+  typedef std::queue<CreateDirectoryCallback> CreateDirectoryCallbackQueue;
   typedef std::queue<ReadDirectoryCallback> ReadDirectoryCallbackQueue;
   typedef std::queue<ReadFileCallback> ReadFileCallbackQueue;
   typedef std::queue<GetFileInfoCallback> GetFileInfoCallbackQueue;
@@ -392,6 +411,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     DCHECK(thread_checker_.CalledOnValidThread());
     close_storage_callbacks_.front().first.Run(true);
     close_storage_callbacks_.pop();
+  }
+
+  void OnCreateDirectory() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    create_directory_callbacks_.front().Run(false /* no error */);
+    create_directory_callbacks_.pop();
+  }
+
+  void OnCreateDirectoryError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    create_directory_callbacks_.front().Run(true /* error */);
+    create_directory_callbacks_.pop();
   }
 
   void OnReadDirectoryEntryIdsToReadDirectory(
@@ -620,6 +651,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // Queued callbacks.
   OpenStorageCallbackQueue open_storage_callbacks_;
   CloseStorageCallbackQueue close_storage_callbacks_;
+  CreateDirectoryCallbackQueue create_directory_callbacks_;
   ReadDirectoryCallbackQueue read_directory_callbacks_;
   ReadFileCallbackQueue read_file_callbacks_;
   GetFileInfoCallbackQueue get_file_info_callbacks_;

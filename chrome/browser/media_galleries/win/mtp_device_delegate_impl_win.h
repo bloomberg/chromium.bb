@@ -90,9 +90,14 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   virtual ~MTPDeviceDelegateImplWin();
 
   // MTPDeviceAsyncDelegate:
-  virtual void GetFileInfo(
-      const base::FilePath& file_path,
-      const GetFileInfoSuccessCallback& success_callback,
+  virtual void GetFileInfo(const base::FilePath& file_path,
+                           const GetFileInfoSuccessCallback& success_callback,
+                           const ErrorCallback& error_callback) override;
+  virtual void CreateDirectory(
+      const base::FilePath& directory_path,
+      const bool exclusive,
+      const bool recursive,
+      const CreateDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
   virtual void ReadDirectory(
       const base::FilePath& root,

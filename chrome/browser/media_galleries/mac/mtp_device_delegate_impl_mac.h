@@ -36,6 +36,12 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
                    const GetFileInfoSuccessCallback& success_callback,
                    const ErrorCallback& error_callback) override;
 
+  void CreateDirectory(const base::FilePath& directory_path,
+                       const bool exclusive,
+                       const bool recursive,
+                       const CreateDirectorySuccessCallback& success_callback,
+                       const ErrorCallback& error_callback) override;
+
   // Note: passed absolute paths, but expects relative paths in reply.
   void ReadDirectory(const base::FilePath& root,
                      const ReadDirectorySuccessCallback& success_callback,
