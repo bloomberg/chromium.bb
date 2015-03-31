@@ -1017,6 +1017,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
 IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
                     cc::BeginFrameArgs /* args */)
 
+// Tells the renderer what audio hardware configuration is.
+IPC_MESSAGE_CONTROL2(ViewMsg_SetAudioHardwareConfig,
+                     media::AudioParameters /* input parameters */,
+                     media::AudioParameters /* output parameters */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -1055,11 +1060,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateFullscreenWidget,
 // Asks the browser for a unique routing ID.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
                             int /* routing_id */)
-
-// Asks the browser for the default audio hardware configuration.
-IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetAudioHardwareConfig,
-                            media::AudioParameters /* input parameters */,
-                            media::AudioParameters /* output parameters */)
 
 // Asks the browser for the renderer process memory size stats.
 IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetProcessMemorySizes,

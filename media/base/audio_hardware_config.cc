@@ -30,6 +30,8 @@ static uint32_t RoundUpToPowerOfTwo(uint32_t v) {
 }
 #endif
 
+AudioHardwareConfig::AudioHardwareConfig() {}
+
 AudioHardwareConfig::AudioHardwareConfig(
     const AudioParameters& input_params,
     const AudioParameters& output_params)
