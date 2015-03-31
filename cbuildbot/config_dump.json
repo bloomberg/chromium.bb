@@ -20561,6 +20561,7 @@
             "test",
             "factory_install"
         ],
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27591,13 +27592,13 @@
             "test",
             "factory_install"
         ],
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
         "name": "lemmings-release",
         "overlays": "both",
-        "paygen_skip_testing": true,
         "push_image": true,
         "sync_chrome": false,
         "trybot_list": true,

@@ -2688,11 +2688,15 @@ _release.add_config('bobcat-release',
 _release.add_config('gizmo-release',
   _base_configs['gizmo'],
   important=True,
+  paygen=False,
+  signer_tests=False,
 )
 
 _release.add_config('lemmings-release',
   _base_configs['lemmings'],
   important=True,
+  paygen=False,
+  signer_tests=False,
 )
 
 _release.add_config('samus-release',
@@ -2730,25 +2734,6 @@ def _AddReleaseConfigs():
 
 
 _AddReleaseConfigs()
-
-_release.add_config('gizmo-release',
-  _base_configs['gizmo'],
-
-  # This build doesn't generate signed images, so don't try to release them.
-  paygen=False,
-  signer_tests=False,
-)
-
-_release.add_config('lemmings-release',
-  _base_configs['lemmings'],
-
-  # Hw Lab can't test, yet.
-  paygen_skip_testing=True,
-
-  # This build doesn't generate signed images, so don't try to release them.
-  paygen=False,
-  signer_tests=False,
-)
 
 _release.add_config('panther_embedded-minimal-release',
   _base_configs['panther_embedded'],
@@ -3379,9 +3364,7 @@ _waterfall_config_map = {
       'bobcat-release',
       'cosmos-release',
       'daisy_winter-release',
-      'gizmo-release',
       'kayle-release',
-      'lemmings-release',
       'nyan_freon-release',
       'panther_moblab-release',
       'rush_ryu-release',
