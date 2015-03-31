@@ -740,26 +740,32 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
   void UninstallExtension(const std::string& id, bool expect_success) {
-    content::WindowedNotificationObserver observer(
-        expect_success
-            ? extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED
-            : extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-        content::NotificationService::AllSources());
-    extension_service()->UninstallExtension(
-        id,
-        extensions::UNINSTALL_REASON_FOR_TESTING,
-        base::Bind(&base::DoNothing),
-        NULL);
-    observer.Wait();
+    if (expect_success) {
+      extensions::TestExtensionRegistryObserver observer(
+          extensions::ExtensionRegistry::Get(browser()->profile()));
+      extension_service()->UninstallExtension(
+          id, extensions::UNINSTALL_REASON_FOR_TESTING,
+          base::Bind(&base::DoNothing), NULL);
+      observer.WaitForExtensionUninstalled();
+    } else {
+      content::WindowedNotificationObserver observer(
+          extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
+          content::NotificationService::AllSources());
+      extension_service()->UninstallExtension(
+          id,
+          extensions::UNINSTALL_REASON_FOR_TESTING,
+          base::Bind(&base::DoNothing),
+          NULL);
+      observer.Wait();
+    }
   }
 
   void DisableExtension(const std::string& id) {
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver observer(
+        extensions::ExtensionRegistry::Get(browser()->profile()));
     extension_service()->DisableExtension(id,
                                           extensions::Extension::DISABLE_NONE);
-    observer.Wait();
+    observer.WaitForExtensionUnloaded();
   }
 
   void UpdateProviderPolicy(const PolicyMap& policy) {
