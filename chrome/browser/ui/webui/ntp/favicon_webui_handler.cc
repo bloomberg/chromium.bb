@@ -91,8 +91,9 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
   std::string dom_id;
   CHECK(args->GetString(1, &dom_id));
 
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()), ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty())
     return;
 

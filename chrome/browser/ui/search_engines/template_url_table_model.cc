@@ -115,7 +115,7 @@ class TemplateURLTableModel::ModelEntry {
 
 TemplateURLTableModel::TemplateURLTableModel(
     TemplateURLService* template_url_service,
-    FaviconService* favicon_service)
+    favicon::FaviconService* favicon_service)
     : observer_(NULL),
       template_url_service_(template_url_service),
       favicon_service_(favicon_service) {

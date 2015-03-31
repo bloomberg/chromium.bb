@@ -459,7 +459,7 @@ AndroidHistoryProviderService::GetLargestRawFaviconForID(
     favicon_base::FaviconID favicon_id,
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  FaviconService* fs = FaviconServiceFactory::GetForProfile(
+  favicon::FaviconService* fs = FaviconServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(fs);
   return fs->GetLargestRawFaviconForID(favicon_id, callback, tracker);

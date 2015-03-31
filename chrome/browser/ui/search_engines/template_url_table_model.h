@@ -14,9 +14,12 @@
 #include "components/search_engines/template_url_service_observer.h"
 #include "ui/base/models/table_model.h"
 
-class FaviconService;
 class TemplateURL;
 class TemplateURLService;
+
+namespace favicon {
+class FaviconService;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -37,7 +40,7 @@ class TemplateURLTableModel : public ui::TableModel,
                                      TemplateURLServiceObserver {
  public:
   TemplateURLTableModel(TemplateURLService* template_url_service,
-                        FaviconService* favicon_service);
+                        favicon::FaviconService* favicon_service);
 
   ~TemplateURLTableModel() override;
 
@@ -122,7 +125,7 @@ class TemplateURLTableModel : public ui::TableModel,
   // The model we're displaying entries from.
   TemplateURLService* template_url_service_;
 
-  FaviconService* favicon_service_;
+  favicon::FaviconService* favicon_service_;
 
   // Index of the last search engine in entries_. This is used to determine the
   // group boundaries.

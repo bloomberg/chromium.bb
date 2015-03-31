@@ -904,8 +904,9 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
 
   history->AddPageNoVisitForBookmark(bookmark_node->url(),
                                      bookmark_node->GetTitle());

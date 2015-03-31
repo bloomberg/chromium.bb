@@ -14,14 +14,15 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-FaviconService* FaviconServiceFactory::GetForProfile(Profile* profile,
-                                                     ServiceAccessType sat) {
+favicon::FaviconService* FaviconServiceFactory::GetForProfile(
+    Profile* profile,
+    ServiceAccessType sat) {
   if (!profile->IsOffTheRecord()) {
-    return static_cast<FaviconService*>(
+    return static_cast<favicon::FaviconService*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
   } else if (sat == ServiceAccessType::EXPLICIT_ACCESS) {
     // Profile must be OffTheRecord in this case.
-    return static_cast<FaviconService*>(
+    return static_cast<favicon::FaviconService*>(
         GetInstance()->GetServiceForBrowserContext(
             profile->GetOriginalProfile(), true));
   }
@@ -50,9 +51,10 @@ FaviconServiceFactory::~FaviconServiceFactory() {
 KeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new FaviconService(ChromeFaviconClientFactory::GetForProfile(profile),
-                            HistoryServiceFactory::GetForProfile(
-                                profile, ServiceAccessType::EXPLICIT_ACCESS));
+  return new favicon::FaviconService(
+      ChromeFaviconClientFactory::GetForProfile(profile),
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 bool FaviconServiceFactory::ServiceIsNULLWhileTesting() const {

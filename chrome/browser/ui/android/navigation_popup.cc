@@ -40,8 +40,9 @@ void NavigationPopup::FetchFaviconForUrl(JNIEnv* env,
                                          jobject obj,
                                          jstring jurl) {
   Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   GURL url(base::android::ConvertJavaStringToUTF16(env, jurl));

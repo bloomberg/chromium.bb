@@ -131,8 +131,9 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
 #endif  // !defined(OS_ANDROID)
 
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   FallbackIconService* fallback_icon_service =
       FallbackIconServiceFactory::GetForBrowserContext(profile_);
 
