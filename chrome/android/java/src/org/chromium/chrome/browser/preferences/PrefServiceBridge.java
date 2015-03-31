@@ -12,10 +12,13 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.JavaScriptExceptionInfo;
 import org.chromium.chrome.browser.preferences.website.PopupExceptionInfo;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +29,6 @@ import java.util.List;
  * preferences.
  */
 public final class PrefServiceBridge {
-
     // Does not need sync with native; used for the popup settings check
     public static final String EXCEPTION_SETTING_ALLOW = "allow";
     public static final String EXCEPTION_SETTING_BLOCK = "block";
@@ -39,7 +41,7 @@ public final class PrefServiceBridge {
     public static final int SUPERVISED_USER_FILTERING_BLOCK = 2;
 
     private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
-    private static final int MIGRATION_CURRENT_VERSION = 1;
+    private static final int MIGRATION_CURRENT_VERSION = 2;
 
     private static String sProfilePath;
 
@@ -50,6 +52,10 @@ public final class PrefServiceBridge {
     // Constants related to the Contextual Search preference.
     private static final String CONTEXTUAL_SEARCH_DISABLED = "false";
     private static final String CONTEXTUAL_SEARCH_ENABLED = "true";
+
+    // The key to store whether the Location Permission was automatically added for the search
+    // engine set as default.
+    public static final String LOCATION_AUTO_ALLOWED = "search_engine_location_auto_allowed";
 
     /**
      * Structure that holds all the version information about the current Chrome browser.
@@ -138,10 +144,54 @@ public final class PrefServiceBridge {
                     + "the results may be unpredictable.");
         }
 
-        if (currentVersion <= 0) {
+        if (currentVersion < 1) {
             nativeMigrateJavascriptPreference();
         }
+        if (currentVersion < 2) {
+            addDefaultSearchEnginePermission(context);
+        }
         preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).commit();
+    }
+
+   /**
+    * Add a permission entry for Location for the default search engine.
+    */
+    private void addDefaultSearchEnginePermission(final Context context) {
+        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        if (!templateUrlService.isLoaded()) {
+            templateUrlService.registerLoadListener(new LoadListener() {
+                @Override
+                public void onTemplateUrlServiceLoaded() {
+                    TemplateUrlService.getInstance().unregisterLoadListener(this);
+                    addDefaultSearchEnginePermission(context);
+                }});
+            templateUrlService.load();
+            return;
+        }
+
+        maybeCreatePermissionForDefaultSearchEngine(true, context);
+    }
+
+    /**
+     * Add a permission entry for Location for the default search engine.
+     * @param allowed Whether to create an Allowed permission or a Denied permission.
+     * @param context The current context to use.
+     */
+    public static void maybeCreatePermissionForDefaultSearchEngine(
+            boolean allowed, Context context) {
+        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
+                templateUrlService.getDefaultSearchEngineIndex());
+        GeolocationInfo locationSettings = new GeolocationInfo(url, null);
+        ContentSetting locationPermission = locationSettings.getContentSetting();
+        if (locationPermission == null || locationPermission == ContentSetting.ASK) {
+            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                    url, url, allowed
+                            ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt());
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(context);
+            sharedPreferences.edit().putBoolean(LOCATION_AUTO_ALLOWED, true).apply();
+        }
     }
 
     /**
@@ -678,7 +728,7 @@ public final class PrefServiceBridge {
      */
     public void setJavaScriptAllowed(String pattern, boolean allow) {
         nativeSetJavaScriptAllowed(
-                pattern, allow ? ContentSetting.ALLOW : ContentSetting.BLOCK);
+                pattern, allow ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt());
     }
 
     /**
@@ -687,7 +737,7 @@ public final class PrefServiceBridge {
      * @param pattern attribute for the popup exception pattern
      */
     public void removeJavaScriptException(String pattern) {
-        nativeSetJavaScriptAllowed(pattern, ContentSetting.DEFAULT);
+        nativeSetJavaScriptAllowed(pattern, ContentSetting.DEFAULT.toInt());
     }
 
     /**
@@ -718,7 +768,9 @@ public final class PrefServiceBridge {
      * @param allow attribute to specify whether to allow or block pattern
      */
     public void setPopupException(String pattern, boolean allow) {
-        nativeSetPopupException(pattern, allow ? ContentSetting.ALLOW : ContentSetting.BLOCK);
+        nativeSetPopupException(pattern, allow
+                ? ContentSetting.ALLOW.toInt()
+                : ContentSetting.BLOCK.toInt());
     }
 
     /**
@@ -727,7 +779,7 @@ public final class PrefServiceBridge {
      * @param pattern attribute for the popup exception pattern
      */
     public void removePopupException(String pattern) {
-        nativeSetPopupException(pattern, ContentSetting.DEFAULT);
+        nativeSetPopupException(pattern, ContentSetting.DEFAULT.toInt());
     }
 
     /**

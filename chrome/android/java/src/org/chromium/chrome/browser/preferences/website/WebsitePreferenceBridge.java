@@ -224,7 +224,7 @@ public abstract class WebsitePreferenceBridge {
 
     private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
     static native int nativeGetGeolocationSettingForOrigin(String origin, String embedder);
-    static native void nativeSetGeolocationSettingForOrigin(String origin, String embedder,
+    public static native void nativeSetGeolocationSettingForOrigin(String origin, String embedder,
             int value);
     private static native void nativeGetMidiOrigins(Object list);
     static native int nativeGetMidiSettingForOrigin(String origin, String embedder);

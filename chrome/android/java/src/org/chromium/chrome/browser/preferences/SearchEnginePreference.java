@@ -1,109 +1,62 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.preferences;
 
+import android.app.AlertDialog;
 import android.content.Context;
-import android.content.res.Resources;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.DialogPreference;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
-
-import java.util.List;
 
 /**
- * Preference that allows the user to choose a search engine.
+ * A dialog preference for picking a default search engine.
  */
-public class SearchEnginePreference extends ChromeBaseListPreference implements LoadListener,
-        OnPreferenceChangeListener {
+public class SearchEnginePreference extends DialogPreference
+        implements SearchEngineAdapter.SelectSearchEngineCallback {
 
     static final String PREF_SEARCH_ENGINE = "search_engine";
 
-    /**
-     * Constructor for inflating from XML.
-     */
+    // The custom search engine adapter for the data to show in the dialog.
+    private SearchEngineAdapter mSearchEngineAdapter;
+
     public SearchEnginePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        setPersistent(false);
-        initEntries();
-
-        setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return TemplateUrlService.getInstance().isSearchProviderManaged();
-            }
-        });
+        setEnabled(false);
+        mSearchEngineAdapter = new SearchEngineAdapter(getContext(), this);
     }
 
-    /**
-     * @return The name of the search engine followed by the domain, e.g. "Google (google.co.uk)".
-     */
-    private static String getSearchEngineNameAndDomain(Resources res, TemplateUrl searchEngine) {
-        String title = searchEngine.getShortName();
-        if (!searchEngine.getKeyword().isEmpty()) {
-            title = res.getString(R.string.search_engine_name_and_domain, title,
-                    searchEngine.getKeyword());
-        }
-        return title;
+    String getValueForTesting() {
+        return mSearchEngineAdapter.getValueForTesting();
     }
 
-    private void initEntries() {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        if (!templateUrlService.isLoaded()) {
-            setEnabled(false);
-            templateUrlService.registerLoadListener(this);
-            templateUrlService.load();
-            return;
-        }
-
-        List<TemplateUrl> searchEngines = templateUrlService.getLocalizedSearchEngines();
-        int defaultSearchEngineIndex = templateUrlService.getDefaultSearchEngineIndex();
-        int valueIndex = -1;
-
-        Resources resources = getContext().getResources();
-        CharSequence[] entries = new CharSequence[searchEngines.size()];
-        CharSequence[] entryValues = new CharSequence[searchEngines.size()];
-        for (int i = 0; i < entries.length; i++) {
-            TemplateUrl templateUrl = searchEngines.get(i);
-            entries[i] = getSearchEngineNameAndDomain(resources, templateUrl);
-            entryValues[i] = Integer.toString(templateUrl.getIndex());
-            if (templateUrl.getIndex() == defaultSearchEngineIndex) valueIndex = i;
-        }
-
-        setEntries(entries);
-        setEntryValues(entryValues);
-        if (valueIndex != -1) setValueIndex(valueIndex);
-        setOnPreferenceChangeListener(this);
+    void setValueForTesting(String value) {
+        mSearchEngineAdapter.setValueForTesting(value);
     }
+
+    // DialogPreference:
 
     @Override
-    public CharSequence getSummary() {
-        // Show the currently selected value as the summary.
-        return getEntry();
+    protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
+        super.onPrepareDialogBuilder(builder);
+
+        builder.setNegativeButton(null, null)
+               .setPositiveButton(R.string.close, null)
+               .setSingleChoiceItems(mSearchEngineAdapter, 0, null);
     }
 
-    // OnPreferenceChangeListener
+    // SelectSearchEngineAdapter.SelectSearchEngineCallback:
 
     @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        int newSearchEngineIndex = Integer.parseInt((String) newValue);
-        TemplateUrlService.getInstance().setSearchEngine(newSearchEngineIndex);
-        return true;
-    }
-
-    // TemplateUrlService.LoadListener
-
-    @Override
-    public void onTemplateUrlServiceLoaded() {
-        TemplateUrlService.getInstance().unregisterLoadListener(this);
+    public void currentSearchEngineDetermined(String name) {
+        setSummary(name);
         setEnabled(true);
-        initEntries();
+    }
+
+    @Override
+    public void onDismissDialog() {
+        getDialog().dismiss();
     }
 }

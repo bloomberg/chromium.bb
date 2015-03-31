@@ -16,6 +16,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -70,25 +73,7 @@ public class PreferencesTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"Preferences"})
     public void testSearchEnginePreference() throws Exception {
-        // Make sure the template_url_service is loaded.
-        final CallbackHelper onTemplateUrlServiceLoadedHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (TemplateUrlService.getInstance().isLoaded()) {
-                    onTemplateUrlServiceLoadedHelper.notifyCalled();
-                } else {
-                    TemplateUrlService.getInstance().registerLoadListener(new LoadListener() {
-                        @Override
-                        public void onTemplateUrlServiceLoaded() {
-                            onTemplateUrlServiceLoadedHelper.notifyCalled();
-                        }
-                    });
-                    TemplateUrlService.getInstance().load();
-                }
-            }
-        });
-        onTemplateUrlServiceLoadedHelper.waitForCallback(0);
+        ensureTemplateUrlServiceLoaded();
 
         // Set the second search engine as the default using TemplateUrlService.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -110,16 +95,114 @@ public class PreferencesTest extends ChromeShellTestBase {
                 SearchEnginePreference pref = (SearchEnginePreference)
                         fragment.findPreference(SearchEnginePreference.PREF_SEARCH_ENGINE);
                 assertNotNull(pref);
-                assertEquals("1", pref.getValue());
+                assertEquals("1", pref.getValueForTesting());
 
-                // Simulate selecting the third search engine and ensure that TemplateUrlService
-                // is updated.
-                if (pref.getOnPreferenceChangeListener().onPreferenceChange(pref, "2")) {
-                    pref.setValue("2");
-                }
-                assertEquals(2, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
+                // Simulate selecting the third search engine, ensure that TemplateUrlService is
+                // updated, and location permission granted for the new engine.
+                pref.setValueForTesting("2");
+                TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+                assertEquals(2, templateUrlService.getDefaultSearchEngineIndex());
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(2));
+
+                // Simulate selecting the fourth search engine and but set a blocked permission
+                // first and ensure that location permission is NOT granted.
+                String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(3);
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSetting.BLOCK.toInt());
+                pref.setValueForTesting("3");
+                assertEquals(3, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
+                assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(3));
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(2));
+
+                // Make sure a pre-existing ALLOW value does not get deleted when switching away
+                // from a search engine.
+                url = templateUrlService.getSearchEngineUrlFromTemplateUrl(4);
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSetting.ALLOW.toInt());
+                pref.setValueForTesting("4");
+                assertEquals(4, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(4));
+                pref.setValueForTesting("3");
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(4));
             }
         });
+    }
+
+    /**
+     * Test migration path to creating a search engine permission.
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testPrepopulateDoesNotCrash() throws Exception {
+        ensureTemplateUrlServiceLoaded();
+
+        // Create the default permission from the UI thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
+                        true, getInstrumentation().getTargetContext());
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(
+                        TemplateUrlService.getInstance().getDefaultSearchEngineIndex()));
+            }
+        });
+    }
+
+    /**
+     * Test that migration path does NOT create a search engine permission if one already exists.
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testPrepopulateDoesNothing() throws Exception {
+        ensureTemplateUrlServiceLoaded();
+
+        // Create the default permission from the UI thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Create a Blocked record.
+                TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+                String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
+                        templateUrlService.getDefaultSearchEngineIndex());
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSetting.BLOCK.toInt());
+
+                // See if it overwrites it with an Allowed record (spoiler-alert: it shouldn't).
+                PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
+                        true, getInstrumentation().getTargetContext());
+                assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(
+                        templateUrlService.getDefaultSearchEngineIndex()));
+            }
+        });
+    }
+
+    private void ensureTemplateUrlServiceLoaded() throws Exception {
+        // Make sure the template_url_service is loaded.
+        final CallbackHelper onTemplateUrlServiceLoadedHelper = new CallbackHelper();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                if (TemplateUrlService.getInstance().isLoaded()) {
+                    onTemplateUrlServiceLoadedHelper.notifyCalled();
+                } else {
+                    TemplateUrlService.getInstance().registerLoadListener(new LoadListener() {
+                        @Override
+                        public void onTemplateUrlServiceLoaded() {
+                            onTemplateUrlServiceLoadedHelper.notifyCalled();
+                        }
+                    });
+                    TemplateUrlService.getInstance().load();
+                }
+            }
+        });
+        onTemplateUrlServiceLoadedHelper.waitForCallback(0);
+    }
+
+    private ContentSetting locationPermissionForSearchEngine(int index) {
+        String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(index);
+        GeolocationInfo locationSettings = new GeolocationInfo(url, null);
+        ContentSetting locationPermission = locationSettings.getContentSetting();
+        return locationPermission;
     }
 
     // TODO(mvanouwerkerk): Write new preference intent tests for notification settings.

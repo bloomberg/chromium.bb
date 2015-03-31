@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -241,6 +242,18 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
     url = gurl.spec();
   }
 
+  return base::android::ConvertUTF8ToJavaString(env, url);
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
+    JNIEnv* env,
+    jobject obj,
+    jint index) {
+  TemplateURL* template_url = template_url_service_->GetTemplateURLs()[index];
+  std::string url(template_url->url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(
+          base::string16()), SearchTermsData(), nullptr));
   return base::android::ConvertUTF8ToJavaString(env, url);
 }
 

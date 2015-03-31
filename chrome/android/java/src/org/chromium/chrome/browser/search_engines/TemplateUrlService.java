@@ -50,7 +50,8 @@ public class TemplateUrlService {
         private final String mKeyword;
 
         @CalledByNative("TemplateUrl")
-        public static TemplateUrl create(int id, String shortName, String keyword) {
+        public static TemplateUrl create(
+                int id, String shortName, String keyword) {
             return new TemplateUrl(id, shortName, keyword);
         }
 
@@ -314,6 +315,15 @@ public class TemplateUrlService {
             mNativeTemplateUrlServiceAndroid, query, alternateTerm, shouldPrefetch);
     }
 
+    /**
+     * Finds the URL for the search engine at the given index.
+     * @param index The templateUrl index to look up.
+     * @return      A {@link String} that contains the url of the specified search engine.
+     */
+    public String getSearchEngineUrlFromTemplateUrl(int index) {
+        return nativeGetSearchEngineUrlFromTemplateUrl(mNativeTemplateUrlServiceAndroid, index);
+    }
+
     private native long nativeInit();
     private native void nativeLoad(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(long nativeTemplateUrlServiceAndroid);
@@ -334,4 +344,6 @@ public class TemplateUrlService {
             String query, String currentUrl);
     private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
             String query, String alternateTerm, boolean shouldPrefetch);
+    private native String nativeGetSearchEngineUrlFromTemplateUrl(
+            long nativeTemplateUrlServiceAndroid, int index);
 }
