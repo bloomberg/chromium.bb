@@ -45,7 +45,7 @@ const DefaultContentSettingInfo kDefaultSettings[] = {
     {prefs::kDefaultPluginsSetting, CONTENT_SETTING_ALLOW, true},
     {prefs::kDefaultPopupsSetting, CONTENT_SETTING_BLOCK, true},
     {prefs::kDefaultGeolocationSetting, CONTENT_SETTING_ASK, false},
-    {prefs::kDefaultNotificationsSetting, CONTENT_SETTING_ASK, true},
+    {prefs::kDefaultNotificationsSetting, CONTENT_SETTING_ASK, false},
     {prefs::kDefaultAutoSelectCertificateSetting, CONTENT_SETTING_DEFAULT,
         false},
     {prefs::kDefaultFullScreenSetting, CONTENT_SETTING_ASK, true},
