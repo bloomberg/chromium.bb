@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <AppKit/NSEvent.h>
+#import <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
@@ -10,6 +10,31 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
+
+namespace {
+
+// Returns the menu item associated with |key| in |menu|, or nil if not found.
+NSMenuItem* FindMenuItem(NSEvent* key, NSMenu* menu) {
+  NSMenuItem* result = nil;
+
+  for (NSMenuItem* item in [menu itemArray]) {
+    NSMenu* submenu = [item submenu];
+    if (submenu) {
+      if (submenu != [NSApp servicesMenu])
+        result = FindMenuItem(key, submenu);
+    } else if ([item cr_firesForKeyEventIfEnabled:key]) {
+      result = item;
+    }
+
+    if (result)
+      break;
+  }
+
+  return result;
+}
+
+}  // namespace
 
 // Basically, there are two kinds of keyboard shortcuts: Ones that should work
 // only if the tab contents is focused (BrowserKeyboardShortcut), and ones that
@@ -167,6 +192,48 @@ int CommandForBrowserKeyboardShortcut(
                                     command_key, shift_key,
                                     cntrl_key, opt_key, vkey_code,
                                     key_char);
+}
+
+int CommandForKeyEvent(NSEvent* event) {
+  if ([event type] != NSKeyDown)
+    return -1;
+
+  // Look in menu.
+  NSMenuItem* item = FindMenuItem(event, [NSApp mainMenu]);
+  if (item && [item action] == @selector(commandDispatch:) && [item tag] > 0)
+    return [item tag];
+
+  // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
+  // that do not correspond to IDC_ constants need no special treatment however,
+  // as they can't be blacklisted in
+  // |BrowserCommandController::IsReservedCommandOrKey()| anyhow.
+  if (item && [item action] == @selector(performClose:))
+    return IDC_CLOSE_WINDOW;
+
+  // "Exit" doesn't use the |commandDispatch:| mechanism either.
+  if (item && [item action] == @selector(terminate:))
+    return IDC_EXIT;
+
+  // Look in secondary keyboard shortcuts.
+  NSUInteger modifiers = [event modifierFlags];
+  const bool cmdKey = (modifiers & NSCommandKeyMask) != 0;
+  const bool shiftKey = (modifiers & NSShiftKeyMask) != 0;
+  const bool cntrlKey = (modifiers & NSControlKeyMask) != 0;
+  const bool optKey = (modifiers & NSAlternateKeyMask) != 0;
+  const int keyCode = [event keyCode];
+  const unichar keyChar = KeyCharacterForEvent(event);
+
+  int cmdNum = CommandForWindowKeyboardShortcut(
+      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
+  if (cmdNum != -1)
+    return cmdNum;
+
+  cmdNum = CommandForBrowserKeyboardShortcut(
+      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
+  if (cmdNum != -1)
+    return cmdNum;
+
+  return -1;
 }
 
 unichar KeyCharacterForEvent(NSEvent* event) {

@@ -62,6 +62,9 @@ int CommandForBrowserKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
     int vkey_code, unichar key_char);
 
+// Returns the Chrome command associated with |event|, or -1 if not found.
+int CommandForKeyEvent(NSEvent* event);
+
 // Returns a keyboard event character for the given |event|.  In most cases
 // this returns the first character of [NSEvent charactersIgnoringModifiers],
 // but when [NSEvent character] has different printable ascii character
