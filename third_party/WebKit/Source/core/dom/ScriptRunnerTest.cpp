@@ -8,10 +8,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
-#include "platform/heap/Handle.h"
 #include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
-#include "wtf/PassOwnPtr.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
