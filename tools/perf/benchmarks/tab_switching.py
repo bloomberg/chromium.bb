@@ -84,6 +84,24 @@ class TabSwitchingToughEnergyCases(benchmark.Benchmark):
     return 'tab_switching.tough_energy_cases'
 
 
+@benchmark.Enabled('has tabs')
+@benchmark.Disabled('android')  # http://crbug.com/460084
+class TabSwitchingToughImageCases(benchmark.Benchmark):
+  """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
+
+  The histogram is a measure of the time between when a tab was requested to be
+  shown, and when first paint occurred. The script opens each page in different
+  tabs, waits for them to load, and then switches to each tab and records the
+  metric. The pages were chosen by hand to stress the image decoding system.
+  """
+  test = tab_switching.TabSwitching
+  page_set = page_sets.ToughImageCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'tab_switching.tough_image_cases'
+
+
 @benchmark.Disabled  # Just for local testing, not on waterfall.
 class TabSwitchingFlashEnergyCases(benchmark.Benchmark):
   test = tab_switching.TabSwitching
