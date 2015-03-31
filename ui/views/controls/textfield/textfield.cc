@@ -1490,13 +1490,14 @@ bool Textfield::GetCompositionCharacterBounds(uint32 index,
   DCHECK(rect);
   if (!HasCompositionText())
     return false;
-  gfx::RenderText* render_text = GetRenderText();
-  const gfx::Range& composition_range = render_text->GetCompositionRange();
+  gfx::Range composition_range;
+  model_->GetCompositionTextRange(&composition_range);
   DCHECK(!composition_range.is_empty());
 
   size_t text_index = composition_range.start() + index;
   if (composition_range.end() <= text_index)
     return false;
+  gfx::RenderText* render_text = GetRenderText();
   if (!render_text->IsValidCursorIndex(text_index)) {
     text_index = render_text->IndexOfAdjacentGrapheme(
         text_index, gfx::CURSOR_BACKWARD);

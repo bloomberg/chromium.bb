@@ -267,6 +267,9 @@ class VIEWS_EXPORT TextfieldModel {
   // The stylized text, cursor, selection, and the visual layout model.
   scoped_ptr<gfx::RenderText> render_text_;
 
+  // The composition range.
+  gfx::Range composition_range_;
+
   typedef std::list<internal::Edit*> EditHistory;
   EditHistory edit_history_;
 

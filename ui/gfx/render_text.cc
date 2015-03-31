@@ -694,10 +694,6 @@ void RenderText::SelectWord() {
   MoveCursorTo(reversed ? selection_min : selection_max, true);
 }
 
-const Range& RenderText::GetCompositionRange() const {
-  return composition_range_;
-}
-
 void RenderText::SetCompositionRange(const Range& composition_range) {
   CHECK(!composition_range.IsValid() ||
         Range(0, text_.length()).Contains(composition_range));

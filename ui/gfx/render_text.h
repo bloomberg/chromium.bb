@@ -338,7 +338,6 @@ class GFX_EXPORT RenderText {
   // boundaries.
   void SelectWord();
 
-  const Range& GetCompositionRange() const;
   void SetCompositionRange(const Range& composition_range);
 
   // Set the text color over the entire text or a logical character range.
