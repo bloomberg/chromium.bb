@@ -12,10 +12,6 @@ cr.define('appList.startPage', function() {
   // The element containing the current Google Doodle.
   var doodle = null;
 
-  // TODO(calamity): This is used for manual inspection of the doodle data.
-  // Remove this once http://crbug.com/462082 is diagnosed.
-  var doodleData = null;
-
   /**
    * Initialize the page.
    */
@@ -61,7 +57,6 @@ cr.define('appList.startPage', function() {
     }
 
     var doodleData = data.ddljson;
-    this.doodleData = doodleData;
     if (!doodleData || !doodleData.transparent_large_image) {
       setDoodleVisible(false);
       return;
@@ -111,6 +106,5 @@ cr.define('appList.startPage', function() {
   };
 });
 
-// TODO(calamity): Suppress context the menu once http://crbug.com/462082 is
-// diagnosed.
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 document.addEventListener('DOMContentLoaded', appList.startPage.initialize);

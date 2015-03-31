@@ -536,15 +536,6 @@ void StartPageService::DidNavigateMainFrame(
   ui_zoom::ZoomController::FromWebContents(contents_.get())->SetZoomLevel(0);
 }
 
-void StartPageService::RenderProcessGone(base::TerminationStatus status) {
-  // TODO(calamity): Remove this log after http://crbug.com/462082 is diagnosed.
-  if (status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
-      status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
-      status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
-    LOG(WARNING) << "App list doodle contents crashed with status " << status;
-  }
-}
-
 void StartPageService::WebUILoaded() {
   // There's a race condition between the WebUI loading, and calling its JS
   // functions. Specifically, calling LoadContents() doesn't mean that the page

@@ -142,8 +142,6 @@ class StartPageService : public KeyedService,
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  void RenderProcessGone(base::TerminationStatus status) override;
-
 
   // Change the known microphone availability. |available| should be true if
   // the microphone exists and is available for use.
