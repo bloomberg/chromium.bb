@@ -74,6 +74,7 @@
       'webapp/crd/js/dns_blackhole_checker_unittest.js',
       'webapp/crd/js/error_unittest.js',
       'webapp/crd/js/fallback_signal_strategy_unittest.js',
+      'webapp/crd/js/gcd_client_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
       'webapp/crd/js/identity_unittest.js',
       'webapp/crd/js/l10n_unittest.js',
@@ -172,6 +173,7 @@
       'webapp/crd/js/remoting.js',
       'webapp/crd/js/typecheck.js',
       'webapp/crd/js/xhr.js',
+      'webapp/crd/js/gcd_client.js',
     ],
     # Gnubby authentication JavaScript files.
     'remoting_webapp_js_gnubby_auth_files': [
