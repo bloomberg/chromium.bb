@@ -542,6 +542,7 @@ body.check-select #search-button {
 #search-box {
   display: flex;
   flex: none;
+  font-size: 14px;
 }
 
 body.check-select #search-box {
@@ -587,22 +588,24 @@ body.check-select #search-box {
 }
 
 #search-box .clear {
-  -webkit-margin-end: 30px;
-  align-self: center;
   background: -webkit-image-set(
       url(../images/files/ui/search_clear.png) 1x,
       url(../images/files/ui/2x/search_clear.png) 2x)
       no-repeat center;
-  border: none;
+  cursor: pointer;
   display: none;
-  flex: none;
-  height: 12px;
-  min-height: 0;
-  min-width: 0;
-  outline: none;
-  padding: 0;
+  height: 16px;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 7px;
   visibility: hidden;
-  width: 12px;
+  width: 16px;
+}
+
+html[dir='rtl'] #search-box .clear {
+  left: 0;
+  right: auto;
 }
 
 #search-box.has-cursor .clear,
@@ -612,18 +615,6 @@ body.check-select #search-box {
 
 #search-box.has-text .clear {
   visibility: visible;
-}
-
-#search-box .clear:hover {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/search_clear_hover.png) 1x,
-      url(../images/files/ui/2x/search_clear_hover.png) 2x);
-}
-
-#search-box .clear:active {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/search_clear_pressed.png) 1x,
-      url(../images/files/ui/2x/search_clear_pressed.png) 2x);
 }
 
 /* Container for the detail and thumbnail list views. */
