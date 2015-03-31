@@ -5,11 +5,13 @@
 var ClientRenderer = (function() {
   var ClientRenderer = function() {
     this.playerListElement = document.getElementById('player-list');
-    this.propertiesTable =
-        document.getElementById('property-table').querySelector('tbody');
+    this.audioPropertiesTable =
+        document.getElementById('audio-property-table').querySelector('tbody');
+    this.playerPropertiesTable =
+        document.getElementById('player-property-table').querySelector('tbody');
     this.logTable = document.getElementById('log').querySelector('tbody');
     this.graphElement = document.getElementById('graphs');
-    this.propertyName = document.getElementById('property-name');
+    this.audioPropertyName = document.getElementById('audio-property-name');
 
     this.selectedPlayer = null;
     this.selectedAudioComponentType = null;
@@ -27,8 +29,10 @@ var ClientRenderer = (function() {
     this.bufferCanvas.height = media.BAR_HEIGHT;
 
     this.clipboardTextarea = document.getElementById('clipboard-textarea');
-    this.clipboardButton = document.getElementById('copy-button');
-    this.clipboardButton.onclick = this.copyToClipboard_.bind(this);
+    var clipboardButtons = document.getElementsByClassName('copy-button');
+    for (var i = 0; i < clipboardButtons.length; i++) {
+      clipboardButtons[i].onclick = this.copyToClipboard_.bind(this);
+    }
 
     this.hiddenKeys = ['component_id', 'component_type', 'owner_id'];
   };
@@ -113,7 +117,7 @@ var ClientRenderer = (function() {
      */
     playerUpdated: function(players, player, key, value) {
       if (player === this.selectedPlayer) {
-        this.drawProperties_(player.properties);
+        this.drawProperties_(player.properties, this.playerPropertiesTable);
         this.drawLog_();
         this.drawGraphs_();
       }
@@ -218,16 +222,13 @@ var ClientRenderer = (function() {
 
     selectAudioComponent_: function(
           componentType, componentId, componentData, friendlyName) {
-      this.selectedPlayer = null;
       this.selectedAudioComponentType = componentType;
       this.selectedAudioComponentId = componentId;
       this.selectedAudioCompontentData = componentData;
-      this.drawProperties_(componentData);
-      removeChildren(this.logTable);
-      removeChildren(this.graphElement);
+      this.drawProperties_(componentData, this.audioPropertiesTable);
 
-      removeChildren(this.propertyName);
-      this.propertyName.appendChild(document.createTextNode(friendlyName));
+      removeChildren(this.audioPropertyName);
+      this.audioPropertyName.appendChild(document.createTextNode(friendlyName));
     },
 
     redrawPlayerList_: function(players) {
@@ -253,18 +254,16 @@ var ClientRenderer = (function() {
       this.selectedAudioComponentType = null;
       this.selectedAudioComponentId = null;
       this.selectedAudioCompontentData = null;
-      this.drawProperties_(player.properties);
+      this.drawProperties_(player.properties, this.playerPropertiesTable);
 
       removeChildren(this.logTable);
       removeChildren(this.graphElement);
       this.drawLog_();
       this.drawGraphs_();
-      removeChildren(this.propertyName);
-      this.propertyName.appendChild(document.createTextNode('Player'));
     },
 
-    drawProperties_: function(propertyMap) {
-      removeChildren(this.propertiesTable);
+    drawProperties_: function(propertyMap, propertiesTable) {
+      removeChildren(propertiesTable);
       var sortedKeys = Object.keys(propertyMap).sort();
       for (var i = 0; i < sortedKeys.length; ++i) {
         var key = sortedKeys[i];
@@ -272,7 +271,7 @@ var ClientRenderer = (function() {
           continue;
 
         var value = propertyMap[key];
-        var row = this.propertiesTable.insertRow(-1);
+        var row = propertiesTable.insertRow(-1);
         var keyCell = row.insertCell(-1);
         var valueCell = row.insertCell(-1);
 

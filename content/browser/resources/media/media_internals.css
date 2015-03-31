@@ -12,6 +12,22 @@ body,
   font-family:Arial;
 }
 
+tabbox {
+  margin-top: 10px;
+}
+
+tab {
+  -webkit-user-select: none;
+}
+
+body tabpanels {
+  box-shadow: none;
+}
+
+tabpanel {
+  padding: 10px;
+}
+
 table {
   font-family: sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -21,7 +37,7 @@ table {
   display: block;
 }
 th {
-  background-color: rgb(112, 196, 105);
+  background-color: #4AA9E4;
   font-weight: normal;
   color: white;
   padding: 2px;
@@ -156,4 +172,9 @@ h3 {
 
 #video-capture-capabilities-table .video-capture-formats-table td {
   padding:2px;
+}
+
+.show-none-if-empty:empty:after {
+  content: "none";
+  color: rgba(0, 0, 0, .5);
 }
