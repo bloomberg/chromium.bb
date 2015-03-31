@@ -12,11 +12,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
-namespace {
-// Template with presence beacon check to prevent re-injection of JavaScript.
-NSString* const kPresenceCheckTemplate = @"if (typeof %@ !== 'object') { %@ }";
-}
-
 @implementation CRWJSInjectionManager {
   // JS to inject into the page. This may be nil if it has been purged due to
   // low memory.
@@ -57,18 +52,6 @@ NSString* const kPresenceCheckTemplate = @"if (typeof %@ !== 'object') { %@ }";
   [self injectDependenciesIfMissing];
   [_receiver injectScript:[self injectionContent] forClass:[self class]];
   DCHECK([self hasBeenInjected]);
-}
-
-- (NSString*)injectionContentIncludingDependencies {
-  NSArray* allDependencies = [self allDependencies];
-  NSMutableArray* scripts =
-      [NSMutableArray arrayWithCapacity:allDependencies.count];
-  for (CRWJSInjectionManager* dependency in allDependencies) {
-    [scripts addObject:[dependency injectionContent]];
-  }
-  NSString* script = [scripts componentsJoinedByString:@""];
-  NSString* beacon = [self presenceBeacon];
-  return [NSString stringWithFormat:kPresenceCheckTemplate, beacon, script];
 }
 
 - (void)lowMemoryWarning:(NSNotification*)notify {

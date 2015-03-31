@@ -48,8 +48,18 @@ NSString* GetEarlyPageScript(WebViewType web_view_type) {
   NSString* embedder_page_script =
       GetWebClient()->GetEarlyPageScript(web_view_type);
   DCHECK(embedder_page_script);
-  return [GetWebEarlyPageScript(web_view_type)
-      stringByAppendingString:embedder_page_script];
+
+  // Make sure that script is injected only once. For example, content of
+  // WKUserScript can be injected into the same page multiple times
+  // without notifying WKNavigationDelegate (e.g. after window.document.write
+  // JavaScript call). Injecting the script multiple times invalidates the
+  // __gCrWeb.windowId variable and will break the ability to send messages from
+  // JS to the native code. Wrapping injected script into "if (!injected)" check
+  // prevents multiple injections into the same page.
+  NSString* kScriptTemplate = @"if (typeof __gCrWeb !== 'object') { %@; %@ }";
+  return [NSString stringWithFormat:kScriptTemplate,
+                                    GetWebEarlyPageScript(web_view_type),
+                                    embedder_page_script];
 }
 
 }  // namespace web

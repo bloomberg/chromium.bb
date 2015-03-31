@@ -36,10 +36,6 @@
 // missing. It also injects the dependencies' JavaScript if they are missing.
 - (void)inject;
 
-// Returns an autoreleased string that is the JavaScript to be injected into
-// the receiver object including any JavaScript for all specified dependencies.
-- (NSString*)injectionContentIncludingDependencies;
-
 // Evaluates the provided JavaScript expression, slightly deferred. Designed for
 // scripts where the chance of crwebinvoke:// being triggered indirectly is
 // high, and that aren't required to return a value.
