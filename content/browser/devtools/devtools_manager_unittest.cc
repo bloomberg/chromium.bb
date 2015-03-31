@@ -276,6 +276,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   const GURL url("http://www.google.com");
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  contents()->GetMainFrame()->PrepareForCommit();
   contents()->TestDidNavigate(
       contents()->GetMainFrame(), 1, url, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
@@ -288,6 +289,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(client_host.agent_host(),
             DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
@@ -295,6 +297,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  contents()->GetMainFrame()->PrepareForCommit();
   contents()->TestDidNavigate(
       contents()->GetMainFrame(), 1, url, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
