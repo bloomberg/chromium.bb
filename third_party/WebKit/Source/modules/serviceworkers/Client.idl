@@ -11,6 +11,7 @@
     ImplementedAs=ServiceWorkerClient,
 ] interface Client {
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;
+    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute ContextFrameType frameType;
     // FIXME: Un-deprecate when the discussion on https://github.com/slightlyoff/ServiceWorker/issues/609 settles.
     [Custom, RaisesException, DeprecateAs=ServiceWorkerClientPostMessage, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 };

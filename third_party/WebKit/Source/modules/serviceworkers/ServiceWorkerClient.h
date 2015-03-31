@@ -26,6 +26,7 @@ public:
 
     // Client.idl
     String url() const { return m_url; }
+    String frameType() const;
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -38,6 +39,7 @@ protected:
 private:
     String m_uuid;
     String m_url;
+    WebURLRequest::FrameType m_frameType;
 };
 
 } // namespace blink

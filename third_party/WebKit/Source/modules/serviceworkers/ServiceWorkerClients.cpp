@@ -30,9 +30,11 @@ public:
         OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
         HeapVector<Member<ServiceWorkerClient>> clients;
         for (size_t i = 0; i < webClients->clients.size(); ++i) {
-            // FIXME: For now we only support getting "window" type clients.
-            ASSERT(webClients->clients[i].clientType == WebServiceWorkerClientTypeWindow);
-            clients.append(ServiceWorkerWindowClient::create(webClients->clients[i]));
+            WebServiceWorkerClientInfo& client = webClients->clients[i];
+            if (client.clientType == WebServiceWorkerClientTypeWindow)
+                clients.append(ServiceWorkerWindowClient::create(client));
+            else
+                clients.append(ServiceWorkerClient::create(client));
         }
         return clients;
     }
@@ -80,12 +82,6 @@ ScriptPromise ServiceWorkerClients::matchAll(ScriptState* scriptState, const Cli
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-
-    if (options.type() != "window") {
-        // FIXME: Remove this when query options are supported in the embedder.
-        resolver->reject(DOMException::create(NotSupportedError, "type parameter of getAll is not supported."));
-        return promise;
-    }
 
     WebServiceWorkerClientQueryOptions webOptions;
     webOptions.clientType = getClientType(options.type());

@@ -22,11 +22,29 @@ ServiceWorkerClient* ServiceWorkerClient::create(const WebServiceWorkerClientInf
 ServiceWorkerClient::ServiceWorkerClient(const WebServiceWorkerClientInfo& info)
     : m_uuid(info.uuid)
     , m_url(info.url.string())
+    , m_frameType(info.frameType)
 {
 }
 
 ServiceWorkerClient::~ServiceWorkerClient()
 {
+}
+
+String ServiceWorkerClient::frameType() const
+{
+    switch (m_frameType) {
+    case WebURLRequest::FrameTypeAuxiliary:
+        return "auxiliary";
+    case WebURLRequest::FrameTypeNested:
+        return "nested";
+    case WebURLRequest::FrameTypeNone:
+        return "none";
+    case WebURLRequest::FrameTypeTopLevel:
+        return "top-level";
+    }
+
+    ASSERT_NOT_REACHED();
+    return String();
 }
 
 void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)

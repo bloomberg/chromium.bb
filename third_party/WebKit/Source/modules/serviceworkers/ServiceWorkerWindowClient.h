@@ -30,7 +30,6 @@ public:
     // WindowClient.idl
     String visibilityState() const;
     bool focused() const { return m_isFocused; }
-    String frameType() const;
     ScriptPromise focus(ScriptState*);
 
     DECLARE_VIRTUAL_TRACE();
@@ -40,7 +39,6 @@ private:
 
     WebPageVisibilityState m_pageVisibilityState;
     bool m_isFocused;
-    WebURLRequest::FrameType m_frameType;
 };
 
 } // namespace blink
