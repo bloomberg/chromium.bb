@@ -8,24 +8,71 @@ if (self.importScripts) {
 }
 
 async_test(function(test) {
-   navigator.permissions.query('geolocation').then(function(result) {
-       // TODO(mlamouri): test values when some instrumentation are done.
-       assert_true(result instanceof PermissionStatus);
-       test.done();
-   }).catch(function() {
-        assert_unreached('navigator.permissions.query() should not fail.')
-   });
-}, 'Check the navigator.permissions.query() normal behavior in ' + get_current_scope() + ' scope.');
+    navigator.permissions.query({name:'geolocation'}).then(function(result) {
+        // TODO(mlamouri): test values when some instrumentation are available.
+        assert_true(result instanceof PermissionStatus);
+        test.done();
+    }).catch(function() {
+        assert_unreached('querying geolocation permission should not fail.')
+    });
+}, 'Test geolocation permission in ' + get_current_scope() + ' scope.');
 
 async_test(function(test) {
-    navigator.permissions.query('unknown-keyword').then(function() {
-        assert_unreached('navigator.permissions.query() should not succeed (for now).')
-    }, function(e) {
-        assert_true(e instanceof TypeError);
-        assert_equals('TypeError', e.name);
-    }).then(function() {
+    navigator.permissions.query({name:'midi'}).then(function(result) {
+        // By default, the permission is granted if "sysex" option isn't set or
+        // set to false.
+        assert_equals(result.status, "granted");
+
+        // Test for sysex=false.
+        return navigator.permissions.query({name:'midi', sysex: false});
+    }).then(function(result) {
+        // By default, the permission is granted if "sysex" option isn't set or
+        // set to false.
+        assert_equals(result.status, "granted");
+
+        // Test for sysex=true.
+        return navigator.permissions.query({name:'midi', sysex: true});
+    }).then(function(result) {
+        // TODO(mlamouri): test values when some instrumentation are available.
+        assert_true(result instanceof PermissionStatus);
         test.done();
+    }).catch(function() {
+        assert_unreached('querying midi permission should not fail.')
     });
-}, 'Check the navigator.permissions.query() with wrong keyword in ' + get_current_scope() + ' scope.');
+}, 'Test midi permission in ' + get_current_scope() + ' scope.');
+
+async_test(function(test) {
+    navigator.permissions.query({name:'notifications'}).then(function(result) {
+        // TODO(mlamouri): test values when some instrumentation are available.
+        assert_true(result instanceof PermissionStatus);
+        test.done();
+    }).catch(function() {
+        assert_unreached('querying notifications permission should not fail.')
+    });
+}, 'Test notifications permission in ' + get_current_scope() + ' scope.');
+
+async_test(function(test) {
+    navigator.permissions.query({name:'push'}).then(function(result) {
+        // By default, the permission is rejected if "userVisible" option isn't
+        // set or set to true.
+        assert_equals(result.status, "denied");
+
+        // Test for userVisible=true.
+        return navigator.permissions.query({name:'push', userVisible: false});
+    }).then(function(result) {
+         // By default, the permission is rejected if "userVisible" option isn't
+        // set or set to true.
+        assert_equals(result.status, "denied");
+
+        // Test for userVisible=true.
+        return navigator.permissions.query({name:'push', userVisible: true});
+    }).then(function(result) {
+        // TODO(mlamouri): test values when some instrumentation are available.
+        assert_true(result instanceof PermissionStatus);
+        test.done();
+    }).catch(function() {
+        assert_unreached('querying push permission should not fail.')
+    });
+}, 'Test push permission in ' + get_current_scope() + ' scope.');
 
 done();

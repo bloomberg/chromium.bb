@@ -18,6 +18,8 @@ namespace blink {
 class ExecutionContext;
 class ScriptPromiseResolver;
 
+// Expose the status of a given WebPermissionType for the current
+// ExecutionContext.
 class PermissionStatus final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PermissionStatus>
     , public ContextLifecycleObserver {
@@ -28,6 +30,7 @@ public:
     static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus*, WebPermissionType);
     static void dispose(WebPermissionStatus*);
 
+    PermissionStatus(ExecutionContext*, WebPermissionStatus);
     ~PermissionStatus() override;
 
     // EventTarget implementation.
@@ -37,15 +40,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     String status() const;
-    // TODO: needs to be used by the IDL
-    WebPermissionType type() const { return m_type; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
 private:
-    explicit PermissionStatus(ExecutionContext*, WebPermissionType, WebPermissionStatus);
-
-    WebPermissionType m_type;
     WebPermissionStatus m_status;
 };
 

@@ -7,11 +7,16 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/modules/v8/V8MidiPermissionDescriptor.h"
+#include "bindings/modules/v8/V8PermissionDescriptor.h"
+#include "bindings/modules/v8/V8PushPermissionDescriptor.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/permissions/PermissionController.h"
+#include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionQueryCallback.h"
+#include "modules/permissions/PermissionStatus.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/permissions/WebPermissionClient.h"
 
@@ -33,28 +38,50 @@ WebPermissionClient* permissionClient(ExecutionContext* executionContext)
 
 } // anonymous namespace
 
-ScriptPromise Permissions::query(ScriptState* scriptState, const AtomicString& permissionName)
+ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& rawPermission)
 {
     WebPermissionClient* client = permissionClient(scriptState->executionContext());
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
 
+    TrackExceptionState exceptionState;
+    PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+
+
+    if (exceptionState.hadException())
+        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
+    if (!permission.hasName())
+        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), "'name' is a required property.")));
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    String name = permission.name();
     WebPermissionType type;
-    if (permissionName == "geolocation") {
+    if (name == "geolocation") {
         type = WebPermissionTypeGeolocation;
-    } else if (permissionName == "notifications") {
+    } else if (name == "notifications") {
         type = WebPermissionTypeNotifications;
-    } else if (permissionName == "push-notifications") {
+    } else if (name == "push") {
+        PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+        // The only "userVisible" push is supported for now.
+        if (!pushPermission.userVisible()) {
+            resolver->resolve(new PermissionStatus(scriptState->executionContext(), WebPermissionStatusDenied));
+            return promise;
+        }
         type = WebPermissionTypePushNotifications;
-    } else if (permissionName == "midi-sysex") {
+    } else if (name == "midi") {
+        MidiPermissionDescriptor midiPermission = NativeValueTraits<MidiPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+        // Only sysex usage requires a permission for now.
+        if (!midiPermission.sysex()) {
+            resolver->resolve(new PermissionStatus(scriptState->executionContext(), WebPermissionStatusGranted));
+            return promise;
+        }
         type = WebPermissionTypeMidiSysEx;
     } else {
         ASSERT_NOT_REACHED();
         type = WebPermissionTypeGeolocation;
     }
-
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
 
     // If the current origin is a file scheme, it will unlikely return a
     // meaningful value because most APIs are broken on file scheme and no

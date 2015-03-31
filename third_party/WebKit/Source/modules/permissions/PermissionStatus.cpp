@@ -13,7 +13,7 @@ namespace blink {
 // static
 PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus* status, WebPermissionType type)
 {
-    PermissionStatus* permissionStatus = new PermissionStatus(resolver->executionContext(), type, *status);
+    PermissionStatus* permissionStatus = new PermissionStatus(resolver->executionContext(), *status);
     delete status;
     return permissionStatus;
 }
@@ -24,10 +24,9 @@ void PermissionStatus::dispose(WebPermissionStatus* status)
     delete status;
 }
 
-PermissionStatus::PermissionStatus(ExecutionContext* executionContext, WebPermissionType permissionType, WebPermissionStatus permissionStatus)
+PermissionStatus::PermissionStatus(ExecutionContext* executionContext, WebPermissionStatus status)
     : ContextLifecycleObserver(executionContext)
-    , m_type(permissionType)
-    , m_status(permissionStatus)
+    , m_status(status)
 {
 }
 

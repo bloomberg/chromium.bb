@@ -5,17 +5,10 @@
 // Specification at:
 // https://w3c.github.io/permissions/
 
-enum PermissionName {
-    "geolocation",
-    "notifications",
-    "push-notifications",
-    "midi-sysex"
-};
-
 [
     Exposed=(Window,Worker),
     GarbageCollected,
     RuntimeEnabled=Permissions
 ] interface Permissions {
-    [CallWith=ScriptState] Promise<PermissionStatus> query(PermissionName permission);
+    [CallWith=ScriptState] Promise<PermissionStatus> query(object permission);
 };
