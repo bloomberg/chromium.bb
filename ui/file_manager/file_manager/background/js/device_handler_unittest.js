@@ -584,6 +584,11 @@ function setupChromeApis() {
         }
       }
     },
+    i18n: {
+      getUILanguage: function() {
+        return 'en-US'
+      }
+    },
     notifications: {
       resolver: new importer.Resolver(),
       create: function(id, params, callback) {

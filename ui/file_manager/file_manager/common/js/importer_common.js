@@ -276,7 +276,11 @@ importer.importEnabled = function() {
             'disable-cloud-import',
             /** @param {boolean} disabled */
             function(disabled) {
-              resolve(!disabled);
+              // TODO(smckay): For M42 only, we dropped the ball on
+              // decent RTL formatting. Disable it for the duration of M42 only.
+              var rtl = ['ar', 'iw', 'he', 'fa'].indexOf(
+                  chrome.i18n.getUILanguage().toLowerCase()) !== -1;
+              resolve(!disabled && !rtl);
             });
       });
 };
