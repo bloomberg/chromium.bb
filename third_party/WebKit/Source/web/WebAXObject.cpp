@@ -528,6 +528,14 @@ bool WebAXObject::ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) con
     return true;
 }
 
+bool WebAXObject::isMultiline() const
+{
+    if (isDetached())
+        return false;
+
+    return m_private->isMultiline();
+}
+
 bool WebAXObject::isInLiveRegion() const
 {
     if (isDetached())

@@ -28,7 +28,6 @@
 
 #include "config.h"
 #include "modules/accessibility/AXObject.h"
-
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -117,7 +116,7 @@ const RoleEntry roles[] = {
     { "tablist", TabListRole },
     { "tabpanel", TabPanelRole },
     { "text", StaticTextRole },
-    { "textbox", TextAreaRole },
+    { "textbox", TextFieldRole },
     { "timer", TimerRole },
     { "toolbar", ToolbarRole },
     { "tooltip", UserInterfaceTooltipRole },
@@ -263,7 +262,7 @@ bool AXObject::isDetached() const
 
 bool AXObject::isARIATextControl() const
 {
-    return ariaRoleAttribute() == TextAreaRole || ariaRoleAttribute() == TextFieldRole || ariaRoleAttribute() == SearchBoxRole;
+    return ariaRoleAttribute() == TextFieldRole || ariaRoleAttribute() == SearchBoxRole;
 }
 
 bool AXObject::isButton() const
@@ -320,7 +319,6 @@ bool AXObject::isPasswordFieldAndShouldHideValue() const
 bool AXObject::isTextControl() const
 {
     switch (roleValue()) {
-    case TextAreaRole:
     case TextFieldRole:
     case ComboBoxRole:
     case SearchBoxRole:
@@ -345,7 +343,6 @@ bool AXObject::isClickable() const
     case RadioButtonRole:
     case SpinButtonRole:
     case TabRole:
-    case TextAreaRole:
     case TextFieldRole:
     case ToggleButtonRole:
         return true;
@@ -502,7 +499,6 @@ String AXObject::actionVerb() const
     case ToggleButtonRole:
         return queryString(WebLocalizedString::AXButtonActionVerb);
     case TextFieldRole:
-    case TextAreaRole:
         return queryString(WebLocalizedString::AXTextFieldActionVerb);
     case RadioButtonRole:
         return queryString(WebLocalizedString::AXRadioButtonActionVerb);
@@ -540,8 +536,21 @@ AccessibilityButtonState AXObject::checkboxOrRadioValue() const
     return ButtonStateOff;
 }
 
-bool AXObject::ariaIsMultiline() const
+bool AXObject::isMultiline() const
 {
+    Node* node = this->node();
+    if (!node)
+        return false;
+
+    if (isHTMLTextAreaElement(*node))
+        return true;
+
+    if (node->hasEditableStyle())
+        return true;
+
+    if (!isNativeTextControl() && !isNonNativeTextControl())
+        return false;
+
     return equalIgnoringCase(getAttribute(aria_multilineAttr), "true");
 }
 
@@ -1058,7 +1067,7 @@ int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
 
 bool AXObject::isARIAControl(AccessibilityRole ariaRole)
 {
-    return isARIAInput(ariaRole) || ariaRole == TextAreaRole || ariaRole == ButtonRole
+    return isARIAInput(ariaRole) || ariaRole == ButtonRole
         || ariaRole == ComboBoxRole || ariaRole == SliderRole;
 }
 
