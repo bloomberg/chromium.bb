@@ -1540,7 +1540,9 @@ crbug.com/425345 [ Mac ] virtual/slimmingpaint/fast/text/line-break-after-questi
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
 crbug.com/433727 [ XP ] http/tests/serviceworker/cache-put.html [ Pass Timeout ]
+crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout ]
+crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout ]
 
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
 
@@ -1928,6 +1930,3 @@ crbug.com/471375 virtual/scroll_customization/fast/events/touch/gesture/touch-ge
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 
 crbug.com/471678 [ Release ] http/tests/inspector/elements/styles/selector-line.html [ Failure Pass ]
-
-crbug.com/471984 [ Win ] http/tests/cachestorage/worker/cache-delete.html [ Failure Pass ]
-crbug.com/471984 [ Win ] http/tests/cachestorage/window/cache-delete.html [ Failure Pass ]

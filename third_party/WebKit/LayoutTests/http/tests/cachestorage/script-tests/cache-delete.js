@@ -34,11 +34,10 @@ cache_test(function(cache) {
           assert_true(result,
                       'Cache.delete should resolve with "true" if an entry ' +
                       'was successfully deleted.');
+          return cache.match(test_url);
         })
-      .then(function() {
-          assert_promise_rejects(
-            cache.match(test_url),
-            'NotFoundError',
+      .then(function(result) {
+          assert_equals(result, undefined,
             'Cache.delete should remove matching entries from cache.');
         });
   }, 'Cache.delete called with a string URL');
