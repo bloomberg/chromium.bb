@@ -29,9 +29,9 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(BeginCompositingDisplayItem::create(object, WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
+        context->displayItemList()->add(BeginCompositingDisplayItem::create(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect));
     } else {
-        BeginCompositingDisplayItem beginCompositingContent(object, WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
+        BeginCompositingDisplayItem beginCompositingContent(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
         beginCompositingContent.replay(context);
     }
 

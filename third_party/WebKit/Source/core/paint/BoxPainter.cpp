@@ -203,7 +203,7 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
             paintRootBackgroundColor(m_layoutBox, paintInfo, rect, Color());
             skipBaseColor = true;
         }
-        context->beginLayer(1, context->compositeOperation());
+        context->beginLayer();
     }
 
     Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
@@ -409,7 +409,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         // holding the text content.
         backgroundClipStateSaver.save();
         context->clip(maskRect);
-        context->beginLayer(1, context->compositeOperation());
+        context->beginLayer();
 
         break;
     }
@@ -438,7 +438,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
             if (isOpaqueRoot && !skipBaseColor) {
                 paintRootBackgroundColor(obj, paintInfo, rect, bgColor);
             } else if (bgColor.alpha()) {
-                context->fillRect(backgroundRect, bgColor, context->compositeOperation());
+                context->fillRect(backgroundRect, bgColor);
             }
         }
     }
@@ -507,8 +507,6 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
     bool allMaskImagesLoaded = true;
 
-    SkXfermode::Mode previousCompositeOperation = paintInfo.context->compositeOperation();
-
     if (!compositedMask || flattenCompositingLayers) {
         pushTransparencyLayer = true;
         StyleImage* maskBoxImage = m_layoutBox.style()->maskBoxImage().image();
@@ -520,19 +518,16 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
         allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
-        paintInfo.context->setCompositeOperation(SkXfermode::kDstIn_Mode);
         paintInfo.context->beginLayer(1, SkXfermode::kDstIn_Mode);
     }
 
     if (allMaskImagesLoaded) {
-        paintFillLayers(paintInfo, Color::transparent, m_layoutBox.style()->maskLayers(), paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode);
-        paintNinePieceImage(m_layoutBox, paintInfo.context, paintRect, m_layoutBox.styleRef(), m_layoutBox.style()->maskBoxImage(), SkXfermode::kSrcOver_Mode);
+        paintFillLayers(paintInfo, Color::transparent, m_layoutBox.style()->maskLayers(), paintRect);
+        paintNinePieceImage(m_layoutBox, paintInfo.context, paintRect, m_layoutBox.styleRef(), m_layoutBox.style()->maskBoxImage());
     }
 
-    if (pushTransparencyLayer) {
+    if (pushTransparencyLayer)
         paintInfo.context->endLayer();
-        paintInfo.context->setCompositeOperation(previousCompositeOperation);
-    }
 }
 
 void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -566,7 +561,8 @@ void BoxPainter::paintRootBackgroundColor(LayoutObject& obj, const PaintInfo& pa
 
     Color baseColor = obj.view()->frameView()->baseBackgroundColor();
     bool shouldClearDocumentBackground = obj.document().settings() && obj.document().settings()->shouldClearDocumentBackground();
-    SkXfermode::Mode operation = shouldClearDocumentBackground ? SkXfermode::kSrc_Mode : context->compositeOperation();
+    SkXfermode::Mode operation = shouldClearDocumentBackground ?
+        SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode;
 
     // If we have an alpha go ahead and blend with the base background color.
     if (baseColor.alpha()) {
@@ -1622,8 +1618,7 @@ void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, c
 
         bool useTransparencyLayer = includesAdjacentEdges(commonColorEdgeSet) && commonColor.hasAlpha();
         if (useTransparencyLayer) {
-            graphicsContext->beginLayer(static_cast<float>(commonColor.alpha()) / 255,
-                graphicsContext->compositeOperation());
+            graphicsContext->beginLayer(static_cast<float>(commonColor.alpha()) / 255);
             commonColor = Color(commonColor.red(), commonColor.green(), commonColor.blue());
         }
 

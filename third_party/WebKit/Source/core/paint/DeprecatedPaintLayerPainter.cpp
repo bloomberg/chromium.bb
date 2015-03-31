@@ -219,7 +219,7 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
             &paintingInfo, LayoutPoint(), paintFlags));
 
         compositingRecorder = adoptPtr(new CompositingRecorder(context, *m_renderLayer.layoutObject(),
-            WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), m_renderLayer.layoutObject()->style()->blendMode()),
+            WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_renderLayer.layoutObject()->style()->blendMode()),
             m_renderLayer.layoutObject()->opacity()));
     }
 

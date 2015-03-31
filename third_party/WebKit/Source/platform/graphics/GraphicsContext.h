@@ -165,7 +165,6 @@ public:
     // Do not use these methods: they are deprecated/scheduled for removal.
     void setCompositeOperation(SkXfermode::Mode);
     SkXfermode::Mode compositeOperation() const;
-    CompositeOperator compositeOperationDeprecated() const;
 
     // Specify the device scale factor which may change the way document markers
     // and fonts are rendered.
@@ -264,10 +263,10 @@ public:
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
-    // beginLayer()/endLayer() behaves like save()/restore() for only CTM and clip states.
+    // beginLayer()/endLayer() behaves like save()/restore() for CTM and clip states.
     // Apply SkXfermode::Mode when the layer is composited on the backdrop (i.e. endLayer()).
-    // Don't change the current SkXfermode::Mode states.
-    void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, SkImageFilter* = 0);
+    void beginLayer(float opacity = 1.0f, SkXfermode::Mode = SkXfermode::kSrcOver_Mode,
+        const FloatRect* = 0, ColorFilter = ColorFilterNone, SkImageFilter* = 0);
     void endLayer();
 
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()

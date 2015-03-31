@@ -108,7 +108,7 @@ TEST(GraphicsContextTest, trackImageMask)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.beginLayer(1, SkXfermode::kSrcOver_Mode);
+    context.beginLayer();
     context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
     context.beginLayer(1, SkXfermode::kDstIn_Mode);
@@ -141,7 +141,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.beginLayer(1, SkXfermode::kSrcOver_Mode);
+    context.beginLayer();
     context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
     context.beginLayer(1, SkXfermode::kDstIn_Mode);
@@ -173,7 +173,6 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
 
-    Path path;
     context.setShouldAntialias(false);
     context.setMiterLimit(1);
     context.setStrokeThickness(5);
@@ -194,11 +193,13 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     context.clip(IntRect(10, 10, 10, 40));
 
     // Draw a path that gets clipped. This should destroy the opaque area but only inside the clip.
-    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
-    context.setFillColor(alpha);
+    Path path;
     path.moveTo(FloatPoint(10, 10));
     path.addLineTo(FloatPoint(40, 40));
-    context.strokePath(path);
+    SkPaint paint;
+    paint.setColor(alpha.rgb());
+    paint.setXfermodeMode(SkXfermode::kSrcOut_Mode);
+    context.drawPath(path.skPath(), paint);
 
     EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
 }

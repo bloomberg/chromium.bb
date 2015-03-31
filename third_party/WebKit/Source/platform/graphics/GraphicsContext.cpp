@@ -387,11 +387,6 @@ SkXfermode::Mode GraphicsContext::compositeOperation() const
     return immutableState()->compositeOperation();
 }
 
-CompositeOperator GraphicsContext::compositeOperationDeprecated() const
-{
-    return compositeOperatorFromSkia(immutableState()->compositeOperation());
-}
-
 SkColorFilter* GraphicsContext::colorFilter() const
 {
     return immutableState()->colorFilter();

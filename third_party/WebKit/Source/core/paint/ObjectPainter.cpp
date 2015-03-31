@@ -73,8 +73,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
             graphicsContext->fillPath(path);
             return;
         }
-        graphicsContext->beginLayer(static_cast<float>(outlineColor.alpha()) / 255,
-            graphicsContext->compositeOperation());
+        graphicsContext->beginLayer(static_cast<float>(outlineColor.alpha()) / 255);
         outlineColor = Color(outlineColor.red(), outlineColor.green(), outlineColor.blue());
     }
 

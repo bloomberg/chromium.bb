@@ -98,7 +98,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
         return false;
 
     if (!isIsolationInstalled() && SVGLayoutSupport::isIsolationRequired(m_object))
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object, WebCoreCompositeToSkiaComposite(m_paintInfo.context->compositeOperationDeprecated(), WebBlendModeNormal), 1));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object, SkXfermode::kSrcOver_Mode, 1));
 
     return true;
 }
@@ -113,12 +113,12 @@ void SVGPaintContext::applyCompositingIfNecessary()
 
     const ComputedStyle& style = m_object->styleRef();
     float opacity = style.opacity();
-    bool hasBlendMode = style.hasBlendMode() && m_object->isBlendingAllowed();
-    if (opacity < 1 || hasBlendMode) {
+    WebBlendMode blendMode = style.hasBlendMode() && m_object->isBlendingAllowed() ?
+        style.blendMode() : WebBlendModeNormal;
+    if (opacity < 1 || blendMode != WebBlendModeNormal) {
         m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, *m_object, m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
-        WebBlendMode blendMode = hasBlendMode ? style.blendMode() : WebBlendModeNormal;
-        CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo.context->compositeOperationDeprecated();
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object, WebCoreCompositeToSkiaComposite(compositeOp, blendMode), opacity));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object,
+            WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode), opacity));
     }
 }
 
