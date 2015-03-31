@@ -342,6 +342,8 @@ TEST_F(LabelTest, SingleLineSizing) {
   const gfx::Size size_with_border = label.GetPreferredSize();
   EXPECT_EQ(size_with_border.height(), size.height() + border.height());
   EXPECT_EQ(size_with_border.width(), size.width() + border.width());
+  EXPECT_EQ(size.height() + border.height(),
+            label.GetHeightForWidth(size_with_border.width()));
 }
 
 TEST_F(LabelTest, MultilineSmallAvailableWidthSizing) {

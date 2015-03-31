@@ -109,6 +109,10 @@ void LabelExample::CreateExampleView(View* container) {
   label->SetMultiLine(true);
   container->AddChildView(label);
 
+  label = new Label(ASCIIToUTF16("Label with thick border"));
+  label->SetBorder(Border::CreateSolidBorder(20, SK_ColorRED));
+  container->AddChildView(label);
+
   AddCustomLabel(container);
 }
 
