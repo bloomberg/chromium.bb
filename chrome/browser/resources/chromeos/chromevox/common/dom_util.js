@@ -230,6 +230,9 @@ cvox.DomUtil.hasInvisibleAncestor_ = function(node) {
  */
 cvox.DomUtil.hasVisibleNodeSubtree_ = function(root, recursive) {
   if (!(root instanceof Element)) {
+    if (!root.parentElement) {
+      return false;
+    }
     var parentStyle = document.defaultView
         .getComputedStyle(root.parentElement, null);
     var isVisibleParent = !cvox.DomUtil.isInvisibleStyle(parentStyle);
