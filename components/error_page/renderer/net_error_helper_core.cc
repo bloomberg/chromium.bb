@@ -429,6 +429,7 @@ NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {
 
 bool NetErrorHelperCore::IsReloadableError(
     const NetErrorHelperCore::ErrorPageInfo& info) {
+  GURL url = info.error.unreachableURL;
   return info.error.domain.utf8() == net::kErrorDomain &&
          info.error.reason != net::ERR_ABORTED &&
          // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
@@ -441,7 +442,10 @@ bool NetErrorHelperCore::IsReloadableError(
          // handshake_failure alert.
          // https://crbug.com/431387
          info.error.reason != net::ERR_SSL_PROTOCOL_ERROR &&
-         !info.was_failed_post;
+         !info.was_failed_post &&
+         // Don't auto-reload non-http/https schemas.
+         // https://crbug.com/471713
+         url.SchemeIsHTTPOrHTTPS();
 }
 
 NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,

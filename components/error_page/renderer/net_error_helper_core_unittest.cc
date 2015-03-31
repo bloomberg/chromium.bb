@@ -126,18 +126,26 @@ WebURLError ProbeError(DnsProbeStatus status) {
   return error;
 }
 
-WebURLError NetError(net::Error net_error) {
+WebURLError NetErrorForURL(net::Error net_error, const GURL& url) {
   WebURLError error;
-  error.unreachableURL = GURL(kFailedUrl);
+  error.unreachableURL = url;
   error.domain = blink::WebString::fromUTF8(net::kErrorDomain);
   error.reason = net_error;
   return error;
+}
+
+WebURLError NetError(net::Error net_error) {
+  return NetErrorForURL(net_error, GURL(kFailedUrl));
 }
 
 // Convenience functions that create an error string for a non-POST request.
 
 std::string ProbeErrorString(DnsProbeStatus status) {
   return ErrorToString(ProbeError(status), false);
+}
+
+std::string NetErrorStringForURL(net::Error net_error, const GURL& url) {
+  return ErrorToString(NetErrorForURL(net_error, url), false);
 }
 
 std::string NetErrorString(net::Error net_error) {
@@ -241,20 +249,24 @@ class NetErrorHelperCoreTest : public testing::Test,
     core()->OnNavigationCorrectionsFetched(result, "en", false);
   }
 
-  void DoErrorLoad(net::Error error) {
+  void DoErrorLoadOfURL(net::Error error, const GURL& url) {
     core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                        NetErrorHelperCore::NON_ERROR_PAGE);
     std::string html;
     core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
-                        NetError(error), false, &html);
+                        NetErrorForURL(error, url), false, &html);
     EXPECT_FALSE(html.empty());
-    EXPECT_EQ(NetErrorString(error), html);
+    EXPECT_EQ(NetErrorStringForURL(error, url), html);
 
     core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                        NetErrorHelperCore::ERROR_PAGE);
     core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
                         error_url());
     core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  }
+
+  void DoErrorLoad(net::Error error) {
+    DoErrorLoadOfURL(error, GURL(kFailedUrl));
   }
 
   void DoSuccessLoad() {
@@ -2187,6 +2199,12 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
   EXPECT_FALSE(timer()->IsRunning());
 
   DoErrorLoad(net::ERR_BAD_SSL_CLIENT_AUTH_CERT);
+  EXPECT_FALSE(timer()->IsRunning());
+
+  DoErrorLoadOfURL(net::ERR_ACCESS_DENIED, GURL("data://some-data-here"));
+  EXPECT_FALSE(timer()->IsRunning());
+
+  DoErrorLoadOfURL(net::ERR_ACCESS_DENIED, GURL("chrome-extension://foo"));
   EXPECT_FALSE(timer()->IsRunning());
 }
 
