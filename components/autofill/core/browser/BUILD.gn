@@ -2,19 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_android) {
-  import("//build/config/android/config.gni")
-  autofill_enable_sync = !is_android_webview_build
-} else {
-  autofill_enable_sync = true
-}
-
-config("autofill_browser_config") {
-  if (autofill_enable_sync) {
-    defines = [ "AUTOFILL_ENABLE_SYNC" ]
-  }
-}
-
 # GYP version: components/autofill.gyp:autofill_regexes
 action("regexes") {
   visibility = [ "//components/autofill/*" ]
@@ -177,6 +164,7 @@ static_library("browser") {
     "//net",
     "//skia",
     "//sql",
+    "//sync",
     "//third_party/fips181",
     "//third_party/icu",
     "//third_party/libaddressinput:util",
@@ -189,20 +177,6 @@ static_library("browser") {
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-  public_configs = [ ":autofill_browser_config" ]
-
-  if (autofill_enable_sync) {
-    deps += [ "//sync" ]
-  } else {
-    sources -= [
-      "webdata/autocomplete_syncable_service.cc",
-      "webdata/autocomplete_syncable_service.h",
-      "webdata/autofill_profile_syncable_service.cc",
-      "webdata/autofill_profile_syncable_service.h",
-      "webdata/autofill_wallet_syncable_service.cc",
-      "webdata/autofill_wallet_syncable_service.h",
-    ]
-  }
 }
 
 static_library("test_support") {

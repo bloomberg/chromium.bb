@@ -132,7 +132,6 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
       return;
   }
 
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   if (password_manager_sync_metrics::IsSyncAccountCredential(
           password_view_->GetProfile(),
           base::UTF16ToUTF8(password_list_[index]->username_value),
@@ -140,7 +139,6 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     content::RecordAction(
         base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
   }
-#endif
 
   // Call back the front end to reveal the password.
   password_view_->ShowPassword(index, password_list_[index]->password_value);

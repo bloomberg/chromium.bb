@@ -4,10 +4,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
 
-#if !defined(AUTOFILL_ENABLE_SYNC)
-#error "This file should be built only when sync is enabled in Autofill"
-#endif
-
 #include <map>
 #include <string>
 #include <vector>

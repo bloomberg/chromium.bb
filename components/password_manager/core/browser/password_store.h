@@ -130,9 +130,7 @@ class PasswordStore : protected PasswordStoreSync,
   // needs to shut itself down.
   virtual void Shutdown();
 
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
-#endif
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
@@ -284,14 +282,12 @@ class PasswordStore : protected PasswordStoreSync,
       scoped_ptr<GetLoginsRequest> request,
       const std::vector<std::string>& additional_android_realms);
 
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   // Creates PasswordSyncableService instance on the background thread.
   void InitSyncableService(
       const syncer::SyncableService::StartSyncFlare& flare);
 
   // Deletes PasswordSyncableService instance on the background thread.
   void DestroySyncableService();
-#endif
 
   // The observers.
   scoped_refptr<ObserverListThreadSafe<Observer>> observers_;

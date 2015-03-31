@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_H__
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_H__
 
-#if !defined(PASSWORD_MANAGER_ENABLE_SYNC)
-#error "Only build this file when sync is enabled in Password Manager."
-#endif
-
 #include <string>
 #include <vector>
 

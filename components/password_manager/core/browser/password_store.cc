@@ -13,10 +13,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
 #include "components/password_manager/core/browser/password_syncable_service.h"
-#endif
 
 using autofill::PasswordForm;
 
@@ -72,9 +69,7 @@ PasswordStore::PasswordStore(
 }
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   ScheduleTask(base::Bind(&PasswordStore::InitSyncableService, this, flare));
-#endif
   return true;
 }
 
@@ -182,22 +177,18 @@ bool PasswordStore::ScheduleTask(const base::Closure& task) {
 }
 
 void PasswordStore::Shutdown() {
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   ScheduleTask(base::Bind(&PasswordStore::DestroySyncableService, this));
-#endif
   // The AffiliationService must be destroyed from the main thread.
   affiliated_match_helper_.reset();
   shutdown_called_ = true;
 }
 
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
 base::WeakPtr<syncer::SyncableService>
 PasswordStore::GetPasswordSyncableService() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   DCHECK(syncable_service_);
   return syncable_service_->AsWeakPtr();
 }
-#endif
 
 PasswordStore::~PasswordStore() {
   DCHECK(shutdown_called_);
@@ -230,10 +221,8 @@ void PasswordStore::NotifyLoginsChanged(
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (!changes.empty()) {
     observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged, changes);
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
     if (syncable_service_)
       syncable_service_->ActOnPasswordStoreChanges(changes);
-#endif
   }
 }
 
@@ -310,7 +299,6 @@ void PasswordStore::ScheduleGetLoginsWithAffiliations(
                           additional_android_realms));
 }
 
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
 void PasswordStore::InitSyncableService(
     const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
@@ -323,6 +311,5 @@ void PasswordStore::DestroySyncableService() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   syncable_service_.reset();
 }
-#endif
 
 }  // namespace password_manager

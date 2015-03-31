@@ -12,6 +12,7 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
+        '../sync/sync.gyp:sync',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
         'autofill_core_common',
@@ -85,6 +86,8 @@
         'password_manager/core/browser/password_store_default.h',
         'password_manager/core/browser/password_store_sync.cc',
         'password_manager/core/browser/password_store_sync.h',
+        'password_manager/core/browser/password_syncable_service.cc',
+        'password_manager/core/browser/password_syncable_service.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
         'password_manager/core/browser/test_affiliation_fetcher_factory.h',
@@ -94,40 +97,12 @@
         'password_manager/core/browser/webdata/password_web_data_service_win.cc',
         'password_manager/core/browser/webdata/password_web_data_service_win.h',
       ],
-      'variables': {
-        'conditions': [
-          ['android_webview_build == 1', {
-            # Android WebView doesn't support sync.
-            'password_manager_enable_sync%': 0,
-          }, {
-            'password_manager_enable_sync%': 1,
-          }],
-        ],
-      },
       'conditions': [
         ['OS=="mac"', {
           'sources!': [
             # TODO(blundell): Provide the iOS login DB implementation and then
             # also exclude the POSIX one from iOS. http://crbug.com/341429
             'password_manager/core/browser/login_database_posix.cc',
-          ],
-        }],
-        ['password_manager_enable_sync == 1', {
-          'defines': [
-            'PASSWORD_MANAGER_ENABLE_SYNC',
-          ],
-          'dependencies': [
-            '../sync/sync.gyp:sync',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              'PASSWORD_MANAGER_ENABLE_SYNC',
-            ],
-          },
-          'sources': [
-            # Note: sources list duplicated in GN build.
-            'password_manager/core/browser/password_syncable_service.cc',
-            'password_manager/core/browser/password_syncable_service.h',
           ],
         }],
       ],

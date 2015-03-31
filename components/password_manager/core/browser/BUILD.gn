@@ -8,13 +8,6 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-config("password_manager_config") {
-  # Sync (not supported in Android WebView).
-  if (!is_android || !is_android_webview_build) {
-    defines = [ "PASSWORD_MANAGER_ENABLE_SYNC" ]
-  }
-}
-
 static_library("browser") {
   sources = [
     "affiliated_match_helper.cc",
@@ -75,6 +68,8 @@ static_library("browser") {
     "password_store_default.h",
     "password_store_sync.cc",
     "password_store_sync.h",
+    "password_syncable_service.cc",
+    "password_syncable_service.h",
     "psl_matching_helper.cc",
     "psl_matching_helper.h",
     "test_affiliation_fetcher_factory.h",
@@ -95,6 +90,7 @@ static_library("browser") {
     "//components/strings",
     "//net",
     "//sql",
+    "//sync",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
     "//url",
@@ -108,16 +104,6 @@ static_library("browser") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-  public_configs = [ ":password_manager_config" ]
-
-  # Sync (not supported in Android WebView).
-  if (!is_android || !is_android_webview_build) {
-    sources += [
-      "password_syncable_service.cc",
-      "password_syncable_service.h",
-    ]
-    deps += [ "//sync" ]
-  }
 }
 
 proto_library("proto") {

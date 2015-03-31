@@ -575,15 +575,11 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           GetSessionsSyncableService()->AsWeakPtr();
     }
     case syncer::PASSWORDS: {
-#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
       scoped_refptr<password_manager::PasswordStore> password_store =
           PasswordStoreFactory::GetForProfile(
               profile_, ServiceAccessType::EXPLICIT_ACCESS);
       return password_store.get() ? password_store->GetPasswordSyncableService()
                                   : base::WeakPtr<syncer::SyncableService>();
-#else
-      return base::WeakPtr<syncer::SyncableService>();
-#endif
     }
 #if defined(OS_CHROMEOS)
     case syncer::WIFI_CREDENTIALS:
