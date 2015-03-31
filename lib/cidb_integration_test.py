@@ -84,7 +84,7 @@ class CIDBIntegrationTest(cros_test_lib.LocalSqlServerTestCase):
 
     return cidb.CIDBConnection(
         creds_dir_path,
-        query_retry_args=cidb.SQLConnectionRetryArgs(4, 1, 1.1))
+        query_retry_args=cidb.SqlConnectionRetryArgs(4, 1, 1.1))
 
   def _PrepareFreshDatabase(self, max_schema_version=None):
     """Create an empty database with migrations applied.
