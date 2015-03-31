@@ -1842,15 +1842,16 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
     }
 }
 
-void WebLocalFrameImpl::didFail(const ResourceError& error, bool wasProvisional)
+void WebLocalFrameImpl::didFail(const ResourceError& error, bool wasProvisional, HistoryCommitType commitType)
 {
     if (!client())
         return;
     WebURLError webError = error;
+    WebHistoryCommitType webCommitType = static_cast<WebHistoryCommitType>(commitType);
     if (wasProvisional)
-        client()->didFailProvisionalLoad(this, webError);
+        client()->didFailProvisionalLoad(this, webError, webCommitType);
     else
-        client()->didFailLoad(this, webError);
+        client()->didFailLoad(this, webError, webCommitType);
 }
 
 void WebLocalFrameImpl::setCanHaveScrollbars(bool canHaveScrollbars)

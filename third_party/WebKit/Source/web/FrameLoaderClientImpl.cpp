@@ -439,18 +439,18 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
-    const ResourceError& error)
+    const ResourceError& error, HistoryCommitType commitType)
 {
     OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().provisionalDocumentLoader());
-    m_webFrame->didFail(error, true);
+    m_webFrame->didFail(error, true, commitType);
     if (observer)
         observer->didFailLoading(error);
 }
 
-void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error)
+void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error, HistoryCommitType commitType)
 {
     OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
-    m_webFrame->didFail(error, false);
+    m_webFrame->didFail(error, false, commitType);
     if (observer)
         observer->didFailLoading(error);
 

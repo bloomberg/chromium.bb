@@ -263,8 +263,9 @@ public:
     // The provisional load was redirected via a HTTP 3xx response.
     virtual void didReceiveServerRedirectForProvisionalLoad(WebLocalFrame*) { }
 
-    // The provisional load failed.
-    virtual void didFailProvisionalLoad(WebLocalFrame*, const WebURLError&) { }
+    // The provisional load failed. The WebHistoryCommitType is the commit type
+    // that would have been used had the load succeeded.
+    virtual void didFailProvisionalLoad(WebLocalFrame*, const WebURLError&, WebHistoryCommitType) { }
 
     // The provisional datasource is now committed.  The first part of the
     // response body has been received, and the encoding of the response
@@ -294,8 +295,10 @@ public:
     // The 'load' event was dispatched.
     virtual void didHandleOnloadEvents(WebLocalFrame*) { }
 
-    // The frame's document or one of its subresources failed to load.
-    virtual void didFailLoad(WebLocalFrame*, const WebURLError&) { }
+    // The frame's document or one of its subresources failed to load. The
+    // WebHistoryCommitType is the commit type that would have been used had the
+    // load succeeded.
+    virtual void didFailLoad(WebLocalFrame*, const WebURLError&, WebHistoryCommitType) { }
 
     // The frame's document and all of its subresources succeeded to load.
     virtual void didFinishLoad(WebLocalFrame*) { }

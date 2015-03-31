@@ -1082,8 +1082,9 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
         m_frame->deprecatedLocalOwner()->renderFallbackContent();
     }
 
+    HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
     if (loader == m_provisionalDocumentLoader) {
-        client()->dispatchDidFailProvisionalLoad(error);
+        client()->dispatchDidFailProvisionalLoad(error, historyCommitType);
         if (loader != m_provisionalDocumentLoader)
             return;
         m_provisionalDocumentLoader->detachFromFrame();
@@ -1094,7 +1095,7 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
         if (m_frame->document()->parser())
             m_frame->document()->parser()->stopParsing();
         if (!m_provisionalDocumentLoader && m_frame->isLoading()) {
-            client()->dispatchDidFailLoad(error);
+            client()->dispatchDidFailLoad(error, historyCommitType);
             m_progressTracker->progressCompleted();
         }
     }

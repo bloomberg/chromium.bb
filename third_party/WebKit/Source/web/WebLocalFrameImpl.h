@@ -297,7 +297,7 @@ public:
     // allows us to navigate by pressing Enter after closing the Find box.
     void setFindEndstateFocusAndSelection();
 
-    void didFail(const ResourceError&, bool wasProvisional);
+    void didFail(const ResourceError&, bool wasProvisional, HistoryCommitType);
 
     // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
     // If the parameter is true, allow the document to be scrolled.

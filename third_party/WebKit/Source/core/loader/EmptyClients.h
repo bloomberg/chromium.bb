@@ -187,8 +187,8 @@ public:
     virtual void dispatchDidReceiveTitle(const String&) override { }
     virtual void dispatchDidChangeIcons(IconType) override { }
     virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override { }
-    virtual void dispatchDidFailProvisionalLoad(const ResourceError&) override { }
-    virtual void dispatchDidFailLoad(const ResourceError&) override { }
+    virtual void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) override { }
+    virtual void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) override { }
     virtual void dispatchDidFinishDocumentLoad() override { }
     virtual void dispatchDidFinishLoad() override { }
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() override { }

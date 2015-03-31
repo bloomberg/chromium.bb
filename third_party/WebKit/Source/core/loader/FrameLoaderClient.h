@@ -92,8 +92,8 @@ namespace blink {
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
         virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
-        virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
-        virtual void dispatchDidFailLoad(const ResourceError&) = 0;
+        virtual void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) = 0;
+        virtual void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;
         virtual void dispatchDidFinishLoad() = 0;
         virtual void dispatchDidFirstVisuallyNonEmptyLayout() = 0;

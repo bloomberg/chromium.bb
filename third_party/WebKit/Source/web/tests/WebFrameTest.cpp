@@ -4654,7 +4654,7 @@ public:
     {
     }
 
-    virtual void didFailProvisionalLoad(WebLocalFrame* frame, const WebURLError& error)
+    virtual void didFailProvisionalLoad(WebLocalFrame* frame, const WebURLError& error, WebHistoryCommitType)
     {
         frame->loadHTMLString("This should appear", toKURL("data:text/html,chromewebdata"), error.unreachableURL, true);
     }
