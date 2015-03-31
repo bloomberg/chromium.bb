@@ -300,14 +300,6 @@ Response PageHandler::StopScreencast() {
   return Response::FallThrough();
 }
 
-Response PageHandler::StartRecordingFrames(int max_frame_count) {
-  return Response::OK();
-}
-
-Response PageHandler::StopRecordingFrames(DevToolsCommandId command_id) {
-  return Response::OK();
-}
-
 Response PageHandler::ScreencastFrameAck(int frame_number) {
   screencast_frame_acked_ = frame_number;
   return Response::OK();
