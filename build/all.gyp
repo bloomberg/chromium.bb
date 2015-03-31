@@ -319,19 +319,11 @@
           'dependencies': [
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',
             '../cc/cc_tests.gyp:cc_unittests',
-            '../chrome/chrome.gyp:browser_tests',
-            '../chrome/chrome.gyp:chromedriver_tests',
-            '../chrome/chrome.gyp:chromedriver_unittests',
-            '../chrome/chrome.gyp:interactive_ui_tests',
-            '../chrome/chrome.gyp:sync_integration_tests',
-            '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_shell',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
-            '../extensions/extensions_tests.gyp:extensions_browsertests',
-            '../extensions/extensions_tests.gyp:extensions_unittests',
             '../gin/gin.gyp:gin_unittests',
             '../google_apis/google_apis.gyp:google_apis_unittests',
             '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',
@@ -350,6 +342,18 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/telemetry/telemetry.gyp:*',
+          ],
+        }],
+        ['OS!="ios" and OS!="android" and chromecast==0', {
+          'dependencies': [
+            '../chrome/chrome.gyp:browser_tests',
+            '../chrome/chrome.gyp:chromedriver_tests',
+            '../chrome/chrome.gyp:chromedriver_unittests',
+            '../chrome/chrome.gyp:interactive_ui_tests',
+            '../chrome/chrome.gyp:sync_integration_tests',
+            '../chrome/chrome.gyp:unit_tests',
+            '../extensions/extensions_tests.gyp:extensions_browsertests',
+            '../extensions/extensions_tests.gyp:extensions_unittests',
           ],
         }],
         ['OS=="win"', {
@@ -440,6 +444,10 @@
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
+          ],
+        }],
+        ['use_aura==1 and chromecast==0', {
+          'dependencies': [
             '../ui/keyboard/keyboard.gyp:keyboard_unittests',
             '../ui/views/views.gyp:views_unittests',
           ],
@@ -1307,13 +1315,19 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_unittests_run',
-            '../chrome/chrome.gyp:browser_tests_run',
-            '../chrome/chrome.gyp:interactive_ui_tests_run',
-            '../chrome/chrome.gyp:sync_integration_tests_run',
-            '../chrome/chrome.gyp:unit_tests_run',
             '../content/content_shell_and_tests.gyp:content_browsertests_run',
             '../content/content_shell_and_tests.gyp:content_unittests_run',
             '../net/net.gyp:net_unittests_run',
+          ],
+          'conditions': [
+            ['chromecast==0', {
+              'dependencies': [
+                '../chrome/chrome.gyp:browser_tests_run',
+                '../chrome/chrome.gyp:interactive_ui_tests_run',
+                '../chrome/chrome.gyp:sync_integration_tests_run',
+                '../chrome/chrome.gyp:unit_tests_run',
+              ],
+            }],
           ],
         }, # target_name: chromium_swarm_tests
       ],
