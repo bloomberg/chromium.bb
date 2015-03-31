@@ -20,3 +20,6 @@ libdrm_omapinclude_HEADERS = omap_drmif.h
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_omap.pc
+
+TESTS = omap-symbol-check
+EXTRA_DIST = $(TESTS)
