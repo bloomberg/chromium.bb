@@ -312,10 +312,6 @@ const char kDisableMemoryPressureSystemChromeOS[] =
 // Enables waking the device based on the receipt of some network packets.
 const char kWakeOnPackets[] = "wake-on-packets";
 
-// Specifies the path for GAIA endpoint. The default value is
-// "ServiceLogin?skipvpage=true&sarp=1&rm=hide".
-const char kGaiaEndpointChromeOS[] = "gaia-endpoint-chromeos";
-
 // Screenshot testing: specifies the directory where the golden screenshots are
 // stored.
 const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";

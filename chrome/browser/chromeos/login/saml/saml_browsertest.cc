@@ -331,12 +331,6 @@ class SamlTest : public InProcessBrowserTest,
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 
-    if (UseWebView()) {
-      // Use ServiceLogin test html/js for MM.
-      command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
-                                      "ServiceLogin");
-    }
-
     const GURL gaia_url = gaia_https_forwarder_->GetURL("");
     command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
     command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
@@ -1252,7 +1246,6 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, TransferCookiesUnaffiliated) {
   EXPECT_EQ(kSAMLIdPCookieValue1, GetCookieValue(kSAMLIdPCookieName));
 }
 
-// TODO(xiyuan): Update once cookies are properly handled.
 INSTANTIATE_TEST_CASE_P(SamlSuite,
                         SAMLPolicyTest,
                         testing::Bool());

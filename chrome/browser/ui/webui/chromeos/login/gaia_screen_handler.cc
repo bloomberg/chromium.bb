@@ -56,8 +56,6 @@ const char kAuthIframeParentOrigin[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
 const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
-// TODO(rsorokin): Move this to the proper file.
-const char kNewGaiaFlowPath[] = "embedded/setup/chromeos";
 
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
@@ -243,10 +241,6 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     params.SetString("chromeType", GetChromeDeviceTypeString());
     params.SetString("clientId",
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-    if (!command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
-      command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
-                                      kNewGaiaFlowPath);
-    }
   } else {
     params.SetBoolean("useNewGaiaFlow", false);
   }
@@ -269,11 +263,6 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
             ? GURL(command_line->GetSwitchValueASCII(::switches::kGaiaUrl))
             : GaiaUrls::GetInstance()->gaia_url();
     params.SetString("gaiaUrl", gaia_url.spec());
-  }
-
-  if (command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
-    params.SetString("gaiaEndpoint", command_line->GetSwitchValueASCII(
-                                         switches::kGaiaEndpointChromeOS));
   }
 
   if (use_easy_bootstrap_) {

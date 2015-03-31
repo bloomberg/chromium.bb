@@ -28,6 +28,7 @@ cr.define('cr.login', function() {
   var SET_COOKIE_HEADER = 'set-cookie';
   var OAUTH_CODE_COOKIE = 'oauth_code';
   var SERVICE_ID = 'chromeoslogin';
+  var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -209,7 +210,12 @@ cr.define('cr.login', function() {
   };
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
-    var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
+    var path = data.gaiaPath;
+    if (!path && this.isNewGaiaFlowChromeOS)
+      path = EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
+    if (!path)
+      path = IDP_PATH;
+    var url = this.idpOrigin_ + path;
 
     if (this.isNewGaiaFlowChromeOS) {
       if (data.chromeType)

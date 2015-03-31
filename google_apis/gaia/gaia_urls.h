@@ -20,6 +20,7 @@ class GaiaUrls {
   const GURL& captcha_base_url() const;
   const GURL& client_login_url() const;
   const GURL& service_login_url() const;
+  const GURL& embedded_setup_chromeos_url() const;
   const GURL& service_login_auth_url() const;
   const GURL& service_logout_url() const;
   const GURL& issue_auth_token_url() const;
@@ -64,6 +65,7 @@ class GaiaUrls {
 
   GURL client_login_url_;
   GURL service_login_url_;
+  GURL embedded_setup_chromeos_url_;
   GURL service_login_auth_url_;
   GURL service_logout_url_;
   GURL issue_auth_token_url_;

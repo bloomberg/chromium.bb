@@ -77,7 +77,6 @@ CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentSkipRobotAuth[];
 CHROMEOS_EXPORT extern const char kFirstExecAfterBoot[];
 CHROMEOS_EXPORT extern const char kForceFirstRunUI[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
-CHROMEOS_EXPORT extern const char kGaiaEndpointChromeOS[];
 CHROMEOS_EXPORT extern const char kGoldenScreenshotsDir[];
 CHROMEOS_EXPORT extern const char kGuestSession[];
 CHROMEOS_EXPORT extern const char kGuestWallpaperLarge[];
