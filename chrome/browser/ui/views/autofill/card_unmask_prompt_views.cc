@@ -36,10 +36,6 @@ namespace autofill {
 // dialog.
 const int kEdgePadding = 19;
 
-// From AutofillDialogViews. TODO(estade): share.
-SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
-SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
-
 // static
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
     CardUnmaskPromptController* controller) {
@@ -179,7 +175,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
   storage_row_->SetBorder(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   storage_row_->set_background(
-      views::Background::CreateSolidBackground(kShadingColor));
+      views::Background::CreateSolidBackground(kLightShadingColor));
 
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
@@ -194,9 +190,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
 }
 
 gfx::Size CardUnmaskPromptViews::GetPreferredSize() const {
-  // Must hardcode a width so the label knows where to wrap. TODO(estade):
-  // This can lead to a weird looking dialog if we end up getting allocated
-  // more width than we ask for, e.g. if the title is super long.
+  // Must hardcode a width so the label knows where to wrap.
   const int kWidth = 375;
   return gfx::Size(kWidth, GetHeightForWidth(kWidth));
 }

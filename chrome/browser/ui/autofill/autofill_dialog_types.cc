@@ -101,6 +101,8 @@ bool DialogNotification::HasCheckbox() const {
 }
 
 SkColor const kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
+SkColor const kLightShadingColor = SkColorSetARGB(7, 0, 0, 0);
+SkColor const kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
 SuggestionState::SuggestionState()
     : visible(false) {}

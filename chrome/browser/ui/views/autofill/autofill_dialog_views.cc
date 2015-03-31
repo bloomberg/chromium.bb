@@ -98,12 +98,6 @@ const int kDialogEdgePadding = 20;
 // The vertical padding between rows of manual inputs (in pixels).
 const int kManualInputRowPadding = 10;
 
-// Slight shading for mouse hover and legal document background.
-SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
-
-// A border color for the legal document view.
-SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
-
 // The top and bottom padding, in pixels, for the suggestions menu dropdown
 // arrows.
 const int kMenuButtonTopInset = 3;
@@ -857,9 +851,9 @@ void AutofillDialogViews::SectionContainer::SetActive(bool active) {
   if (is_active == !!background())
     return;
 
-  set_background(is_active ?
-      views::Background::CreateSolidBackground(kShadingColor) :
-      NULL);
+  set_background(
+      is_active ? views::Background::CreateSolidBackground(kLightShadingColor)
+                : NULL);
   SchedulePaint();
 }
 
@@ -1608,7 +1602,7 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
   footnote_view_->SetBorder(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   footnote_view_->set_background(
-      views::Background::CreateSolidBackground(kShadingColor));
+      views::Background::CreateSolidBackground(kLightShadingColor));
 
   legal_document_view_ = new views::StyledLabel(base::string16(), this);
 

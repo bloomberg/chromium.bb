@@ -88,6 +88,8 @@ class DialogNotification {
 };
 
 extern SkColor const kWarningColor;
+extern SkColor const kLightShadingColor;
+extern SkColor const kSubtleBorderColor;
 
 struct SuggestionState {
   SuggestionState();
