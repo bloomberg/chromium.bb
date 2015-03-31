@@ -2214,12 +2214,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Duration of time taken to run Heap::collectGarbage().</summary>
 </histogram>
 
+<histogram name="BlinkGC.CompleteSweep" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>Duration of time taken to run ThreadState::completeSweep().</summary>
+</histogram>
+
 <histogram name="BlinkGC.GCReason" enum="GCReason">
   <owner>haraken@chromium.org</owner>
   <summary>A type of Blink GC.</summary>
 </histogram>
 
 <histogram name="BlinkGC.PerformPendingSweep" units="milliseconds">
+  <obsolete>
+    Removed at 2014 Jan.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <summary>
     Duration of time taken to run ThreadState::performPendingSweep().
