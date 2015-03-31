@@ -3346,6 +3346,7 @@ _waterfall_config_map = {
       'arm-generic-full',
       'daisy-full',
       'mipsel-o32-generic-full',
+      'x86-generic-full',
 
       # ASAN
       'amd64-generic-asan',

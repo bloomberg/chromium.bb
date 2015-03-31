@@ -72228,6 +72228,7 @@
         "vm_tests": []
     },
     "x86-generic-full": {
+        "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
             "x86-generic"
