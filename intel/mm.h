@@ -38,16 +38,6 @@ struct mem_block {
 	unsigned int reserved:1;
 };
 
-/* Rename the variables in the drm copy of this code so that it doesn't
- * conflict with mesa or whoever else has copied it around.
- */
-#define mmInit drm_mmInit
-#define mmAllocMem drm_mmAllocMem
-#define mmFreeMem drm_mmFreeMem
-#define mmFindBlock drm_mmFindBlock
-#define mmDestroy drm_mmDestroy
-#define mmDumpMemInfo drm_mmDumpMemInfo
-
 /** 
  * input: total size in bytes
  * return: a heap pointer if OK, NULL if error
