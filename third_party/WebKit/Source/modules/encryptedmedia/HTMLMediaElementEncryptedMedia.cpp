@@ -106,9 +106,14 @@ public:
 
     virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) override
     {
-        // The error string is in the format of: OriginalMessage (systemCode)
+        // Non-zero |systemCode| is appended to the |message|. If the |message|
+        // is empty, we'll report "Rejected with system code (systemCode)".
         String errorString = message;
-        errorString.append(" (" + String::number(systemCode) + ")");
+        if (systemCode != 0) {
+            if (errorString.isEmpty())
+                errorString.append("Rejected with system code");
+            errorString.append(" (" + String::number(systemCode) + ")");
+        }
         (*m_failureCallback)(WebCdmExceptionToExceptionCode(code), errorString);
     }
 

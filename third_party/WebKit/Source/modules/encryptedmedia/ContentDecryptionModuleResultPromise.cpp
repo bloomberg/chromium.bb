@@ -67,9 +67,15 @@ void ContentDecryptionModuleResultPromise::completeWithSession(WebContentDecrypt
 
 void ContentDecryptionModuleResultPromise::completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage)
 {
-    // The error string is in the format of: OriginalMessage (systemCode)
+    // Non-zero |systemCode| is appended to the |errorMessage|. If the
+    // |errorMessage| is empty, we'll report "Rejected with system code
+    // (systemCode)".
     String errorString = errorMessage;
-    errorString.append(" (" + String::number(systemCode) + ")");
+    if (systemCode != 0) {
+        if (errorString.isEmpty())
+            errorString.append("Rejected with system code");
+        errorString.append(" (" + String::number(systemCode) + ")");
+    }
     reject(WebCdmExceptionToExceptionCode(exceptionCode), errorString);
 }
 

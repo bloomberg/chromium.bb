@@ -22,10 +22,6 @@
                         test.done();
                     }).catch(function(error) {
                         assert_equals(error.name, 'InvalidAccessError');
-                        // Make sure we have system code appended.
-                        // Note: This is not required by the spec. Extract this
-                        // out before we upstream this to W3C tests.
-                        assert_true(error.message.endsWith(' (0)'));
                         test.done();
                     });
                 }
