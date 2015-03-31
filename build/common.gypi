@@ -625,14 +625,23 @@
       # compiler. Always do this by default.
       'host_clang%': 1,
 
-      # Variables to control Link-Time Optimizations (LTO).
-      # Note: the variables must *not* be enabled at the same time.
-      #       In this case LTO would 'merge' the optimization flags
-      #       at link-time which would lead to all code be optimized with -O2.
-      # Enable LTO on the code compiled with -Os.
-      # See crbug.com/407544
+      # Variables to control Link-Time Optimization (LTO).
+      # On Android, the variable use_lto enables LTO on code compiled with -Os,
+      # and use_lto_o2 enables LTO on code compiled with -O2. On other
+      # platforms, use_lto enables LTO in all translation units, and use_lto_o2
+      # has no effect.
+      #
+      # On Linux and Android, when using LLVM LTO, the script
+      # build/download_gold_plugin.py must be run to download a linker plugin.
+      # On Mac, LLVM needs to be built from scratch using
+      # tools/clang/scripts/update.py and the absolute path to
+      # third_party/llvm-build/Release+Asserts/lib must be added to
+      # $DYLD_LIBRARY_PATH to pick up the right version of the linker plugin.
+      #
+      # On Android, the variables must *not* be enabled at the same time.
+      # In this case LTO would 'merge' the optimization flags at link-time
+      # which would lead to all code be optimized with -O2. See crbug.com/407544
       'use_lto%': 0,
-      # Enable LTO on code compiled with -O2.
       'use_lto_o2%': 0,
 
       # Allowed level of identical code folding in the gold linker.
@@ -5810,6 +5819,17 @@
             'cflags': [
               '-flto',
             ],
+            'xcode_settings': {
+              'LLVM_LTO': 'YES',
+            },
+          }],
+          # Work-around for http://openradar.appspot.com/20356002
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings': {
+              'OTHER_LDFLAGS': [
+                '-Wl,-all_load',
+              ],
+            },
           }],
         ],
       },
