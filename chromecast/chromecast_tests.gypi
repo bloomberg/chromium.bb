@@ -23,7 +23,6 @@
       'target_name': 'cast_test_generator',
       'type': 'none',
       'dependencies': [
-        'media/media.gyp:cast_media_unittests',
         '../base/base.gyp:base_unittests',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
         '../content/content_shell_and_tests.gyp:content_unittests',
@@ -100,6 +99,7 @@
         ['OS!="android"', {
           'dependencies': [
             'cast_shell_browser_test',
+            'media/media.gyp:cast_media_unittests',
           ],
           'variables': {
             'filters': [
