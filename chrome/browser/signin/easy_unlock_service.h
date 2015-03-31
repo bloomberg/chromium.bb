@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,7 +36,6 @@ class PrefRegistrySyncable;
 }
 
 class EasyUnlockAppManager;
-class EasyUnlockAuthAttempt;
 class EasyUnlockServiceObserver;
 class Profile;
 class PrefRegistrySimple;
@@ -171,9 +171,19 @@ class EasyUnlockService : public KeyedService {
   // the service to reflect the provided screenlock state.
   bool UpdateScreenlockState(EasyUnlockScreenlockStateHandler::State state);
 
+  // Returns the screenlock state if it is available. Otherwise STATE_INACTIVE
+  // is returned.
+  EasyUnlockScreenlockStateHandler::State GetScreenlockState();
+
   // Starts an auth attempt for the user associated with the service. The
   // attempt type (unlock vs. signin) will depend on the service type.
   void AttemptAuth(const std::string& user_id);
+
+  // Similar to above but a callback is invoked after the auth attempt is
+  // finalized instead of default unlock/sign-in.
+  typedef EasyUnlockAuthAttempt::FinalizedCallback AttemptAuthCallback;
+  void AttemptAuth(const std::string& user_id,
+                   const AttemptAuthCallback& callback);
 
   // Finalizes the previously started auth attempt for easy unlock. If called on
   // signin profile service, it will cancel the current auth attempt if one

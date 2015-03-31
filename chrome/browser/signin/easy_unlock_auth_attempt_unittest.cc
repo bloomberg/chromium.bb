@@ -210,7 +210,8 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   void SetUp() override {
     app_manager_.reset(new FakeAppManager());
     auth_attempt_.reset(new EasyUnlockAuthAttempt(
-        app_manager_.get(), kTestUser1, EasyUnlockAuthAttempt::TYPE_UNLOCK));
+        app_manager_.get(), kTestUser1, EasyUnlockAuthAttempt::TYPE_UNLOCK,
+        EasyUnlockAuthAttempt::FinalizedCallback()));
   }
 
   void TearDown() override {
@@ -361,7 +362,8 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   void SetUp() override {
     app_manager_.reset(new FakeAppManager());
     auth_attempt_.reset(new EasyUnlockAuthAttempt(
-        app_manager_.get(), kTestUser1, EasyUnlockAuthAttempt::TYPE_SIGNIN));
+        app_manager_.get(), kTestUser1, EasyUnlockAuthAttempt::TYPE_SIGNIN,
+        EasyUnlockAuthAttempt::FinalizedCallback()));
   }
 
   void TearDown() override {

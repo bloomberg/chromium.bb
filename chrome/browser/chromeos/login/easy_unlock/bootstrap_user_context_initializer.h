@@ -10,6 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
+#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
+#include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
@@ -19,7 +23,8 @@ namespace chromeos {
 // The class takes an authorization code then prepares a UserContext that
 // could be used to create a new account.
 class BootstrapUserContextInitializer final
-    : public gaia::GaiaOAuthClient::Delegate {
+    : public gaia::GaiaOAuthClient::Delegate,
+      public EasyUnlockServiceObserver {
  public:
   // Callback type to be invoked after initialization work is done.
   typedef base::Callback<void(bool success, const UserContext& user_context)>
@@ -33,12 +38,24 @@ class BootstrapUserContextInitializer final
   void Start(const std::string& auth_code, const CompleteCallback& callback);
 
   const UserContext& user_context() const { return user_context_; }
+  bool random_key_used() const { return random_key_used_; }
 
   static void SetCompleteCallbackForTesting(CompleteCallback* callback);
 
  private:
-  void InitializeUserContext();
   void Notify(bool success);
+
+  // Starts to check existing Smart lock keys to use.
+  void StartCheckExistingKeys();
+
+  void OnGetEasyUnlockData(bool success,
+                           const EasyUnlockDeviceKeyDataList& data_list);
+  void OnEasyUnlockAuthenticated(EasyUnlockAuthAttempt::Type auth_attempt_type,
+                                 bool success,
+                                 const std::string& user_id,
+                                 const std::string& key_secret,
+                                 const std::string& key_label);
+  void CreateRandomKey();
 
   // Start refresh token and user info fetching.
   void StartTokenFetch(const std::string& auth_code);
@@ -54,10 +71,17 @@ class BootstrapUserContextInitializer final
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
+  // EasyUnlockServiceObserver
+  void OnScreenlockStateChanged(
+      EasyUnlockScreenlockStateHandler::State state) override;
+
   CompleteCallback callback_;
   scoped_ptr<gaia::GaiaOAuthClient> token_fetcher_;
 
   UserContext user_context_;
+  bool random_key_used_;
+
+  base::WeakPtrFactory<BootstrapUserContextInitializer> weak_ptr_factory_;
 
   static CompleteCallback* complete_callback_for_testing_;
 
