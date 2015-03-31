@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/html/HTMLDimension.h"
 
-#include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
