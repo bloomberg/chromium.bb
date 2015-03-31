@@ -9036,5 +9036,53 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(expected, fixed_child->visible_rect_from_property_trees());
 }
 
+TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
+  gfx::Transform identity;
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(800, 800), true, false);
+  root->SetIsContainerForFixedPositionLayers(true);
+
+  scoped_refptr<Layer> frame_clip = Layer::Create();
+  SetLayerPropertiesForTesting(frame_clip.get(), identity, gfx::Point3F(),
+                               gfx::PointF(500, 100), gfx::Size(100, 100), true,
+                               false);
+  frame_clip->SetMasksToBounds(true);
+
+  scoped_refptr<LayerWithForcedDrawsContent> scroller =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  SetLayerPropertiesForTesting(scroller.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1000, 1000), true,
+                               false);
+
+  scroller->SetScrollOffset(gfx::ScrollOffset(100, 100));
+  scroller->SetScrollClipLayerId(frame_clip->id());
+
+  scoped_refptr<LayerWithForcedDrawsContent> fixed =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  SetLayerPropertiesForTesting(fixed.get(), identity, gfx::Point3F(),
+                               gfx::PointF(100, 100), gfx::Size(50, 50), true,
+                               false);
+
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  fixed->SetPositionConstraint(constraint);
+  fixed->SetForceRenderSurface(true);
+  fixed->SetMasksToBounds(true);
+
+  root->AddChild(frame_clip);
+  frame_clip->AddChild(scroller);
+  scroller->AddChild(fixed);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  gfx::Rect expected(0, 0, 50, 50);
+  EXPECT_EQ(expected, fixed->visible_rect_from_property_trees());
+}
+
 }  // namespace
 }  // namespace cc

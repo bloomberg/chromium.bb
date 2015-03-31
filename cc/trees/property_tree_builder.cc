@@ -65,6 +65,7 @@ static bool RequiresClipNode(Layer* layer,
 
 void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
                          Layer* layer,
+                         bool created_transform_node,
                          DataForRecursion* data_for_children) {
   ClipNode* parent = GetClipParent(data_from_ancestor, layer);
   int parent_id = parent->id;
@@ -87,13 +88,17 @@ void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
     data_for_children->clip_tree_parent = parent_id;
   } else if (layer->parent()) {
     // Note the root clip gets handled elsewhere.
-    Layer* transform_parent = GetTransformParent(*data_for_children, layer);
+    Layer* transform_parent = data_for_children->transform_tree_parent;
+    if (layer->position_constraint().is_fixed_position() &&
+        !created_transform_node) {
+      transform_parent = data_for_children->transform_fixed_parent;
+    }
     ClipNode node;
     node.data.clip = gfx::RectF(
         gfx::PointF() + layer->offset_to_transform_parent(), layer->bounds());
     node.data.transform_id = transform_parent->transform_tree_index();
     node.data.target_id =
-        data_from_ancestor.render_target->transform_tree_index();
+        data_for_children->render_target->transform_tree_index();
 
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
@@ -107,7 +112,7 @@ void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   // better way, since we will need both the clipped and unclipped versions.
 }
 
-void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
+bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
                               Layer* layer,
                               DataForRecursion* data_for_children) {
   const bool is_root = !layer->parent();
@@ -176,7 +181,7 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
     layer->set_should_flatten_transform_from_property_tree(
         data_from_ancestor.should_flatten);
     layer->set_transform_tree_index(transform_parent->transform_tree_index());
-    return;
+    return false;
   }
 
   int parent_index = 0;
@@ -243,6 +248,7 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   data_for_children->scroll_compensation_adjustment +=
       layer->ScrollCompensationAdjustment() - node->data.scroll_snap;
+  return true;
 }
 
 void AddOpacityNodeIfNeeded(const DataForRecursion& data_from_ancestor,
@@ -277,8 +283,10 @@ void BuildPropertyTreesInternal(Layer* layer,
   if (layer->render_surface())
     data_for_children.render_target = layer;
 
-  AddTransformNodeIfNeeded(data_from_parent, layer, &data_for_children);
-  AddClipNodeIfNeeded(data_from_parent, layer, &data_for_children);
+  bool created_transform_node =
+      AddTransformNodeIfNeeded(data_from_parent, layer, &data_for_children);
+  AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
+                      &data_for_children);
 
   if (data_from_parent.opacity_tree)
     AddOpacityNodeIfNeeded(data_from_parent, layer, &data_for_children);
