@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "platform/text/SurrogatePairAwareTextIterator.h"
+#include "platform/fonts/UTF16TextIterator.h"
 
 #include <unicode/unorm.h>
 
@@ -30,23 +30,33 @@ using namespace Unicode;
 
 namespace blink {
 
-SurrogatePairAwareTextIterator::SurrogatePairAwareTextIterator(const UChar* characters, int currentCharacter, int lastCharacter, int endCharacter)
+UTF16TextIterator::UTF16TextIterator(const UChar* characters, int length)
     : m_characters(characters)
-    , m_currentCharacter(currentCharacter)
-    , m_lastCharacter(lastCharacter)
-    , m_endCharacter(endCharacter)
+    , m_charactersEnd(characters + length)
+    , m_offset(0)
+    , m_endOffset(length)
+    , m_currentGlyphLength(0)
 {
 }
 
-bool SurrogatePairAwareTextIterator::consumeSlowCase(UChar32& character, unsigned& clusterLength)
+UTF16TextIterator::UTF16TextIterator(const UChar* characters, int currentCharacter, int endOffset, int endCharacter)
+    : m_characters(characters)
+    , m_charactersEnd(characters + endCharacter)
+    , m_offset(currentCharacter)
+    , m_endOffset(endOffset)
+    , m_currentGlyphLength(0)
+{
+}
+
+bool UTF16TextIterator::consumeSlowCase(UChar32& character)
 {
     if (character <= 0x30FE) {
         // Deal with Hiragana and Katakana voiced and semi-voiced syllables.
-        // Normalize into composed form, and then look for glyph with base + combined mark.
-        // Check above for character range to minimize performance impact.
+        // Normalize into composed form, and then look for glyph with base +
+        // combined mark.
         if (UChar32 normalized = normalizeVoicingMarks()) {
             character = normalized;
-            clusterLength = 2;
+            m_currentGlyphLength = 2;
         }
         return true;
     }
@@ -58,9 +68,10 @@ bool SurrogatePairAwareTextIterator::consumeSlowCase(UChar32& character, unsigne
     if (!U16_IS_SURROGATE_LEAD(character))
         return false;
 
-    // Do we have a surrogate pair? If so, determine the full Unicode (32 bit) code point before glyph lookup.
+    // Do we have a surrogate pair? If so, determine the full Unicode (32 bit)
+    // code point before glyph lookup.
     // Make sure we have another character and it's a low surrogate.
-    if (m_currentCharacter + 1 >= m_endCharacter)
+    if (m_characters + 1 >= m_charactersEnd)
         return false;
 
     UChar low = m_characters[1];
@@ -68,23 +79,41 @@ bool SurrogatePairAwareTextIterator::consumeSlowCase(UChar32& character, unsigne
         return false;
 
     character = U16_GET_SUPPLEMENTARY(character, low);
-    clusterLength = 2;
+    m_currentGlyphLength = 2;
     return true;
 }
 
-UChar32 SurrogatePairAwareTextIterator::normalizeVoicingMarks()
+void UTF16TextIterator::consumeMultipleUChar()
+{
+    const UChar* markCharactersEnd = m_characters + m_currentGlyphLength;
+    int markLength = m_currentGlyphLength;
+    while (markCharactersEnd < m_charactersEnd) {
+        UChar32 nextCharacter;
+        int nextCharacterLength = 0;
+        U16_NEXT(markCharactersEnd, nextCharacterLength,
+            m_charactersEnd - markCharactersEnd, nextCharacter);
+        if (!(U_GET_GC_MASK(nextCharacter) & U_GC_M_MASK))
+            break;
+        markLength += nextCharacterLength;
+        markCharactersEnd += nextCharacterLength;
+    }
+    m_currentGlyphLength = markLength;
+}
+
+UChar32 UTF16TextIterator::normalizeVoicingMarks()
 {
     // According to http://www.unicode.org/Public/UNIDATA/UCD.html#Canonical_Combining_Class_Values
     static const uint8_t hiraganaKatakanaVoicingMarksCombiningClass = 8;
 
-    if (m_currentCharacter + 1 >= m_endCharacter)
+    if (m_offset + 1 >= m_endOffset)
         return 0;
 
     if (combiningClass(m_characters[1]) == hiraganaKatakanaVoicingMarksCombiningClass) {
         // Normalize into composed form using 3.2 rules.
         UChar normalizedCharacters[2] = { 0, 0 };
         UErrorCode uStatus = U_ZERO_ERROR;
-        int32_t resultLength = unorm_normalize(m_characters, 2, UNORM_NFC, UNORM_UNICODE_3_2, &normalizedCharacters[0], 2, &uStatus);
+        int32_t resultLength = unorm_normalize(m_characters, 2, UNORM_NFC,
+            UNORM_UNICODE_3_2, &normalizedCharacters[0], 2, &uStatus);
         if (resultLength == 1 && !uStatus)
             return normalizedCharacters[0];
     }

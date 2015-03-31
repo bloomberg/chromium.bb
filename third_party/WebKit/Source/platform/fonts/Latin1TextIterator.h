@@ -28,38 +28,42 @@ namespace blink {
 
 class Latin1TextIterator {
 public:
-    // The passed in LChar pointer starts at 'currentCharacter'. The iterator operates on the range [currentCharacter, lastCharacter].
-    // 'endCharacter' denotes the maximum length of the UChar array, which might exceed 'lastCharacter'.
-    Latin1TextIterator(const LChar* characters, int currentCharacter, int lastCharacter, int /*endCharacter*/)
+    // The passed in LChar pointer starts at 'offset'.
+    // The iterator operates on the range [offset, endOffset].
+    // 'endCharacter' denotes the maximum length of the UChar array,
+    // which might exceed 'endOffset'.
+    Latin1TextIterator(const LChar* characters, int offset, int endOffset)
         : m_characters(characters)
-        , m_currentCharacter(currentCharacter)
-        , m_lastCharacter(lastCharacter)
+        , m_offset(offset)
+        , m_endOffset(endOffset)
     {
     }
 
-    bool consume(UChar32& character, unsigned& clusterLength)
+    bool consume(UChar32& character)
     {
-        if (m_currentCharacter >= m_lastCharacter)
+        if (m_offset >= m_endOffset)
             return false;
 
         character = *m_characters;
-        clusterLength = 1;
         return true;
     }
 
-    void advance(unsigned advanceLength)
+    void advance()
     {
-        m_characters += advanceLength;
-        m_currentCharacter += advanceLength;
+        m_characters++;
+        m_offset++;
     }
 
-    int currentCharacter() const { return m_currentCharacter; }
+    int offset() const { return m_offset; }
     const LChar* characters() const { return m_characters; }
+    // FIXME: Only used by SimpleShaper, should be removed once the SimpleShaper
+    // is removed.
+    unsigned glyphLength() const { return 1; }
 
 private:
     const LChar* m_characters;
-    int m_currentCharacter;
-    int m_lastCharacter;
+    int m_offset;
+    int m_endOffset;
 };
 
 } // namespace blink

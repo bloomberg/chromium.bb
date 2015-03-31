@@ -38,8 +38,8 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
+#include "platform/fonts/UTF16TextIterator.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
-#include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"
@@ -551,33 +551,6 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
     return true;
 }
 
-static inline int handleMultipleUChar(
-    UChar32 character,
-    unsigned clusterLength,
-    const SimpleFontData* currentFontData,
-    const UChar* currentCharacterPosition,
-    const UChar* markCharactersEnd,
-    const UChar* normalizedBufferEnd)
-{
-    if (U_GET_GC_MASK(character) & U_GC_M_MASK) {
-        int markLength = clusterLength;
-        while (markCharactersEnd < normalizedBufferEnd) {
-            UChar32 nextCharacter;
-            int nextCharacterLength = 0;
-            U16_NEXT(markCharactersEnd, nextCharacterLength, normalizedBufferEnd - markCharactersEnd, nextCharacter);
-            if (!(U_GET_GC_MASK(nextCharacter) & U_GC_M_MASK))
-                break;
-            markLength += nextCharacterLength;
-            markCharactersEnd += nextCharacterLength;
-        }
-
-        if (currentFontData->canRenderCombiningCharacterSequence(currentCharacterPosition, markCharactersEnd - currentCharacterPosition)) {
-            return markLength;
-        }
-    }
-    return 0;
-}
-
 struct CandidateRun {
     UChar32 character;
     unsigned start;
@@ -589,13 +562,11 @@ struct CandidateRun {
 static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
     size_t bufferLength, const Font* font, Vector<CandidateRun>* runs, bool isSpaceNormalize)
 {
-    const UChar* normalizedBufferEnd = normalizedBuffer + bufferLength;
-    SurrogatePairAwareTextIterator iterator(normalizedBuffer, 0, bufferLength, bufferLength);
+    UTF16TextIterator iterator(normalizedBuffer, bufferLength);
     UChar32 character;
-    unsigned clusterLength = 0;
     unsigned startIndexOfCurrentRun = 0;
 
-    if (!iterator.consume(character, clusterLength))
+    if (!iterator.consume(character))
         return false;
 
     const SimpleFontData* nextFontData = font->glyphDataForCharacter(character, false, isSpaceNormalize).fontData;
@@ -610,15 +581,14 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
         UScriptCode currentScript = nextScript;
 
         UChar32 lastCharacter = character;
-        for (iterator.advance(clusterLength); iterator.consume(character, clusterLength); iterator.advance(clusterLength)) {
+        for (iterator.advance(); iterator.consume(character); iterator.advance()) {
             if (Character::treatAsZeroWidthSpace(character))
                 continue;
-
-            int length = handleMultipleUChar(character, clusterLength, currentFontData, currentCharacterPosition, iterator.characters() + clusterLength, normalizedBufferEnd);
-            if (length) {
-                clusterLength = length;
+            if ((U_GET_GC_MASK(character) & U_GC_M_MASK)
+                && currentFontData->canRenderCombiningCharacterSequence(
+                    currentCharacterPosition,
+                    iterator.glyphEnd() - currentCharacterPosition))
                 continue;
-            }
 
             nextFontData = font->glyphDataForCharacter(character, false, isSpaceNormalize).fontData;
             nextScript = uscript_getScript(character, &errorCode);
@@ -632,11 +602,11 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
             lastCharacter = character;
         }
 
-        CandidateRun run = { character, startIndexOfCurrentRun, iterator.currentCharacter(), currentFontData, currentScript };
+        CandidateRun run = { character, startIndexOfCurrentRun, iterator.offset(), currentFontData, currentScript };
         runs->append(run);
 
-        startIndexOfCurrentRun = iterator.currentCharacter();
-    } while (iterator.consume(character, clusterLength));
+        startIndexOfCurrentRun = iterator.offset();
+    } while (iterator.consume(character));
 
     return true;
 }

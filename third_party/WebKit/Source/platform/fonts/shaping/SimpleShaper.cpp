@@ -28,7 +28,7 @@
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/Latin1TextIterator.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/text/SurrogatePairAwareTextIterator.h"
+#include "platform/fonts/UTF16TextIterator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/CharacterNames.h"
 
@@ -135,9 +135,9 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
     const float initialRunWidth = m_runWidthSoFar;
 
     CharacterData charData;
-    while (textIterator.consume(charData.character, charData.clusterLength)) {
-        charData.characterOffset = textIterator.currentCharacter();
-
+    while (textIterator.consume(charData.character)) {
+        charData.characterOffset = textIterator.offset();
+        charData.clusterLength = textIterator.glyphLength();
         GlyphData glyphData = glyphDataForCharacter(charData, normalizeSpace);
 
         // Some fonts do not have a glyph for zero-width-space,
@@ -185,12 +185,12 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         }
 
         // Advance past the character we just dealt with.
-        textIterator.advance(charData.clusterLength);
+        textIterator.advance();
         m_runWidthSoFar += width;
     }
 
-    unsigned consumedCharacters = textIterator.currentCharacter() - m_currentCharacter;
-    m_currentCharacter = textIterator.currentCharacter();
+    unsigned consumedCharacters = textIterator.offset() - m_currentCharacter;
+    m_currentCharacter = textIterator.offset();
 
     return consumedCharacters;
 }
@@ -206,11 +206,11 @@ unsigned SimpleShaper::advance(unsigned offset, GlyphBuffer* glyphBuffer)
         return 0;
 
     if (m_run.is8Bit()) {
-        Latin1TextIterator textIterator(m_run.data8(m_currentCharacter), m_currentCharacter, offset, length);
+        Latin1TextIterator textIterator(m_run.data8(m_currentCharacter), m_currentCharacter, offset);
         return advanceInternal(textIterator, glyphBuffer);
     }
 
-    SurrogatePairAwareTextIterator textIterator(m_run.data16(m_currentCharacter), m_currentCharacter, offset, length);
+    UTF16TextIterator textIterator(m_run.data16(m_currentCharacter), m_currentCharacter, offset, length);
     return advanceInternal(textIterator, glyphBuffer);
 }
 
