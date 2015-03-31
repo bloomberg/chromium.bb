@@ -142,3 +142,26 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterMultipleListeners) {
   dns_sd_registry_->DispatchMDnsEvent(test_service_type, services);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+// TODO(justinlin): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_RegisterTooManyListeners DISABLED_RegisterTooManyListeners
+#else
+#define MAYBE_RegisterTooManyListeners RegisterTooManyListeners
+#endif
+// Test loading extension and registering multiple listeners.
+IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterTooManyListeners) {
+  SetUpTestDnsSdRegistry();
+
+  EXPECT_CALL(*dns_sd_registry_, RegisterDnsSdListener(A<std::string>()))
+      .Times(10);
+  EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(A<std::string>()))
+      .Times(10);
+  EXPECT_CALL(*dns_sd_registry_,
+              RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
+      .Times(1);
+
+  EXPECT_TRUE(RunPlatformAppTest("mdns/api-packaged-apps"))
+      << message_;
+}

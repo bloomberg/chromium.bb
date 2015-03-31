@@ -30,6 +30,6 @@ namespace mdns {
     // discovering should be specified as the event filter with the
     // 'serviceType' key. Not specifying an event filter will not start any
     // discovery listeners.
-    [supportsFilters=true] static void onServiceList(MDnsService[] services);
+    [supportsFilters=true, maxListeners=10] static void onServiceList(MDnsService[] services);
   };
 };
