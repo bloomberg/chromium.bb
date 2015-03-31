@@ -16,6 +16,7 @@
 namespace base {
 namespace trace_event {
 
+class MemoryDumpManagerDelegate;
 class MemoryDumpProvider;
 
 // This is the interface exposed to the rest of the codebase to deal with
@@ -27,6 +28,10 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // Invoked once per process to register the TraceLog observer.
   void Initialize();
+
+  // See the lifetime and thread-safety requirements on the delegate below in
+  // the |MemoryDumpManagerDelegate| docstring.
+  void SetDelegate(MemoryDumpManagerDelegate* delegate);
 
   // MemoryDumpManager does NOT take memory ownership of |mdp|, which is
   // expected to be a singleton.
@@ -76,8 +81,10 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // TODO(primiano): this is required only until crbug.com/466121 gets fixed.
   MemoryDumpProvider* dump_provider_currently_active_;  // Not owned.
 
-  // Protects from concurrent accesses to the |dump_providers_*|, e.g., tearing
-  // down logging while creating a memory dump on another thread.
+  MemoryDumpManagerDelegate* delegate_;  // Not owned.
+
+  // Protects from concurrent accesses to the |dump_providers_*| and |delegate_|
+  // to guard against disabling logging while dumping on another thread.
   Lock lock_;
 
   // Optimization to avoid attempting any memory dump (i.e. to not walk an empty
@@ -85,6 +92,21 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   subtle::AtomicWord memory_tracing_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpManager);
+};
+
+// The delegate is supposed to be long lived (read: a Singleton) and thread
+// safe (i.e. should expect calls from any thread and handle thread hopping).
+class BASE_EXPORT MemoryDumpManagerDelegate {
+ public:
+  virtual void RequestGlobalMemoryDump(const MemoryDumpRequestArgs& args,
+                                       const MemoryDumpCallback& callback) = 0;
+
+ protected:
+  MemoryDumpManagerDelegate() {}
+  virtual ~MemoryDumpManagerDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryDumpManagerDelegate);
 };
 
 }  // namespace trace_event

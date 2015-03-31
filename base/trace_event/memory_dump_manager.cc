@@ -60,7 +60,9 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 }
 
 MemoryDumpManager::MemoryDumpManager()
-    : dump_provider_currently_active_(nullptr), memory_tracing_enabled_(0) {
+    : dump_provider_currently_active_(nullptr),
+      delegate_(nullptr),
+      memory_tracing_enabled_(0) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
 
@@ -71,6 +73,12 @@ MemoryDumpManager::~MemoryDumpManager() {
 void MemoryDumpManager::Initialize() {
   TRACE_EVENT0(kTraceCategory, "init");  // Add to trace-viewer category list.
   trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+}
+
+void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
+  AutoLock lock(lock_);
+  DCHECK(delegate_ == nullptr);
+  delegate_ = delegate;
 }
 
 void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
@@ -103,9 +111,6 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
 void MemoryDumpManager::RequestGlobalDump(
     MemoryDumpType dump_type,
     const MemoryDumpCallback& callback) {
-  // TODO(primiano): this will have more logic to coordinate memory dumps across
-  // multiple processes via IPC. See crbug.com/462930.
-
   // Bail out immediately if tracing is not enabled at all.
   if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_)))
     return;
@@ -113,8 +118,23 @@ void MemoryDumpManager::RequestGlobalDump(
   // TODO(primiano): Make guid actually unique (cross-process) by hashing it
   // with the PID. See crbug.com/462931 for details.
   const uint64 guid = g_next_guid.GetNext();
-  MemoryDumpRequestArgs args = {guid, dump_type};
-  CreateProcessDump(args);
+
+  // The delegate_ is supposed to be thread safe, immutable and long lived.
+  // No need to keep the lock after we ensure that a delegate has been set.
+  MemoryDumpManagerDelegate* delegate;
+  {
+    AutoLock lock(lock_);
+    delegate = delegate_;
+  }
+
+  if (delegate) {
+    // The delegate is in charge to coordinate the request among all the
+    // processes and call the CreateLocalDumpPoint on the local process.
+    MemoryDumpRequestArgs args = {guid, dump_type};
+    delegate->RequestGlobalMemoryDump(args, callback);
+  } else if (!callback.is_null()) {
+    callback.Run(guid, false /* success */);
+  }
 }
 
 void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type) {

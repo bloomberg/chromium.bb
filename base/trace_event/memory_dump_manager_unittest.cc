@@ -16,6 +16,17 @@ using testing::Return;
 namespace base {
 namespace trace_event {
 
+// Testing MemoryDumpManagerDelegate which short-circuits dump requests locally
+// instead of performing IPC dances.
+class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
+ public:
+  void RequestGlobalMemoryDump(
+      const base::trace_event::MemoryDumpRequestArgs& args,
+      const MemoryDumpCallback& callback) override {
+    MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+  }
+};
+
 class MemoryDumpManagerTest : public testing::Test {
  public:
   void SetUp() override {
@@ -23,6 +34,7 @@ class MemoryDumpManagerTest : public testing::Test {
     MemoryDumpManager::SetInstanceForTesting(mdm_.get());
     ASSERT_EQ(mdm_, MemoryDumpManager::GetInstance());
     MemoryDumpManager::GetInstance()->Initialize();
+    MemoryDumpManager::GetInstance()->SetDelegate(&delegate_);
   }
 
   void TearDown() override {
@@ -44,6 +56,8 @@ class MemoryDumpManagerTest : public testing::Test {
   scoped_ptr<MemoryDumpManager> mdm_;
 
  private:
+  MemoryDumpManagerDelegateForTesting delegate_;
+
   // We want our singleton torn down after each test.
   ShadowingAtExitManager at_exit_manager_;
 };
