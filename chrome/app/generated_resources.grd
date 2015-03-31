@@ -7034,7 +7034,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches.">
-        Enable "Ok Google" to start a voice search
+        Enable "Ok Google" to start a voice search.
       </message>
       <if expr="chromeos">
         <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
@@ -15703,7 +15703,7 @@ Do you accept?
         Enable
       </message>
       <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_WAIT" desc="Text displayed when waiting for Audio History setting in the 'Ok Google' hotword opt-in dialog.">
-        Enabling Voice &amp; Audio Activity ...
+        Enabling Voice &amp; Audio Activity...
       </message>
       <message name="IDS_HOTWORD_OPT_IN_ERROR" desc="Text displayed on error setting Audio History and training in the 'Ok Google' hotword opt-in dialog.">
         Something went wrong. Please try again.
@@ -15748,16 +15748,16 @@ Do you accept?
         Respond to "Ok Google" when the screen is on and unlocked
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_SETTINGS" desc="The text indicating where the user can change their Chrome settings. ">
-        You can change this at any time in <ph name="BEGIN_LINK">&lt;a target="_blank" href="#" id="settings-link"&gt;</ph>Chrome Settings<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+        You can change this at any time in <ph name="BEGIN_LINK">&lt;a target="_blank" href="#" id="settings-link"&gt;</ph>Chrome Settings<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_AUDIO_HISTORY" desc="The text indicating where the user can change their account history. ">
-        Search queries will be tied to your Google Account. You can view and delete them in your <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.google.com/settings/accounthistory"&gt;</ph>Account History<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+        Search queries will be tied to your Google Account. You can view and delete them in your <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.google.com/settings/accounthistory"&gt;</ph>Account History<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISH" desc="Text on the finish button for the 'Ok Google' hotword opt-in dialog.">
         OK
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete.">
-        Processing ...
+        Processing...
       </message>
 
       <message name="IDS_CAPTIVE_PORTAL_AUTHORIZATION_DIALOG_NAME" desc="Name of the modal Web dialog (displayed in the title) displaying captive portal login page on ChromeOS.">

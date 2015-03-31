@@ -199,12 +199,7 @@ input[type='range'] {
   margin-top: 1.5em;
 }
 
-.hotword-link {
-  -webkit-margin-start: 8px;
-}
-
 #hotword-retrain-link {
-  -webkit-margin-start: 8px;
   text-decoration: none;
 }
 
