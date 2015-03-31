@@ -61,6 +61,9 @@ TEST(SecurityPolicyTest, GenerateReferrer)
     const char secureURLB[] = "https://b.test/path/to/file.html";
     const char secureOriginA[] = "https://a.test/";
 
+    const char blobURL[] = "blob:http%3A//a.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde";
+    const char filesystemURL[] = "filesystem:http%3A//a.test/path/t/file.html";
+
     TestCase inputs[] = {
         // HTTP -> HTTP: Same Origin
         { blink::ReferrerPolicyAlways, insecureURLA, insecureURLA, insecureURLA },
@@ -109,6 +112,12 @@ TEST(SecurityPolicyTest, GenerateReferrer)
         { blink::ReferrerPolicyNever, secureURLA, insecureURLB, 0 },
         { blink::ReferrerPolicyOrigin, secureURLA, insecureURLB, secureOriginA },
         { blink::ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB, secureOriginA },
+
+        // blob and filesystem URL handling
+        { blink::ReferrerPolicyAlways, insecureURLA, blobURL, 0 },
+        { blink::ReferrerPolicyAlways, blobURL, insecureURLA, 0 },
+        { blink::ReferrerPolicyAlways, insecureURLA, filesystemURL, 0 },
+        { blink::ReferrerPolicyAlways, filesystemURL, insecureURLA, 0 },
     };
 
     for (TestCase test : inputs) {

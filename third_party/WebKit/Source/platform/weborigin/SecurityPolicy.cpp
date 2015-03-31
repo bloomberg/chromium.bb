@@ -75,6 +75,9 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
     if (!(protocolIs(referrer, "https") || protocolIs(referrer, "http")))
         return Referrer(String(), referrerPolicy);
 
+    if (SecurityOrigin::shouldUseInnerURL(url))
+        return Referrer(String(), referrerPolicy);
+
     switch (referrerPolicy) {
     case ReferrerPolicyNever:
         return Referrer(String(), referrerPolicy);
@@ -82,8 +85,6 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
         return Referrer(referrer, referrerPolicy);
     case ReferrerPolicyOrigin: {
         String origin = SecurityOrigin::createFromString(referrer)->toString();
-        if (origin == "null")
-            return Referrer(String(), referrerPolicy);
         // A security origin is not a canonical URL as it lacks a path. Add /
         // to turn it into a canonical URL we can use as referrer.
         return Referrer(origin + "/", referrerPolicy);
@@ -93,8 +94,6 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
         RefPtr<SecurityOrigin> urlOrigin = SecurityOrigin::create(url);
         if (!urlOrigin->isSameSchemeHostPort(referrerOrigin.get())) {
             String origin = referrerOrigin->toString();
-            if (origin == "null")
-                return Referrer(String(), referrerPolicy);
             return Referrer(origin + "/", referrerPolicy);
         }
         break;
@@ -106,8 +105,6 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
         RefPtr<SecurityOrigin> urlOrigin = SecurityOrigin::create(url);
         if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled() && !urlOrigin->isSameSchemeHostPort(referrerOrigin.get())) {
             String origin = referrerOrigin->toString();
-            if (origin == "null")
-                return Referrer(String(), referrerPolicy);
             return Referrer(shouldHideReferrer(url, referrer) ? String() : origin + "/", referrerPolicy);
         }
         break;
