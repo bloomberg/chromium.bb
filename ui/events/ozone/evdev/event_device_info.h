@@ -58,7 +58,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   void SetLedEvents(const unsigned long* led_bits, size_t len);
   void SetProps(const unsigned long* prop_bits, size_t len);
   void SetAbsInfo(unsigned int code, const input_absinfo& absinfo);
-  void SetAbsMtSlots(int code, const std::vector<int32_t>& values);
+  void SetAbsMtSlots(unsigned int code, const std::vector<int32_t>& values);
+  void SetAbsMtSlot(unsigned int code, unsigned int slot, uint32_t value);
 
   // Check events this device can generate.
   bool HasEventType(unsigned int type) const;
@@ -72,6 +73,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Properties of absolute axes.
   int32_t GetAbsMinimum(unsigned int code) const;
   int32_t GetAbsMaximum(unsigned int code) const;
+  int32_t GetAbsValue(unsigned int code) const;
   uint32_t GetAbsMtSlotCount() const;
   int32_t GetAbsMtSlotValue(unsigned int code, unsigned int slot) const;
   int32_t GetAbsMtSlotValueWithDefault(unsigned int code,

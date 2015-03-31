@@ -92,6 +92,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   y_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1;
   touch_points_ =
       std::min<int>(info.GetAbsMaximum(ABS_MT_SLOT) + 1, kNumTouchEvdevSlots);
+  current_slot_ = info.GetAbsValue(ABS_MT_SLOT);
 
   // Apply --touch-calibration.
   if (type() == INPUT_DEVICE_INTERNAL) {
@@ -116,13 +117,18 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
     events_[i].touching = (events_[i].tracking_id >= 0);
     events_[i].slot = i;
 
+    // Dirty the slot so we'll update the consumer at the first opportunity.
+    // We can't dispatch here as this is currently called on the worker pool.
+    // TODO(spang): Move initialization off worker pool.
+    events_[i].altered = true;
+
     // Optional bits.
     events_[i].radius_x =
-        info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MAJOR, i, 0);
+        info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MAJOR, i, 0) / 2.0f;
     events_[i].radius_y =
-        info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0);
+        info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0) / 2.0f;
     events_[i].pressure =
-        info.GetAbsMtSlotValueWithDefault(ABS_MT_PRESSURE, i, 0);
+        ScalePressure(info.GetAbsMtSlotValue(ABS_MT_PRESSURE, i));
   }
 }
 
@@ -218,8 +224,7 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       events_[current_slot_].tracking_id = input.value;
       break;
     case ABS_MT_PRESSURE:
-      events_[current_slot_].pressure = input.value - pressure_min_;
-      events_[current_slot_].pressure /= pressure_max_ - pressure_min_;
+      events_[current_slot_].pressure = ScalePressure(input.value);
       break;
     case ABS_MT_SLOT:
       if (input.value >= 0 &&
@@ -244,8 +249,6 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
         // Have to re-initialize.
         if (Reinitialize()) {
           syn_dropped_ = false;
-          for(InProgressTouchEvdev& event : events_)
-            event.altered = false;
         } else {
           LOG(ERROR) << "failed to re-initialize device info";
         }
@@ -307,6 +310,13 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
     event->was_touching = event->touching;
     event->altered = false;
   }
+}
+
+float TouchEventConverterEvdev::ScalePressure(int32_t value) {
+  float pressure = value - pressure_min_;
+  if (pressure_max_ - pressure_min_)
+    pressure /= pressure_max_ - pressure_min_;
+  return pressure;
 }
 
 }  // namespace ui

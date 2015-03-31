@@ -62,6 +62,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                    const base::TimeDelta& delta);
   void ReportEvents(base::TimeDelta delta);
 
+  // Normalize pressure value to [0, 1].
+  float ScalePressure(int32_t value);
+
   // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher_;
 

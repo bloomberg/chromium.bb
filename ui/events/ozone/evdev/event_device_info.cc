@@ -178,13 +178,22 @@ void EventDeviceInfo::SetAbsInfo(unsigned int code,
   memcpy(&abs_info_[code], &abs_info, sizeof(abs_info));
 }
 
-void EventDeviceInfo::SetAbsMtSlots(int code,
+void EventDeviceInfo::SetAbsMtSlots(unsigned int code,
                                     const std::vector<int32_t>& values) {
   DCHECK_EQ(GetAbsMtSlotCount(), values.size());
   int index = code - EVDEV_ABS_MT_FIRST;
   if (index < 0 || index >= EVDEV_ABS_MT_COUNT)
     return;
   slot_values_[index] = values;
+}
+
+void EventDeviceInfo::SetAbsMtSlot(unsigned int code,
+                                   unsigned int slot,
+                                   uint32_t value) {
+  int index = code - EVDEV_ABS_MT_FIRST;
+  if (index < 0 || index >= EVDEV_ABS_MT_COUNT)
+    return;
+  slot_values_[index][slot] = value;
 }
 
 bool EventDeviceInfo::HasEventType(unsigned int type) const {
@@ -241,6 +250,10 @@ int32_t EventDeviceInfo::GetAbsMinimum(unsigned int code) const {
 
 int32_t EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
   return abs_info_[code].maximum;
+}
+
+int32_t EventDeviceInfo::GetAbsValue(unsigned int code) const {
+  return abs_info_[code].value;
 }
 
 uint32_t EventDeviceInfo::GetAbsMtSlotCount() const {

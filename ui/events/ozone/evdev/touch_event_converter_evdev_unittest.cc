@@ -460,6 +460,40 @@ TEST_F(TouchEventConverterEvdevTest, Unsync) {
   EXPECT_EQ(2u, size());
 }
 
+TEST_F(TouchEventConverterEvdevTest, ShouldResumeExistingContactsOnStart) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kLinkTouchscreen, &devinfo));
+
+  // Set up an existing contact in slot 0.
+  devinfo.SetAbsMtSlot(ABS_MT_TRACKING_ID, 0, 1);
+  devinfo.SetAbsMtSlot(ABS_MT_TOUCH_MAJOR, 0, 100);
+  devinfo.SetAbsMtSlot(ABS_MT_POSITION_X, 0, 100);
+  devinfo.SetAbsMtSlot(ABS_MT_POSITION_Y, 0, 100);
+  devinfo.SetAbsMtSlot(ABS_MT_PRESSURE, 0, 128);
+
+  // Initialize the device.
+  dev->Initialize(devinfo);
+
+  // Any report should suffice to dispatch the update.. do an empty one.
+  struct input_event mock_kernel_queue_empty_report[] = {
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue_empty_report,
+                         arraysize(mock_kernel_queue_empty_report), 0);
+  dev->ReadNow();
+  EXPECT_EQ(1u, size());
+
+  ui::TouchEventParams ev = dispatched_event(0);
+  EXPECT_EQ(ET_TOUCH_PRESSED, ev.type);
+  EXPECT_EQ(0, ev.touch_id);
+  EXPECT_FLOAT_EQ(50.f, ev.radii.x());
+  EXPECT_FLOAT_EQ(0.f, ev.radii.y());
+  EXPECT_FLOAT_EQ(0.50196081f, ev.pressure);
+}
+
 // crbug.com/407386
 TEST_F(TouchEventConverterEvdevTest,
        DontChangeMultitouchPositionFromLegacyAxes) {
