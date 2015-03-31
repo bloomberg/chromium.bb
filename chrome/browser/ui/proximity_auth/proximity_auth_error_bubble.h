@@ -28,4 +28,7 @@ void ShowProximityAuthErrorBubble(const base::string16& message,
                                   const gfx::Rect& anchor_rect,
                                   content::WebContents* web_contents);
 
+// Hides the currently displayed error bubble, if any.
+void HideProximityAuthErrorBubble();
+
 #endif  // CHROME_BROWSER_UI_PROXIMITY_AUTH_PROXIMITY_AUTH_ERROR_BUBBLE_H_

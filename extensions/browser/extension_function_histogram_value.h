@@ -1050,6 +1050,7 @@ enum HistogramValue {
   SETTINGSPRIVATE_GETALLPREFS,
   SETTINGSPRIVATE_GETPREF,
   NETWORKINGPRIVATE_FORGETNETWORK,
+  EASYUNLOCKPRIVATE_HIDEERRORBUBBLE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

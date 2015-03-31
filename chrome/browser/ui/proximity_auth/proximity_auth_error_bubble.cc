@@ -14,4 +14,8 @@ void ShowProximityAuthErrorBubble(const base::string16& message,
                                   content::WebContents* web_contents) {
   NOTIMPLEMENTED();
 }
+
+void HideProximityAuthErrorBubble() {
+  NOTIMPLEMENTED();
+}
 #endif

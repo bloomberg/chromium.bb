@@ -792,6 +792,23 @@ bool EasyUnlockPrivateShowErrorBubbleFunction::RunSync() {
   return true;
 }
 
+EasyUnlockPrivateHideErrorBubbleFunction::
+    EasyUnlockPrivateHideErrorBubbleFunction() {
+}
+
+EasyUnlockPrivateHideErrorBubbleFunction::
+    ~EasyUnlockPrivateHideErrorBubbleFunction() {
+}
+
+bool EasyUnlockPrivateHideErrorBubbleFunction::RunSync() {
+#if defined(TOOLKIT_VIEWS)
+  HideProximityAuthErrorBubble();
+#else
+  SetError("Not supported on non-Views platforms.");
+#endif
+  return true;
+}
+
 EasyUnlockPrivateSetAutoPairingResultFunction::
     EasyUnlockPrivateSetAutoPairingResultFunction() {
 }

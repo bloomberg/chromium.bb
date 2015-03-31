@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/proximity_auth/proximity_auth_error_bubble_view.h"
 
+#include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "content/public/browser/page_navigator.h"
@@ -18,6 +19,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
+using base::WeakPtr;
+
 namespace {
 
 // The bubble's content area width, in device-independent pixels.
@@ -26,6 +29,10 @@ const int kBubbleWidth = 296;
 // The padding between columns in the bubble.
 const int kBubbleIntraColumnPadding = 6;
 
+// The currently visible bubble, or null if there isn't one.
+base::LazyInstance<WeakPtr<ProximityAuthErrorBubbleView>>::Leaky g_bubble =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 void ShowProximityAuthErrorBubble(const base::string16& message,
@@ -33,9 +40,35 @@ void ShowProximityAuthErrorBubble(const base::string16& message,
                                   const GURL& link_url,
                                   const gfx::Rect& anchor_rect,
                                   content::WebContents* web_contents) {
-  // The created bubble is owned by the views hierarchy.
-  new ProximityAuthErrorBubbleView(
+  // Only one error bubble should be visible at a time.
+  // Note that it suffices to check just the |message| for equality, because the
+  // |link_range| and |link_url| are always the same for a given |message|
+  // value, and there is no way for the bubble's |anchor_rect| to change without
+  // dismissing the existing bubble.
+  if (g_bubble.Get() && g_bubble.Get()->message() == message)
+    return;
+  HideProximityAuthErrorBubble();
+
+  g_bubble.Get() = ProximityAuthErrorBubbleView::Create(
       message, link_range, link_url, anchor_rect, web_contents);
+}
+
+void HideProximityAuthErrorBubble() {
+  if (g_bubble.Get())
+    g_bubble.Get()->GetWidget()->Close();
+}
+
+// static
+WeakPtr<ProximityAuthErrorBubbleView> ProximityAuthErrorBubbleView::Create(
+    const base::string16& message,
+    const gfx::Range& link_range,
+    const GURL& link_url,
+    const gfx::Rect& anchor_rect,
+    content::WebContents* web_contents) {
+  // The created bubble is owned by the views hierarchy.
+  ProximityAuthErrorBubbleView* bubble = new ProximityAuthErrorBubbleView(
+      message, link_range, link_url, anchor_rect, web_contents);
+  return bubble->weak_ptr_factory_.GetWeakPtr();
 }
 
 ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
@@ -45,7 +78,9 @@ ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
     const gfx::Rect& anchor_rect,
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      link_url_(link_url) {
+      message_(message),
+      link_url_(link_url),
+      weak_ptr_factory_(this) {
   SetAnchorRect(anchor_rect);
   set_arrow(views::BubbleBorder::LEFT_TOP);
 

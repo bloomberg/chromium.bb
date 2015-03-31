@@ -368,6 +368,21 @@ class EasyUnlockPrivateShowErrorBubbleFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateShowErrorBubbleFunction);
 };
 
+class EasyUnlockPrivateHideErrorBubbleFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.hideErrorBubble",
+                             EASYUNLOCKPRIVATE_HIDEERRORBUBBLE)
+  EasyUnlockPrivateHideErrorBubbleFunction();
+
+ private:
+  ~EasyUnlockPrivateHideErrorBubbleFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateHideErrorBubbleFunction);
+};
+
 class EasyUnlockPrivateSetAutoPairingResultFunction
     : public SyncExtensionFunction {
  public:

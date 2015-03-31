@@ -374,6 +374,9 @@ namespace easyUnlockPrivate {
                                 DOMString link_target,
                                 Rect anchorRect);
 
+    // Hides the currently visible error bubble, if there is one.
+    static void hideErrorBubble();
+
     // Sets the result of auto pairing triggered from onStartAutoPairing
     // event. If auto pairing is completed successfully, |result.success|
     // should be true so that Easy bootstrap flow would finish and starts
