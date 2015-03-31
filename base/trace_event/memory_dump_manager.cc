@@ -23,15 +23,15 @@ const char* kTraceEventArgNames[] = {"dumps"};
 const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 StaticAtomicSequenceNumber g_next_guid;
 
-const char* DumpPointTypeToString(const DumpPointType& dump_point_type) {
-  switch (dump_point_type) {
-    case DumpPointType::TASK_BEGIN:
+const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
+  switch (dump_type) {
+    case MemoryDumpType::TASK_BEGIN:
       return "TASK_BEGIN";
-    case DumpPointType::TASK_END:
+    case MemoryDumpType::TASK_END:
       return "TASK_END";
-    case DumpPointType::PERIODIC_INTERVAL:
+    case MemoryDumpType::PERIODIC_INTERVAL:
       return "PERIODIC_INTERVAL";
-    case DumpPointType::EXPLICITLY_TRIGGERED:
+    case MemoryDumpType::EXPLICITLY_TRIGGERED:
       return "EXPLICITLY_TRIGGERED";
   }
   NOTREACHED();
@@ -61,6 +61,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 
 MemoryDumpManager::MemoryDumpManager()
     : dump_provider_currently_active_(nullptr), memory_tracing_enabled_(0) {
+  g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
@@ -99,8 +100,10 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
     dump_providers_enabled_.erase(it);
 }
 
-void MemoryDumpManager::RequestDumpPoint(DumpPointType dump_point_type) {
-  // TODO(primiano): this will have more logic to coordinate dump points across
+void MemoryDumpManager::RequestGlobalDump(
+    MemoryDumpType dump_type,
+    const MemoryDumpCallback& callback) {
+  // TODO(primiano): this will have more logic to coordinate memory dumps across
   // multiple processes via IPC. See crbug.com/462930.
 
   // Bail out immediately if tracing is not enabled at all.
@@ -110,21 +113,22 @@ void MemoryDumpManager::RequestDumpPoint(DumpPointType dump_point_type) {
   // TODO(primiano): Make guid actually unique (cross-process) by hashing it
   // with the PID. See crbug.com/462931 for details.
   const uint64 guid = g_next_guid.GetNext();
-  CreateLocalDumpPoint(dump_point_type, guid);
+  MemoryDumpRequestArgs args = {guid, dump_type};
+  CreateProcessDump(args);
 }
 
-void MemoryDumpManager::BroadcastDumpRequest() {
-  NOTREACHED();  // TODO(primiano): implement IPC synchronization.
+void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type) {
+  RequestGlobalDump(dump_type, MemoryDumpCallback());
 }
 
-// Creates a dump point for the current process and appends it to the trace.
-void MemoryDumpManager::CreateLocalDumpPoint(DumpPointType dump_point_type,
-                                             uint64 guid) {
+// Creates a memory dump for the current process and appends it to the trace.
+void MemoryDumpManager::CreateProcessDump(
+    const MemoryDumpRequestArgs& args) {
   bool did_any_provider_dump = false;
   scoped_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump());
 
-  // Serialize dump point generation so that memory dump providers don't have to
-  // deal with thread safety.
+  // Serialize dump generation so that memory dump providers don't have to deal
+  // with thread safety.
   {
     AutoLock lock(lock_);
     for (auto it = dump_providers_enabled_.begin();
@@ -145,19 +149,20 @@ void MemoryDumpManager::CreateLocalDumpPoint(DumpPointType dump_point_type,
     }
   }
 
-  // Don't create a dump point if all the dumpers failed.
+  // Don't create a memory dump if all the dumpers failed.
   if (!did_any_provider_dump)
     return;
 
   scoped_refptr<ConvertableToTraceFormat> event_value(new TracedValue());
   pmd->AsValueInto(static_cast<TracedValue*>(event_value.get()));
-  const char* const event_name = DumpPointTypeToString(dump_point_type);
+  const char* const event_name = MemoryDumpTypeToString(args.dump_type);
 
   TRACE_EVENT_API_ADD_TRACE_EVENT(
       TRACE_EVENT_PHASE_MEMORY_DUMP,
-      TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name, guid,
-      kTraceEventNumArgs, kTraceEventArgNames, kTraceEventArgTypes,
-      NULL /* arg_values */, &event_value, TRACE_EVENT_FLAG_HAS_ID);
+      TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
+      args.dump_guid, kTraceEventNumArgs, kTraceEventArgNames,
+      kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
+      TRACE_EVENT_FLAG_HAS_ID);
 }
 
 void MemoryDumpManager::OnTraceLogEnabled() {

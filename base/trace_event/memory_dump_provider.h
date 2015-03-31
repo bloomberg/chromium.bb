@@ -16,7 +16,7 @@ class ProcessMemoryDump;
 // The contract interface that memory dump providers must implement.
 class BASE_EXPORT MemoryDumpProvider {
  public:
-  // Called by the MemoryDumpManager when generating dump points.
+  // Called by the MemoryDumpManager when generating memory dumps.
   // Returns: true if the |pmd| was successfully populated, false otherwise.
   virtual bool DumpInto(ProcessMemoryDump* pmd) = 0;
 

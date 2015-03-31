@@ -70,7 +70,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   // Check that the dumper is not called if the memory category is not enabled.
   EnableTracing("foo-and-bar-but-not-memory");
   EXPECT_CALL(mdp, DumpInto(_)).Times(0);
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   // Now repeat enabling the memory category and check that the dumper is
@@ -78,7 +78,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp, DumpInto(_)).Times(3).WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i)
-    mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   mdm_->UnregisterDumpProvider(&mdp);
@@ -86,7 +86,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   // Finally check the unregister logic (no calls to the mdp after unregister).
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp, DumpInto(_)).Times(0);
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   TraceLog::GetInstance()->SetDisabled();
 }
 
@@ -96,11 +96,11 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileTracing) {
 
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
 
   mdm_->UnregisterDumpProvider(&mdp);
   EXPECT_CALL(mdp, DumpInto(_)).Times(0);
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
 
   DisableTracing();
 }
@@ -114,7 +114,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(mdp2, DumpInto(_)).Times(0);
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   // Invert: enable mdp1 and disable mdp2.
@@ -123,7 +123,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp1, DumpInto(_)).Times(0);
   EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   // Enable both mdp1 and mdp2.
@@ -131,7 +131,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 }
 
@@ -148,11 +148,11 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
 
   EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
   EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
 
   EXPECT_CALL(mdp1, DumpInto(_)).Times(0);
   EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
 
   DisableTracing();
 }
@@ -177,8 +177,8 @@ TEST_F(MemoryDumpManagerTest, ActiveDumpProviderConsistency) {
       .WillRepeatedly(Invoke(
           &mdp2,
           &MockDumpProvider::DumpIntoAndCheckDumpProviderCurrentlyActive));
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
-  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 }
 
