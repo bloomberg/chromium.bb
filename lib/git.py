@@ -388,6 +388,9 @@ class Manifest(object):
     """
     self.source = source
     self.default = {}
+    self._current_project_path = None
+    self._current_project_name = None
+    self._annotations = {}
     self.checkouts_by_path = {}
     self.checkouts_by_name = {}
     self.remotes = {}
@@ -397,26 +400,43 @@ class Manifest(object):
     self._RunParser(source)
     self.includes = tuple(self.includes)
 
+  def _RequireAttr(self, attr, attrs):
+    name = attrs.get('name')
+    assert attr in attrs, ('%s is missing a "%s" attribute; attrs: %r' %
+                           (name, attr, attrs))
+
   def _RunParser(self, source, finalize=True):
     parser = sax.make_parser()
     handler = sax.handler.ContentHandler()
-    handler.startElement = self._ProcessElement
+    handler.startElement = self._StartElement
+    handler.endElement = self._EndElement
     parser.setContentHandler(handler)
     parser.parse(source)
     if finalize:
       self._FinalizeAllProjectData()
 
-  def _ProcessElement(self, name, attrs):
+  def _StartElement(self, name, attrs):
     """Stores the default manifest properties and per-project overrides."""
     attrs = dict(attrs.items())
     if name == 'default':
       self.default = attrs
     elif name == 'remote':
+      self._RequireAttr('name', attrs)
       attrs.setdefault('alias', attrs['name'])
       self.remotes[attrs['name']] = attrs
     elif name == 'project':
-      self.checkouts_by_path[attrs.get('path', attrs['name'])] = attrs
-      self.checkouts_by_name.setdefault(attrs['name'], []).append(attrs)
+      self._RequireAttr('name', attrs)
+      self._current_project_path = attrs.get('path', attrs['name'])
+      self._current_project_name = attrs['name']
+      self.checkouts_by_path[self._current_project_path] = attrs
+      checkout = self.checkouts_by_name.setdefault(self._current_project_name,
+                                                   [])
+      checkout.append(attrs)
+      self._annotations = {}
+    elif name == 'annotation':
+      self._RequireAttr('name', attrs)
+      self._RequireAttr('value', attrs)
+      self._annotations[attrs['name']] = attrs['value']
     elif name == 'manifest':
       self.revision = attrs.get('revision')
     elif name == 'include':
@@ -431,6 +451,19 @@ class Manifest(object):
           os.path.join(original_include_dir, attrs['name']))
       self.includes.append((attrs['name'], include_path))
       self._RunParser(include_path, finalize=False)
+
+  def _EndElement(self, name):
+    """Store any child element properties into the parent element."""
+    if name == 'project':
+      assert (self._current_project_name is not None and
+              self._current_project_path is not None), (
+                  'Malformed xml: Encountered unmatched </project>')
+      self.checkouts_by_path[self._current_project_path].update(
+          self._annotations)
+      for checkout in self.checkouts_by_name[self._current_project_name]:
+        checkout.update(self._annotations)
+      self._current_project_path = None
+      self._current_project_name = None
 
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""

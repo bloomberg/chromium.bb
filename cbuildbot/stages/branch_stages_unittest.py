@@ -48,23 +48,27 @@ MANIFEST_CONTENTS = """\
   <!-- Test the explicitly specified branching strategy for projects. -->
   <project name="chromiumos/external-explicitly-pinned"
            path="explicit-external"
-           revision="refs/heads/master"
-           branch-mode="pin" />
+           revision="refs/heads/master">
+    <annotation name="branch-mode" value="pin" />
+  </project>
 
   <project name="chromiumos/external-explicitly-unpinned"
            path="explicit-unpinned"
-           revision="refs/heads/master"
-           branch-mode="tot" />
+           revision="refs/heads/master">
+    <annotation name="branch-mode" value="tot" />
+  </project>
 
   <project name="chromiumos/external-explicitly-pinned-sha1"
            path="explicit-external-sha1"
-           revision="12345"
-           branch-mode="pin" />
+           revision="12345">
+    <annotation name="branch-mode" value="pin" />
+  </project>
 
   <project name="chromiumos/external-explicitly-unpinned-sha1"
            path="explicit-unpinned-sha1"
-           revision="12345"
-           branch-mode="tot" />
+           revision="12345">
+    <annotation name="branch-mode" value="tot" />
+  </project>
 
   <!-- The next two projects test legacy heristic to determine branching
        strategy for projects -->
