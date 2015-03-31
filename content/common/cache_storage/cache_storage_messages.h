@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -23,17 +24,17 @@
 // which are defined in service_worker_messages.h - correct this implicit
 // cross-dependency.
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerCacheQueryParams)
+IPC_STRUCT_TRAITS_BEGIN(content::CacheStorageCacheQueryParams)
   IPC_STRUCT_TRAITS_MEMBER(ignore_search)
   IPC_STRUCT_TRAITS_MEMBER(ignore_method)
   IPC_STRUCT_TRAITS_MEMBER(ignore_vary)
   IPC_STRUCT_TRAITS_MEMBER(cache_name)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerCacheOperationType,
-                          content::SERVICE_WORKER_CACHE_OPERATION_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::CacheStorageCacheOperationType,
+                          content::CACHE_STORAGE_CACHE_OPERATION_TYPE_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerBatchOperation)
+IPC_STRUCT_TRAITS_BEGIN(content::CacheStorageBatchOperation)
   IPC_STRUCT_TRAITS_MEMBER(operation_type)
   IPC_STRUCT_TRAITS_MEMBER(request)
   IPC_STRUCT_TRAITS_MEMBER(response)
@@ -47,68 +48,68 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerCacheError,
 // Messages sent from the child process to the browser.
 
 // CacheStorage operations in the browser.
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_CacheStorageHas,
+IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheStorageHas,
                      int /* thread_id */,
                      int /* request_id */,
                      GURL /* origin */,
                      base::string16 /* fetch_store_name */)
 
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_CacheStorageOpen,
+IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheStorageOpen,
                      int /* thread_id */,
                      int /* request_id */,
                      GURL /* origin */,
                      base::string16 /* fetch_store_name */)
 
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_CacheStorageDelete,
+IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheStorageDelete,
                      int /* thread_id */,
                      int /* request_id */,
                      GURL /* origin */,
                      base::string16 /* fetch_store_name */)
 
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_CacheStorageKeys,
+IPC_MESSAGE_CONTROL3(CacheStorageHostMsg_CacheStorageKeys,
                      int /* thread_id */,
                      int /* request_id */,
                      GURL /* origin */)
 
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_CacheStorageMatch,
+IPC_MESSAGE_CONTROL5(CacheStorageHostMsg_CacheStorageMatch,
                      int /* thread_id */,
                      int /* request_id */,
                      GURL /* origin */,
                      content::ServiceWorkerFetchRequest,
-                     content::ServiceWorkerCacheQueryParams)
+                     content::CacheStorageCacheQueryParams)
 
 // Cache operations in the browser.
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_CacheMatch,
+IPC_MESSAGE_CONTROL5(CacheStorageHostMsg_CacheMatch,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* cache_id */,
                      content::ServiceWorkerFetchRequest,
-                     content::ServiceWorkerCacheQueryParams)
+                     content::CacheStorageCacheQueryParams)
 
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_CacheMatchAll,
+IPC_MESSAGE_CONTROL5(CacheStorageHostMsg_CacheMatchAll,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* cache_id */,
                      content::ServiceWorkerFetchRequest,
-                     content::ServiceWorkerCacheQueryParams)
+                     content::CacheStorageCacheQueryParams)
 
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_CacheKeys,
+IPC_MESSAGE_CONTROL5(CacheStorageHostMsg_CacheKeys,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* cache_id */,
                      content::ServiceWorkerFetchRequest,
-                     content::ServiceWorkerCacheQueryParams)
+                     content::CacheStorageCacheQueryParams)
 
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_CacheBatch,
+IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheBatch,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* cache_id */,
-                     std::vector<content::ServiceWorkerBatchOperation>)
+                     std::vector<content::CacheStorageBatchOperation>)
 
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_CacheClosed,
+IPC_MESSAGE_CONTROL1(CacheStorageHostMsg_CacheClosed,
                      int /* cache_id */)
 
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_BlobDataHandled,
+IPC_MESSAGE_CONTROL1(CacheStorageHostMsg_BlobDataHandled,
                      std::string /* uuid */)
 
 //---------------------------------------------------------------------------
@@ -119,79 +120,79 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_BlobDataHandled,
 // to the appropriate thread.
 
 // Sent at successful completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageHasSuccess,
+IPC_MESSAGE_CONTROL2(CacheStorageMsg_CacheStorageHasSuccess,
                      int /* thread_id */,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageOpenSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageOpenSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* fetch_store_id */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageDeleteSuccess,
+IPC_MESSAGE_CONTROL2(CacheStorageMsg_CacheStorageDeleteSuccess,
                      int /* thread_id */,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageKeysSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageKeysSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      std::vector<base::string16> /* keys */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageMatchSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageMatchSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      content::ServiceWorkerResponse)
 
 // Sent at erroneous completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageHasError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageHasError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageOpenError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageOpenError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageDeleteError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageDeleteError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageKeysError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageKeysError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheStorageMatchError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageMatchError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError)
 
 // Sent at successful completion of Cache operations.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheMatchSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      content::ServiceWorkerResponse)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheMatchAllSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchAllSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      std::vector<content::ServiceWorkerResponse>)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheKeysSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheKeysSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      std::vector<content::ServiceWorkerFetchRequest>)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheBatchSuccess,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheBatchSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      std::vector<content::ServiceWorkerResponse>)
 
 // Sent at erroneous completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheMatchError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheMatchAllError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchAllError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheKeysError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheKeysError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CacheBatchError,
+IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheBatchError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError)

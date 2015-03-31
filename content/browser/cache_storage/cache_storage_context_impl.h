@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_CACHE_STORAGE_CONTEXT_IMPL_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_CACHE_STORAGE_CONTEXT_IMPL_H_
+#ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CONTEXT_IMPL_H_
+#define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CONTEXT_IMPL_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -28,11 +28,11 @@ namespace content {
 
 class BrowserContext;
 class ChromeBlobStorageContext;
-class ServiceWorkerCacheStorageManager;
+class CacheStorageManager;
 
 // One instance of this exists per StoragePartition, and services multiple
 // child processes/origins. Most logic is delegated to the owned
-// ServiceWorkerCacheStorageManager instance, which is only accessed on the IO
+// CacheStorageManager instance, which is only accessed on the IO
 // thread.
 // TODO(jsbell): Derive from a public CacheStorageContext. crbug.com/466371
 class CONTENT_EXPORT CacheStorageContextImpl
@@ -48,16 +48,16 @@ class CONTENT_EXPORT CacheStorageContextImpl
   void Shutdown();
 
   // Only callable on the IO thread.
-  ServiceWorkerCacheStorageManager* cache_manager() const;
+  CacheStorageManager* cache_manager() const;
 
   bool is_incognito() const { return is_incognito_; }
 
   // The URLRequestContext doesn't exist until after the StoragePartition is
   // made (which is after this object is made). This function must be called
-  // after this object is created but before any ServiceWorkerCache operations.
+  // after this object is created but before any CacheStorageCache operations.
   // It must be called on the IO thread. If either parameter is NULL the
   // function immediately returns without forwarding to the
-  // ServiceWorkerCacheStorageManager.
+  // CacheStorageManager.
   void SetBlobParametersForCache(
       net::URLRequestContextGetter* request_context,
       ChromeBlobStorageContext* blob_storage_context);
@@ -79,9 +79,9 @@ class CONTENT_EXPORT CacheStorageContextImpl
   bool is_incognito_ = false;
 
   // Only accessed on the IO thread.
-  scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
+  scoped_ptr<CacheStorageManager> cache_manager_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_CACHE_STORAGE_CONTEXT_IMPL_H_
+#endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CONTEXT_IMPL_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/cache_storage_dispatcher_host.h"
+#include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 
 #include "base/logging.h"
-#include "content/browser/service_worker/cache_storage_context_impl.h"
-#include "content/browser/service_worker/service_worker_cache_listener.h"
-#include "content/common/service_worker/cache_storage_messages.h"
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/cache_storage/cache_storage_listener.h"
+#include "content/common/cache_storage/cache_storage_messages.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
@@ -51,7 +51,7 @@ bool CacheStorageDispatcherHost::OnMessageReceived(
 void CacheStorageDispatcherHost::CreateCacheListener(
     CacheStorageContextImpl* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  cache_listener_.reset(new ServiceWorkerCacheListener(this, context));
+  cache_listener_.reset(new CacheStorageListener(this, context));
 }
 
 }  // namespace content

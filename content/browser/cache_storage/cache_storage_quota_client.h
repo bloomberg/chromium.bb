@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_QUOTA_CLIENT_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_QUOTA_CLIENT_H_
+#ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_QUOTA_CLIENT_H_
+#define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_QUOTA_CLIENT_H_
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -15,17 +15,16 @@ class QuotaManagerProxy;
 }
 
 namespace content {
-class ServiceWorkerCacheStorageManager;
+class CacheStorageManager;
 
-// ServiceWorkerCacheQuotaClient is owned by the QuotaManager. There is one per
-// ServiceWorkerCacheStorageManager, and therefore one per
+// CacheStorageQuotaClient is owned by the QuotaManager. There is one per
+// CacheStorageManager, and therefore one per
 // ServiceWorkerContextCore.
-class CONTENT_EXPORT ServiceWorkerCacheQuotaClient
-    : public storage::QuotaClient {
+class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
  public:
-  explicit ServiceWorkerCacheQuotaClient(
-      base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager);
-  ~ServiceWorkerCacheQuotaClient() override;
+  explicit CacheStorageQuotaClient(
+      base::WeakPtr<CacheStorageManager> cache_manager);
+  ~CacheStorageQuotaClient() override;
 
   // QuotaClient overrides
   ID id() const override;
@@ -44,11 +43,11 @@ class CONTENT_EXPORT ServiceWorkerCacheQuotaClient
   bool DoesSupport(storage::StorageType type) const override;
 
  private:
-  base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager_;
+  base::WeakPtr<CacheStorageManager> cache_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheQuotaClient);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClient);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_QUOTA_CLIENT_H_
+#endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_QUOTA_CLIENT_H_

@@ -8,25 +8,23 @@ option optimize_for = LITE_RUNTIME;
 
 package content;
 
-message ServiceWorkerCacheStorageIndex {
-  message Cache {
-    required string name = 1;
-  }
+message CacheStorageIndex {
+  message Cache { required string name = 1; }
   repeated Cache cache = 1;
   optional string origin = 2;
 }
 
-message ServiceWorkerCacheHeaderMap {
+message CacheHeaderMap {
   required string name = 1;
   required string value = 2;
 }
 
-message ServiceWorkerCacheRequest {
+message CacheRequest {
   required string method = 1;
-  repeated ServiceWorkerCacheHeaderMap headers = 2;
+  repeated CacheHeaderMap headers = 2;
 }
 
-message ServiceWorkerCacheResponse {
+message CacheResponse {
   enum ResponseType {
     BASIC_TYPE = 0;
     CORS_TYPE = 1;
@@ -38,11 +36,11 @@ message ServiceWorkerCacheResponse {
   required int32 status_code = 1;
   required string status_text = 2;
   required ResponseType response_type = 3;
-  repeated ServiceWorkerCacheHeaderMap headers = 4;
+  repeated CacheHeaderMap headers = 4;
   optional string url = 5;
 }
 
-message ServiceWorkerCacheMetadata {
-  required ServiceWorkerCacheRequest request = 1;
-  required ServiceWorkerCacheResponse response = 2;
+message CacheMetadata {
+  required CacheRequest request = 1;
+  required CacheResponse response = 2;
 }

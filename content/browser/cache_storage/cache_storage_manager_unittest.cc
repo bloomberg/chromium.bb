@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_cache_storage_manager.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -10,9 +10,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
-#include "content/browser/service_worker/service_worker_cache_quota_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -23,14 +23,13 @@
 
 namespace content {
 
-class ServiceWorkerCacheStorageManagerTest : public testing::Test {
+class CacheStorageManagerTest : public testing::Test {
  public:
-  ServiceWorkerCacheStorageManagerTest()
+  CacheStorageManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         callback_bool_(false),
-        callback_error_(
-            ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR),
-        callback_cache_error_(ServiceWorkerCache::ERROR_TYPE_OK),
+        callback_error_(CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR),
+        callback_cache_error_(CacheStorageCache::ERROR_TYPE_OK),
         origin1_("http://example1.com"),
         origin2_("http://example2.com") {}
 
@@ -46,15 +45,13 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     net::URLRequestContext* url_request_context =
         browser_context_.GetRequestContext()->GetURLRequestContext();
     if (MemoryOnly()) {
-      cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-          base::FilePath(),
-          base::MessageLoopProxy::current(),
+      cache_manager_ = CacheStorageManager::Create(
+          base::FilePath(), base::MessageLoopProxy::current(),
           quota_manager_proxy_);
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-          temp_dir_.path(),
-          base::MessageLoopProxy::current(),
+      cache_manager_ = CacheStorageManager::Create(
+          temp_dir_.path(), base::MessageLoopProxy::current(),
           quota_manager_proxy_);
     }
 
@@ -69,35 +66,32 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
 
   virtual bool MemoryOnly() { return false; }
 
-  void BoolAndErrorCallback(
-      base::RunLoop* run_loop,
-      bool value,
-      ServiceWorkerCacheStorage::CacheStorageError error) {
+  void BoolAndErrorCallback(base::RunLoop* run_loop,
+                            bool value,
+                            CacheStorage::CacheStorageError error) {
     callback_bool_ = value;
     callback_error_ = error;
     run_loop->Quit();
   }
 
-  void CacheAndErrorCallback(
-      base::RunLoop* run_loop,
-      const scoped_refptr<ServiceWorkerCache>& cache,
-      ServiceWorkerCacheStorage::CacheStorageError error) {
+  void CacheAndErrorCallback(base::RunLoop* run_loop,
+                             const scoped_refptr<CacheStorageCache>& cache,
+                             CacheStorage::CacheStorageError error) {
     callback_cache_ = cache;
     callback_error_ = error;
     run_loop->Quit();
   }
 
-  void StringsAndErrorCallback(
-      base::RunLoop* run_loop,
-      const std::vector<std::string>& strings,
-      ServiceWorkerCacheStorage::CacheStorageError error) {
+  void StringsAndErrorCallback(base::RunLoop* run_loop,
+                               const std::vector<std::string>& strings,
+                               CacheStorage::CacheStorageError error) {
     callback_strings_ = strings;
     callback_error_ = error;
     run_loop->Quit();
   }
 
   void CachePutCallback(base::RunLoop* run_loop,
-                        ServiceWorkerCache::ErrorType error,
+                        CacheStorageCache::ErrorType error,
                         scoped_ptr<ServiceWorkerResponse> response,
                         scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
     callback_cache_error_ = error;
@@ -106,7 +100,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
 
   void CacheMatchCallback(
       base::RunLoop* run_loop,
-      ServiceWorkerCache::ErrorType error,
+      CacheStorageCache::ErrorType error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
     callback_cache_error_ = error;
@@ -118,15 +112,12 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   bool Open(const GURL& origin, const std::string& cache_name) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->OpenCache(
-        origin,
-        cache_name,
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheAndErrorCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        origin, cache_name,
+        base::Bind(&CacheStorageManagerTest::CacheAndErrorCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_error_ !=
-                 ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
+    bool error = callback_error_ != CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
     if (error)
       EXPECT_TRUE(!callback_cache_.get());
     else
@@ -137,11 +128,9 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   bool Has(const GURL& origin, const std::string& cache_name) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->HasCache(
-        origin,
-        cache_name,
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::BoolAndErrorCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        origin, cache_name,
+        base::Bind(&CacheStorageManagerTest::BoolAndErrorCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
     return callback_bool_;
@@ -150,11 +139,9 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   bool Delete(const GURL& origin, const std::string& cache_name) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->DeleteCache(
-        origin,
-        cache_name,
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::BoolAndErrorCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        origin, cache_name,
+        base::Bind(&CacheStorageManagerTest::BoolAndErrorCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
     return callback_bool_;
@@ -164,14 +151,11 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->EnumerateCaches(
         origin,
-        base::Bind(
-            &ServiceWorkerCacheStorageManagerTest::StringsAndErrorCallback,
-            base::Unretained(this),
-            base::Unretained(loop.get())));
+        base::Bind(&CacheStorageManagerTest::StringsAndErrorCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_error_ !=
-                 ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
+    bool error = callback_error_ != CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
     return !error;
   }
 
@@ -184,11 +168,11 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->MatchCache(
         origin, cache_name, request.Pass(),
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheMatchCallback,
+        base::Bind(&CacheStorageManagerTest::CacheMatchCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != ServiceWorkerCache::ERROR_TYPE_OK;
+    bool error = callback_cache_error_ != CacheStorageCache::ERROR_TYPE_OK;
     return !error;
   }
 
@@ -199,15 +183,15 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->MatchAllCaches(
         origin, request.Pass(),
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheMatchCallback,
+        base::Bind(&CacheStorageManagerTest::CacheMatchCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != ServiceWorkerCache::ERROR_TYPE_OK;
+    bool error = callback_cache_error_ != CacheStorageCache::ERROR_TYPE_OK;
     return !error;
   }
 
-  bool CachePut(const scoped_refptr<ServiceWorkerCache>& cache,
+  bool CachePut(const scoped_refptr<CacheStorageCache>& cache,
                 const GURL& url) {
     scoped_ptr<ServiceWorkerFetchRequest> request(
         new ServiceWorkerFetchRequest());
@@ -216,36 +200,33 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     response->url = url;
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache->Put(
-        request.Pass(),
-        response.Pass(),
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CachePutCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        request.Pass(), response.Pass(),
+        base::Bind(&CacheStorageManagerTest::CachePutCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != ServiceWorkerCache::ERROR_TYPE_OK;
+    bool error = callback_cache_error_ != CacheStorageCache::ERROR_TYPE_OK;
     return !error;
   }
 
-  bool CacheMatch(const scoped_refptr<ServiceWorkerCache>& cache,
-                               const GURL& url) {
+  bool CacheMatch(const scoped_refptr<CacheStorageCache>& cache,
+                  const GURL& url) {
     scoped_ptr<ServiceWorkerFetchRequest> request(
         new ServiceWorkerFetchRequest());
     request->url = url;
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache->Match(
         request.Pass(),
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheMatchCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        base::Bind(&CacheStorageManagerTest::CacheMatchCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != ServiceWorkerCache::ERROR_TYPE_OK;
+    bool error = callback_cache_error_ != CacheStorageCache::ERROR_TYPE_OK;
     return !error;
   }
 
-  ServiceWorkerCacheStorage* CacheStorageForOrigin(const GURL& origin) {
-    return cache_manager_->FindOrCreateServiceWorkerCacheManager(origin);
+  CacheStorage* CacheStorageForOrigin(const GURL& origin) {
+    return cache_manager_->FindOrCreateCacheStorage(origin);
   }
 
  protected:
@@ -254,12 +235,12 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
-  scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
+  scoped_ptr<CacheStorageManager> cache_manager_;
 
-  scoped_refptr<ServiceWorkerCache> callback_cache_;
+  scoped_refptr<CacheStorageCache> callback_cache_;
   int callback_bool_;
-  ServiceWorkerCacheStorage::CacheStorageError callback_error_;
-  ServiceWorkerCache::ErrorType callback_cache_error_;
+  CacheStorage::CacheStorageError callback_error_;
+  CacheStorageCache::ErrorType callback_cache_error_;
   scoped_ptr<ServiceWorkerResponse> callback_cache_response_;
   std::vector<std::string> callback_strings_;
 
@@ -267,84 +248,81 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   const GURL origin2_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageManagerTest);
 };
 
-class ServiceWorkerCacheStorageManagerMemoryOnlyTest
-    : public ServiceWorkerCacheStorageManagerTest {
+class CacheStorageManagerMemoryOnlyTest : public CacheStorageManagerTest {
   bool MemoryOnly() override { return true; }
 };
 
-class ServiceWorkerCacheStorageManagerTestP
-    : public ServiceWorkerCacheStorageManagerTest,
-      public testing::WithParamInterface<bool> {
+class CacheStorageManagerTestP : public CacheStorageManagerTest,
+                                 public testing::WithParamInterface<bool> {
   bool MemoryOnly() override { return !GetParam(); }
 };
 
-TEST_F(ServiceWorkerCacheStorageManagerTest, TestsRunOnIOThread) {
+TEST_F(CacheStorageManagerTest, TestsRunOnIOThread) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenCache) {
+TEST_P(CacheStorageManagerTestP, OpenCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenTwoCaches) {
+TEST_P(CacheStorageManagerTestP, OpenTwoCaches) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, CachePointersDiffer) {
+TEST_P(CacheStorageManagerTestP, CachePointersDiffer) {
   EXPECT_TRUE(Open(origin1_, "foo"));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> cache = callback_cache_;
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_NE(callback_cache_.get(), cache.get());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, Open2CachesSameNameDiffOrigins) {
+TEST_P(CacheStorageManagerTestP, Open2CachesSameNameDiffOrigins) {
   EXPECT_TRUE(Open(origin1_, "foo"));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> cache = callback_cache_;
   EXPECT_TRUE(Open(origin2_, "foo"));
   EXPECT_NE(cache.get(), callback_cache_.get());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenExistingCache) {
+TEST_P(CacheStorageManagerTestP, OpenExistingCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> cache = callback_cache_;
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_EQ(callback_cache_.get(), cache.get());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, HasCache) {
+TEST_P(CacheStorageManagerTestP, HasCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Has(origin1_, "foo"));
   EXPECT_TRUE(callback_bool_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, HasNonExistent) {
+TEST_P(CacheStorageManagerTestP, HasNonExistent) {
   EXPECT_FALSE(Has(origin1_, "foo"));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteCache) {
+TEST_P(CacheStorageManagerTestP, DeleteCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_FALSE(Has(origin1_, "foo"));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteTwice) {
+TEST_P(CacheStorageManagerTestP, DeleteTwice) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_FALSE(Delete(origin1_, "foo"));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND,
-            callback_error_);
+  EXPECT_EQ(CacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, EmptyKeys) {
+TEST_P(CacheStorageManagerTestP, EmptyKeys) {
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_TRUE(callback_strings_.empty());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, SomeKeys) {
+TEST_P(CacheStorageManagerTestP, SomeKeys) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin2_, "baz"));
@@ -359,7 +337,7 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, SomeKeys) {
   EXPECT_STREQ("baz", callback_strings_[0].c_str());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, DeletedKeysGone) {
+TEST_P(CacheStorageManagerTestP, DeletedKeysGone) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin2_, "baz"));
@@ -369,45 +347,45 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, DeletedKeysGone) {
   EXPECT_STREQ("foo", callback_strings_[0].c_str());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchEntryExists) {
+TEST_P(CacheStorageManagerTestP, StorageMatchEntryExists) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_TRUE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo")));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchNoEntry) {
+TEST_P(CacheStorageManagerTestP, StorageMatchNoEntry) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatch(origin1_, "foo", GURL("http://example.com/bar")));
-  EXPECT_EQ(ServiceWorkerCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CacheStorageCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchNoCache) {
+TEST_P(CacheStorageManagerTestP, StorageMatchNoCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatch(origin1_, "bar", GURL("http://example.com/foo")));
-  EXPECT_EQ(ServiceWorkerCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CacheStorageCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExists) {
+TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExists) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllNoEntry) {
+TEST_P(CacheStorageManagerTestP, StorageMatchAllNoEntry) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/bar")));
-  EXPECT_EQ(ServiceWorkerCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CacheStorageCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllNoCaches) {
+TEST_P(CacheStorageManagerTestP, StorageMatchAllNoCaches) {
   EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
-  EXPECT_EQ(ServiceWorkerCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CacheStorageCache::ERROR_TYPE_NOT_FOUND, callback_cache_error_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
+TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_TRUE(Open(origin1_, "bar"));
@@ -416,7 +394,7 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
   EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchInOneOfMany) {
+TEST_P(CacheStorageManagerTestP, StorageMatchInOneOfMany) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
@@ -425,9 +403,9 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchInOneOfMany) {
   EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
+TEST_P(CacheStorageManagerTestP, Chinese) {
   EXPECT_TRUE(Open(origin1_, "你好"));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> cache = callback_cache_;
   EXPECT_TRUE(Open(origin1_, "你好"));
   EXPECT_EQ(callback_cache_.get(), cache.get());
   EXPECT_TRUE(Keys(origin1_));
@@ -435,9 +413,9 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
   EXPECT_STREQ("你好", callback_strings_[0].c_str());
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
+TEST_F(CacheStorageManagerTest, EmptyKey) {
   EXPECT_TRUE(Open(origin1_, ""));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> cache = callback_cache_;
   EXPECT_TRUE(Open(origin1_, ""));
   EXPECT_EQ(cache.get(), callback_cache_.get());
   EXPECT_TRUE(Keys(origin1_));
@@ -449,15 +427,14 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
   EXPECT_EQ(0u, callback_strings_.size());
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
+TEST_F(CacheStorageManagerTest, DataPersists) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin1_, "baz"));
   EXPECT_TRUE(Open(origin2_, "raz"));
   EXPECT_TRUE(Delete(origin1_, "bar"));
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ =
-      ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
+  cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(2u, callback_strings_.size());
   std::vector<std::string> expected_keys;
@@ -466,17 +443,16 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
   EXPECT_EQ(expected_keys, callback_strings_);
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {
+TEST_F(CacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin2_, "baz"));
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ =
-      ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
+  cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(0u, callback_strings_.size());
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerTest, BadCacheName) {
+TEST_F(CacheStorageManagerTest, BadCacheName) {
   // Since the implementation writes cache names to disk, ensure that we don't
   // escape the directory.
   const std::string bad_name = "../../../../../../../../../../../../../../foo";
@@ -486,7 +462,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, BadCacheName) {
   EXPECT_STREQ(bad_name.c_str(), callback_strings_[0].c_str());
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerTest, BadOriginName) {
+TEST_F(CacheStorageManagerTest, BadOriginName) {
   // Since the implementation writes origin names to disk, ensure that we don't
   // escape the directory.
   GURL bad_origin("http://../../../../../../../../../../../../../../foo");
@@ -497,42 +473,41 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, BadOriginName) {
 }
 
 // With a persistent cache if the client drops its reference to a
-// ServiceWorkerCache
+// CacheStorageCache
 // it should be deleted.
-TEST_F(ServiceWorkerCacheStorageManagerTest, DropReference) {
+TEST_F(CacheStorageManagerTest, DropReference) {
   EXPECT_TRUE(Open(origin1_, "foo"));
-  base::WeakPtr<ServiceWorkerCache> cache = callback_cache_->AsWeakPtr();
+  base::WeakPtr<CacheStorageCache> cache = callback_cache_->AsWeakPtr();
   callback_cache_ = NULL;
   EXPECT_TRUE(!cache);
 }
 
 // With a memory cache the cache can't be freed from memory until the client
 // calls delete.
-TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest,
-       MemoryLosesReferenceOnlyAfterDelete) {
+TEST_F(CacheStorageManagerMemoryOnlyTest, MemoryLosesReferenceOnlyAfterDelete) {
   EXPECT_TRUE(Open(origin1_, "foo"));
-  base::WeakPtr<ServiceWorkerCache> cache = callback_cache_->AsWeakPtr();
+  base::WeakPtr<CacheStorageCache> cache = callback_cache_->AsWeakPtr();
   callback_cache_ = NULL;
   EXPECT_TRUE(cache);
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_FALSE(cache);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
+TEST_P(CacheStorageManagerTestP, DeleteBeforeRelease) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_TRUE(callback_cache_->AsWeakPtr());
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenRunsSerially) {
+TEST_P(CacheStorageManagerTestP, OpenRunsSerially) {
   EXPECT_FALSE(Delete(origin1_, "tmp"));  // Init storage.
-  ServiceWorkerCacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
   cache_storage->StartAsyncOperationForTesting();
 
   scoped_ptr<base::RunLoop> open_loop(new base::RunLoop());
   cache_manager_->OpenCache(
       origin1_, "foo",
-      base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheAndErrorCallback,
+      base::Bind(&CacheStorageManagerTest::CacheAndErrorCallback,
                  base::Unretained(this), base::Unretained(open_loop.get())));
 
   base::RunLoop().RunUntilIdle();
@@ -543,14 +518,14 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenRunsSerially) {
   EXPECT_TRUE(callback_cache_);
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, MemoryBackedSize) {
-  ServiceWorkerCacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+TEST_F(CacheStorageManagerMemoryOnlyTest, MemoryBackedSize) {
+  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
   EXPECT_EQ(0, cache_storage->MemoryBackedSize());
 
   EXPECT_TRUE(Open(origin1_, "foo"));
-  scoped_refptr<ServiceWorkerCache> foo_cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> foo_cache = callback_cache_;
   EXPECT_TRUE(Open(origin1_, "bar"));
-  scoped_refptr<ServiceWorkerCache> bar_cache = callback_cache_;
+  scoped_refptr<CacheStorageCache> bar_cache = callback_cache_;
   EXPECT_EQ(0, cache_storage->MemoryBackedSize());
 
   EXPECT_TRUE(CachePut(foo_cache, GURL("http://example.com/foo")));
@@ -561,27 +536,26 @@ TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, MemoryBackedSize) {
   EXPECT_EQ(foo_size * 2, cache_storage->MemoryBackedSize());
 }
 
-TEST_F(ServiceWorkerCacheStorageManagerTest, MemoryBackedSizePersistent) {
-  ServiceWorkerCacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+TEST_F(CacheStorageManagerTest, MemoryBackedSizePersistent) {
+  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
   EXPECT_EQ(0, cache_storage->MemoryBackedSize());
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_EQ(0, cache_storage->MemoryBackedSize());
 }
 
-class ServiceWorkerCacheStorageMigrationTest
-    : public ServiceWorkerCacheStorageManagerTest {
+class CacheStorageMigrationTest : public CacheStorageManagerTest {
  protected:
-  ServiceWorkerCacheStorageMigrationTest() : cache1_("foo"), cache2_("bar") {}
+  CacheStorageMigrationTest() : cache1_("foo"), cache2_("bar") {}
 
   void SetUp() override {
-    ServiceWorkerCacheStorageManagerTest::SetUp();
+    CacheStorageManagerTest::SetUp();
 
     // Populate a cache, then move it to the "legacy" location
     // so that tests can verify the results of migration.
-    legacy_path_ = ServiceWorkerCacheStorageManager::ConstructLegacyOriginPath(
+    legacy_path_ = CacheStorageManager::ConstructLegacyOriginPath(
         cache_manager_->root_path(), origin1_);
-    new_path_ = ServiceWorkerCacheStorageManager::ConstructOriginPath(
+    new_path_ = CacheStorageManager::ConstructOriginPath(
         cache_manager_->root_path(), origin1_);
 
     ASSERT_FALSE(base::DirectoryExists(legacy_path_));
@@ -593,8 +567,7 @@ class ServiceWorkerCacheStorageMigrationTest
     ASSERT_TRUE(base::DirectoryExists(new_path_));
 
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-    cache_manager_ =
-        ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
+    cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
 
     ASSERT_TRUE(base::Move(new_path_, legacy_path_));
     ASSERT_TRUE(base::DirectoryExists(legacy_path_));
@@ -605,7 +578,7 @@ class ServiceWorkerCacheStorageMigrationTest
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->GetOriginUsage(
         origin,
-        base::Bind(&ServiceWorkerCacheStorageMigrationTest::UsageCallback,
+        base::Bind(&CacheStorageMigrationTest::UsageCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
     return callback_usage_;
@@ -624,10 +597,10 @@ class ServiceWorkerCacheStorageMigrationTest
 
   int64 callback_usage_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageMigrationTest);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageMigrationTest);
 };
 
-TEST_F(ServiceWorkerCacheStorageMigrationTest, OpenCache) {
+TEST_F(CacheStorageMigrationTest, OpenCache) {
   EXPECT_TRUE(Open(origin1_, cache1_));
   EXPECT_FALSE(base::DirectoryExists(legacy_path_));
   EXPECT_TRUE(base::DirectoryExists(new_path_));
@@ -639,7 +612,7 @@ TEST_F(ServiceWorkerCacheStorageMigrationTest, OpenCache) {
   EXPECT_EQ(expected_keys, callback_strings_);
 }
 
-TEST_F(ServiceWorkerCacheStorageMigrationTest, DeleteCache) {
+TEST_F(CacheStorageMigrationTest, DeleteCache) {
   EXPECT_TRUE(Delete(origin1_, cache1_));
   EXPECT_FALSE(base::DirectoryExists(legacy_path_));
   EXPECT_TRUE(base::DirectoryExists(new_path_));
@@ -650,13 +623,13 @@ TEST_F(ServiceWorkerCacheStorageMigrationTest, DeleteCache) {
   EXPECT_EQ(expected_keys, callback_strings_);
 }
 
-TEST_F(ServiceWorkerCacheStorageMigrationTest, GetOriginUsage) {
+TEST_F(CacheStorageMigrationTest, GetOriginUsage) {
   EXPECT_GT(GetOriginUsage(origin1_), 0);
   EXPECT_FALSE(base::DirectoryExists(legacy_path_));
   EXPECT_TRUE(base::DirectoryExists(new_path_));
 }
 
-TEST_F(ServiceWorkerCacheStorageMigrationTest, MoveFailure) {
+TEST_F(CacheStorageMigrationTest, MoveFailure) {
   // Revert the migration.
   ASSERT_TRUE(base::Move(legacy_path_, new_path_));
   ASSERT_FALSE(base::DirectoryExists(legacy_path_));
@@ -678,15 +651,14 @@ TEST_F(ServiceWorkerCacheStorageMigrationTest, MoveFailure) {
   EXPECT_EQ(expected_keys, callback_strings_);
 }
 
-class ServiceWorkerCacheQuotaClientTest
-    : public ServiceWorkerCacheStorageManagerTest {
+class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
  protected:
-  ServiceWorkerCacheQuotaClientTest() {}
+  CacheStorageQuotaClientTest() {}
 
   void SetUp() override {
-    ServiceWorkerCacheStorageManagerTest::SetUp();
+    CacheStorageManagerTest::SetUp();
     quota_client_.reset(
-        new ServiceWorkerCacheQuotaClient(cache_manager_->AsWeakPtr()));
+        new CacheStorageQuotaClient(cache_manager_->AsWeakPtr()));
   }
 
   void UsageCallback(base::RunLoop* run_loop, int64 usage) {
@@ -708,11 +680,9 @@ class ServiceWorkerCacheQuotaClientTest
   int64 QuotaGetOriginUsage(const GURL& origin) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     quota_client_->GetOriginUsage(
-        origin,
-        storage::kStorageTypeTemporary,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::UsageCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        origin, storage::kStorageTypeTemporary,
+        base::Bind(&CacheStorageQuotaClientTest::UsageCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
     return callback_usage_;
   }
@@ -721,9 +691,8 @@ class ServiceWorkerCacheQuotaClientTest
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     quota_client_->GetOriginsForType(
         storage::kStorageTypeTemporary,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::OriginsCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        base::Bind(&CacheStorageQuotaClientTest::OriginsCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
     return callback_origins_.size();
   }
@@ -731,11 +700,9 @@ class ServiceWorkerCacheQuotaClientTest
   size_t QuotaGetOriginsForHost(const std::string& host) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     quota_client_->GetOriginsForHost(
-        storage::kStorageTypeTemporary,
-        host,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::OriginsCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        storage::kStorageTypeTemporary, host,
+        base::Bind(&CacheStorageQuotaClientTest::OriginsCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
     return callback_origins_.size();
   }
@@ -743,11 +710,9 @@ class ServiceWorkerCacheQuotaClientTest
   bool QuotaDeleteOriginData(const GURL& origin) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     quota_client_->DeleteOriginData(
-        origin,
-        storage::kStorageTypeTemporary,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::DeleteOriginCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
+        origin, storage::kStorageTypeTemporary,
+        base::Bind(&CacheStorageQuotaClientTest::DeleteOriginCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
     return callback_status_ == storage::kQuotaStatusOk;
   }
@@ -756,33 +721,32 @@ class ServiceWorkerCacheQuotaClientTest
     return quota_client_->DoesSupport(type);
   }
 
-  scoped_ptr<ServiceWorkerCacheQuotaClient> quota_client_;
+  scoped_ptr<CacheStorageQuotaClient> quota_client_;
 
   storage::QuotaStatusCode callback_status_;
   int64 callback_usage_;
   std::set<GURL> callback_origins_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheQuotaClientTest);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClientTest);
 };
 
-class ServiceWorkerCacheQuotaClientTestP
-    : public ServiceWorkerCacheQuotaClientTest,
-      public testing::WithParamInterface<bool> {
+class CacheStorageQuotaClientTestP : public CacheStorageQuotaClientTest,
+                                     public testing::WithParamInterface<bool> {
   bool MemoryOnly() override { return !GetParam(); }
 };
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaID) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaID) {
   EXPECT_EQ(storage::QuotaClient::kServiceWorkerCache, quota_client_->id());
 }
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginUsage) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginUsage) {
   EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_LT(0, QuotaGetOriginUsage(origin1_));
 }
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForType) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForType) {
   EXPECT_EQ(0u, QuotaGetOriginsForType());
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
@@ -790,7 +754,7 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForType) {
   EXPECT_EQ(2u, QuotaGetOriginsForType());
 }
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForHost) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForHost) {
   EXPECT_EQ(0u, QuotaGetOriginsForHost("example.com"));
   EXPECT_TRUE(Open(GURL("http://example.com:8080"), "foo"));
   EXPECT_TRUE(Open(GURL("http://example.com:9000"), "foo"));
@@ -803,7 +767,7 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForHost) {
   EXPECT_EQ(0u, QuotaGetOriginsForHost("unknown.com"));
 }
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteOriginData) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaDeleteOriginData) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   // Call put to test that initialized caches are properly deleted too.
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
@@ -818,11 +782,11 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteOriginData) {
   EXPECT_TRUE(Open(origin1_, "foo"));
 }
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteEmptyOrigin) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaDeleteEmptyOrigin) {
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
 }
 
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDoesSupport) {
+TEST_P(CacheStorageQuotaClientTestP, QuotaDoesSupport) {
   EXPECT_TRUE(QuotaDoesSupport(storage::kStorageTypeTemporary));
   EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypePersistent));
   EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypeSyncable));
@@ -830,12 +794,12 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDoesSupport) {
   EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypeUnknown));
 }
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheStorageManagerTests,
-                        ServiceWorkerCacheStorageManagerTestP,
+INSTANTIATE_TEST_CASE_P(CacheStorageManagerTests,
+                        CacheStorageManagerTestP,
                         ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheQuotaClientTests,
-                        ServiceWorkerCacheQuotaClientTestP,
+INSTANTIATE_TEST_CASE_P(CacheStorageQuotaClientTests,
+                        CacheStorageQuotaClientTestP,
                         ::testing::Values(false, true));
 
 }  // namespace content

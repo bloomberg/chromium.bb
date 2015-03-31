@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/service_worker/cache_storage_message_filter.h"
+#include "content/renderer/cache_storage/cache_storage_message_filter.h"
 
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/cache_storage_messages.h"
-#include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
+#include "content/common/cache_storage/cache_storage_messages.h"
+#include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 
 namespace content {
 
@@ -25,8 +25,8 @@ bool CacheStorageMessageFilter::ShouldHandleMessage(
 
 void CacheStorageMessageFilter::OnFilteredMessageReceived(
     const IPC::Message& msg) {
-  ServiceWorkerCacheStorageDispatcher::ThreadSpecificInstance(
-      thread_safe_sender())->OnMessageReceived(msg);
+  CacheStorageDispatcher::ThreadSpecificInstance(thread_safe_sender())
+      ->OnMessageReceived(msg);
 }
 
 bool CacheStorageMessageFilter::GetWorkerThreadIdForMessage(

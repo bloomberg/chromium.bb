@@ -71,13 +71,6 @@ ServiceWorkerResponse::ServiceWorkerResponse(
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}
 
-ServiceWorkerCacheQueryParams::ServiceWorkerCacheQueryParams()
-    : ignore_search(false),
-      ignore_method(false),
-      ignore_vary(false) {}
-
-ServiceWorkerBatchOperation::ServiceWorkerBatchOperation() {}
-
 ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
     : handle_id(kInvalidServiceWorkerHandleId),
       state(blink::WebServiceWorkerStateUnknown),

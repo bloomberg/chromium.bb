@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/service_worker/webserviceworkercachestorage_impl.h"
+#include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 
 #include "content/child/thread_safe_sender.h"
-#include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
+#include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
@@ -54,9 +54,9 @@ void WebServiceWorkerCacheStorageImpl::dispatchMatch(
   GetDispatcher()->dispatchMatch(callbacks, origin_, request, query_params);
 }
 
-ServiceWorkerCacheStorageDispatcher*
-WebServiceWorkerCacheStorageImpl::GetDispatcher() const {
-  return ServiceWorkerCacheStorageDispatcher::ThreadSpecificInstance(
+CacheStorageDispatcher* WebServiceWorkerCacheStorageImpl::GetDispatcher()
+    const {
+  return CacheStorageDispatcher::ThreadSpecificInstance(
       thread_safe_sender_.get());
 }
 

@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/service_worker/service_worker_cache_scheduler.h"
+#include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -208,7 +208,7 @@ class CONTENT_EXPORT BackgroundSyncManager {
   void PendingStatusCallback(const StatusCallback& callback, ErrorType error);
 
   SWIdToRegistrationsMap sw_to_registrations_map_;
-  ServiceWorkerCacheScheduler op_scheduler_;
+  CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;

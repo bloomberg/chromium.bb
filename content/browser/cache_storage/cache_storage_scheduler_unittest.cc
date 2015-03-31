@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_cache_scheduler.h"
+#include "content/browser/cache_storage/cache_storage_scheduler.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,7 +15,7 @@ namespace {
 
 class JobStats {
  public:
-  JobStats(ServiceWorkerCacheScheduler* scheduler)
+  JobStats(CacheStorageScheduler* scheduler)
       : scheduler_(scheduler), callback_count_(0) {}
 
   virtual void Run() = 0;
@@ -23,13 +23,13 @@ class JobStats {
   int callback_count() const { return callback_count_; }
 
  protected:
-  ServiceWorkerCacheScheduler* scheduler_;
+  CacheStorageScheduler* scheduler_;
   int callback_count_;
 };
 
 class SyncJob : public JobStats {
  public:
-  SyncJob(ServiceWorkerCacheScheduler* scheduler) : JobStats(scheduler) {}
+  SyncJob(CacheStorageScheduler* scheduler) : JobStats(scheduler) {}
 
   void Run() override {
     callback_count_++;
@@ -39,7 +39,7 @@ class SyncJob : public JobStats {
 
 class AsyncJob : public JobStats {
  public:
-  AsyncJob(ServiceWorkerCacheScheduler* scheduler) : JobStats(scheduler) {}
+  AsyncJob(CacheStorageScheduler* scheduler) : JobStats(scheduler) {}
 
   void Run() override { callback_count_++; }
   void Done() { scheduler_->CompleteOperationAndRunNext(); }
@@ -47,23 +47,23 @@ class AsyncJob : public JobStats {
 
 }  // namespace
 
-class ServiceWorkerCacheSchedulerTest : public testing::Test {
+class CacheStorageSchedulerTest : public testing::Test {
  protected:
-  ServiceWorkerCacheSchedulerTest()
+  CacheStorageSchedulerTest()
       : async_job_(AsyncJob(&scheduler_)), sync_job_(SyncJob(&scheduler_)) {}
 
-  ServiceWorkerCacheScheduler scheduler_;
+  CacheStorageScheduler scheduler_;
   AsyncJob async_job_;
   SyncJob sync_job_;
 };
 
-TEST_F(ServiceWorkerCacheSchedulerTest, ScheduleOne) {
+TEST_F(CacheStorageSchedulerTest, ScheduleOne) {
   scheduler_.ScheduleOperation(
       base::Bind(&JobStats::Run, base::Unretained(&sync_job_)));
   EXPECT_EQ(1, sync_job_.callback_count());
 }
 
-TEST_F(ServiceWorkerCacheSchedulerTest, ScheduleTwo) {
+TEST_F(CacheStorageSchedulerTest, ScheduleTwo) {
   scheduler_.ScheduleOperation(
       base::Bind(&JobStats::Run, base::Unretained(&sync_job_)));
   scheduler_.ScheduleOperation(
@@ -71,7 +71,7 @@ TEST_F(ServiceWorkerCacheSchedulerTest, ScheduleTwo) {
   EXPECT_EQ(2, sync_job_.callback_count());
 }
 
-TEST_F(ServiceWorkerCacheSchedulerTest, Block) {
+TEST_F(CacheStorageSchedulerTest, Block) {
   scheduler_.ScheduleOperation(
       base::Bind(&JobStats::Run, base::Unretained(&async_job_)));
   EXPECT_EQ(1, async_job_.callback_count());

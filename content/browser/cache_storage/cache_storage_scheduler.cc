@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_cache_scheduler.h"
+#include "content/browser/cache_storage/cache_storage_scheduler.h"
 
 #include <string>
 
@@ -10,30 +10,28 @@
 
 namespace content {
 
-ServiceWorkerCacheScheduler::ServiceWorkerCacheScheduler()
-    : operation_running_(false) {
+CacheStorageScheduler::CacheStorageScheduler() : operation_running_(false) {
 }
 
-ServiceWorkerCacheScheduler::~ServiceWorkerCacheScheduler() {
+CacheStorageScheduler::~CacheStorageScheduler() {
 }
 
-void ServiceWorkerCacheScheduler::ScheduleOperation(
-    const base::Closure& closure) {
+void CacheStorageScheduler::ScheduleOperation(const base::Closure& closure) {
   pending_operations_.push_back(closure);
   RunOperationIfIdle();
 }
 
-void ServiceWorkerCacheScheduler::CompleteOperationAndRunNext() {
+void CacheStorageScheduler::CompleteOperationAndRunNext() {
   DCHECK(operation_running_);
   operation_running_ = false;
   RunOperationIfIdle();
 }
 
-bool ServiceWorkerCacheScheduler::ScheduledOperations() const {
+bool CacheStorageScheduler::ScheduledOperations() const {
   return operation_running_ || !pending_operations_.empty();
 }
 
-void ServiceWorkerCacheScheduler::RunOperationIfIdle() {
+void CacheStorageScheduler::RunOperationIfIdle() {
   if (!operation_running_ && !pending_operations_.empty()) {
     operation_running_ = true;
     // TODO(jkarlin): Run multiple operations in parallel where allowed.

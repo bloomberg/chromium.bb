@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_DISPATCHER_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_H_
+#define CONTENT_RENDERER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_H_
 
 #include <vector>
 
@@ -20,22 +20,20 @@
 
 namespace content {
 
-class ServiceWorkerScriptContext;
 class ThreadSafeSender;
 struct ServiceWorkerFetchRequest;
 struct ServiceWorkerResponse;
 
 // Handle the Cache Storage messaging for this context thread. The
 // main thread and each worker thread have their own instances.
-class ServiceWorkerCacheStorageDispatcher : public WorkerTaskRunner::Observer {
+class CacheStorageDispatcher : public WorkerTaskRunner::Observer {
  public:
-  explicit ServiceWorkerCacheStorageDispatcher(
-      ThreadSafeSender* thread_safe_sender);
-  ~ServiceWorkerCacheStorageDispatcher() override;
+  explicit CacheStorageDispatcher(ThreadSafeSender* thread_safe_sender);
+  ~CacheStorageDispatcher() override;
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.
-  static ServiceWorkerCacheStorageDispatcher* ThreadSpecificInstance(
+  static CacheStorageDispatcher* ThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender);
 
   // WorkerTaskRunner::Observer implementation.
@@ -214,11 +212,11 @@ class ServiceWorkerCacheStorageDispatcher : public WorkerTaskRunner::Observer {
   TimeMap cache_keys_times_;
   TimeMap cache_batch_times_;
 
-  base::WeakPtrFactory<ServiceWorkerCacheStorageDispatcher> weak_factory_;
+  base::WeakPtrFactory<CacheStorageDispatcher> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageDispatcher);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_H_

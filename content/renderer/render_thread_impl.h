@@ -82,6 +82,7 @@ class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
+class CacheStorageDispatcher;
 class CompositorForwardingMessageFilter;
 class ContextProviderCommandBuffer;
 class DBMessageFilter;
@@ -104,7 +105,6 @@ class RendererDemuxerAndroid;
 class RendererScheduler;
 class ResourceDispatchThrottler;
 class ResourceSchedulingFilter;
-class ServiceWorkerCacheStorageDispatcher;
 class V8SamplingProfiler;
 class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
@@ -479,8 +479,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<RendererScheduler> renderer_scheduler_;
   scoped_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   scoped_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
-  scoped_ptr<ServiceWorkerCacheStorageDispatcher>
-      main_thread_cache_storage_dispatcher_;
+  scoped_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
   scoped_ptr<EmbeddedWorkerDispatcher> embedded_worker_dispatcher_;
 
   // Used on the render thread and deleted by WebKit at shutdown.

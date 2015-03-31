@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache.h"
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,6 +11,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
+#include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
@@ -121,20 +122,20 @@ class DelayableBackend : public disk_cache::Backend {
 
 }  // namespace
 
-// A ServiceWorkerCache that can optionally delay during backend creation.
-class TestServiceWorkerCache : public ServiceWorkerCache {
+// A CacheStorageCache that can optionally delay during backend creation.
+class TestCacheStorageCache : public CacheStorageCache {
  public:
-  TestServiceWorkerCache(
+  TestCacheStorageCache(
       const GURL& origin,
       const base::FilePath& path,
       net::URLRequestContext* request_context,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context)
-      : ServiceWorkerCache(origin,
-                           path,
-                           request_context,
-                           quota_manager_proxy,
-                           blob_context),
+      : CacheStorageCache(origin,
+                          path,
+                          request_context,
+                          quota_manager_proxy,
+                          blob_context),
         delay_backend_creation_(false) {}
 
   void CreateBackend(const ErrorCallback& callback) override {
@@ -145,7 +146,7 @@ class TestServiceWorkerCache : public ServiceWorkerCache {
   }
 
   void ContinueCreateBackend() {
-    ServiceWorkerCache::CreateBackend(backend_creation_callback_);
+    CacheStorageCache::CreateBackend(backend_creation_callback_);
   }
 
   void set_delay_backend_creation(bool delay) {
@@ -162,19 +163,19 @@ class TestServiceWorkerCache : public ServiceWorkerCache {
   }
 
  private:
-  ~TestServiceWorkerCache() override {}
+  ~TestCacheStorageCache() override {}
 
   bool delay_backend_creation_;
   ErrorCallback backend_creation_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestServiceWorkerCache);
+  DISALLOW_COPY_AND_ASSIGN(TestCacheStorageCache);
 };
 
-class ServiceWorkerCacheTest : public testing::Test {
+class CacheStorageCacheTest : public testing::Test {
  public:
-  ServiceWorkerCacheTest()
+  CacheStorageCacheTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        callback_error_(ServiceWorkerCache::ERROR_TYPE_OK),
+        callback_error_(CacheStorageCache::ERROR_TYPE_OK),
         callback_closed_(false) {}
 
   void SetUp() override {
@@ -202,7 +203,7 @@ class ServiceWorkerCacheTest : public testing::Test {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = MemoryOnly() ? base::FilePath() : temp_dir_.path();
 
-    cache_ = make_scoped_refptr(new TestServiceWorkerCache(
+    cache_ = make_scoped_refptr(new TestCacheStorageCache(
         GURL("http://example.com"), path, url_request_context,
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr()));
   }
@@ -221,10 +222,7 @@ class ServiceWorkerCacheTest : public testing::Test {
                                   headers, Referrer(), false);
     no_body_request_ =
         ServiceWorkerFetchRequest(GURL("http://example.com/no_body.html"),
-                                  "GET",
-                                  headers,
-                                  Referrer(),
-                                  false);
+                                  "GET", headers, Referrer(), false);
 
     std::string expected_response;
     for (int i = 0; i < 100; ++i)
@@ -237,47 +235,29 @@ class ServiceWorkerCacheTest : public testing::Test {
     blob_handle_ =
         blob_storage_context->context()->AddFinishedBlob(blob_data.get());
 
-    body_response_ =
-        ServiceWorkerResponse(GURL("http://example.com/body.html"),
-                              200,
-                              "OK",
-                              blink::WebServiceWorkerResponseTypeDefault,
-                              headers,
-                              blob_handle_->uuid(),
-                              expected_blob_data_.size(),
-                              GURL());
+    body_response_ = ServiceWorkerResponse(
+        GURL("http://example.com/body.html"), 200, "OK",
+        blink::WebServiceWorkerResponseTypeDefault, headers,
+        blob_handle_->uuid(), expected_blob_data_.size(), GURL());
 
-    no_body_response_ =
-        ServiceWorkerResponse(GURL("http://example.com/no_body.html"),
-                              200,
-                              "OK",
-                              blink::WebServiceWorkerResponseTypeDefault,
-                              headers,
-                              "",
-                              0,
-                              GURL());
+    no_body_response_ = ServiceWorkerResponse(
+        GURL("http://example.com/no_body.html"), 200, "OK",
+        blink::WebServiceWorkerResponseTypeDefault, headers, "", 0, GURL());
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
       const ServiceWorkerFetchRequest& request) {
-    return make_scoped_ptr(new ServiceWorkerFetchRequest(request.url,
-                                                         request.method,
-                                                         request.headers,
-                                                         request.referrer,
-                                                         request.is_reload));
+    return make_scoped_ptr(new ServiceWorkerFetchRequest(
+        request.url, request.method, request.headers, request.referrer,
+        request.is_reload));
   }
 
   scoped_ptr<ServiceWorkerResponse> CopyFetchResponse(
       const ServiceWorkerResponse& response) {
-    scoped_ptr<ServiceWorkerResponse> sw_response(
-        new ServiceWorkerResponse(response.url,
-                                  response.status_code,
-                                  response.status_text,
-                                  response.response_type,
-                                  response.headers,
-                                  response.blob_uuid,
-                                  response.blob_size,
-                                  response.stream_url));
+    scoped_ptr<ServiceWorkerResponse> sw_response(new ServiceWorkerResponse(
+        response.url, response.status_code, response.status_text,
+        response.response_type, response.headers, response.blob_uuid,
+        response.blob_size, response.stream_url));
     return sw_response.Pass();
   }
 
@@ -285,58 +265,57 @@ class ServiceWorkerCacheTest : public testing::Test {
            const ServiceWorkerResponse& response) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Put(CopyFetchRequest(request),
-                CopyFetchResponse(response),
-                base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
-                           base::Unretained(this),
-                           base::Unretained(loop.get())));
+    cache_->Put(
+        CopyFetchRequest(request), CopyFetchResponse(response),
+        base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     // TODO(jkarlin): These functions should use base::RunLoop().RunUntilIdle()
     // once the cache uses a passed in MessageLoopProxy instead of the CACHE
     // thread.
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
+    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
   }
 
   bool Match(const ServiceWorkerFetchRequest& request) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Match(CopyFetchRequest(request),
-                  base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
-                             base::Unretained(this),
-                             base::Unretained(loop.get())));
+    cache_->Match(
+        CopyFetchRequest(request),
+        base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
+    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
   }
 
   bool Delete(const ServiceWorkerFetchRequest& request) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Delete(CopyFetchRequest(request),
-                   base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
-                              base::Unretained(this),
-                              base::Unretained(loop.get())));
+    cache_->Delete(
+        CopyFetchRequest(request),
+        base::Bind(&CacheStorageCacheTest::ErrorTypeCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
+    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
   }
 
   bool Keys() {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Keys(base::Bind(&ServiceWorkerCacheTest::RequestsCallback,
+    cache_->Keys(base::Bind(&CacheStorageCacheTest::RequestsCallback,
                             base::Unretained(this),
                             base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
+    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
   }
 
   bool Close() {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
+    cache_->Close(base::Bind(&CacheStorageCacheTest::CloseCallback,
                              base::Unretained(this),
                              base::Unretained(loop.get())));
     loop->Run();
@@ -344,8 +323,8 @@ class ServiceWorkerCacheTest : public testing::Test {
   }
 
   void RequestsCallback(base::RunLoop* run_loop,
-                        ServiceWorkerCache::ErrorType error,
-                        scoped_ptr<ServiceWorkerCache::Requests> requests) {
+                        CacheStorageCache::ErrorType error,
+                        scoped_ptr<CacheStorageCache::Requests> requests) {
     callback_error_ = error;
     callback_strings_.clear();
     if (requests) {
@@ -357,7 +336,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   }
 
   void ErrorTypeCallback(base::RunLoop* run_loop,
-                         ServiceWorkerCache::ErrorType error) {
+                         CacheStorageCache::ErrorType error) {
     callback_error_ = error;
     if (run_loop)
       run_loop->Quit();
@@ -365,13 +344,13 @@ class ServiceWorkerCacheTest : public testing::Test {
 
   void ResponseAndErrorCallback(
       base::RunLoop* run_loop,
-      ServiceWorkerCache::ErrorType error,
+      CacheStorageCache::ErrorType error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> body_handle) {
     callback_error_ = error;
     callback_response_ = response.Pass();
     callback_response_data_.reset();
-    if (error == ServiceWorkerCache::ERROR_TYPE_OK &&
+    if (error == CacheStorageCache::ERROR_TYPE_OK &&
         !callback_response_->blob_uuid.empty()) {
       callback_response_data_ = body_handle.Pass();
     }
@@ -435,7 +414,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   storage::BlobStorageContext* blob_storage_context_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<TestServiceWorkerCache> cache_;
+  scoped_refptr<TestCacheStorageCache> cache_;
 
   ServiceWorkerFetchRequest body_request_;
   ServiceWorkerResponse body_response_;
@@ -444,25 +423,25 @@ class ServiceWorkerCacheTest : public testing::Test {
   scoped_ptr<storage::BlobDataHandle> blob_handle_;
   std::string expected_blob_data_;
 
-  ServiceWorkerCache::ErrorType callback_error_;
+  CacheStorageCache::ErrorType callback_error_;
   scoped_ptr<ServiceWorkerResponse> callback_response_;
   scoped_ptr<storage::BlobDataHandle> callback_response_data_;
   std::vector<std::string> callback_strings_;
   bool callback_closed_;
 };
 
-class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
-                                public testing::WithParamInterface<bool> {
+class CacheStorageCacheTestP : public CacheStorageCacheTest,
+                               public testing::WithParamInterface<bool> {
   bool MemoryOnly() override { return !GetParam(); }
 };
 
-class ServiceWorkerCacheMemoryOnlyTest
-    : public ServiceWorkerCacheTest,
+class CacheStorageCacheMemoryOnlyTest
+    : public CacheStorageCacheTest,
       public testing::WithParamInterface<bool> {
   bool MemoryOnly() override { return true; }
 };
 
-TEST_P(ServiceWorkerCacheTestP, PutNoBody) {
+TEST_P(CacheStorageCacheTestP, PutNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(callback_response_);
   EXPECT_STREQ(no_body_response_.url.spec().c_str(),
@@ -472,7 +451,7 @@ TEST_P(ServiceWorkerCacheTestP, PutNoBody) {
   EXPECT_EQ(0u, callback_response_->blob_size);
 }
 
-TEST_P(ServiceWorkerCacheTestP, PutBody) {
+TEST_P(CacheStorageCacheTestP, PutBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(callback_response_);
   EXPECT_STREQ(body_response_.url.spec().c_str(),
@@ -486,7 +465,7 @@ TEST_P(ServiceWorkerCacheTestP, PutBody) {
   EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
 }
 
-TEST_P(ServiceWorkerCacheTestP, ResponseURLDiffersFromRequestURL) {
+TEST_P(CacheStorageCacheTestP, ResponseURLDiffersFromRequestURL) {
   no_body_response_.url = GURL("http://example.com/foobar");
   EXPECT_STRNE("http://example.com/foobar",
                no_body_request_.url.spec().c_str());
@@ -496,7 +475,7 @@ TEST_P(ServiceWorkerCacheTestP, ResponseURLDiffersFromRequestURL) {
                callback_response_->url.spec().c_str());
 }
 
-TEST_P(ServiceWorkerCacheTestP, ResponseURLEmpty) {
+TEST_P(CacheStorageCacheTestP, ResponseURLEmpty) {
   no_body_response_.url = GURL();
   EXPECT_STRNE("", no_body_request_.url.spec().c_str());
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
@@ -504,22 +483,21 @@ TEST_P(ServiceWorkerCacheTestP, ResponseURLEmpty) {
   EXPECT_STREQ("", callback_response_->url.spec().c_str());
 }
 
-TEST_F(ServiceWorkerCacheTest, PutBodyDropBlobRef) {
+TEST_F(CacheStorageCacheTest, PutBodyDropBlobRef) {
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_),
               CopyFetchResponse(body_response_),
-              base::Bind(&ServiceWorkerCacheTestP::ResponseAndErrorCallback,
-                         base::Unretained(this),
-                         base::Unretained(loop.get())));
+              base::Bind(&CacheStorageCacheTestP::ResponseAndErrorCallback,
+                         base::Unretained(this), base::Unretained(loop.get())));
   // The handle should be held by the cache now so the deref here should be
   // okay.
   blob_handle_.reset();
   loop->Run();
 
-  EXPECT_EQ(ServiceWorkerCache::ERROR_TYPE_OK, callback_error_);
+  EXPECT_EQ(CacheStorageCache::ERROR_TYPE_OK, callback_error_);
 }
 
-TEST_P(ServiceWorkerCacheTestP, PutReplace) {
+TEST_P(CacheStorageCacheTestP, PutReplace) {
   EXPECT_TRUE(Put(body_request_, no_body_response_));
   EXPECT_TRUE(Match(body_request_));
   EXPECT_FALSE(callback_response_data_);
@@ -533,7 +511,7 @@ TEST_P(ServiceWorkerCacheTestP, PutReplace) {
   EXPECT_FALSE(callback_response_data_);
 }
 
-TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
+TEST_P(CacheStorageCacheTestP, MatchNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Match(no_body_request_));
   EXPECT_EQ(200, callback_response_->status_code);
@@ -544,7 +522,7 @@ TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
   EXPECT_EQ(0u, callback_response_->blob_size);
 }
 
-TEST_P(ServiceWorkerCacheTestP, MatchBody) {
+TEST_P(CacheStorageCacheTestP, MatchBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Match(body_request_));
   EXPECT_EQ(200, callback_response_->status_code);
@@ -559,7 +537,7 @@ TEST_P(ServiceWorkerCacheTestP, MatchBody) {
   EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
 }
 
-TEST_P(ServiceWorkerCacheTestP, Vary) {
+TEST_P(CacheStorageCacheTestP, Vary) {
   body_request_.headers["vary_foo"] = "foo";
   body_response_.headers["vary"] = "vary_foo";
   EXPECT_TRUE(Put(body_request_, body_response_));
@@ -572,7 +550,7 @@ TEST_P(ServiceWorkerCacheTestP, Vary) {
   EXPECT_FALSE(Match(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, EmptyVary) {
+TEST_P(CacheStorageCacheTestP, EmptyVary) {
   body_response_.headers["vary"] = "";
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Match(body_request_));
@@ -581,7 +559,7 @@ TEST_P(ServiceWorkerCacheTestP, EmptyVary) {
   EXPECT_TRUE(Match(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, NoVaryButDiffHeaders) {
+TEST_P(CacheStorageCacheTestP, NoVaryButDiffHeaders) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Match(body_request_));
 
@@ -589,7 +567,7 @@ TEST_P(ServiceWorkerCacheTestP, NoVaryButDiffHeaders) {
   EXPECT_TRUE(Match(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, VaryMultiple) {
+TEST_P(CacheStorageCacheTestP, VaryMultiple) {
   body_request_.headers["vary_foo"] = "foo";
   body_request_.headers["vary_bar"] = "bar";
   body_response_.headers["vary"] = " vary_foo    , vary_bar";
@@ -603,7 +581,7 @@ TEST_P(ServiceWorkerCacheTestP, VaryMultiple) {
   EXPECT_FALSE(Match(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, VaryNewHeader) {
+TEST_P(CacheStorageCacheTestP, VaryNewHeader) {
   body_request_.headers["vary_foo"] = "foo";
   body_response_.headers["vary"] = " vary_foo, vary_bar";
   EXPECT_TRUE(Put(body_request_, body_response_));
@@ -613,18 +591,18 @@ TEST_P(ServiceWorkerCacheTestP, VaryNewHeader) {
   EXPECT_FALSE(Match(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, VaryStar) {
+TEST_P(CacheStorageCacheTestP, VaryStar) {
   body_response_.headers["vary"] = "*";
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_FALSE(Match(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, EmptyKeys) {
+TEST_P(CacheStorageCacheTestP, EmptyKeys) {
   EXPECT_TRUE(Keys());
   EXPECT_EQ(0u, callback_strings_.size());
 }
 
-TEST_P(ServiceWorkerCacheTestP, TwoKeys) {
+TEST_P(CacheStorageCacheTestP, TwoKeys) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Keys());
@@ -635,7 +613,7 @@ TEST_P(ServiceWorkerCacheTestP, TwoKeys) {
   EXPECT_TRUE(VerifyKeys(expected_keys));
 }
 
-TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
+TEST_P(CacheStorageCacheTestP, TwoKeysThenOne) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Keys());
@@ -653,7 +631,7 @@ TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
   EXPECT_TRUE(VerifyKeys(expected_key));
 }
 
-TEST_P(ServiceWorkerCacheTestP, DeleteNoBody) {
+TEST_P(CacheStorageCacheTestP, DeleteNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Match(no_body_request_));
   EXPECT_TRUE(Delete(no_body_request_));
@@ -664,7 +642,7 @@ TEST_P(ServiceWorkerCacheTestP, DeleteNoBody) {
   EXPECT_TRUE(Delete(no_body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, DeleteBody) {
+TEST_P(CacheStorageCacheTestP, DeleteBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Match(body_request_));
   EXPECT_TRUE(Delete(body_request_));
@@ -675,7 +653,7 @@ TEST_P(ServiceWorkerCacheTestP, DeleteBody) {
   EXPECT_TRUE(Delete(body_request_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, QuickStressNoBody) {
+TEST_P(CacheStorageCacheTestP, QuickStressNoBody) {
   for (int i = 0; i < 100; ++i) {
     EXPECT_FALSE(Match(no_body_request_));
     EXPECT_TRUE(Put(no_body_request_, no_body_response_));
@@ -684,7 +662,7 @@ TEST_P(ServiceWorkerCacheTestP, QuickStressNoBody) {
   }
 }
 
-TEST_P(ServiceWorkerCacheTestP, QuickStressBody) {
+TEST_P(CacheStorageCacheTestP, QuickStressBody) {
   for (int i = 0; i < 100; ++i) {
     ASSERT_FALSE(Match(body_request_));
     ASSERT_TRUE(Put(body_request_, body_response_));
@@ -693,7 +671,7 @@ TEST_P(ServiceWorkerCacheTestP, QuickStressBody) {
   }
 }
 
-TEST_P(ServiceWorkerCacheTestP, PutResponseType) {
+TEST_P(CacheStorageCacheTestP, PutResponseType) {
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeBasic));
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeCORS));
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeDefault));
@@ -701,36 +679,29 @@ TEST_P(ServiceWorkerCacheTestP, PutResponseType) {
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeOpaque));
 }
 
-TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerResponseHeaders) {
-  // ServiceWorkerCache depends on ServiceWorkerResponse having caseless
+TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
+  // CacheStorageCache depends on ServiceWorkerResponse having caseless
   // headers so that it can quickly lookup vary headers.
-  ServiceWorkerResponse response(GURL("http://www.example.com"),
-                                 200,
-                                 "OK",
+  ServiceWorkerResponse response(GURL("http://www.example.com"), 200, "OK",
                                  blink::WebServiceWorkerResponseTypeDefault,
-                                 ServiceWorkerHeaderMap(),
-                                 "",
-                                 0,
-                                 GURL());
+                                 ServiceWorkerHeaderMap(), "", 0, GURL());
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);
 }
 
-TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerFetchRequestHeaders) {
-  // ServiceWorkerCache depends on ServiceWorkerFetchRequest having caseless
+TEST_F(CacheStorageCacheTest, CaselessServiceWorkerFetchRequestHeaders) {
+  // CacheStorageCache depends on ServiceWorkerFetchRequest having caseless
   // headers so that it can quickly lookup vary headers.
-  ServiceWorkerFetchRequest request(GURL("http://www.example.com"),
-                                         "GET",
-                                         ServiceWorkerHeaderMap(),
-                                         Referrer(),
-                                         false);
+  ServiceWorkerFetchRequest request(GURL("http://www.example.com"), "GET",
+                                    ServiceWorkerHeaderMap(), Referrer(),
+                                    false);
   request.headers["content-type"] = "foo";
   request.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", request.headers["content-type"]);
 }
 
-TEST_P(ServiceWorkerCacheTestP, QuotaManagerModified) {
+TEST_P(CacheStorageCacheTestP, QuotaManagerModified) {
   EXPECT_EQ(0, quota_manager_proxy_->notify_storage_modified_count());
 
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
@@ -754,7 +725,7 @@ TEST_P(ServiceWorkerCacheTestP, QuotaManagerModified) {
   EXPECT_EQ(0, sum_delta);
 }
 
-TEST_F(ServiceWorkerCacheMemoryOnlyTest, MemoryBackedSize) {
+TEST_F(CacheStorageCacheMemoryOnlyTest, MemoryBackedSize) {
   EXPECT_EQ(0, cache_->MemoryBackedSize());
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_LT(0, cache_->MemoryBackedSize());
@@ -770,27 +741,27 @@ TEST_F(ServiceWorkerCacheMemoryOnlyTest, MemoryBackedSize) {
   EXPECT_EQ(0, cache_->MemoryBackedSize());
 }
 
-TEST_F(ServiceWorkerCacheTest, MemoryBackedSizePersistent) {
+TEST_F(CacheStorageCacheTest, MemoryBackedSizePersistent) {
   EXPECT_EQ(0, cache_->MemoryBackedSize());
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_EQ(0, cache_->MemoryBackedSize());
 }
 
-TEST_P(ServiceWorkerCacheTestP, OpsFailOnClosedBackendNeverCreated) {
+TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackendNeverCreated) {
   cache_->set_delay_backend_creation(
       true);  // Will hang the test if a backend is created.
   EXPECT_TRUE(Close());
   VerifyAllOpsFail();
 }
 
-TEST_P(ServiceWorkerCacheTestP, OpsFailOnClosedBackend) {
+TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackend) {
   // Create the backend and put something in it.
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Close());
   VerifyAllOpsFail();
 }
 
-TEST_P(ServiceWorkerCacheTestP, VerifySerialScheduling) {
+TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   // Start two operations, the first one is delayed but the second isn't. The
   // second should wait for the first.
   EXPECT_TRUE(Keys());  // Opens the backend.
@@ -803,7 +774,7 @@ TEST_P(ServiceWorkerCacheTestP, VerifySerialScheduling) {
 
   scoped_ptr<base::RunLoop> close_loop1(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_), response1.Pass(),
-              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
+              base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
                          base::Unretained(this), close_loop1.get()));
 
   // Blocks on opening the cache entry.
@@ -815,7 +786,7 @@ TEST_P(ServiceWorkerCacheTestP, VerifySerialScheduling) {
   response2->status_code = 2;
   scoped_ptr<base::RunLoop> close_loop2(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_), response2.Pass(),
-              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
+              base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
                          base::Unretained(this), close_loop2.get()));
 
   // The second put operation should wait for the first to complete.
@@ -829,8 +800,8 @@ TEST_P(ServiceWorkerCacheTestP, VerifySerialScheduling) {
   EXPECT_EQ(2, callback_response_->status_code);
 }
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,
-                        ServiceWorkerCacheTestP,
+INSTANTIATE_TEST_CASE_P(CacheStorageCacheTest,
+                        CacheStorageCacheTestP,
                         ::testing::Values(false, true));
 
 }  // namespace content

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_H_
+#ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_H_
+#define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_H_
 
 #include <map>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/service_worker/service_worker_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,14 +26,14 @@ class BlobStorageContext;
 }
 
 namespace content {
-class ServiceWorkerCacheScheduler;
+class CacheStorageScheduler;
 
 // TODO(jkarlin): Constrain the total bytes used per origin.
 
-// ServiceWorkerCacheStorage holds the set of caches for a given origin. It is
-// owned by the ServiceWorkerCacheStorageManager. This class expects to be run
+// CacheStorage holds the set of caches for a given origin. It is
+// owned by the CacheStorageManager. This class expects to be run
 // on the IO thread. The asynchronous methods are executed serially.
-class CONTENT_EXPORT ServiceWorkerCacheStorage {
+class CONTENT_EXPORT CacheStorage {
  public:
   enum CacheStorageError {
     CACHE_STORAGE_ERROR_NO_ERROR,
@@ -45,14 +45,14 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   };
   typedef std::vector<std::string> StringVector;
   typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
-  typedef base::Callback<void(const scoped_refptr<ServiceWorkerCache>&,
+  typedef base::Callback<void(const scoped_refptr<CacheStorageCache>&,
                               CacheStorageError)> CacheAndErrorCallback;
   typedef base::Callback<void(const StringVector&, CacheStorageError)>
       StringsAndErrorCallback;
 
   static const char kIndexFileName[];
 
-  ServiceWorkerCacheStorage(
+  CacheStorage(
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
@@ -63,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
 
   // Any unfinished asynchronous operations may not complete or call their
   // callbacks.
-  virtual ~ServiceWorkerCacheStorage();
+  virtual ~CacheStorage();
 
   // Get the cache for the given key. If the cache is not found it is
   // created.
@@ -85,15 +85,15 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
                   scoped_ptr<ServiceWorkerFetchRequest> request,
-                  const ServiceWorkerCache::ResponseCallback& callback);
+                  const CacheStorageCache::ResponseCallback& callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
   // first response found. Note that if multiple caches have the same
   // request/response then it is not defined which cache's response will be
   // returned. If no response is found then |callback| is called with
-  // ServiceWorkerCache::ErrorTypeNotFound.
+  // CacheStorageCache::ErrorTypeNotFound.
   void MatchAllCaches(scoped_ptr<ServiceWorkerFetchRequest> request,
-                      const ServiceWorkerCache::ResponseCallback& callback);
+                      const CacheStorageCache::ResponseCallback& callback);
 
   // Calls close on each cache and runs the callback after all of them have
   // closed.
@@ -113,28 +113,27 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   class SimpleCacheLoader;
   class CacheLoader;
 
-  typedef std::map<std::string, base::WeakPtr<ServiceWorkerCache> > CacheMap;
+  typedef std::map<std::string, base::WeakPtr<CacheStorageCache>> CacheMap;
 
-  // Return a ServiceWorkerCache for the given name if the name is known. If the
-  // ServiceWorkerCache has been deleted, creates a new one.
-  scoped_refptr<ServiceWorkerCache> GetLoadedCache(
+  // Return a CacheStorageCache for the given name if the name is known. If the
+  // CacheStorageCache has been deleted, creates a new one.
+  scoped_refptr<CacheStorageCache> GetLoadedCache(
       const std::string& cache_name);
 
   // Initializer and its callback are below.
   void LazyInit();
   void LazyInitImpl();
   void LazyInitDidLoadIndex(
-      scoped_ptr<std::vector<std::string> > indexed_cache_names);
+      scoped_ptr<std::vector<std::string>> indexed_cache_names);
 
   // The Open and CreateCache callbacks are below.
   void OpenCacheImpl(const std::string& cache_name,
                      const CacheAndErrorCallback& callback);
-  void CreateCacheDidCreateCache(
-      const std::string& cache_name,
-      const CacheAndErrorCallback& callback,
-      const scoped_refptr<ServiceWorkerCache>& cache);
+  void CreateCacheDidCreateCache(const std::string& cache_name,
+                                 const CacheAndErrorCallback& callback,
+                                 const scoped_refptr<CacheStorageCache>& cache);
   void CreateCacheDidWriteIndex(const CacheAndErrorCallback& callback,
-                                const scoped_refptr<ServiceWorkerCache>& cache,
+                                const scoped_refptr<CacheStorageCache>& cache,
                                 bool success);
 
   // The HasCache callbacks are below.
@@ -148,7 +147,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   void DeleteCacheDidClose(const std::string& cache_name,
                            const BoolAndErrorCallback& callback,
                            const StringVector& ordered_cache_names,
-                           const scoped_refptr<ServiceWorkerCache>& cache);
+                           const scoped_refptr<CacheStorageCache>& cache);
   void DeleteCacheDidWriteIndex(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback,
                                 bool success);
@@ -161,24 +160,24 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
                       scoped_ptr<ServiceWorkerFetchRequest> request,
-                      const ServiceWorkerCache::ResponseCallback& callback);
-  void MatchCacheDidMatch(const scoped_refptr<ServiceWorkerCache>& cache,
-                          const ServiceWorkerCache::ResponseCallback& callback,
-                          ServiceWorkerCache::ErrorType error,
+                      const CacheStorageCache::ResponseCallback& callback);
+  void MatchCacheDidMatch(const scoped_refptr<CacheStorageCache>& cache,
+                          const CacheStorageCache::ResponseCallback& callback,
+                          CacheStorageCache::ErrorType error,
                           scoped_ptr<ServiceWorkerResponse> response,
                           scoped_ptr<storage::BlobDataHandle> handle);
 
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
-                          const ServiceWorkerCache::ResponseCallback& callback);
-  void MatchAllCachesDidMatch(scoped_refptr<ServiceWorkerCache> cache,
+                          const CacheStorageCache::ResponseCallback& callback);
+  void MatchAllCachesDidMatch(scoped_refptr<CacheStorageCache> cache,
                               const base::Closure& barrier_closure,
-                              ServiceWorkerCache::ResponseCallback* callback,
-                              ServiceWorkerCache::ErrorType error,
+                              CacheStorageCache::ResponseCallback* callback,
+                              CacheStorageCache::ErrorType error,
                               scoped_ptr<ServiceWorkerResponse> response,
                               scoped_ptr<storage::BlobDataHandle> handle);
   void MatchAllCachesDidMatchAll(
-      scoped_ptr<ServiceWorkerCache::ResponseCallback> callback);
+      scoped_ptr<CacheStorageCache::ResponseCallback> callback);
 
   // The CloseAllCaches callbacks are below.
   void CloseAllCachesImpl(const base::Closure& callback);
@@ -189,14 +188,14 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
                                    CacheStorageError error);
   void PendingCacheAndErrorCallback(
       const CacheAndErrorCallback& callback,
-      const scoped_refptr<ServiceWorkerCache>& cache,
+      const scoped_refptr<CacheStorageCache>& cache,
       CacheStorageError error);
   void PendingStringsAndErrorCallback(const StringsAndErrorCallback& callback,
                                       const StringVector& strings,
                                       CacheStorageError error);
   void PendingResponseCallback(
-      const ServiceWorkerCache::ResponseCallback& callback,
-      ServiceWorkerCache::ErrorType error,
+      const CacheStorageCache::ResponseCallback& callback,
+      CacheStorageCache::ErrorType error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
 
@@ -205,9 +204,9 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   bool initializing_;
 
   // The pending operation scheduler.
-  scoped_ptr<ServiceWorkerCacheScheduler> scheduler_;
+  scoped_ptr<CacheStorageScheduler> scheduler_;
 
-  // The map of cache names to ServiceWorkerCache objects.
+  // The map of cache names to CacheStorageCache objects.
   CacheMap cache_map_;
 
   // The names of caches in the order that they were created.
@@ -225,11 +224,11 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   // Performs backend specific operations (memory vs disk).
   scoped_ptr<CacheLoader> cache_loader_;
 
-  base::WeakPtrFactory<ServiceWorkerCacheStorage> weak_factory_;
+  base::WeakPtrFactory<CacheStorage> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorage);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorage);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_H_
+#endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_H_

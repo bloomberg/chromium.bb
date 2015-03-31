@@ -2,35 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_cache_quota_client.h"
+#include "content/browser/cache_storage/cache_storage_quota_client.h"
 
-#include "content/browser/service_worker/service_worker_cache_storage_manager.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
 
-ServiceWorkerCacheQuotaClient::ServiceWorkerCacheQuotaClient(
-    base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager)
+CacheStorageQuotaClient::CacheStorageQuotaClient(
+    base::WeakPtr<CacheStorageManager> cache_manager)
     : cache_manager_(cache_manager) {
 }
 
-ServiceWorkerCacheQuotaClient::~ServiceWorkerCacheQuotaClient() {
+CacheStorageQuotaClient::~CacheStorageQuotaClient() {
 }
 
-storage::QuotaClient::ID ServiceWorkerCacheQuotaClient::id() const {
+storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return kServiceWorkerCache;
 }
 
-void ServiceWorkerCacheQuotaClient::OnQuotaManagerDestroyed() {
+void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   delete this;
 }
 
-void ServiceWorkerCacheQuotaClient::GetOriginUsage(
-    const GURL& origin_url,
-    storage::StorageType type,
-    const GetUsageCallback& callback) {
+void CacheStorageQuotaClient::GetOriginUsage(const GURL& origin_url,
+                                             storage::StorageType type,
+                                             const GetUsageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_ || !DoesSupport(type)) {
@@ -41,7 +40,7 @@ void ServiceWorkerCacheQuotaClient::GetOriginUsage(
   cache_manager_->GetOriginUsage(origin_url, callback);
 }
 
-void ServiceWorkerCacheQuotaClient::GetOriginsForType(
+void CacheStorageQuotaClient::GetOriginsForType(
     storage::StorageType type,
     const GetOriginsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -54,7 +53,7 @@ void ServiceWorkerCacheQuotaClient::GetOriginsForType(
   cache_manager_->GetOrigins(callback);
 }
 
-void ServiceWorkerCacheQuotaClient::GetOriginsForHost(
+void CacheStorageQuotaClient::GetOriginsForHost(
     storage::StorageType type,
     const std::string& host,
     const GetOriginsCallback& callback) {
@@ -68,7 +67,7 @@ void ServiceWorkerCacheQuotaClient::GetOriginsForHost(
   cache_manager_->GetOriginsForHost(host, callback);
 }
 
-void ServiceWorkerCacheQuotaClient::DeleteOriginData(
+void CacheStorageQuotaClient::DeleteOriginData(
     const GURL& origin,
     storage::StorageType type,
     const DeletionCallback& callback) {
@@ -87,8 +86,7 @@ void ServiceWorkerCacheQuotaClient::DeleteOriginData(
   cache_manager_->DeleteOriginData(origin, callback);
 }
 
-bool ServiceWorkerCacheQuotaClient::DoesSupport(
-    storage::StorageType type) const {
+bool CacheStorageQuotaClient::DoesSupport(storage::StorageType type) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return type == storage::kStorageTypeTemporary;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/cache_storage_context_impl.h"
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
-#include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -65,8 +65,7 @@ void CacheStorageContextImpl::Shutdown() {
       base::Bind(&CacheStorageContextImpl::ShutdownOnIO, this));
 }
 
-ServiceWorkerCacheStorageManager* CacheStorageContextImpl::cache_manager()
-    const {
+CacheStorageManager* CacheStorageContextImpl::cache_manager() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return cache_manager_.get();
 }
@@ -91,9 +90,9 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!cache_manager_);
-  cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-      user_data_directory, cache_task_runner.get(),
-      make_scoped_refptr(quota_manager_proxy));
+  cache_manager_ =
+      CacheStorageManager::Create(user_data_directory, cache_task_runner.get(),
+                                  make_scoped_refptr(quota_manager_proxy));
 }
 
 void CacheStorageContextImpl::ShutdownOnIO() {

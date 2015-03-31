@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_H_
+#ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_
+#define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_
 
 #include <list>
 
@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -29,16 +30,16 @@ class QuotaManagerProxy;
 
 namespace content {
 class ChromeBlobStorageContext;
-class ServiceWorkerCacheMetadata;
-class ServiceWorkerCacheScheduler;
-class TestServiceWorkerCache;
+class CacheMetadata;
+class CacheStorageScheduler;
+class TestCacheStorageCache;
 
 // Represents a ServiceWorker Cache as seen in
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html.
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/
 // The asynchronous methods are executed serially. Callbacks to the
 // public functions will be called so long as the cache object lives.
-class CONTENT_EXPORT ServiceWorkerCache
-    : public base::RefCounted<ServiceWorkerCache> {
+class CONTENT_EXPORT CacheStorageCache
+    : public base::RefCounted<CacheStorageCache> {
  public:
   // This enum is used in histograms, so do not change the ordering and always
   // append new types to the end.
@@ -60,12 +61,12 @@ class CONTENT_EXPORT ServiceWorkerCache
   typedef base::Callback<void(ErrorType, scoped_ptr<Requests>)>
       RequestsCallback;
 
-  static scoped_refptr<ServiceWorkerCache> CreateMemoryCache(
+  static scoped_refptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
       net::URLRequestContext* request_context,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
-  static scoped_refptr<ServiceWorkerCache> CreatePersistentCache(
+  static scoped_refptr<CacheStorageCache> CreatePersistentCache(
       const GURL& origin,
       const base::FilePath& path,
       net::URLRequestContext* request_context,
@@ -93,18 +94,18 @@ class CONTENT_EXPORT ServiceWorkerCache
   void Keys(const RequestsCallback& callback);
 
   // Closes the backend. Future operations that require the backend
-  // will exit early. Close should only be called once per ServiceWorkerCache.
+  // will exit early. Close should only be called once per CacheStorageCache.
   void Close(const base::Closure& callback);
 
   // The size of the cache contents in memory. Returns 0 if the cache backend is
   // not a memory cache backend.
   int64 MemoryBackedSize() const;
 
-  base::WeakPtr<ServiceWorkerCache> AsWeakPtr();
+  base::WeakPtr<CacheStorageCache> AsWeakPtr();
 
  private:
-  friend class base::RefCounted<ServiceWorkerCache>;
-  friend class TestServiceWorkerCache;
+  friend class base::RefCounted<CacheStorageCache>;
+  friend class TestCacheStorageCache;
 
   class BlobReader;
   struct KeysContext;
@@ -122,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   typedef std::vector<disk_cache::Entry*> Entries;
   typedef scoped_ptr<disk_cache::Backend> ScopedBackendPtr;
 
-  ServiceWorkerCache(
+  CacheStorageCache(
       const GURL& origin,
       const base::FilePath& path,
       net::URLRequestContext* request_context,
@@ -130,14 +131,14 @@ class CONTENT_EXPORT ServiceWorkerCache
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
   // Async operations in progress will cancel and not run their callbacks.
-  virtual ~ServiceWorkerCache();
+  virtual ~CacheStorageCache();
 
   // Match callbacks
   void MatchImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                  const ResponseCallback& callback);
   void MatchDidOpenEntry(scoped_ptr<MatchContext> match_context, int rv);
   void MatchDidReadMetadata(scoped_ptr<MatchContext> match_context,
-                            scoped_ptr<ServiceWorkerCacheMetadata> headers);
+                            scoped_ptr<CacheMetadata> headers);
   void MatchDidReadResponseBodyData(scoped_ptr<MatchContext> match_context,
                                     int rv);
   void MatchDoneWithBody(scoped_ptr<MatchContext> match_context);
@@ -160,7 +161,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   void DeleteDidOpenEntry(
       const GURL& origin,
       scoped_ptr<ServiceWorkerFetchRequest> request,
-      const ServiceWorkerCache::ErrorCallback& callback,
+      const CacheStorageCache::ErrorCallback& callback,
       scoped_ptr<disk_cache::Entry*> entryptr,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       int rv);
@@ -172,14 +173,14 @@ class CONTENT_EXPORT ServiceWorkerCache
                             const Entries::iterator& iter);
   void KeysDidReadMetadata(scoped_ptr<KeysContext> keys_context,
                            const Entries::iterator& iter,
-                           scoped_ptr<ServiceWorkerCacheMetadata> metadata);
+                           scoped_ptr<CacheMetadata> metadata);
 
   void CloseImpl(const base::Closure& callback);
 
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called. Virtual for tests.
   virtual void CreateBackend(const ErrorCallback& callback);
-  void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
+  void CreateBackendDidCreate(const CacheStorageCache::ErrorCallback& callback,
                               scoped_ptr<ScopedBackendPtr> backend_ptr,
                               int rv);
 
@@ -206,17 +207,17 @@ class CONTENT_EXPORT ServiceWorkerCache
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_;
-  scoped_ptr<ServiceWorkerCacheScheduler> scheduler_;
+  scoped_ptr<CacheStorageScheduler> scheduler_;
   bool initializing_;
 
   // Whether or not to store data in disk or memory.
   bool memory_only_;
 
-  base::WeakPtrFactory<ServiceWorkerCache> weak_ptr_factory_;
+  base::WeakPtrFactory<CacheStorageCache> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCache);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageCache);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_H_
+#endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_

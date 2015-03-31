@@ -13,7 +13,7 @@
 
 namespace content {
 
-class ServiceWorkerCacheStorageDispatcher;
+class CacheStorageDispatcher;
 class ThreadSafeSender;
 
 // This corresponds to an instance of the script-facing CacheStorage object.
@@ -45,7 +45,7 @@ class WebServiceWorkerCacheStorageImpl
 
  private:
   // Helper to return the thread-specific dispatcher.
-  ServiceWorkerCacheStorageDispatcher* GetDispatcher() const;
+  CacheStorageDispatcher* GetDispatcher() const;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   const GURL origin_;

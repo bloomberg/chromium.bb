@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_SCHEDULER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_SCHEDULER_H_
+#ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_H_
+#define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_H_
 
 #include <list>
 
@@ -12,10 +12,10 @@
 
 namespace content {
 
-class CONTENT_EXPORT ServiceWorkerCacheScheduler {
+class CONTENT_EXPORT CacheStorageScheduler {
  public:
-  ServiceWorkerCacheScheduler();
-  virtual ~ServiceWorkerCacheScheduler();
+  CacheStorageScheduler();
+  virtual ~CacheStorageScheduler();
 
   // Adds the operation to the tail of the queue and starts it if the scheduler
   // is idle.
@@ -35,9 +35,9 @@ class CONTENT_EXPORT ServiceWorkerCacheScheduler {
   std::list<base::Closure> pending_operations_;
   bool operation_running_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheScheduler);
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageScheduler);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_SCHEDULER_H_
+#endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_H_

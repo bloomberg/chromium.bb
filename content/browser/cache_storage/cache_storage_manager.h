@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_MANAGER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_MANAGER_H_
+#ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_MANAGER_H_
+#define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "content/browser/service_worker/service_worker_cache_storage.h"
+#include "content/browser/cache_storage/cache_storage.h"
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
 #include "url/gurl.h"
@@ -31,48 +31,44 @@ class QuotaManagerProxy;
 
 namespace content {
 
-class ServiceWorkerCacheQuotaClient;
+class CacheStorageQuotaClient;
 
-// Keeps track of a ServiceWorkerCacheStorage per origin. There is one
-// ServiceWorkerCacheStorageManager per ServiceWorkerContextCore.
-// TODO(jkarlin): Remove ServiceWorkerCacheStorage from memory once they're no
+// Keeps track of a CacheStorage per origin. There is one
+// CacheStorageManager per ServiceWorkerContextCore.
+// TODO(jkarlin): Remove CacheStorage from memory once they're no
 // longer in active use.
-class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
+class CONTENT_EXPORT CacheStorageManager {
  public:
-  static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
+  static scoped_ptr<CacheStorageManager> Create(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy);
 
-  static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
-      ServiceWorkerCacheStorageManager* old_manager);
+  static scoped_ptr<CacheStorageManager> Create(
+      CacheStorageManager* old_manager);
 
-  virtual ~ServiceWorkerCacheStorageManager();
+  virtual ~CacheStorageManager();
 
   // Methods to support the CacheStorage spec. These methods call the
-  // corresponding ServiceWorkerCacheStorage method on the appropriate thread.
-  void OpenCache(
-      const GURL& origin,
-      const std::string& cache_name,
-      const ServiceWorkerCacheStorage::CacheAndErrorCallback& callback);
-  void HasCache(
-      const GURL& origin,
-      const std::string& cache_name,
-      const ServiceWorkerCacheStorage::BoolAndErrorCallback& callback);
-  void DeleteCache(
-      const GURL& origin,
-      const std::string& cache_name,
-      const ServiceWorkerCacheStorage::BoolAndErrorCallback& callback);
-  void EnumerateCaches(
-      const GURL& origin,
-      const ServiceWorkerCacheStorage::StringsAndErrorCallback& callback);
+  // corresponding CacheStorage method on the appropriate thread.
+  void OpenCache(const GURL& origin,
+                 const std::string& cache_name,
+                 const CacheStorage::CacheAndErrorCallback& callback);
+  void HasCache(const GURL& origin,
+                const std::string& cache_name,
+                const CacheStorage::BoolAndErrorCallback& callback);
+  void DeleteCache(const GURL& origin,
+                   const std::string& cache_name,
+                   const CacheStorage::BoolAndErrorCallback& callback);
+  void EnumerateCaches(const GURL& origin,
+                       const CacheStorage::StringsAndErrorCallback& callback);
   void MatchCache(const GURL& origin,
                   const std::string& cache_name,
                   scoped_ptr<ServiceWorkerFetchRequest> request,
-                  const ServiceWorkerCache::ResponseCallback& callback);
+                  const CacheStorageCache::ResponseCallback& callback);
   void MatchAllCaches(const GURL& origin,
                       scoped_ptr<ServiceWorkerFetchRequest> request,
-                      const ServiceWorkerCache::ResponseCallback& callback);
+                      const CacheStorageCache::ResponseCallback& callback);
 
   // This must be called before creating any of the public *Cache functions
   // above.
@@ -80,27 +76,24 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
-  base::WeakPtr<ServiceWorkerCacheStorageManager> AsWeakPtr() {
+  base::WeakPtr<CacheStorageManager> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
-  friend class ServiceWorkerCacheQuotaClient;
-  friend class ServiceWorkerCacheStorageManagerTest;
-  friend class ServiceWorkerCacheStorageMigrationTest;
+  friend class CacheStorageQuotaClient;
+  friend class CacheStorageManagerTest;
+  friend class CacheStorageMigrationTest;
 
-  typedef std::map<GURL, ServiceWorkerCacheStorage*>
-      ServiceWorkerCacheStorageMap;
+  typedef std::map<GURL, CacheStorage*> CacheStorageMap;
 
-  ServiceWorkerCacheStorageManager(
+  CacheStorageManager(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy);
 
-  // The returned ServiceWorkerCacheStorage* is owned by
-  // service_worker_cache_storages_.
-  ServiceWorkerCacheStorage* FindOrCreateServiceWorkerCacheManager(
-      const GURL& origin);
+  // The returned CacheStorage* is owned by this manager.
+  CacheStorage* FindOrCreateCacheStorage(const GURL& origin);
 
   // QuotaClient support
   void GetOriginUsage(const GURL& origin_url,
@@ -114,8 +107,8 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   static void DeleteOriginDidClose(
       const GURL& origin,
       const storage::QuotaClient::DeletionCallback& callback,
-      scoped_ptr<ServiceWorkerCacheStorage> cache_storage,
-      base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager);
+      scoped_ptr<CacheStorage> cache_storage,
+      base::WeakPtr<CacheStorageManager> cache_manager);
 
   net::URLRequestContext* url_request_context() const {
     return request_context_;
@@ -152,15 +145,15 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
 
   // The map owns the CacheStorages and the CacheStorages are only accessed on
   // |cache_task_runner_|.
-  ServiceWorkerCacheStorageMap cache_storage_map_;
+  CacheStorageMap cache_storage_map_;
 
   net::URLRequestContext* request_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
-  base::WeakPtrFactory<ServiceWorkerCacheStorageManager> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageManager);
+  base::WeakPtrFactory<CacheStorageManager> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_STORAGE_MANAGER_H_
+#endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_MANAGER_H_
