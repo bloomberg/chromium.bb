@@ -644,8 +644,6 @@
       'browser/extensions/extension_view_host.h',
       'browser/extensions/extension_view_host_factory.cc',
       'browser/extensions/extension_view_host_factory.h',
-      'browser/extensions/extension_view_host_mac.h',
-      'browser/extensions/extension_view_host_mac.mm',
       'browser/extensions/extension_web_ui.cc',
       'browser/extensions/extension_web_ui.h',
       'browser/extensions/extension_web_ui_override_registrar.cc',

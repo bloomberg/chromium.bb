@@ -14,10 +14,6 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/view_type.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/extensions/extension_view_host_mac.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -36,11 +32,7 @@ ExtensionViewHost* CreateViewHostForExtension(const Extension* extension,
   scoped_refptr<content::SiteInstance> site_instance =
       ProcessManager::Get(profile)->GetSiteInstanceForURL(url);
   ExtensionViewHost* host =
-#if defined(OS_MACOSX)
-      new ExtensionViewHostMac(extension, site_instance.get(), url, view_type);
-#else
       new ExtensionViewHost(extension, site_instance.get(), url, view_type);
-#endif
   host->CreateView(browser);
   return host;
 }
