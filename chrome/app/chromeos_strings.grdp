@@ -13,6 +13,9 @@
   <message name="IDS_CHROMEBASE" desc="The localized name for Chromebase">
     Chromebase
   </message>
+  <message name="IDS_CHROMEBIT" desc="The localized name for Chromebit">
+    Chromebit  
+  </message>
   <!-- Idle logout dialog for retail mode -->
   <message name="IDS_IDLE_LOGOUT_TITLE" desc="Dialog title for the idle logout dialog. Used in retail mode only.">
     Are you still there?

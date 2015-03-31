@@ -15,16 +15,24 @@ namespace {
 
 // List of ChromeOS board names corresponding to Chromebase devices. Googlers
 // can find a list of ChromeOS device and board names at http://go/cros-names
-const char* const kChromebaseBoards[]  = {
-  "monroe",
+const char* const kChromebaseBoards[] = {
+    "monroe",
 };
 
 // List of ChromeOS board names corresponding to Chromebox devices. Googlers
 // can find a list of ChromeOS device and board names at http://go/cros-names
-const char* const kChromeboxBoards[]  = {
-  "panther",
-  "stumpy",
-  "zako",
+const char* const kChromeboxBoards[] = {
+    "panther",
+    "stumpy",
+    "zako",
+    "tricky",
+    "mccloud",
+};
+
+// List of ChromeOS board names corresponding to Chromebit devices. Googlers
+// can find a list of ChromeOS device and board names at http://go/cros-names
+const char* const kChromebitBoards[] = {
+    "veyron_brain",
 };
 
 }  // namespace
@@ -33,6 +41,7 @@ namespace chrome_device_types {
 
 const char kChromebox[] = "chromebox";
 const char kChromebase[] = "chromebase";
+const char kChromebit[] = "chromebit";
 const char kChromebook[] = "chromebook";
 
 }  // namespace chrome_device_types
@@ -51,6 +60,10 @@ int GetChromeDeviceTypeResourceId() {
     if (StartsWithASCII(board, kChromebaseBoards[i], true))
       return IDS_CHROMEBASE;
   }
+  for (size_t i = 0; i < arraysize(kChromebitBoards); ++i) {
+    if (StartsWithASCII(board, kChromebitBoards[i], true))
+      return IDS_CHROMEBIT;
+  }
   return IDS_CHROMEBOOK;
 }
 
@@ -61,6 +74,8 @@ std::string GetChromeDeviceTypeString() {
       return chrome_device_types::kChromebox;
     case IDS_CHROMEBASE:
       return chrome_device_types::kChromebase;
+    case IDS_CHROMEBIT:
+      return chrome_device_types::kChromebit;
     default:
       NOTREACHED() << "Unknown Chrome device type: " << resource_id;
     case IDS_CHROMEBOOK:
