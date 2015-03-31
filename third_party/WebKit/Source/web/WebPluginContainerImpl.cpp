@@ -105,6 +105,12 @@ void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
     reportGeometry();
 }
 
+void WebPluginContainerImpl::layoutWidgetIfPossible()
+{
+    RELEASE_ASSERT(m_webPlugin);
+    m_webPlugin->layoutPluginIfNeeded();
+}
+
 void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect)
 {
     if (!parent())

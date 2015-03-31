@@ -205,6 +205,11 @@ void LayoutPart::layout()
 {
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
+
+    if (Widget* widget = this->widget()) {
+        widget->layoutWidgetIfPossible();
+    }
+
     clearNeedsLayout();
 }
 

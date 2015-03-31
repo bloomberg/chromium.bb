@@ -81,6 +81,7 @@ public:
 
     // Widget methods
     virtual void setFrameRect(const IntRect&) override;
+    virtual void layoutWidgetIfPossible() override;
     virtual void paint(GraphicsContext*, const IntRect&) override;
     virtual void invalidateRect(const IntRect&) override;
     virtual void issuePaintInvalidations() override final;

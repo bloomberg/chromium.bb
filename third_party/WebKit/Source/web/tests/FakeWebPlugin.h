@@ -52,6 +52,7 @@ public:
     virtual void destroy() override;
     virtual NPObject* scriptableObject() override { return 0; }
     virtual bool canProcessDrag() const override { return false; }
+    virtual void layoutPluginIfNeeded() override { }
     virtual void paint(WebCanvas*, const WebRect&) override { }
     virtual void updateGeometry(const WebRect& clientRect, const WebRect& clipRect, const WebRect& windowClipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
     virtual void updateFocus(bool, WebFocusType) override { }
