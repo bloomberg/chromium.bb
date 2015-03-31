@@ -12709,6 +12709,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Launch.InvalidIntent" enum="BooleanHit">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    Records whether or not an invalid Android Intent was fired to launch Chrome.
+    (http://crbug.com/445136)
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.All.SafeThreadAccess" units="accesses">
   <obsolete>
     Deprecated 2013-10. No thread-unsafety was found.
