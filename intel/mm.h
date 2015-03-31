@@ -65,13 +65,6 @@ extern struct mem_block *mmAllocMem(struct mem_block *heap, int size,
 extern int mmFreeMem(struct mem_block *b);
 
 /**
- * Free block starts at offset
- * input: pointer to a heap, start offset
- * return: pointer to a block
- */
-extern struct mem_block *mmFindBlock(struct mem_block *heap, int start);
-
-/**
  * destroy MM
  */
 extern void mmDestroy(struct mem_block *mmInit);

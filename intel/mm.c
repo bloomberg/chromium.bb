@@ -191,18 +191,6 @@ struct mem_block *mmAllocMem(struct mem_block *heap, int size, int align2,
 	return p;
 }
 
-struct mem_block *mmFindBlock(struct mem_block *heap, int start)
-{
-	struct mem_block *p;
-
-	for (p = heap->next; p != heap; p = p->next) {
-		if (p->ofs == start)
-			return p;
-	}
-
-	return NULL;
-}
-
 static int Join2Blocks(struct mem_block *p)
 {
 	/* XXX there should be some assertions here */
