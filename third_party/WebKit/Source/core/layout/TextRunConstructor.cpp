@@ -32,7 +32,6 @@
 #include "core/layout/TextRunConstructor.h"
 
 #include "core/layout/LayoutText.h"
-#include "core/layout/style/ComputedStyle.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
