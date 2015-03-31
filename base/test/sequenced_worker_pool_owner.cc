@@ -43,6 +43,9 @@ void SequencedWorkerPoolOwner::OnHasWork() {
 void SequencedWorkerPoolOwner::WillWaitForShutdown() {
   if (!will_wait_for_shutdown_callback_.is_null()) {
     will_wait_for_shutdown_callback_.Run();
+
+    // Release the reference to the callback to prevent retain cycles.
+    will_wait_for_shutdown_callback_ = Closure();
   }
 }
 

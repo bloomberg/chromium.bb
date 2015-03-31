@@ -159,6 +159,16 @@ class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
         FROM_HERE, reposting_task, SequencedWorkerPool::BLOCK_SHUTDOWN);
   }
 
+  void PostBlockingTaskThenUnblockThreads(
+      const scoped_refptr<SequencedWorkerPool>& pool,
+      ThreadBlocker* blocker,
+      size_t threads_to_wake) {
+    Closure arbitrary_task = base::Bind(&TestTracker::FastTask, this, 0);
+    pool->PostWorkerTaskWithShutdownBehavior(
+        FROM_HERE, arbitrary_task, SequencedWorkerPool::BLOCK_SHUTDOWN);
+    blocker->Unblock(threads_to_wake);
+  }
+
   // Waits until the given number of tasks have started executing.
   void WaitUntilTasksBlocked(size_t count) {
     {
@@ -287,7 +297,7 @@ class SequencedWorkerPoolTest : public testing::Test {
 
 // Checks that the given number of entries are in the tasks to complete of
 // the given tracker, and then signals the given event the given number of
-// times. This is used to wakt up blocked background threads before blocking
+// times. This is used to wake up blocked background threads before blocking
 // on shutdown.
 void EnsureTasksToCompleteCountAndUnblock(scoped_refptr<TestTracker> tracker,
                                           size_t expected_tasks_to_complete,
@@ -580,6 +590,34 @@ TEST_F(SequencedWorkerPoolTest, AllowsAfterShutdown) {
       kNumBlockTasks + kNumQueuedTasks + kNumNewBlockingTasksToAllow));
 
   // Clean up the task IDs we added and go home.
+  tracker()->ClearCompleteSequence();
+}
+
+// Tests that blocking tasks can still be posted during shutdown, as long as
+// the task is not being posted within the context of a running task.
+TEST_F(SequencedWorkerPoolTest,
+       AllowsBlockingTasksDuringShutdownOutsideOfRunningTask) {
+  EnsureAllWorkersCreated();
+  ThreadBlocker blocker;
+
+  // Start tasks to take all the threads and block them.
+  const int kNumBlockTasks = static_cast<int>(kNumWorkerThreads);
+  for (int i = 0; i < kNumBlockTasks; ++i) {
+    EXPECT_TRUE(pool()->PostWorkerTask(
+        FROM_HERE,
+        base::Bind(&TestTracker::BlockTask, tracker(), i, &blocker)));
+  }
+  tracker()->WaitUntilTasksBlocked(kNumWorkerThreads);
+
+  // Setup to open the floodgates from within Shutdown().
+  SetWillWaitForShutdownCallback(
+      base::Bind(&TestTracker::PostBlockingTaskThenUnblockThreads,
+                 scoped_refptr<TestTracker>(tracker()), pool(), &blocker,
+                 kNumWorkerThreads));
+  pool()->Shutdown(kNumWorkerThreads + 1);
+
+  // Ensure that the correct number of tasks actually got run.
+  tracker()->WaitUntilTasksComplete(static_cast<size_t>(kNumWorkerThreads + 1));
   tracker()->ClearCompleteSequence();
 }
 
