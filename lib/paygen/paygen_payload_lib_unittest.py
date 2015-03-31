@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import collections
 import mock
 import mox
 import os
@@ -121,22 +120,21 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
       au_generator_uri_override = gspaths.ChromeosReleases.GeneratorUri(
           payload.tgt_image.channel, payload.tgt_image.board, '6351.0.0')
 
-    gen = paygen_payload_lib._PaygenPayload(
+    return paygen_payload_lib._PaygenPayload(
         payload=payload,
         cache=self.cache,
         work_dir=work_dir,
         sign=sign,
         verify=False,
         au_generator_uri_override=au_generator_uri_override)
-    gen.tgt_image_file = None
-    gen.src_image_file = None
-    return gen
 
   def testWorkingDirNames(self):
     """Make sure that some of the files we create have the expected names."""
     gen = self._GetStdGenerator(work_dir='/foo')
 
     self.assertEqual(gen.generator_dir, '/foo/au-generator')
+    self.assertEqual(gen.src_image_file, '/foo/src_image.bin')
+    self.assertEqual(gen.tgt_image_file, '/foo/tgt_image.bin')
     self.assertEqual(gen.payload_file, '/foo/delta.bin')
     self.assertEqual(gen.delta_log_file, '/foo/delta.log')
 
@@ -252,50 +250,38 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out and record the expected function calls.
     self.mox.StubOutWithMock(download_cache.DownloadCache,
-                             'GetFileObject')
+                             'GetFileCopy')
     if test_extract_file:
       download_file = mox.IsA(str)
     else:
       download_file = image_file
-
-    prep_uri = 'prepped://%s/%s' % (image_obj.get('image_type', 'signed'),
-                                    download_uri)
-    fetch_func = lambda uri, fetch_func: fetch_func(uri, image_file)
-    self.cache.GetFileObject(
-        prep_uri, fetch_func=mox.IgnoreArg()).WithSideEffects(fetch_func)
+    self.cache.GetFileCopy(download_uri, download_file)
 
     if test_extract_file:
-      fake_file = collections.namedtuple('File', ['name'])(test_extract_file)
-      self.cache.GetFileObject(download_uri).AndReturn(fake_file)
-
       self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-      cros_build_lib.RunCommand(['tar', '-xf', download_file,
+      cros_build_lib.RunCommand(['tar', '-xJf', download_file,
                                  test_extract_file], cwd=test_work_dir)
-
       self.mox.StubOutWithMock(shutil, 'move')
       shutil.move(os.path.join(test_work_dir, test_extract_file), image_file)
-    else:
-      self.mox.StubOutWithMock(urilib, 'Copy')
-      urilib.Copy(download_uri, image_file)
+
+    self.mox.StubOutWithMock(cros_build_lib, 'SudoRunCommand')
+    self.mox.StubOutWithMock(cros_image, 'LoopbackPartitions')
 
     fake_kern_part_file = tempfile.NamedTemporaryFile(prefix='fake_kern_part',
                                                       suffix='_p4')
     fake_kern_part = fake_kern_part_file.name
     osutils.WriteFile(fake_kern_part, 'a' * (65536 * 2))
 
-    self.mox.StubOutWithMock(cros_image, 'LoopbackPartitions')
     dummy_parts = cros_image_unittest.LoopbackPartitions(
         part_count=12, part_overrides={4: fake_kern_part})
     generator_dir = os.path.join(test_work_dir, 'au-generator')
     cros_image.LoopbackPartitions(
         image_file, util_path=generator_dir).AndReturn(dummy_parts)
-
-    self.mox.StubOutWithMock(cros_build_lib, 'SudoRunCommand')
     cros_build_lib.SudoRunCommand(['chmod', 'a+r', fake_kern_part])
 
     # Run the test.
     self.mox.ReplayAll()
-    gen._PrepareImage(image_obj)
+    gen._PrepareImage(image_obj, image_file)
 
   def testPrepareImageNormal(self):
     """Test preparing a normal image."""
@@ -598,9 +584,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record expected calls.
     gen._PrepareGenerator()
-    fake_file = collections.namedtuple('File', ['name'])(None)
-    gen._PrepareImage(payload.tgt_image).AndReturn(fake_file)
-    gen._PrepareImage(payload.src_image).AndReturn(fake_file)
+    gen._PrepareImage(payload.tgt_image, gen.tgt_image_file)
+    gen._PrepareImage(payload.src_image, gen.src_image_file)
     gen._GenerateUnsignedPayload()
     gen._SignPayload().AndReturn((['payload_sigs'], ['metadata_sigs']))
     gen._StorePayloadJson(['metadata_sigs'])
