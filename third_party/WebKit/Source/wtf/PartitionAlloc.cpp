@@ -396,11 +396,19 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
     // We allocated a new super page so update super page metadata.
     // First check if this is a new extent or not.
     PartitionSuperPageExtentEntry* latestExtent = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(superPage));
+    // By storing the root in every extent metadata object, we have a fast way
+    // to go from a pointer within the partition to the root object.
+    latestExtent->root = root;
+    // Most new extents will be part of a larger extent, and these three fields
+    // are unused, but we initialize them to 0 so that we get a clear signal
+    // in case they are accidentally used.
+    latestExtent->superPageBase = 0;
+    latestExtent->superPagesEnd = 0;
+    latestExtent->next = 0;
 
     PartitionSuperPageExtentEntry* currentExtent = root->currentExtent;
     bool isNewExtent = (superPage != requestedAddress);
     if (UNLIKELY(isNewExtent)) {
-        latestExtent->next = 0;
         if (UNLIKELY(!currentExtent)) {
             ASSERT(!root->firstExtent);
             root->firstExtent = latestExtent;
@@ -409,18 +417,14 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
             currentExtent->next = latestExtent;
         }
         root->currentExtent = latestExtent;
-        currentExtent = latestExtent;
-        currentExtent->superPageBase = superPage;
-        currentExtent->superPagesEnd = superPage + kSuperPageSize;
+        latestExtent->superPageBase = superPage;
+        latestExtent->superPagesEnd = superPage + kSuperPageSize;
     } else {
         // We allocated next to an existing extent so just nudge the size up a little.
+        ASSERT(currentExtent->superPagesEnd);
         currentExtent->superPagesEnd += kSuperPageSize;
         ASSERT(ret >= currentExtent->superPageBase && ret < currentExtent->superPagesEnd);
     }
-    // By storing the root in every extent metadata object, we have a fast way
-    // to go from a pointer within the partition to the root object.
-    latestExtent->root = root;
-
     return ret;
 }
 
@@ -635,6 +639,12 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
 
     PartitionSuperPageExtentEntry* extent = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(ptr));
     extent->root = root;
+    // Most new extents will be part of a larger extent, and these three fields
+    // are unused, but we initialize them to 0 so that we get a clear signal
+    // in case they are accidentally used.
+    extent->superPageBase = 0;
+    extent->superPagesEnd = 0;
+    extent->next = 0;
     PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ret);
     PartitionBucket* bucket = reinterpret_cast<PartitionBucket*>(reinterpret_cast<char*>(page) + kPageMetadataSize);
     page->freelistHead = 0;
