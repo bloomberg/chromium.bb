@@ -170,9 +170,11 @@ void AppRemotingTestDriverEnvironment::ShowHostAvailability() {
 const RemoteApplicationDetails&
 AppRemotingTestDriverEnvironment::GetDetailsFromAppName(
     const std::string& application_name) {
-  DCHECK_GT(application_details_map_.count(application_name), 0UL);
+  std::map<std::string, RemoteApplicationDetails>::const_iterator
+      map_pair_iterator = application_details_map_.find(application_name);
+  DCHECK(map_pair_iterator != application_details_map_.end());
 
-  return application_details_map_.at(application_name);
+  return map_pair_iterator->second;
 }
 
 void AppRemotingTestDriverEnvironment::SetAccessTokenFetcherForTest(
