@@ -1,0 +1,46 @@
+{
+  "tests": [
+    {
+      "app": "ios_chrome_unittests"
+    },
+    {
+      "app": "ios_net_unittests"
+    },
+    {
+      "app": "ios_web_unittests"
+    },
+    {
+      "app": "base_unittests"
+    },
+    {
+      "app": "components_unittests"
+    },
+    {
+      "app": "crypto_unittests"
+    },
+    {
+      "app": "gfx_unittests"
+    },
+    {
+      "app": "url_unittests"
+    },
+    {
+      "app": "content_unittests"
+    },
+    {
+      "app": "net_unittests"
+    },
+    {
+      "app": "ui_base_unittests"
+    },
+    {
+      "app": "sync_unit_tests"
+    },
+    {
+      "app": "sql_unittests"
+    },
+    {
+      "app": "skia_unittests"
+    }
+  ]
+}

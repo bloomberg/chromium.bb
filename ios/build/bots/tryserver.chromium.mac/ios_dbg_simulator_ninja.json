@@ -3,85 +3,25 @@
     "smut"
   ],
   "comments": [
-    "Tests for 32-bit iOS 8.1 iPhone simulator."
+    "Tests for 32- and 64-bit iOS 8.1 iPhone simulators."
   ],
   "xcode version": "6.1.1",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
-    "target_subarch": "arm32"
+    "target_subarch": "both"
   },
   "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator8.1",
   "tests": [
     {
-      "app": "ios_chrome_unittests",
+      "include": "common_tests.json",
       "device type": "iPhone 5",
       "os": "8.1"
     },
     {
-      "app": "ios_net_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "ios_web_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "base_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "components_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "crypto_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "gfx_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "url_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "content_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "net_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "ui_base_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "sync_unit_tests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "sql_unittests",
-      "device type": "iPhone 5",
-      "os": "8.1"
-    },
-    {
-      "app": "skia_unittests",
-      "device type": "iPhone 5",
+      "include": "common_tests.json",
+      "device type": "iPhone 5s",
       "os": "8.1"
     }
   ]
