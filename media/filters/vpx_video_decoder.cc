@@ -473,12 +473,17 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
     codec_format = VideoFrame::YV12HD;
   }
 
-  gfx::Size size(vpx_image->d_w, vpx_image->d_h);
+  // The mixed |w|/|d_h| in |coded_size| is intentional. Setting the correct
+  // coded width is necessary to allow coalesced memory access, which may avoid
+  // frame copies. Setting the correct coded height however does not have any
+  // benefit, and only risk copying too much data.
+  const gfx::Size coded_size(vpx_image->w, vpx_image->d_h);
+  const gfx::Size visible_size(vpx_image->d_w, vpx_image->d_h);
 
   if (!vpx_codec_alpha_ && memory_pool_.get()) {
     *video_frame = VideoFrame::WrapExternalYuvData(
         codec_format,
-        size, gfx::Rect(size), config_.natural_size(),
+        coded_size, gfx::Rect(visible_size), config_.natural_size(),
         vpx_image->stride[VPX_PLANE_Y],
         vpx_image->stride[VPX_PLANE_U],
         vpx_image->stride[VPX_PLANE_V],
@@ -492,8 +497,8 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
 
   *video_frame = frame_pool_.CreateFrame(
       codec_format,
-      size,
-      gfx::Rect(size),
+      visible_size,
+      gfx::Rect(visible_size),
       config_.natural_size(),
       kNoTimestamp());
 
