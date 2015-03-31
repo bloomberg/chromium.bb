@@ -545,6 +545,12 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
       unmountCommand.execute(this);
     }.bind(this));
     rowElement.appendChild(ejectButton);
+
+    // Add paper-ripple effect on the eject button.
+    var ripple = cr.doc.createElement('paper-ripple');
+    ripple.setAttribute('fit', '');
+    ripple.className = 'circle recenteringTouch';
+    ejectButton.appendChild(ripple);
   }
 };
 

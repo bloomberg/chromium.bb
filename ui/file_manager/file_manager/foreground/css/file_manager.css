@@ -221,9 +221,9 @@ div.splitter {
       url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
   cursor: pointer;
   flex: none;
-  height: 20px;
-  margin-right: 6px;
-  width: 20px;
+  height: 40px;
+  position: relative;
+  width: 40px;
   z-index: 1;  /* Make sure .root-eject is on upper layer than paper-ripple. */
 }
 
