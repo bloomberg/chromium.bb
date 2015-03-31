@@ -212,8 +212,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
   typedef base::Callback<void(scoped_refptr<RemotePage>)> RemotePageCallback;
   void OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
-                      const std::string& url,
-                      const RemotePageCallback& callback);
+                      const std::string& url);
 
   scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       scoped_refptr<RemoteBrowser> browser);
@@ -268,11 +267,6 @@ class DevToolsAndroidBridge : public KeyedService {
 
   scoped_refptr<AndroidDeviceManager::Device> FindDevice(
       const std::string& serial);
-
-  void RespondToOpenOnUIThread(scoped_refptr<RemoteBrowser> browser,
-                               const RemotePageCallback& callback,
-                               int result,
-                               const std::string& response);
 
   base::WeakPtr<DevToolsAndroidBridge> AsWeakPtr() {
       return weak_factory_.GetWeakPtr();

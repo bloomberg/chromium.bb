@@ -4,23 +4,13 @@
 
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
-#include <string>
-
-#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/devtools/device/devtools_android_bridge.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -56,12 +46,6 @@ const char kFallbackFrontendURL[] =
     "data:text/plain,Cannot load DevTools frontend from an untrusted origin";
 #endif  // defined(DEBUG_DEVTOOLS)
 
-const char kRemoteOpenPrefix[] = "remote/open";
-
-#if defined(DEBUG_DEVTOOLS)
-const char kLocalSerial[] = "local";
-#endif  // defined(DEBUG_DEVTOOLS)
-
 // DevToolsDataSource ---------------------------------------------------------
 
 std::string GetMimeTypeForPath(const std::string& path) {
@@ -88,7 +72,6 @@ std::string GetMimeTypeForPath(const std::string& path) {
 // requests. Three types of requests could be handled based on the URL path:
 // 1. /bundled/: bundled DevTools frontend is served.
 // 2. /remote/: remote DevTools frontend is served from App Engine.
-// 3. /remote/open/: query is URL which is opened on remote device.
 class DevToolsDataSource : public content::URLDataSource,
                            public net::URLFetcherDelegate {
  public:
@@ -164,18 +147,6 @@ void DevToolsDataSource::StartDataRequest(
   if (StartsWithASCII(path, bundled_path_prefix, false)) {
     StartBundledDataRequest(path.substr(bundled_path_prefix.length()),
                             render_process_id, render_frame_id, callback);
-    return;
-  }
-
-  // Serve static response while connecting to the remote device.
-  if (StartsWithASCII(path, kRemoteOpenPrefix, false)) {
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableDevToolsExperiments)) {
-      callback.Run(NULL);
-      return;
-    }
-    std::string response = "Connecting to the device...";
-    callback.Run(base::RefCountedString::TakeString(&response));
     return;
   }
 
@@ -257,90 +228,6 @@ void DevToolsDataSource::OnURLFetchComplete(const net::URLFetcher* source) {
   pending_.erase(it);
 }
 
-// OpenRemotePageRequest ------------------------------------------------------
-
-class OpenRemotePageRequest : public DevToolsAndroidBridge::DeviceListListener {
- public:
-  OpenRemotePageRequest(
-      Profile* profile,
-      const std::string url,
-      const DevToolsAndroidBridge::RemotePageCallback& callback);
-  ~OpenRemotePageRequest() override {}
-
- private:
-  // DevToolsAndroidBridge::Listener overrides.
-  void DeviceListChanged(
-      const DevToolsAndroidBridge::RemoteDevices& devices) override;
-
-  bool OpenInBrowser(
-      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser);
-  void RemotePageOpened(scoped_refptr<DevToolsAndroidBridge::RemotePage> page);
-
-  std::string url_;
-  DevToolsAndroidBridge::RemotePageCallback callback_;
-  bool opening_;
-  DevToolsAndroidBridge* android_bridge_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpenRemotePageRequest);
-};
-
-OpenRemotePageRequest::OpenRemotePageRequest(
-    Profile* profile,
-    const std::string url,
-    const DevToolsAndroidBridge::RemotePageCallback& callback)
-    : url_(url),
-      callback_(callback),
-      opening_(false),
-      android_bridge_(
-          DevToolsAndroidBridge::Factory::GetForProfile(profile)) {
-  android_bridge_->AddDeviceListListener(this);
-}
-
-void OpenRemotePageRequest::DeviceListChanged(
-    const DevToolsAndroidBridge::RemoteDevices& devices) {
-  if (opening_)
-    return;
-
-  for (DevToolsAndroidBridge::RemoteDevices::const_iterator dit =
-      devices.begin(); dit != devices.end(); ++dit) {
-    DevToolsAndroidBridge::RemoteDevice* device = dit->get();
-    if (!device->is_connected())
-      continue;
-
-    DevToolsAndroidBridge::RemoteBrowsers& browsers = device->browsers();
-    for (DevToolsAndroidBridge::RemoteBrowsers::iterator bit =
-        browsers.begin(); bit != browsers.end(); ++bit) {
-      if (OpenInBrowser(bit->get())) {
-        opening_ = true;
-        return;
-      }
-    }
-  }
-}
-
-bool OpenRemotePageRequest::OpenInBrowser(
-    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser) {
-  if (!browser->IsChrome())
-    return false;
-#if defined(DEBUG_DEVTOOLS)
-  if (browser->serial() == kLocalSerial)
-    return false;
-#endif  // defined(DEBUG_DEVTOOLS)
-  android_bridge_->OpenRemotePage(
-      browser,
-      url_,
-      base::Bind(&OpenRemotePageRequest::RemotePageOpened,
-                 base::Unretained(this)));
-  return true;
-}
-
-void OpenRemotePageRequest::RemotePageOpened(
-    scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
-  callback_.Run(page);
-  android_bridge_->RemoveDeviceListListener(this);
-  delete this;
-}
-
 }  // namespace
 
 // DevToolsUI -----------------------------------------------------------------
@@ -368,9 +255,7 @@ GURL DevToolsUI::GetRemoteBaseURL() {
 
 DevToolsUI::DevToolsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      content::WebContentsObserver(web_ui->GetWebContents()),
-      bindings_(web_ui->GetWebContents()),
-      weak_factory_(this) {
+      bindings_(web_ui->GetWebContents()) {
   web_ui->SetBindings(0);
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(
@@ -379,57 +264,4 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui)
 }
 
 DevToolsUI::~DevToolsUI() {
-}
-
-void DevToolsUI::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  content::NavigationEntry* entry = load_details.entry;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDevToolsExperiments)) {
-    return;
-  }
-
-  if (entry->GetVirtualURL() == remote_frontend_loading_url_) {
-    remote_frontend_loading_url_ = GURL();
-    return;
-  }
-
-  std::string path = entry->GetVirtualURL().path().substr(1);
-  if (!StartsWithASCII(path, kRemoteOpenPrefix, false))
-    return;
-
-  bindings_.Detach();
-  remote_page_opening_url_ = entry->GetVirtualURL();
-  new OpenRemotePageRequest(Profile::FromWebUI(web_ui()),
-                            entry->GetVirtualURL().query(),
-                            base::Bind(&DevToolsUI::RemotePageOpened,
-                                       weak_factory_.GetWeakPtr(),
-                                       entry->GetVirtualURL()));
-}
-
-void DevToolsUI::RemotePageOpened(
-    const GURL& virtual_url,
-    scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
-  // Already navigated away while connecting to remote device.
-  if (remote_page_opening_url_ != virtual_url)
-    return;
-
-  remote_page_opening_url_ = GURL();
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  GURL url = DevToolsUIBindings::ApplyThemeToURL(profile,
-      DevToolsUI::GetProxyURL(page->frontend_url()));
-
-  content::NavigationController& navigation_controller =
-      web_ui()->GetWebContents()->GetController();
-  content::NavigationController::LoadURLParams params(url);
-  params.should_replace_current_entry = true;
-  remote_frontend_loading_url_ = virtual_url;
-  navigation_controller.LoadURLWithParams(params);
-  navigation_controller.GetPendingEntry()->SetVirtualURL(virtual_url);
-
-  DevToolsAndroidBridge* bridge =
-      DevToolsAndroidBridge::Factory::GetForProfile(profile);
-  scoped_ptr<DevToolsTargetImpl> target(bridge->CreatePageTarget(page));
-  bindings_.AttachTo(target->GetAgentHost());
 }

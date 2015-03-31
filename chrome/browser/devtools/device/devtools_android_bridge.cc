@@ -668,26 +668,8 @@ scoped_refptr<AndroidDeviceManager::Device> DevToolsAndroidBridge::FindDevice(
   return it == device_map_.end() ? nullptr : it->second;
 }
 
-void DevToolsAndroidBridge::RespondToOpenOnUIThread(
-    scoped_refptr<RemoteBrowser> browser,
-    const RemotePageCallback& callback,
-    int result,
-    const std::string& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (result < 0) {
-    callback.Run(NULL);
-    return;
-  }
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
-  base::DictionaryValue* dict;
-  if (value && value->GetAsDictionary(&dict))
-    callback.Run(new RemotePage(browser->browser_id_, *dict));
-}
-
-void DevToolsAndroidBridge::OpenRemotePage(
-    scoped_refptr<RemoteBrowser> browser,
-    const std::string& input_url,
-    const DevToolsAndroidBridge::RemotePageCallback& callback) {
+void DevToolsAndroidBridge::OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
+                                           const std::string& input_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL gurl(input_url);
   if (!gurl.is_valid()) {
@@ -701,9 +683,7 @@ void DevToolsAndroidBridge::OpenRemotePage(
   std::string query = net::EscapeQueryParamValue(url, false /* use_plus */);
   std::string request =
       base::StringPrintf(kNewPageRequestWithURL, query.c_str());
-  SendJsonRequest(browser->browser_id_, request,
-                  base::Bind(&DevToolsAndroidBridge::RespondToOpenOnUIThread,
-                             AsWeakPtr(), browser, callback));
+  SendJsonRequest(browser->browser_id_, request, base::Bind(&NoOp));
 }
 
 DevToolsAndroidBridge::RemoteBrowser::~RemoteBrowser() {

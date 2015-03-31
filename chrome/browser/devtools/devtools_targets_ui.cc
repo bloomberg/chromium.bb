@@ -303,19 +303,11 @@ AdbTargetsUIHandler::~AdbTargetsUIHandler() {
   android_bridge_->RemoveDeviceListListener(this);
 }
 
-static void NoOp(scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
-}
-
 void AdbTargetsUIHandler::Open(const std::string& browser_id,
                                const std::string& url) {
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
-  if (it == remote_browsers_.end())
-    return;
-
-  android_bridge_->OpenRemotePage(
-      it->second,
-      url,
-      base::Bind(&NoOp));
+  if (it != remote_browsers_.end())
+    android_bridge_->OpenRemotePage(it->second, url);
 }
 
 scoped_refptr<content::DevToolsAgentHost>
