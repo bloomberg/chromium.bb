@@ -194,7 +194,8 @@ class Brick(object):
     deps = [b.config['name'] for b in self.Dependencies()]
 
     self._WriteLayoutConf(
-        {'masters': ' '.join(['portage-stable', 'chromiumos'] + deps),
+        {'masters': ' '.join(
+            ['eclass-overlay', 'portage-stable', 'chromiumos'] + deps),
          'repo-name': self.config['name']})
 
     parents = self.config.get('experimental_profiles',
