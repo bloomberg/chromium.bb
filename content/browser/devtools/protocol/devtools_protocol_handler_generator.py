@@ -355,7 +355,7 @@ ${prep}\
 """)
 
 tmpl_prep_req = string.Template("""\
-  ${param_type} in_${param}${init};
+  ${raw_type} in_${param}${init};
   if (!params || !params->Get${Type}("${proto_param}", &in_${param})) {
     client_.SendError(command_id, Response::InvalidParams("${proto_param}"));
     return true;
@@ -371,17 +371,17 @@ tmpl_prep_req_list = string.Template("""\
   std::vector<${item_type}> in_${param};
   for (base::ListValue::const_iterator it =
       list_${param}->begin(); it != list_${param}->end(); ++it) {
-    ${item_type} item${item_init};
+    ${item_raw_type} item;
     if (!(*it)->GetAs${ItemType}(&item)) {
       client_.SendError(command_id, Response::InvalidParams("${proto_param}"));
       return true;
     }
-    in_${param}.push_back(item);
+    in_${param}.push_back(${item_pass});
   }
 """)
 
 tmpl_prep_opt = string.Template("""\
-  ${param_type} in_${param}${init};
+  ${raw_type} in_${param}${init};
   bool ${param}_found = params && params->Get${Type}(
       "${proto_param}",
       &in_${param});
@@ -391,10 +391,15 @@ tmpl_prep_output = string.Template("""\
   ${param_type} out_${param}${init};
 """)
 
-tmpl_arg_req = string.Template("in_${param}")
+tmpl_arg_name = string.Template("in_${param}")
+
+tmpl_arg_req = string.Template("${param_pass}")
 
 tmpl_arg_opt = string.Template(
-    "${param}_found ? &in_${param} : nullptr")
+    "${param}_found ? ${param_pass} : nullptr")
+
+tmpl_object_pass = string.Template(
+    "make_scoped_ptr<base::DictionaryValue>(${name}->DeepCopy())")
 
 tmpl_client_impl = string.Template("""\
 namespace ${domain} {
@@ -539,17 +544,27 @@ def ResolveRef(json, mapping):
 def ResolveArray(json, mapping):
   items_map = mapping.copy()
   ResolveType(json["items"], items_map)
+  if items_map["Type"] == "List":
+    # TODO(dgozman) Implement this.
+    raise Exception("Nested arrays are not implemented")
   mapping["param_type"] = "std::vector<%s>" % items_map["param_type"]
   mapping["Type"] = "List"
   mapping["pass_type"] = "const %s&" % mapping["param_type"]
+  mapping["storage_type"] = "std::vector<%s>" % items_map["storage_type"]
+  mapping["raw_type"] = mapping["storage_type"]
   mapping["prep_req"] = tmpl_prep_req_list.substitute(mapping,
-      item_type = items_map["param_type"],
+      item_type = items_map["storage_type"],
       item_init = items_map["init"],
+      item_raw_type = items_map["raw_type"],
+      item_pass = items_map["pass_template"].substitute(name="item", opt=""),
       ItemType = items_map["Type"])
   mapping["arg_out"] = "&out_%s" % mapping["param"]
 
 def ResolveObject(json, mapping):
   mapping["Type"] = "Dictionary"
+  mapping["storage_type"] = "scoped_ptr<base::DictionaryValue>"
+  mapping["raw_type"] = "base::DictionaryValue*"
+  mapping["pass_template"] = tmpl_object_pass
   if "properties" in json:
     if not "declared_name" in mapping:
       mapping["declared_name"] = ("%s%s" %
@@ -566,6 +581,7 @@ def ResolveObject(json, mapping):
     mapping["param_type"] = "base::DictionaryValue"
     mapping["pass_type"] = "scoped_ptr<base::DictionaryValue>"
     mapping["arg_out"] = "out_%s.get()" % mapping["param"]
+  mapping["prep_req"] = tmpl_prep_req.substitute(mapping)
 
 def ResolvePrimitive(json, mapping):
   jsonrpc_type = json["type"]
@@ -591,6 +607,8 @@ def ResolvePrimitive(json, mapping):
       DeclareEnum(json, mapping)
   else:
     raise Exception("Unknown type: %s" % json_type)
+  mapping["storage_type"] = mapping["param_type"]
+  mapping["raw_type"] = mapping["param_type"]
   mapping["prep_req"] = tmpl_prep_req.substitute(mapping)
   if jsonrpc_type != "string":
     mapping["pass_type"] = mapping["param_type"]
@@ -598,6 +616,7 @@ def ResolvePrimitive(json, mapping):
 
 def ResolveType(json, mapping):
   mapping["init"] = ""
+  mapping["pass_template"] = string.Template("${opt}${name}")
   if "$ref" in json:
     ResolveRef(json, mapping)
   elif "type" in json:
@@ -659,16 +678,24 @@ for json_domain in all_domains:
           param_map["param"] = Uncamelcase(json_param["name"])
           ResolveType(json_param, param_map)
           if json_param.get("optional"):
-            if param_map["Type"] in ["List", "Dictionary"]:
+            if param_map["Type"] in ["List"]:
               # TODO(vkuzkokov) Implement transformation of base::ListValue
               # to std::vector and base::DictonaryValue to struct.
               raise Exception(
-                  "Optional array and object parameters are not implemented")
+                  "Optional array parameters are not implemented")
             prep.append(tmpl_prep_opt.substitute(param_map))
-            args.append(tmpl_arg_opt.substitute(param_map))
+            param_pass = param_map["pass_template"].substitute(
+                name=tmpl_arg_name.substitute(param_map),
+                opt="&")
+            args.append(
+                tmpl_arg_opt.substitute(param_map, param_pass=param_pass))
           else:
             prep.append(param_map["prep_req"])
-            args.append(tmpl_arg_req.substitute(param_map))
+            param_pass = param_map["pass_template"].substitute(
+                name=tmpl_arg_name.substitute(param_map),
+                opt="")
+            args.append(
+                tmpl_arg_req.substitute(param_map, param_pass=param_pass))
 
       if json_command.get("async"):
         domain_needs_client = True
