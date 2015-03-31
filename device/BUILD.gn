@@ -5,9 +5,11 @@
 import("//build/config/features.gni")
 import("//testing/test.gni")
 
+is_linux_without_udev = is_linux && !use_udev
+is_linux_without_dbus = is_linux && !use_dbus
+
 test("device_unittests") {
   sources = [
-    "battery/battery_status_manager_linux_unittest.cc",
     "battery/battery_status_manager_win_unittest.cc",
     "battery/battery_status_service_unittest.cc",
     "bluetooth/bluetooth_adapter_mac_unittest.mm",
@@ -24,18 +26,8 @@ test("device_unittests") {
     "bluetooth/bluetooth_socket_chromeos_unittest.cc",
     "bluetooth/bluetooth_task_manager_win_unittest.cc",
     "bluetooth/bluetooth_uuid_unittest.cc",
-    "hid/hid_connection_unittest.cc",
-    "hid/hid_device_filter_unittest.cc",
-    "hid/hid_report_descriptor_unittest.cc",
-    "hid/input_service_linux_unittest.cc",
-    "hid/test_report_descriptors.cc",
-    "hid/test_report_descriptors.h",
     "nfc/nfc_chromeos_unittest.cc",
     "nfc/nfc_ndef_record_unittest.cc",
-    "serial/data_sink_unittest.cc",
-    "serial/data_source_unittest.cc",
-    "serial/serial_connection_unittest.cc",
-    "serial/serial_service_unittest.cc",
     "test/run_all_unittests.cc",
     "test/usb_test_gadget_impl.cc",
     "usb/usb_context_unittest.cc",
@@ -50,10 +42,7 @@ test("device_unittests") {
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
-    "//device/hid",
     "//device/nfc",
-    "//device/serial",
-    "//device/serial:test_support",
     "//device/usb",
     "//mojo/environment:chromium",
     "//net",
@@ -65,9 +54,38 @@ test("device_unittests") {
     "//url",
   ]
 
-  if (is_chromeos) {
-    sources -= [ "battery/battery_status_manager_linux_unittest.cc" ]
+  if (!is_linux_without_dbus && !is_chromeos) {
+    sources += [ "battery/battery_status_manager_linux_unittest.cc" ]
+  }
 
+  # HID and Serial:
+  # Linux, requires udev.
+  if (!is_linux_without_udev) {
+    sources += [
+      "hid/hid_connection_unittest.cc",
+      "hid/hid_device_filter_unittest.cc",
+      "hid/hid_report_descriptor_unittest.cc",
+      "hid/input_service_linux_unittest.cc",
+      "hid/test_report_descriptors.cc",
+      "hid/test_report_descriptors.h",
+      "serial/data_sink_unittest.cc",
+      "serial/data_source_unittest.cc",
+      "serial/serial_connection_unittest.cc",
+      "serial/serial_service_unittest.cc",
+    ]
+    deps += [
+      "//device/hid",
+      "//device/serial",
+      "//device/serial:test_support",
+    ]
+  }
+
+  if (use_udev) {
+    sources += [ "udev_linux/udev_unittest.cc" ]
+    deps += [ "//device/udev_linux" ]
+  }
+
+  if (is_chromeos) {
     configs += [ "//build/config/linux:dbus" ]
 
     deps += [
@@ -84,38 +102,5 @@ test("device_unittests") {
 
   if (is_mac) {
     libs = [ "IOBluetooth.framework" ]
-  }
-
-  if (use_udev) {
-    sources += [ "udev_linux/udev_unittest.cc" ]
-
-    deps += [ "//device/udev_linux" ]
-  }
-
-  if (is_linux && !use_udev) {
-    # Udev is the only Linux implementation. If we're compiling without Udev,
-    # disable these unittests.
-    sources -= [
-      "hid/hid_connection_unittest.cc",
-      "hid/hid_device_filter_unittest.cc",
-      "hid/hid_report_descriptor_unittest.cc",
-      "hid/input_service_linux_unittest.cc",
-      "hid/test_report_descriptors.cc",
-      "hid/test_report_descriptors.h",
-      "serial/data_sink_unittest.cc",
-      "serial/data_source_unittest.cc",
-      "serial/serial_connection_unittest.cc",
-      "serial/serial_service_unittest.cc",
-    ]
-
-    deps -= [
-      "//device/hid",
-      "//device/serial",
-      "//device/serial:test_support",
-    ]
-  }
-
-  if (is_linux && !use_dbus) {
-    sources -= [ "battery/battery_status_manager_linux_unittest.cc" ]
   }
 }
