@@ -86,11 +86,14 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Has absolute X & Y axes (excludes MT)
   bool HasAbsXY() const;
 
-  // Has MT absolute events
+  // Has MT absolute X & Y events.
   bool HasMTAbsXY() const;
 
   // Has relative X & Y axes.
   bool HasRelXY() const;
+
+  // Has multitouch protocol "B".
+  bool HasMultitouch() const;
 
   // Determine whether this is a "Direct Touch" device e.g. touchscreen.
   // Corresponds to INPUT_PROP_DIRECT but may be inferred.

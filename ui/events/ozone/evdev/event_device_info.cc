@@ -290,6 +290,10 @@ bool EventDeviceInfo::HasRelXY() const {
   return HasRelEvent(REL_X) && HasRelEvent(REL_Y);
 }
 
+bool EventDeviceInfo::HasMultitouch() const {
+  return HasAbsEvent(ABS_MT_SLOT);
+}
+
 bool EventDeviceInfo::HasDirect() const {
   bool has_direct = HasProp(INPUT_PROP_DIRECT);
   bool has_pointer = HasProp(INPUT_PROP_POINTER);

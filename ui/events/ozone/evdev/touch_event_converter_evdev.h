@@ -49,7 +49,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   virtual bool Reinitialize();
 
-  void ProcessInputEvent(const input_event& input);
+  void ProcessMultitouchEvent(const input_event& input);
+  void EmulateMultitouchEvent(const input_event& input);
+  void ProcessKey(const input_event& input);
   void ProcessAbs(const input_event& input);
   void ProcessSyn(const input_event& input);
 
@@ -65,11 +67,16 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Normalize pressure value to [0, 1].
   float ScalePressure(int32_t value);
 
+  int NextTrackingId();
+
   // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher_;
 
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;
+
+  // Device has multitouch capability.
+  bool has_mt_;
 
   // Pressure values.
   int pressure_min_;
@@ -85,6 +92,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Number of touch points reported by driver
   int touch_points_;
+
+  // Tracking id counter.
+  int next_tracking_id_;
 
   // Touch point currently being updated from the /dev/input/event* stream.
   size_t current_slot_;
