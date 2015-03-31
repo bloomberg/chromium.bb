@@ -658,6 +658,18 @@ gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
+#if !defined(OS_WIN)
+  // The Browser associated with this browser window must become the active
+  // browser at the time |Show()| is called. This is the natural behavior under
+  // Windows and Ash, but other platforms will not trigger
+  // OnWidgetActivationChanged() until we return to the runloop. Therefore any
+  // calls to Browser::GetLastActive() will return the wrong result if we do not
+  // explicitly set it here.
+  // A similar block also appears in BrowserWindowCocoa::Show().
+  if (browser()->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+    BrowserList::SetLastActive(browser());
+#endif
+
   // If the window is already visible, just activate it.
   if (frame_->IsVisible()) {
     frame_->Activate();
