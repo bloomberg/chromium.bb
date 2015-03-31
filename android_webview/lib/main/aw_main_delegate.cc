@@ -115,10 +115,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
       kV8SnapshotDataDescriptor, kSnapshotFileName));
 #endif
-  // TODO(mkosiba): make this CHECK when the android_webview_build uses an asset
-  // from the .apk too.
-  AwAssets::RegisterAssetWithGlobalDescriptors(
-      kAndroidICUDataDescriptor, base::i18n::kIcuDataFileName);
+  CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
+      kAndroidICUDataDescriptor, base::i18n::kIcuDataFileName));
 
   return false;
 }

@@ -30,32 +30,28 @@
           },
          'includes': [ '../build/repack_action.gypi' ],
         },
+        {
+          'action_name': 'android_webview_locales_rename_paks',
+          'variables': {
+            'rename_locales': 'tools/webview_locales_rename_paks.py',
+          },
+          'inputs': [
+            '<(rename_locales)',
+            '<!@pymod_do_main(webview_locales_rename_paks -i -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
+          ],
+          'outputs': [
+            '<!@pymod_do_main(webview_locales_rename_paks -o -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
+          ],
+          'action': [
+            'python',
+            '<(rename_locales)',
+            '-p', '<(PRODUCT_DIR)',
+            '-s', '<(SHARED_INTERMEDIATE_DIR)',
+            '<@(locales)',
+          ],
+        },
       ],
       'conditions': [
-        ['android_webview_build==0', {
-          'actions': [
-            {
-              'action_name': 'android_webview_locales_rename_paks',
-              'variables': {
-                'rename_locales': 'tools/webview_locales_rename_paks.py',
-              },
-              'inputs': [
-                '<(rename_locales)',
-                '<!@pymod_do_main(webview_locales_rename_paks -i -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
-              ],
-              'outputs': [
-                '<!@pymod_do_main(webview_locales_rename_paks -o -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
-              ],
-              'action': [
-                'python',
-                '<(rename_locales)',
-                '-p', '<(PRODUCT_DIR)',
-                '-s', '<(SHARED_INTERMEDIATE_DIR)',
-                '<@(locales)',
-              ],
-            }
-          ],
-        }],
         ['v8_use_external_startup_data==1', {
           'variables': {
             'conditions': [
@@ -161,8 +157,10 @@
         '../android_webview/native/webview_native.gyp:webview_native',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:autofill_content_renderer',
+        '../components/components.gyp:breakpad_host',
         '../components/components.gyp:cdm_browser',
         '../components/components.gyp:cdm_renderer',
+        '../components/components.gyp:crash_component',
         '../components/components.gyp:data_reduction_proxy_core_browser',
         '../components/components.gyp:navigation_interception',
         '../components/components.gyp:printing_common',
@@ -307,6 +305,7 @@
         'common/render_view_messages.h',
         'common/url_constants.cc',
         'common/url_constants.h',
+        'crash_reporter/aw_microdump_crash_reporter.cc',
         'crash_reporter/aw_microdump_crash_reporter.h',
         'lib/aw_browser_dependency_factory_impl.cc',
         'lib/aw_browser_dependency_factory_impl.h',
@@ -334,66 +333,43 @@
         'renderer/print_render_frame_observer.cc',
         'renderer/print_render_frame_observer.h',
       ],
-      # TODO(primiano): remove the *_disabled_in_android_builds fallback and
-      # merge this with the target once android_webview_build goes away.
-      'conditions': [
-        ['android_webview_build==0', {
-          'dependencies': [
-            '../components/components.gyp:breakpad_host',
-            '../components/components.gyp:crash_component',
-          ],
-          'sources': [
-            'crash_reporter/aw_microdump_crash_reporter.cc',
-          ],
-        }, {  # android_webview_build==1
-          'sources': [
-            'crash_reporter/aw_microdump_crash_reporter_disabled_in_android_builds.cc',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'libwebviewchromium',
       'includes': [
           'libwebviewchromium.gypi',
       ],
-    }
+    },
+    {
+      'target_name': 'android_webview_java',
+      'type': 'none',
+      'dependencies': [
+        '../components/components.gyp:navigation_interception_java',
+        '../components/components.gyp:web_contents_delegate_android_java',
+        '../content/content.gyp:content_java',
+        '../ui/android/ui_android.gyp:ui_java',
+        'android_webview_strings_grd',
+      ],
+      'variables': {
+        'java_in_dir': '../android_webview/java',
+        'has_java_resources': 1,
+        'R_package': 'org.chromium.android_webview',
+        'R_package_relpath': 'org/chromium/android_webview',
+      },
+      'includes': [ '../build/java.gypi' ],
+    },
+    {
+      'target_name': 'system_webview_apk',
+      'variables': {
+        'apk_name': 'SystemWebView',
+        'android_sdk_jar': '../third_party/android_platform/webview/frameworks_5.1.0_r1.jar',
+        'java_in_dir': 'glue/java',
+        'resource_dir': 'apk/java/res',
+      },
+      'includes': [ 'apk/system_webview_apk_common.gypi' ],
+    },
   ],
-  'conditions': [
-    ['android_webview_build==0', {
-      'includes': [
-        'android_webview_tests.gypi',
-      ],
-      'targets': [
-        {
-          'target_name': 'android_webview_java',
-          'type': 'none',
-          'dependencies': [
-            '../components/components.gyp:navigation_interception_java',
-            '../components/components.gyp:web_contents_delegate_android_java',
-            '../content/content.gyp:content_java',
-            '../ui/android/ui_android.gyp:ui_java',
-            'android_webview_strings_grd',
-          ],
-          'variables': {
-            'java_in_dir': '../android_webview/java',
-            'has_java_resources': 1,
-            'R_package': 'org.chromium.android_webview',
-            'R_package_relpath': 'org/chromium/android_webview',
-          },
-          'includes': [ '../build/java.gypi' ],
-        },
-        {
-          'target_name': 'system_webview_apk',
-          'variables': {
-            'apk_name': 'SystemWebView',
-            'android_sdk_jar': '../third_party/android_platform/webview/frameworks_5.1.0_r1.jar',
-            'java_in_dir': 'glue/java',
-            'resource_dir': 'apk/java/res',
-          },
-          'includes': [ 'apk/system_webview_apk_common.gypi' ],
-        },
-      ],
-    }],
+  'includes': [
+    'android_webview_tests.gypi',
   ],
 }
