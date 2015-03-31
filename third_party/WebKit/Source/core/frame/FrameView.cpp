@@ -249,6 +249,7 @@ void FrameView::reset()
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     m_maintainScrollPositionAnchor = nullptr;
     m_viewportConstrainedObjects.clear();
+    m_layoutSubtreeRoots.clear();
 }
 
 void FrameView::removeFromAXObjectCache()
