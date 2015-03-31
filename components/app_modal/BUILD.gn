@@ -30,7 +30,7 @@ static_library("app_modal") {
     deps += [ "//ui/aura" ]
   }
 
-  if (toolkit_views && !is_mac) {
+  if (toolkit_views) {
     sources += [
       "views/javascript_app_modal_dialog_views.cc",
       "views/javascript_app_modal_dialog_views.h",
