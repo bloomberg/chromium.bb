@@ -37,9 +37,12 @@ any web server.</li>
 <li><strong>Native Client (NaCl)</strong>: Also called traditional or non-portable Native
 Client, NaCl runs architecture-dependent (<strong>nexe</strong>) modules, which are
 packaged into an application. At runtime, the browser decides which nexe to
-load based on the architecture of the client machine. NaCl modules must be run
-from the <a class="reference external" href="https://chrome.google.com/webstore/category/apps">Chrome Web Store (CWS)</a>. Fortunately, work from
-PNaCl modules can be used to create NaCl modules.</li>
+load based on the architecture of the client machine.
+Apps and Extensions installed via the <a class="reference external" href="https://chrome.google.com/webstore/category/apps">Chrome Web Store (CWS)</a> can use NaCl
+modules without additional prompting.
+NaCl apps can also be installed from chrome://extensions or
+the command-line during development,
+however, this is not a recommended distribution mechanism.</li>
 </ul>
 <p>These flavors are described in more depth in <a class="reference internal" href="/native-client/nacl-and-pnacl.html"><em>PNaCl and NaCl</em></a></p>
 <div class="left-side">

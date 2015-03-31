@@ -20,13 +20,13 @@ In short, Native Client brings the **performance** and **low-level control**
 of native code to modern web browsers, without sacrificing the **security** and
 **portability** of the web. Watch the video below for an overview of
 Native Client, including its goals, how it works, and how
-Portable Native Client lets developers run native compiled code on the web. 
+Portable Native Client lets developers run native compiled code on the web.
 
 .. Note::
   :class: note
 
   This site uses several examples of Native Client. For the best experience,
-  consider downloading the `latest version of Chrome 
+  consider downloading the `latest version of Chrome
   <https://www.google.com/chrome/>`_. When you come back, be sure to `check out
   our demos <https://gonativeclient.appspot.com/demo>`_.
 
@@ -37,7 +37,7 @@ Portable Native Client lets developers run native compiled code on the web.
   <iframe class="video" width="600" height="337"
   src="//www.youtube.com/embed/MvKEomoiKBA?rel=0" frameborder="0"></iframe>
   <div class="big-intro">
-  
+
 Two Types of Modules
 ====================
 
@@ -52,12 +52,15 @@ Native Client comes in two flavors.
 * **Native Client (NaCl)**: Also called traditional or non-portable Native
   Client, NaCl runs architecture-dependent (**nexe**) modules, which are
   packaged into an application. At runtime, the browser decides which nexe to
-  load based on the architecture of the client machine. NaCl modules must be run
-  from the `Chrome Web Store (CWS) 
-  <https://chrome.google.com/webstore/category/apps>`_. Fortunately, work from
-  PNaCl modules can be used to create NaCl modules. 
-  
-These flavors are described in more depth in :doc:`PNaCl and NaCl 
+  load based on the architecture of the client machine.
+  Apps and Extensions installed via the `Chrome Web Store (CWS)
+  <https://chrome.google.com/webstore/category/apps>`_ can use NaCl
+  modules without additional prompting.
+  NaCl apps can also be installed from chrome://extensions or
+  the command-line during development,
+  however, this is not a recommended distribution mechanism.
+
+These flavors are described in more depth in :doc:`PNaCl and NaCl
 <nacl-and-pnacl>`
 
 .. raw:: html
@@ -81,7 +84,7 @@ Native Client module written in C++.
   <div class="big-intro">
 
 If you've already got the basics down, you're probably trying to get a real
-application ready for production. You're :doc:`building 
+application ready for production. You're :doc:`building
 <devguide/devcycle/building>`, :doc:`debugging <devguide/devcycle/debugging>`
 or :doc:`ready to distribute <devguide/distributing>`.
 
@@ -93,10 +96,10 @@ or :doc:`ready to distribute <devguide/distributing>`.
   <div class="left-side-inner">
   <h2>Nuts and Bolts</h2>
   <div class="big-intro">
-  
+
 You've been working on a Native Client module for a while now and you've run
 into an arcane problem. You may need to refer to the :doc:`PNaCl Bitcode
-Reference <reference/pnacl-bitcode-abi>` or the :doc:`Sandbox internals 
+Reference <reference/pnacl-bitcode-abi>` or the :doc:`Sandbox internals
 <reference/sandbox_internals/index>`.
 
 .. raw:: html
