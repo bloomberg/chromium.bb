@@ -130,5 +130,7 @@ interface ContentDecryptionModuleClient {
   OnSessionKeysChange(string session_id, bool has_additional_usable_key,
                       array<CdmKeyInformation> key_information);
 
-  OnSessionExpirationUpdate(string session_id, int64 new_expiry_time_usec);
+  // Provide session expiration update for |session_id|.
+  // |new_expiry_time_sec| is the number of seconds since epoch (Jan 1, 1970).
+  OnSessionExpirationUpdate(string session_id, double new_expiry_time_sec);
 };

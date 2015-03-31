@@ -71,7 +71,7 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
       bool has_additional_usable_key,
       mojo::Array<mojo::CdmKeyInformationPtr> keys_info) final;
   void OnSessionExpirationUpdate(const mojo::String& session_id,
-                                 int64_t new_expiry_time_usec) final;
+                                 double new_expiry_time_sec) final;
 
   // Callbacks to handle CDM promises.
   // We have to inline this method, since MS VS 2013 compiler fails to compile

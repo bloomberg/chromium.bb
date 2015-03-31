@@ -134,9 +134,9 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
 
 void MojoCdmService::OnSessionExpirationUpdate(
     const std::string& session_id,
-    const base::Time& new_expiry_time) {
+    const base::Time& new_expiry_time_sec) {
   client_->OnSessionExpirationUpdate(session_id,
-                                     new_expiry_time.ToInternalValue());
+                                     new_expiry_time_sec.ToDoubleT());
 }
 
 void MojoCdmService::OnSessionClosed(const std::string& session_id) {

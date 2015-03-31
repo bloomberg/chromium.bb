@@ -167,9 +167,9 @@ void MojoCdm::OnSessionKeysChange(
 }
 
 void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
-                                        int64_t new_expiry_time_usec) {
+                                        double new_expiry_time_sec) {
   session_expiration_update_cb_.Run(
-      session_id, base::Time::FromInternalValue(new_expiry_time_usec));
+      session_id, base::Time::FromDoubleT(new_expiry_time_sec));
 }
 
 }  // namespace media
