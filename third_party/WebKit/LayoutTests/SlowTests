@@ -191,3 +191,4 @@ crbug.com/448670 http/tests/serviceworker/chromium/register-different-script-man
 crbug.com/459009 crypto/subtle/ [ Slow ]
 
 crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
+crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
