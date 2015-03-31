@@ -2135,7 +2135,10 @@ void Heap::init()
     s_allocatedObjectSize = 0;
     s_allocatedSpace = 0;
     s_markedObjectSize = 0;
-    s_markingTimeInLastGC = 0.0;
+
+    // Use 8ms as initial estimated marking time.
+    // 8ms is long enough for low-end mobile devices to mark common real-world object graphs.
+    s_markingTimeInLastGC = 0.008;
 
     GCInfoTable::init();
 }
