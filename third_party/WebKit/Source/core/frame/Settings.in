@@ -105,9 +105,6 @@ hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 
-# FIXME: Remove this temporary flag. See crbug.com/366483 for the target
-# milestone.
-allowConnectingInsecureWebSocket initial=false
 mediaControlsOverlayPlayButtonEnabled initial=false
 mediaPlaybackRequiresUserGesture initial=false
 

@@ -370,7 +370,7 @@ bool MixedContentChecker::shouldBlockWebSocket(LocalFrame* frame, const KURL& ur
     // the client checks in order to prevent degrading the site's security UI.
     bool strictMode = mixedFrame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
     if (!strictMode) {
-        bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket());
+        bool allowedPerSettings = settings && settings->allowRunningOfInsecureContent();
         allowed = client->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
     }
 

@@ -617,11 +617,6 @@ void WebSettingsImpl::setStrictPowerfulFeatureRestrictions(bool enabled)
     m_settings->setStrictPowerfulFeatureRestrictions(enabled);
 }
 
-void WebSettingsImpl::setAllowConnectingInsecureWebSocket(bool enabled)
-{
-    m_settings->setAllowConnectingInsecureWebSocket(enabled);
-}
-
 void WebSettingsImpl::setPasswordEchoEnabled(bool flag)
 {
     m_settings->setPasswordEchoEnabled(flag);
