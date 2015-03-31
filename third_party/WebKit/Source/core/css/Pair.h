@@ -44,11 +44,6 @@ public:
 
     CSSPrimitiveValue* first() const { return m_first.get(); }
     CSSPrimitiveValue* second() const { return m_second.get(); }
-    IdenticalValuesPolicy identicalValuesPolicy() const { return m_identicalValuesPolicy; }
-
-    void setFirst(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first) { m_first = first; }
-    void setSecond(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second) { m_second = second; }
-    void setIdenticalValuesPolicy(IdenticalValuesPolicy identicalValuesPolicy) { m_identicalValuesPolicy = identicalValuesPolicy; }
 
     String cssText() const
     {
@@ -65,11 +60,6 @@ public:
     DECLARE_TRACE();
 
 private:
-    Pair()
-        : m_first(nullptr)
-        , m_second(nullptr)
-        , m_identicalValuesPolicy(DropIdenticalValues) { }
-
     Pair(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)
         : m_first(first)
         , m_second(second)
