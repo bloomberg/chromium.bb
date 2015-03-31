@@ -440,7 +440,7 @@ TEST_F(CertVerifyProcTest, MAYBE_ExtraneousMD5RootCert) {
   ASSERT_NE(static_cast<X509Certificate*>(NULL), extra_cert.get());
 
   scoped_refptr<X509Certificate> root_cert =
-      ImportCertFromFile(certs_dir, "cross-signed-root-sha1.pem");
+      ImportCertFromFile(certs_dir, "cross-signed-root-sha256.pem");
   ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
 
   ScopedTestRoot scoped_root(root_cert.get());

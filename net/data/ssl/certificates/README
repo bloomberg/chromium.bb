@@ -178,7 +178,7 @@ unit tests.
 ===== From net/data/ssl/scripts/generate-cross-signed-certs.sh
 - cross-signed-leaf.pem
 - cross-signed-root-md5.pem
-- cross-signed-root-sha1.pem
+- cross-signed-root-sha256.pem
      A certificate chain for regression testing http://crbug.com/108514
 
 ===== From net/data/ssl/scripts/generate-redundant-test-chains.sh
