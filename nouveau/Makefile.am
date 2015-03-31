@@ -21,4 +21,5 @@ libdrm_nouveauinclude_HEADERS = $(LIBDRM_NOUVEAU_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_nouveau.pc
 
-EXTRA_DIST = Android.mk
+TESTS = nouveau-symbol-check
+EXTRA_DIST = Android.mk $(TESTS)
