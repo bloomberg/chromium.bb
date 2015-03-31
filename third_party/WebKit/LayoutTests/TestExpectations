@@ -1925,5 +1925,3 @@ crbug.com/471375 virtual/scroll_customization/fast/events/touch/gesture/touch-ge
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 
 crbug.com/471678 [ Release ] http/tests/inspector/elements/styles/selector-line.html [ Failure Pass ]
-
-crbug.com/471968 [ Mac ] svg/carto.net/button.svg [ NeedsRebaseline ]
