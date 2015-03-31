@@ -26,6 +26,7 @@ pkg_config("gtk_internal_config") {
 group("gtk") {
   visibility = [
     "//chrome/browser/ui/libgtk2ui",
+    "//gpu/gles2_conform_support:gles2_conform_test_windowless",
     "//remoting/host",
   ]
   public_configs = [ ":gtk_internal_config" ]
