@@ -233,12 +233,6 @@ class CONTENT_EXPORT ContentRendererClient {
                                const GURL& first_party_for_cookies,
                                GURL* new_url);
 
-  // See the corresponding functions in blink::WebFrameClient.
-  virtual void DidCreateScriptContext(blink::WebLocalFrame* frame,
-                                      v8::Handle<v8::Context> context,
-                                      int extension_group,
-                                      int world_id) {}
-
   // See blink::Platform.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length);

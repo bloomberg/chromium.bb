@@ -110,15 +110,6 @@ bool ShellContentRendererClient::WillSendRequest(
   return false;
 }
 
-void ShellContentRendererClient::DidCreateScriptContext(
-    blink::WebLocalFrame* frame,
-    v8::Handle<v8::Context> context,
-    int extension_group,
-    int world_id) {
-  extension_dispatcher_->DidCreateScriptContext(
-      frame, context, extension_group, world_id);
-}
-
 const void* ShellContentRendererClient::CreatePPAPIInterface(
     const std::string& interface_name) {
 #if !defined(DISABLE_NACL)

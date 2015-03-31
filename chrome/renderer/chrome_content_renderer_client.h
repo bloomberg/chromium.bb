@@ -121,10 +121,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                        const GURL& url,
                        const GURL& first_party_for_cookies,
                        GURL* new_url) override;
-  void DidCreateScriptContext(blink::WebLocalFrame* frame,
-                              v8::Handle<v8::Context> context,
-                              int extension_group,
-                              int world_id) override;
   unsigned long long VisitedLinkHash(const char* canonical_url,
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long link_hash) override;

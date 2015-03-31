@@ -24,6 +24,14 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
 ExtensionFrameHelper::~ExtensionFrameHelper() {
 }
 
+void ExtensionFrameHelper::DidCreateScriptContext(
+    v8::Handle<v8::Context> context,
+    int extension_group,
+    int world_id) {
+  extension_dispatcher_->DidCreateScriptContext(
+      render_frame()->GetWebFrame(), context, extension_group, world_id);
+}
+
 void ExtensionFrameHelper::WillReleaseScriptContext(
     v8::Handle<v8::Context> context,
     int world_id) {

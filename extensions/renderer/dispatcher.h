@@ -90,11 +90,11 @@ class Dispatcher : public content::RenderProcessObserver,
 
   bool IsExtensionActive(const std::string& extension_id) const;
 
+  // Forwarded from the RenderFrameObserver events by ExtensionFrameHelper.
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               const v8::Handle<v8::Context>& context,
                               int extension_group,
                               int world_id);
-
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 const v8::Handle<v8::Context>& context,
                                 int world_id);

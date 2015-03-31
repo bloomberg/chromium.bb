@@ -3409,8 +3409,9 @@ void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
                                              int extension_group,
                                              int world_id) {
   DCHECK(!frame_ || frame_ == frame);
-  GetContentClient()->renderer()->DidCreateScriptContext(
-      frame, context, extension_group, world_id);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidCreateScriptContext(context, extension_group, world_id));
 }
 
 void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
