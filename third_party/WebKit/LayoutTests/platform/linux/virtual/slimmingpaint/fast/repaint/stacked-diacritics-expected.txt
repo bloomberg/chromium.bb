@@ -6,12 +6,17 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [19, 148, 126, 41]
+        [19, 116, 200, 74],
+        [19, 116, 126, 73],
+        [8, 136, 222, 142],
+        [8, 116, 222, 162]
       ],
       "paintInvalidationClients": [
         "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
         "LayoutText #text",
-        "RootInlineBox"
+        "RootInlineBox",
+        "LayoutBlockFlow DIV class='test'",
+        "LayoutBlockFlow DIV id='stacked'"
       ]
     }
   ]
