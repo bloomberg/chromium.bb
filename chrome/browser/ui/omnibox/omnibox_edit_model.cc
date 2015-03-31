@@ -680,6 +680,33 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = ui::PAGE_TRANSITION_LINK;
   }
 
+  // While the user is typing, the instant search base page may be prerendered
+  // in the background. Even though certain inputs may not be eligible for
+  // prerendering, the prerender isn't automatically cancelled as the user
+  // continues typing, in hopes the final input will end up making use of the
+  // prerenderer. Intermediate inputs that are legal for prerendering will be
+  // sent to the prerendered page to keep it up to date; then once the user
+  // commits a navigation, it will trigger code in chrome::Navigate() to swap in
+  // the prerenderer.
+  //
+  // Unfortunately, that swap code only has the navigated URL, so it doesn't
+  // actually know whether the prerenderer has been sent the relevant input
+  // already, or whether instead the user manually navigated to something that
+  // looks like a search URL (which won't have been sent to the prerenderer).
+  // In this case, we need to ensure the prerenderer is cancelled here so that
+  // code can't attempt to wrongly swap-in, or it could swap in an empty page in
+  // place of the correct navigation.
+  //
+  // This would be clearer if we could swap in the prerenderer here instead of
+  // over in chrome::Navigate(), but we have to wait until then because the
+  // final decision about whether to use the prerendered page depends on other
+  // parts of the chrome::NavigateParams struct not available until then.
+  InstantSearchPrerenderer* prerenderer =
+      InstantSearchPrerenderer::GetForProfile(profile_);
+  if (prerenderer &&
+      !prerenderer->IsAllowed(match, controller_->GetWebContents()))
+    prerenderer->Cancel();
+
   DCHECK(popup_model());
   view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),
                    popup_model()->selected_line());

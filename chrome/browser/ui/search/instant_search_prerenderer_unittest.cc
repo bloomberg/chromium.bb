@@ -20,6 +20,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -32,6 +33,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size.h"
 
 using base::ASCIIToUTF16;
@@ -314,8 +316,30 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   // Allow prerendering only for search type AutocompleteMatch suggestions.
   AutocompleteMatch search_type_match(NULL, 1100, false,
                                       AutocompleteMatchType::SEARCH_SUGGEST);
+  search_type_match.keyword = ASCIIToUTF16("{google:baseurl}");
   EXPECT_TRUE(AutocompleteMatch::IsSearchType(search_type_match.type));
   EXPECT_TRUE(prerenderer->IsAllowed(search_type_match, active_tab));
+
+  // Do not allow prerendering for custom search provider requests.
+  TemplateURLData data;
+  data.SetURL("https://www.dummyurl.com/search?q=%s&img=1");
+  data.short_name = ASCIIToUTF16("t");
+  data.SetKeyword(ASCIIToUTF16("k"));
+  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  service->Add(t_url);
+  service->Load();
+  AutocompleteMatch custom_search_type_match(
+      NULL, 1100, false, AutocompleteMatchType::SEARCH_SUGGEST);
+  custom_search_type_match.keyword = ASCIIToUTF16("k");
+  custom_search_type_match.destination_url =
+      GURL("https://www.dummyurl.com/search?q=fan&img=1");
+  TemplateURL* template_url =
+      custom_search_type_match.GetTemplateURL(service, false);
+  EXPECT_TRUE(template_url);
+  EXPECT_TRUE(AutocompleteMatch::IsSearchType(custom_search_type_match.type));
+  EXPECT_FALSE(prerenderer->IsAllowed(custom_search_type_match, active_tab));
 
   AutocompleteMatch url_type_match(NULL, 1100, true,
                                    AutocompleteMatchType::URL_WHAT_YOU_TYPED);
