@@ -91,6 +91,12 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Start all tests without a gpu channel so that the tests exercise a
+    // consistent codepath.
+    command_line->AppendSwitch(switches::kDisableGpuEarlyInit);
+  }
+
   void OnContextLost(const base::Closure callback, int* counter) {
     (*counter)++;
     callback.Run();
@@ -133,16 +139,28 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
   }
 };
 
-// Fails since UI Compositor establishes a GpuChannel.
-IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, DISABLED_Basic) {
+// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
+// establishes a GPU channel.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_Basic Basic
+#else
+#define MAYBE_Basic DISABLED_Basic
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, MAYBE_Basic) {
   DCHECK(!IsChannelEstablished());
   EstablishAndWait();
   EXPECT_TRUE(GetGpuChannel() != NULL);
 }
 
-// Fails since UI Compositor establishes a GpuChannel.
+// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
+// establishes a GPU channel.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_EstablishAndTerminate EstablishAndTerminate
+#else
+#define MAYBE_EstablishAndTerminate DISABLED_EstablishAndTerminate
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       DISABLED_EstablishAndTerminate) {
+                       MAYBE_EstablishAndTerminate) {
   DCHECK(!IsChannelEstablished());
   base::RunLoop run_loop;
   GetFactory()->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
@@ -153,9 +171,15 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 }
 
 #if !defined(OS_ANDROID)
-// Fails since UI Compositor establishes a GpuChannel.
+// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
+// establishes a GPU channel.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_AlreadyEstablished AlreadyEstablished
+#else
+#define MAYBE_AlreadyEstablished DISABLED_AlreadyEstablished
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       DISABLED_AlreadyEstablished) {
+                       MAYBE_AlreadyEstablished) {
   DCHECK(!IsChannelEstablished());
   scoped_refptr<GpuChannelHost> gpu_channel =
       GetFactory()->EstablishGpuChannelSync(kInitCause);
@@ -170,9 +194,15 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 }
 #endif
 
-// Fails since UI Compositor establishes a GpuChannel.
+// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
+// establishes a GPU channel.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_CrashAndRecover
+#else
+#define MAYBE_CrashAndRecover DISABLED_CrashAndRecover
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       DISABLED_CrashAndRecover) {
+                       MAYBE_CrashAndRecover) {
   DCHECK(!IsChannelEstablished());
   EstablishAndWait();
   scoped_refptr<GpuChannelHost> host = GetGpuChannel();
