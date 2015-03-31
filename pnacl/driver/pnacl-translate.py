@@ -313,7 +313,7 @@ def SetUpArch():
     '1': '-O2',
     '2': '-O2',
     }
-  env.append('SZ_FLAGS_ARCH', sz_opt_map.get(env.getone('OPT_LEVEL'), '-O2'))
+  env.append('SZ_FLAGS_EXTRA', sz_opt_map.get(env.getone('OPT_LEVEL'), '-O2'))
   # At this point, the only Subzero options left to set are -o, -filetype, and
   # -threads.
 

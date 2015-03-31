@@ -126,28 +126,34 @@ define i32 @_start() {
     if driver_test_utils.CanRunHost():
       pexe = self.getFakePexe()
       # Test Subzero's default args. Assume default is threads=0.
-      # In that case modules still = 1, and no special params are need
-      # so the argv[] only has the 1 null byte.
+      # In that case # of modules still == 1, and the only special param
+      # is the optimization level.
       self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '--use-sz'],
           ['StreamInitWithSplit i\\(0\\) h\\(objfile\\) '
-           'h\\(invalid\\).*C\\(1,'])
+           'h\\(invalid\\).*C\\(4,-O2\\\\'])
       # Similar, but with explicitly set split-module=0.
       self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '--use-sz', '-split-module=0'],
           ['StreamInitWithSplit i\\(0\\) h\\(objfile\\) '
-           'h\\(invalid\\).*C\\(1,'])
+           'h\\(invalid\\).*C\\(4,-O2\\\\'])
       # Test that we can bump the thread count up (e.g., up to 4).
       self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '--use-sz', '-split-module=4'],
           ['StreamInitWithSplit i\\(4\\) h\\(objfile\\) '
-           'h\\(invalid\\).*C\\(1,'])
+           'h\\(invalid\\).*C\\(4,-O2\\\\'])
+      # Test that you get Om1 when you ask for O0.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['-O0', '--pnacl-sb', '--use-sz'],
+          ['StreamInitWith.*C\\(.*-Om1.'])
 
   def test_LLVMFile(self):
     if not driver_test_utils.CanRunHost():
