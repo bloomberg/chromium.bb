@@ -60,7 +60,8 @@ BATCHES = \
 	tests/gen7-3d.batch
 
 TESTS = \
-	$(BATCHES:.batch=.batch.sh)
+	$(BATCHES:.batch=.batch.sh) \
+	intel-symbol-check
 
 EXTRA_DIST = \
 	$(BATCHES) \
@@ -68,7 +69,8 @@ EXTRA_DIST = \
 	$(BATCHES:.batch=.batch-ref.txt) \
 	$(BATCHES:.batch=.batch-ref.txt) \
 	tests/test-batch.sh \
-	Android.mk
+	Android.mk \
+	$(TESTS)
 
 test_decode_LDADD = libdrm_intel.la ../libdrm.la
 
