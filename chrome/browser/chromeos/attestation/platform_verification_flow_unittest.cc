@@ -47,7 +47,9 @@ const char kTestURL[] = "http://mytestdomain/test";
 class FakeDelegate : public PlatformVerificationFlow::Delegate {
  public:
   FakeDelegate()
-      : url_(kTestURL), is_permitted_by_user_(true), is_incognito_(false) {
+      : url_(kTestURL),
+        is_permitted_by_user_(true),
+        is_in_supported_mode_(true) {
     // Configure a user for the mock user manager.
     mock_user_manager_.SetActiveUser(kTestEmail);
   }
@@ -65,8 +67,8 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     return is_permitted_by_user_;
   }
 
-  bool IsGuestOrIncognito(content::WebContents* web_contents) override {
-    return is_incognito_;
+  bool IsInSupportedMode(content::WebContents* web_contents) override {
+    return is_in_supported_mode_;
   }
 
   void set_url(const GURL& url) {
@@ -77,15 +79,15 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     is_permitted_by_user_ = is_permitted_by_user;
   }
 
-  void set_is_incognito(bool is_incognito) {
-    is_incognito_ = is_incognito;
+  void set_is_in_supported_mode(bool is_in_supported_mode) {
+    is_in_supported_mode_ = is_in_supported_mode;
   }
 
  private:
   MockUserManager mock_user_manager_;
   GURL url_;
   bool is_permitted_by_user_;
-  bool is_incognito_;
+  bool is_in_supported_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
 };
@@ -328,8 +330,8 @@ TEST_F(PlatformVerificationFlowTest, ExpiredCert) {
   EXPECT_EQ(certificate_, fake_certificate_list_[1]);
 }
 
-TEST_F(PlatformVerificationFlowTest, IncognitoMode) {
-  fake_delegate_.set_is_incognito(true);
+TEST_F(PlatformVerificationFlowTest, UnsupportedMode) {
+  fake_delegate_.set_is_in_supported_mode(false);
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::PLATFORM_NOT_VERIFIED, result_);

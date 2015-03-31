@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,18 +13,17 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-
 #if defined(OS_CHROMEOS)
 #include <utility>
 
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/views/widget/widget.h"
 #elif defined(OS_ANDROID)
-#include "base/command_line.h"
 #include "media/base/media_switches.h"
 #else
 #error This file currently only supports Chrome OS and Android.
@@ -200,6 +200,13 @@ bool ProtectedMediaIdentifierPermissionContext::
   if (profile()->IsOffTheRecord() || profile()->IsGuestSession()) {
     DVLOG(1) << "Protected media identifier disabled in incognito or guest "
                 "mode.";
+    return false;
+  }
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kSystemDevMode) &&
+      !command_line->HasSwitch(chromeos::switches::kAllowRAInDevMode)) {
+    DVLOG(1) << "Protected media identifier disabled in dev mode.";
     return false;
   }
 

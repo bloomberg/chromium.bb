@@ -85,8 +85,11 @@ class PlatformVerificationFlow
     // Checks whether attestation is permitted by user.
     virtual bool IsPermittedByUser(content::WebContents* web_contents) = 0;
 
-    // Returns true iff |web_contents| belongs to a guest or incognito session.
-    virtual bool IsGuestOrIncognito(content::WebContents* web_contents) = 0;
+    // Returns true iff the device is in a mode that supports platform
+    // verification. For example, platform verification is not supported in
+    // guest or incognito mode. It is also not supported in dev mode unless
+    // overridden by a flag.
+    virtual bool IsInSupportedMode(content::WebContents* web_contents) = 0;
   };
 
   // This callback will be called when a challenge operation completes.  If

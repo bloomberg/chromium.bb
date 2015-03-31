@@ -21,6 +21,7 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
+CHROMEOS_EXPORT extern const char kAllowRAInDevMode[];
 CHROMEOS_EXPORT extern const char kAppOemManifestFile[];
 CHROMEOS_EXPORT extern const char kArtifactsDir[];
 CHROMEOS_EXPORT extern const char kAshWebUIInit[];

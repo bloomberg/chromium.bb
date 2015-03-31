@@ -18,6 +18,7 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -107,10 +108,15 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
     return content_setting == CONTENT_SETTING_ALLOW;
   }
 
-  bool IsGuestOrIncognito(content::WebContents* web_contents) override {
+  bool IsInSupportedMode(content::WebContents* web_contents) override {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    return (profile->IsOffTheRecord() || profile->IsGuestSession());
+    if (profile->IsOffTheRecord() || profile->IsGuestSession())
+      return false;
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    return !command_line->HasSwitch(chromeos::switches::kSystemDevMode) ||
+           command_line->HasSwitch(chromeos::switches::kAllowRAInDevMode);
   }
 
  private:
@@ -188,13 +194,11 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     return;
   }
 
-  // A platform key must be bound to a user. They are not allowed in incognito
-  // or guest mode.
   // TODO(xhwang): Change to DCHECK when prefixed EME support is removed.
   // See http://crbug.com/249976
-  if (delegate_->IsGuestOrIncognito(web_contents)) {
-    VLOG(1) << "Platform verification denied because the current session is "
-            << "guest or incognito.";
+  if (!delegate_->IsInSupportedMode(web_contents)) {
+    VLOG(1) << "Platform verification denied because it's not supported in the "
+            << "current mode.";
     ReportError(callback, PLATFORM_NOT_VERIFIED);
     return;
   }
