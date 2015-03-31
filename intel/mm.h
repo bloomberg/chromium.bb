@@ -29,6 +29,12 @@
 #ifndef MM_H
 #define MM_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "libdrm.h"
+
 struct mem_block {
 	struct mem_block *next, *prev;
 	struct mem_block *next_free, *prev_free;
@@ -42,7 +48,7 @@ struct mem_block {
  * input: total size in bytes
  * return: a heap pointer if OK, NULL if error
  */
-extern struct mem_block *mmInit(int ofs, int size);
+drm_private extern struct mem_block *mmInit(int ofs, int size);
 
 /**
  * Allocate 'size' bytes with 2^align2 bytes alignment,
@@ -54,24 +60,25 @@ extern struct mem_block *mmInit(int ofs, int size);
  *		startSearch = linear offset from start of heap to begin search
  * return: pointer to the allocated block, 0 if error
  */
-extern struct mem_block *mmAllocMem(struct mem_block *heap, int size,
-				    int align2, int startSearch);
+drm_private extern struct mem_block *mmAllocMem(struct mem_block *heap,
+						int size, int align2,
+						int startSearch);
 
 /**
  * Free block starts at offset
  * input: pointer to a block
  * return: 0 if OK, -1 if error
  */
-extern int mmFreeMem(struct mem_block *b);
+drm_private extern int mmFreeMem(struct mem_block *b);
 
 /**
  * destroy MM
  */
-extern void mmDestroy(struct mem_block *mmInit);
+drm_private extern void mmDestroy(struct mem_block *mmInit);
 
 /**
  * For debuging purpose.
  */
-extern void mmDumpMemInfo(const struct mem_block *mmInit);
+drm_private extern void mmDumpMemInfo(const struct mem_block *mmInit);
 
 #endif
