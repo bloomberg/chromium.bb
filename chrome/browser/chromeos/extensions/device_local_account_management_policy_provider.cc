@@ -30,6 +30,7 @@ const char* const kPublicSessionWhitelist[] = {
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
     "eilbnahdgoddoedakcmfkcgfoegeloil",  // Ancoris proxy component
     "ceehlgckkmkaoggdnjhibffkphfnphmg",  // Libdata login
+    "fnhgfoccpcjdnjcobejogdnlnidceemb",  // OverDrive
 
     // Retail mode:
     "bjfeaefhaooblkndnoabbkkkenknkemb",  // 500 px demo
