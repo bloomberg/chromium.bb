@@ -567,6 +567,8 @@ crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-194.html [ Pass Failure ]
 crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-201.html [ Pass Failure ]
 crbug.com/465864 ietestcenter/Javascript/15.3.3.2-1.html [ Pass Failure ]
 
+crbug.com/472267 ietestcenter/Javascript/15.2.3.2-1.html [ Pass Failure ]
+
 crbug.com/472189 ietestcenter/Javascript/15.2.3.3-1.html [ Pass Failure ]
 
 crbug.com/316148 crbug.com/465864 http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Failure Crash ]
