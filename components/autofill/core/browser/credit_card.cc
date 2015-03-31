@@ -546,9 +546,10 @@ base::string16 CreditCard::TypeAndLastFourDigits() const {
   if (digits.empty())
     return type;
 
-  // The separator character is a horizontal midline ellipsis.
+  // The separator character is a non breaking space and a horizontal midline
+  // ellipsis.
   // TODO(estade): i18n?
-  return type + base::UTF8ToUTF16(" \xE2\x8B\xAF") + digits;
+  return type + base::UTF8ToUTF16("\xC2\xA0\xE2\x8B\xAF") + digits;
 }
 
 void CreditCard::operator=(const CreditCard& credit_card) {

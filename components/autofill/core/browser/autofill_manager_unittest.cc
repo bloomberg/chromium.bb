@@ -889,11 +889,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
       Suggestion(
-          "Visa \xE2\x8B\xAF"
+          "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
       Suggestion(
-          "MasterCard \xE2\x8B\xAF"
+          "MasterCard\xC2\xA0\xE2\x8B\xAF"
           "8765",
           "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -919,7 +919,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
       Suggestion(
-          "Visa \xE2\x8B\xAF"
+          "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
@@ -942,10 +942,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 
 #if defined(OS_ANDROID)
   static const char* kVisaSuggestion =
-      "Visa \xE2\x8B\xAF"
+      "Visa\xC2\xA0\xE2\x8B\xAF"
       "3456";
   static const char* kMcSuggestion =
-      "MasterCard \xE2\x8B\xAF"
+      "MasterCard\xC2\xA0\xE2\x8B\xAF"
       "8765";
 #else
   static const char* kVisaSuggestion = "*3456";
@@ -1037,15 +1037,15 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
       Suggestion(
-          "Visa \xE2\x8B\xAF"
+          "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
       Suggestion(
-          "MasterCard \xE2\x8B\xAF"
+          "MasterCard\xC2\xA0\xE2\x8B\xAF"
           "8765",
           "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)),
       Suggestion(
-          "MasterCard \xE2\x8B\xAF"
+          "MasterCard\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "05/12", kMasterCard, autofill_manager_->GetPackedCreditCardID(7)));
 }
@@ -1084,11 +1084,11 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   external_delegate_->CheckSuggestions(
       kPageID2,
       Suggestion(
-          "Visa \xE2\x8B\xAF"
+          "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
       Suggestion(
-          "MasterCard \xE2\x8B\xAF"
+          "MasterCard\xC2\xA0\xE2\x8B\xAF"
           "8765",
           "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -3171,7 +3171,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
       Suggestion(
-          "Visa \xE2\x8B\xAF"
+          "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }

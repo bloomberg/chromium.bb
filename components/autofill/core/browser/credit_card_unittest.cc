@@ -90,12 +90,12 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
       &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
   base::string16 summary2 = credit_card2.Label();
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "5100"),
             summary2);
   base::string16 obfuscated2 = credit_card2.TypeAndLastFourDigits();
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "5100"),
             obfuscated2);
 
@@ -105,12 +105,12 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
       &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
   base::string16 summary3 = credit_card3.Label();
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "5100"),
             summary3);
   base::string16 obfuscated3 = credit_card3.TypeAndLastFourDigits();
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "5100"),
             obfuscated3);
 
@@ -120,12 +120,12 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
       &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
   base::string16 summary4 = credit_card4.Label();
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "5100, 01/2010"),
             summary4);
   base::string16 obfuscated4 = credit_card4.TypeAndLastFourDigits();
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "5100"),
             obfuscated4);
 
@@ -137,12 +137,12 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
   base::string16 summary5 = credit_card5.Label();
   EXPECT_EQ(UTF8ToUTF16(
-                "Card \xE2\x8B\xAF"
+                "Card\xC2\xA0\xE2\x8B\xAF"
                 "5100, 01/2010"),
             summary5);
   base::string16 obfuscated5 = credit_card5.TypeAndLastFourDigits();
   EXPECT_EQ(UTF8ToUTF16(
-                "Card \xE2\x8B\xAF"
+                "Card\xC2\xA0\xE2\x8B\xAF"
                 "5100"),
             obfuscated5);
 }

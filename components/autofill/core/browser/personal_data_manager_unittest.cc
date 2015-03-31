@@ -2900,12 +2900,12 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
       AutofillType(CREDIT_CARD_NUMBER), base::string16());
   ASSERT_EQ(2U, suggestions.size());
   EXPECT_EQ(UTF8ToUTF16(
-                "Amex \xE2\x8B\xAF"
+                "Amex\xC2\xA0\xE2\x8B\xAF"
                 "8555"),
             suggestions[0].value);
   EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[0].label);
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "2109"),
             suggestions[1].value);
   EXPECT_EQ(base::string16(), suggestions[1].label);
@@ -2954,19 +2954,19 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
       AutofillType(CREDIT_CARD_NUMBER), base::string16());
   ASSERT_EQ(4U, suggestions.size());
   EXPECT_EQ(UTF8ToUTF16(
-                "Amex \xE2\x8B\xAF"
+                "Amex\xC2\xA0\xE2\x8B\xAF"
                 "8555"),
             suggestions[0].value);
   EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard \xE2\x8B\xAF"
+                "MasterCard\xC2\xA0\xE2\x8B\xAF"
                 "2109"),
             suggestions[1].value);
   EXPECT_EQ(UTF8ToUTF16(
-                "Visa \xE2\x8B\xAF"
+                "Visa\xC2\xA0\xE2\x8B\xAF"
                 "9012"),
             suggestions[2].value);
   EXPECT_EQ(UTF8ToUTF16(
-                "Visa \xE2\x8B\xAF"
+                "Visa\xC2\xA0\xE2\x8B\xAF"
                 "2109"),
             suggestions[3].value);
 
