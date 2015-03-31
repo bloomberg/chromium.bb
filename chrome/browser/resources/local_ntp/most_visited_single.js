@@ -40,7 +40,9 @@ var LOG_TYPE = {
   // The visuals of that tile's fallback are handled externally. Unused here.
   NTP_EXTERNAL_TILE_FALLBACK: 8,
   // The user moused over an NTP tile.
-  NTP_MOUSEOVER: 9
+  NTP_MOUSEOVER: 9,
+  // A NTP Tile has finished loading (successfully or failing).
+  NTP_TILE_LOADED: 10,
 };
 
 
@@ -98,6 +100,7 @@ var logEvent = function(eventType) {
 var countLoad = function() {
   loadedCounter -= 1;
   if (loadedCounter <= 0) {
+    logEvent(LOG_TYPE.NTP_TILE_LOADED);
     window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
     loadedCounter = 1;
   }
