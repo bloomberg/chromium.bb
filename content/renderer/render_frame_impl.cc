@@ -2574,6 +2574,13 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
   LoadNavigationErrorPage(failed_request, error, replace);
 }
 
+void RenderFrameImpl::didFailProvisionalLoad(
+    blink::WebLocalFrame* frame,
+    const blink::WebURLError& error,
+    blink::WebHistoryCommitType commit_type) {
+  didFailProvisionalLoad(frame, error);
+}
+
 void RenderFrameImpl::didCommitProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
@@ -2838,6 +2845,12 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
                                              failed_request.url(),
                                              error.reason,
                                              error_description));
+}
+
+void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
+                                  const blink::WebURLError& error,
+                                  blink::WebHistoryCommitType commit_type) {
+  didFailLoad(frame, error);
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {

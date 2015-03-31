@@ -404,6 +404,10 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didFailProvisionalLoad(
       blink::WebLocalFrame* frame,
       const blink::WebURLError& error);
+  virtual void didFailProvisionalLoad(
+      blink::WebLocalFrame* frame,
+      const blink::WebURLError& error,
+      blink::WebHistoryCommitType commit_type);
   virtual void didCommitProvisionalLoad(
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
@@ -420,6 +424,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   virtual void didFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error);
+  virtual void didFailLoad(blink::WebLocalFrame* frame,
+                           const blink::WebURLError& error,
+                           blink::WebHistoryCommitType commit_type);
   virtual void didFinishLoad(blink::WebLocalFrame* frame);
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& item,
