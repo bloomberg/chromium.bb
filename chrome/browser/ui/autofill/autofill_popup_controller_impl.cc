@@ -464,7 +464,7 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
   selected_line_ = selected_line;
 
   if (selected_line_ != kNoSelection) {
-    delegate_->DidSelectSuggestion(elided_values_[selected_line_],
+    delegate_->DidSelectSuggestion(suggestions_[selected_line_].value,
                                    suggestions_[selected_line_].frontend_id);
   } else {
     delegate_->ClearPreviewedForm();
