@@ -55,8 +55,6 @@ sequential_promise_test(function(t) {
         assert_false(res.bodyUsed);
         var reader = res.body.getReader();
         assert_true(res.bodyUsed);
-        return res;
-      }).then(function(res) {
         return res.text();
       }).then(unreached_rejection(t), function() {
         // text() should fail because bodyUsed is set.
@@ -67,8 +65,6 @@ sequential_promise_test(function(t) {
     var response;
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         response = res;
-        // We need to access body attribute to start the stream.
-        res.body;
         assert_false(res.bodyUsed);
         var p = res.arrayBuffer();
         assert_true(res.bodyUsed);
@@ -83,9 +79,6 @@ sequential_promise_test(function(t) {
 
 sequential_promise_test(function(t) {
     return fetch('/fetch/resources/slow-failure.cgi').then(function(res) {
-        // We need to access body attribute to start the stream.
-        res.body;
-
         return res.text().then(function() {
             assert_unreached('text() should fail');
           }, function(e) {
@@ -141,6 +134,22 @@ sequential_promise_test(function(t) {
         assert_equals(r[1].byteLength, 190);
       });
   }, 'Cancelling stream should not affect cloned one.');
+
+sequential_promise_test(function(t) {
+    var stream;
+    return fetch('/fetch/resources/progressive.php').then(function(res) {
+        var p = res.text();
+        stream = res.body;
+        assert_throws({name: 'TypeError'}, function() { stream.getReader() });
+        return p;
+      }).then(function(text) {
+        assert_equals(text.length, 190);
+        return stream.getReader().read();
+      }).then(function(r) {
+        assert_true(r.done);
+        assert_equals(r.value, undefined);
+      });
+  }, 'Accessing body when processing text().');
 
 sequential_promise_test_done();
 done();

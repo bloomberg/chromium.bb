@@ -16,12 +16,14 @@ class ExceptionState;
 class ExecutionContext;
 class ReadableByteStreamReader;
 class ScriptState;
+class Strategy;
 class UnderlyingSource;
 
 class CORE_EXPORT ReadableByteStream : public ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     explicit ReadableByteStream(UnderlyingSource* source) : ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(source) { }
+    ReadableByteStream(UnderlyingSource* source, Strategy* strategy) : ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(source, strategy) { }
 
     ReadableByteStreamReader* getBytesReader(ExecutionContext*, ExceptionState&);
 };

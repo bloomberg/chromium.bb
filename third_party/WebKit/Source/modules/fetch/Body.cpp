@@ -59,70 +59,45 @@ public:
         ReadingBlob,
         Closed,
         Errored,
-        BodyUsed,
     };
-    ReadableStreamSource(Body* body) : m_body(body), m_state(Initial)
-    {
-        if (m_body->buffer()) {
-            m_bodyStreamBuffer = m_body->buffer();
-        } else {
-            m_blobDataHandle = m_body->blobDataHandle();
-            if (!m_blobDataHandle)
-                m_blobDataHandle = BlobDataHandle::create(BlobData::create(), 0);
-        }
-    }
+    ReadableStreamSource(Body* body) : m_body(body), m_state(Initial) { }
     ~ReadableStreamSource() override { }
+
+    State state() const { return m_state; }
+
     void startStream(ReadableByteStream* stream)
     {
-        ASSERT(m_state == Initial);
-        ASSERT(!m_stream);
-        ASSERT(stream);
         m_stream = stream;
         stream->didSourceStart();
-        if (m_body->bodyUsed()) {
-            m_state = BodyUsed;
-            m_stream->error(DOMException::create(InvalidStateError, "The stream is locked."));
-            return;
-        }
-        if (m_bodyStreamBuffer) {
-            ASSERT(m_bodyStreamBuffer == m_body->buffer());
-            m_state = Streaming;
-            m_bodyStreamBuffer->registerObserver(this);
-            onWrite();
-            if (m_bodyStreamBuffer->hasError())
-                return onError();
-            if (m_bodyStreamBuffer->isClosed())
-                return onClose();
-        } else {
-            ASSERT(m_blobDataHandle);
-            m_state = ReadingBlob;
-            FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
-            m_loader = adoptPtr(new FileReaderLoader(readType, this));
-            m_loader->start(m_body->executionContext(), m_blobDataHandle);
-        }
     }
     // Creates a new BodyStreamBuffer to drain the data.
     BodyStreamBuffer* createDrainingStream()
     {
-        ASSERT(!m_drainingStreamBuffer);
         ASSERT(m_state != Initial);
-        ASSERT(m_state != BodyUsed);
-        ASSERT(m_stream);
-        m_drainingStreamBuffer = new BodyStreamBuffer(new Canceller(this));
-        if (m_state == Errored) {
-            m_drainingStreamBuffer->error(exception());
-            return m_drainingStreamBuffer;
+
+        auto drainingStreamBuffer = new BodyStreamBuffer(new Canceller(this));
+        if (m_stream->stateInternal() == ReadableByteStream::Closed) {
+            drainingStreamBuffer->close();
+            return drainingStreamBuffer;
         }
+        if (m_stream->stateInternal() == ReadableByteStream::Errored) {
+            drainingStreamBuffer->error(exception());
+            return drainingStreamBuffer;
+        }
+
+        ASSERT(!m_drainingStreamBuffer);
         // Take back the data in |m_stream|.
         Deque<std::pair<RefPtr<DOMArrayBufferView>, size_t>> tmp_queue;
-        if (m_stream->stateInternal() == ReadableStream::Readable)
-            m_stream->readInternal(tmp_queue);
+        ASSERT(m_stream->stateInternal() == ReadableStream::Readable);
+        m_stream->readInternal(tmp_queue);
         while (!tmp_queue.isEmpty()) {
             std::pair<RefPtr<DOMArrayBufferView>, size_t> data = tmp_queue.takeFirst();
-            m_drainingStreamBuffer->write(data.first->buffer());
+            drainingStreamBuffer->write(data.first->buffer());
         }
         if (m_state == Closed)
-            m_drainingStreamBuffer->close();
+            drainingStreamBuffer->close();
+
+        m_drainingStreamBuffer = drainingStreamBuffer;
         return m_drainingStreamBuffer;
     }
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -155,7 +130,32 @@ private:
     };
 
     // UnderlyingSource functions.
-    void pullSource() override { }
+    void pullSource() override
+    {
+        // Note that one |pull| is called only when |read| is called on the
+        // associated ReadableByteStreamReader because we create a stream with
+        // StrictStrategy.
+
+        if (m_state == Initial) {
+            if (m_body->buffer()) {
+                m_bodyStreamBuffer = m_body->buffer();
+                m_state = Streaming;
+                m_bodyStreamBuffer->registerObserver(this);
+                onWrite();
+                if (m_bodyStreamBuffer->hasError())
+                    return onError();
+                if (m_bodyStreamBuffer->isClosed())
+                    return onClose();
+            } else {
+                m_blobDataHandle = m_body->blobDataHandle() ? m_body->blobDataHandle() : BlobDataHandle::create(BlobData::create(), 0);
+                m_state = ReadingBlob;
+                FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
+                m_loader = adoptPtr(new FileReaderLoader(readType, this));
+                m_loader->start(m_body->executionContext(), m_blobDataHandle);
+            }
+        }
+    }
+
     ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) override
     {
         cancel();
@@ -280,8 +280,7 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     m_resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
 
-    if (m_stream) {
-        ASSERT(m_streamSource);
+    if (streamAccessed()) {
         m_streamSource->createDrainingStream()->readAllAndCreateBlobHandle(mimeType(), new BlobHandleReceiver(this));
     } else if (buffer()) {
         buffer()->readAllAndCreateBlobHandle(mimeType(), new BlobHandleReceiver(this));
@@ -366,46 +365,32 @@ ScriptPromise Body::text(ScriptState* scriptState)
 ReadableByteStream* Body::body()
 {
     UseCounter::count(executionContext(), UseCounter::FetchBodyStream);
-    if (!m_stream) {
-        ASSERT(!m_streamSource);
-        m_streamSource = new ReadableStreamSource(this);
-        m_stream = new ReadableByteStream(m_streamSource);
-        m_streamSource->startStream(m_stream);
-    }
     return m_stream;
 }
 
 bool Body::bodyUsed() const
 {
-    return m_bodyUsed || (m_stream && m_stream->isLocked());
+    return m_bodyUsed || m_stream->isLocked();
 }
 
 void Body::setBodyUsed()
 {
     ASSERT(!m_bodyUsed);
-    ASSERT(!m_stream || !m_stream->isLocked());
-    // Note that technically we can set BodyUsed even when the stream is
-    // closed or errored, but getReader doesn't work then.
-    if (m_stream && m_stream->stateInternal() != ReadableStream::Closed && m_stream->stateInternal() != ReadableStream::Errored) {
-        TrackExceptionState exceptionState;
-        m_streamReader = m_stream->getBytesReader(executionContext(), exceptionState);
-        ASSERT(!exceptionState.hadException());
-    }
+    ASSERT(!m_stream->isLocked());
+    TrackExceptionState exceptionState;
+    m_streamReader = m_stream->getBytesReader(executionContext(), exceptionState);
+    ASSERT(!exceptionState.hadException());
     m_bodyUsed = true;
 }
 
 bool Body::streamAccessed() const
 {
-    return m_stream;
+    return m_streamSource->state() != m_streamSource->Initial;
 }
 
 BodyStreamBuffer* Body::createDrainingStream()
 {
-    ASSERT(m_stream);
-    BodyStreamBuffer* newBuffer = m_streamSource->createDrainingStream();
-    m_stream = nullptr;
-    m_streamSource = nullptr;
-    return newBuffer;
+    return m_streamSource->createDrainingStream();
 }
 
 void Body::stop()
@@ -421,7 +406,7 @@ bool Body::hasPendingActivity() const
         return false;
     if (m_resolver)
         return true;
-    if (m_stream && m_stream->isLocked())
+    if (m_stream->isLocked())
         return true;
     return false;
 }
@@ -439,7 +424,10 @@ Body::Body(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_bodyUsed(false)
     , m_responseType(ResponseType::ResponseUnknown)
+    , m_streamSource(new ReadableStreamSource(this))
+    , m_stream(new ReadableByteStream(m_streamSource, new ReadableByteStream::StrictStrategy))
 {
+    m_streamSource->startStream(m_stream);
 }
 
 void Body::resolveJSON(const String& string)
@@ -490,6 +478,7 @@ void Body::didFinishLoading()
     default:
         ASSERT_NOT_REACHED();
     }
+    m_stream->close();
     m_resolver.clear();
 }
 
@@ -498,6 +487,7 @@ void Body::didFail(FileError::ErrorCode code)
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
+    m_stream->error(DOMException::create(NetworkError, "network error"));
     if (m_resolver) {
         // FIXME: We should reject the promise.
         m_resolver->resolve("");
@@ -509,6 +499,7 @@ void Body::didBlobHandleReceiveError(PassRefPtrWillBeRawPtr<DOMException> except
 {
     if (!m_resolver)
         return;
+    m_stream->error(DOMException::create(NetworkError, "network error"));
     m_resolver->reject(exception);
     m_resolver.clear();
 }
