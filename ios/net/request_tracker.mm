@@ -66,6 +66,9 @@ GlobalNetworkClientFactories*
 
 }  // namespace
 
+RequestTracker::RequestTrackerFactory::~RequestTrackerFactory() {
+}
+
 // static
 void RequestTracker::SetRequestTrackerFactory(RequestTrackerFactory* factory) {
   g_request_tracker_factory = factory;

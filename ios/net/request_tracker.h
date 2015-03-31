@@ -44,6 +44,8 @@ class RequestTracker {
 
   class RequestTrackerFactory {
    public:
+    virtual ~RequestTrackerFactory();
+
     // Returns false if |request| is associated to an invalid tracker and should
     // be cancelled. In this case |tracker| is set to nullptr.
     // Returns true if |request| is associated with a valid tracker or if the
