@@ -337,8 +337,10 @@ public:
     void didV8GC();
 
     void performIdleGC(double deadlineSeconds);
+    void performIdleCompleteSweep(double deadlineSeconds);
 
     void scheduleIdleGC();
+    void scheduleIdleCompleteSweep();
     void schedulePreciseGC();
     void scheduleGCIfNeeded();
     void setGCState(GCState);

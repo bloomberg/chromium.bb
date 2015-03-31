@@ -573,9 +573,13 @@ void ThreadState::scheduleGCIfNeeded()
     ASSERT(!sweepForbidden());
 
     if (shouldForceConservativeGC()) {
-        // If GC is deemed urgent, eagerly sweep and finalize any external allocations right away.
-        GCType gcType = Heap::isUrgentGCRequested() ? GCWithSweep : GCWithoutSweep;
-        Heap::collectGarbage(HeapPointersOnStack, gcType, Heap::ConservativeGC);
+        if (Heap::isUrgentGCRequested()) {
+            // If GC is deemed urgent, eagerly sweep and finalize any external allocations right away.
+            Heap::collectGarbage(HeapPointersOnStack, GCWithSweep, Heap::ConservativeGC);
+        } else {
+            // Otherwise, schedule a lazy sweeping in an idle task.
+            Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+        }
         return;
     }
     if (shouldSchedulePreciseGC())
@@ -602,8 +606,18 @@ void ThreadState::performIdleGC(double deadlineSeconds)
     Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep, Heap::IdleGC);
 }
 
+void ThreadState::performIdleCompleteSweep(double deadlineSeconds)
+{
+    ASSERT(isMainThread());
+    // The completeSweep() does nothing if the sweeping is already done.
+    // TODO(haraken): Split the sweeping task into chunks so that each chunk fits
+    // in the deadlineSeconds.
+    completeSweep();
+}
+
 void ThreadState::scheduleIdleGC()
 {
+    // Idle GC is supported only in the main thread.
     if (!isMainThread())
         return;
 
@@ -614,6 +628,18 @@ void ThreadState::scheduleIdleGC()
 
     Scheduler::shared()->postNonNestableIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleGC, this));
     setGCState(IdleGCScheduled);
+}
+
+void ThreadState::scheduleIdleCompleteSweep()
+{
+    // Idle complete sweep is supported only in the main thread.
+    if (!isMainThread())
+        return;
+
+    // TODO(haraken): Remove this. Lazy sweeping is not yet enabled in non-oilpan builds.
+#if ENABLE(OILPAN)
+    Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleCompleteSweep, this));
+#endif
 }
 
 void ThreadState::schedulePreciseGC()
@@ -1027,6 +1053,7 @@ void ThreadState::postGCProcessing()
     } else {
         // The default behavior is lazy sweeping.
         setGCState(Sweeping);
+        scheduleIdleCompleteSweep();
     }
 #else
     // FIXME: For now, we disable lazy sweeping in non-oilpan builds
