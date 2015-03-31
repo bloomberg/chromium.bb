@@ -48,14 +48,17 @@ class DeviceSensors implements SensorEventListener {
     // The lock to access the mNativePtr.
     private final Object mNativePtrLock = new Object();
 
-    // The acceleration vector including gravity expressed in the body frame.
-    private float[] mAccelerationIncludingGravityVector;
-
     // The geomagnetic vector expressed in the body frame.
     private float[] mMagneticFieldVector;
 
     // Holds a shortened version of the rotation vector for compatibility purposes.
     private float[] mTruncatedRotationVector;
+
+    // Holds current rotation matrix for the device.
+    private float[] mDeviceRotationMatrix;
+
+    // Holds Euler angles corresponding to the rotation matrix.
+    private double[] mRotationAngles;
 
     // Lazily initialized when registering for notifications.
     private SensorManagerProxy mSensorManagerProxy;
@@ -122,6 +125,7 @@ class DeviceSensors implements SensorEventListener {
                                 true);
                         mUseBackupOrientationSensors = success;
                     }
+                    ensureRotationStructuresAllocated();
                     break;
                 case DEVICE_MOTION:
                     // note: device motion spec does not require all sensors to be available
@@ -360,32 +364,26 @@ class DeviceSensors implements SensorEventListener {
     }
 
     private void getOrientationFromRotationVector(float[] rotationVector) {
-        float[] deviceRotationMatrix = new float[9];
-        SensorManager.getRotationMatrixFromVector(deviceRotationMatrix, rotationVector);
+        SensorManager.getRotationMatrixFromVector(mDeviceRotationMatrix, rotationVector);
+        computeDeviceOrientationFromRotationMatrix(mDeviceRotationMatrix, mRotationAngles);
 
-        double[] rotationAngles = new double[3];
-        computeDeviceOrientationFromRotationMatrix(deviceRotationMatrix, rotationAngles);
-
-        gotOrientation(Math.toDegrees(rotationAngles[0]),
-                       Math.toDegrees(rotationAngles[1]),
-                       Math.toDegrees(rotationAngles[2]));
+        gotOrientation(Math.toDegrees(mRotationAngles[0]),
+                       Math.toDegrees(mRotationAngles[1]),
+                       Math.toDegrees(mRotationAngles[2]));
     }
 
     private void getOrientationFromGeomagneticVectors(float[] acceleration, float[] magnetic) {
-        float[] deviceRotationMatrix = new float[9];
         if (acceleration == null || magnetic == null) {
             return;
         }
-        if (!SensorManager.getRotationMatrix(deviceRotationMatrix, null, acceleration, magnetic)) {
+        if (!SensorManager.getRotationMatrix(mDeviceRotationMatrix, null, acceleration, magnetic)) {
             return;
         }
+        computeDeviceOrientationFromRotationMatrix(mDeviceRotationMatrix, mRotationAngles);
 
-        double[] rotationAngles = new double[3];
-        computeDeviceOrientationFromRotationMatrix(deviceRotationMatrix, rotationAngles);
-
-        gotOrientation(Math.toDegrees(rotationAngles[0]),
-                       Math.toDegrees(rotationAngles[1]),
-                       Math.toDegrees(rotationAngles[2]));
+        gotOrientation(Math.toDegrees(mRotationAngles[0]),
+                       Math.toDegrees(mRotationAngles[1]),
+                       Math.toDegrees(mRotationAngles[2]));
     }
 
     private SensorManagerProxy getSensorManagerProxy() {
@@ -419,6 +417,15 @@ class DeviceSensors implements SensorEventListener {
             case DEVICE_LIGHT:
                 mDeviceLightIsActive = value;
                 return;
+        }
+    }
+
+    private void ensureRotationStructuresAllocated() {
+        if (mDeviceRotationMatrix == null) {
+            mDeviceRotationMatrix = new float[9];
+        }
+        if (mRotationAngles == null) {
+            mRotationAngles = new double[3];
         }
     }
 
