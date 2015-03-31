@@ -74,8 +74,6 @@ namespace developer_private = api::developer_private;
 namespace {
 
 const char kNoSuchExtensionError[] = "No such extension.";
-const char kSupervisedUserError[] =
-    "Supervised users cannot modify extension settings.";
 const char kCannotModifyPolicyExtensionError[] =
     "Cannot modify the extension by policy.";
 const char kRequiresUserGestureError[] =
@@ -171,17 +169,10 @@ bool UserCanModifyExtensionConfiguration(
     const Extension* extension,
     content::BrowserContext* browser_context,
     std::string* error) {
-  // Currently, we only gate file access modification on account permissions.
-  if (util::IsExtensionSupervised(
-          extension, Profile::FromBrowserContext(browser_context))) {
-    *error = kSupervisedUserError;
-    return false;
-  }
-
   ManagementPolicy* management_policy =
       ExtensionSystem::Get(browser_context)->management_policy();
   if (!management_policy->UserMayModifySettings(extension, nullptr)) {
-    LOG(ERROR) << "Attempt to change allow file access of an extension that "
+    LOG(ERROR) << "Attempt to change settings of an extension that is "
                << "non-usermanagable was made. Extension id : "
                << extension->id();
     *error = kCannotModifyPolicyExtensionError;
