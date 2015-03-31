@@ -358,6 +358,8 @@ void AudioRendererHost::OnCreateStream(
   }
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
   audio_log_->OnCreated(stream_id, params, output_device_id);
+  MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
+      stream_id, render_process_id_, render_frame_id, audio_log_.get());
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

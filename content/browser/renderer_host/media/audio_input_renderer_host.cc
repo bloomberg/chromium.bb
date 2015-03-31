@@ -423,6 +423,10 @@ void AudioInputRendererHost::DoCreateStream(
   entry->stream_id = stream_id;
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
   audio_log_->OnCreated(stream_id, audio_params, device_id);
+
+  // TODO(dalecurtis): Wire up input streams to show WebContents titles, needs
+  // AudioInputRendererHost converted to use RenderProcessID & RenderFrameID
+  // instead of RenderViewID.
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {
