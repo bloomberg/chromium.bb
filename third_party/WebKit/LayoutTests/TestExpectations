@@ -1122,6 +1122,13 @@ crbug.com/408123 fast/multicol/pagination-v-vertical-lr.html [ Skip ]
 crbug.com/408123 fast/multicol/pagination-v-vertical-rl.html [ Skip ]
 # END - Old multicol tests that should be removed once the old implementation is gone
 
+crbug.com/382491 virtual/slimmingpaint/fast/box-shadow/inset-with-extraordinary-radii-and-border.html [ Skip ]
+crbug.com/382491 virtual/slimmingpaint/fast/box-shadow/inset.html [ Skip ]
+crbug.com/470713 virtual/slimmingpaint/fast/box-shadow/negative-shadow-box-expand.html [ NeedsRebaseline ]
+crbug.com/470713 virtual/slimmingpaint/fast/box-shadow/shadow-box-resize-writing-mode.html [ NeedsRebaseline ]
+crbug.com/470713 virtual/slimmingpaint/fast/box-shadow/shadow-box-resize.html [ NeedsRebaseline ]
+crbug.com/470713 virtual/slimmingpaint/fast/box-shadow/negative-shadow-box-shrink.html [ NeedsRebaseline ]
+
 crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ ImageOnlyFailure ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]

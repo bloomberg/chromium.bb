@@ -299,6 +299,12 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/box-shadow",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/scrolling",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
