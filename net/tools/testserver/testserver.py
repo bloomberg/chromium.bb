@@ -1325,14 +1325,14 @@ class TestPageHandler(testserver_base.BasePageHandler):
     wait_sec = 1.0
     if query_char >= 0:
       try:
-        wait_sec = int(self.path[query_char + 1:])
+        wait_sec = float(self.path[query_char + 1:])
       except ValueError:
         pass
     time.sleep(wait_sec)
     self.send_response(200)
     self.send_header('Content-Type', 'text/plain')
     self.end_headers()
-    self.wfile.write("waited %d seconds" % wait_sec)
+    self.wfile.write("waited %.1f seconds" % wait_sec)
     return True
 
   def ChunkedServerHandler(self):
