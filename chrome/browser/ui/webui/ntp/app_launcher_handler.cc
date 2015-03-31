@@ -713,9 +713,8 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
       app_sorting->PageIntegerAsStringOrdinal(static_cast<size_t>(page_index));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service) {
     LOG(ERROR) << "No favicon service";
     return;

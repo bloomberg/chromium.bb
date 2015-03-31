@@ -22,7 +22,8 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
-namespace favicon {
+using favicon::FaviconURL;
+
 namespace {
 
 // Size (along each axis) of a touch icon. This currently corresponds to
@@ -690,7 +691,7 @@ int FaviconHandler::ScheduleDownload(const GURL& url,
 
 void FaviconHandler::SortAndPruneImageUrls() {
   // Not using const-reference since the loop mutates FaviconURL::icon_sizes.
-  for (FaviconURL& image_url : image_urls_) {
+  for (favicon::FaviconURL& image_url : image_urls_) {
     if (image_url.icon_sizes.empty())
       continue;
 
@@ -702,5 +703,3 @@ void FaviconHandler::SortAndPruneImageUrls() {
   std::stable_sort(image_urls_.begin(), image_urls_.end(),
                    CompareIconSize);
 }
-
-}  // namespace favicon

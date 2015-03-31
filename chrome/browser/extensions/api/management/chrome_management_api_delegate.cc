@@ -249,9 +249,8 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
     content::BrowserContext* context,
     const std::string& title,
     const GURL& launch_url) const {
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(Profile::FromBrowserContext(context),
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(context), ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(favicon_service);
 
   ChromeAppForLinkDelegate* delegate = new ChromeAppForLinkDelegate;

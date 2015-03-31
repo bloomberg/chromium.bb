@@ -86,9 +86,8 @@ void MostVisitedHandler::RegisterMessages() {
   // Set up our sources for top-sites data.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
 
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   FallbackIconService* fallback_icon_service =
       FallbackIconServiceFactory::GetForBrowserContext(profile);
 

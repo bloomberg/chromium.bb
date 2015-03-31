@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "components/favicon/core/favicon_driver_observer.h"
+#include "components/favicon/core/favicon_tab_helper_observer.h"
 #include "components/sessions/session_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -53,7 +53,7 @@ class TabAndroid : public CoreTabHelperDelegate,
                    public InstantServiceObserver,
                    public SearchTabHelperDelegate,
                    public content::NotificationObserver,
-                   public favicon::FaviconDriverObserver {
+                   public FaviconTabHelperObserver {
  public:
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
@@ -137,7 +137,7 @@ class TabAndroid : public CoreTabHelperDelegate,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // favicon::FaviconDriverObserver -------------------------------------------
+  // FaviconTabHelperObserver -----------------------------------------------
   void OnFaviconAvailable(const gfx::Image& image) override;
 
   // Methods called from Java via JNI -----------------------------------------

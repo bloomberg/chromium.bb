@@ -38,10 +38,9 @@ void SetFaviconTask(Profile* profile,
   scoped_refptr<base::RefCountedMemory> bitmap_data(
       new base::RefCountedBytes(image_data));
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(
-          ProfileManager::GetActiveUserProfile(),
-          ServiceAccessType::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      ProfileManager::GetActiveUserProfile(),
+      ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
 

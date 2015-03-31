@@ -16,15 +16,12 @@
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class FaviconClient;
 class GURL;
 
 namespace history {
 class HistoryService;
 }
-
-namespace favicon {
-
-class FaviconClient;
 
 // The favicon service provides methods to access favicons. It calls the history
 // backend behind the scenes. The callbacks are run asynchronously, even in the
@@ -253,7 +250,5 @@ class FaviconService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);
 };
-
-}  // namespace favicon
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_SERVICE_H_

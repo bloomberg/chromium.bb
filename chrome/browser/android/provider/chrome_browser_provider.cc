@@ -651,13 +651,13 @@ class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
 };
 
 // Base class for all asynchronous blocking tasks that use the favicon service.
-class FaviconServiceTask : public AsyncServiceRequest<favicon::FaviconService> {
+class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
  public:
   FaviconServiceTask(base::CancelableTaskTracker* cancelable_tracker,
                      Profile* profile,
-                     favicon::FaviconService* favicon_service)
-      : AsyncServiceRequest<favicon::FaviconService>(favicon_service,
-                                                     cancelable_tracker),
+                     FaviconService* favicon_service)
+      : AsyncServiceRequest<FaviconService>(favicon_service,
+                                            cancelable_tracker),
         profile_(profile) {}
 
   Profile* profile() const { return profile_; }
@@ -673,7 +673,7 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
  public:
   BookmarkIconFetchTask(base::CancelableTaskTracker* cancelable_tracker,
                         Profile* profile,
-                        favicon::FaviconService* favicon_service)
+                        FaviconService* favicon_service)
       : FaviconServiceTask(cancelable_tracker, profile, favicon_service) {}
 
   favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
@@ -684,13 +684,15 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
     if (service() == NULL)
       return favicon_base::FaviconRawBitmapResult();
 
-    RunAsyncRequestOnUIThreadBlocking(base::Bind(
-        &favicon::FaviconService::GetRawFaviconForPageURL,
-        base::Unretained(service()), url,
-        favicon_base::FAVICON | favicon_base::TOUCH_ICON, desired_size_in_pixel,
-        base::Bind(&BookmarkIconFetchTask::OnFaviconRetrieved,
-                   base::Unretained(this)),
-        cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(
+        base::Bind(&FaviconService::GetRawFaviconForPageURL,
+                   base::Unretained(service()),
+                   url,
+                   favicon_base::FAVICON | favicon_base::TOUCH_ICON,
+                   desired_size_in_pixel,
+                   base::Bind(&BookmarkIconFetchTask::OnFaviconRetrieved,
+                              base::Unretained(this)),
+                   cancelable_tracker()));
     return result_;
   }
 

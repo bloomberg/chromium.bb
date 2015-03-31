@@ -117,8 +117,9 @@ void RunFaviconCallbackAsync(
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&favicon::FaviconService::FaviconResultsCallbackRunner,
-                 callback, base::Owned(favicon_bitmap_results)));
+      base::Bind(&FaviconService::FaviconResultsCallbackRunner,
+                 callback,
+                 base::Owned(favicon_bitmap_results)));
 }
 
 bool ValidateOverrideURL(const base::Value* override_url_value,

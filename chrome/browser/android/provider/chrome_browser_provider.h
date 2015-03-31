@@ -16,11 +16,8 @@
 #include "components/history/core/browser/history_service_observer.h"
 
 class AndroidHistoryProviderService;
-class Profile;
-
-namespace favicon {
 class FaviconService;
-}
+class Profile;
 
 namespace history {
 class TopSites;
@@ -214,7 +211,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   Profile* profile_;
   bookmarks::BookmarkModel* bookmark_model_;
   scoped_refptr<history::TopSites> top_sites_;
-  favicon::FaviconService* favicon_service_;
+  FaviconService* favicon_service_;
 
   scoped_ptr<AndroidHistoryProviderService> service_;
 

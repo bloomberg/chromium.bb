@@ -210,9 +210,8 @@ void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
 }
 
 void ExtensionIconSource::LoadFaviconImage(int request_id) {
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   // Fall back to the default icons if the service isn't available.
   if (favicon_service == NULL) {
     LoadDefaultImage(request_id);

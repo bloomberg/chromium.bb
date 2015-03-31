@@ -5,24 +5,19 @@
 #ifndef CHROME_BROWSER_FAVICON_CHROME_FAVICON_CLIENT_FACTORY_H_
 #define CHROME_BROWSER_FAVICON_CHROME_FAVICON_CLIENT_FACTORY_H_
 
+#include "base/memory/singleton.h"
+#include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-template <typename T>
-struct DefaultSingletonTraits;
-
 class Profile;
-
-namespace favicon {
-class FaviconClient;
-}
 
 // Singleton that owns all ChromeFaviconClients and associates them with
 // Profiles.
 class ChromeFaviconClientFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the instance of favicon::FaviconClient associated with |profile|
+  // Returns the instance of FaviconClient associated with this profile
   // (creating one if none exists).
-  static favicon::FaviconClient* GetForProfile(Profile* profile);
+  static FaviconClient* GetForProfile(Profile* profile);
 
   // Returns an instance of the factory singleton.
   static ChromeFaviconClientFactory* GetInstance();

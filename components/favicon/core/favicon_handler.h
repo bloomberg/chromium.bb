@@ -19,19 +19,14 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-class FaviconTabHelperTest;
+class FaviconClient;
+class FaviconDriver;
+class FaviconService;
 class SkBitmap;
-class TestFaviconHandler;
 
 namespace base {
 class RefCountedMemory;
 }
-
-namespace favicon {
-
-class FaviconClient;
-class FaviconDriver;
-class FaviconService;
 
 // FaviconHandler works with FaviconDriver to fetch the specific type of
 // favicon.
@@ -157,8 +152,8 @@ class FaviconHandler {
 
  private:
   // For testing:
-  friend class ::FaviconTabHelperTest;
-  friend class ::TestFaviconHandler;
+  friend class FaviconTabHelperTest;
+  friend class TestFaviconHandler;
 
   // Represents an in progress download of an image from the renderer.
   struct DownloadRequest {
@@ -316,7 +311,5 @@ class FaviconHandler {
 
   DISALLOW_COPY_AND_ASSIGN(FaviconHandler);
 };
-
-}  // namespace favicon
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_H_

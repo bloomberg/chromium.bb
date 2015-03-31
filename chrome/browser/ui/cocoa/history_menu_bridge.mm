@@ -395,7 +395,7 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
 }
 
 void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
-  favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
+  FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   base::CancelableTaskTracker::TaskId task_id =
       service->GetFaviconImageForPageURL(

@@ -14,10 +14,7 @@
 #include "content/public/browser/url_data_source.h"
 
 class FallbackIconService;
-
-namespace favicon {
 class FaviconService;
-}
 
 // LargeIconSource services explicit chrome:// requests for large icons.
 //
@@ -36,7 +33,7 @@ class LargeIconSource : public content::URLDataSource {
  public:
   // |favicon_service| and |fallback_icon_service| are owned by caller and may
   // be null.
-  LargeIconSource(favicon::FaviconService* favicon_service,
+  LargeIconSource(FaviconService* favicon_service,
                   FallbackIconService* fallback_icon_service);
 
   ~LargeIconSource() override;
@@ -80,7 +77,7 @@ class LargeIconSource : public content::URLDataSource {
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  favicon::FaviconService* favicon_service_;
+  FaviconService* favicon_service_;
 
   FallbackIconService* fallback_icon_service_;
 

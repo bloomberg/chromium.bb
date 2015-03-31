@@ -244,9 +244,8 @@ void ShortcutHelper::AddShortcutUsingFavicon() {
   icon_types.push_back(favicon_base::FAVICON);
   icon_types.push_back(favicon_base::TOUCH_PRECOMPOSED_ICON |
                        favicon_base::TOUCH_ICON);
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
 
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.

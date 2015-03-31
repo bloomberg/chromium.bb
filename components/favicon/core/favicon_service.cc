@@ -19,7 +19,8 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
-namespace favicon {
+using base::Bind;
+
 namespace {
 
 // Helper to run callback with empty results if we cannot get the history
@@ -31,8 +32,7 @@ base::CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
       base::ThreadTaskRunnerHandle::Get());
   return tracker->PostTask(
       thread_runner.get(), FROM_HERE,
-      base::Bind(callback,
-                 std::vector<favicon_base::FaviconRawBitmapResult>()));
+      Bind(callback, std::vector<favicon_base::FaviconRawBitmapResult>()));
 }
 
 // Returns a vector of pixel edge sizes from |size_in_dip| and
@@ -68,8 +68,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
     const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
   favicon_base::FaviconResultsCallback callback_runner =
-      base::Bind(&FaviconService::RunFaviconImageCallbackWithBitmapResults,
-                 base::Unretained(this), callback, gfx::kFaviconSize);
+      Bind(&FaviconService::RunFaviconImageCallbackWithBitmapResults,
+           base::Unretained(this), callback, gfx::kFaviconSize);
   if (history_service_) {
     std::vector<GURL> icon_urls;
     icon_urls.push_back(icon_url);
@@ -90,8 +90,10 @@ base::CancelableTaskTracker::TaskId FaviconService::GetRawFavicon(
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
   favicon_base::FaviconResultsCallback callback_runner =
-      base::Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
-                 base::Unretained(this), callback, desired_size_in_pixel);
+      Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
+           base::Unretained(this),
+           callback,
+           desired_size_in_pixel);
 
   if (history_service_) {
     std::vector<GURL> icon_urls;
@@ -129,10 +131,13 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImageForPageURL(
     const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
   return GetFaviconForPageURLImpl(
-      page_url, favicon_base::FAVICON,
+      page_url,
+      favicon_base::FAVICON,
       GetPixelSizesForFaviconScales(gfx::kFaviconSize),
-      base::Bind(&FaviconService::RunFaviconImageCallbackWithBitmapResults,
-                 base::Unretained(this), callback, gfx::kFaviconSize),
+      Bind(&FaviconService::RunFaviconImageCallbackWithBitmapResults,
+           base::Unretained(this),
+           callback,
+           gfx::kFaviconSize),
       tracker);
 }
 
@@ -145,9 +150,13 @@ base::CancelableTaskTracker::TaskId FaviconService::GetRawFaviconForPageURL(
   std::vector<int> desired_sizes_in_pixel;
   desired_sizes_in_pixel.push_back(desired_size_in_pixel);
   return GetFaviconForPageURLImpl(
-      page_url, icon_types, desired_sizes_in_pixel,
-      base::Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
-                 base::Unretained(this), callback, desired_size_in_pixel),
+      page_url,
+      icon_types,
+      desired_sizes_in_pixel,
+      Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
+           base::Unretained(this),
+           callback,
+           desired_size_in_pixel),
       tracker);
 }
 
@@ -159,8 +168,10 @@ FaviconService::GetLargestRawFaviconForPageURL(
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
   favicon_base::FaviconResultsCallback favicon_results_callback =
-      base::Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
-                 base::Unretained(this), callback, 0);
+      Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
+           base::Unretained(this),
+           callback,
+           0);
   if (favicon_client_ && favicon_client_->IsNativeApplicationURL(page_url)) {
     std::vector<int> desired_sizes_in_pixel;
     desired_sizes_in_pixel.push_back(0);
@@ -216,8 +227,10 @@ base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForID(
   // any resizing.
   int desired_size = 0;
   favicon_base::FaviconResultsCallback callback_runner =
-      base::Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
-                 base::Unretained(this), callback, desired_size);
+      Bind(&FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults,
+           base::Unretained(this),
+           callback,
+           desired_size);
 
   if (history_service_) {
     return history_service_->GetFaviconForID(
@@ -376,5 +389,3 @@ void FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults(
       &resized_bitmap_data);
   callback.Run(bitmap_result);
 }
-
-}  // namespace favicon

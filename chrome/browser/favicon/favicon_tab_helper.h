@@ -10,14 +10,11 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/favicon_url.h"
-
-class GURL;
-class Profile;
-class SkBitmap;
 
 namespace gfx {
 class Image;
@@ -27,20 +24,20 @@ namespace content {
 struct FaviconStatus;
 }
 
-namespace favicon {
-class FaviconClient;
-class FaviconDriverObserver;
+class GURL;
 class FaviconHandler;
-}
+class FaviconTabHelperObserver;
+class Profile;
+class SkBitmap;
 
-// FaviconTabHelper works with favicon::FaviconHandlers to fetch the favicons.
+// FaviconTabHelper works with FaviconHandlers to fetch the favicons.
 //
 // FetchFavicon fetches the given page's icons. It requests the icons from the
 // history backend. If the icon is not available or expired, the icon will be
 // downloaded and saved in the history backend.
 //
 class FaviconTabHelper : public content::WebContentsObserver,
-                         public favicon::FaviconDriver,
+                         public FaviconDriver,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
   ~FaviconTabHelper() override;
@@ -75,10 +72,10 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // Saves the favicon for the current page.
   void SaveFavicon();
 
-  void AddObserver(favicon::FaviconDriverObserver* observer);
-  void RemoveObserver(favicon::FaviconDriverObserver* observer);
+  void AddObserver(FaviconTabHelperObserver* observer);
+  void RemoveObserver(FaviconTabHelperObserver* observer);
 
-  // favicon::FaviconDriver methods.
+  // FaviconDriver methods.
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   const gfx::Image GetActiveFaviconImage() override;
@@ -126,22 +123,22 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   Profile* profile_;
 
-  favicon::FaviconClient* client_;
+  FaviconClient* client_;
 
   std::vector<content::FaviconURL> favicon_urls_;
 
   // Bypass cache when downloading favicons for this page URL.
   GURL bypass_cache_page_url_;
 
-  scoped_ptr<favicon::FaviconHandler> favicon_handler_;
+  scoped_ptr<FaviconHandler> favicon_handler_;
 
-  // Handles downloading touchicons. It is null if
+  // Handles downloading touchicons. It is NULL if
   // browser_defaults::kEnableTouchIcon is false.
-  scoped_ptr<favicon::FaviconHandler> touch_icon_handler_;
+  scoped_ptr<FaviconHandler> touch_icon_handler_;
 
-  scoped_ptr<favicon::FaviconHandler> large_icon_handler_;
+  scoped_ptr<FaviconHandler> large_icon_handler_;
 
-  ObserverList<favicon::FaviconDriverObserver> observer_list_;
+  ObserverList<FaviconTabHelperObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconTabHelper);
 };
