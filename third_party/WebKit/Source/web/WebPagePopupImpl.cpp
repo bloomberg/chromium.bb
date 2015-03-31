@@ -404,6 +404,28 @@ bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
     return frame.eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
 }
 
+void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& event)
+{
+    if (isMouseEventInWindow(event))
+        PageWidgetEventHandler::handleMouseDown(mainFrame, event);
+    else if (m_popupClient)
+        m_popupClient->closePopup();
+}
+
+bool WebPagePopupImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
+{
+    if (isMouseEventInWindow(event))
+        return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
+    if (m_popupClient)
+        m_popupClient->closePopup();
+    return false;
+}
+
+bool WebPagePopupImpl::isMouseEventInWindow(const WebMouseEvent& event)
+{
+    return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(event.x, event.y));
+}
+
 bool WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
 {
     if (m_closing)

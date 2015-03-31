@@ -87,6 +87,10 @@ private:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) override;
     virtual bool handleCharEvent(const WebKeyboardEvent&) override;
     virtual bool handleGestureEvent(const WebGestureEvent&) override;
+    virtual void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&) override;
+    virtual bool handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&) override;
+
+    bool isMouseEventInWindow(const WebMouseEvent&);
 
     // PagePopup function
     virtual AXObject* rootAXObject() override;
