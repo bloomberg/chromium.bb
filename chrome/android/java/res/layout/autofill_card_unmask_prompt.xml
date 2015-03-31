@@ -21,16 +21,16 @@
             android:id="@+id/no_retry_error_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginTop="23dp"
+            android:layout_marginBottom="2dp"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
             android:paddingTop="12dp"
             android:paddingBottom="15dp"
             android:gravity="start"
             android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:background="@color/input_underline_error_color"
+            android:textColor="@color/input_underline_error_color"
+            android:background="#e0e0e0"
             android:visibility="gone" />
 
         <TextView
@@ -40,8 +40,8 @@
             android:layout_marginStart="24dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="12dp"
-            android:textSize="12sp"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"
             android:textColor="@color/explanation_text_color"
             android:lineSpacingMultiplier="1.25"
             android:gravity="start" />
@@ -153,7 +153,7 @@
                 android:layout_marginStart="17dp"
                 android:layout_marginEnd="10dp"
                 android:paddingStart="7dp"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="@color/explanation_text_color"
                 android:text="@string/autofill_card_unmask_prompt_storage_checkbox" />
 
@@ -168,14 +168,15 @@
         android:layout_alignBottom="@+id/controls_container"
         android:layout_alignStart="@+id/controls_container"
         android:layout_alignEnd="@+id/controls_container"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone">
 
         <ProgressBar
             android:id="@+id/verification_progress_bar"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="8dp"
             android:visibility="gone" />
 
         <!--  TODO(estade): add a real content description for this image. -->
@@ -191,8 +192,7 @@
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:textColor="?attr/colorAccent"
-            android:textSize="12sp" />
+            android:textSize="20sp" />
     </LinearLayout>
 </RelativeLayout>
