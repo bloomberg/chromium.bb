@@ -19,4 +19,3 @@ source_set("sel_ldr_launcher_base") {
     "//native_client/src/trusted/service_runtime:nacl_error_code",
   ]
 }
-

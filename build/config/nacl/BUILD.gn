@@ -7,13 +7,13 @@ import("nacl_defines.gni")
 # Native Client Definitions
 config("nacl_defines") {
   defines = nacl_defines
-  include_dirs = ["//."]
+  include_dirs = [ "//." ]
 }
 
 config("nexe_defines") {
   defines = [
     "DYNAMIC_ANNOTATIONS_ENABLED=1",
-    "DYNAMIC_ANNOTATIONS_PREFIX=NACL_"
+    "DYNAMIC_ANNOTATIONS_PREFIX=NACL_",
   ]
 }
 
@@ -23,12 +23,8 @@ config("nexe_defines") {
 # add flags to everythin in //native_client, having a base target works around
 # that limitation.)
 source_set("nacl_base") {
-  public_configs = [
-    ":nacl_defines"
-  ]
+  public_configs = [ ":nacl_defines" ]
   if (current_os == "nacl") {
-    public_configs += [
-      ":nexe_defines"
-    ]
+    public_configs += [ ":nexe_defines" ]
   }
 }

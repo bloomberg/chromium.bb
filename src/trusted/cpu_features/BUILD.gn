@@ -4,12 +4,12 @@
 
 group("all_cpu_features") {
   deps = [
-    ":cpu_features"
+    ":cpu_features",
   ]
 }
 
 static_library("cpu_features") {
-  include_dirs = ["."]
+  include_dirs = [ "." ]
   sources = [
     "arch/arm/cpu_arm.c",
     "arch/mips/cpu_mips.c",

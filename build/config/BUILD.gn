@@ -30,18 +30,19 @@ declare_args() {
 config("feature_flags") {
   # TODO(brettw) most of these need to be parameterized.
   defines = [
-      "CHROMIUM_BUILD",
-      "ENABLE_ONE_CLICK_SIGNIN",
-      "ENABLE_REMOTING=1",
-      "ENABLE_NOTIFICATIONS",
-      "ENABLE_EGLIMAGE=1",
-      "ENABLE_BACKGROUND=1",
-      "ENABLE_GOOGLE_NOW=1",
-      "ENABLE_SETTINGS_APP=1",
-      "USE_MOJO=1",
-      "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
-      # Temporary suppression until Blink code can be removed.
-      "BLINK_SCALE_FILTERS_AT_RECORD_TIME",
+    "CHROMIUM_BUILD",
+    "ENABLE_ONE_CLICK_SIGNIN",
+    "ENABLE_REMOTING=1",
+    "ENABLE_NOTIFICATIONS",
+    "ENABLE_EGLIMAGE=1",
+    "ENABLE_BACKGROUND=1",
+    "ENABLE_GOOGLE_NOW=1",
+    "ENABLE_SETTINGS_APP=1",
+    "USE_MOJO=1",
+    "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
+
+    # Temporary suppression until Blink code can be removed.
+    "BLINK_SCALE_FILTERS_AT_RECORD_TIME",
   ]
 
   if (cld_version > 0) {
@@ -240,6 +241,7 @@ config("default_libs") {
       "winmm.lib",
       "winspool.lib",
       "ws2_32.lib",
+
       # Please don't add more stuff here. We should actually be making this
       # list smaller, since all common things should be covered. If you need
       # some extra libraries, please just add a libs = [ "foo.lib" ] to your
@@ -256,7 +258,7 @@ config("default_libs") {
       #   '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
       "c",
       "dl",
-      "m"
+      "m",
     ]
   } else if (is_mac) {
     libs = [
@@ -277,8 +279,6 @@ config("default_libs") {
       "UIKit.framework",
     ]
   } else if (is_linux) {
-    libs = [
-      "dl",
-    ]
+    libs = [ "dl" ]
   }
 }

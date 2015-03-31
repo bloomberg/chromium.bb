@@ -20,19 +20,13 @@ static_library("service_runtime_x86_32") {
     "tramp_32.S",
   ]
   if (is_mac) {
-    sources += [
-      "../../osx/nacl_signal_32.c",
-    ]
+    sources += [ "../../osx/nacl_signal_32.c" ]
   }
   if (is_linux) {
-    sources += [
-      "../../linux/nacl_signal_32.c",
-    ]
+    sources += [ "../../linux/nacl_signal_32.c" ]
   }
   if (is_win) {
-    sources += [
-      "../../win/nacl_signal_32.c",
-    ]
+    sources += [ "../../win/nacl_signal_32.c" ]
   }
   deps = [
     "//native_client/build/config/nacl:nacl_base",

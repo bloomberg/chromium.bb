@@ -12,10 +12,14 @@ config("sdk") {
     ldflags = [ "--sysroot=" + sysroot ]
 
     # Need to get some linker flags out of the sysroot.
-    ldflags += [ exec_script("sysroot_ld_path.py",
-        [ rebase_path("//native_client/build/linux/sysroot_ld_path.sh", root_build_dir),
-          sysroot ],
-        "value") ]
+    ldflags += [ exec_script(
+            "sysroot_ld_path.py",
+            [
+              rebase_path("//native_client/build/linux/sysroot_ld_path.sh",
+                          root_build_dir),
+              sysroot,
+            ],
+            "value") ]
   }
 }
 
@@ -32,13 +36,22 @@ pkg_config("freetype2") {
 }
 
 pkg_config("glib") {
-  packages = [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ]
+  packages = [
+    "glib-2.0",
+    "gmodule-2.0",
+    "gobject-2.0",
+    "gthread-2.0",
+  ]
 }
 
 pkg_config("gtk") {
   # Gtk requires gmodule, but it does not list it as a dependency in some
   # misconfigured systems.
-  packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
+  packages = [
+    "gmodule-2.0",
+    "gtk+-2.0",
+    "gthread-2.0",
+  ]
 }
 
 pkg_config("pangocairo") {
@@ -125,26 +138,39 @@ template("generate_library_loader") {
       visibility = invoker.visibility
     }
 
-    outputs = [ output_h, output_cc ]
+    outputs = [
+      output_h,
+      output_cc,
+    ]
 
     args = [
-      "--name", invoker.name,
-      "--output-h", rebase_path(output_h),
-      "--output-cc", rebase_path(output_cc),
-      "--header", invoker.header,
-      # Note GYP build exposes a per-target variable to control this, which, if
-      # manually set to true, will disable dlopen(). Its not clear this is
-      # needed, so here we just leave off. If this can be done globally, we
-      # can expose one switch for this value, otherwise we need to add a template
-      # param for this.
-      "--link-directly=0",
-    ] + invoker.functions
+             "--name",
+             invoker.name,
+             "--output-h",
+             rebase_path(output_h),
+             "--output-cc",
+             rebase_path(output_cc),
+             "--header",
+             invoker.header,
+
+             # Note GYP build exposes a per-target variable to control this, which, if
+             # manually set to true, will disable dlopen(). Its not clear this is
+             # needed, so here we just leave off. If this can be done globally, we
+             # can expose one switch for this value, otherwise we need to add a template
+             # param for this.
+             "--link-directly=0",
+           ] + invoker.functions
   }
 
   source_set(target_name) {
     direct_dependent_configs = [ invoker.config ]
-    sources = [ output_h, output_cc ]
-    deps = [ ":${target_name}_loader" ]
+    sources = [
+      output_h,
+      output_cc,
+    ]
+    deps = [
+      ":${target_name}_loader",
+    ]
   }
 }
 

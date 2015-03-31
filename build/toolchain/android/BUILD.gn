@@ -18,10 +18,10 @@ if (host_cpu == "x64") {
 
 gcc_toolchain("x86") {
   prefix = "$android_ndk_root/toolchains/x86-4.6/prebuilt/$build_os-$android_host_arch/bin/i686-linux-android-"
-  cc  = prefix + "gcc"
+  cc = prefix + "gcc"
   cxx = prefix + "g++"
-  ar  = prefix + "ar"
-  ld  = cxx
+  ar = prefix + "ar"
+  ld = cxx
 
   toolchain_cpu = "x86"
   toolchain_os = "android"
@@ -29,10 +29,10 @@ gcc_toolchain("x86") {
 
 gcc_toolchain("arm") {
   prefix = "$android_ndk_root/toolchains/arm-linux-androideabi-4.6/prebuilt/$build_os-$android_host_arch/bin/arm-linux-androideabi-"
-  cc  = prefix + "gcc"
+  cc = prefix + "gcc"
   cxx = prefix + "g++"
-  ar  = prefix + "ar"
-  ld  = cxx
+  ar = prefix + "ar"
+  ld = cxx
 
   toolchain_cpu = "arm"
   toolchain_os = "android"
@@ -40,10 +40,10 @@ gcc_toolchain("arm") {
 
 gcc_toolchain("mipsel") {
   prefix = "$android_ndk_root/toolchains/mipsel-linux-android-4.6/prebuilt/$build_os-$android_host_arch/bin/mipsel-linux-android-"
-  cc  = prefix + "gcc"
+  cc = prefix + "gcc"
   cxx = prefix + "g++"
-  ar  = prefix + "ar"
-  ld  = cxx
+  ar = prefix + "ar"
+  ld = cxx
 
   toolchain_cpu = "mipsel"
   toolchain_os = "android"

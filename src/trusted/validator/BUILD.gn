@@ -11,24 +11,16 @@ static_library("validators") {
   ]
 
   if (current_cpu == "arm") {
-    deps += [
-      "//native_client/src/trusted/validator_arm:ncvalidate_arm_v2"
-    ]
+    deps += [ "//native_client/src/trusted/validator_arm:ncvalidate_arm_v2" ]
   }
   if (current_cpu == "mips") {
-    deps += [
-      "//native_client/src/trusted/validator_mips:ncvalidate_mips"
-    ]
+    deps += [ "//native_client/src/trusted/validator_mips:ncvalidate_mips" ]
   }
   if (current_cpu == "x86") {
-    deps += [
-      "//native_client/src/trusted/validator_ragel:dfa_validate",
-    ]
+    deps += [ "//native_client/src/trusted/validator_ragel:dfa_validate" ]
   }
   if (current_cpu == "x64") {
-    deps += [
-      "//native_client/src/trusted/validator_ragel:dfa_validate",
-    ]
+    deps += [ "//native_client/src/trusted/validator_ragel:dfa_validate" ]
   }
 }
 

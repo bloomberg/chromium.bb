@@ -8,5 +8,7 @@ source_set("serialization") {
     "serialization.h",
   ]
 
-  deps = [ "//native_client/build/config/nacl:nacl_base" ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

@@ -13,10 +13,14 @@ assert(is_win)
 # Its arguments are the VS path and the compiler wrapper tool. It will write
 # "environment.x86" and "environment.x64" to the build directory and return a
 # list to us.
-gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py",
-                                root_build_dir)
+gyp_win_tool_path =
+    rebase_path("//tools/gyp/pylib/gyp/win_tool.py", root_build_dir)
 exec_script("setup_toolchain.py",
-            [ visual_studio_path, gyp_win_tool_path, windows_sdk_path ],
+            [
+              visual_studio_path,
+              gyp_win_tool_path,
+              windows_sdk_path,
+            ],
             "string")
 
 stamp_command = "$python_path gyp-win-tool stamp \$out"
@@ -27,7 +31,7 @@ copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
 toolchain("32") {
   # Make these apply to all tools below.
   lib_prefix = ""
-  lib_dir_prefix="/LIBPATH:"
+  lib_dir_prefix = "/LIBPATH:"
 
   cc_command = "ninja -t msvc -e environment.x86 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
   tool("cc") {
@@ -86,7 +90,7 @@ toolchain("32") {
 toolchain("64") {
   # Make these apply to all tools below.
   lib_prefix = ""
-  lib_dir_prefix="/LIBPATH:"
+  lib_dir_prefix = "/LIBPATH:"
 
   cc_command = "ninja -t msvc -e environment.x64 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
   tool("cc") {
@@ -143,6 +147,7 @@ toolchain("64") {
   # passed to the build. They are ignored when this is the default toolchain.
   toolchain_args() {
     current_cpu = "x64"
+
     # Normally the build config resets the CPU architecture to 32-bits. Setting
     # this flag overrides that behavior.
     force_win64 = true
@@ -152,7 +157,7 @@ toolchain("64") {
 toolchain("trusted_x86") {
   # Make these apply to all tools below.
   lib_prefix = ""
-  lib_dir_prefix="/LIBPATH:"
+  lib_dir_prefix = "/LIBPATH:"
 
   cc_command = "ninja -t msvc -e environment.x86 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
   tool("cc") {
@@ -211,7 +216,7 @@ toolchain("trusted_x86") {
 toolchain("trusted_x64") {
   # Make these apply to all tools below.
   lib_prefix = ""
-  lib_dir_prefix="/LIBPATH:"
+  lib_dir_prefix = "/LIBPATH:"
 
   cc_command = "ninja -t msvc -e environment.x64 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
   tool("cc") {
@@ -268,6 +273,7 @@ toolchain("trusted_x64") {
   # passed to the build. They are ignored when this is the default toolchain.
   toolchain_args() {
     toolchain_cpu = "x64"
+
     # Normally the build config resets the CPU architecture to 32-bits. Setting
     # this flag overrides that behavior.
     force_win64 = true

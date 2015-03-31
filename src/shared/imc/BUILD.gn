@@ -8,9 +8,7 @@ static_library("imc") {
   ]
 
   if (current_os == "nacl") {
-    sources += [
-      "nacl/nacl_imc.cc",
-    ]
+    sources += [ "nacl/nacl_imc.cc" ]
   }
 
   if (current_os == "mac") {

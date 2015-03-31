@@ -18,10 +18,14 @@ os_toolchain_dir = "${nacl_toolchain_dir}/${current_os}_x86"
 # https://code.google.com/p/chromium/issues/detail?id=431880
 # Calls to get the toolchain revision are relatively slow, so do them all in a
 # single batch to amortize python startup, etc.
-revisions = exec_script(
-    "//native_client/build/get_toolchain_revision.py",
-    ["nacl_arm_newlib", "nacl_x86_newlib", "nacl_x86_glibc", "pnacl_newlib"],
-    "trim list lines")
+revisions = exec_script("//native_client/build/get_toolchain_revision.py",
+                        [
+                          "nacl_arm_newlib",
+                          "nacl_x86_newlib",
+                          "nacl_x86_glibc",
+                          "pnacl_newlib",
+                        ],
+                        "trim list lines")
 nacl_arm_newlib_rev = revisions[0]
 nacl_x86_newlib_rev = revisions[1]
 nacl_x86_glibc_rev = revisions[2]
@@ -126,6 +130,7 @@ nacl_toolchain("irt_x86") {
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
+
   # Some IRT implementations (notably, Chromium's) contain C++ code,
   # so we need to link w/ the C++ linker.
   ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
@@ -147,6 +152,7 @@ nacl_toolchain("irt_x64") {
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
+
   # Some IRT implementations (notably, Chromium's) contain C++ code,
   # so we need to link w/ the C++ linker.
   ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
@@ -168,6 +174,7 @@ nacl_toolchain("irt_arm") {
   cxx = toolprefix + "g++"
   ar = toolprefix + "ar"
   readelf = toolprefix + "readelf"
+
   # Some IRT implementations (notably, Chromium's) contain C++ code,
   # so we need to link w/ the C++ linker.
   ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"

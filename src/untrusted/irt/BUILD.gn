@@ -11,7 +11,7 @@ executable("irt_core") {
   ]
   deps = [
     "//native_client/build/config/nacl:nacl_base",
-    ":irt_core_lib"
+    ":irt_core_lib",
   ]
 }
 

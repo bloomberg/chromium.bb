@@ -131,7 +131,7 @@ static_library("nacl_dyncode") {
   ]
 }
 static_library("nacl") {
-  cflags_c = ["-std=c99"]
+  cflags_c = [ "-std=c99" ]
   sources = [
     "gc_hooks.c",
     "nacl_irt.c",
@@ -337,10 +337,8 @@ static_library("nacl") {
     ]
   }
 
-  if ((current_os != "glibc") && (current_cpu == "arm")) {
-    sources += [
-      "aeabi_read_tp.S",
-    ]
+  if (current_os != "glibc" && current_cpu == "arm") {
+    sources += [ "aeabi_read_tp.S" ]
   }
 
   if (current_cpu == "pnacl") {

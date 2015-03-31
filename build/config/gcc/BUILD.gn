@@ -24,7 +24,6 @@ config("executable_ldconfig") {
     # Want to pass "\$". Need to escape both '\' and '$'. GN will re-escape as
     # required for ninja.
     "-Wl,-rpath=\\\$ORIGIN/lib/",
-
     "-Wl,-rpath-link=lib/",
   ]
 

@@ -85,9 +85,7 @@ static_library("sel") {
   ]
 
   if (current_os == "linux") {
-    sources += [
-      "linux/nacl_signal.c",
-    ]
+    sources += [ "linux/nacl_signal.c" ]
   }
 
   if (current_os == "mac") {
@@ -162,14 +160,10 @@ static_library("sel") {
       ]
     }
     if (current_cpu == "arm") {
-      sources += [
-          "linux/arm/sel_segments.c",
-      ]
+      sources += [ "linux/arm/sel_segments.c" ]
     }
     if (current_cpu == "mipsel") {
-      sources += [
-        "linux/mips/sel_segments.c",
-      ]
+      sources += [ "linux/mips/sel_segments.c" ]
     }
   }
   if (is_posix) {
@@ -189,9 +183,7 @@ static_library("sel") {
       "win/vm_hole.c",
     ]
   } else {
-    sources += [
-      "generic/vm_hole.c",
-    ]
+    sources += [ "generic/vm_hole.c" ]
   }
 
   deps = [
@@ -227,20 +219,20 @@ static_library("sel") {
   }
 }
 
-
 executable("sel_ldr") {
-  sources = ["nacl_test_injection_main.c"]
+  sources = [
+    "nacl_test_injection_main.c",
+  ]
   deps = [
     "//native_client/src/trusted/service_runtime:sel_main",
   ]
   if (is_posix) {
-    libs = ["rt"]
-    ldflags = ["-pie"]
+    libs = [ "rt" ]
+    ldflags = [ "-pie" ]
   }
   if (is_linux) {
     datadeps = [
-      "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap"
+      "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
     ]
   }
 }
-
