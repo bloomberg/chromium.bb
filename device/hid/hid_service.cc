@@ -15,7 +15,7 @@
 #include "device/hid/hid_service_linux.h"
 #elif defined(OS_MACOSX)
 #include "device/hid/hid_service_mac.h"
-#else
+#elif defined(OS_WIN)
 #include "device/hid/hid_service_win.h"
 #endif
 
