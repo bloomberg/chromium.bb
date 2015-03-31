@@ -109,13 +109,6 @@ void AsyncResourceHandler::OnFollowRedirect(int request_id) {
     return;
   }
 
-  if (!redirect_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("Net.AsyncResourceHandler_RedirectHopTime",
-                        TimeTicks::Now() - redirect_start_time_);
-    // Reset start time.
-    redirect_start_time_ = TimeTicks();
-  }
-
   ResumeIfDeferred();
 }
 
@@ -145,8 +138,6 @@ bool AsyncResourceHandler::OnRequestRedirected(
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
     return false;
-
-  redirect_start_time_ = TimeTicks::Now();
 
   *defer = did_defer_ = true;
   OnDefer();

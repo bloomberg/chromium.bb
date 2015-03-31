@@ -16680,6 +16680,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_RedirectHopTime" units="milliseconds">
+  <obsolete>
+    Data collection finished on 2015-03-31.
+  </obsolete>
   <owner>bnc@chromium.org</owner>
   <summary>
     The time between the call of AsyncResourceHandler::OnRequestRedirected and
