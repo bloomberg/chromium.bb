@@ -25,7 +25,9 @@ class ObjectPath;
 namespace chromeos {
 
 // Style Note: Clients are sorted by names.
+class AmplifierClient;
 class ApManagerClient;
+class AudioDspClient;
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
 class BluetoothDeviceClient;
@@ -59,6 +61,7 @@ class PeerDaemonManagerClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class PrivetDaemonManagerClient;
+class SMSClient;
 class SessionManagerClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
@@ -66,7 +69,6 @@ class ShillManagerClient;
 class ShillProfileClient;
 class ShillServiceClient;
 class ShillThirdPartyVpnDriverClient;
-class SMSClient;
 class SystemClockClient;
 class UpdateEngineClient;
 
@@ -120,7 +122,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // All returned objects are owned by DBusThreadManager.  Do not use these
   // pointers after DBusThreadManager has been shut down.
+  AmplifierClient* GetAmplifierClient();
   ApManagerClient* GetApManagerClient();
+  AudioDspClient* GetAudioDspClient();
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();
@@ -206,6 +210,8 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
+  void SetAmplifierClient(scoped_ptr<AmplifierClient> client);
+  void SetAudioDspClient(scoped_ptr<AudioDspClient> client);
   void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
   void SetBluetoothAgentManagerClient(
       scoped_ptr<BluetoothAgentManagerClient> client);

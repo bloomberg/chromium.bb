@@ -12,7 +12,9 @@
 
 namespace chromeos {
 
+class AmplifierClient;
 class ApManagerClient;
+class AudioDspClient;
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
 class BluetoothDeviceClient;
@@ -29,31 +31,31 @@ class CrosDisksClient;
 class CryptohomeClient;
 class DebugDaemonClient;
 class EasyUnlockClient;
-class LeadershipDaemonManagerClient;
-class LorgnetteManagerClient;
-class MetronomeClient;
-class ShillDeviceClient;
-class ShillIPConfigClient;
-class ShillManagerClient;
-class ShillServiceClient;
-class ShillProfileClient;
-class ShillThirdPartyVpnDriverClient;
 class GsmSMSClient;
 class ImageBurnerClient;
 class IntrospectableClient;
+class LeadershipDaemonManagerClient;
+class LorgnetteManagerClient;
+class MetronomeClient;
 class ModemMessagingClient;
-class NfcManagerClient;
 class NfcAdapterClient;
 class NfcDeviceClient;
-class NfcTagClient;
+class NfcManagerClient;
 class NfcRecordClient;
+class NfcTagClient;
 class PeerDaemonManagerClient;
 class PermissionBrokerClient;
-class PrivetDaemonManagerClient;
-class SystemClockClient;
 class PowerManagerClient;
-class SessionManagerClient;
+class PrivetDaemonManagerClient;
 class SMSClient;
+class SessionManagerClient;
+class ShillDeviceClient;
+class ShillIPConfigClient;
+class ShillManagerClient;
+class ShillProfileClient;
+class ShillServiceClient;
+class ShillThirdPartyVpnDriverClient;
+class SystemClockClient;
 class UpdateEngineClient;
 
 // The bundle of all D-Bus clients used in DBusThreadManager. The bundle
@@ -91,6 +93,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
     METRONOME =            1 << 21,
     AP_MANAGER =           1 << 22,
     PRIVET_DAEMON =        1 << 23,
+    AMPLIFIER =            1 << 24,
+    AUDIO_DSP =            1 << 25,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -109,7 +113,11 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // un-stubbed.
   static DBusClientTypeMask ParseUnstubList(const std::string& unstub_list);
 
+  AmplifierClient* amplifier_client() { return amplifier_client_.get(); }
+
   ApManagerClient* ap_manager_client() { return ap_manager_client_.get(); }
+
+  AudioDspClient* audio_dsp_client() { return audio_dsp_client_.get(); }
 
   BluetoothAdapterClient* bluetooth_adapter_client() {
     return bluetooth_adapter_client_.get();
@@ -284,7 +292,9 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // are defined within DBusClientType enum.
   DBusClientTypeMask unstub_client_mask_;
 
+  scoped_ptr<AmplifierClient> amplifier_client_;
   scoped_ptr<ApManagerClient> ap_manager_client_;
+  scoped_ptr<AudioDspClient> audio_dsp_client_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;

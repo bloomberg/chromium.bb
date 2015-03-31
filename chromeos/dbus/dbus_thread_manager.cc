@@ -8,7 +8,9 @@
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
+#include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -114,8 +116,16 @@ dbus::Bus* DBusThreadManager::GetSystemBus() {
   return system_bus_.get();
 }
 
+AmplifierClient* DBusThreadManager::GetAmplifierClient() {
+  return client_bundle_->amplifier_client();
+}
+
 ApManagerClient* DBusThreadManager::GetApManagerClient() {
   return client_bundle_->ap_manager_client();
+}
+
+AudioDspClient* DBusThreadManager::GetAudioDspClient() {
+  return client_bundle_->audio_dsp_client();
 }
 
 BluetoothAdapterClient* DBusThreadManager::GetBluetoothAdapterClient() {
@@ -302,7 +312,9 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
 }
 
 void DBusThreadManager::InitializeClients() {
+  GetAmplifierClient()->Init(GetSystemBus());
   GetApManagerClient()->Init(GetSystemBus());
+  GetAudioDspClient()->Init(GetSystemBus());
   GetBluetoothAdapterClient()->Init(GetSystemBus());
   GetBluetoothAgentManagerClient()->Init(GetSystemBus());
   GetBluetoothDeviceClient()->Init(GetSystemBus());
@@ -458,6 +470,16 @@ DBusThreadManagerSetter::DBusThreadManagerSetter() {
 }
 
 DBusThreadManagerSetter::~DBusThreadManagerSetter() {
+}
+
+void DBusThreadManagerSetter::SetAmplifierClient(
+    scoped_ptr<AmplifierClient> client) {
+  DBusThreadManager::Get()->client_bundle_->amplifier_client_ = client.Pass();
+}
+
+void DBusThreadManagerSetter::SetAudioDspClient(
+    scoped_ptr<AudioDspClient> client) {
+  DBusThreadManager::Get()->client_bundle_->audio_dsp_client_ = client.Pass();
 }
 
 void DBusThreadManagerSetter::SetBluetoothAdapterClient(
