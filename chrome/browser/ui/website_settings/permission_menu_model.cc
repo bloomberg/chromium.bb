@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -14,7 +15,15 @@ PermissionMenuModel::PermissionMenuModel(
     : ui::SimpleMenuModel(this), permission_(info), callback_(callback) {
   DCHECK(!callback_.is_null());
   base::string16 label;
-  switch (permission_.default_setting) {
+
+  ContentSetting effective_setting = permission_.setting;
+
+#if defined(ENABLE_PLUGINS)
+  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
+      permission_.type, permission_.setting);
+#endif  // defined(ENABLE_PLUGINS)
+
+  switch (effective_setting) {
     case CONTENT_SETTING_ALLOW:
       label = l10n_util::GetStringUTF16(
           IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW);
@@ -24,11 +33,8 @@ PermissionMenuModel::PermissionMenuModel(
           IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_BLOCK);
       break;
     case CONTENT_SETTING_ASK:
-      // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
-      label = l10n_util::GetStringUTF16(
-          permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS
-              ? IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_BLOCK
-              : IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
+      label =
+          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
       break;
     case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
       label = l10n_util::GetStringUTF16(
@@ -90,13 +96,14 @@ PermissionMenuModel::PermissionMenuModel(const GURL& url,
 PermissionMenuModel::~PermissionMenuModel() {}
 
 bool PermissionMenuModel::IsCommandIdChecked(int command_id) const {
-  // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
-  if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      permission_.setting == CONTENT_SETTING_ASK &&
-      command_id == CONTENT_SETTING_BLOCK) {
-    return true;
-  }
-  return permission_.setting == command_id;
+  ContentSetting setting = permission_.setting;
+
+#if defined(ENABLE_PLUGINS)
+  setting = PluginsFieldTrial::EffectiveContentSetting(permission_.type,
+                                                       permission_.setting);
+#endif  // defined(ENABLE_PLUGINS)
+
+  return setting == command_id;
 }
 
 bool PermissionMenuModel::IsCommandIdEnabled(int command_id) const {

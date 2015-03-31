@@ -293,6 +293,13 @@ cr.define('options', function() {
   };
 
   /**
+   * Disable the 'allow' option in the Plugins section.
+   */
+  ContentSettings.disablePluginsAllowOption = function() {
+    $('plugins-allow-radio').disabled = true;
+  };
+
+  /**
    * Updates the microphone/camera devices menu with the given entries.
    * @param {string} type The device type.
    * @param {Array} devices List of available devices.

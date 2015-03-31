@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -176,15 +177,13 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
     ContentSetting default_setting,
     content_settings::SettingSource source) {
   ContentSetting effective_setting = setting;
-  if (effective_setting == CONTENT_SETTING_DEFAULT) {
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
     effective_setting = default_setting;
 
-    // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
-    if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-        default_setting == CONTENT_SETTING_ASK) {
-      effective_setting = CONTENT_SETTING_BLOCK;
-    }
-  }
+#if defined(ENABLE_PLUGINS)
+  effective_setting =
+      PluginsFieldTrial::EffectiveContentSetting(type, effective_setting);
+#endif
 
   const int* button_text_ids = NULL;
   switch (source) {

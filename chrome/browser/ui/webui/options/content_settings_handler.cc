@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,9 +21,9 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -528,6 +527,12 @@ void ContentSettingsHandler::InitializePage() {
   UpdateHandlersEnabledRadios();
   UpdateAllExceptionsViewsFromModel();
   UpdateProtectedContentExceptionsButton();
+
+  // For Plugins, allow flag to override displayed content setting.
+  if (PluginsFieldTrial::IsForcePluginPowerSaverEnabled()) {
+    web_ui()->CallJavascriptFunction(
+        "ContentSettings.disablePluginsAllowOption");
+  }
 }
 
 void ContentSettingsHandler::OnContentSettingChanged(
@@ -606,11 +611,10 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
   ContentSetting default_setting =
       GetContentSettingsMap()->GetDefaultContentSetting(type, &provider_id);
 
-  // For Plugins, display the obsolete ASK setting as BLOCK.
-  if (type == ContentSettingsType::CONTENT_SETTINGS_TYPE_PLUGINS &&
-      default_setting == ContentSetting::CONTENT_SETTING_ASK) {
-    default_setting = ContentSetting::CONTENT_SETTING_BLOCK;
-  }
+#if defined(ENABLE_PLUGINS)
+  default_setting =
+      PluginsFieldTrial::EffectiveContentSetting(type, default_setting);
+#endif
 
   base::DictionaryValue filter_settings;
   filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",

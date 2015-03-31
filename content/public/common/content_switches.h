@@ -298,10 +298,6 @@ CONTENT_EXPORT extern const char kFontCacheSharedMemSuffix[];
 
 CONTENT_EXPORT extern const char kEnableNpapi[];
 
-#if defined(ENABLE_PLUGINS)
-CONTENT_EXPORT extern const char kEnablePluginPowerSaver[];
-#endif
-
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 

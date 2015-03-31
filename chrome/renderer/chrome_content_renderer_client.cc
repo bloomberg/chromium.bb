@@ -759,19 +759,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
-#if defined(ENABLE_PLUGINS)
-    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed &&
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnablePluginPowerSaver)) {
-      status_value =
-          ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
-    }
-#endif
-
 #if defined(OS_WIN)
     // In Windows we need to check if we can load NPAPI plugins.
     // For example, if the render view is in the Ash desktop, we should not.
-    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed &&
+    // If user is on ALLOW or DETECT setting, loading needs to be blocked here.
+    if ((status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
+         status_value ==
+             ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) &&
         info.type == content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
         if (observer->AreNPAPIPluginsBlocked())
           status_value =

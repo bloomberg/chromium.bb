@@ -6334,11 +6334,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allows applications to use NaCl Socket API. Use only to test NaCl plugins.
       </message>
       <if expr="enable_plugins">
-        <message name="IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_NAME" desc="Name for the Plugin Power Saver feature.">
-          Enable Plugin Power Saver.
+        <message name="IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_NAME" desc="Name for the flag to force on the Plugin Power Saver feature.">
+          Enable Plugin Power Saver
         </message>
-        <message name="IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_DESCRIPTION" desc="Description for the Plugin Power Saver feature.">
-          Enables experimental power saver mode for peripheral plugin content.
+        <message name="IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_DESCRIPTION" desc="Description of the flag to force on the Plugin Power Saver feature.">
+          Force on the experimental power saver mode for peripheral plugin content. Overrides content settings.
         </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_PINCH_SCALE_NAME" desc="Name of the flag to turn on experiental pinch to scale.">

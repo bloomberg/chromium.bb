@@ -977,11 +977,6 @@ const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
 // Enables the use of NPAPI plugins.
 const char kEnableNpapi[]                   = "enable-npapi";
 
-#if defined(ENABLE_PLUGINS)
-// Enables the plugin power saver feature.
-const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
-#endif
-
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches

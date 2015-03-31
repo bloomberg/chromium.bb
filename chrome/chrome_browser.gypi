@@ -2002,6 +2002,8 @@
       'browser/plugins/plugin_prefs_factory.h',
       'browser/plugins/plugin_status_pref_setter.cc',
       'browser/plugins/plugin_status_pref_setter.h',
+      'browser/plugins/plugins_field_trial.cc',
+      'browser/plugins/plugins_field_trial.h',
       'browser/renderer_host/pepper/chrome_browser_pepper_host_factory.cc',
       'browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h',
       'browser/renderer_host/pepper/device_id_fetcher.cc',
