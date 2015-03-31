@@ -5,5 +5,5 @@
 [
     RuntimeEnabled=NetworkInformation
 ] partial interface Navigator {
-    readonly attribute NetworkInformation connection;
+    [MeasureAs=NetInfo] readonly attribute NetworkInformation connection;
 };
