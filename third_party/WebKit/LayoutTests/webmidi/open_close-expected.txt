@@ -16,7 +16,11 @@ PASS port.connection is "closed"
 Check state transition for open on closed state.
 - check initial state.
 PASS port.connection is "closed"
-- check handler port.
+- check port handler.
+PASS handler is called with port [object MIDIInput].
+PASS eventport.id is "MockInputID"
+PASS eventport.connection is "open"
+- check access handler.
 PASS handler is called with port [object MIDIInput].
 PASS eventport.id is "MockInputID"
 PASS eventport.connection is "open"
@@ -38,7 +42,11 @@ PASS port.connection is "open"
 Check state transition for close on open state.
 - check initial state.
 PASS port.connection is "open"
-- check handler port.
+- check port handler.
+PASS handler is called with port [object MIDIInput].
+PASS eventport.id is "MockInputID"
+PASS eventport.connection is "closed"
+- check access handler.
 PASS handler is called with port [object MIDIInput].
 PASS eventport.id is "MockInputID"
 PASS eventport.connection is "closed"
