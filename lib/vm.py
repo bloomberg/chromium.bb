@@ -80,7 +80,8 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
   if not exists:
     # No existing VM image that we can reuse. Create a new VM image.
     logging.info('Creating %s', dest_path)
-    cmd = ['./image_to_vm.sh', '--test_image']
+    cmd = [os.path.join(constants.CROSUTILS_DIR, 'image_to_vm.sh'),
+           '--test_image']
 
     if image:
       cmd.append('--from=%s' % cros_build_lib.ToChrootPath(image_dir))
@@ -171,6 +172,7 @@ class VMInstance(object):
     self.agent = remote_access.RemoteAccess(
         remote_access.LOCALHOST, self.tempdir, self.port,
         debug_level=self.debug_level, interactive=False)
+    self.device_addr = 'ssh://%s:%d' % (remote_access.LOCALHOST, self.port)
 
   def _Start(self):
     """Run the command to start VM."""

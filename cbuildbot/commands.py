@@ -661,9 +661,9 @@ def RunDevModeTest(buildroot, board, image_dir):
 
 
 def RunCrosVMTest(board, image_dir):
-  """Runs cros_vm_test script to verify cros flash/deploy works."""
+  """Runs cros_vm_test script to verify cros commands work."""
   image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
-  test = cros_vm_test.CrosCommandTest(board, image_path)
+  test = cros_vm_test.CrosVMTest(board, image_path)
   test.Run()
 
 
