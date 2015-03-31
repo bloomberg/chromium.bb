@@ -4,7 +4,6 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	@PTHREADSTUBS_CFLAGS@ \
-	$(VISIBILITY_CFLAGS) \
 	$(WARN_CFLAGS)
 
 libdrm_tegra_ladir = $(libdir)

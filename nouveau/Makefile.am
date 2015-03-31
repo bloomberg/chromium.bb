@@ -2,7 +2,6 @@ include Makefile.sources
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
-	$(VISIBILITY_CFLAGS) \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm \
