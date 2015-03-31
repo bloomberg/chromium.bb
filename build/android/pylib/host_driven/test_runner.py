@@ -48,17 +48,16 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
   """
 
   #override
-  def __init__(self, device, shard_index, tool, cleanup_test_files):
+  def __init__(self, device, shard_index, tool):
     """Creates a new HostDrivenTestRunner.
 
     Args:
       device: Attached android device.
       shard_index: Shard index.
       tool: Name of the Valgrind tool.
-      cleanup_test_files: Whether or not to cleanup test files on device.
     """
 
-    super(HostDrivenTestRunner, self).__init__(device, tool, cleanup_test_files)
+    super(HostDrivenTestRunner, self).__init__(device, tool)
 
     # The shard index affords the ability to create unique port numbers (e.g.
     # DEFAULT_PORT + shard_index) if the test so wishes.
@@ -82,7 +81,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
     exception_raised = False
 
     try:
-      test.SetUp(str(self.device), self.shard_index, self._cleanup_test_files)
+      test.SetUp(str(self.device), self.shard_index)
     except Exception:
       logging.exception(
           'Caught exception while trying to run SetUp() for test: ' +

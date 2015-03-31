@@ -26,7 +26,6 @@ class TestRunner(instr_test_runner.TestRunner):
     # Create an InstrumentationOptions object to pass to the super class
     instrumentation_options = instr_test_options.InstrumentationOptions(
         test_options.tool,
-        test_options.cleanup_test_files,
         test_options.annotations,
         test_options.exclude_annotations,
         test_options.test_filter,

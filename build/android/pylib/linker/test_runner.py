@@ -49,16 +49,14 @@ class LinkerTestRunner(base_test_runner.BaseTestRunner):
   """
 
   #override
-  def __init__(self, device, tool, cleanup_test_files):
+  def __init__(self, device, tool):
     """Creates a new LinkerTestRunner.
 
     Args:
       device: Attached android device.
       tool: Name of the Valgrind tool.
-      cleanup_test_files: Whether or not to cleanup test files on device.
     """
-
-    super(LinkerTestRunner, self).__init__(device, tool, cleanup_test_files)
+    super(LinkerTestRunner, self).__init__(device, tool)
 
   #override
   def InstallTestPackage(self):
@@ -68,8 +66,7 @@ class LinkerTestRunner(base_test_runner.BaseTestRunner):
     if not os.path.exists(apk_path):
       raise Exception('%s not found, please build it' % apk_path)
 
-    package_name = apk_helper.GetPackageName(apk_path)
-    self.device.old_interface.ManagedInstall(apk_path, package_name)
+    self.device.Install(apk_path)
 
   #override
   def RunTest(self, test):
