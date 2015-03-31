@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_implementation.h"
@@ -43,12 +44,12 @@ RenderbufferManager::RenderbufferManager(
     MemoryTracker* memory_tracker,
     GLint max_renderbuffer_size,
     GLint max_samples,
-    bool depth24_supported)
+    FeatureInfo* feature_info)
     : memory_tracker_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
       max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),
-      depth24_supported_(depth24_supported),
+      feature_info_(feature_info),
       num_uncleared_renderbuffers_(0),
       renderbuffer_count_(0),
       have_context_(true) {
@@ -210,7 +211,7 @@ bool RenderbufferManager::ComputeEstimatedRenderbufferSize(int width,
 
 GLenum RenderbufferManager::InternalRenderbufferFormatToImplFormat(
     GLenum impl_format) const {
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+  if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
     switch (impl_format) {
       case GL_DEPTH_COMPONENT16:
         return GL_DEPTH_COMPONENT;
@@ -222,7 +223,8 @@ GLenum RenderbufferManager::InternalRenderbufferFormatToImplFormat(
     }
   } else {
     // Upgrade 16-bit depth to 24-bit if possible.
-    if (impl_format == GL_DEPTH_COMPONENT16 && depth24_supported_)
+    if (impl_format == GL_DEPTH_COMPONENT16 &&
+        feature_info_->feature_flags().oes_depth24)
       return GL_DEPTH_COMPONENT24;
   }
   return impl_format;

@@ -21,6 +21,7 @@ class GLContext;
 enum GLImplementation {
   kGLImplementationNone,
   kGLImplementationDesktopGL,
+  kGLImplementationDesktopGLCoreProfile,
   kGLImplementationOSMesaGL,
   kGLImplementationAppleGL,
   kGLImplementationEGLGLES2,

@@ -95,6 +95,7 @@ bool InitializeOneOffForSandbox() {
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
       if (!InitializeOneOffForSandbox()) {
         LOG(ERROR) << "GLSurfaceCGL::InitializeOneOff failed.";
@@ -112,6 +113,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL: {
       NOTIMPLEMENTED() << "No onscreen support on Mac.";
       return NULL;
@@ -143,6 +145,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       return surface;
     }
     case kGLImplementationDesktopGL:
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL: {
       scoped_refptr<GLSurface> surface(new NoOpGLSurface(size));
       if (!surface->Initialize())

@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_version_info.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -79,6 +80,8 @@ const GLint TestHelper::kMaxVaryingFloats;
 const GLint TestHelper::kMaxVertexUniformVectors;
 const GLint TestHelper::kMaxVertexUniformComponents;
 #endif
+
+std::vector<std::string> TestHelper::split_extensions_;
 
 void TestHelper::SetupTextureInitializationExpectations(
     ::gfx::MockGLInterface* gl,
@@ -270,14 +273,14 @@ void TestHelper::SetupContextGroupInitExpectations(
 
   SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version);
 
-  std::string l_version(base::StringToLowerASCII(std::string(gl_version)));
-  bool is_es3 = (l_version.substr(0, 12) == "opengl es 3.");
+  gfx::GLVersionInfo gl_info(gl_version, "", extensions);
 
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
   if (strstr(extensions, "GL_EXT_framebuffer_multisample") ||
-      strstr(extensions, "GL_EXT_multisampled_render_to_texture") || is_es3) {
+      strstr(extensions, "GL_EXT_multisampled_render_to_texture") ||
+      gl_info.is_es3) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES, _))
         .WillOnce(SetArgumentPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
@@ -309,15 +312,28 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformComponents))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VARYING_FLOATS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVaryingFloats))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformComponents))
-      .RetiresOnSaturation();
+
+  if (gl_info.is_es) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VARYING_VECTORS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxVaryingVectors))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors))
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformComponents))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VARYING_FLOATS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxVaryingFloats))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformComponents))
+        .RetiresOnSaturation();
+  }
 
   bool use_default_textures = bind_generates_resource;
   SetupTextureManagerInitExpectations(gl, extensions, use_default_textures);
@@ -335,21 +351,39 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
      const char* gl_version) {
   InSequence sequence;
 
-  EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, GetString(GL_RENDERER))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(gl_renderer)))
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetString(GL_VERSION))
       .WillOnce(Return(reinterpret_cast<const uint8*>(gl_version)))
       .RetiresOnSaturation();
 
-  std::string l_version(base::StringToLowerASCII(std::string(gl_version)));
-  bool is_es3 = (l_version.substr(0, 12) == "opengl es 3.");
+  // Persistent storage is needed for the split extension string.
+  split_extensions_.clear();
+  if (extensions) {
+    Tokenize(extensions, " ", &split_extensions_);
+  }
+
+  gfx::GLVersionInfo gl_info(gl_version, gl_renderer, extensions);
+  if (!gl_info.is_es && gl_info.major_version >= 3) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_NUM_EXTENSIONS, _))
+        .WillOnce(SetArgumentPointee<1>(split_extensions_.size()))
+        .RetiresOnSaturation();
+    for (size_t ii = 0; ii < split_extensions_.size(); ++ii) {
+      EXPECT_CALL(*gl, GetStringi(GL_EXTENSIONS, ii))
+          .WillOnce(Return(reinterpret_cast<const uint8*>(
+              split_extensions_[ii].c_str())))
+          .RetiresOnSaturation();
+    }
+  } else {
+    EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
+        .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
+        .RetiresOnSaturation();
+  }
+
+  EXPECT_CALL(*gl, GetString(GL_RENDERER))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(gl_renderer)))
+      .RetiresOnSaturation();
 
   if (strstr(extensions, "GL_ARB_texture_float") ||
-      (is_es3 && strstr(extensions, "GL_EXT_color_buffer_float"))) {
+      (gl_info.is_es3 && strstr(extensions, "GL_EXT_color_buffer_float"))) {
     static const GLuint tx_ids[] = {101, 102};
     static const GLuint fb_ids[] = {103, 104};
     const GLsizei width = 16;
@@ -390,7 +424,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         GL_RGB, GL_FLOAT, _))
         .Times(1)
         .RetiresOnSaturation();
-    if (is_es3) {
+    if (gl_info.is_es3) {
       EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
           .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
           .RetiresOnSaturation();
@@ -420,7 +454,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
 
   if (strstr(extensions, "GL_EXT_draw_buffers") ||
       strstr(extensions, "GL_ARB_draw_buffers") ||
-      (is_es3 && strstr(extensions, "GL_NV_draw_buffers"))) {
+      (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers"))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
         .WillOnce(SetArgumentPointee<1>(8))
         .RetiresOnSaturation();
@@ -429,7 +463,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         .RetiresOnSaturation();
   }
 
-  if (is_es3 || strstr(extensions, "GL_EXT_texture_rg") ||
+  if (gl_info.is_es3 || strstr(extensions, "GL_EXT_texture_rg") ||
       (strstr(extensions, "GL_ARB_texture_rg"))) {
     static const GLuint tx_ids[] = {101, 102};
     static const GLuint fb_ids[] = {103, 104};

@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gpu {
 namespace gles2 {
@@ -120,8 +121,15 @@ bool ShaderTranslator::Init(
   if (glsl_implementation_type == kGlslES) {
     shader_output = SH_ESSL_OUTPUT;
   } else {
-    shader_output = (shader_spec == SH_WEBGL2_SPEC) ? SH_GLSL_CORE_OUTPUT :
-        SH_GLSL_COMPATIBILITY_OUTPUT;
+    // TODO(kbr): clean up the tests of shader_spec and
+    // gfx::GetGLImplementation(). crbug.com/471960
+    if (shader_spec == SH_WEBGL2_SPEC ||
+        gfx::GetGLImplementation() ==
+            gfx::kGLImplementationDesktopGLCoreProfile) {
+      shader_output = SH_GLSL_CORE_OUTPUT;
+    } else {
+      shader_output = SH_GLSL_COMPATIBILITY_OUTPUT;
+    }
   }
 
   {

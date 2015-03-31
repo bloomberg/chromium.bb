@@ -226,7 +226,8 @@ void DriverGL::InitializeStaticBindings() {
       GetGLProcAddress("glGetShaderSource"));
   fn.glGetStringFn =
       reinterpret_cast<glGetStringProc>(GetGLProcAddress("glGetString"));
-  fn.glGetStringiFn = 0;
+  fn.glGetStringiFn =
+      reinterpret_cast<glGetStringiProc>(GetGLProcAddress("glGetStringi"));
   fn.glGetSyncivFn = 0;
   fn.glGetTexLevelParameterfvFn = 0;
   fn.glGetTexLevelParameterivFn = 0;
@@ -477,6 +478,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   ext.b_GL_CHROMIUM_gles_depth_binding_hack =
       extensions.find("GL_CHROMIUM_gles_depth_binding_hack ") !=
       std::string::npos;
+  ext.b_GL_CHROMIUM_glgetstringi_hack =
+      extensions.find("GL_CHROMIUM_glgetstringi_hack ") != std::string::npos;
   ext.b_GL_EXT_debug_marker =
       extensions.find("GL_EXT_debug_marker ") != std::string::npos;
   ext.b_GL_EXT_direct_state_access =
@@ -1366,13 +1369,6 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         reinterpret_cast<glGetShaderPrecisionFormatProc>(
             GetGLProcAddress("glGetShaderPrecisionFormat"));
     DCHECK(fn.glGetShaderPrecisionFormatFn);
-  }
-
-  debug_fn.glGetStringiFn = 0;
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
-    fn.glGetStringiFn =
-        reinterpret_cast<glGetStringiProc>(GetGLProcAddress("glGetStringi"));
-    DCHECK(fn.glGetStringiFn);
   }
 
   debug_fn.glGetSyncivFn = 0;

@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEST_HELPER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEST_HELPER_H_
 
+#include <string>
+#include <vector>
+
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
@@ -140,6 +143,8 @@ class TestHelper {
   static void SetupTextureDestructionExpectations(::gfx::MockGLInterface* gl,
                                                   GLenum target,
                                                   bool use_default_textures);
+
+  static std::vector<std::string> split_extensions_;
 };
 
 // This object temporaritly Sets what gfx::GetGLImplementation returns. During

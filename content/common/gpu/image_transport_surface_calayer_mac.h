@@ -8,7 +8,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
@@ -77,6 +76,15 @@ class CALayerStorageProvider
   GLuint fbo_texture_;
   gfx::Size fbo_pixel_size_;
   float fbo_scale_factor_;
+
+  // State for the Core Profile code path.
+  GLuint program_;
+  GLuint vertex_shader_;
+  GLuint fragment_shader_;
+  GLuint position_location_;
+  GLuint tex_location_;
+  GLuint vertex_buffer_;
+  GLuint vertex_array_;
 
   // The CALayer that the current frame is being drawn into.
   base::scoped_nsobject<CAContext> context_;

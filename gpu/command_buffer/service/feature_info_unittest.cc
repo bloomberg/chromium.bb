@@ -42,7 +42,13 @@ class FeatureInfoTest : public GpuServiceTest {
   }
 
   void SetupInitExpectations(const char* extensions) {
-    SetupInitExpectationsWithGLVersion(extensions, "", "3.0");
+    std::string extensions_str = extensions;
+    // Most of the tests' expectations currently assume the desktop
+    // OpenGL compatibility profile.
+    if (extensions_str.find("GL_ARB_compatibility") == std::string::npos) {
+        extensions_str += " GL_ARB_compatibility";
+    }
+    SetupInitExpectationsWithGLVersion(extensions_str.c_str(), "", "3.0");
   }
 
   void SetupInitExpectationsWithGLVersion(
@@ -1382,7 +1388,8 @@ TEST_F(FeatureInfoTest, ARBSyncDisabled) {
 
 TEST_F(FeatureInfoTest, InitializeCHROMIUM_path_rendering) {
   SetupInitExpectationsWithGLVersion(
-      "GL_NV_path_rendering GL_EXT_direct_state_access", "", "4.3");
+      "GL_ARB_compatibility GL_NV_path_rendering GL_EXT_direct_state_access",
+      "", "4.3");
   EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
 }
@@ -1395,21 +1402,22 @@ TEST_F(FeatureInfoTest, InitializeCHROMIUM_path_rendering2) {
 }
 
 TEST_F(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering) {
-  SetupInitExpectationsWithGLVersion("", "", "4.3");
+  SetupInitExpectationsWithGLVersion("GL_ARB_compatibility", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));
 }
 
 TEST_F(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering2) {
-  SetupInitExpectationsWithGLVersion("GL_NV_path_rendering", "", "4.3");
+  SetupInitExpectationsWithGLVersion(
+      "GL_ARB_compatibility GL_NV_path_rendering", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));
 }
 
 TEST_F(FeatureInfoTest, InitializeNoKHR_blend_equation_advanced) {
-  SetupInitExpectationsWithGLVersion("", "", "4.3");
+  SetupInitExpectationsWithGLVersion("GL_ARB_compatibility", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().blend_equation_advanced);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_KHR_blend_equation_advanced")));
@@ -1428,7 +1436,7 @@ TEST_F(FeatureInfoTest, InitializeNV_blend_equations_advanced) {
 }
 
 TEST_F(FeatureInfoTest, InitializeNoKHR_blend_equation_advanced_coherent) {
-  SetupInitExpectationsWithGLVersion("", "", "4.3");
+  SetupInitExpectationsWithGLVersion("GL_ARB_compatibility ", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().blend_equation_advanced_coherent);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_KHR_blend_equation_advanced_coherent")));

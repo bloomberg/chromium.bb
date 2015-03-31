@@ -898,6 +898,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_timer_query;
   bool b_GL_ARB_vertex_array_object;
   bool b_GL_CHROMIUM_gles_depth_binding_hack;
+  bool b_GL_CHROMIUM_glgetstringi_hack;
   bool b_GL_EXT_debug_marker;
   bool b_GL_EXT_direct_state_access;
   bool b_GL_EXT_discard_framebuffer;

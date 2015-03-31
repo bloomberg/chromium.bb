@@ -8,7 +8,6 @@
 #include <list>
 
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
-#include "ui/gl/gl_bindings.h"
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>

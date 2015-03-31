@@ -47,6 +47,15 @@ static CGLPixelFormatObj GetPixelFormat() {
     attribs.push_back((CGLPixelFormatAttribute) kCGLRendererGenericFloatID);
     g_support_renderer_switching = false;
   }
+  if (GetGLImplementation() == kGLImplementationDesktopGLCoreProfile) {
+    // These constants don't exist in the 10.6 SDK against which
+    // Chromium currently compiles.
+    const int kOpenGLProfile = 99;
+    const int kOpenGL3_2Core = 0x3200;
+    attribs.push_back(static_cast<CGLPixelFormatAttribute>(kOpenGLProfile));
+    attribs.push_back(static_cast<CGLPixelFormatAttribute>(kOpenGL3_2Core));
+  }
+
   attribs.push_back((CGLPixelFormatAttribute) 0);
 
   GLint num_virtual_screens;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -22,6 +23,10 @@ const char kOpenGLFrameworkPath[] =
 }  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnsafeES3APIs)) {
+    impls->push_back(kGLImplementationDesktopGLCoreProfile);
+  }
   impls->push_back(kGLImplementationDesktopGL);
   impls->push_back(kGLImplementationAppleGL);
   impls->push_back(kGLImplementationOSMesaGL);
@@ -82,6 +87,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationDesktopGL:
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL: {
       base::NativeLibrary library = base::LoadNativeLibrary(
           base::FilePath(kOpenGLFrameworkPath), NULL);
@@ -113,6 +119,7 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
   switch (implementation) {
     case kGLImplementationOSMesaGL:
     case kGLImplementationDesktopGL:
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
       InitializeDynamicGLBindingsGL(context);
       break;

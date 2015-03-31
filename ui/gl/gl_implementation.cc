@@ -99,6 +99,7 @@ GLImplementation GetGLImplementation() {
 
 bool HasDesktopGLFeatures() {
   return kGLImplementationDesktopGL == g_gl_implementation ||
+         kGLImplementationDesktopGLCoreProfile == g_gl_implementation ||
          kGLImplementationOSMesaGL == g_gl_implementation ||
          kGLImplementationAppleGL == g_gl_implementation;
 }

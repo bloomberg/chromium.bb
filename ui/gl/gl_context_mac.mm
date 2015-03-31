@@ -24,6 +24,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   TRACE_EVENT0("gpu", "GLContext::CreateGLContext");
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL: {
       scoped_refptr<GLContext> context;
       // Note that with virtualization we might still be able to make current

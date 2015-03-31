@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_local.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -84,8 +85,22 @@ void GLContext::SetUnbindFboOnMakeCurrent() {
 
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent(NULL));
-  const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-  return std::string(ext ? ext : "");
+  if (gfx::GetGLImplementation() !=
+      gfx::kGLImplementationDesktopGLCoreProfile) {
+    const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    return std::string(ext ? ext : "");
+  }
+
+  std::vector<std::string> exts;
+  GLint num_extensions = 0;
+  glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+  for (GLint i = 0; i < num_extensions; ++i) {
+    const char* extension = reinterpret_cast<const char*>(
+        glGetStringi(GL_EXTENSIONS, i));
+    DCHECK(extension != NULL);
+    exts.push_back(extension);
+  }
+  return JoinString(exts, " ");
 }
 
 std::string GLContext::GetGLVersion() {
@@ -135,7 +150,9 @@ const GLVersionInfo* GLContext::GetVersionInfo() {
     std::string version = GetGLVersion();
     std::string renderer = GetGLRenderer();
     version_info_ =
-        make_scoped_ptr(new GLVersionInfo(version.c_str(), renderer.c_str()));
+        make_scoped_ptr(new GLVersionInfo(
+            version.c_str(), renderer.c_str(),
+            GetExtensions().c_str()));
   }
   return version_info_.get();
 }

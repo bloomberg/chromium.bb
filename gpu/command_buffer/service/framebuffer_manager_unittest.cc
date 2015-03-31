@@ -26,7 +26,6 @@ const GLint kMaxRenderbufferSize = 64;
 const GLint kMaxSamples = 4;
 const uint32 kMaxDrawBuffers = 16;
 const uint32 kMaxColorAttachments = 16;
-const bool kDepth24Supported = false;
 const bool kUseDefaultTextures = false;
 
 }  // namespace
@@ -35,27 +34,30 @@ class FramebufferManagerTest : public GpuServiceTest {
  public:
   FramebufferManagerTest()
       : manager_(1, 1),
-        texture_manager_(NULL,
-                         new FeatureInfo(),
-                         kMaxTextureSize,
-                         kMaxCubemapSize,
-                         kMaxRectangleTextureSize,
-                         kUseDefaultTextures),
-        renderbuffer_manager_(NULL,
-                              kMaxRenderbufferSize,
-                              kMaxSamples,
-                              kDepth24Supported) {}
+        feature_info_(new FeatureInfo()) {
+    texture_manager_.reset(new TextureManager(NULL,
+                                              feature_info_.get(),
+                                              kMaxTextureSize,
+                                              kMaxCubemapSize,
+                                              kMaxRectangleTextureSize,
+                                              kUseDefaultTextures));
+    renderbuffer_manager_.reset(new RenderbufferManager(NULL,
+                                                        kMaxRenderbufferSize,
+                                                        kMaxSamples,
+                                                        feature_info_.get()));
+  }
   ~FramebufferManagerTest() override {
     manager_.Destroy(false);
-    texture_manager_.Destroy(false);
-    renderbuffer_manager_.Destroy(false);
+    texture_manager_->Destroy(false);
+    renderbuffer_manager_->Destroy(false);
   }
 
  protected:
 
   FramebufferManager manager_;
-  TextureManager texture_manager_;
-  RenderbufferManager renderbuffer_manager_;
+  scoped_refptr<FeatureInfo> feature_info_;
+  scoped_ptr<TextureManager> texture_manager_;
+  scoped_ptr<RenderbufferManager> renderbuffer_manager_;
 };
 
 TEST_F(FramebufferManagerTest, Basic) {
@@ -109,20 +111,22 @@ class FramebufferInfoTest : public GpuServiceTest {
 
   FramebufferInfoTest()
       : manager_(kMaxDrawBuffers,  kMaxColorAttachments),
-        feature_info_(new FeatureInfo()),
-        renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples,
-                              kDepth24Supported) {
+        feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(NULL,
                                               feature_info_.get(),
                                               kMaxTextureSize,
                                               kMaxCubemapSize,
                                               kMaxRectangleTextureSize,
                                               kUseDefaultTextures));
+    renderbuffer_manager_.reset(new RenderbufferManager(NULL,
+                                                        kMaxRenderbufferSize,
+                                                        kMaxSamples,
+                                                        feature_info_.get()));
   }
   ~FramebufferInfoTest() override {
     manager_.Destroy(false);
     texture_manager_->Destroy(false);
-    renderbuffer_manager_.Destroy(false);
+    renderbuffer_manager_->Destroy(false);
   }
 
  protected:
@@ -145,7 +149,7 @@ class FramebufferInfoTest : public GpuServiceTest {
   Framebuffer* framebuffer_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> texture_manager_;
-  RenderbufferManager renderbuffer_manager_;
+  scoped_ptr<RenderbufferManager> renderbuffer_manager_;
   scoped_ptr<MockErrorState> error_state_;
 };
 
@@ -205,10 +209,10 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(
       framebuffer_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
 
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
 
   // check adding one attachment
@@ -224,13 +228,13 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Try a format that's not good for COLOR_ATTACHMENT0.
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kBadFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
   // Try a good format.
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetColorAttachmentFormat());
@@ -241,10 +245,10 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   // check adding another
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient2Id, kRenderbufferService2Id);
   Renderbuffer* renderbuffer2 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient2Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient2Id);
   ASSERT_TRUE(renderbuffer2 != NULL);
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer2);
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
@@ -263,7 +267,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
       status == GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT);
   EXPECT_FALSE(framebuffer_->IsCleared());
 
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer2, kSamples2, kFormat2, kWidth2, kHeight2);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
@@ -272,7 +276,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // check marking them as cleared.
   manager_.MarkAttachmentsAsCleared(
-      framebuffer_, &renderbuffer_manager_, texture_manager_.get());
+      framebuffer_, renderbuffer_manager_.get(), texture_manager_.get());
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -280,14 +284,14 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Check adding one that is already cleared.
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient3Id, kRenderbufferService3Id);
   Renderbuffer* renderbuffer3 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient3Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient3Id);
   ASSERT_TRUE(renderbuffer3 != NULL);
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer3, kSamples3, kFormat3, kWidth3, kHeight3);
-  renderbuffer_manager_.SetCleared(renderbuffer3, true);
+  renderbuffer_manager_->SetCleared(renderbuffer3, true);
 
   framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer3);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
@@ -300,7 +304,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Check marking the renderbuffer as unclared.
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetColorAttachmentFormat());
@@ -323,17 +327,17 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Clear it.
   manager_.MarkAttachmentsAsCleared(
-      framebuffer_, &renderbuffer_manager_, texture_manager_.get());
+      framebuffer_, renderbuffer_manager_.get(), texture_manager_.get());
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Check replacing an attachment
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient4Id, kRenderbufferService4Id);
   Renderbuffer* renderbuffer4 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient4Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient4Id);
   ASSERT_TRUE(renderbuffer4 != NULL);
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer4, kSamples4, kFormat4, kWidth4, kHeight4);
 
   framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer4);
@@ -351,7 +355,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
             framebuffer_->IsPossiblyComplete());
 
   // Check changing an attachment.
-  renderbuffer_manager_.SetInfo(
+  renderbuffer_manager_->SetInfo(
       renderbuffer4, kSamples4, kFormat4, kWidth4 + 1, kHeight4);
 
   attachment = framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT);
@@ -379,7 +383,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Remove depth, Set color to 0 size.
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, NULL);
-  renderbuffer_manager_.SetInfo(renderbuffer1, kSamples1, kFormat1, 0, 0);
+  renderbuffer_manager_->SetInfo(renderbuffer1, kSamples1, kFormat1, 0, 0);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
@@ -735,15 +739,15 @@ TEST_F(FramebufferInfoTest, UnbindRenderbuffer) {
   const GLuint kRenderbufferClient2Id = 34;
   const GLuint kRenderbufferService2Id = 334;
 
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient2Id, kRenderbufferService2Id);
   Renderbuffer* renderbuffer2 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient2Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient2Id);
   ASSERT_TRUE(renderbuffer2 != NULL);
 
   // Attach to 2 attachment points.
@@ -811,10 +815,10 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   const GLint kLevel1 = 0;
   const GLint kSamples1 = 0;
 
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
   texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
@@ -836,7 +840,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
 
   // Check MarkAttachmentsAsCleared marks as complete.
   manager_.MarkAttachmentsAsCleared(
-      framebuffer_, &renderbuffer_manager_, texture_manager_.get());
+      framebuffer_, renderbuffer_manager_.get(), texture_manager_.get());
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
 
   // Check Unbind marks as not complete.
@@ -857,10 +861,10 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   const GLint kLevel1 = 0;
   const GLint kSamples1 = 0;
 
-  renderbuffer_manager_.CreateRenderbuffer(
+  renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
-      renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
   texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(

@@ -15,6 +15,13 @@
 
 namespace content {
 
+scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
+    GpuChannelManager* manager,
+    GpuCommandBufferStub* stub,
+    gfx::PluginWindowHandle handle) {
+  return new ImageTransportSurfaceFBO(manager, stub, handle);
+}
+
 ImageTransportSurfaceFBO::ImageTransportSurfaceFBO(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
@@ -43,7 +50,9 @@ bool ImageTransportSurfaceFBO::Initialize() {
   // Only support IOSurfaces if the GL implementation is the native desktop GL.
   // IO surfaces will not work with, for example, OSMesa software renderer
   // GL contexts.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL &&
+  if (gfx::GetGLImplementation() !=
+      gfx::kGLImplementationDesktopGLCoreProfile &&
+      gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL &&
       gfx::GetGLImplementation() != gfx::kGLImplementationAppleGL)
     return false;
 
@@ -116,8 +125,13 @@ void ImageTransportSurfaceFBO::NotifyWasBound() {
   glUseProgram(0);
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
   DCHECK(status == GL_FRAMEBUFFER_COMPLETE);
-  glBegin(GL_TRIANGLES);
-  glEnd();
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+    // These aren't present in the core profile.
+    // TODO(ccameron): verify this workaround isn't still needed with
+    // the core profile.
+    glBegin(GL_TRIANGLES);
+    glEnd();
+  }
   glUseProgram(old_program);
 }
 
@@ -298,7 +312,19 @@ void ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer(
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
   GLint previous_texture_id = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &previous_texture_id);
+
+  GLenum texture_target = GL_TEXTURE_RECTANGLE_ARB;
+  GLenum texture_binding_target = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+  // However, the remote core animation path on the core profile will
+  // be the preferred combination going forward.
+  if (gfx::GetGLImplementation() ==
+      gfx::kGLImplementationDesktopGLCoreProfile &&
+      ui::RemoteLayerAPISupported()) {
+    texture_target = GL_TEXTURE_2D;
+    texture_binding_target = GL_TEXTURE_BINDING_2D;
+  }
+
+  glGetIntegerv(texture_binding_target, &previous_texture_id);
 
   // Free the old IO Surface first to reduce memory fragmentation.
   DestroyFramebuffer();
@@ -308,17 +334,17 @@ void ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer(
 
   glGenTextures(1, &texture_id_);
 
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_id_);
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,
+  glBindTexture(texture_target, texture_id_);
+  glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(texture_target,
                   GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,
+  glTexParameteri(texture_target,
                   GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
-                            GL_TEXTURE_RECTANGLE_ARB,
+                            texture_target,
                             texture_id_,
                             0);
 
@@ -373,7 +399,7 @@ void ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer(
 
   has_complete_framebuffer_ = true;
 
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, previous_texture_id);
+  glBindTexture(texture_target, previous_texture_id);
   // The FBO remains bound for this GL context.
 }
 

@@ -1543,7 +1543,7 @@ class GLES2DecoderMultisampledRenderToTextureTest
           *gl_,
           RenderbufferStorageMultisampleIMG(GL_RENDERBUFFER,
                                             TestHelper::kMaxSamples,
-                                            GL_RGBA,
+                                            GL_RGBA4,
                                             TestHelper::kMaxRenderbufferSize,
                                             1))
           .Times(1)
@@ -1553,7 +1553,7 @@ class GLES2DecoderMultisampledRenderToTextureTest
           *gl_,
           RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
                                             TestHelper::kMaxSamples,
-                                            GL_RGBA,
+                                            GL_RGBA4,
                                             TestHelper::kMaxRenderbufferSize,
                                             1))
           .Times(1)

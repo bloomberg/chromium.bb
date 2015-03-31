@@ -331,8 +331,10 @@ const GLVersionInfo* GetGLVersionInfo() {
 void InitializeDynamicGLBindingsGL(GLContext* context) {
   g_driver_gl.InitializeCustomDynamicBindings(context);
   DCHECK(context && context->IsCurrent(NULL) && !g_version_info);
-  g_version_info = new GLVersionInfo(context->GetGLVersion().c_str(),
-      context->GetGLRenderer().c_str());
+  g_version_info = new GLVersionInfo(
+      context->GetGLVersion().c_str(),
+      context->GetGLRenderer().c_str(),
+      context->GetExtensions().c_str());
 }
 
 void InitializeDebugGLBindingsGL() {
@@ -435,8 +437,7 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
   real_context_ = real_context;
 
   DCHECK(real_context->IsCurrent(NULL));
-  std::string ext_string(
-      reinterpret_cast<const char*>(driver_->fn.glGetStringFn(GL_EXTENSIONS)));
+  std::string ext_string = real_context->GetExtensions();
   std::vector<std::string> ext;
   Tokenize(ext_string, " ", &ext);
 

@@ -2733,17 +2733,39 @@ bool GLES2DecoderImpl::Initialize(
     // can't do anything about that.
 
     if (!surfaceless_) {
-      GLint v = 0;
-      glGetIntegerv(GL_ALPHA_BITS, &v);
+      GLint alpha_bits = 0;
+      GLint depth_bits = 0;
+      GLint stencil_bits = 0;
+
+      bool default_fb = (GetBackbufferServiceId() == 0);
+
+      if (feature_info_->gl_version_info().is_desktop_core_profile) {
+        glGetFramebufferAttachmentParameterivEXT(
+            GL_FRAMEBUFFER,
+            default_fb ? GL_BACK_LEFT : GL_COLOR_ATTACHMENT0,
+            GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &alpha_bits);
+        glGetFramebufferAttachmentParameterivEXT(
+            GL_FRAMEBUFFER,
+            default_fb ? GL_DEPTH : GL_DEPTH_ATTACHMENT,
+            GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &depth_bits);
+        glGetFramebufferAttachmentParameterivEXT(
+            GL_FRAMEBUFFER,
+            default_fb ? GL_STENCIL : GL_STENCIL_ATTACHMENT,
+            GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &stencil_bits);
+      } else {
+        glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);
+        glGetIntegerv(GL_DEPTH_BITS, &depth_bits);
+        glGetIntegerv(GL_STENCIL_BITS, &stencil_bits);
+      }
+
       // This checks if the user requested RGBA and we have RGBA then RGBA. If
       // the user requested RGB then RGB. If the user did not specify a
       // preference than use whatever we were given. Same for DEPTH and STENCIL.
       back_buffer_color_format_ =
-          (attrib_parser.alpha_size != 0 && v > 0) ? GL_RGBA : GL_RGB;
-      glGetIntegerv(GL_DEPTH_BITS, &v);
-      back_buffer_has_depth_ = attrib_parser.depth_size != 0 && v > 0;
-      glGetIntegerv(GL_STENCIL_BITS, &v);
-      back_buffer_has_stencil_ = attrib_parser.stencil_size != 0 && v > 0;
+          (attrib_parser.alpha_size != 0 && alpha_bits > 0) ? GL_RGBA : GL_RGB;
+      back_buffer_has_depth_ = attrib_parser.depth_size != 0 && depth_bits > 0;
+      back_buffer_has_stencil_ =
+          attrib_parser.stencil_size != 0 && stencil_bits > 0;
     }
 
     state_.viewport_width = surface->GetSize().width();
@@ -2756,7 +2778,7 @@ bool GLES2DecoderImpl::Initialize(
   // mailing list archives. It also implicitly enables the desktop GL
   // capability GL_POINT_SPRITE to provide access to the gl_PointCoord
   // variable in fragment shaders.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+  if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
   }
@@ -4749,23 +4771,93 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        glGetIntegerv(GL_ALPHA_BITS, &v);
-        params[0] = BoundFramebufferHasColorAttachmentWithAlpha(false) ? v : 0;
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+          Framebuffer* framebuffer =
+              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          if (framebuffer) {
+            glGetFramebufferAttachmentParameterivEXT(
+                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &v);
+          } else {
+            v = (back_buffer_color_format_ == GL_RGBA ? 8 : 0);
+          }
+        } else {
+          glGetIntegerv(GL_ALPHA_BITS, &v);
+        }
+        params[0] =
+            BoundFramebufferHasColorAttachmentWithAlpha(false) ? v : 0;
       }
       return true;
     case GL_DEPTH_BITS:
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        glGetIntegerv(GL_DEPTH_BITS, &v);
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+          Framebuffer* framebuffer =
+              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          if (framebuffer) {
+            glGetFramebufferAttachmentParameterivEXT(
+                GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &v);
+          } else {
+            v = (back_buffer_has_depth_ ? 24 : 0);
+          }
+        } else {
+          glGetIntegerv(GL_DEPTH_BITS, &v);
+        }
         params[0] = BoundFramebufferHasDepthAttachment() ? v : 0;
+      }
+      return true;
+    case GL_RED_BITS:
+    case GL_GREEN_BITS:
+    case GL_BLUE_BITS:
+      *num_written = 1;
+      if (params) {
+        GLint v = 0;
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+          Framebuffer* framebuffer =
+              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          if (framebuffer) {
+            GLenum framebuffer_enum = 0;
+            switch (pname) {
+              case GL_RED_BITS:
+                framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
+                break;
+              case GL_GREEN_BITS:
+                framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
+                break;
+              case GL_BLUE_BITS:
+                framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
+                break;
+            }
+            glGetFramebufferAttachmentParameterivEXT(
+                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer_enum, &v);
+          } else {
+            v = 8;
+          }
+        } else {
+          glGetIntegerv(pname, &v);
+        }
+        params[0] = v;
       }
       return true;
     case GL_STENCIL_BITS:
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        glGetIntegerv(GL_STENCIL_BITS, &v);
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+          Framebuffer* framebuffer =
+              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          if (framebuffer) {
+            glGetFramebufferAttachmentParameterivEXT(
+                GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &v);
+          } else {
+            v = (back_buffer_has_stencil_ ? 8 : 0);
+          }
+        } else {
+          glGetIntegerv(GL_STENCIL_BITS, &v);
+        }
         params[0] = BoundFramebufferHasStencilAttachment() ? v : 0;
       }
       return true;
@@ -6612,7 +6704,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   DCHECK(simulated);
   *simulated = false;
 
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+  if (feature_info_->gl_version_info().BehavesLikeGLES())
     return true;
 
   const VertexAttrib* attrib =
@@ -8358,7 +8450,8 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetString", name, "name");
     return error::kNoError;
   }
-  const char* str = reinterpret_cast<const char*>(glGetString(name));
+
+  const char* str = nullptr;
   std::string extensions;
   switch (name) {
     case GL_VERSION:
@@ -8373,6 +8466,8 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
       // They are used by WEBGL_debug_renderer_info.
       if (!force_webgl_glsl_validation_)
         str = "Chromium";
+      else
+        str = reinterpret_cast<const char*>(glGetString(name));
       break;
     case GL_EXTENSIONS:
       {
@@ -8418,6 +8513,7 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
       }
       break;
     default:
+      str = reinterpret_cast<const char*>(glGetString(name));
       break;
   }
   Bucket* bucket = CreateBucket(c.bucket_id);

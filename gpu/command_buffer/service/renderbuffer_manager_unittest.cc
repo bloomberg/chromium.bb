@@ -6,8 +6,10 @@
 
 #include <set>
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
@@ -23,10 +25,19 @@ class RenderbufferManagerTestBase : public GpuServiceTest {
   static const GLint kMaxSamples = 4;
 
  protected:
-  void SetUpBase(MemoryTracker* memory_tracker, bool depth24_supported) {
+  void SetUpBase(MemoryTracker* memory_tracker,
+                 bool depth24_supported,
+                 bool use_gles) {
     GpuServiceTest::SetUp();
+    feature_info_ = new FeatureInfo();
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+        gl_.get(),
+        depth24_supported ? "GL_OES_depth24" : "",
+        "",
+        use_gles ? "OpenGL ES 2.0" : "OpenGL 2.1");
+    feature_info_->Initialize();
     manager_.reset(new RenderbufferManager(
-        memory_tracker, kMaxSize, kMaxSamples, depth24_supported));
+        memory_tracker, kMaxSize, kMaxSamples, feature_info_.get()));
   }
 
   void TearDown() override {
@@ -35,6 +46,7 @@ class RenderbufferManagerTestBase : public GpuServiceTest {
     GpuServiceTest::TearDown();
   }
 
+  scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<RenderbufferManager> manager_;
 };
 
@@ -42,7 +54,8 @@ class RenderbufferManagerTest : public RenderbufferManagerTestBase {
  protected:
   void SetUp() override {
     bool depth24_supported = false;
-    SetUpBase(NULL, depth24_supported);
+    bool use_gles = false;
+    SetUpBase(NULL, depth24_supported, use_gles);
   }
 };
 
@@ -52,7 +65,8 @@ class RenderbufferManagerMemoryTrackerTest
   void SetUp() override {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
     bool depth24_supported = false;
-    SetUpBase(mock_memory_tracker_.get(), depth24_supported);
+    bool use_gles = false;
+    SetUpBase(mock_memory_tracker_.get(), depth24_supported, use_gles);
   }
 
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
@@ -291,29 +305,34 @@ TEST_F(RenderbufferManagerTest, AddToSignature) {
       .RetiresOnSaturation();
 }
 
-class RenderbufferManagerFormatTest : public RenderbufferManagerTestBase {
+class RenderbufferManagerFormatGLESTest : public RenderbufferManagerTestBase {
  protected:
   void SetUp() override {
     bool depth24_supported = true;
-    SetUpBase(NULL, depth24_supported);
+    bool use_gles = true;
+    SetUpBase(NULL, depth24_supported, use_gles);
   }
 };
 
-TEST_F(RenderbufferManagerFormatTest, UpgradeDepthFormatOnGLES) {
-  gfx::GLImplementation prev_impl = gfx::GetGLImplementation();
-  gfx::SetGLImplementation(gfx::kGLImplementationEGLGLES2);
+TEST_F(RenderbufferManagerFormatGLESTest, UpgradeDepthFormatOnGLES) {
   GLenum impl_format =
       manager_->InternalRenderbufferFormatToImplFormat(GL_DEPTH_COMPONENT16);
-  gfx::SetGLImplementation(prev_impl);
   EXPECT_EQ(static_cast<GLenum>(GL_DEPTH_COMPONENT24), impl_format);
 }
 
-TEST_F(RenderbufferManagerFormatTest, UseUnsizedDepthFormatOnNonGLES) {
-  gfx::GLImplementation prev_impl = gfx::GetGLImplementation();
-  gfx::SetGLImplementation(gfx::kGLImplementationDesktopGL);
+class RenderbufferManagerFormatNonGLESTest :
+      public RenderbufferManagerTestBase {
+ protected:
+  void SetUp() override {
+    bool depth24_supported = true;
+    bool use_gles = false;
+    SetUpBase(NULL, depth24_supported, use_gles);
+  }
+};
+
+TEST_F(RenderbufferManagerFormatNonGLESTest, UseUnsizedDepthFormatOnNonGLES) {
   GLenum impl_format =
       manager_->InternalRenderbufferFormatToImplFormat(GL_DEPTH_COMPONENT16);
-  gfx::SetGLImplementation(prev_impl);
   EXPECT_EQ(static_cast<GLenum>(GL_DEPTH_COMPONENT), impl_format);
 }
 

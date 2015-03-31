@@ -386,7 +386,8 @@ _STATES = {
         'name': 'hint_generate_mipmap',
         'type': 'GLenum',
         'enum': 'GL_GENERATE_MIPMAP_HINT',
-        'default': 'GL_DONT_CARE'
+        'default': 'GL_DONT_CARE',
+        'gl_version_flag': '!is_desktop_core_profile'
       },
       {
         'name': 'hint_fragment_shader_derivative',
@@ -9652,11 +9653,21 @@ void ContextState::InitState(const ContextState *prev_state) const {
               else:
                 file.Write("  if (prev_state->%s != %s) {\n  " %
                            (item_name, item_name))
+            if 'gl_version_flag' in item:
+              item_name = item['gl_version_flag']
+              inverted = ''
+              if item_name[0] == '!':
+                inverted = '!'
+                item_name = item_name[1:]
+              file.Write("  if (%sfeature_info_->gl_version_info().%s) {\n" %
+                         (inverted, item_name))
             file.Write("  gl%s(%s, %s);\n" %
                        (state['func'],
                         (item['enum_set']
                            if 'enum_set' in item else item['enum']),
                         item['name']))
+            if 'gl_version_flag' in item:
+              file.Write("  }\n")
             if test_prev:
               if 'extension_flag' in item:
                 file.Write("  ")

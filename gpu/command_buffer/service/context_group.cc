@@ -97,7 +97,8 @@ bool ContextGroup::Initialize(
       GL_MAX_RENDERBUFFER_SIZE, kMinRenderbufferSize,
       &max_renderbuffer_size)) {
     LOG(ERROR) << "ContextGroup::Initialize failed because maximum "
-               << "renderbuffer size too small.";
+               << "renderbuffer size too small (" << max_renderbuffer_size
+               << ", should be " << kMinRenderbufferSize << ").";
     return false;
   }
   GLint max_samples = 0;
@@ -121,15 +122,13 @@ bool ContextGroup::Initialize(
     draw_buffer_ = GL_BACK;
   }
 
-  const bool depth24_supported = feature_info_->feature_flags().oes_depth24;
-
   buffer_manager_.reset(
       new BufferManager(memory_tracker_.get(), feature_info_.get()));
   framebuffer_manager_.reset(
       new FramebufferManager(max_draw_buffers_, max_color_attachments_));
   renderbuffer_manager_.reset(new RenderbufferManager(
       memory_tracker_.get(), max_renderbuffer_size, max_samples,
-      depth24_supported));
+      feature_info_.get()));
   shader_manager_.reset(new ShaderManager());
   valuebuffer_manager_.reset(
       new ValuebufferManager(subscription_ref_set_.get(),
@@ -213,7 +212,7 @@ bool ContextGroup::Initialize(
     return false;
   }
 
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+  if (feature_info_->gl_version_info().BehavesLikeGLES()) {
     GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,
         &max_fragment_uniform_vectors_);
     GetIntegerv(GL_MAX_VARYING_VECTORS, &max_varying_vectors_);
