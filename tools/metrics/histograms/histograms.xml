@@ -15062,6 +15062,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ModuleIntegrityVerification.BytesModified" units="bytes">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Represents the amount of bytes in a module that are different on disk and in
+    memory. Logged when the ModuleIntegrityVerifier determines that a module is
+    different on disk and in memory after being triggered by an incident.
+  </summary>
+</histogram>
+
+<histogram name="ModuleIntegrityVerification.Difference" units="bytes">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Represents the difference in bytes deemed modified by the two
+    ModuleIntegrityVerifier code paths. The suffix indicates which path had a
+    higher value. Logged when the ModuleIntegrityVerifier determines that a
+    module is different on disk and in memory after being triggered by an
+    incident and the reported byte count for both methods is different.
+  </summary>
+</histogram>
+
+<histogram name="ModuleIntegrityVerification.RelocationsUnorderedModuleIndex">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Logged when the relocations in a module are not ordered causing the module
+    verification to abort. The value is the index of the affected module.
+  </summary>
+</histogram>
+
 <histogram name="Mouse.PointerSensitivity.Changed" enum="PointerSensitivity">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -63779,6 +63807,17 @@ To add a new entry, add it with any value and run test to compute valid value.
              capabilities, between EnumerateDevices() and
              OnDevicesInfoEnumerated()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ModuleIntegrityVerificationType" separator=".">
+  <suffix name="WithoutByteSet"
+      label="The version of the Module Integrity Verifier that doesn't use a
+             hash set to track relocations."/>
+  <suffix name="WithByteSet"
+      label="The version of the Module Integrity Verifier that uses a hash
+             set to track relocations."/>
+  <affected-histogram name="ModuleIntegrityVerification.BytesModified"/>
+  <affected-histogram name="ModuleIntegrityVerification.Difference"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NavigationCharacteristic">

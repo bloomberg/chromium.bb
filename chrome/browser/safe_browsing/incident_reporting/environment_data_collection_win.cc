@@ -6,9 +6,11 @@
 
 #include <windows.h>
 #include <set>
+#include <string>
 
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -127,14 +129,54 @@ void CollectModuleVerificationData(
     size_t num_modules_to_verify,
     ClientIncidentReport_EnvironmentData_Process* process) {
   for (size_t i = 0; i < num_modules_to_verify; ++i) {
+    scoped_ptr<ClientIncidentReport_EnvironmentData_Process_ModuleState>
+        module_state(
+            new ClientIncidentReport_EnvironmentData_Process_ModuleState());
+
+    int new_verifier_bytes_modified = 0;
+    VerificationResult result = NewVerifyModule(modules_to_verify[i],
+                                                module_state.get());
+
     std::set<std::string> modified_exports;
-    int modified = VerifyModule(modules_to_verify[i], &modified_exports);
+    int num_bytes = 0;
+    int modified = VerifyModule(modules_to_verify[i],
+                                &modified_exports,
+                                &num_bytes);
+
+    if (result.state == MODULE_STATE_MODIFIED) {
+      UMA_HISTOGRAM_COUNTS_10000(
+          "ModuleIntegrityVerification.BytesModified.WithoutByteSet",
+          new_verifier_bytes_modified);
+    }
+
+    if (modified == MODULE_STATE_MODIFIED) {
+      UMA_HISTOGRAM_COUNTS_10000(
+          "ModuleIntegrityVerification.BytesModified.WithByteSet",
+          num_bytes);
+    }
+
+    if (modified == MODULE_STATE_MODIFIED ||
+        result.state == MODULE_STATE_MODIFIED) {
+      int difference = abs(new_verifier_bytes_modified - num_bytes);
+
+      if (new_verifier_bytes_modified > num_bytes) {
+        UMA_HISTOGRAM_COUNTS_10000(
+            "ModuleIntegrityVerification.Difference.WithoutByteSet",
+            difference);
+      } else if (num_bytes > new_verifier_bytes_modified) {
+        UMA_HISTOGRAM_COUNTS_10000(
+            "ModuleIntegrityVerification.Difference.WithByteSet",
+            difference);
+      }
+    }
+
+    if (!result.verification_completed) {
+      UMA_HISTOGRAM_COUNTS_100(
+          "ModuleIntegrityVerification.RelocationsUnorderedModuleIndex", i);
+    }
 
     if (modified == MODULE_STATE_UNMODIFIED)
       continue;
-
-    ClientIncidentReport_EnvironmentData_Process_ModuleState* module_state =
-        process->add_module_state();
 
     module_state->set_name(base::WideToUTF8(modules_to_verify[i]));
     // Add 1 to the ModuleState enum to get the corresponding value in the
@@ -147,6 +189,7 @@ void CollectModuleVerificationData(
          ++it) {
       module_state->add_modified_export(*it);
     }
+    process->mutable_module_state()->AddAllocated(module_state.release());
   }
 }
 

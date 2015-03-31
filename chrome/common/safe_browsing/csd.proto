@@ -462,6 +462,14 @@ message ClientIncidentReport {
         optional string name = 1;
         optional ModifiedState modified_state = 2;
         repeated string modified_export = 3;
+
+        message Modification {
+          optional uint32 file_offset = 1;
+          optional int32 byte_count = 2;
+          optional bytes modified_bytes = 3;
+          optional string export_name = 4;
+        }
+        repeated Modification modification = 4;
       }
       repeated ModuleState module_state = 11;
     }
