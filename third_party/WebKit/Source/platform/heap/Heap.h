@@ -874,7 +874,7 @@ public:
         return !ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
 #else
         // FIXME: remove when lazy sweeping is always on
-        // (cf. ThreadState::postGCProcessing()).
+        // (cf. ThreadState::preSweep()).
         return false;
 #endif
     }

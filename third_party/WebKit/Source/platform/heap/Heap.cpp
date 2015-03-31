@@ -2505,7 +2505,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 
         state->postGC(ThreadState::GCWithSweep);
     }
-    state->postGCProcessing();
+    state->preSweep();
 }
 
 void Heap::processMarkingStack(Visitor* markingVisitor)

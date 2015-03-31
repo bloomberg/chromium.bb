@@ -351,6 +351,27 @@ public:
         return gcState() == Sweeping || gcState() == SweepingAndPreciseGCScheduled || gcState() == SweepingAndIdleGCScheduled;
     }
 
+    // A GC runs in the following sequence.
+    //
+    // 1) All threads park at safe points.
+    // 2) The GCing thread calls preGC() for all ThreadStates.
+    // 3) The GCing thread calls Heap::collectGarbage().
+    //    This does marking but doesn't do sweeping.
+    // 4) The GCing thread calls postGC() for all ThreadStates.
+    // 5) The GCing thread resume all threads.
+    // 6) Each thread calls preSweep().
+    // 7) Each thread runs lazy sweeping (concurrently with sweepings
+    //    in other threads) and eventually calls completeSweep().
+    //
+    // Notes:
+    // - We stop the world between 1) and 5).
+    // - isInGC() returns true between 2) and 4).
+    // - isSweepingInProgress() returns true between 6) and 7).
+    // - It is valid that the next GC is scheduled while some thread
+    //   has not yet completed its lazy sweeping of the last GC.
+    //   In this case, the next GC just cancels the remaining lazy sweeping.
+    //   Specifically, preGC() of the next GC calls makeConsistentForSweeping()
+    //   and it marks all not-yet-swept objets as dead.
     void preGC();
     void postGC(GCType);
 
@@ -522,7 +543,7 @@ public:
 
     size_t objectPayloadSizeForTesting();
 
-    void postGCProcessing();
+    void preSweep();
     void prepareHeapForTermination();
 
     // Request to call a pref-finalizer of the target object before the object

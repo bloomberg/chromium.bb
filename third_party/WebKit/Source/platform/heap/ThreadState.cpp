@@ -933,7 +933,7 @@ void ThreadState::safePoint(StackState stackState)
     s_safePointBarrier->checkAndPark(this);
     m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
-    postGCProcessing();
+    preSweep();
 }
 
 #ifdef ADDRESS_SANITIZER
@@ -985,7 +985,7 @@ void ThreadState::leaveSafePoint(SafePointAwareMutexLocker* locker)
     m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
     clearSafePointScopeMarker();
-    postGCProcessing();
+    preSweep();
 }
 
 void ThreadState::copyStackUntilSafePointScope()
@@ -1014,7 +1014,7 @@ void ThreadState::copyStackUntilSafePointScope()
     }
 }
 
-void ThreadState::postGCProcessing()
+void ThreadState::preSweep()
 {
     checkThread();
     if (gcState() != EagerSweepScheduled && gcState() != LazySweepScheduled)
