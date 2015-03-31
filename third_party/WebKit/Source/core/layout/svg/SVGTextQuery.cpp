@@ -420,6 +420,21 @@ struct ExtentOfCharacterData : SVGTextQuery::Data {
     FloatRect extent;
 };
 
+const SVGTextMetrics& findMetricsForCharacter(const Vector<SVGTextMetrics>& textMetricsValues, const SVGTextFragment& fragment, unsigned startInFragment)
+{
+    // Find the text metrics cell that start at or contain the character at |startInFragment|.
+    unsigned textMetricsOffset = fragment.metricsListOffset;
+    unsigned fragmentOffset = 0;
+    while (fragmentOffset < fragment.length) {
+        const SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset++];
+        unsigned glyphEnd = fragmentOffset + metrics.length();
+        if (startInFragment < glyphEnd)
+            break;
+        fragmentOffset = glyphEnd;
+    }
+    return textMetricsValues[textMetricsOffset - 1];
+}
+
 static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const SVGTextFragment& fragment, int startPosition, FloatRect& extent)
 {
     float scalingFactor = queryData->textLayoutObject->scalingFactor();
@@ -432,8 +447,8 @@ static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const
     // Use the SVGTextMetrics computed by SVGTextMetricsBuilder (which spends
     // time attempting to compute more correct glyph bounds already, handling
     // cursive scripts to some degree.)
-    Vector<SVGTextMetrics>& textMetricsValues = queryData->textLayoutObject->layoutAttributes()->textMetricsValues();
-    const SVGTextMetrics& metrics = textMetricsValues[fragment.characterOffset + startPosition];
+    const Vector<SVGTextMetrics>& textMetricsValues = queryData->textLayoutObject->layoutAttributes()->textMetricsValues();
+    const SVGTextMetrics& metrics = findMetricsForCharacter(textMetricsValues, fragment, startPosition);
 
     // TODO(fs): Negative glyph extents seems kind of weird to have, but
     // presently it can occur in some cases (like Arabic.)

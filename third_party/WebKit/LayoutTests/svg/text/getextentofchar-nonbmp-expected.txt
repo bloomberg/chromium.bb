@@ -1,0 +1,5 @@
+𝄞𝄞
+ This is a testharness.js-based test.
+PASS SVGTextContentElement.getExtentOfChar, non-BMP characters. 
+Harness: the test ran to completion.
+
