@@ -819,6 +819,14 @@
                   '|chrome/browser/chromeos/wm_' \
                   '|ui/base/x/'
     },
+    'zoom': {
+      'filepath': 'chrome/browser/ui/zoom/' \
+                  '|components/ui/zoom/' \
+                  '|content/browser/host_zoom_*' \
+                  '|content/browser/storage_partition_impl*' \
+                  '|content/public/browser/host_zoom_map.h' \
+                  '|content/public/browser/storage_partition.h'
+    },
   },
 
   'WATCHLISTS': {
@@ -1099,5 +1107,6 @@
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
+    'zoom': ['wjmaclean@chromium.org'],
   },
 }
