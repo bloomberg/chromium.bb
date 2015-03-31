@@ -10,6 +10,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
@@ -27,13 +28,26 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
       content::ResourceRequestInfo::ForRequest(request);
 
   // Extensions with webview: allow loading certain resources by guest renderers
-  // with privileged partition IDs as specified in the manifest file.
+  // with privileged partition IDs as specified in owner's extension the
+  // manifest file.
+  std::string owner_extension_id;
+  int owner_process_id;
+  WebViewRendererState::GetInstance()->GetOwnerInfo(
+      info->GetChildID(), &owner_process_id, &owner_extension_id);
+  const Extension* owner_extension =
+      extension_info_map->extensions().GetByID(owner_extension_id);
+  const WebviewInfo* webview_info =
+      owner_extension
+          ? static_cast<const WebviewInfo*>(owner_extension->GetManifestData(
+                manifest_keys::kWebviewAccessibleResources))
+          : nullptr;
   std::string partition_id;
   bool is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
       info->GetChildID(), &partition_id);
   std::string resource_path = request->url().path();
-  if (is_guest && WebviewInfo::IsResourceWebviewAccessible(
-                      extension, partition_id, resource_path)) {
+  if (is_guest && webview_info &&
+      webview_info->IsResourceWebviewAccessible(extension, partition_id,
+                                                resource_path)) {
     *allowed = true;
     return true;
   }
