@@ -219,12 +219,6 @@ template("gcc_toolchain") {
       target_os = target_os
       target_cpu = target_cpu
 
-      # TODO(dpranke): These values are here for backwards compatibility and
-      # should be deleted when all of the builders and configs have been
-      # updated.
-      cpu_arch = current_cpu
-      os = current_os
-
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
       }

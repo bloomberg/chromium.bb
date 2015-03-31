@@ -17,27 +17,12 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 
-# TODO(dpranke): The os and cpu_arch variables exist for backwards
-# compatibility and should be deleted once all of the build files and
-# bots have been updated to use current_cpu/target_cpu and
-# current_os/target_os instead.
-
 if (target_os == "") {
-  if (defined(os)) {
-    # If os is defined, it was set in an args file and needs to be
-    # used for backwards-compatibility.
-    target_os = os
-  } else {
-    target_os = host_os
-  }
+  target_os = host_os
 }
 
 if (target_cpu == "") {
-  if (defined(cpu_arch)) {
-    # If cpu_arch is defined, it was set in an args file and needs to be
-    # used for backwards-compatibility.
-    target_cpu = cpu_arch
-  } else if (target_os == "android") {
+  if (target_os == "android") {
     # If we're building for Android, we should assume that we want to
     # build for ARM by default, not the host_cpu (which is likely x64).
     # This allows us to not have to specify both target_os and target_cpu
@@ -56,13 +41,6 @@ if (current_os == "") {
 }
 
 declare_args() {
-  # TODO(dpranke): These values are here for backwards compatibility and
-  # should be deleted when all of the builders and configs have been updated.
-  cpu_arch = target_cpu
-  os = target_os
-  build_cpu_arch = host_cpu
-  build_os = host_os
-
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
   #   2 means regular build with symbols.
@@ -121,10 +99,6 @@ declare_args() {
     cros_use_custom_toolchain = false
   }
 }
-
-# TODO(dpranke): Remove these asserts when os and cpu_arch are removed.
-assert(current_cpu == cpu_arch)
-assert(current_os == os)
 
 # =============================================================================
 # OS DEFINITIONS
@@ -437,7 +411,7 @@ if (is_win) {
 
 set_defaults("executable") {
   configs = []
-  if (os != "nacl") {
+  if (current_os != "nacl") {
     configs = _native_compiler_configs +
               [ "//native_client/build/config:default_libs" ]
     if (is_win) {
@@ -456,7 +430,7 @@ set_defaults("executable") {
 
 set_defaults("static_library") {
   configs = []
-  if (os != "nacl") {
+  if (current_os != "nacl") {
     configs += _native_compiler_configs
   } else {
     configs += _nacl_compiler_configs
@@ -465,7 +439,7 @@ set_defaults("static_library") {
 
 set_defaults("shared_library") {
   configs = []
-  if (os != "nacl") {
+  if (current_os != "nacl") {
     configs += _native_compiler_configs +
                [ "//native_client/build/config:default_libs" ]
     if (is_win) {
@@ -480,7 +454,7 @@ set_defaults("shared_library") {
 
 set_defaults("source_set") {
   configs = []
-  if (os != "nacl") {
+  if (current_os != "nacl") {
     configs = _native_compiler_configs
   } else {
     configs = _nacl_compiler_configs

@@ -43,7 +43,7 @@ static_library("nacl_sys_private") {
     "sysbrk.c",
   ]
 
-  if (os != "glibc") {
+  if (current_os != "glibc") {
     sources += [
       "None",
       "private_blockhook",
@@ -141,7 +141,7 @@ static_library("nacl") {
     "random.c",
   ]
 
-  if (os != "glibc") {
+  if (current_os != "glibc") {
     sources += [
       "_exit.c",
       "abort.c",
@@ -337,7 +337,7 @@ static_library("nacl") {
     ]
   }
 
-  if ((os != "glibc") && (current_cpu == "arm")) {
+  if ((current_os != "glibc") && (current_cpu == "arm")) {
     sources += [
       "aeabi_read_tp.S",
     ]
@@ -407,7 +407,7 @@ static_library("nacl_list_mappings") {
   ]
 }
 
-if (os != "glibc") {
+if (current_os != "glibc") {
   source_set("sys_private") {
     cflags_c = []
     sources = [
