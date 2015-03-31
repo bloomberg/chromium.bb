@@ -357,7 +357,7 @@ bool DateTimeEditBuilder::shouldHourFieldDisabled() const
     }
 
     const Decimal decimalMsPerDay(static_cast<int>(msPerDay));
-    Decimal hourPartOfMinimum = (stepRange().minimum().abs().remainder(decimalMsPerDay) / static_cast<int>(msPerHour)).floor();
+    Decimal hourPartOfMinimum = (stepRange().stepBase().abs().remainder(decimalMsPerDay) / static_cast<int>(msPerHour)).floor();
     return hourPartOfMinimum == m_dateValue.hour() && stepRange().step().remainder(decimalMsPerDay).isZero();
 }
 
@@ -367,7 +367,7 @@ bool DateTimeEditBuilder::shouldMillisecondFieldDisabled() const
         return true;
 
     const Decimal decimalMsPerSecond(static_cast<int>(msPerSecond));
-    return stepRange().minimum().abs().remainder(decimalMsPerSecond) == m_dateValue.millisecond() && stepRange().step().remainder(decimalMsPerSecond).isZero();
+    return stepRange().stepBase().abs().remainder(decimalMsPerSecond) == m_dateValue.millisecond() && stepRange().step().remainder(decimalMsPerSecond).isZero();
 }
 
 bool DateTimeEditBuilder::shouldMinuteFieldDisabled() const
@@ -376,7 +376,7 @@ bool DateTimeEditBuilder::shouldMinuteFieldDisabled() const
         return true;
 
     const Decimal decimalMsPerHour(static_cast<int>(msPerHour));
-    Decimal minutePartOfMinimum = (stepRange().minimum().abs().remainder(decimalMsPerHour) / static_cast<int>(msPerMinute)).floor();
+    Decimal minutePartOfMinimum = (stepRange().stepBase().abs().remainder(decimalMsPerHour) / static_cast<int>(msPerMinute)).floor();
     return minutePartOfMinimum == m_dateValue.minute() && stepRange().step().remainder(decimalMsPerHour).isZero();
 }
 
@@ -386,7 +386,7 @@ bool DateTimeEditBuilder::shouldSecondFieldDisabled() const
         return true;
 
     const Decimal decimalMsPerMinute(static_cast<int>(msPerMinute));
-    Decimal secondPartOfMinimum = (stepRange().minimum().abs().remainder(decimalMsPerMinute) / static_cast<int>(msPerSecond)).floor();
+    Decimal secondPartOfMinimum = (stepRange().stepBase().abs().remainder(decimalMsPerMinute) / static_cast<int>(msPerSecond)).floor();
     return secondPartOfMinimum == m_dateValue.second() && stepRange().step().remainder(decimalMsPerMinute).isZero();
 }
 

@@ -331,7 +331,6 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 
-crbug.com/395877 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
 crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
 
 # Untriaged Linux-specific Aura failures
@@ -1925,3 +1924,8 @@ crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedi
 crbug.com/471678 [ Release ] http/tests/inspector/elements/styles/selector-line.html [ Failure Pass ]
 
 crbug.com/471984 [ Win ] http/tests/cachestorage/worker/cache-delete.html [ Failure Pass ]
+
+# These need a rebaseline after crbug.com/463388
+crbug.com/463388 fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/463388 fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/463388 fast/forms/time/time-appearance-basic.html [ NeedsRebaseline ]
