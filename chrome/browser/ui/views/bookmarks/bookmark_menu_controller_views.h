@@ -112,6 +112,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
                                       bool* has_mnemonics,
                                       views::MenuButton** button) override;
   int GetMaxWidthForMenu(views::MenuItemView* view) override;
+  void WillShowMenu(views::MenuItemView* menu) override;
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;

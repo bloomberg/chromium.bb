@@ -91,8 +91,7 @@ const int kZoomLabelHorizontalPadding = 2;
 
 // Returns true if |command_id| identifies a bookmark menu item.
 bool IsBookmarkCommand(int command_id) {
-  return command_id >= WrenchMenuModel::kMinBookmarkCommandId &&
-      command_id <= WrenchMenuModel::kMaxBookmarkCommandId;
+  return command_id >= IDC_FIRST_BOOKMARK_MENU;
 }
 
 // Returns true if |command_id| identifies a recent tabs menu item.
@@ -817,13 +816,6 @@ void WrenchMenu::Init(ui::MenuModel* model) {
                                // so we get the taller menu style.
   PopulateMenu(root_, model);
 
-#if !defined(NDEBUG)
-  // Verify that the reserved command ID's for bookmarks menu are not used.
-  for (int i = WrenchMenuModel::kMinBookmarkCommandId;
-       i <= WrenchMenuModel::kMaxBookmarkCommandId; ++i)
-    DCHECK(command_id_to_entry_.find(i) == command_id_to_entry_.end());
-#endif  // !defined(NDEBUG)
-
   int32 types = views::MenuRunner::HAS_MNEMONICS;
   if (for_drop()) {
     // We add NESTED_DRAG since currently the only operation to open the wrench
@@ -1055,6 +1047,8 @@ bool WrenchMenu::GetAccelerator(int command_id,
 void WrenchMenu::WillShowMenu(MenuItemView* menu) {
   if (menu == bookmark_menu_)
     CreateBookmarkMenu();
+  else if (bookmark_menu_delegate_)
+    bookmark_menu_delegate_->WillShowMenu(menu);
 }
 
 void WrenchMenu::WillHideMenu(MenuItemView* menu) {
@@ -1064,9 +1058,9 @@ void WrenchMenu::WillHideMenu(MenuItemView* menu) {
   if (menu->HasSubmenu() &&
       ((feedback_menu_item_ && feedback_menu_item_->IsSelected()) ||
        (screenshot_menu_item_ && screenshot_menu_item_->IsSelected()))) {
-    // It's okay to just turn off the animation and no to take care the
-    // animation back because the menu widget will be recreated next time
-    // it's opened. See ToolbarView::RunMenu() and Init() of this class.
+    // It's okay to just turn off the animation and not turn it back on because
+    // the menu widget will be recreated next time it's opened. See
+    // ToolbarView::RunMenu() and Init() of this class.
     menu->GetSubmenu()->GetWidget()->
         SetVisibilityChangedAnimationsEnabled(false);
   }
@@ -1197,6 +1191,7 @@ MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
   DCHECK(command_id > -1 ||
          (command_id == -1 &&
           model->GetTypeAt(model_index) == MenuModel::TYPE_SEPARATOR));
+  DCHECK_LT(command_id, IDC_FIRST_BOOKMARK_MENU);
 
   if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
     // All command ID's should be unique except for IDC_SHOW_HISTORY which is
@@ -1249,11 +1244,7 @@ void WrenchMenu::CreateBookmarkMenu() {
   views::Widget* parent = views::Widget::GetWidgetForNativeWindow(
       browser_->window()->GetNativeWindow());
   bookmark_menu_delegate_.reset(
-      new BookmarkMenuDelegate(browser_,
-                               browser_,
-                               parent,
-                               WrenchMenuModel::kMinBookmarkCommandId,
-                               WrenchMenuModel::kMaxBookmarkCommandId));
+      new BookmarkMenuDelegate(browser_, browser_, parent));
   bookmark_menu_delegate_->Init(this,
                                 bookmark_menu_,
                                 model->bookmark_bar_node(),

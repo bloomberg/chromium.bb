@@ -46,30 +46,52 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  void NewDelegate(int min_menu_id, int max_menu_id) {
+  void NewDelegate() {
     // Destroy current menu if available, see comments in TearDown().
     if (bookmark_menu_delegate_.get())
       views::MenuRunner menu_runner(bookmark_menu_delegate_->menu(), 0);
 
     bookmark_menu_delegate_.reset(
-        new BookmarkMenuDelegate(browser(), NULL, NULL,
-                                 min_menu_id, max_menu_id));
+        new BookmarkMenuDelegate(browser(), nullptr, nullptr));
   }
 
-  void NewAndInitDelegateForPermanent(int min_menu_id,
-                                      int max_menu_id) {
+  void NewAndInitDelegateForPermanent() {
     const BookmarkNode* node = model_->bookmark_bar_node();
-    NewDelegate(min_menu_id, max_menu_id);
+    NewDelegate();
     bookmark_menu_delegate_->Init(&test_delegate_, NULL, node, 0,
                                   BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,
                                   BOOKMARK_LAUNCH_LOCATION_NONE);
   }
+
+  const BookmarkNode* GetNodeForMenuItem(views::MenuItemView* menu) {
+    const auto& node_map = bookmark_menu_delegate_->menu_id_to_node_map_;
+    auto iter = node_map.find(menu->GetCommand());
+    return (iter == node_map.end()) ? nullptr : iter->second;
+  }
+
+  int next_menu_id() { return bookmark_menu_delegate_->next_menu_id_; }
+
+  // Forces all the menus to load by way of invoking WillShowMenu() on all menu
+  // items of tyep SUBMENU.
+  void LoadAllMenus() { LoadAllMenus(bookmark_menu_delegate_->menu()); }
 
   BookmarkModel* model_;
 
   scoped_ptr<BookmarkMenuDelegate> bookmark_menu_delegate_;
 
  private:
+  void LoadAllMenus(views::MenuItemView* menu) {
+    EXPECT_EQ(views::MenuItemView::SUBMENU, menu->GetType());
+
+    for (int i = 0; i < menu->GetSubmenu()->GetMenuItemCount(); ++i) {
+      views::MenuItemView* child = menu->GetSubmenu()->GetMenuItemAt(i);
+      if (child->GetType() == views::MenuItemView::SUBMENU) {
+        bookmark_menu_delegate_->WillShowMenu(child);
+        LoadAllMenus(child);
+      }
+    }
+  }
+
   std::string base_path() const { return "file:///c:/tmp/"; }
 
   // Creates the following structure:
@@ -107,124 +129,60 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuDelegateTest);
 };
 
+TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
+  NewAndInitDelegateForPermanent();
+  views::MenuItemView* root_item = bookmark_menu_delegate_->menu();
+  ASSERT_TRUE(root_item->HasSubmenu());
+  EXPECT_EQ(4, root_item->GetSubmenu()->GetMenuItemCount());
+  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
+  views::MenuItemView* f1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
+  ASSERT_TRUE(f1_item->HasSubmenu());
+  // f1 hasn't been loaded yet.
+  EXPECT_EQ(0, f1_item->GetSubmenu()->GetMenuItemCount());
+  // Will show triggers a load.
+  int next_id_before_load = next_menu_id();
+  bookmark_menu_delegate_->WillShowMenu(f1_item);
+  // f1 should have loaded its children.
+  EXPECT_EQ(next_id_before_load + 2, next_menu_id());
+  ASSERT_EQ(2, f1_item->GetSubmenu()->GetMenuItemCount());
+  const BookmarkNode* f1_node = model_->bookmark_bar_node()->GetChild(1);
+  EXPECT_EQ(f1_node->GetChild(0),
+            GetNodeForMenuItem(f1_item->GetSubmenu()->GetMenuItemAt(0)));
+  EXPECT_EQ(f1_node->GetChild(1),
+            GetNodeForMenuItem(f1_item->GetSubmenu()->GetMenuItemAt(1)));
+
+  // F11 shouldn't have loaded yet.
+  views::MenuItemView* f11_item = f1_item->GetSubmenu()->GetMenuItemAt(1);
+  ASSERT_TRUE(f11_item->HasSubmenu());
+  EXPECT_EQ(0, f11_item->GetSubmenu()->GetMenuItemCount());
+
+  next_id_before_load = next_menu_id();
+  bookmark_menu_delegate_->WillShowMenu(f11_item);
+  // Invoke WillShowMenu() twice to make sure the second call doesn't cause
+  // problems.
+  bookmark_menu_delegate_->WillShowMenu(f11_item);
+  // F11 should have loaded its single child (f11a).
+  EXPECT_EQ(next_id_before_load + 1, next_menu_id());
+
+  ASSERT_EQ(1, f11_item->GetSubmenu()->GetMenuItemCount());
+  const BookmarkNode* f11_node = f1_node->GetChild(1);
+  EXPECT_EQ(f11_node->GetChild(0),
+            GetNodeForMenuItem(f11_item->GetSubmenu()->GetMenuItemAt(0)));
+}
+
 // Verifies WillRemoveBookmarks() doesn't attempt to access MenuItemViews that
 // have since been deleted.
 TEST_F(BookmarkMenuDelegateTest, RemoveBookmarks) {
   views::MenuDelegate test_delegate;
   const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(1);
-  NewDelegate(0, kint32max);
+  NewDelegate();
   bookmark_menu_delegate_->Init(&test_delegate, NULL, node, 0,
                                 BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                                 BOOKMARK_LAUNCH_LOCATION_NONE);
+  LoadAllMenus();
   std::vector<const BookmarkNode*> nodes_to_remove;
   nodes_to_remove.push_back(node->GetChild(1));
   bookmark_menu_delegate_->WillRemoveBookmarks(nodes_to_remove);
   nodes_to_remove.clear();
   bookmark_menu_delegate_->DidRemoveBookmarks();
-}
-
-// Verifies menu ID's of items in menu fall within the specified range.
-TEST_F(BookmarkMenuDelegateTest, MenuIdRange) {
-  // Start with maximum menu Id of 10 - the number of items that AddTestData()
-  // populated.  Everything should be created.
-  NewAndInitDelegateForPermanent(0, 10);
-  views::MenuItemView* root_item = bookmark_menu_delegate_->menu();
-  ASSERT_TRUE(root_item->HasSubmenu());
-  EXPECT_EQ(4, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
-  views::MenuItemView* F1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
-  ASSERT_TRUE(F1_item->HasSubmenu());
-  EXPECT_EQ(2, F1_item->GetSubmenu()->GetMenuItemCount());
-  views::MenuItemView* F11_item = F1_item->GetSubmenu()->GetMenuItemAt(1);
-  ASSERT_TRUE(F11_item->HasSubmenu());
-  EXPECT_EQ(1, F11_item->GetSubmenu()->GetMenuItemCount());
-  views::MenuItemView* other_item = root_item->GetSubmenu()->GetMenuItemAt(3);
-  ASSERT_TRUE(other_item->HasSubmenu());
-  EXPECT_EQ(2, other_item->GetSubmenu()->GetMenuItemCount());
-  views::MenuItemView* OF1_item = other_item->GetSubmenu()->GetMenuItemAt(1);
-  ASSERT_TRUE(OF1_item->HasSubmenu());
-  EXPECT_EQ(1, OF1_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum 9.  "of1a" item should not be created.
-  NewAndInitDelegateForPermanent(0, 9);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(4, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
-  other_item = root_item->GetSubmenu()->GetMenuItemAt(3);
-  OF1_item = other_item->GetSubmenu()->GetMenuItemAt(1);
-  EXPECT_EQ(0, OF1_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum 8.  "OF1" submenu should not be created.
-  NewAndInitDelegateForPermanent(0, 8);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(4, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
-  other_item = root_item->GetSubmenu()->GetMenuItemAt(3);
-  EXPECT_EQ(1, other_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum 7.  "Other" submenu should be empty.
-  NewAndInitDelegateForPermanent(0, 7);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(4, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
-  other_item = root_item->GetSubmenu()->GetMenuItemAt(3);
-  EXPECT_EQ(0, other_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum to 6.  "Other" submenu should not be created, and no
-  // separator.
-  NewAndInitDelegateForPermanent(0, 6);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(3, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(3, root_item->GetSubmenu()->child_count());  // No separator.
-
-  // Reduce maximum 5.  "F2" and "Other" submenus shouldn't be created.
-  NewAndInitDelegateForPermanent(0, 5);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(2, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(2, root_item->GetSubmenu()->child_count());  // No separator.
-  F1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
-  F11_item = F1_item->GetSubmenu()->GetMenuItemAt(1);
-  EXPECT_EQ(1, F11_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum to 4.  "f11a" item and "F2" and "Other" submenus should
-  // not be created.
-  NewAndInitDelegateForPermanent(0, 4);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(2, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(2, root_item->GetSubmenu()->child_count());  // No separator.
-  F1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
-  F11_item = F1_item->GetSubmenu()->GetMenuItemAt(1);
-  EXPECT_EQ(0, F11_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum to 3.  "F11", "F2" and "Other" submenus should not be
-  // created.
-  NewAndInitDelegateForPermanent(0, 3);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(2, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(2, root_item->GetSubmenu()->child_count());  // No separator.
-  F1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
-  EXPECT_EQ(views::MenuItemView::SUBMENU, F1_item->GetType());
-  EXPECT_EQ(1, F1_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum 2.  Only "a" item and empty "F1" submenu should be created.
-  NewAndInitDelegateForPermanent(0, 2);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(2, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(2, root_item->GetSubmenu()->child_count());  // No separator.
-  F1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
-  EXPECT_EQ(views::MenuItemView::SUBMENU, F1_item->GetType());
-  EXPECT_EQ(0, F1_item->GetSubmenu()->GetMenuItemCount());
-
-  // Reduce maximum to 1.  Only "a" item should be created.
-  NewAndInitDelegateForPermanent(0, 1);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(1, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(1, root_item->GetSubmenu()->child_count());  // No separator.
-
-  // Verify correct handling of integer overflow with range, set kint32max as
-  // maximum and 1 less as minimum.  Only "a" item should be created.
-  NewAndInitDelegateForPermanent(kint32max - 1, kint32max);
-  root_item = bookmark_menu_delegate_->menu();
-  EXPECT_EQ(1, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(1, root_item->GetSubmenu()->child_count());  // No separator.
 }

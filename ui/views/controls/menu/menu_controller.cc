@@ -1515,6 +1515,7 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
     item->GetDelegate()->WillShowMenu(item);
     if (old_count != item->GetSubmenu()->child_count()) {
       // If the number of children changed then we may need to add empty items.
+      item->RemoveEmptyMenus();
       item->AddEmptyMenus();
     }
   }

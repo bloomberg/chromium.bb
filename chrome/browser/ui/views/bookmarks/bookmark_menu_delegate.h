@@ -52,9 +52,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
 
   BookmarkMenuDelegate(Browser* browser,
                        content::PageNavigator* navigator,
-                       views::Widget* parent,
-                       int first_menu_id,
-                       int max_menu_id);
+                       views::Widget* parent);
   ~BookmarkMenuDelegate() override;
 
   // Creates the menus from the model.
@@ -119,6 +117,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   void WriteDragData(views::MenuItemView* sender, ui::OSExchangeData* data);
   int GetDragOperations(views::MenuItemView* sender);
   int GetMaxWidthForMenu(views::MenuItemView* menu);
+  void WillShowMenu(views::MenuItemView* menu);
 
   // BookmarkModelObserver methods.
   void BookmarkModelChanged() override;
@@ -131,6 +130,8 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   void DidRemoveBookmarks() override;
 
  private:
+  friend class BookmarkMenuDelegateTest;
+
   typedef std::map<int, const bookmarks::BookmarkNode*> MenuIDToNodeMap;
   typedef std::map<const bookmarks::BookmarkNode*, views::MenuItemView*>
       NodeToMenuMap;
@@ -142,8 +143,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
 
   // Invokes BuildMenuForPermanentNode() for the permanent nodes (excluding
   // 'other bookmarks' folder).
-  void BuildMenusForPermanentNodes(views::MenuItemView* menu,
-                                   int* next_menu_id);
+  void BuildMenusForPermanentNodes(views::MenuItemView* menu);
 
   // If |node| has children a new menu is created and added to |menu| to
   // represent it. If |node| is not empty and |added_separator| is false, a
@@ -152,22 +152,20 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   void BuildMenuForPermanentNode(const bookmarks::BookmarkNode* node,
                                  int icon_resource_id,
                                  views::MenuItemView* menu,
-                                 int* next_menu_id,
                                  bool* added_separator);
 
-  void BuildMenuForManagedNode(views::MenuItemView* menu, int* next_menu_id);
-  void BuildMenuForSupervisedNode(views::MenuItemView* menu, int* next_menu_id);
+  void BuildMenuForManagedNode(views::MenuItemView* menu);
+  void BuildMenuForSupervisedNode(views::MenuItemView* menu);
 
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.
   void BuildMenu(const bookmarks::BookmarkNode* parent,
                  int start_child_index,
-                 views::MenuItemView* menu,
-                 int* next_menu_id);
+                 views::MenuItemView* menu);
 
-  // Returns true if |menu_id_| is outside the range of minimum and maximum menu
-  // ID's allowed.
-  bool IsOutsideMenuIdRange(int menu_id) const;
+  // Registers the necessary mappings for |menu| and |node|.
+  void AddMenuToMaps(views::MenuItemView* menu,
+                     const bookmarks::BookmarkNode* node);
 
   Browser* browser_;
   Profile* profile_;
@@ -197,10 +195,6 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
 
   // ID of the next menu item.
   int next_menu_id_;
-
-  // Minimum and maximum ID's to use for menu items.
-  const int min_menu_id_;
-  const int max_menu_id_;
 
   views::MenuDelegate* real_delegate_;
 
