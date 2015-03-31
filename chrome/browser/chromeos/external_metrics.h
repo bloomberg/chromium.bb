@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 
@@ -53,7 +52,7 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   ~ExternalMetrics();
 
   // Passes an action event to the UMA service on the UI thread.
-  void RecordActionUI(std::string action_string);
+  void RecordActionUI(const std::string& action_string);
 
   // Passes an action event to the UMA service.
   void RecordAction(const std::string& action_name);
@@ -85,15 +84,6 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 
   // Schedules a metrics event collection in the future.
   void ScheduleCollector();
-
-  // Calls setup methods for Chrome OS field trials that need to be initialized
-  // based on data from the file system.  They are setup here so that we can
-  // make absolutely sure that they are setup before we gather UMA statistics
-  // from ChromeOS.
-  void SetupFieldTrialsOnFileThread();
-
-  // Set containing known user actions.
-  base::hash_set<std::string> valid_user_actions_;
 
   // File used by libmetrics to send metrics to Chrome.
   std::string uma_events_file_;

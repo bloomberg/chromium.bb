@@ -8,9 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
@@ -48,48 +45,6 @@ bool CheckLinearValues(const std::string& name, int maximum) {
   return CheckValues(name, 1, maximum, maximum + 1);
 }
 
-// Establishes field trial for wifi scanning in chromeos.  crbug.com/242733.
-void SetupProgressiveScanFieldTrial() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  const char name_of_experiment[] = "ProgressiveScan";
-  const base::FilePath group_file_path(
-      "/home/chronos/.progressive_scan_variation");
-  const base::FieldTrial::Probability kDivisor = 1000;
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::FactoryGetFieldTrial(
-          name_of_experiment, kDivisor, "Default", 2013, 12, 31,
-          base::FieldTrial::SESSION_RANDOMIZED, NULL);
-
-  // Announce the groups with 0 percentage; the actual percentages come from
-  // the server configuration.
-  std::map<int, std::string> group_to_char;
-  group_to_char[trial->AppendGroup("FullScan", 0)] = "c";
-  group_to_char[trial->AppendGroup("33Percent_4MinMax", 0)] = "1";
-  group_to_char[trial->AppendGroup("50Percent_4MinMax", 0)] = "2";
-  group_to_char[trial->AppendGroup("50Percent_8MinMax", 0)] = "3";
-  group_to_char[trial->AppendGroup("100Percent_8MinMax", 0)] = "4";
-  group_to_char[trial->AppendGroup("100Percent_1MinSeen_A", 0)] = "5";
-  group_to_char[trial->AppendGroup("100Percent_1MinSeen_B", 0)] = "6";
-  group_to_char[trial->AppendGroup("100Percent_1Min_4Max", 0)] = "7";
-
-  // Announce the experiment to any listeners (especially important is the UMA
-  // software, which will append the group names to UMA statistics).
-  const int group_num = trial->group();
-  std::string group_char = "x";
-  if (ContainsKey(group_to_char, group_num))
-    group_char = group_to_char[group_num];
-
-  // Write the group to the file to be read by ChromeOS.
-  int size = static_cast<int>(group_char.length());
-  if (base::WriteFile(group_file_path, group_char.c_str(), size) == size) {
-    VLOG(1) << "Configured in group '" << trial->group_name()
-            << "' ('" << group_char << "') for "
-            << name_of_experiment << " field trial";
-  } else {
-    VLOG(1) << "Couldn't write to " << group_file_path.value();
-  }
-}
-
 }  // namespace
 
 // The interval between external metrics collections in seconds
@@ -102,28 +57,7 @@ ExternalMetrics::ExternalMetrics() : uma_events_file_(kEventsFilePath) {
 ExternalMetrics::~ExternalMetrics() {}
 
 void ExternalMetrics::Start() {
-  // Register user actions external to the browser.
-  // tools/metrics/actions/extract_actions.py won't understand these lines, so
-  // all of these are explicitly added in that script.
-  // TODO(derat): We shouldn't need to verify actions before reporting them;
-  // remove all of this once http://crosbug.com/11125 is fixed.
-  valid_user_actions_.insert("Cryptohome.PKCS11InitFail");
-  valid_user_actions_.insert("Updater.ServerCertificateChanged");
-  valid_user_actions_.insert("Updater.ServerCertificateFailed");
-
-  // Initialize here field trials that don't need to read from files.
-  // (None for the moment.)
-
-  // Initialize any chromeos field trials that need to read from a file (e.g.,
-  // those that have an upstart script determine their experimental group for
-  // them) then schedule the data collection.  All of this is done on the file
-  // thread.
-  bool task_posted = BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&chromeos::ExternalMetrics::SetupFieldTrialsOnFileThread,
-                 this));
-  DCHECK(task_posted);
+  ScheduleCollector();
 }
 
 // static
@@ -134,12 +68,8 @@ scoped_refptr<ExternalMetrics> ExternalMetrics::CreateForTesting(
   return external_metrics;
 }
 
-void ExternalMetrics::RecordActionUI(std::string action_string) {
-  if (valid_user_actions_.count(action_string)) {
-    content::RecordComputedAction(action_string);
-  } else {
-    DLOG(ERROR) << "undefined UMA action: " << action_string;
-  }
+void ExternalMetrics::RecordActionUI(const std::string& action_string) {
+  content::RecordComputedAction(action_string);
 }
 
 void ExternalMetrics::RecordAction(const std::string& action) {
@@ -242,21 +172,11 @@ void ExternalMetrics::CollectEventsAndReschedule() {
 }
 
 void ExternalMetrics::ScheduleCollector() {
-  bool result;
-  result = BrowserThread::PostDelayedTask(
+  bool result = BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&chromeos::ExternalMetrics::CollectEventsAndReschedule, this),
       base::TimeDelta::FromSeconds(kExternalMetricsCollectionIntervalSeconds));
   DCHECK(result);
-}
-
-void ExternalMetrics::SetupFieldTrialsOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  // Field trials that do not read from files can be initialized in
-  // ExternalMetrics::Start() above.
-  SetupProgressiveScanFieldTrial();
-
-  ScheduleCollector();
 }
 
 }  // namespace chromeos
