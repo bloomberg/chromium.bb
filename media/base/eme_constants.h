@@ -70,15 +70,14 @@ enum EmeSessionTypeSupport {
 };
 
 // Used to declare support for distinctive identifier and persistent state.
+// These are purposefully limited to not allow one to require the other, so that
+// transitive requirements are not possible. Non-trivial refactoring would be
+// required to support transitive requirements.
 enum EmeFeatureSupport {
   // Invalid default value.
   EME_FEATURE_INVALID,
   // Access to the feature is not supported at all.
   EME_FEATURE_NOT_SUPPORTED,
-  // Access to the feature may be requested if a distinctive identifier is
-  // available. (This is the correct choice for declaring support for a
-  // requestable distinctive identifier.)
-  EME_FEATURE_REQUESTABLE_WITH_IDENTIFIER,
   // Access to the feature may be requested.
   EME_FEATURE_REQUESTABLE,
   // Access to the feature cannot be blocked.
@@ -122,12 +121,21 @@ enum class EmeRobustness {
 enum class EmeConfigRule {
   // The configuration option is not supported.
   NOT_SUPPORTED,
+  // The configuration option prevents use of a distinctive identifier.
+  IDENTIFIER_NOT_ALLOWED,
   // The configuration option is supported if a distinctive identifier is
   // available.
   IDENTIFIER_REQUIRED,
   // The configuration option is supported, but the user experience may be
   // improved if a distinctive identifier is available.
   IDENTIFIER_RECOMMENDED,
+  // The configuration option prevents use of persistent state.
+  PERSISTENCE_NOT_ALLOWED,
+  // The configuration option is supported if persistent state is available.
+  PERSISTENCE_REQUIRED,
+  // The configuration option is supported if both a distinctive identifier and
+  // persistent state are available.
+  IDENTIFIER_AND_PERSISTENCE_REQUIRED,
   // The configuration option is supported without conditions.
   SUPPORTED,
 };

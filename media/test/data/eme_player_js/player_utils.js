@@ -86,10 +86,15 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   this.registerDefaultEventListeners(player);
   player.video.receivedKeyMessage = false;
   Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
-  var persistentState = player.testConfig.sessionToLoad ? "required"
-                                                        : "optional";
+  var config = {};
+  if (player.testConfig.sessionToLoad) {
+    config = {
+        persistentState: "required",
+        sessionTypes: ["temporary", "persistent-license"]
+    };
+  }
   return navigator.requestMediaKeySystemAccess(
-      player.testConfig.keySystem, [{persistentState: persistentState}])
+      player.testConfig.keySystem, [config])
       .then(function(access) { return access.createMediaKeys(); })
       .then(function(mediaKeys) {
         return player.video.setMediaKeys(mediaKeys);

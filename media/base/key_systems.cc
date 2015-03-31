@@ -84,9 +84,9 @@ static EmeConfigRule ConvertSessionTypeSupport(
     case EME_SESSION_TYPE_NOT_SUPPORTED:
       return EmeConfigRule::NOT_SUPPORTED;
     case EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER:
-      return EmeConfigRule::IDENTIFIER_REQUIRED;
+      return EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED;
     case EME_SESSION_TYPE_SUPPORTED:
-      return EmeConfigRule::SUPPORTED;
+      return EmeConfigRule::PERSISTENCE_REQUIRED;
   }
   NOTREACHED();
   return EmeConfigRule::NOT_SUPPORTED;
@@ -458,27 +458,11 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
       DCHECK(info.persistent_release_message_support ==
              EME_SESSION_TYPE_NOT_SUPPORTED);
     }
-    else if (info.persistent_state_support ==
-             EME_FEATURE_REQUESTABLE_WITH_IDENTIFIER) {
-      // Must be either NOT_SUPPORTED or SUPPORTED_WITH_IDENTIFIER.
-      DCHECK(info.persistent_license_support != EME_SESSION_TYPE_SUPPORTED);
-      DCHECK(info.persistent_release_message_support !=
-             EME_SESSION_TYPE_SUPPORTED);
-    }
 
     // persistent-release-message sessions are not currently supported.
     // http://crbug.com/448888
     DCHECK(info.persistent_release_message_support ==
            EME_SESSION_TYPE_NOT_SUPPORTED);
-
-    // Because an optional persistent state value is resolved after an optional
-    // distinctive identifier, persistent state requiring a distinctive
-    // identifier may not resolve correctly.
-    DCHECK(info.persistent_state_support !=
-           EME_FEATURE_REQUESTABLE_WITH_IDENTIFIER);
-
-    // If supported, distinctive identifiers always require permission.
-    DCHECK(info.distinctive_identifier_support != EME_FEATURE_REQUESTABLE);
 
     // If distinctive identifiers are not supported, then no other features can
     // require them.
@@ -869,33 +853,39 @@ EmeConfigRule KeySystemsImpl::GetPersistentStateConfigRule(
   }
 
   // For NOT_ALLOWED and REQUIRED, the result is as expected. For OPTIONAL, we
-  // return the least restrictive of the two rules; this guarantees that if
-  // OPTIONAL is accepted, then it can always be resolved to some value. (In
-  // fact OPTIONAL is always accepted, because the least restrictive rule is
-  // always SUPPORTED.)
+  // return the most restrictive rule that is not more restrictive than for
+  // NOT_ALLOWED or REQUIRED. Those values will be checked individually when
+  // the option is resolved.
   //
-  // Note that even if permission is not required for persistent state, it may
-  // be required for specific persistent session types.
+  // Note that even though a distinctive identifier can not be required for
+  // persistent state, it may still be required for persistent sessions.
   //
-  //                              NOT_ALLOWED    OPTIONAL   REQUIRED
-  //               NOT_SUPPORTED  SUPPORTED      SUPPORTED  NOT_SUPPORTED
-  // REQUESTABLE_WITH_IDENTIFIER  SUPPORTED      SUPPORTED  IDENTIFIER_REQ
-  //                 REQUESTABLE  SUPPORTED      SUPPORTED  SUPPORTED
-  //              ALWAYS_ENABLED  NOT_SUPPORTED  SUPPORTED  SUPPORTED
+  //                   NOT_ALLOWED    OPTIONAL       REQUIRED
+  //    NOT_SUPPORTED  P_NOT_ALLOWED  P_NOT_ALLOWED  NOT_SUPPORTED
+  //      REQUESTABLE  P_NOT_ALLOWED  SUPPORTED      P_REQUIRED
+  //   ALWAYS_ENABLED  NOT_SUPPORTED  P_REQUIRED     P_REQUIRED
   EmeFeatureSupport support = key_system_iter->second.persistent_state_support;
-  if (support == EME_FEATURE_NOT_SUPPORTED &&
-      requirement == EME_FEATURE_REQUIRED) {
+  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
+         support == EME_FEATURE_REQUESTABLE ||
+         support == EME_FEATURE_ALWAYS_ENABLED);
+  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
+         requirement == EME_FEATURE_OPTIONAL ||
+         requirement == EME_FEATURE_REQUIRED);
+  if ((support == EME_FEATURE_NOT_SUPPORTED &&
+       requirement == EME_FEATURE_REQUIRED) ||
+      (support == EME_FEATURE_ALWAYS_ENABLED &&
+       requirement == EME_FEATURE_NOT_ALLOWED)) {
     return EmeConfigRule::NOT_SUPPORTED;
   }
-  if (support == EME_FEATURE_ALWAYS_ENABLED &&
+  if (support == EME_FEATURE_REQUESTABLE &&
+      requirement == EME_FEATURE_OPTIONAL) {
+    return EmeConfigRule::SUPPORTED;
+  }
+  if (support == EME_FEATURE_NOT_SUPPORTED ||
       requirement == EME_FEATURE_NOT_ALLOWED) {
-    return EmeConfigRule::NOT_SUPPORTED;
+    return EmeConfigRule::PERSISTENCE_NOT_ALLOWED;
   }
-  if (support == EME_FEATURE_REQUESTABLE_WITH_IDENTIFIER &&
-      requirement == EME_FEATURE_REQUIRED) {
-    return EmeConfigRule::IDENTIFIER_REQUIRED;
-  }
-  return EmeConfigRule::SUPPORTED;
+  return EmeConfigRule::PERSISTENCE_REQUIRED;
 }
 
 EmeConfigRule KeySystemsImpl::GetDistinctiveIdentifierConfigRule(
@@ -910,30 +900,38 @@ EmeConfigRule KeySystemsImpl::GetDistinctiveIdentifierConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
   }
 
-  // Permission is required for REQUIRED, but not for NOT_ALLOWED. For OPTIONAL,
-  // we return the least restrictive of the two rules; this guarantees that if
-  // OPTIONAL is accepted, then it can always be resolved to some value.
+  // For NOT_ALLOWED and REQUIRED, the result is as expected. For OPTIONAL, we
+  // return the most restrictive rule that is not more restrictive than for
+  // NOT_ALLOWED or REQUIRED. Those values will be checked individually when
+  // the option is resolved.
   //
-  //                              NOT_ALLOWED    OPTIONAL        REQUIRED
-  //               NOT_SUPPORTED  SUPPORTED      SUPPORTED       NOT_SUPPORTED
-  // REQUESTABLE_WITH_IDENTIFIER  SUPPORTED      SUPPORTED       IDENTIFIER_REQ
-  //              ALWAYS_ENABLED  NOT_SUPPORTED  IDENTIFIER_REQ  IDENTIFIER_REQ
+  //                   NOT_ALLOWED    OPTIONAL       REQUIRED
+  //    NOT_SUPPORTED  I_NOT_ALLOWED  I_NOT_ALLOWED  NOT_SUPPORTED
+  //      REQUESTABLE  I_NOT_ALLOWED  SUPPORTED      I_REQUIRED
+  //   ALWAYS_ENABLED  NOT_SUPPORTED  I_REQUIRED     I_REQUIRED
   EmeFeatureSupport support =
       key_system_iter->second.distinctive_identifier_support;
-  DCHECK(support != EME_FEATURE_REQUESTABLE);
-  if (support == EME_FEATURE_NOT_SUPPORTED &&
-      requirement == EME_FEATURE_REQUIRED) {
+  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
+         support == EME_FEATURE_REQUESTABLE ||
+         support == EME_FEATURE_ALWAYS_ENABLED);
+  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
+         requirement == EME_FEATURE_OPTIONAL ||
+         requirement == EME_FEATURE_REQUIRED);
+  if ((support == EME_FEATURE_NOT_SUPPORTED &&
+       requirement == EME_FEATURE_REQUIRED) ||
+      (support == EME_FEATURE_ALWAYS_ENABLED &&
+       requirement == EME_FEATURE_NOT_ALLOWED)) {
     return EmeConfigRule::NOT_SUPPORTED;
   }
-  if (support == EME_FEATURE_ALWAYS_ENABLED &&
-      requirement == EME_FEATURE_NOT_ALLOWED) {
-    return EmeConfigRule::NOT_SUPPORTED;
+  if (support == EME_FEATURE_REQUESTABLE &&
+             requirement == EME_FEATURE_OPTIONAL) {
+    return EmeConfigRule::SUPPORTED;
   }
-  if (support == EME_FEATURE_ALWAYS_ENABLED ||
-      requirement == EME_FEATURE_REQUIRED) {
-    return EmeConfigRule::IDENTIFIER_REQUIRED;
+  if (support == EME_FEATURE_NOT_SUPPORTED ||
+             requirement == EME_FEATURE_NOT_ALLOWED) {
+    return EmeConfigRule::IDENTIFIER_NOT_ALLOWED;
   }
-  return EmeConfigRule::SUPPORTED;
+  return EmeConfigRule::IDENTIFIER_REQUIRED;
 }
 
 KeySystems& KeySystems::GetInstance() {
