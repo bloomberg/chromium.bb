@@ -196,7 +196,9 @@ namespace {
 // process.
 bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
                                  EXCEPTION_POINTERS* ex_info,
-                                 MDRawAssertionInfo*, bool) {
+                                 MDRawAssertionInfo*, bool succeeded) {
+  GetCrashReporterClient()->RecordCrashDumpAttemptResult(
+      false /* is_real_crash */, succeeded);
   return true;
 }
 
@@ -208,7 +210,9 @@ bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
 // facilities such as the i18n helpers.
 bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
                       EXCEPTION_POINTERS* ex_info,
-                      MDRawAssertionInfo*, bool) {
+                      MDRawAssertionInfo*, bool succeeded) {
+  GetCrashReporterClient()->RecordCrashDumpAttemptResult(
+      true /* is_real_crash */, succeeded);
   // Check if the exception is one of the kind which would not be solved
   // by simply restarting chrome. In this case we show a message box with
   // and exit silently. Remember that chrome is in a crashed state so we
