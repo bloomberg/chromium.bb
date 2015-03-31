@@ -449,6 +449,23 @@ scoped_ptr<DefaultProvider::ValueMap> DefaultProvider::ReadDictionaryPref() {
       GetSettingsFromDictionary(default_settings_dictionary);
 
   ForceDefaultsToBeExplicit(value_map.get());
+
+  // Migrate obsolete cookie prompt mode.
+  if (ValueToContentSetting(
+          (*value_map)[CONTENT_SETTINGS_TYPE_COOKIES].get()) ==
+      CONTENT_SETTING_ASK) {
+    (*value_map)[CONTENT_SETTINGS_TYPE_COOKIES].reset(
+        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  }
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Migrate protected media from allow to ask.
+  if (ValueToContentSetting(
+          (*value_map)[CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER]
+              .get()) == CONTENT_SETTING_ALLOW) {
+    (*value_map)[CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER].reset(
+        new base::FundamentalValue(CONTENT_SETTING_ASK));
+  }
+#endif
   return value_map.Pass();
 }
 
@@ -484,13 +501,6 @@ scoped_ptr<DefaultProvider::ValueMap>
       }
     }
   }
-  // Migrate obsolete cookie prompt mode.
-  if (ValueToContentSetting(
-      (*value_map)[CONTENT_SETTINGS_TYPE_COOKIES].get())
-      == CONTENT_SETTING_ASK) {
-    (*value_map)[CONTENT_SETTINGS_TYPE_COOKIES].reset(
-        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
-  }
 
   return make_scoped_ptr(value_map);
 }
@@ -506,12 +516,6 @@ void DefaultProvider::MigrateDefaultSettings() {
     ContentSettingsType content_type = ContentSettingsType(i);
     WriteIndividualPref(content_type, (*value_map)[content_type].get());
   }
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  // For protected media identifier, it is desirable to just reset the setting
-  // instead of migrating it from the old preference.
-  WriteIndividualPref(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, NULL);
-#endif
 
   prefs_->SetBoolean(prefs::kMigratedDefaultContentSettings, true);
 }

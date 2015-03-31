@@ -189,13 +189,7 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
 // across platforms.
 bool ProtectedMediaIdentifierPermissionContext::
     IsProtectedMediaIdentifierEnabled() const {
-#if defined(OS_ANDROID)
-  if (!profile()->GetPrefs()->GetBoolean(
-          prefs::kProtectedMediaIdentifierEnabled)) {
-    DVLOG(1) << "Protected media identifier disabled by a user master switch.";
-    return false;
-  }
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   // Platform verification is not allowed in incognito or guest mode.
   if (profile()->IsOffTheRecord() || profile()->IsGuestSession()) {
     DVLOG(1) << "Protected media identifier disabled in incognito or guest "

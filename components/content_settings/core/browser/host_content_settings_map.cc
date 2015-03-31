@@ -226,7 +226,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
-  DCHECK(IsSettingAllowedForType(prefs_, setting, content_type));
+  DCHECK(IsDefaultSettingAllowedForType(prefs_, setting, content_type));
 
   base::Value* value = NULL;
   if (setting != CONTENT_SETTING_DEFAULT)
@@ -245,10 +245,6 @@ void HostContentSettingsMap::SetWebsiteSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
-  // TODO(msramek): MEDIASTREAM is deprecated. Remove this check when all
-  // references to MEDIASTREAM are removed from the code.
-  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_MEDIASTREAM);
-
   DCHECK(IsValueAllowedForType(prefs_, value, content_type));
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
@@ -486,6 +482,21 @@ bool HostContentSettingsMap::IsValueAllowedForType(
 }
 
 // static
+bool HostContentSettingsMap::IsDefaultSettingAllowedForType(
+    PrefService* prefs,
+    ContentSetting setting,
+    ContentSettingsType content_type) {
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Don't support ALLOW for protected media default setting until migration.
+  if (content_type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
+      setting == CONTENT_SETTING_ALLOW) {
+    return false;
+  }
+#endif
+  return IsSettingAllowedForType(prefs, setting, content_type);
+}
+
+// static
 bool HostContentSettingsMap::IsSettingAllowedForType(
     PrefService* prefs,
     ContentSetting setting,
@@ -500,13 +511,14 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     return false;
   }
 
-  // We don't support the mediastream setting.
+  // TODO(msramek): MEDIASTREAM is deprecated. Remove this check when all
+  // references to MEDIASTREAM are removed from the code.
   if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     return false;
   }
 
-  // App banners store a dictionary.
-  if (content_type == CONTENT_SETTINGS_TYPE_APP_BANNER)
+  // Compound types cannot be mapped to the type |ContentSetting|.
+  if (ContentTypeHasCompoundValue(content_type))
     return false;
 
   // DEFAULT, ALLOW and BLOCK are always allowed.
@@ -521,16 +533,19 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return setting == CONTENT_SETTING_ASK ||
              setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
     case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+#endif
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return setting == CONTENT_SETTING_ASK;
     default:
@@ -542,15 +557,12 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
 bool HostContentSettingsMap::ContentTypeHasCompoundValue(
     ContentSettingsType type) {
   // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM, and
+  // CONTENT_SETTINGS_TYPE_APP_BANNER, and
   // CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS are of type dictionary/map.
   // Compound types like dictionaries can't be mapped to the type
   // |ContentSetting|.
-  if (type == CONTENT_SETTINGS_TYPE_APP_BANNER)
-    return true;
-
   return (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+          type == CONTENT_SETTINGS_TYPE_APP_BANNER ||
           type == CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
 }
 
