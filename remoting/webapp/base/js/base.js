@@ -165,13 +165,17 @@ base.extend = function(dest, src) {
  *
  * @param {*} childObject
  * @param {*} parentCtor
- * @param {...} parentCtorAargs
+ * @param {...} parentCtorArgs
  * @suppress {checkTypes|reportUnknownTypes}
  */
-base.inherits = function(childObject, parentCtor, parentCtorAargs) {
+base.inherits = function(childObject, parentCtor, parentCtorArgs) {
   base.debug.assert(parentCtor && parentCtor.prototype,
                     'Invalid parent constructor.');
   var parentArgs = Array.prototype.slice.call(arguments, 2);
+
+  // Mix in the parent's prototypes so that they're available during the parent
+  // ctor.
+  base.mix(childObject, parentCtor.prototype);
   parentCtor.apply(childObject, parentArgs);
 
   // Note that __proto__ is deprecated.
@@ -179,10 +183,6 @@ base.inherits = function(childObject, parentCtor, parentCtorAargs) {
   //   Global_Objects/Object/proto.
   // It is used so that childObject instanceof parentCtor will
   // return true.
-  //
-  // Alternatively, this could be implemented using mixins, e.g.
-  //   base.mix(childObject, parentCtor.prototype);
-  // if we don't care about the correctness of instanceof in the future.
   childObject.__proto__.__proto__ = parentCtor.prototype;
   base.debug.assert(childObject instanceof parentCtor);
 };

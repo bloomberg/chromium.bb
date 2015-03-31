@@ -43,7 +43,7 @@ QUnit.Assert.prototype.async = function() {};
 QUnit.Assert.prototype.notEqual = function(a, b, opt_desc) {};
 
 /**
- * @param {boolean} cond
+ * @param {*} cond Passes if cond is truthy.
  * @param {string=} desc
  * @return {boolean}
  */
