@@ -29,6 +29,7 @@
 #ifndef Location_h
 #define Location_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMStringList.h"
 #include "core/frame/DOMWindowProperty.h"
@@ -82,6 +83,11 @@ public:
     String origin() const;
 
     PassRefPtrWillBeRawPtr<DOMStringList> ancestorOrigins() const;
+
+    // Just return the |this| object the way the normal valueOf function on the Object prototype would.
+    // The valueOf function is only added to make sure that it cannot be overwritten on location
+    // objects, since that would provide a hook to change the string conversion behavior of location objects.
+    ScriptValue valueOf(const ScriptValue& thisObject) { return thisObject; }
 
     DECLARE_VIRTUAL_TRACE();
 
