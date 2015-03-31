@@ -74,7 +74,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/LengthFunctions.h"
-#include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint3D.h"
@@ -86,6 +85,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/Platform.h"
+#include "wtf/Partitions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
@@ -1209,7 +1209,7 @@ LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* root
 
 void* DeprecatedPaintLayer::operator new(size_t sz)
 {
-    return partitionAlloc(Partitions::getRenderingPartition(), sz);
+    return partitionAlloc(WTF::Partitions::getRenderingPartition(), sz);
 }
 
 void DeprecatedPaintLayer::operator delete(void* ptr)

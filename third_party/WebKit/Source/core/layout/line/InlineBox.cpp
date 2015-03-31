@@ -27,8 +27,8 @@
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BlockPainter.h"
-#include "platform/Partitions.h"
 #include "platform/fonts/FontMetrics.h"
+#include "wtf/Partitions.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -73,7 +73,7 @@ void InlineBox::remove(MarkLineBoxes markLineBoxes)
 
 void* InlineBox::operator new(size_t sz)
 {
-    return partitionAlloc(Partitions::getRenderingPartition(), sz);
+    return partitionAlloc(WTF::Partitions::getRenderingPartition(), sz);
 }
 
 void InlineBox::operator delete(void* ptr)

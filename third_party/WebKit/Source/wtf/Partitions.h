@@ -28,27 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "platform/Partitions.h"
+#ifndef Partitions_h
+#define Partitions_h
 
-namespace blink {
+#include "wtf/PartitionAlloc.h"
+#include "wtf/WTFExport.h"
 
-SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
-SizeSpecificPartitionAllocator<1024> Partitions::m_renderingAllocator;
+namespace WTF {
 
-void Partitions::init()
-{
-    m_objectModelAllocator.init();
-    m_renderingAllocator.init();
-}
+class WTF_EXPORT Partitions {
+public:
+    static void initialize();
+    static void shutdown();
+    ALWAYS_INLINE static PartitionRootGeneric* getBufferPartition()
+    {
+        if (UNLIKELY(!s_initialized))
+            initialize();
+        return m_bufferAllocator.root();
+    }
 
-void Partitions::shutdown()
-{
-    // We could ASSERT here for a memory leak within the partition, but it leads
-    // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
-    // the valgrind and heapcheck bots, which run without partitions.
-    (void) m_renderingAllocator.shutdown();
-    (void) m_objectModelAllocator.shutdown();
-}
+    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return m_objectModelAllocator.root(); }
+    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return m_renderingAllocator.root(); }
 
-} // namespace blink
+    static size_t currentDOMMemoryUsage()
+    {
+        return m_objectModelAllocator.root()->totalSizeOfCommittedPages;
+    }
+
+private:
+    static bool s_initialized;
+    static PartitionAllocatorGeneric m_bufferAllocator;
+    static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
+    static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
+};
+
+} // namespace WTF
+
+#endif // Partitions_h

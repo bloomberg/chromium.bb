@@ -54,9 +54,9 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/EventTracer.h"
 #include "platform/FontFamilyNames.h"
-#include "platform/Partitions.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Partitions.h"
 #include "wtf/text/StringStatics.h"
 
 namespace blink {
@@ -103,7 +103,6 @@ void CoreInitializer::init()
     StyleChangeExtraData::init();
 
     QualifiedName::init();
-    Partitions::init();
     EventTracer::initialize();
     KURL::initialize();
 
@@ -126,8 +125,6 @@ void CoreInitializer::shutdown()
     // Make sure we stop the HTMLParserThread before Platform::current() is
     // cleared.
     HTMLParserThread::shutdown();
-
-    Partitions::shutdown();
 }
 
 } // namespace blink

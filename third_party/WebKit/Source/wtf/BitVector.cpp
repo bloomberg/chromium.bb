@@ -28,8 +28,8 @@
 
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PartitionAlloc.h"
+#include "wtf/Partitions.h"
 #include "wtf/PrintStream.h"
-#include "wtf/WTF.h"
 #include <algorithm>
 #include <string.h>
 

@@ -38,7 +38,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PartitionAlloc.h"
-#include "wtf/WTF.h"
+#include "wtf/Partitions.h"
 
 #include <string.h>
 

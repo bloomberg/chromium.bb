@@ -28,32 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Partitions_h
-#define Partitions_h
+#include "config.h"
+#include "wtf/Partitions.h"
 
-#include "platform/PlatformExport.h"
-#include "wtf/PartitionAlloc.h"
+#include "wtf/DefaultAllocator.h"
+#include "wtf/FastMalloc.h"
 
-namespace blink {
+namespace WTF {
 
-class PLATFORM_EXPORT Partitions {
-public:
-    static void init();
-    static void shutdown();
+bool Partitions::s_initialized;
 
-    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return m_objectModelAllocator.root(); }
-    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return m_renderingAllocator.root(); }
+PartitionAllocatorGeneric Partitions::m_bufferAllocator;
+SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
+SizeSpecificPartitionAllocator<1024> Partitions::m_renderingAllocator;
 
-    static size_t currentDOMMemoryUsage()
-    {
-        return m_objectModelAllocator.root()->totalSizeOfCommittedPages;
+void Partitions::initialize()
+{
+    static int lock = 0;
+    // Guard against two threads hitting here in parallel.
+    spinLockLock(&lock);
+    if (!s_initialized) {
+        m_bufferAllocator.init();
+        m_objectModelAllocator.init();
+        m_renderingAllocator.init();
+        s_initialized = true;
     }
+    spinLockUnlock(&lock);
+}
 
-private:
-    static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
-    static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
-};
+void Partitions::shutdown()
+{
+    fastMallocShutdown();
 
-} // namespace blink
+    // We could ASSERT here for a memory leak within the partition, but it leads
+    // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
+    // the valgrind and heapcheck bots, which run without partitions.
+    (void) m_renderingAllocator.shutdown();
+    (void) m_objectModelAllocator.shutdown();
+    (void) m_bufferAllocator.shutdown();
+}
 
-#endif // Partitions_h
+} // namespace WTF

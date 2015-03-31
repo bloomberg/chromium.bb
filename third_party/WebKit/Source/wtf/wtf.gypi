@@ -91,6 +91,8 @@
             'PageAllocator.h',
             'PartitionAlloc.cpp',
             'PartitionAlloc.h',
+            'Partitions.cpp',
+            'Partitions.h',
             'PassOwnPtr.h',
             'PassRefPtr.h',
             'PassTraits.h',

@@ -89,10 +89,10 @@
 #include "core/page/Page.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/Partitions.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "wtf/HashSet.h"
+#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/Vector.h"
@@ -114,7 +114,7 @@ static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 void* Node::operator new(size_t size)
 {
     ASSERT(isMainThread());
-    return partitionAlloc(Partitions::getObjectModelPartition(), size);
+    return partitionAlloc(WTF::Partitions::getObjectModelPartition(), size);
 }
 
 void Node::operator delete(void* ptr)

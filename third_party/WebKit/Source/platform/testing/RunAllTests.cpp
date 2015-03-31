@@ -31,11 +31,11 @@
 #include "config.h"
 
 #include "platform/EventTracer.h"
-#include "platform/Partitions.h"
 #include "platform/TestingPlatformSupport.h"
 #include "platform/heap/Heap.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
+#include "wtf/Partitions.h"
 #include "wtf/WTF.h"
 #include <base/test/test_suite.h>
 #include <string.h>
@@ -61,11 +61,11 @@ int main(int argc, char** argv)
 
     blink::Heap::init();
     blink::ThreadState::attachMainThread();
-    blink::Partitions::init();
     blink::EventTracer::initialize();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
-    blink::Partitions::shutdown();
     blink::ThreadState::detachMainThread();
     blink::Heap::shutdown();
+
+    WTF::shutdown();
     return result;
 }

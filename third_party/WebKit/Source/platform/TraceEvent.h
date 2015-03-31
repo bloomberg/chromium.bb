@@ -165,6 +165,7 @@
 
 #include "platform/EventTracer.h"
 
+#include "wtf/CurrentTime.h"
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/CString.h"

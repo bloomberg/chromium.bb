@@ -49,8 +49,8 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/svg/SVGElement.h"
-#include "platform/Partitions.h"
 #include "platform/TraceEvent.h"
+#include "wtf/Partitions.h"
 #include "wtf/Vector.h"
 #include <algorithm>
 
@@ -475,7 +475,7 @@ void V8GCController::reportDOMMemoryUsageToV8(v8::Isolate* isolate)
 
     static size_t lastUsageReportedToV8 = 0;
 
-    size_t currentUsage = Partitions::currentDOMMemoryUsage();
+    size_t currentUsage = WTF::Partitions::currentDOMMemoryUsage();
     int64_t diff = static_cast<int64_t>(currentUsage) - static_cast<int64_t>(lastUsageReportedToV8);
     isolate->AdjustAmountOfExternalAllocatedMemory(diff);
 

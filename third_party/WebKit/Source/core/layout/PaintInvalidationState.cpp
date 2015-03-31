@@ -10,7 +10,6 @@
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "platform/Partitions.h"
 
 namespace blink {
 

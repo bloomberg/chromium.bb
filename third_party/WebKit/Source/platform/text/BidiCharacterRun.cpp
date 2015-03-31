@@ -24,7 +24,7 @@
 #include "config.h"
 #include "platform/text/BidiCharacterRun.h"
 
-#include "platform/Partitions.h"
+#include "wtf/Partitions.h"
 #include "wtf/RefCountedLeakCounter.h"
 
 using namespace WTF;

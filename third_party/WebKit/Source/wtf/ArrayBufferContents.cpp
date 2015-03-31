@@ -29,7 +29,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/PartitionAlloc.h"
-#include "wtf/WTF.h"
+#include "wtf/Partitions.h"
 #include <string.h>
 
 namespace WTF {

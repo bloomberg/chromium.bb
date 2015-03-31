@@ -78,13 +78,13 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/ObjectPainter.h"
 #include "platform/JSONValues.h"
-#include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "wtf/Partitions.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -142,7 +142,7 @@ static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = 0;
 void* LayoutObject::operator new(size_t sz)
 {
     ASSERT(isMainThread());
-    return partitionAlloc(Partitions::getRenderingPartition(), sz);
+    return partitionAlloc(WTF::Partitions::getRenderingPartition(), sz);
 }
 
 void LayoutObject::operator delete(void* ptr)
