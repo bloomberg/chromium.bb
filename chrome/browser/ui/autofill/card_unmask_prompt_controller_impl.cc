@@ -159,6 +159,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
   DCHECK(InputCvcIsValid(cvc));
   base::TrimWhitespace(cvc, base::TRIM_ALL, &pending_response_.cvc);
   if (ShouldRequestExpirationDate()) {
+    DCHECK(InputExpirationIsValid(exp_month, exp_year));
     pending_response_.exp_month = exp_month;
     pending_response_.exp_year = exp_year;
   }

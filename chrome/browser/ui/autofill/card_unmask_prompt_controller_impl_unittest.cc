@@ -125,6 +125,10 @@ class CardUnmaskPromptControllerImplTest
                                   ASCIIToUTF16("01"),
                                   ASCIIToUTF16("2015"),
                                   should_store_pan);
+    EXPECT_EQ(
+        should_store_pan,
+        user_prefs::UserPrefs::Get(web_contents()->GetBrowserContext())
+            ->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState));
   }
 
  protected:
@@ -318,7 +322,6 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanTryAgainFailure) {
       AutofillMetrics::GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE, 1);
 }
 
-
 TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {
   struct CvcCase {
     const char* input;
@@ -369,6 +372,29 @@ TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {
                                   base::string16(), base::string16(), false);
     EXPECT_EQ(ASCIIToUTF16(cvc_cases_amex[i].canonicalized_input),
               delegate_->response().cvc);
+  }
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, ExpirationDateValidation) {
+  struct {
+    const char* input_month;
+    const char* input_year;
+    bool valid;
+  } exp_cases[] = {
+      {"01", "2040", true},
+      {"1", "2040", true},
+      {"1", "40", true},
+      {"10", "40", true},
+      {"01", "1940", false},
+      {"13", "2040", false},
+  };
+
+  ShowPrompt();
+
+  for (size_t i = 0; i < arraysize(exp_cases); ++i) {
+    EXPECT_EQ(exp_cases[i].valid, controller_->InputExpirationIsValid(
+                                      ASCIIToUTF16(exp_cases[i].input_month),
+                                      ASCIIToUTF16(exp_cases[i].input_year)));
   }
 }
 
