@@ -17786,6 +17786,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DownloadBandwidth">
+  <obsolete>
+    Deprecated as of 03/2015.  No longer generated.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Kbps on download streams exceeding 25KB.  Measures from the beginning of the

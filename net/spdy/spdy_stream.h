@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/bandwidth_metrics.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
@@ -507,8 +506,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   int32 send_window_size_;
   int32 recv_window_size_;
   int32 unacked_recv_window_bytes_;
-
-  ScopedBandwidthMetrics metrics_;
 
   const base::WeakPtr<SpdySession> session_;
 

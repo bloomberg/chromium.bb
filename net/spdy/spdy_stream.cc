@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -427,8 +428,6 @@ int SpdyStream::OnInitialResponseHeadersReceived(
       break;
   }
 
-  metrics_.StartStream();
-
   DCHECK_NE(io_state_, STATE_IDLE);
 
   response_time_ = response_time;
@@ -477,7 +476,6 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
       pending_recv_data_.push_back(buffer.release());
     } else {
       pending_recv_data_.push_back(NULL);
-      metrics_.StopStream();
       // Note: we leave the stream open in the session until the stream
       //       is claimed.
     }
@@ -496,7 +494,6 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   CHECK(!IsClosed());
 
   if (!buffer) {
-    metrics_.StopStream();
     if (io_state_ == STATE_OPEN) {
       io_state_ = STATE_HALF_CLOSED_REMOTE;
     } else if (io_state_ == STATE_HALF_CLOSED_LOCAL) {
@@ -518,7 +515,6 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   }
 
   // Track our bandwidth.
-  metrics_.RecordBytes(length);
   recv_bytes_ += length;
   recv_last_byte_time_ = base::TimeTicks::Now();
 

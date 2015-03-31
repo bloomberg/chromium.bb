@@ -187,8 +187,6 @@
       'base/address_tracker_linux.h',
       'base/backoff_entry.cc',
       'base/backoff_entry.h',
-      'base/bandwidth_metrics.cc',
-      'base/bandwidth_metrics.h',
       'base/cache_type.h',
       'base/chunked_upload_data_stream.cc',
       'base/chunked_upload_data_stream.h',
