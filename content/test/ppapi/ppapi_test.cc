@@ -44,9 +44,6 @@ void PPAPITestMessageHandler::Reset() {
 PPAPITestBase::PPAPITestBase() { }
 
 void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
-  // The test sends us the result via a cookie.
-  command_line->AppendSwitch(switches::kEnableFileCookies);
-
   // Some stuff is hung off of the testing interface which is not enabled
   // by default.
   command_line->AppendSwitch(switches::kEnablePepperTesting);

@@ -210,14 +210,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // the instance (i.e. as part of the instance initialization process).
   void SetCookieableSchemes(const char* const schemes[], size_t num_schemes);
 
-  // Resets the list of cookieable schemes to kDefaultCookieableSchemes with or
-  // without 'file' being included.
-  //
-  // There are some unknowns about how to correctly handle file:// cookies,
-  // and our implementation for this is not robust enough. This allows you
-  // to enable support, but it should only be used for testing. Bug 1157243.
-  void SetEnableFileScheme(bool accept);
-
   // Instructs the cookie monster to not delete expired cookies. This is used
   // in cases where the cookie monster is used as a data structure to keep
   // arbitrary cookies.
@@ -311,6 +303,22 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const GURL& url,
       const std::string& name,
       const CookieChangedCallback& callback) override;
+
+#if defined(OS_ANDROID)
+  // Resets the list of cookieable schemes to kDefaultCookieableSchemes with or
+  // without 'file' being included.
+  //
+  // There are some unknowns about how to correctly handle file:// cookies,
+  // and our implementation for this is not robust enough (Bug 1157243).
+  // This allows you to enable support, and is exposed as a public WebView
+  // API ('CookieManager::setAcceptFileSchemeCookies').
+  //
+  // TODO(mkwst): This method will be removed once we can deprecate and remove
+  // the Android WebView 'CookieManager::setAcceptFileSchemeCookies' method.
+  // Until then, this method only has effect on Android, and must not be used
+  // outside a WebView context.
+  void SetEnableFileScheme(bool accept);
+#endif
 
  private:
   // For queueing the cookie monster calls.

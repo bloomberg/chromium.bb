@@ -4,9 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "extensions/common/constants.h"
@@ -15,14 +13,7 @@
 
 // Static
 bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
-  // Special-case `file://` scheme iff cookies and site data are enabled via
-  // the `--allow-file-cookies` CLI flag.
-  if (scheme == url::kFileScheme) {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableFileCookies);
-  }
-
-  // Otherwise, all "web safe" schemes are valid, except `chrome-extension://`
+  // All "web safe" schemes are valid, except `chrome-extension://`
   // and `chrome-devtools://`.
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();

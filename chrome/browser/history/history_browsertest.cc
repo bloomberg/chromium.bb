@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,11 +26,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 
 namespace {
+
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
 
 // Note: WaitableEvent is not used for synchronization between the main thread
 // and history backend thread because the history subsystem posts tasks back
@@ -60,9 +65,12 @@ class WaitForHistoryTask : public history::HistoryDBTask {
 
 class HistoryBrowserTest : public InProcessBrowserTest {
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableFileCookies);
-  }
+  HistoryBrowserTest()
+      : test_server_(net::SpawnedTestServer::TYPE_HTTP,
+                     net::SpawnedTestServer::kLocalhost,
+                     base::FilePath(kDocRoot)) {}
+
+  void SetUp() override { ASSERT_TRUE(test_server_.Start()); }
 
   PrefService* GetPrefs() {
     return GetProfile()->GetPrefs();
@@ -107,11 +115,11 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   void LoadAndWaitForFile(const char* filename) {
-    GURL url = ui_test_utils::GetTestUrl(
-        base::FilePath().AppendASCII("History"),
-        base::FilePath().AppendASCII(filename));
+    GURL url = test_server_.GetURL(std::string("History") + filename);
     LoadAndWaitForURL(url);
   }
+
+  net::SpawnedTestServer test_server_;
 };
 
 // Test that the browser history is saved (default setting).

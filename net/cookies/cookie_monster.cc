@@ -1340,14 +1340,6 @@ void CookieMonster::SetCookieableSchemes(const char* const schemes[],
                              schemes + num_schemes);
 }
 
-void CookieMonster::SetEnableFileScheme(bool accept) {
-  // This assumes "file" is always at the end of the array. See the comment
-  // above kDefaultCookieableSchemes.
-  int num_schemes = accept ? kDefaultCookieableSchemesCount
-                           : kDefaultCookieableSchemesCount - 1;
-  SetCookieableSchemes(kDefaultCookieableSchemes, num_schemes);
-}
-
 void CookieMonster::SetKeepExpiredCookies() {
   keep_expired_cookies_ = true;
 }
@@ -2349,6 +2341,23 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
   return hook_map_[key]->Add(
       base::Bind(&RunAsync, base::MessageLoopProxy::current(), callback));
 }
+
+#if defined(OS_ANDROID)
+void CookieMonster::SetEnableFileScheme(bool accept) {
+  // This assumes "file" is always at the end of the array. See the comment
+  // above kDefaultCookieableSchemes.
+  //
+  // TODO(mkwst): We're keeping this method around to support the
+  // 'CookieManager::setAcceptFileSchemeCookies' method on Android's WebView;
+  // if/when we can deprecate and remove that method, we can remove this one
+  // as well. Until then, we'll just ensure that the method has no effect on
+  // non-android systems.
+  int num_schemes = accept ? kDefaultCookieableSchemesCount
+                           : kDefaultCookieableSchemesCount - 1;
+
+  SetCookieableSchemes(kDefaultCookieableSchemes, num_schemes);
+}
+#endif
 
 void CookieMonster::RunCallbacks(const CanonicalCookie& cookie, bool removed) {
   lock_.AssertAcquired();

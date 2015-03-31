@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -29,7 +28,6 @@
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
-#include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -1389,11 +1387,6 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
          CookieStoreConfig::RESTORED_SESSION_COOKIES)) {
       cookie_monster->SetPersistSessionCookies(true);
     }
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFileCookies)) {
-    cookie_monster->SetEnableFileScheme(true);
   }
 
   return cookie_monster;

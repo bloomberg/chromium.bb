@@ -4,13 +4,11 @@
 
 #include "content/test/test_blink_web_unit_test_support.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/renderer/scheduler/webthread_impl_for_scheduler.h"
@@ -105,9 +103,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   // Ensure we pick up the default theme engine.
   SetThemeEngine(NULL);
 #endif
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableFileCookies);
 
   // Test shell always exposes the GC.
   std::string flags("--expose-gc");

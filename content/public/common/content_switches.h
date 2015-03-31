@@ -104,7 +104,6 @@ CONTENT_EXPORT extern const char kEnableDistanceFieldText[];
 CONTENT_EXPORT extern const char kEnableDownloadResumption[];
 CONTENT_EXPORT extern const char kEnableExperimentalCanvasFeatures[];
 CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
-CONTENT_EXPORT extern const char kEnableFileCookies[];
 extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableGpuRasterization[];
 CONTENT_EXPORT extern const char kGpuRasterizationMSAASampleCount[];
