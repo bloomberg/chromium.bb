@@ -102,8 +102,6 @@ public:
     void disableDestructionChecks() { m_disableDestructionChecks = true; }
 #endif
 
-    bool hasStroke() const { return strokeStyle() != NoStroke && strokeThickness() > 0; }
-
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
     void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }
 
@@ -125,18 +123,14 @@ public:
     void setLineJoin(LineJoin join) { mutableState()->setLineJoin(join); }
     void setMiterLimit(float limit) { mutableState()->setMiterLimit(limit); }
 
-    WindRule fillRule() const { return immutableState()->fillRule(); }
     void setFillRule(WindRule fillRule) { mutableState()->setFillRule(fillRule); }
 
     Color fillColor() const { return immutableState()->fillColor(); }
     void setFillColor(const Color& color) { mutableState()->setFillColor(color); }
-    SkColor effectiveFillColor() const { return immutableState()->effectiveFillColor(); }
 
     void setFillPattern(PassRefPtr<Pattern>, float alpha = 1);
-    Pattern* fillPattern() const { return immutableState()->fillPattern(); }
 
     void setFillGradient(PassRefPtr<Gradient>, float alpha = 1);
-    Gradient* fillGradient() const { return immutableState()->fillGradient(); }
 
     SkDrawLooper* drawLooper() const { return immutableState()->drawLooper(); }
 
@@ -194,12 +188,6 @@ public:
     void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
 
-    // Get the current fill style.
-    const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
-
-    // Get the current stroke style.
-    const SkPaint& strokePaint() const { return immutableState()->strokePaint(); }
-
     // These draw methods will do both stroking and filling.
     // FIXME: ...except drawRect(), which fills properly but always strokes
     // using a 1-pixel stroke inset from the rect borders (of the correct
@@ -234,7 +222,6 @@ public:
 
     void drawImage(Image*, const IntPoint&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawImage(Image*, const IntRect&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
-    void drawImage(Image*, const FloatRect& destRect);
     void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
 
     void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
@@ -249,14 +236,9 @@ public:
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
     void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void drawBitmapRect(const SkBitmap&, const SkRect*, const SkRect&, const SkPaint* = 0);
-    void drawImage(const SkImage*, SkScalar, SkScalar, const SkPaint* = 0);
-    void drawImageRect(const SkImage*, const SkRect*, const SkRect&, const SkPaint* = 0);
     void drawOval(const SkRect&, const SkPaint&);
     void drawPath(const SkPath&, const SkPaint&);
     void drawRect(const SkRect&, const SkPaint&);
-    void drawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkRect& textRect, const SkPaint&);
-    void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint&);
-    void drawTextBlob(const SkTextBlob*, const SkPoint& origin, const SkPaint&);
 
     void clip(const IntRect& rect) { clipRect(rect); }
     void clip(const FloatRect& rect) { clipRect(rect); }
@@ -294,16 +276,17 @@ public:
     void beginRecording(const FloatRect&, uint32_t = 0);
     PassRefPtr<const SkPicture> endRecording();
 
-    bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,
         DrawLooperBuilder::ShadowTransformMode = DrawLooperBuilder::ShadowRespectsTransforms,
         DrawLooperBuilder::ShadowAlphaMode = DrawLooperBuilder::ShadowRespectsAlpha, ShadowMode = DrawShadowAndForeground);
     void clearShadow() { clearDrawLooper(); clearDropShadowImageFilter(); }
+    void setDropShadowImageFilter(PassRefPtr<SkImageFilter>);
 
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
     // The builder passed into this method will be destroyed.
     void setDrawLooper(PassOwnPtr<DrawLooperBuilder>);
+    void setDrawLooper(PassRefPtr<SkDrawLooper> looper) { mutableState()->setDrawLooper(looper); }
     void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
@@ -409,7 +392,6 @@ private:
     void concat(const SkMatrix&);
     void drawRRect(const SkRRect&, const SkPaint&);
 
-    void setDropShadowImageFilter(PassRefPtr<SkImageFilter>);
     void clearDropShadowImageFilter();
     SkImageFilter* dropShadowImageFilter() const { return immutableState()->dropShadowImageFilter(); }
 

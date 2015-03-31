@@ -220,7 +220,6 @@ private:
     CanvasRenderingContext2DState& modifiableState();
     const CanvasRenderingContext2DState& state() const { return *m_stateStack.last(); }
 
-    void applyLineDash() const;
     void setShadow(const FloatSize& offset, float blur, RGBA32 color);
     void applyShadow(ShadowMode = DrawShadowAndForeground);
 
@@ -238,11 +237,10 @@ private:
     void unwindStateStack();
     void realizeSaves(SkCanvas*);
 
-    void applyStrokePattern();
-    void applyFillPattern();
-
-    void fillInternal(const Path&, const String& windingRuleString);
-    void strokeInternal(const Path&);
+    template<typename DrawFunc, typename ContainsFunc>
+    bool draw(const DrawFunc&, const ContainsFunc&, const SkRect& bounds, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType = CanvasRenderingContext2DState::NoImage);
+    void drawPathInternal(const Path&, CanvasRenderingContext2DState::PaintType, SkPath::FillType = SkPath::kWinding_FillType);
+    void drawImageOnContext(CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
     void clipInternal(const Path&, const String& windingRuleString);
 
     bool isPointInPathInternal(const Path&, const float x, const float y, const String& windingRuleString);
@@ -260,8 +258,8 @@ private:
 
     void inflateStrokeRect(FloatRect&) const;
 
-    void fullCanvasCompositedDraw(PassOwnPtr<Closure> draw); // deprecated
-    void fullCanvasCompositedDraw(PassOwnPtr<Function<void(SkCanvas*, const SkPaint*)>>, CanvasRenderingContext2DState::PaintType, OpacityMode bitmapOpacity);
+    template<typename DrawFunc>
+    void fullCanvasCompositedDraw(const DrawFunc&, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
@@ -275,13 +273,7 @@ private:
         UntransformedUnclippedFill
     };
 
-    enum ImageType {
-        NoImage,
-        OpaqueImage,
-        NonOpaqueImage
-    };
-
-    void checkOverdraw(const SkRect&, const SkPaint*, ImageType, DrawType);
+    void checkOverdraw(const SkRect&, const SkPaint*, CanvasRenderingContext2DState::ImageType, DrawType);
 
     virtual bool is2d() const override { return true; }
     virtual bool isAccelerated() const override;

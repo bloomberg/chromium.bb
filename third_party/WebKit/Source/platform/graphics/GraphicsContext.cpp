@@ -354,11 +354,6 @@ void GraphicsContext::clearDropShadowImageFilter()
     mutableState()->clearDropShadowImageFilter();
 }
 
-bool GraphicsContext::hasShadow() const
-{
-    return !!immutableState()->drawLooper() || !!immutableState()->dropShadowImageFilter();
-}
-
 SkMatrix GraphicsContext::getTotalMatrix() const
 {
     // FIXME: this is a hack to avoid changing all call sites of getTotalMatrix() to not use this method.
@@ -962,7 +957,7 @@ void GraphicsContext::drawTextPasses(const DrawTextFunc& drawText)
         drawText(immutableState()->fillPaint());
     }
 
-    if ((modeFlags & TextModeStroke) && hasStroke()) {
+    if ((modeFlags & TextModeStroke) && strokeStyle() != NoStroke && strokeThickness() > 0) {
         SkPaint paintForStroking(immutableState()->strokePaint());
         if (modeFlags & TextModeFill) {
             paintForStroking.setLooper(0); // shadow was already applied during fill pass
@@ -1021,13 +1016,6 @@ void GraphicsContext::drawImage(Image* image, const IntRect& r, SkXfermode::Mode
     if (!image)
         return;
     drawImage(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->size())), op, shouldRespectImageOrientation);
-}
-
-void GraphicsContext::drawImage(Image* image, const FloatRect& dest)
-{
-    if (!image)
-        return;
-    drawImage(image, dest, FloatRect(IntRect(IntPoint(), image->size())));
 }
 
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
@@ -1092,24 +1080,6 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
 
     ASSERT(m_canvas);
     m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint, flags);
-}
-
-void GraphicsContext::drawImage(const SkImage* image, SkScalar left, SkScalar top, const SkPaint* paint)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    m_canvas->drawImage(image, left, top, paint);
-}
-
-void GraphicsContext::drawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    m_canvas->drawImageRect(image, src, dst, paint);
 }
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
@@ -1515,7 +1485,7 @@ void GraphicsContext::fillRectWithRoundedHole(const FloatRect& rect, const Float
     else
         path.addRect(roundedHoleRect.rect());
 
-    WindRule oldFillRule = fillRule();
+    WindRule oldFillRule = immutableState()->fillRule();
     Color oldFillColor = fillColor();
 
     setFillRule(RULE_EVENODD);

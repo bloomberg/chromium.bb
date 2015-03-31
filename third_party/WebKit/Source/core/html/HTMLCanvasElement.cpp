@@ -659,10 +659,6 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     // canvases but not in unaccelerated canvases.
     if (!msaaSampleCount && document().settings() && !document().settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
-    // GraphicsContext's defaults don't always agree with the 2d canvas spec.
-    // See CanvasRenderingContext2D::State::State() for more information.
-    m_imageBuffer->context()->setMiterLimit(10);
-    m_imageBuffer->context()->setStrokeThickness(1);
 #if ENABLE(ASSERT)
     m_imageBuffer->context()->disableDestructionChecks(); // 2D canvas is allowed to leave context in an unfinalized state.
 #endif

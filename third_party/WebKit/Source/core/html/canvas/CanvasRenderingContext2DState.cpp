@@ -397,7 +397,7 @@ bool CanvasRenderingContext2DState::shouldDrawShadows() const
     return alphaChannel(m_shadowColor) && (m_shadowBlur || !m_shadowOffset.isZero());
 }
 
-const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, ShadowMode shadowMode, OpacityMode bitmapOpacity) const
+const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, ShadowMode shadowMode, ImageType imageType) const
 {
     SkPaint* paint;
     if (paintType == StrokePaintType) {
@@ -422,25 +422,24 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, Shad
     }
 
     if (shadowMode == DrawShadowOnly) {
-        if (bitmapOpacity == Opaque) {
-            paint->setLooper(shadowOnlyDrawLooper());
-            paint->setImageFilter(0);
+        if (imageType == NonOpaqueImage) {
+            paint->setLooper(0);
+            paint->setImageFilter(shadowOnlyImageFilter());
             return paint;
         }
-        paint->setLooper(0);
-        paint->setImageFilter(shadowOnlyImageFilter());
-        return paint;
-    }
-
-    ASSERT(shadowMode == DrawShadowAndForeground);
-    if (bitmapOpacity == Opaque) {
-        paint->setLooper(shadowAndForegroundDrawLooper());
+        paint->setLooper(shadowOnlyDrawLooper());
         paint->setImageFilter(0);
         return paint;
     }
 
-    paint->setLooper(0);
-    paint->setImageFilter(shadowAndForegroundImageFilter());
+    ASSERT(shadowMode == DrawShadowAndForeground);
+    if (imageType == NonOpaqueImage) {
+        paint->setLooper(0);
+        paint->setImageFilter(shadowAndForegroundImageFilter());
+        return paint;
+    }
+    paint->setLooper(shadowAndForegroundDrawLooper());
+    paint->setImageFilter(0);
     return paint;
 }
 

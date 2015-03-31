@@ -128,8 +128,14 @@ public:
 
     bool shouldDrawShadows() const;
 
+    enum ImageType {
+        NoImage,
+        OpaqueImage,
+        NonOpaqueImage
+    };
+
     // If paint will not be used for painting a bitmap, set bitmapOpacity to Opaque
-    const SkPaint* getPaint(PaintType, ShadowMode, OpacityMode bitmapOpacity = Opaque) const;
+    const SkPaint* getPaint(PaintType, ShadowMode, ImageType = NoImage) const;
 
 private:
     void updateLineDash() const;
