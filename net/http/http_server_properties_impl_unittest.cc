@@ -272,11 +272,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, Probability) {
   impl_.SetAlternativeService(test_host_port_pair, alternative_service, 0.5);
   EXPECT_TRUE(HasAlternativeService(test_host_port_pair));
 
-  AlternateProtocolMap::const_iterator it =
-      impl_.alternate_protocol_map().Peek(test_host_port_pair);
-  EXPECT_TRUE(it != impl_.alternate_protocol_map().end());
-  EXPECT_EQ(443, it->second.port);
-  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+  AlternativeServiceMap::const_iterator it =
+      impl_.alternative_service_map().Peek(test_host_port_pair);
+  ASSERT_TRUE(it != impl_.alternative_service_map().end());
+  EXPECT_EQ(443, it->second.alternative_service.port);
+  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
   EXPECT_EQ(0.5, it->second.probability);
 }
 
@@ -299,28 +299,29 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   const AlternativeService alternative_service2(NPN_SPDY_3, "foo2", 443);
   impl_.SetAlternativeService(test_host_port_pair2, alternative_service2, 1.0);
 
-  AlternateProtocolMap alternate_protocol_map(
-      AlternateProtocolMap::NO_AUTO_EVICT);
-  AlternateProtocolInfo alternate(123, NPN_SPDY_3, 1);
-  alternate_protocol_map.Put(test_host_port_pair2, alternate);
+  AlternativeServiceMap alternative_service_map(
+      AlternativeServiceMap::NO_AUTO_EVICT);
+  AlternativeServiceInfo alternative_service_info(NPN_SPDY_3, "bar", 123, 1.0);
+  alternative_service_map.Put(test_host_port_pair2, alternative_service_info);
   HostPortPair test_host_port_pair3("foo3", 80);
-  alternate.port = 1234;
-  alternate_protocol_map.Put(test_host_port_pair3, alternate);
-  impl_.InitializeAlternateProtocolServers(&alternate_protocol_map);
+  alternative_service_info.alternative_service.port = 1234;
+  alternative_service_map.Put(test_host_port_pair3, alternative_service_info);
+  impl_.InitializeAlternativeServiceServers(&alternative_service_map);
 
   // Verify test_host_port_pair3 is the MRU server.
-  const AlternateProtocolMap& map = impl_.alternate_protocol_map();
-  AlternateProtocolMap::const_iterator it = map.begin();
+  const AlternativeServiceMap& map = impl_.alternative_service_map();
+  AlternativeServiceMap::const_iterator it = map.begin();
+  ASSERT_TRUE(it != map.end());
   EXPECT_TRUE(it->first.Equals(test_host_port_pair3));
-  EXPECT_EQ(1234, it->second.port);
-  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(1234, it->second.alternative_service.port);
 
   ASSERT_TRUE(HasAlternativeService(test_host_port_pair1));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
-  AlternativeService alternative_service =
+  const AlternativeService alternative_service =
       impl_.GetAlternativeService(test_host_port_pair2);
-  EXPECT_EQ(123, alternative_service.port);
   EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ(123, alternative_service.port);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
@@ -331,11 +332,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
   const AlternativeService alternative_service2(NPN_SPDY_3, "foo2", 1234);
   impl_.SetAlternativeService(test_host_port_pair2, alternative_service2, 1.0);
 
-  const AlternateProtocolMap& map = impl_.alternate_protocol_map();
-  AlternateProtocolMap::const_iterator it = map.begin();
+  const AlternativeServiceMap& map = impl_.alternative_service_map();
+  AlternativeServiceMap::const_iterator it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
-  EXPECT_EQ(1234, it->second.port);
-  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(1234, it->second.alternative_service.port);
 
   // GetAlternativeService should reorder the AlternateProtocol map.
   const AlternativeService alternative_service =
@@ -344,8 +345,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
   EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
   it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair1));
-  EXPECT_EQ(443, it->second.port);
-  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(443, it->second.alternative_service.port);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {

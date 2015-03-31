@@ -635,11 +635,12 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   if (quic_server_info_factory_) {
     bool load_from_disk_cache = !disable_disk_cache_;
     if (http_server_properties_) {
-      const AlternateProtocolMap& alternate_protocol_map =
-          http_server_properties_->alternate_protocol_map();
-      AlternateProtocolMap::const_iterator it =
-          alternate_protocol_map.Peek(server_id.host_port_pair());
-      if (it == alternate_protocol_map.end() || it->second.protocol != QUIC) {
+      const AlternativeServiceMap& alternative_service_map =
+          http_server_properties_->alternative_service_map();
+      AlternativeServiceMap::const_iterator it =
+          alternative_service_map.Peek(server_id.host_port_pair());
+      if (it == alternative_service_map.end() ||
+          it->second.alternative_service.protocol != QUIC) {
         // If there is no entry for QUIC, consider that as a new server and
         // don't wait for Cache thread to load the data for that server.
         load_from_disk_cache = false;
@@ -1136,16 +1137,16 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
 
   if (http_server_properties_) {
     if (quic_supported_servers_at_startup_.empty()) {
-      for (const std::pair<const HostPortPair, AlternateProtocolInfo>&
-               key_value : http_server_properties_->alternate_protocol_map()) {
-        if (key_value.second.protocol == QUIC) {
+      for (const std::pair<const HostPortPair, AlternativeServiceInfo>&
+               key_value : http_server_properties_->alternative_service_map()) {
+        if (key_value.second.alternative_service.protocol == QUIC) {
           quic_supported_servers_at_startup_.insert(key_value.first);
         }
       }
     }
 
     // TODO(rtenneti): Delete the following histogram after collecting stats.
-    // If the AlternateProtocolMap contained an entry for this host, check if
+    // If the AlternativeServiceMap contained an entry for this host, check if
     // the disk cache contained an entry for it.
     if (ContainsKey(quic_supported_servers_at_startup_,
                     server_id.host_port_pair())) {

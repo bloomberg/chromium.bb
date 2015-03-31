@@ -51,8 +51,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   void InitializeSpdyServers(std::vector<std::string>* spdy_servers,
                              bool support_spdy);
 
-  void InitializeAlternateProtocolServers(
-      AlternateProtocolMap* alternate_protocol_servers);
+  void InitializeAlternativeServiceServers(
+      AlternativeServiceMap* alternate_protocol_servers);
 
   void InitializeSpdySettingsServers(SpdySettingsMap* spdy_settings_map);
 
@@ -101,7 +101,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   void ConfirmAlternativeService(
       const AlternativeService& alternative_service) override;
   void ClearAlternativeService(const HostPortPair& origin) override;
-  const AlternateProtocolMap& alternate_protocol_map() const override;
+  const AlternativeServiceMap& alternative_service_map() const override;
   void SetAlternateProtocolProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
@@ -139,7 +139,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   typedef std::map<AlternativeService, int> RecentlyBrokenAlternativeServices;
 
   // Return the iterator for |server|, or for its canonical host, or end.
-  AlternateProtocolMap::const_iterator GetAlternateProtocolIterator(
+  AlternativeServiceMap::const_iterator GetAlternateProtocolIterator(
       const HostPortPair& server);
 
   // Return the canonical host for |server|, or end if none exists.
@@ -152,7 +152,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   SpdyServerHostPortMap spdy_servers_map_;
   Http11ServerHostPortSet http11_servers_;
 
-  AlternateProtocolMap alternate_protocol_map_;
+  AlternativeServiceMap alternative_service_map_;
   BrokenAlternativeServices broken_alternative_services_;
   // Class invariant:  Every alternative service in broken_alternative_services_
   // must also be in recently_broken_alternative_services_.

@@ -470,14 +470,14 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     const net::HttpServerProperties& http_server_properties =
         *context->http_server_properties();
 
-    const net::AlternateProtocolMap& map =
-        http_server_properties.alternate_protocol_map();
+    const net::AlternativeServiceMap& map =
+        http_server_properties.alternative_service_map();
 
-    for (net::AlternateProtocolMap::const_iterator it = map.begin();
-          it != map.end(); ++it) {
+    for (net::AlternativeServiceMap::const_iterator it = map.begin();
+         it != map.end(); ++it) {
       base::DictionaryValue* dict = new base::DictionaryValue();
       dict->SetString("host_port_pair", it->first.ToString());
-      dict->SetString("alternate_protocol", it->second.ToString());
+      dict->SetString("alternative_service", it->second.ToString());
       dict_list->Append(dict);
     }
 

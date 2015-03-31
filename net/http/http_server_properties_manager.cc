@@ -58,8 +58,10 @@ const char kSupportsQuicKey[] = "supports_quic";
 const char kUsedQuicKey[] = "used_quic";
 const char kAddressKey[] = "address";
 const char kAlternateProtocolKey[] = "alternate_protocol";
-const char kPortKey[] = "port";
+const char kAlternativeServiceKey[] = "alternative_service";
 const char kProtocolKey[] = "protocol_str";
+const char kHostKey[] = "host";
+const char kPortKey[] = "port";
 const char kProbabilityKey[] = "probability";
 const char kNetworkStatsKey[] = "network_stats";
 const char kSrttKey[] = "srtt";
@@ -240,10 +242,10 @@ void HttpServerPropertiesManager::ClearAlternativeService(
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
-const AlternateProtocolMap&
-HttpServerPropertiesManager::alternate_protocol_map() const {
+const AlternativeServiceMap&
+HttpServerPropertiesManager::alternative_service_map() const {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->alternate_protocol_map();
+  return http_server_properties_impl_->alternative_service_map();
 }
 
 void HttpServerPropertiesManager::SetAlternateProtocolProbabilityThreshold(
@@ -380,8 +382,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   scoped_ptr<StringVector> spdy_servers(new StringVector);
   scoped_ptr<SpdySettingsMap> spdy_settings_map(
       new SpdySettingsMap(kMaxSpdySettingsHostsToPersist));
-  scoped_ptr<AlternateProtocolMap> alternate_protocol_map(
-      new AlternateProtocolMap(kMaxAlternateProtocolHostsToPersist));
+  scoped_ptr<AlternativeServiceMap> alternative_service_map(
+      new AlternativeServiceMap(kMaxAlternateProtocolHostsToPersist));
   scoped_ptr<ServerNetworkStatsMap> server_network_stats_map(
       new ServerNetworkStatsMap(kMaxServerNetworkStatsHostsToPersist));
 
@@ -411,8 +413,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
     }
 
     AddToSpdySettingsMap(server, *server_pref_dict, spdy_settings_map.get());
-    if (!AddToAlternateProtocolMap(server, *server_pref_dict,
-                                   alternate_protocol_map.get()) ||
+    if (!AddToAlternativeServiceMap(server, *server_pref_dict,
+                                    alternative_service_map.get()) ||
         !AddToNetworkStatsMap(server, *server_pref_dict,
                               server_network_stats_map.get())) {
       detected_corrupted_prefs = true;
@@ -425,7 +427,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
           &HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread,
           base::Unretained(this), base::Owned(spdy_servers.release()),
           base::Owned(spdy_settings_map.release()),
-          base::Owned(alternate_protocol_map.release()), base::Owned(addr),
+          base::Owned(alternative_service_map.release()), base::Owned(addr),
           base::Owned(server_network_stats_map.release()),
           detected_corrupted_prefs));
 }
@@ -465,62 +467,97 @@ void HttpServerPropertiesManager::AddToSpdySettingsMap(
   spdy_settings_map->Put(server, settings_map);
 }
 
-AlternateProtocolInfo HttpServerPropertiesManager::ParseAlternateProtocolDict(
-    const base::DictionaryValue& alternate_protocol_dict,
+AlternativeServiceInfo HttpServerPropertiesManager::ParseAlternativeServiceDict(
+    const base::DictionaryValue& alternative_service_dict,
     const std::string& server_str) {
-  AlternateProtocolInfo alternate_protocol;
-  int port = 0;
-  if (!alternate_protocol_dict.GetInteger(kPortKey, &port) ||
-      !IsPortValid(port)) {
-    DVLOG(1) << "Malformed alternative service port for server: " << server_str;
-    return alternate_protocol;
-  }
-  alternate_protocol.port = static_cast<uint16>(port);
-
-  double probability = 1.0;
-  if (alternate_protocol_dict.HasKey(kProbabilityKey) &&
-      !alternate_protocol_dict.GetDoubleWithoutPathExpansion(kProbabilityKey,
-                                                             &probability)) {
-    DVLOG(1) << "Malformed alternative service probability for server: "
-             << server_str;
-    return alternate_protocol;
-  }
-  alternate_protocol.probability = probability;
-
+  // Protocol is mandatory.
   std::string protocol_str;
-  if (!alternate_protocol_dict.GetStringWithoutPathExpansion(kProtocolKey,
-                                                             &protocol_str)) {
+  if (!alternative_service_dict.GetStringWithoutPathExpansion(kProtocolKey,
+                                                              &protocol_str)) {
     DVLOG(1) << "Malformed alternative service protocol string for server: "
              << server_str;
-    return alternate_protocol;
+    return AlternativeServiceInfo();
   }
   AlternateProtocol protocol = AlternateProtocolFromString(protocol_str);
   if (!IsAlternateProtocolValid(protocol)) {
     DVLOG(1) << "Invalid alternative service protocol string for server: "
              << server_str;
-    return alternate_protocol;
+    return AlternativeServiceInfo();
   }
-  alternate_protocol.protocol = protocol;
 
-  return alternate_protocol;
+  // Host is optional, defaults to "".
+  std::string host;
+  if (alternative_service_dict.HasKey(kHostKey) &&
+      !alternative_service_dict.GetStringWithoutPathExpansion(kHostKey,
+                                                              &host)) {
+    DVLOG(1) << "Malformed alternative service host string for server: "
+             << server_str;
+    return AlternativeServiceInfo();
+  }
+
+  // Port is mandatory.
+  int port = 0;
+  if (!alternative_service_dict.GetInteger(kPortKey, &port) ||
+      !IsPortValid(port)) {
+    DVLOG(1) << "Malformed alternative service port for server: " << server_str;
+    return AlternativeServiceInfo();
+  }
+
+  // Probability is optional, defaults to 1.0.
+  double probability = 1.0;
+  if (alternative_service_dict.HasKey(kProbabilityKey) &&
+      !alternative_service_dict.GetDoubleWithoutPathExpansion(kProbabilityKey,
+                                                              &probability)) {
+    DVLOG(1) << "Malformed alternative service probability for server: "
+             << server_str;
+    return AlternativeServiceInfo();
+  }
+
+  return AlternativeServiceInfo(protocol, host, static_cast<uint16>(port),
+                                probability);
 }
 
-bool HttpServerPropertiesManager::AddToAlternateProtocolMap(
+bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
     const HostPortPair& server,
     const base::DictionaryValue& server_pref_dict,
-    AlternateProtocolMap* alternate_protocol_map) {
-  // Get alternate_protocol server.
-  DCHECK(alternate_protocol_map->Peek(server) == alternate_protocol_map->end());
-  const base::DictionaryValue* alternate_protocol_dict = NULL;
-  if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
-          kAlternateProtocolKey, &alternate_protocol_dict)) {
-    return true;
+    AlternativeServiceMap* alternative_service_map) {
+  DCHECK(alternative_service_map->Peek(server) ==
+         alternative_service_map->end());
+  // Get alternative_services...
+  const base::ListValue* alternative_service_list;
+  const base::DictionaryValue* alternative_service_dict;
+  AlternativeServiceInfo alternative_service_info;
+  if (server_pref_dict.GetListWithoutPathExpansion(kAlternativeServiceKey,
+                                                   &alternative_service_list)) {
+    if (alternative_service_list->empty()) {
+      return false;
+    }
+    // Get first element of the list.
+    // TODO(bnc): Once we store multiple AlternativeServiceInfo per server, read
+    // all of them.
+    if (!alternative_service_list->GetDictionary(0,
+                                                 &alternative_service_dict)) {
+      return false;
+    }
+    alternative_service_info = ParseAlternativeServiceDict(
+        *alternative_service_dict, server.ToString());
+  } else {
+    // ...or alternate_protocol.
+    // TODO(bnc): Remove this in M46, we do not need preference migration for
+    // long.
+    if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
+            kAlternateProtocolKey, &alternative_service_dict)) {
+      return true;
+    }
+    alternative_service_info = ParseAlternativeServiceDict(
+        *alternative_service_dict, server.ToString());
   }
-  AlternateProtocolInfo alternate_protocol =
-      ParseAlternateProtocolDict(*alternate_protocol_dict, server.ToString());
-  if (alternate_protocol.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+
+  if (alternative_service_info.alternative_service.protocol ==
+      UNINITIALIZED_ALTERNATE_PROTOCOL) {
     return false;
-  alternate_protocol_map->Put(server, alternate_protocol);
+  }
+  alternative_service_map->Put(server, alternative_service_info);
   return true;
 }
 
@@ -579,7 +616,7 @@ bool HttpServerPropertiesManager::AddToNetworkStatsMap(
 void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
     StringVector* spdy_servers,
     SpdySettingsMap* spdy_settings_map,
-    AlternateProtocolMap* alternate_protocol_map,
+    AlternativeServiceMap* alternative_service_map,
     IPAddressNumber* last_quic_address,
     ServerNetworkStatsMap* server_network_stats_map,
     bool detected_corrupted_prefs) {
@@ -598,9 +635,9 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
   // Update the cached data and use the new Alternate-Protocol server list from
   // preferences.
   UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers",
-                       alternate_protocol_map->size());
-  http_server_properties_impl_->InitializeAlternateProtocolServers(
-      alternate_protocol_map);
+                       alternative_service_map->size());
+  http_server_properties_impl_->InitializeAlternativeServiceServers(
+      alternative_service_map);
 
   http_server_properties_impl_->InitializeSupportsQuic(last_quic_address);
 
@@ -658,23 +695,27 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     spdy_settings_map->Put(it->first, it->second);
   }
 
-  AlternateProtocolMap* alternate_protocol_map =
-      new AlternateProtocolMap(kMaxAlternateProtocolHostsToPersist);
-  const AlternateProtocolMap& map =
-      http_server_properties_impl_->alternate_protocol_map();
+  AlternativeServiceMap* alternative_service_map =
+      new AlternativeServiceMap(kMaxAlternateProtocolHostsToPersist);
+  const AlternativeServiceMap& map =
+      http_server_properties_impl_->alternative_service_map();
   count = 0;
   typedef std::map<std::string, bool> CanonicalHostPersistedMap;
   CanonicalHostPersistedMap persisted_map;
-  for (AlternateProtocolMap::const_iterator it = map.begin();
+  for (AlternativeServiceMap::const_iterator it = map.begin();
        it != map.end() && count < kMaxAlternateProtocolHostsToPersist; ++it) {
-    const AlternateProtocolInfo& alternate_protocol = it->second;
-    if (!IsAlternateProtocolValid(alternate_protocol.protocol)) {
+    const AlternativeServiceInfo& alternative_service_info = it->second;
+    if (!IsAlternateProtocolValid(
+            alternative_service_info.alternative_service.protocol)) {
       continue;
     }
     const HostPortPair& server = it->first;
-    if (IsAlternativeServiceBroken(
-            AlternativeService(alternate_protocol.protocol, server.host(),
-                               alternate_protocol.port))) {
+    AlternativeService alternative_service(
+        alternative_service_info.alternative_service);
+    if (alternative_service.host.empty()) {
+      alternative_service.host = server.host();
+    }
+    if (IsAlternativeServiceBroken(alternative_service)) {
       continue;
     }
     std::string canonical_suffix =
@@ -684,7 +725,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
         continue;
       persisted_map[canonical_suffix] = true;
     }
-    alternate_protocol_map->Put(server, alternate_protocol);
+    alternative_service_map->Put(server, alternative_service_info);
     ++count;
   }
 
@@ -706,33 +747,33 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
       base::Bind(
           &HttpServerPropertiesManager::UpdatePrefsOnPrefThread, pref_weak_ptr_,
           base::Owned(spdy_server_list), base::Owned(spdy_settings_map),
-          base::Owned(alternate_protocol_map), base::Owned(last_quic_addr),
+          base::Owned(alternative_service_map), base::Owned(last_quic_addr),
           base::Owned(server_network_stats_map), completion));
 }
 
 // A local or temporary data structure to hold |supports_spdy|, SpdySettings,
-// AlternateProtocolInfo and SupportsQuic preferences for a server. This is used
-// only in UpdatePrefsOnPrefThread.
+// AlternativeServiceInfo and SupportsQuic preferences for a server. This is
+// used only in UpdatePrefsOnPrefThread.
 struct ServerPref {
   ServerPref()
       : supports_spdy(false),
         settings_map(NULL),
-        alternate_protocol(NULL),
+        alternative_service(NULL),
         supports_quic(NULL),
         server_network_stats(NULL) {}
   ServerPref(bool supports_spdy,
              const SettingsMap* settings_map,
-             const AlternateProtocolInfo* alternate_protocol,
+             const AlternativeServiceInfo* alternative_service,
              const SupportsQuic* supports_quic,
              const ServerNetworkStats* server_network_stats)
       : supports_spdy(supports_spdy),
         settings_map(settings_map),
-        alternate_protocol(alternate_protocol),
+        alternative_service(alternative_service),
         supports_quic(supports_quic),
         server_network_stats(server_network_stats) {}
   bool supports_spdy;
   const SettingsMap* settings_map;
-  const AlternateProtocolInfo* alternate_protocol;
+  const AlternativeServiceInfo* alternative_service;
   const SupportsQuic* supports_quic;
   const ServerNetworkStats* server_network_stats;
 };
@@ -740,7 +781,7 @@ struct ServerPref {
 void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     base::ListValue* spdy_server_list,
     SpdySettingsMap* spdy_settings_map,
-    AlternateProtocolMap* alternate_protocol_map,
+    AlternativeServiceMap* alternative_service_map,
     IPAddressNumber* last_quic_address,
     ServerNetworkStatsMap* server_network_stats_map,
     const base::Closure& completion) {
@@ -768,10 +809,10 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   }
 
   // Add AlternateProtocol servers to server_pref_map.
-  for (AlternateProtocolMap::const_iterator map_it =
-           alternate_protocol_map->begin();
-       map_it != alternate_protocol_map->end(); ++map_it) {
-    server_pref_map[map_it->first].alternate_protocol = &map_it->second;
+  for (AlternativeServiceMap::const_iterator map_it =
+           alternative_service_map->begin();
+       map_it != alternative_service_map->end(); ++map_it) {
+    server_pref_map[map_it->first].alternative_service = &map_it->second;
   }
 
   // Add ServerNetworkStats servers to server_pref_map.
@@ -797,8 +838,8 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     if (server_pref.supports_spdy)
       server_pref_dict->SetBoolean(kSupportsSpdyKey, server_pref.supports_spdy);
     SaveSpdySettingsToServerPrefs(server_pref.settings_map, server_pref_dict);
-    SaveAlternateProtocolToServerPrefs(server_pref.alternate_protocol,
-                                       server_pref_dict);
+    SaveAlternativeServiceToServerPrefs(server_pref.alternative_service,
+                                        server_pref_dict);
     SaveNetworkStatsToServerPrefs(server_pref.server_network_stats,
                                   server_pref_dict);
 
@@ -840,23 +881,33 @@ void HttpServerPropertiesManager::SaveSpdySettingsToServerPrefs(
   server_pref_dict->SetWithoutPathExpansion(kSettingsKey, spdy_settings_dict);
 }
 
-void HttpServerPropertiesManager::SaveAlternateProtocolToServerPrefs(
-    const AlternateProtocolInfo* port_alternate_protocol,
+void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
+    const AlternativeServiceInfo* alternative_service_info,
     base::DictionaryValue* server_pref_dict) {
-  if (!port_alternate_protocol)
+  if (!alternative_service_info)
     return;
 
-  base::DictionaryValue* port_alternate_protocol_dict =
+  const AlternativeService& alternative_service =
+      alternative_service_info->alternative_service;
+  base::DictionaryValue* alternative_service_info_dict =
       new base::DictionaryValue;
-  port_alternate_protocol_dict->SetInteger(kPortKey,
-                                           port_alternate_protocol->port);
-  const char* protocol_str =
-      AlternateProtocolToString(port_alternate_protocol->protocol);
-  port_alternate_protocol_dict->SetString(kProtocolKey, protocol_str);
-  port_alternate_protocol_dict->SetDouble(kProbabilityKey,
-                                          port_alternate_protocol->probability);
-  server_pref_dict->SetWithoutPathExpansion(kAlternateProtocolKey,
-                                            port_alternate_protocol_dict);
+  alternative_service_info_dict->SetString(
+      kProtocolKey, AlternateProtocolToString(alternative_service.protocol));
+  if (!alternative_service.host.empty()) {
+    alternative_service_info_dict->SetString(kHostKey,
+                                             alternative_service.host);
+  }
+  alternative_service_info_dict->SetInteger(kPortKey, alternative_service.port);
+  alternative_service_info_dict->SetDouble(
+      kProbabilityKey, alternative_service_info->probability);
+
+  // Create a single element list here.
+  // TODO(bnc): Once we store multiple AlternativeServiceInfo per server, save
+  // all of them.
+  base::ListValue* alternative_service_list = new base::ListValue();
+  alternative_service_list->Append(alternative_service_info_dict);
+  server_pref_dict->SetWithoutPathExpansion(kAlternativeServiceKey,
+                                            alternative_service_list);
 }
 
 void HttpServerPropertiesManager::SaveSupportsQuicToPrefs(

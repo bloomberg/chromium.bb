@@ -7841,7 +7841,7 @@ scoped_refptr<HttpNetworkSession> SetupSessionForGroupNameTests(
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
-      AlternateProtocolFromNextProto(next_proto), "alternative.host", 443);
+      AlternateProtocolFromNextProto(next_proto), "", 443);
   http_server_properties->SetAlternativeService(
       HostPortPair("host.with.alternate", 80), alternative_service, 1.0);
 

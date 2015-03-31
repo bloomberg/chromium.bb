@@ -74,14 +74,14 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   MOCK_METHOD6(UpdateCacheFromPrefsOnNetworkThread,
                void(std::vector<std::string>* spdy_servers,
                     SpdySettingsMap* spdy_settings_map,
-                    AlternateProtocolMap* alternate_protocol_map,
+                    AlternativeServiceMap* alternative_service_map,
                     IPAddressNumber* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map,
                     bool detected_corrupted_prefs));
   MOCK_METHOD5(UpdatePrefsOnPref,
                void(base::ListValue* spdy_server_list,
                     SpdySettingsMap* spdy_settings_map,
-                    AlternateProtocolMap* alternate_protocol_map,
+                    AlternativeServiceMap* alternative_service_map,
                     IPAddressNumber* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map));
 
@@ -163,12 +163,15 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set supports_spdy for www.google.com:80.
   server_pref_dict->SetBoolean("supports_spdy", true);
 
-  // Set up alternate_protocol for www.google.com:80.
-  base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
-  alternate_protocol->SetInteger("port", 443);
-  alternate_protocol->SetString("protocol_str", "npn-spdy/3");
-  server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
-                                            alternate_protocol);
+  // Set up alternative_service for www.google.com:80.
+  base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+  alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict->SetString("host", "maps.google.com");
+  alternative_service_dict->SetInteger("port", 443);
+  base::ListValue* alternative_service_list = new base::ListValue;
+  alternative_service_list->Append(alternative_service_dict);
+  server_pref_dict->SetWithoutPathExpansion("alternative_service",
+                                            alternative_service_list);
 
   // Set up ServerNetworkStats for www.google.com:80.
   base::DictionaryValue* stats = new base::DictionaryValue;
@@ -185,13 +188,13 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set supports_spdy for mail.google.com:80
   server_pref_dict1->SetBoolean("supports_spdy", true);
 
-  // Set up alternate_protocol for mail.google.com:80
-  base::DictionaryValue* alternate_protocol1 = new base::DictionaryValue;
-  alternate_protocol1->SetInteger("port", 444);
-  alternate_protocol1->SetString("protocol_str", "npn-spdy/3.1");
-
+  // Set up alternate_protocol for mail.google.com:80 to test migration to
+  // alternative-service.
+  base::DictionaryValue* alternate_protocol_dict = new base::DictionaryValue;
+  alternate_protocol_dict->SetString("protocol_str", "npn-spdy/3.1");
+  alternate_protocol_dict->SetInteger("port", 444);
   server_pref_dict1->SetWithoutPathExpansion("alternate_protocol",
-                                             alternate_protocol1);
+                                             alternate_protocol_dict);
 
   // Set up ServerNetworkStats for mail.google.com:80.
   base::DictionaryValue* stats1 = new base::DictionaryValue;
@@ -229,15 +232,17 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_FALSE(http_server_props_manager_->SupportsRequestPriority(
       HostPortPair::FromString("foo.google.com:1337")));
 
-  // Verify AlternateProtocol.
+  // Verify alternative service.
   AlternativeService alternative_service =
       http_server_props_manager_->GetAlternativeService(google_server);
-  EXPECT_EQ(443, alternative_service.port);
   EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ("maps.google.com", alternative_service.host);
+  EXPECT_EQ(443, alternative_service.port);
   alternative_service =
       http_server_props_manager_->GetAlternativeService(mail_server);
-  EXPECT_EQ(444, alternative_service.port);
   EXPECT_EQ(NPN_SPDY_3_1, alternative_service.protocol);
+  EXPECT_EQ("mail.google.com", alternative_service.host);
+  EXPECT_EQ(444, alternative_service.port);
 
   // Verify SupportsQuic.
   IPAddressNumber last_address;
@@ -263,12 +268,15 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   // Set supports_spdy for www.google.com:65536.
   server_pref_dict->SetBoolean("supports_spdy", true);
 
-  // Set up alternate_protocol for www.google.com:65536.
-  base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
-  alternate_protocol->SetInteger("port", 80);
-  alternate_protocol->SetString("protocol_str", "npn-spdy/3");
-  server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
-                                            alternate_protocol);
+  // Set up alternative_service for www.google.com:65536.
+
+  base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+  alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict->SetInteger("port", 80);
+  base::ListValue* alternative_service_list = new base::ListValue;
+  alternative_service_list->Append(alternative_service_dict);
+  server_pref_dict->SetWithoutPathExpansion("alternative_service",
+                                            alternative_service_list);
 
   // Set up ServerNetworkStats for www.google.com:65536.
   base::DictionaryValue* stats = new base::DictionaryValue;
@@ -313,12 +321,14 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   // Set supports_spdy for www.google.com:80.
   server_pref_dict->SetBoolean("supports_spdy", true);
 
-  // Set up alternate_protocol for www.google.com:80.
-  base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
-  alternate_protocol->SetInteger("port", 65536);
-  alternate_protocol->SetString("protocol_str", "npn-spdy/3");
-  server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
-                                            alternate_protocol);
+  // Set up alternative_service for www.google.com:80.
+  base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+  alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict->SetInteger("port", 65536);
+  base::ListValue* alternative_service_list = new base::ListValue;
+  alternative_service_list->Append(alternative_service_dict);
+  server_pref_dict->SetWithoutPathExpansion("alternative_service",
+                                            alternative_service_list);
 
   // Set the server preference for www.google.com:80.
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
@@ -336,7 +346,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  // Verify AlternateProtocol is not set.
+  // Verify alternative service is not set.
   EXPECT_FALSE(
       HasAlternativeService(HostPortPair::FromString("www.google.com:80")));
 }
@@ -586,7 +596,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
-// https://crbug.com/444956: Add 200 alternate_protocol servers followed by
+// https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
 TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   ExpectCacheUpdate();
@@ -594,13 +604,16 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
 
   for (int i = 0; i < 200; ++i) {
-    // Set up alternate_protocol for www.google.com:i.
-    base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
-    alternate_protocol->SetInteger("port", i);
-    alternate_protocol->SetString("protocol_str", "npn-spdy/3");
+    // Set up alternative_service for www.google.com:i.
+    base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+    alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+    alternative_service_dict->SetString("host", "");
+    alternative_service_dict->SetInteger("port", i);
+    base::ListValue* alternative_service_list = new base::ListValue;
+    alternative_service_list->Append(alternative_service_dict);
     base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
-    server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
-                                              alternate_protocol);
+    server_pref_dict->SetWithoutPathExpansion("alternative_service",
+                                              alternative_service_list);
     servers_dict->SetWithoutPathExpansion(StringPrintf("www.google.com:%d", i),
                                           server_pref_dict);
   }
@@ -631,7 +644,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  // Verify AlternateProtocol.
+  // Verify alternative service.
   for (int i = 0; i < 200; ++i) {
     std::string server = StringPrintf("www.google.com:%d", i);
     AlternativeService alternative_service =
@@ -652,7 +665,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   const HostPortPair server_mail("mail.google.com", 80);
 
   // Set alternate protocol.
-  AlternativeService www_altsvc(NPN_SPDY_3, "www.google.com", 443);
+  AlternativeService www_altsvc(NPN_SPDY_3, "", 443);
   AlternativeService mail_altsvc(NPN_SPDY_3_1, "mail.google.com", 444);
   http_server_props_manager_->SetAlternativeService(server_www, www_altsvc,
                                                     1.0);
@@ -676,27 +689,15 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   base::RunLoop().RunUntilIdle();
 
   // Verify preferences.
-  const char expected_json[] = "{"
-    "\"servers\":{"
-      "\"mail.google.com:80\":{"
-        "\"alternate_protocol\":{"
-          "\"port\":444,\"probability\":0.2,\"protocol_str\":\"npn-spdy/3.1\""
-        "},"
-        "\"network_stats\":{"
-          "\"srtt\":42"
-        "}"
-      "},"
-      "\"www.google.com:80\":{"
-        "\"alternate_protocol\":{"
-          "\"port\":443,\"probability\":1.0,\"protocol_str\":\"npn-spdy/3\""
-        "}"
-      "}"
-    "},"
-    "\"supports_quic\":{"
-      "\"address\":\"127.0.0.1\",\"used_quic\":true"
-    "},"
-    "\"version\":3"
-  "}";
+  const char expected_json[] =
+      "{\"servers\":{\"mail.google.com:80\":{\"alternative_service\":[{"
+      "\"host\":"
+      "\"mail.google.com\",\"port\":444,\"probability\":0.2,\"protocol_str\":"
+      "\"npn-spdy/"
+      "3.1\"}],\"network_stats\":{\"srtt\":42}},\"www.google.com:80\":"
+      "{\"alternative_service\":[{\"port\":443,\"probability\":1.0,"
+      "\"protocol_str\":\"npn-spdy/3\"}]}},\"supports_quic\":"
+      "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":3}";
 
   const base::Value* http_server_properties =
       pref_service_.GetUserPref(kTestHttpServerProperties);

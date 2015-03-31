@@ -86,6 +86,8 @@ NET_EXPORT AlternateProtocol AlternateProtocolFromString(
 NET_EXPORT_PRIVATE AlternateProtocol AlternateProtocolFromNextProto(
     NextProto next_proto);
 
+// (protocol, host, port) triple as defined in
+// https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html
 struct NET_EXPORT AlternativeService {
   AlternativeService()
       : protocol(UNINITIALIZED_ALTERNATE_PROTOCOL), host(), port(0) {}
@@ -118,30 +120,43 @@ struct NET_EXPORT AlternativeService {
     return port < other.port;
   }
 
+  std::string ToString() const;
+
   AlternateProtocol protocol;
   std::string host;
   uint16 port;
 };
 
-struct NET_EXPORT AlternateProtocolInfo {
-  AlternateProtocolInfo()
-      : port(0), protocol(UNINITIALIZED_ALTERNATE_PROTOCOL), probability(0) {}
+struct NET_EXPORT AlternativeServiceInfo {
+  AlternativeServiceInfo() : alternative_service(), probability(0.0) {}
 
-  AlternateProtocolInfo(uint16 port,
-                        AlternateProtocol protocol,
-                        double probability)
-      : port(port), protocol(protocol), probability(probability) {}
+  AlternativeServiceInfo(const AlternativeService& alternative_service,
+                         double probability)
+      : alternative_service(alternative_service), probability(probability) {}
 
-  bool Equals(const AlternateProtocolInfo& other) const {
-    return port == other.port &&
-        protocol == other.protocol &&
-        probability == other.probability;
+  AlternativeServiceInfo(AlternateProtocol protocol,
+                         const std::string& host,
+                         uint16 port,
+                         double probability)
+      : alternative_service(protocol, host, port), probability(probability) {}
+
+  AlternativeServiceInfo(
+      const AlternativeServiceInfo& alternative_service_info) = default;
+  AlternativeServiceInfo& operator=(
+      const AlternativeServiceInfo& alternative_service_info) = default;
+
+  bool operator==(const AlternativeServiceInfo& other) const {
+    return alternative_service == other.alternative_service &&
+           probability == other.probability;
+  }
+
+  bool operator!=(const AlternativeServiceInfo& other) const {
+    return !this->operator==(other);
   }
 
   std::string ToString() const;
 
-  uint16 port;
-  AlternateProtocol protocol;
+  AlternativeService alternative_service;
   double probability;
 };
 
@@ -166,8 +181,8 @@ struct NET_EXPORT ServerNetworkStats {
   QuicBandwidth bandwidth_estimate;
 };
 
-typedef base::MRUCache<
-    HostPortPair, AlternateProtocolInfo> AlternateProtocolMap;
+typedef base::MRUCache<HostPortPair, AlternativeServiceInfo>
+    AlternativeServiceMap;
 typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
 typedef base::MRUCache<HostPortPair, ServerNetworkStats> ServerNetworkStatsMap;
 
@@ -176,7 +191,7 @@ extern const char kAlternateProtocolHeader[];
 // The interface for setting/retrieving the HTTP server properties.
 // Currently, this class manages servers':
 // * SPDY support (based on NPN results)
-// * Alternate-Protocol support
+// * alternative service support
 // * Spdy Settings (like CWND ID field)
 class NET_EXPORT HttpServerProperties {
  public:
@@ -247,8 +262,8 @@ class NET_EXPORT HttpServerProperties {
   // Clears the alternative service for |origin|.
   virtual void ClearAlternativeService(const HostPortPair& origin) = 0;
 
-  // Returns all Alternate-Protocol mappings.
-  virtual const AlternateProtocolMap& alternate_protocol_map() const = 0;
+  // Returns all alternative service mappings.
+  virtual const AlternativeServiceMap& alternative_service_map() const = 0;
 
   // Sets the threshold to be used when evaluating alternative service
   // advertisments. Only advertisements with a probability greater than or equal

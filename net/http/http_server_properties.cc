@@ -100,9 +100,14 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
   return UNINITIALIZED_ALTERNATE_PROTOCOL;
 }
 
-std::string AlternateProtocolInfo::ToString() const {
-  return base::StringPrintf("%d:%s p=%f", port,
-                            AlternateProtocolToString(protocol), probability);
+std::string AlternativeService::ToString() const {
+  return base::StringPrintf("(%s, %s, %d)", AlternateProtocolToString(protocol),
+                            host.c_str(), port);
+}
+
+std::string AlternativeServiceInfo::ToString() const {
+  return base::StringPrintf("%s, p=%f", alternative_service.ToString().c_str(),
+                            probability);
 }
 
 // static
