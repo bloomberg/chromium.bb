@@ -141,3 +141,15 @@ grit("resources") {
     "blink_resources_200_percent.pak",
   ]
 }
+
+# GYP version: WebKit/public/blink_resources.gyp:blink_image_resources
+grit("image_resources") {
+  output_dir = "$root_gen_dir/blink/public/resources"
+  use_qualified_include = true
+  source = "blink_image_resources.grd"
+  outputs = [
+    "grit/blink_image_resources.h",
+    "blink_image_resources_100_percent.pak",
+    "blink_image_resources_200_percent.pak",
+  ]
+}
