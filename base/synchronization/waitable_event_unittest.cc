@@ -73,29 +73,27 @@ TEST(WaitableEventTest, WaitManyShortcut) {
 
 class WaitableEventSignaler : public PlatformThread::Delegate {
  public:
-  WaitableEventSignaler(double seconds, WaitableEvent* ev)
-      : seconds_(seconds),
-        ev_(ev) {
+  WaitableEventSignaler(TimeDelta delay, WaitableEvent* event)
+      : delay_(delay),
+        event_(event) {
   }
 
   void ThreadMain() override {
-    PlatformThread::Sleep(TimeDelta::FromSecondsD(seconds_));
-    ev_->Signal();
+    PlatformThread::Sleep(delay_);
+    event_->Signal();
   }
 
  private:
-  const double seconds_;
-  WaitableEvent *const ev_;
+  const TimeDelta delay_;
+  WaitableEvent* event_;
 };
 
+// Tests that a WaitableEvent can be safely deleted when |Wait| is done without
+// additional synchronization.
 TEST(WaitableEventTest, WaitAndDelete) {
-  // This test tests that if a WaitableEvent can be safely deleted
-  // when |Wait| is done without additional synchrnization.
-  // If this test crashes, it is a bug.
-
   WaitableEvent* ev = new WaitableEvent(false, false);
 
-  WaitableEventSignaler signaler(0.01, ev);
+  WaitableEventSignaler signaler(TimeDelta::FromMilliseconds(10), ev);
   PlatformThreadHandle thread;
   PlatformThread::Create(0, &signaler, &thread);
 
@@ -105,16 +103,14 @@ TEST(WaitableEventTest, WaitAndDelete) {
   PlatformThread::Join(thread);
 }
 
+// Tests that a WaitableEvent can be safely deleted when |WaitMany| is done
+// without additional synchronization.
 TEST(WaitableEventTest, WaitMany) {
-  // This test tests that if a WaitableEvent can be safely deleted
-  // when |WaitMany| is done without additional synchrnization.
-  // If this test crashes, it is a bug.
-
   WaitableEvent* ev[5];
   for (unsigned i = 0; i < 5; ++i)
     ev[i] = new WaitableEvent(false, false);
 
-  WaitableEventSignaler signaler(0.01, ev[2]);
+  WaitableEventSignaler signaler(TimeDelta::FromMilliseconds(10), ev[2]);
   PlatformThreadHandle thread;
   PlatformThread::Create(0, &signaler, &thread);
 
@@ -125,6 +121,30 @@ TEST(WaitableEventTest, WaitMany) {
 
   PlatformThread::Join(thread);
   EXPECT_EQ(2u, index);
+}
+
+// Tests that using TimeDelta::Max() on TimedWait() is not the same as passing
+// a timeout of 0. (crbug.com/465948)
+#if defined(OS_POSIX)
+// crbug.com/465948 not fixed yet.
+#define MAYBE_TimedWait DISABLED_TimedWait
+#else
+#define MAYBE_TimedWait TimedWait
+#endif
+TEST(WaitableEventTest, MAYBE_TimedWait) {
+  WaitableEvent* ev = new WaitableEvent(false, false);
+
+  TimeDelta thread_delay = TimeDelta::FromMilliseconds(10);
+  WaitableEventSignaler signaler(thread_delay, ev);
+  PlatformThreadHandle thread;
+  TimeTicks start = TimeTicks::Now();
+  PlatformThread::Create(0, &signaler, &thread);
+
+  ev->TimedWait(TimeDelta::Max());
+  EXPECT_GE(TimeTicks::Now() - start, thread_delay);
+  delete ev;
+
+  PlatformThread::Join(thread);
 }
 
 }  // namespace base
