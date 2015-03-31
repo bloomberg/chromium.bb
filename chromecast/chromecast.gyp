@@ -45,6 +45,8 @@
         '../base/base.gyp:base',
       ],
       'sources': [
+        'base/cast_paths.cc',
+        'base/cast_paths.h',
         'base/metrics/cast_histograms.h',
         'base/metrics/cast_metrics_helper.cc',
         'base/metrics/cast_metrics_helper.h',
@@ -247,8 +249,6 @@
         'browser/url_request_context_factory.h',
         'common/cast_content_client.cc',
         'common/cast_content_client.h',
-        'common/cast_paths.cc',
-        'common/cast_paths.h',
         'common/cast_resource_delegate.cc',
         'common/cast_resource_delegate.h',
         'common/chromecast_switches.cc',

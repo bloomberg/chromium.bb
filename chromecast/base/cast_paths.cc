@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/common/cast_paths.h"
+#include "chromecast/base/cast_paths.h"
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"

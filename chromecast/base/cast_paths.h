@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_COMMON_CAST_PATHS_H_
-#define CHROMECAST_COMMON_CAST_PATHS_H_
+#ifndef CHROMECAST_BASE_CAST_PATHS_H_
+#define CHROMECAST_BASE_CAST_PATHS_H_
 
 #include "build/build_config.h"
 
@@ -31,4 +31,4 @@ void RegisterPathProvider();
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_COMMON_CAST_PATHS_H_
+#endif  // CHROMECAST_BASE_CAST_PATHS_H_

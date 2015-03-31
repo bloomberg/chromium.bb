@@ -14,7 +14,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/pref_store.h"
-#include "chromecast/common/cast_paths.h"
+#include "chromecast/base/cast_paths.h"
 #include "chromecast/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
