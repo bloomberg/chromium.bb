@@ -66,7 +66,7 @@ private:
     // so we can't support generated content.
     virtual bool canHaveGeneratedChildren() const override final { return false; }
     virtual bool canHaveChildren() const override final { return true; }
-    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override final;
+    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override final;
 
     virtual bool isImage() const override final { return false; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;

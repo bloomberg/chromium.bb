@@ -13,7 +13,7 @@
 
 namespace blink {
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const LayoutStyle& styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode()) {
         return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart)
@@ -23,7 +23,7 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const La
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const LayoutStyle& styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode()) {
         return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd)
@@ -33,14 +33,14 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const L
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedTopBorder(const LayoutStyle& styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedTopBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode())
         return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
     return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const LayoutStyle& styleForCellFlow) const
+inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode()) {
         return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore)
@@ -139,7 +139,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (recorder.canUseCachedDrawing())
         return;
 
-    const LayoutStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
+    const ComputedStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
     CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
     CollapsedBorderValue rightVal = cachedCollapsedRightBorder(styleForCellFlow);
     CollapsedBorderValue topVal = cachedCollapsedTopBorder(styleForCellFlow);

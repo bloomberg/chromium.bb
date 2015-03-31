@@ -37,7 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -46,7 +46,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
@@ -198,14 +198,14 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (element() == candidate)
         return false;
     Element* parent = candidate.parentOrShadowHostElement();
-    const LayoutStyle* style = candidate.layoutStyle();
+    const ComputedStyle* style = candidate.computedStyle();
     if (!style)
         return false;
     if (!style->isSharable())
         return false;
     if (!parent)
         return false;
-    if (element().parentOrShadowHostElement()->layoutStyle() != parent->layoutStyle())
+    if (element().parentOrShadowHostElement()->computedStyle() != parent->computedStyle())
         return false;
     if (candidate.tagQName() != element().tagQName())
         return false;
@@ -308,7 +308,7 @@ bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-LayoutStyle* SharedStyleFinder::findSharedStyle()
+ComputedStyle* SharedStyleFinder::findSharedStyle()
 {
     INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleLookups);
 
@@ -344,7 +344,7 @@ LayoutStyle* SharedStyleFinder::findSharedStyle()
         return 0;
     }
 
-    return shareElement->mutableLayoutStyle();
+    return shareElement->mutableComputedStyle();
 }
 
 }

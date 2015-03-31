@@ -31,7 +31,7 @@
 #include "core/css/Rect.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Node.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "platform/Decimal.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontMetrics.h"
@@ -314,7 +314,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const String& str, UnitType type)
         m_value.string->ref();
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize, const LayoutStyle& style)
+CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize, const ComputedStyle& style)
     : CSSValue(PrimitiveClass)
 {
     init(lengthSize, style);
@@ -400,7 +400,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     }
 }
 
-void CSSPrimitiveValue::init(const LengthSize& lengthSize, const LayoutStyle& style)
+void CSSPrimitiveValue::init(const LengthSize& lengthSize, const ComputedStyle& style)
 {
     m_primitiveUnitType = CSS_PAIR;
     m_hasCachedCSSText = false;

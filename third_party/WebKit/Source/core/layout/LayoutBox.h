@@ -344,28 +344,28 @@ public:
     LayoutUnit marginLogicalLeft() const { return m_marginBoxOutsets.logicalLeft(style()->writingMode()); }
     LayoutUnit marginLogicalRight() const { return m_marginBoxOutsets.logicalRight(style()->writingMode()); }
 
-    virtual LayoutUnit marginBefore(const LayoutStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->writingMode()); }
-    virtual LayoutUnit marginAfter(const LayoutStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->writingMode()); }
-    virtual LayoutUnit marginStart(const LayoutStyle* overrideStyle = 0) const override final
+    virtual LayoutUnit marginBefore(const ComputedStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->writingMode()); }
+    virtual LayoutUnit marginAfter(const ComputedStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->writingMode()); }
+    virtual LayoutUnit marginStart(const ComputedStyle* overrideStyle = 0) const override final
     {
-        const LayoutStyle* styleToUse = overrideStyle ? overrideStyle : style();
+        const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         return m_marginBoxOutsets.start(styleToUse->writingMode(), styleToUse->direction());
     }
-    virtual LayoutUnit marginEnd(const LayoutStyle* overrideStyle = 0) const override final
+    virtual LayoutUnit marginEnd(const ComputedStyle* overrideStyle = 0) const override final
     {
-        const LayoutStyle* styleToUse = overrideStyle ? overrideStyle : style();
+        const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         return m_marginBoxOutsets.end(styleToUse->writingMode(), styleToUse->direction());
     }
-    void setMarginBefore(LayoutUnit value, const LayoutStyle* overrideStyle = 0) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
-    void setMarginAfter(LayoutUnit value, const LayoutStyle* overrideStyle = 0) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
-    void setMarginStart(LayoutUnit value, const LayoutStyle* overrideStyle = 0)
+    void setMarginBefore(LayoutUnit value, const ComputedStyle* overrideStyle = 0) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    void setMarginAfter(LayoutUnit value, const ComputedStyle* overrideStyle = 0) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    void setMarginStart(LayoutUnit value, const ComputedStyle* overrideStyle = 0)
     {
-        const LayoutStyle* styleToUse = overrideStyle ? overrideStyle : style();
+        const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         m_marginBoxOutsets.setStart(styleToUse->writingMode(), styleToUse->direction(), value);
     }
-    void setMarginEnd(LayoutUnit value, const LayoutStyle* overrideStyle = 0)
+    void setMarginEnd(LayoutUnit value, const ComputedStyle* overrideStyle = 0)
     {
-        const LayoutStyle* styleToUse = overrideStyle ? overrideStyle : style();
+        const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         m_marginBoxOutsets.setEnd(styleToUse->writingMode(), styleToUse->direction(), value);
     }
 
@@ -654,10 +654,10 @@ public:
     LayoutPoint topLeftLocation() const;
     LayoutSize topLeftLocationOffset() const { return toLayoutSize(topLeftLocation()); }
 
-    LayoutRect logicalVisualOverflowRectForPropagation(const LayoutStyle&) const;
-    LayoutRect visualOverflowRectForPropagation(const LayoutStyle&) const;
-    LayoutRect logicalLayoutOverflowRectForPropagation(const LayoutStyle&) const;
-    LayoutRect layoutOverflowRectForPropagation(const LayoutStyle&) const;
+    LayoutRect logicalVisualOverflowRectForPropagation(const ComputedStyle&) const;
+    LayoutRect visualOverflowRectForPropagation(const ComputedStyle&) const;
+    LayoutRect logicalLayoutOverflowRectForPropagation(const ComputedStyle&) const;
+    LayoutRect layoutOverflowRectForPropagation(const ComputedStyle&) const;
 
     bool hasOverflowModel() const { return m_overflow; }
     bool hasVisualOverflow() const { return m_overflow && !borderBoxRect().contains(m_overflow->visualOverflowRect()); }
@@ -716,8 +716,8 @@ public:
 protected:
     virtual void willBeDestroyed() override;
 
-    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void updateFromStyle() override;
 
     // Returns false if it could not cheaply compute the extent (e.g. fixed background), in which case the returned rect may be incorrect.
@@ -758,8 +758,8 @@ protected:
 private:
     void invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
-    void updateShapeOutsideInfoAfterStyleChange(const LayoutStyle&, const LayoutStyle* oldStyle);
-    void updateGridPositionAfterStyleChange(const LayoutStyle*);
+    void updateShapeOutsideInfoAfterStyleChange(const ComputedStyle&, const ComputedStyle* oldStyle);
+    void updateGridPositionAfterStyleChange(const ComputedStyle*);
 
     bool autoWidthShouldFitContent() const;
     LayoutUnit shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, LayoutUnit bordersPlusPadding) const;

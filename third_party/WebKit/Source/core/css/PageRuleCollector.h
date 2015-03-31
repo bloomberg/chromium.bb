@@ -32,14 +32,14 @@ class StyleRulePage;
 class PageRuleCollector {
     STACK_ALLOCATED();
 public:
-    PageRuleCollector(const LayoutStyle* rootElementStyle, int pageIndex);
+    PageRuleCollector(const ComputedStyle* rootElementStyle, int pageIndex);
 
     void matchPageRules(RuleSet* rules);
     MatchResult& matchedResult() { return m_result; }
 
 private:
-    bool isLeftPage(const LayoutStyle* rootElementStyle, int pageIndex) const;
-    bool isRightPage(const LayoutStyle* rootElementStyle, int pageIndex) const { return !isLeftPage(rootElementStyle, pageIndex); }
+    bool isLeftPage(const ComputedStyle* rootElementStyle, int pageIndex) const;
+    bool isRightPage(const ComputedStyle* rootElementStyle, int pageIndex) const { return !isLeftPage(rootElementStyle, pageIndex); }
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
 

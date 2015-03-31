@@ -54,7 +54,7 @@ using namespace HTMLNames;
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
     ASSERT(input->layoutObject());
-    const LayoutStyle& sliderStyle = input->layoutObject()->styleRef();
+    const ComputedStyle& sliderStyle = input->layoutObject()->styleRef();
 
     return sliderStyle.appearance() == SliderVerticalPart;
 }
@@ -81,7 +81,7 @@ void SliderThumbElement::setPositionFromValue()
         layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutObject* SliderThumbElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SliderThumbElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSliderThumb(this);
 }
@@ -283,7 +283,7 @@ const AtomicString& SliderThumbElement::shadowPseudoId() const
     if (!input || !input->layoutObject())
         return sliderThumbShadowPartId();
 
-    const LayoutStyle& sliderStyle = input->layoutObject()->styleRef();
+    const ComputedStyle& sliderStyle = input->layoutObject()->styleRef();
     switch (sliderStyle.appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
@@ -306,7 +306,7 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
 
 DEFINE_NODE_FACTORY(SliderContainerElement)
 
-LayoutObject* SliderContainerElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SliderContainerElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSliderContainer(this);
 }
@@ -319,7 +319,7 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     if (!shadowHost() || !shadowHost()->layoutObject())
         return sliderContainer;
 
-    const LayoutStyle& sliderStyle = shadowHost()->layoutObject()->styleRef();
+    const ComputedStyle& sliderStyle = shadowHost()->layoutObject()->styleRef();
     switch (sliderStyle.appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:

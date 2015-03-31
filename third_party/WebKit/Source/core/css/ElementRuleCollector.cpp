@@ -46,7 +46,7 @@
 namespace blink {
 
 ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
-    const SelectorFilter& filter, LayoutStyle* style)
+    const SelectorFilter& filter, ComputedStyle* style)
     : m_context(context)
     , m_selectorFilter(filter)
     , m_style(style)

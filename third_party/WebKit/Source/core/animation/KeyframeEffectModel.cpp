@@ -65,14 +65,14 @@ void KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
 }
 
-void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const LayoutStyle* baseStyle)
+void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const ComputedStyle* baseStyle)
 {
     ensureKeyframeGroups();
     snapshotCompositableProperties(element, baseStyle);
     ensureInterpolationEffect(&element, baseStyle);
 }
 
-void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, const LayoutStyle* baseStyle)
+void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, const ComputedStyle* baseStyle)
 {
     ensureKeyframeGroups();
     for (CSSPropertyID property : CompositorAnimations::CompositableProperties) {
@@ -176,7 +176,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 }
 
-void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element, const LayoutStyle* baseStyle) const
+void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element, const ComputedStyle* baseStyle) const
 {
     if (m_interpolationEffect)
         return;

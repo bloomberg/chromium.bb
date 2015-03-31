@@ -22,23 +22,23 @@
 #include "config.h"
 #include "core/layout/style/StyleMultiColData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleMultiColData::StyleMultiColData()
     : m_width(0)
-    , m_count(LayoutStyle::initialColumnCount())
+    , m_count(ComputedStyle::initialColumnCount())
     , m_gap(0)
     , m_visitedLinkColumnRuleColor(StyleColor::currentColor())
     , m_autoWidth(true)
     , m_autoCount(true)
     , m_normalGap(true)
-    , m_fill(LayoutStyle::initialColumnFill())
+    , m_fill(ComputedStyle::initialColumnFill())
     , m_columnSpan(false)
-    , m_breakBefore(LayoutStyle::initialPageBreak())
-    , m_breakAfter(LayoutStyle::initialPageBreak())
-    , m_breakInside(LayoutStyle::initialPageBreak())
+    , m_breakBefore(ComputedStyle::initialPageBreak())
+    , m_breakAfter(ComputedStyle::initialPageBreak())
+    , m_breakInside(ComputedStyle::initialPageBreak())
 {
 }
 

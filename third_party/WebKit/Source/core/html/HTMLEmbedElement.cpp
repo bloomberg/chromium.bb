@@ -149,7 +149,7 @@ void HTMLEmbedElement::updateWidgetInternal()
     requestObject(m_url, m_serviceType, paramNames, paramValues);
 }
 
-bool HTMLEmbedElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (isImageType())
         return HTMLPlugInElement::layoutObjectIsNeeded(style);

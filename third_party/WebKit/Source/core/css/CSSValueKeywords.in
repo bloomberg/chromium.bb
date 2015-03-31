@@ -14,7 +14,7 @@ initial
 // border-bottom-style
 // border-left-style
 // border-right-style
-// The order here must match the order of the EBorderStyle enum in LayoutStyleConstants.h.
+// The order here must match the order of the EBorderStyle enum in ComputedStyleConstants.h.
 none
 hidden
 inset
@@ -221,7 +221,7 @@ bottom
 -webkit-baseline-middle
 //
 // text-align
-// The order here must match the order of the ETextAlign enum in LayoutStyleConstants.h.
+// The order here must match the order of the ETextAlign enum in ComputedStyleConstants.h.
 //
 -webkit-auto
 left
@@ -246,7 +246,7 @@ outside
 inside
 //
 // list-style-type
-// The order here must match the order of the EListStyleType enum in LayoutStyleConstants.h.
+// The order here must match the order of the EListStyleType enum in ComputedStyleConstants.h.
 //
 disc
 circle
@@ -331,7 +331,7 @@ katakana-iroha
 //none
 //
 // display
-// The order here must match the order of the EDisplay enum in LayoutStyleConstants.h.
+// The order here must match the order of the EDisplay enum in ComputedStyleConstants.h.
 //
 inline
 block
@@ -358,7 +358,7 @@ inline-grid
 -webkit-inline-flex
 //
 // cursor
-// The order here must match the order of the ECursor enum in LayoutStyleConstants.h.
+// The order here must match the order of the ECursor enum in ComputedStyleConstants.h.
 //
 auto
 crosshair

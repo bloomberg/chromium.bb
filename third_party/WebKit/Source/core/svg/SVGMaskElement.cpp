@@ -150,7 +150,7 @@ void SVGMaskElement::childrenChanged(const ChildrenChange& change)
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutObject* SVGMaskElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGMaskElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGResourceMasker(this);
 }

@@ -906,12 +906,12 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
     }
 }
 
-PassRefPtr<LayoutStyle> SVGElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> SVGElement::customStyleForLayoutObject()
 {
     if (!correspondingElement())
         return document().ensureStyleResolver().styleForElement(this);
 
-    const LayoutStyle* style = 0;
+    const ComputedStyle* style = 0;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->layoutObject())
             style = renderer->style();
@@ -938,12 +938,12 @@ void SVGElement::setUseOverrideComputedStyle(bool value)
         svgRareData()->setUseOverrideComputedStyle(value);
 }
 
-const LayoutStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
+const ComputedStyle* SVGElement::ensureComputedStyle(PseudoId pseudoElementSpecifier)
 {
     if (!hasSVGRareData() || !svgRareData()->useOverrideComputedStyle())
-        return Element::computedStyle(pseudoElementSpecifier);
+        return Element::ensureComputedStyle(pseudoElementSpecifier);
 
-    LayoutStyle* parentStyle = 0;
+    ComputedStyle* parentStyle = 0;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->layoutObject())
             parentStyle = renderer->style();

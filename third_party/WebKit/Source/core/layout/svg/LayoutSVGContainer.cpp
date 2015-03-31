@@ -102,7 +102,7 @@ bool LayoutSVGContainer::selfWillPaint()
     return resources && resources->filter();
 }
 
-void LayoutSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGContainer::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutSVGModelObject::styleDidChange(diff, oldStyle);
 

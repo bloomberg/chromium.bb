@@ -8,14 +8,14 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
-void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutStyle& style, const Vector<LayoutRect>& focusRingRects)
+void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const ComputedStyle& style, const Vector<LayoutRect>& focusRingRects)
 {
     ASSERT(style.outlineStyleIsAuto());
     Vector<IntRect> focusRingIntRects;
@@ -26,7 +26,7 @@ void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutStyle
 
 void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& objectBounds, const LayoutRect& visualOverflowBounds)
 {
-    const LayoutStyle& styleToUse = m_layoutObject.styleRef();
+    const ComputedStyle& styleToUse = m_layoutObject.styleRef();
     if (!styleToUse.hasOutline())
         return;
 

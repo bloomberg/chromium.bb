@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 
 #include <gtest/gtest.h>
 
@@ -14,8 +14,8 @@ namespace {
 // Ensures RefPtr values are compared by their values, not by pointers.
 #define TEST_STYLE_REFPTR_VALUE_NO_DIFF(type, fieldName) \
     { \
-        RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create(); \
-        RefPtr<SVGLayoutStyle> svg2 = SVGLayoutStyle::create(); \
+        RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create(); \
+        RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create(); \
         RefPtr<type> value1 = type::create(); \
         RefPtr<type> value2 = value1->copy(); \
         svg1->set##fieldName(value1); \
@@ -28,14 +28,14 @@ namespace {
 // when we change some field to RefPtr in the future.
 #define TEST_STYLE_VALUE_NO_DIFF(type, fieldName) \
     { \
-        RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create(); \
-        RefPtr<SVGLayoutStyle> svg2 = SVGLayoutStyle::create(); \
-        svg1->set##fieldName(SVGLayoutStyle::initial##fieldName()); \
-        svg2->set##fieldName(SVGLayoutStyle::initial##fieldName()); \
+        RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create(); \
+        RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create(); \
+        svg1->set##fieldName(SVGComputedStyle::initial##fieldName()); \
+        svg2->set##fieldName(SVGComputedStyle::initial##fieldName()); \
         EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference()); \
     }
 
-TEST(SVGLayoutStyleTest, StrokeStyleShouldCompareValue)
+TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue)
 {
     TEST_STYLE_VALUE_NO_DIFF(float, StrokeOpacity);
     TEST_STYLE_VALUE_NO_DIFF(float, StrokeMiterLimit);
@@ -44,22 +44,22 @@ TEST(SVGLayoutStyleTest, StrokeStyleShouldCompareValue)
     TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
 
     {
-        RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create();
-        RefPtr<SVGLayoutStyle> svg2 = SVGLayoutStyle::create();
-        svg1->setStrokePaint(SVGLayoutStyle::initialStrokePaintType(), SVGLayoutStyle::initialStrokePaintColor(), SVGLayoutStyle::initialStrokePaintUri(), true, false);
-        svg2->setStrokePaint(SVGLayoutStyle::initialStrokePaintType(), SVGLayoutStyle::initialStrokePaintColor(), SVGLayoutStyle::initialStrokePaintUri(), true, false);
+        RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create();
+        RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create();
+        svg1->setStrokePaint(SVGComputedStyle::initialStrokePaintType(), SVGComputedStyle::initialStrokePaintColor(), SVGComputedStyle::initialStrokePaintUri(), true, false);
+        svg2->setStrokePaint(SVGComputedStyle::initialStrokePaintType(), SVGComputedStyle::initialStrokePaintColor(), SVGComputedStyle::initialStrokePaintUri(), true, false);
         EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());
     }
     {
-        RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create();
-        RefPtr<SVGLayoutStyle> svg2 = SVGLayoutStyle::create();
-        svg1->setStrokePaint(SVGLayoutStyle::initialStrokePaintType(), SVGLayoutStyle::initialStrokePaintColor(), SVGLayoutStyle::initialStrokePaintUri(), false, true);
-        svg2->setStrokePaint(SVGLayoutStyle::initialStrokePaintType(), SVGLayoutStyle::initialStrokePaintColor(), SVGLayoutStyle::initialStrokePaintUri(), false, true);
+        RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create();
+        RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create();
+        svg1->setStrokePaint(SVGComputedStyle::initialStrokePaintType(), SVGComputedStyle::initialStrokePaintColor(), SVGComputedStyle::initialStrokePaintUri(), false, true);
+        svg2->setStrokePaint(SVGComputedStyle::initialStrokePaintType(), SVGComputedStyle::initialStrokePaintColor(), SVGComputedStyle::initialStrokePaintUri(), false, true);
         EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());
     }
 }
 
-TEST(SVGLayoutStyleTest, MiscStyleShouldCompareValue)
+TEST(SVGComputedStyleTest, MiscStyleShouldCompareValue)
 {
     TEST_STYLE_VALUE_NO_DIFF(Color, FloodColor);
     TEST_STYLE_VALUE_NO_DIFF(float, FloodOpacity);

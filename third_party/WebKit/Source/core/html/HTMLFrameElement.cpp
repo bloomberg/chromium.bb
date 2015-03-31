@@ -42,13 +42,13 @@ inline HTMLFrameElement::HTMLFrameElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLFrameElement)
 
-bool HTMLFrameElement::layoutObjectIsNeeded(const LayoutStyle&)
+bool HTMLFrameElement::layoutObjectIsNeeded(const ComputedStyle&)
 {
     // For compatibility, frames render even when display: none is set.
     return isURLAllowed();
 }
 
-LayoutObject* HTMLFrameElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* HTMLFrameElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutFrame(this);
 }

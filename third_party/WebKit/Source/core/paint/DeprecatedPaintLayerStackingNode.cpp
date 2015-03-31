@@ -275,7 +275,7 @@ void DeprecatedPaintLayerStackingNode::updateLayerListsIfNeeded()
     reflectionLayer->stackingNode()->updateNormalFlowList();
 }
 
-void DeprecatedPaintLayerStackingNode::updateStackingNodesAfterStyleChange(const LayoutStyle* oldStyle)
+void DeprecatedPaintLayerStackingNode::updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle)
 {
     bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;

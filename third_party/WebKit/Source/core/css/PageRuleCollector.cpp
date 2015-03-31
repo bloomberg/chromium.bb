@@ -40,7 +40,7 @@ static inline bool comparePageRules(const StyleRulePage* r1, const StyleRulePage
     return r1->selector()->specificity() < r2->selector()->specificity();
 }
 
-bool PageRuleCollector::isLeftPage(const LayoutStyle* rootElementStyle, int pageIndex) const
+bool PageRuleCollector::isLeftPage(const ComputedStyle* rootElementStyle, int pageIndex) const
 {
     bool isFirstPageLeft = false;
     ASSERT(rootElementStyle);
@@ -62,7 +62,7 @@ String PageRuleCollector::pageName(int /* pageIndex */) const
     return "";
 }
 
-PageRuleCollector::PageRuleCollector(const LayoutStyle* rootElementStyle, int pageIndex)
+PageRuleCollector::PageRuleCollector(const ComputedStyle* rootElementStyle, int pageIndex)
     : m_isLeftPage(isLeftPage(rootElementStyle, pageIndex))
     , m_isFirstPage(isFirstPage(pageIndex))
     , m_pageName(pageName(pageIndex)) { }

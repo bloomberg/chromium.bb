@@ -62,7 +62,7 @@ public:
     virtual const char* name() const override { return "LayoutRuby (inline)"; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || LayoutInline::isOfType(type); }
@@ -81,7 +81,7 @@ public:
     virtual const char* name() const override { return "LayoutRuby (block)"; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || LayoutBlockFlow::isOfType(type); }

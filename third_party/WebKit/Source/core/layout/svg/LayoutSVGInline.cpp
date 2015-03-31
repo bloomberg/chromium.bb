@@ -31,7 +31,7 @@
 
 namespace blink {
 
-bool LayoutSVGInline::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutSVGInline::isChildAllowed(LayoutObject* child, const ComputedStyle& style) const
 {
     if (child->isText())
         return SVGLayoutSupport::isLayoutableTextNode(child);
@@ -117,7 +117,7 @@ void LayoutSVGInline::willBeDestroyed()
     LayoutInline::willBeDestroyed();
 }
 
-void LayoutSVGInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGInline::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();

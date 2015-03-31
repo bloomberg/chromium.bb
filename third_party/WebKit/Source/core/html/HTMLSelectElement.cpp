@@ -36,7 +36,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/GestureEvent.h"
@@ -378,7 +378,7 @@ bool HTMLSelectElement::canSelectAll() const
     return !usesMenuList();
 }
 
-LayoutObject* HTMLSelectElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* HTMLSelectElement::createLayoutObject(const ComputedStyle&)
 {
     if (usesMenuList())
         return new LayoutMenuList(this);

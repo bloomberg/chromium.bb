@@ -76,8 +76,8 @@ public:
     LayoutObject* rendererOwningScrollbar() const;
 
 protected:
-    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
 private:

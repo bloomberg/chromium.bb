@@ -55,7 +55,7 @@ private:
 
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
     void notifyParentOfPathChange(ContainerNode*);
 
 };

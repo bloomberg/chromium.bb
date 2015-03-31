@@ -101,7 +101,7 @@ LayoutThemeDefault::~LayoutThemeDefault()
 {
 }
 
-bool LayoutThemeDefault::supportsFocusRing(const LayoutStyle& style) const
+bool LayoutThemeDefault::supportsFocusRing(const ComputedStyle& style) const
 {
     if (useMockTheme()) {
         // Don't use focus rings for buttons when mocking controls.
@@ -216,7 +216,7 @@ int LayoutThemeDefault::sliderTickOffsetFromTrackCenter() const
     return -16;
 }
 
-void LayoutThemeDefault::adjustSliderThumbSize(LayoutStyle& style, Element* element) const
+void LayoutThemeDefault::adjustSliderThumbSize(ComputedStyle& style, Element* element) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartSliderThumb);
 
@@ -273,7 +273,7 @@ bool LayoutThemeDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, cons
     return false;
 }
 
-void LayoutThemeDefault::setCheckboxSize(LayoutStyle& style) const
+void LayoutThemeDefault::setCheckboxSize(ComputedStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -296,7 +296,7 @@ bool LayoutThemeDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const I
     return false;
 }
 
-void LayoutThemeDefault::setRadioSize(LayoutStyle& style) const
+void LayoutThemeDefault::setRadioSize(ComputedStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -473,7 +473,7 @@ bool LayoutThemeDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, c
     return false;
 }
 
-void LayoutThemeDefault::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustInnerSpinButtonStyle(ComputedStyle& style, Element*) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
@@ -518,7 +518,7 @@ bool LayoutThemeDefault::shouldOpenPickerWithF4Key() const
     return true;
 }
 
-bool LayoutThemeDefault::shouldUseFallbackTheme(const LayoutStyle& style) const
+bool LayoutThemeDefault::shouldUseFallbackTheme(const ComputedStyle& style) const
 {
     if (useMockTheme()) {
         // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.
@@ -529,7 +529,7 @@ bool LayoutThemeDefault::shouldUseFallbackTheme(const LayoutStyle& style) const
     return LayoutTheme::shouldUseFallbackTheme(style);
 }
 
-bool LayoutThemeDefault::supportsHover(const LayoutStyle& style) const
+bool LayoutThemeDefault::supportsHover(const ComputedStyle& style) const
 {
     return true;
 }
@@ -555,7 +555,7 @@ void LayoutThemeDefault::systemFont(CSSValueID systemFontID, FontStyle& fontStyl
     LayoutThemeFontProvider::systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
 }
 
-int LayoutThemeDefault::minimumMenuListSize(const LayoutStyle& style) const
+int LayoutThemeDefault::minimumMenuListSize(const ComputedStyle& style) const
 {
     return 0;
 }
@@ -572,11 +572,11 @@ IntRect center(const IntRect& original, int width, int height)
     return IntRect(x, y, width, height);
 }
 
-void LayoutThemeDefault::adjustButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustButtonStyle(ComputedStyle& style, Element*) const
 {
     if (style.appearance() == PushButtonPart) {
         // Ignore line-height.
-        style.setLineHeight(LayoutStyle::initialLineHeight());
+        style.setLineHeight(ComputedStyle::initialLineHeight());
     }
 }
 
@@ -585,10 +585,10 @@ bool LayoutThemeDefault::paintTextArea(LayoutObject* o, const PaintInfo& i, cons
     return paintTextField(o, i, r);
 }
 
-void LayoutThemeDefault::adjustSearchFieldStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldStyle(ComputedStyle& style, Element*) const
 {
     // Ignore line-height.
-    style.setLineHeight(LayoutStyle::initialLineHeight());
+    style.setLineHeight(ComputedStyle::initialLineHeight());
 }
 
 bool LayoutThemeDefault::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
@@ -596,7 +596,7 @@ bool LayoutThemeDefault::paintSearchField(LayoutObject* o, const PaintInfo& i, c
     return paintTextField(o, i, r);
 }
 
-void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(ComputedStyle& style, Element*) const
 {
     // Scale the button size based on the font size
     float fontScale = style.fontSize() / defaultControlFontPixelSize;
@@ -645,14 +645,14 @@ bool LayoutThemeDefault::paintSearchFieldCancelButton(LayoutObject* cancelButton
     return false;
 }
 
-void LayoutThemeDefault::adjustSearchFieldDecorationStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldDecorationStyle(ComputedStyle& style, Element*) const
 {
     IntSize emptySize(1, 11);
     style.setWidth(Length(emptySize.width(), Fixed));
     style.setHeight(Length(emptySize.height(), Fixed));
 }
 
-void LayoutThemeDefault::adjustSearchFieldResultsDecorationStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldResultsDecorationStyle(ComputedStyle& style, Element*) const
 {
     // Scale the decoration size based on the font size
     float fontScale = style.fontSize() / defaultControlFontPixelSize;
@@ -749,33 +749,33 @@ bool LayoutThemeDefault::paintMediaFullscreenButton(LayoutObject* object, const 
     return LayoutMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
-void LayoutThemeDefault::adjustMenuListStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustMenuListStyle(ComputedStyle& style, Element*) const
 {
     // Height is locked to auto on all browsers.
-    style.setLineHeight(LayoutStyle::initialLineHeight());
+    style.setLineHeight(ComputedStyle::initialLineHeight());
 }
 
-void LayoutThemeDefault::adjustMenuListButtonStyle(LayoutStyle& style, Element* e) const
+void LayoutThemeDefault::adjustMenuListButtonStyle(ComputedStyle& style, Element* e) const
 {
     adjustMenuListStyle(style, e);
 }
 
-int LayoutThemeDefault::popupInternalPaddingLeft(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingLeft(const ComputedStyle& style) const
 {
     return menuListInternalPadding(style, LeftPadding);
 }
 
-int LayoutThemeDefault::popupInternalPaddingRight(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingRight(const ComputedStyle& style) const
 {
     return menuListInternalPadding(style, RightPadding);
 }
 
-int LayoutThemeDefault::popupInternalPaddingTop(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingTop(const ComputedStyle& style) const
 {
     return menuListInternalPadding(style, TopPadding);
 }
 
-int LayoutThemeDefault::popupInternalPaddingBottom(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingBottom(const ComputedStyle& style) const
 {
     return menuListInternalPadding(style, BottomPadding);
 }
@@ -791,7 +791,7 @@ int LayoutThemeDefault::menuListArrowPadding() const
     return ScrollbarTheme::theme()->scrollbarThickness();
 }
 
-int LayoutThemeDefault::menuListInternalPadding(const LayoutStyle& style, int paddingType) const
+int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int paddingType) const
 {
     // This internal padding is in addition to the user-supplied padding.
     // Matches the FF behavior.

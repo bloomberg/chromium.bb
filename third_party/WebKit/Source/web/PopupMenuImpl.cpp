@@ -8,7 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHRElement.h"
@@ -103,7 +103,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     }
     PagePopupClient::addString("],\n", data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
-    const LayoutStyle* ownerStyle = ownerElement().layoutStyle();
+    const ComputedStyle* ownerStyle = ownerElement().computedStyle();
     Color backgroundColor = ownerStyle->visitedDependentColor(CSSPropertyBackgroundColor);
 #if OS(LINUX)
     // On other platforms, the <option> background color is the same as the
@@ -154,7 +154,7 @@ const char* fontWeightToString(FontWeight weight)
 
 void PopupMenuImpl::addElementStyle(HTMLElement& element, SharedBuffer* data)
 {
-    const LayoutStyle* style = m_client->layoutStyleForItem(element);
+    const ComputedStyle* style = m_client->computedStyleForItem(element);
     ASSERT(style);
     PagePopupClient::addString("style: {\n", data);
     addProperty("color", style->visitedDependentColor(CSSPropertyColor).serialized(), data);

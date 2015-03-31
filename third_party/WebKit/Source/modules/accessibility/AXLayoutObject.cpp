@@ -814,7 +814,7 @@ String AXLayoutObject::text() const
         if (!m_layoutObject)
             return String();
 
-        const LayoutStyle* style = m_layoutObject->style();
+        const ComputedStyle* style = m_layoutObject->style();
         if (!style)
             return String();
 

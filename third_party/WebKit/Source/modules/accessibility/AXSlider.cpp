@@ -63,7 +63,7 @@ AccessibilityOrientation AXSlider::orientation() const
     if (!m_layoutObject)
         return AccessibilityOrientationHorizontal;
 
-    const LayoutStyle* style = m_layoutObject->style();
+    const ComputedStyle* style = m_layoutObject->style();
     if (!style)
         return AccessibilityOrientationHorizontal;
 

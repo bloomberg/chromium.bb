@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -81,10 +81,10 @@ void SVGPaintServer::prependTransform(const AffineTransform& transform)
         m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
 }
 
-static SVGPaintDescription requestPaint(const LayoutObject& object, const LayoutStyle& style, LayoutSVGResourceMode mode)
+static SVGPaintDescription requestPaint(const LayoutObject& object, const ComputedStyle& style, LayoutSVGResourceMode mode)
 {
     // If we have no style at all, ignore it.
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     // If we have no fill/stroke, return 0.
     if (mode == ApplyToFillMode) {
@@ -153,7 +153,7 @@ static SVGPaintDescription requestPaint(const LayoutObject& object, const Layout
     return SVGPaintDescription(uriResource);
 }
 
-SVGPaintServer SVGPaintServer::requestForLayoutObject(const LayoutObject& layoutObject, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
+SVGPaintServer SVGPaintServer::requestForLayoutObject(const LayoutObject& layoutObject, const ComputedStyle& style, LayoutSVGResourceMode resourceMode)
 {
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
@@ -170,7 +170,7 @@ SVGPaintServer SVGPaintServer::requestForLayoutObject(const LayoutObject& layout
     return invalid();
 }
 
-bool SVGPaintServer::existsForLayoutObject(const LayoutObject& layoutObject, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
+bool SVGPaintServer::existsForLayoutObject(const LayoutObject& layoutObject, const ComputedStyle& style, LayoutSVGResourceMode resourceMode)
 {
     return requestPaint(layoutObject, style, resourceMode).isValid;
 }
@@ -184,7 +184,7 @@ LayoutSVGResourcePaintServer::~LayoutSVGResourcePaintServer()
 {
 }
 
-SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(const LayoutObject& layoutObject, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
+SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(const LayoutObject& layoutObject, const ComputedStyle& style, LayoutSVGResourceMode resourceMode)
 {
     return requestPaint(layoutObject, style, resourceMode);
 }

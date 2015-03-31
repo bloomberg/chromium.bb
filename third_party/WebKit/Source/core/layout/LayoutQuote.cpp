@@ -60,7 +60,7 @@ void LayoutQuote::willBeRemovedFromTree()
     detachQuote();
 }
 
-void LayoutQuote::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutQuote::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutInline::styleDidChange(diff, oldStyle);
     updateText();

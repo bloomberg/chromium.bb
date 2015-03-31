@@ -22,14 +22,14 @@
 #include "config.h"
 #include "core/layout/style/StyleTransformData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleTransformData::StyleTransformData()
-    : m_operations(LayoutStyle::initialTransform())
-    , m_origin(LayoutStyle::initialTransformOrigin())
-    , m_motion(nullptr, LayoutStyle::initialMotionOffset(), LayoutStyle::initialMotionRotation(), LayoutStyle::initialMotionRotationType())
+    : m_operations(ComputedStyle::initialTransform())
+    , m_origin(ComputedStyle::initialTransformOrigin())
+    , m_motion(nullptr, ComputedStyle::initialMotionOffset(), ComputedStyle::initialMotionRotation(), ComputedStyle::initialMotionRotationType())
 {
 }
 

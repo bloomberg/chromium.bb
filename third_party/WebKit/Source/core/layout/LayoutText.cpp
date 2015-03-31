@@ -183,7 +183,7 @@ bool LayoutText::isWordBreak() const
     return false;
 }
 
-void LayoutText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutText::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     // There is no need to ever schedule paint invalidations from a style change of a text run, since
     // we already did this for the parent of the text run.
@@ -194,7 +194,7 @@ void LayoutText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyl
         m_knownToHaveNoOverflowAndNoFallbackFonts = false;
     }
 
-    const LayoutStyle& newStyle = styleRef();
+    const ComputedStyle& newStyle = styleRef();
     ETextTransform oldTransform = oldStyle ? oldStyle->textTransform() : TTNONE;
     ETextSecurity oldSecurity = oldStyle ? oldStyle->textSecurity() : TSNONE;
     if (oldTransform != newStyle.textTransform() || oldSecurity != newStyle.textSecurity())
@@ -664,7 +664,7 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
         *extraWidthToEndOfLine = (box->root().logicalWidth() + rootLeft) - (left + 1);
 
     LayoutBlock* cb = containingBlock();
-    const LayoutStyle& cbStyle = cb->styleRef();
+    const ComputedStyle& cbStyle = cb->styleRef();
 
     float leftEdge;
     float rightEdge;
@@ -723,7 +723,7 @@ ALWAYS_INLINE float LayoutText::widthFromCache(const Font& f, int start, int len
         bool isSpace;
         ASSERT(m_text);
         StringImpl& text = *m_text.impl();
-        const LayoutStyle& layoutStyle = styleRef();
+        const ComputedStyle& computedStyle = styleRef();
         for (int i = start; i < start + len; i++) {
             char c = text[i];
             // If glyph is not present in primary font then we cannot calculate width based on primary
@@ -737,11 +737,11 @@ ALWAYS_INLINE float LayoutText::widthFromCache(const Font& f, int start, int len
                     w += monospaceCharacterWidth;
                     isSpace = true;
                 } else if (c == characterTabulation) {
-                    if (layoutStyle.collapseWhiteSpace()) {
+                    if (computedStyle.collapseWhiteSpace()) {
                         w += monospaceCharacterWidth;
                         isSpace = true;
                     } else {
-                        w += f.tabWidth(layoutStyle.tabSize(), xPos + w);
+                        w += f.tabWidth(computedStyle.tabSize(), xPos + w);
                         isSpace = false;
                     }
                 } else {
@@ -895,7 +895,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth)
 
 static inline float hyphenWidth(LayoutText* renderer, const Font& font, TextDirection direction)
 {
-    const LayoutStyle& style = renderer->styleRef();
+    const ComputedStyle& style = renderer->styleRef();
     return font.width(constructTextRun(renderer, font, style.hyphenString().string(), style, direction));
 }
 
@@ -920,7 +920,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     m_hasBreakableEnd = false;
     m_hasEndWhiteSpace = false;
 
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     const Font& f = styleToUse.font(); // FIXME: This ignores first-line.
     float wordSpacing = styleToUse.wordSpacing();
     int len = textLength();
@@ -1351,7 +1351,7 @@ void LayoutText::addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintL
     // Text nodes aren't event targets, so don't descend any further.
 }
 
-void applyTextTransform(const LayoutStyle* style, String& text, UChar previousCharacter)
+void applyTextTransform(const ComputedStyle* style, String& text, UChar previousCharacter)
 {
     if (!style)
         return;

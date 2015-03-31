@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebFormControlElement.h"
 
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -165,7 +165,7 @@ int WebFormControlElement::selectionEnd() const
 
 WebString WebFormControlElement::directionForFormData() const
 {
-    if (const LayoutStyle* style = constUnwrap<HTMLFormControlElement>()->layoutStyle())
+    if (const ComputedStyle* style = constUnwrap<HTMLFormControlElement>()->computedStyle())
         return style->isLeftToRightDirection() ? WebString::fromUTF8("ltr") : WebString::fromUTF8("rtl");
     return WebString::fromUTF8("ltr");
 }

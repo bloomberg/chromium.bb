@@ -176,9 +176,9 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
         ASSERT(!recursionData.wholeSubtreeInvalid());
         element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
     } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
-        // Clone the LayoutStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
+        // Clone the ComputedStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
         if (LayoutObject* renderer = element.layoutObject()) {
-            renderer->setStyleInternal(LayoutStyle::clone(renderer->styleRef()));
+            renderer->setStyleInternal(ComputedStyle::clone(renderer->styleRef()));
         } else {
             TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element, PreventStyleSharingForParent);
             element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));

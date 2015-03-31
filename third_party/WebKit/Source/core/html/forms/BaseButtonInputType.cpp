@@ -64,7 +64,7 @@ bool BaseButtonInputType::appendFormData(FormDataList&, bool) const
     return false;
 }
 
-LayoutObject* BaseButtonInputType::createLayoutObject(const LayoutStyle&) const
+LayoutObject* BaseButtonInputType::createLayoutObject(const ComputedStyle&) const
 {
     return new LayoutButton(&element());
 }

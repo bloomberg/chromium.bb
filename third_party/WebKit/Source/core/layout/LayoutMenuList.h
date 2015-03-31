@@ -60,7 +60,7 @@ private:
     HTMLSelectElement* selectElement() const;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type); }
-    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject*) override;
@@ -74,7 +74,7 @@ private:
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     // PopupMenuClient methods
     virtual void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
@@ -98,7 +98,7 @@ private:
     virtual bool multiple() const override;
     virtual IntRect elementRectRelativeToViewport() const override;
     virtual Element& ownerElement() const override;
-    virtual const LayoutStyle* layoutStyleForItem(Element&) const override;
+    virtual const ComputedStyle* computedStyleForItem(Element&) const override;
 
     virtual bool hasLineIfEmpty() const override { return true; }
 
@@ -129,7 +129,7 @@ private:
 
     int m_lastActiveIndex;
 
-    RefPtr<LayoutStyle> m_optionStyle;
+    RefPtr<ComputedStyle> m_optionStyle;
 
     RefPtrWillBePersistent<PopupMenu> m_popup;
     bool m_popupIsVisible;

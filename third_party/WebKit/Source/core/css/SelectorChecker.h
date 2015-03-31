@@ -38,7 +38,7 @@ class CSSSelector;
 class ContainerNode;
 class Element;
 class LayoutScrollbar;
-class LayoutStyle;
+class ComputedStyle;
 
 class SelectorChecker {
     WTF_MAKE_NONCOPYABLE(SelectorChecker);
@@ -77,7 +77,7 @@ public:
         RawPtrWillBeMember<const ContainerNode> scope;
         VisitedMatchType visitedMatchType;
         PseudoId pseudoId;
-        LayoutStyle* elementStyle;
+        ComputedStyle* elementStyle;
         RawPtrWillBeMember<LayoutScrollbar> scrollbar;
         ScrollbarPart scrollbarPart;
         unsigned isSubSelector : 1;

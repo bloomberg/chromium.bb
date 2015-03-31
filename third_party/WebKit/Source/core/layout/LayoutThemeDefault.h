@@ -42,7 +42,7 @@ public:
 
     virtual Color systemColor(CSSValueID) const override;
 
-    virtual bool supportsFocusRing(const LayoutStyle&) const override;
+    virtual bool supportsFocusRing(const ComputedStyle&) const override;
 
     // List Box selection color
     virtual Color activeListBoxSelectionBackgroundColor() const;
@@ -57,15 +57,15 @@ public:
 
     virtual IntSize sliderTickSize() const override;
     virtual int sliderTickOffsetFromTrackCenter() const override;
-    virtual void adjustSliderThumbSize(LayoutStyle&, Element*) const override;
+    virtual void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
 
     static void setCaretBlinkInterval(double);
 
     virtual bool paintCheckbox(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual void setCheckboxSize(LayoutStyle&) const override;
+    virtual void setCheckboxSize(ComputedStyle&) const override;
 
     virtual bool paintRadio(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual void setRadioSize(LayoutStyle&) const override;
+    virtual void setRadioSize(ComputedStyle&) const override;
 
     virtual bool paintButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
@@ -74,7 +74,7 @@ public:
     virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustInnerSpinButtonStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const override;
     virtual bool paintInnerSpinButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual bool popsMenuBySpaceKey() const override final { return true; }
@@ -92,7 +92,7 @@ public:
 
     // A method asking if the theme's controls actually care about redrawing
     // when hovered.
-    virtual bool supportsHover(const LayoutStyle&) const override final;
+    virtual bool supportsHover(const ComputedStyle&) const override final;
 
     virtual Color platformFocusRingColor() const override;
 
@@ -101,21 +101,21 @@ public:
     // System fonts.
     virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const;
 
-    virtual int minimumMenuListSize(const LayoutStyle&) const override;
+    virtual int minimumMenuListSize(const ComputedStyle&) const override;
 
-    virtual void adjustButtonStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustButtonStyle(ComputedStyle&, Element*) const override;
 
     virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustSearchFieldStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
     virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustSearchFieldCancelButtonStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
     virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustSearchFieldDecorationStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
 
-    virtual void adjustSearchFieldResultsDecorationStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
     virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
     virtual bool paintMediaSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
@@ -140,17 +140,17 @@ public:
     // In short, we either go down the MenuList code path or the MenuListButton
     // codepath. We never go down both. And in both cases, they render the
     // entire menulist.
-    virtual void adjustMenuListStyle(LayoutStyle&, Element*) const override;
-    virtual void adjustMenuListButtonStyle(LayoutStyle&, Element*) const override;
+    virtual void adjustMenuListStyle(ComputedStyle&, Element*) const override;
+    virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
 
     virtual double animationRepeatIntervalForProgressBar() const override;
     virtual double animationDurationForProgressBar() const override;
 
     // These methods define the padding for the MenuList's inner block.
-    virtual int popupInternalPaddingLeft(const LayoutStyle&) const override;
-    virtual int popupInternalPaddingRight(const LayoutStyle&) const override;
-    virtual int popupInternalPaddingTop(const LayoutStyle&) const override;
-    virtual int popupInternalPaddingBottom(const LayoutStyle&) const override;
+    virtual int popupInternalPaddingLeft(const ComputedStyle&) const override;
+    virtual int popupInternalPaddingRight(const ComputedStyle&) const override;
+    virtual int popupInternalPaddingTop(const ComputedStyle&) const override;
+    virtual int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
     // Provide a way to pass the default font size from the Settings object
     // to the render theme. FIXME: http://b/1129186 A cleaner way would be
@@ -164,7 +164,7 @@ public:
 protected:
     LayoutThemeDefault();
     virtual ~LayoutThemeDefault();
-    virtual bool shouldUseFallbackTheme(const LayoutStyle&) const override;
+    virtual bool shouldUseFallbackTheme(const ComputedStyle&) const override;
     virtual int menuListArrowPadding() const;
 
     IntRect determinateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
@@ -184,7 +184,7 @@ protected:
 private:
     virtual bool shouldShowPlaceholderWhenFocused() const override;
 
-    int menuListInternalPadding(const LayoutStyle&, int paddingType) const;
+    int menuListInternalPadding(const ComputedStyle&, int paddingType) const;
     bool paintMediaButtonInternal(GraphicsContext*, const IntRect&, Image*);
     IntRect convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const;
 

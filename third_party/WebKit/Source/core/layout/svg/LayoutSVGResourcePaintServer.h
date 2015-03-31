@@ -36,7 +36,7 @@ class GraphicsContext;
 class GraphicsContextStateSaver;
 class LayoutObject;
 class LayoutSVGResourcePaintServer;
-class LayoutStyle;
+class ComputedStyle;
 
 class SVGPaintServer {
 public:
@@ -44,8 +44,8 @@ public:
     explicit SVGPaintServer(PassRefPtr<Gradient>);
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
-    static SVGPaintServer requestForLayoutObject(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
-    static bool existsForLayoutObject(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
+    static SVGPaintServer requestForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
+    static bool existsForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
 
     void apply(GraphicsContext&, LayoutSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 
@@ -82,7 +82,7 @@ public:
     virtual SVGPaintServer preparePaintServer(const LayoutObject&) = 0;
 
     // Helper utilities used in to access the underlying resources for DRT.
-    static SVGPaintDescription requestPaintDescription(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
+    static SVGPaintDescription requestPaintDescription(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
 };
 
 DEFINE_TYPE_CASTS(LayoutSVGResourcePaintServer, LayoutSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());

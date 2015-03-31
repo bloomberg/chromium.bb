@@ -101,7 +101,7 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-LayoutObject* SVGAElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGAElement::createLayoutObject(const ComputedStyle&)
 {
     if (parentNode() && parentNode()->isSVGElement() && toSVGElement(parentNode())->isTextContent())
         return new LayoutSVGInline(this);

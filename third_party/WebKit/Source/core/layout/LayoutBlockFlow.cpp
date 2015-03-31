@@ -775,7 +775,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
     return result;
 }
 
-static inline LayoutUnit calculateMinimumPageHeight(const LayoutStyle& style, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
+static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     // We may require a certain minimum number of lines per page in order to satisfy
     // orphans and widows, and that may affect the minimum page height.
@@ -1089,7 +1089,7 @@ MarginInfo::MarginInfo(LayoutBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
     , m_determinedMarginBeforeQuirk(false)
     , m_discardMargin(false)
 {
-    const LayoutStyle& blockStyle = blockFlow->styleRef();
+    const ComputedStyle& blockStyle = blockFlow->styleRef();
     ASSERT(blockFlow->isLayoutView() || blockFlow->parent());
     m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isLayoutFlowThread() && !blockFlow->isLayoutView();
 
@@ -1701,7 +1701,7 @@ void LayoutBlockFlow::setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg)
 bool LayoutBlockFlow::mustSeparateMarginBeforeForChild(const LayoutBox& child) const
 {
     ASSERT(!child.selfNeedsLayout());
-    const LayoutStyle& childStyle = child.styleRef();
+    const ComputedStyle& childStyle = child.styleRef();
     if (!child.isWritingModeRoot())
         return childStyle.marginBeforeCollapse() == MSEPARATE;
     if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
@@ -1714,7 +1714,7 @@ bool LayoutBlockFlow::mustSeparateMarginBeforeForChild(const LayoutBox& child) c
 bool LayoutBlockFlow::mustSeparateMarginAfterForChild(const LayoutBox& child) const
 {
     ASSERT(!child.selfNeedsLayout());
-    const LayoutStyle& childStyle = child.styleRef();
+    const ComputedStyle& childStyle = child.styleRef();
     if (!child.isWritingModeRoot())
         return childStyle.marginAfterCollapse() == MSEPARATE;
     if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
@@ -1931,9 +1931,9 @@ void LayoutBlockFlow::createFloatingObjects()
     m_floatingObjects = adoptPtr(new FloatingObjects(this, isHorizontalWritingMode()));
 }
 
-void LayoutBlockFlow::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutBlockFlow::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
-    const LayoutStyle* oldStyle = style();
+    const ComputedStyle* oldStyle = style();
     s_canPropagateFloatIntoSibling = oldStyle ? !isFloatingOrOutOfFlowPositioned() && !avoidsFloats() : false;
     if (oldStyle && parent() && diff.needsFullLayout() && oldStyle->position() != newStyle.position()
         && containsFloats() && !isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
@@ -1942,7 +1942,7 @@ void LayoutBlockFlow::styleWillChange(StyleDifference diff, const LayoutStyle& n
     LayoutBlock::styleWillChange(diff, newStyle);
 }
 
-void LayoutBlockFlow::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
 
@@ -3041,12 +3041,12 @@ RootInlineBox* LayoutBlockFlow::createRootInlineBox()
     return new RootInlineBox(*this);
 }
 
-bool LayoutBlockFlow::isPagedOverflow(const LayoutStyle& style)
+bool LayoutBlockFlow::isPagedOverflow(const ComputedStyle& style)
 {
     return style.isOverflowPaged() && node() != document().viewportDefiningElement();
 }
 
-LayoutBlockFlow::FlowThreadType LayoutBlockFlow::flowThreadType(const LayoutStyle& style)
+LayoutBlockFlow::FlowThreadType LayoutBlockFlow::flowThreadType(const ComputedStyle& style)
 {
     if (isPagedOverflow(style))
         return PagedFlowThread;
@@ -3069,7 +3069,7 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::createMultiColumnFlowThread(FlowTh
     }
 }
 
-void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const LayoutStyle* oldStyle)
+void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const ComputedStyle* oldStyle)
 {
     if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled())
         return;

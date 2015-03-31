@@ -146,8 +146,8 @@ public:
     void setSelectionRangeForBinding(int start, int end, ExceptionState&);
     void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState&);
 
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override final;
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override final;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual void detach(const AttachContext& = AttachContext()) override final;
     virtual void updateFocusAppearance(bool restorePreviousSelection) override final;
 
@@ -359,7 +359,7 @@ private:
     RadioButtonGroupScope* radioButtonGroupScope() const;
     void addToRadioButtonGroup();
     void removeFromRadioButtonGroup();
-    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
+    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 

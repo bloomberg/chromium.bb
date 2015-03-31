@@ -22,8 +22,8 @@
 
 #include "core/SVGNames.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/LayoutStyle.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
@@ -102,7 +102,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuil
         return nullptr;
 
     ASSERT(renderer->style());
-    const SVGLayoutStyle& svgStyle = renderer->style()->svgStyle();
+    const SVGComputedStyle& svgStyle = renderer->style()->svgStyle();
 
     Color color = svgStyle.floodColor();
     float opacity = svgStyle.floodOpacity();

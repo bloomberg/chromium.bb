@@ -35,7 +35,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURLHash.h"
@@ -79,7 +79,7 @@ class RegisteredEventListener;
 class LayoutBox;
 class LayoutBoxModelObject;
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 class SVGQualifiedName;
 class ShadowRoot;
 template <typename NodeType> class StaticNodeTypeList;
@@ -520,7 +520,7 @@ public:
     LayoutBoxModelObject* layoutBoxModelObject() const;
 
     struct AttachContext {
-        LayoutStyle* resolvedStyle;
+        ComputedStyle* resolvedStyle;
         bool performingReattach;
 
         AttachContext() : resolvedStyle(nullptr), performingReattach(false) { }
@@ -546,13 +546,13 @@ public:
     bool shouldCallRecalcStyle(StyleRecalcChange);
 
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
-    LayoutStyle* mutableLayoutStyle() const;
-    const LayoutStyle* layoutStyle() const;
-    const LayoutStyle* parentLayoutStyle() const;
+    ComputedStyle* mutableComputedStyle() const;
+    const ComputedStyle* computedStyle() const;
+    const ComputedStyle* parentComputedStyle() const;
 
-    const LayoutStyle& layoutStyleRef() const;
+    const ComputedStyle& computedStyleRef() const;
 
-    const LayoutStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
+    const ComputedStyle* ensureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualEnsureComputedStyle(pseudoElementSpecifier); }
 
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see ContainerNode.h for more notification methods)
@@ -807,9 +807,9 @@ private:
 
     void setStyleChange(StyleChangeType);
 
-    virtual LayoutStyle* nonRendererStyle() const { return nullptr; }
+    virtual ComputedStyle* nonLayoutObjectComputedStyle() const { return nullptr; }
 
-    virtual const LayoutStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
+    virtual const ComputedStyle* virtualEnsureComputedStyle(PseudoId = NOPSEUDO);
 
     void trackForDebugging();
 

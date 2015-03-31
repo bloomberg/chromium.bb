@@ -348,7 +348,7 @@ bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(LayoutObject* object
     return pointInClippingArea(object, localPoint);
 }
 
-DashArray SVGLayoutSupport::resolveSVGDashArray(const SVGDashArray& svgDashArray, const LayoutStyle& style, const SVGLengthContext& lengthContext)
+DashArray SVGLayoutSupport::resolveSVGDashArray(const SVGDashArray& svgDashArray, const ComputedStyle& style, const SVGLengthContext& lengthContext)
 {
     DashArray dashArray;
     for (const Length& dashLength : svgDashArray.vector())
@@ -356,12 +356,12 @@ DashArray SVGLayoutSupport::resolveSVGDashArray(const SVGDashArray& svgDashArray
     return dashArray;
 }
 
-void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const LayoutStyle& style, const LayoutObject& object)
+void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const ComputedStyle& style, const LayoutObject& object)
 {
     ASSERT(object.node());
     ASSERT(object.node()->isSVGElement());
 
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object.node()));
     context.setStrokeThickness(lengthContext.valueForLength(svgStyle.strokeWidth()));
@@ -373,12 +373,12 @@ void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const
     context.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 
-void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const LayoutStyle& style, const LayoutObject& object)
+void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const ComputedStyle& style, const LayoutObject& object)
 {
     ASSERT(object.node());
     ASSERT(object.node()->isSVGElement());
 
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object.node()));
     strokeData.setThickness(lengthContext.valueForLength(svgStyle.strokeWidth()));
@@ -390,7 +390,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
     strokeData.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 
-bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
+bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const ComputedStyle& style, LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
     ASSERT(paintInfo.context == stateSaver.context());
 
@@ -398,7 +398,7 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (paintInfo.isRenderingClipPathAsMaskImage()) {
         if (resourceMode == ApplyToStrokeMode)
             return false;
-        context.setFillColor(SVGLayoutStyle::initialFillPaintColor());
+        context.setFillColor(SVGComputedStyle::initialFillPaintColor());
         return true;
     }
 
@@ -409,7 +409,7 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (additionalPaintServerTransform && paintServer.isTransformDependent())
         paintServer.prependTransform(*additionalPaintServerTransform);
 
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
     float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
     paintServer.apply(context, resourceMode, paintAlpha, stateSaver);
 
@@ -428,9 +428,9 @@ bool SVGLayoutSupport::isLayoutableTextNode(const LayoutObject* object)
     return object->isSVGInlineText() && !toLayoutSVGInlineText(object)->hasEmptyText();
 }
 
-bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const LayoutStyle& style)
+bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const ComputedStyle& style)
 {
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     return style.hasIsolation() || style.opacity() < 1 || style.hasBlendMode()
         || svgStyle.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();

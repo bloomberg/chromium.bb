@@ -65,7 +65,7 @@ public:
     virtual bool multiple() const override { return false; }
     virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *m_ownerElement; }
-    virtual const LayoutStyle* layoutStyleForItem(Element& element) const override { return nullptr; }
+    virtual const ComputedStyle* computedStyleForItem(Element& element) const override { return nullptr; }
 
     void setListSize(size_t size) { m_listSize = size; }
     void setDisplayNoneIndex(unsigned index) { m_displayNoneIndexSet.insert(index); }

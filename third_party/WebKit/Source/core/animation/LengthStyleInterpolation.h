@@ -10,12 +10,12 @@
 
 namespace blink {
 
-class LayoutStyle;
+class ComputedStyle;
 class Length;
 
 class LengthStyleInterpolation : public StyleInterpolation {
 public:
-    typedef void (LayoutStyle::*LengthSetter)(const Length&);
+    typedef void (ComputedStyle::*LengthSetter)(const Length&);
     typedef void NonInterpolableType;
 
     static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)

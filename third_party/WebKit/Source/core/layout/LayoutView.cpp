@@ -129,7 +129,7 @@ LayoutUnit LayoutView::availableLogicalHeight(AvailableLogicalHeightType heightT
     return LayoutBlockFlow::availableLogicalHeight(heightType);
 }
 
-bool LayoutView::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutView::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isBox();
 }

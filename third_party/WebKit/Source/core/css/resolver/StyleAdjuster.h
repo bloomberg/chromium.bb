@@ -29,7 +29,7 @@ namespace blink {
 class AuthorStyleInfo;
 class Element;
 class HTMLElement;
-class LayoutStyle;
+class ComputedStyle;
 
 // Certain CSS Properties/Values do not apply to certain elements
 // and the web expects that we expose "adjusted" values when
@@ -41,14 +41,14 @@ public:
         : m_useQuirksModeStyles(useQuirksModeStyles)
     { }
 
-    void adjustLayoutStyle(LayoutStyle& styleToAdjust, const LayoutStyle& parentStyle, Element*, const AuthorStyleInfo&);
+    void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*, const AuthorStyleInfo&);
 
 private:
-    void adjustStyleForFirstLetter(LayoutStyle&);
-    void adjustStyleForDisplay(LayoutStyle& styleToAdjust, const LayoutStyle& parentStyle);
-    void adjustStyleForHTMLElement(LayoutStyle& styleToAdjust, const LayoutStyle& parentStyle, HTMLElement&);
-    void adjustOverflow(LayoutStyle& styleToAdjust);
-    void adjustStyleForAlignment(LayoutStyle& styleToAdjust, const LayoutStyle& parentStyle);
+    void adjustStyleForFirstLetter(ComputedStyle&);
+    void adjustStyleForDisplay(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle);
+    void adjustStyleForHTMLElement(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, HTMLElement&);
+    void adjustOverflow(ComputedStyle& styleToAdjust);
+    void adjustStyleForAlignment(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle);
 
     bool m_useQuirksModeStyles;
 };

@@ -44,7 +44,7 @@ static bool sidesHaveSameUnits(const AnimatableValue* sideA, const AnimatableVal
 }
 
 // This is only used by *-image-slice properties which cannot interpolate between numbers and percentages.
-// Numbers are internally represented by pixels on the LayoutStyle so we must manually type check both sides.
+// Numbers are internally represented by pixels on the ComputedStyle so we must manually type check both sides.
 bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
     const AnimatableLengthBoxAndBool* lengthBoxAndBool = toAnimatableLengthBoxAndBool(value);

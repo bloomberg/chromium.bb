@@ -7,22 +7,22 @@
 
 namespace blink {
 
-static void copyMarginProperties(LayoutStyle& placeholderStyle, const LayoutStyle& spannerStyle)
+static void copyMarginProperties(ComputedStyle& placeholderStyle, const ComputedStyle& spannerStyle)
 {
     // We really only need the block direction margins, but there are no setters for that in
-    // LayoutStyle. Just copy all margin sides. The inline ones don't matter anyway.
+    // ComputedStyle. Just copy all margin sides. The inline ones don't matter anyway.
     placeholderStyle.setMarginLeft(spannerStyle.marginLeft());
     placeholderStyle.setMarginRight(spannerStyle.marginRight());
     placeholderStyle.setMarginTop(spannerStyle.marginTop());
     placeholderStyle.setMarginBottom(spannerStyle.marginBottom());
 }
 
-LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const LayoutStyle& parentStyle, LayoutBox& rendererInFlowThread)
+LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const ComputedStyle& parentStyle, LayoutBox& rendererInFlowThread)
 {
     LayoutMultiColumnSpannerPlaceholder* newSpanner = new LayoutMultiColumnSpannerPlaceholder(&rendererInFlowThread);
     Document& document = rendererInFlowThread.document();
     newSpanner->setDocumentForAnonymous(&document);
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK);
     copyMarginProperties(*newStyle, rendererInFlowThread.styleRef());
     newSpanner->setStyle(newStyle);
     return newSpanner;
@@ -36,7 +36,7 @@ LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(LayoutB
 
 void LayoutMultiColumnSpannerPlaceholder::updateMarginProperties()
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::clone(styleRef());
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(styleRef());
     copyMarginProperties(*newStyle, m_rendererInFlowThread->styleRef());
     setStyle(newStyle);
 }

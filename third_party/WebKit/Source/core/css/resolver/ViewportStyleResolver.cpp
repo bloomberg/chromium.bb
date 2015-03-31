@@ -38,7 +38,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -147,7 +147,7 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const
         return primitiveValue->getFloatValue();
 
     if (primitiveValue->isFontRelativeLength())
-        return primitiveValue->getFloatValue() * m_document->layoutStyle()->fontDescription().computedSize();
+        return primitiveValue->getFloatValue() * m_document->computedStyle()->fontDescription().computedSize();
 
     if (primitiveValue->isPercentage()) {
         float percentValue = primitiveValue->getFloatValue() / 100.0f;
@@ -196,7 +196,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     if (primitiveValue->getValueID() == CSSValueInternalExtendToZoom)
         return Length(ExtendToZoom);
 
-    LayoutStyle* documentStyle = m_document->mutableLayoutStyle();
+    ComputedStyle* documentStyle = m_document->mutableComputedStyle();
 
     // If we have viewport units the conversion will mark the document style as having viewport units.
     bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();

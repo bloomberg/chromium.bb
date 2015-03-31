@@ -23,7 +23,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -84,7 +84,7 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     ASSERT(!isNull(m_offset));
 }
 
-void StringKeyframe::PropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const LayoutStyle* baseStyle) const
+void StringKeyframe::PropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle* baseStyle) const
 {
     if (!m_animatableValueCache && (baseStyle || !m_value->isInheritedValue()))
         m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
@@ -122,7 +122,7 @@ InterpolationRange setRange(CSSPropertyID id)
 } // namespace
 
 // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
-PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, const LayoutStyle* baseStyle) const
+PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end).value();

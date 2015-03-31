@@ -52,7 +52,7 @@ public:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode) const override;
 
 private:
-    virtual void updateAnonymousChildStyle(const LayoutObject& child, LayoutStyle& childStyle) const override;
+    virtual void updateAnonymousChildStyle(const LayoutObject& child, ComputedStyle& childStyle) const override;
 
     virtual bool hasLineIfEmpty() const override { return isHTMLInputElement(node()); }
 

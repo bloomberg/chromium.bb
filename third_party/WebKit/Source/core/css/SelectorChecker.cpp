@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -51,7 +51,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutScrollbar.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -625,8 +625,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 element.setStyleAffectedByEmpty();
                 if (context.elementStyle)
                     context.elementStyle->setEmptyState(result);
-                else if (element.layoutStyle() && (element.document().styleEngine().usesSiblingRules() || element.layoutStyle()->unique()))
-                    element.mutableLayoutStyle()->setEmptyState(result);
+                else if (element.computedStyle() && (element.document().styleEngine().usesSiblingRules() || element.computedStyle()->unique()))
+                    element.mutableComputedStyle()->setEmptyState(result);
             }
             return result;
         }
@@ -702,7 +702,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
             if (m_mode == ResolvingStyle) {
-                LayoutStyle* childStyle = context.elementStyle ? context.elementStyle : element.mutableLayoutStyle();
+                ComputedStyle* childStyle = context.elementStyle ? context.elementStyle : element.mutableComputedStyle();
                 if (childStyle)
                     childStyle->setUnique();
                 parent->setChildrenAffectedByForwardPositionalRules();

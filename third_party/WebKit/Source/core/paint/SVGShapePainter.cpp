@@ -61,7 +61,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
             LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
-                const SVGLayoutStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
+                const SVGComputedStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
 
                 bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES;
                 // We're munging GC paint attributes without saving first (and so does

@@ -7,11 +7,11 @@
 #include "public/web/WebDocument.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/page/Page.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -41,7 +41,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     HTMLElement* bodyElement = coreDoc->body();
     ASSERT(bodyElement);
 
-    const LayoutStyle& styleBeforeInsertion = bodyElement->layoutStyleRef();
+    const ComputedStyle& styleBeforeInsertion = bodyElement->computedStyleRef();
 
     // Inserted stylesheet not yet applied.
     ASSERT_EQ(Color(0, 0, 0), styleBeforeInsertion.visitedDependentColor(CSSPropertyColor));
@@ -49,7 +49,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     // Apply inserted stylesheet.
     coreDoc->updateRenderTreeIfNeeded();
 
-    const LayoutStyle& styleAfterInsertion = bodyElement->layoutStyleRef();
+    const ComputedStyle& styleAfterInsertion = bodyElement->computedStyleRef();
 
     // Inserted stylesheet applied.
     ASSERT_EQ(Color(0, 128, 0), styleAfterInsertion.visitedDependentColor(CSSPropertyColor));
@@ -71,13 +71,13 @@ TEST(WebDocumentTest, BeginExitTransition)
     Element* transitionElement = coreDoc->getElementById("foo");
     ASSERT(transitionElement);
 
-    const LayoutStyle* transitionStyle = transitionElement->layoutStyle();
+    const ComputedStyle* transitionStyle = transitionElement->computedStyle();
     ASSERT(transitionStyle);
 
     HTMLElement* bodyElement = coreDoc->body();
     ASSERT(bodyElement);
 
-    const LayoutStyle* bodyStyle = bodyElement->layoutStyle();
+    const ComputedStyle* bodyStyle = bodyElement->computedStyle();
     ASSERT(bodyStyle);
     // The transition_exit.css stylesheet should not have been applied at this point.
     ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
@@ -89,12 +89,12 @@ TEST(WebDocumentTest, BeginExitTransition)
     coreDoc->updateRenderTreeIfNeeded();
 
     // The element should now be hidden.
-    transitionStyle = transitionElement->layoutStyle();
+    transitionStyle = transitionElement->computedStyle();
     ASSERT_TRUE(transitionStyle);
     ASSERT_EQ(transitionStyle->opacity(), 0);
 
     // The stylesheet should now have been applied.
-    bodyStyle = bodyElement->layoutStyle();
+    bodyStyle = bodyElement->computedStyle();
     ASSERT(bodyStyle);
     ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
 }
@@ -116,13 +116,13 @@ TEST(WebDocumentTest, BeginExitTransitionToNativeApp)
     Element* transitionElement = coreDoc->getElementById("foo");
     ASSERT(transitionElement);
 
-    const LayoutStyle* transitionStyle = transitionElement->layoutStyle();
+    const ComputedStyle* transitionStyle = transitionElement->computedStyle();
     ASSERT(transitionStyle);
 
     HTMLElement* bodyElement = coreDoc->body();
     ASSERT(bodyElement);
 
-    const LayoutStyle* bodyStyle = bodyElement->layoutStyle();
+    const ComputedStyle* bodyStyle = bodyElement->computedStyle();
     ASSERT(bodyStyle);
     // The transition_exit.css stylesheet should not have been applied at this point.
     ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
@@ -134,12 +134,12 @@ TEST(WebDocumentTest, BeginExitTransitionToNativeApp)
     coreDoc->updateRenderTreeIfNeeded();
 
     // The element should not be hidden.
-    transitionStyle = transitionElement->layoutStyle();
+    transitionStyle = transitionElement->computedStyle();
     ASSERT_TRUE(transitionStyle);
     ASSERT_EQ(transitionStyle->opacity(), 1);
 
     // The stylesheet should now have been applied.
-    bodyStyle = bodyElement->layoutStyle();
+    bodyStyle = bodyElement->computedStyle();
     ASSERT(bodyStyle);
     ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
 }
@@ -159,7 +159,7 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     Element* transitionElement = coreDoc->getElementById("foo");
     ASSERT(transitionElement);
 
-    const LayoutStyle* transitionStyle = transitionElement->layoutStyle();
+    const ComputedStyle* transitionStyle = transitionElement->computedStyle();
     ASSERT(transitionStyle);
     EXPECT_EQ(transitionStyle->opacity(), 1);
 
@@ -167,7 +167,7 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     frame->document().hideTransitionElements("#foo");
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
     coreDoc->updateRenderTreeIfNeeded();
-    transitionStyle = transitionElement->layoutStyle();
+    transitionStyle = transitionElement->computedStyle();
     ASSERT_TRUE(transitionStyle);
     EXPECT_EQ(transitionStyle->opacity(), 0);
 
@@ -175,7 +175,7 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     frame->document().showTransitionElements("#foo");
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
     coreDoc->updateRenderTreeIfNeeded();
-    transitionStyle = transitionElement->layoutStyle();
+    transitionStyle = transitionElement->computedStyle();
     ASSERT_TRUE(transitionStyle);
     EXPECT_EQ(transitionStyle->opacity(), 1);
 }

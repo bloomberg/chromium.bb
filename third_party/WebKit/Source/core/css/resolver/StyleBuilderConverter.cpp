@@ -64,7 +64,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolv
 {
     if (value->isPrimitiveValue()) {
         ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
-        return LayoutStyle::initialBoxReflect();
+        return ComputedStyle::initialBoxReflect();
     }
 
     CSSReflectValue* reflectValue = toCSSReflectValue(value);
@@ -354,7 +354,7 @@ GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&, CSS
         return AutoFlowRowDense;
     default:
         ASSERT_NOT_REACHED();
-        return LayoutStyle::initialGridAutoFlow();
+        return ComputedStyle::initialGridAutoFlow();
     }
 }
 
@@ -591,7 +591,7 @@ Length StyleBuilderConverter::convertLineHeight(StyleResolverState& state, CSSVa
     }
 
     ASSERT(primitiveValue->getValueID() == CSSValueNormal);
-    return LayoutStyle::initialLineHeight();
+    return ComputedStyle::initialLineHeight();
 }
 
 float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state, CSSValue* value)
@@ -637,7 +637,7 @@ float StyleBuilderConverter::convertPerspective(StyleResolverState& state, CSSVa
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->getValueID() == CSSValueNone)
-        return LayoutStyle::initialPerspective();
+        return ComputedStyle::initialPerspective();
 
     // CSSPropertyWebkitPerspective accepts unitless numbers.
     if (primitiveValue->isNumber()) {
@@ -817,7 +817,7 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
 PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isValueList())
-        return SVGLayoutStyle::initialStrokeDashArray();
+        return SVGComputedStyle::initialStrokeDashArray();
 
     CSSValueList* dashes = toCSSValueList(value);
 

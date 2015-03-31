@@ -21,7 +21,7 @@
 #include "core/layout/svg/SVGResources.h"
 
 #include "core/SVGNames.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
@@ -204,7 +204,7 @@ static inline SVGResources& ensureResources(OwnPtr<SVGResources>& resources)
     return *resources.get();
 }
 
-PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const SVGLayoutStyle& style)
+PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object, const SVGComputedStyle& style)
 {
     ASSERT(object);
 

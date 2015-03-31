@@ -26,16 +26,16 @@
 #include "config.h"
 #include "core/layout/style/StyleFlexibleBoxData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleFlexibleBoxData::StyleFlexibleBoxData()
-    : m_flexGrow(LayoutStyle::initialFlexGrow())
-    , m_flexShrink(LayoutStyle::initialFlexShrink())
-    , m_flexBasis(LayoutStyle::initialFlexBasis())
-    , m_flexDirection(LayoutStyle::initialFlexDirection())
-    , m_flexWrap(LayoutStyle::initialFlexWrap())
+    : m_flexGrow(ComputedStyle::initialFlexGrow())
+    , m_flexShrink(ComputedStyle::initialFlexShrink())
+    , m_flexBasis(ComputedStyle::initialFlexBasis())
+    , m_flexDirection(ComputedStyle::initialFlexDirection())
+    , m_flexWrap(ComputedStyle::initialFlexWrap())
 {
 }
 

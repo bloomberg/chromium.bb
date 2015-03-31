@@ -22,16 +22,16 @@
 #include "config.h"
 #include "core/layout/style/StyleInheritedData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleInheritedData::StyleInheritedData()
-    : horizontal_border_spacing(LayoutStyle::initialHorizontalBorderSpacing())
-    , vertical_border_spacing(LayoutStyle::initialVerticalBorderSpacing())
-    , line_height(LayoutStyle::initialLineHeight())
-    , color(LayoutStyle::initialColor())
-    , visitedLinkColor(LayoutStyle::initialColor())
+    : horizontal_border_spacing(ComputedStyle::initialHorizontalBorderSpacing())
+    , vertical_border_spacing(ComputedStyle::initialVerticalBorderSpacing())
+    , line_height(ComputedStyle::initialLineHeight())
+    , color(ComputedStyle::initialColor())
+    , visitedLinkColor(ComputedStyle::initialColor())
     , textAutosizingMultiplier(1)
 {
 }

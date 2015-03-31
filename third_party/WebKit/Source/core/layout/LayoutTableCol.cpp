@@ -44,7 +44,7 @@ LayoutTableCol::LayoutTableCol(Element* element)
     updateFromElement();
 }
 
-void LayoutTableCol::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTableCol::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
@@ -96,7 +96,7 @@ void LayoutTableCol::willBeRemovedFromTree()
     table()->removeColumn(this);
 }
 
-bool LayoutTableCol::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutTableCol::isChildAllowed(LayoutObject* child, const ComputedStyle& style) const
 {
     // We cannot use isTableColumn here as style() may return 0.
     return child->isLayoutTableCol() && style.display() == TABLE_COLUMN;

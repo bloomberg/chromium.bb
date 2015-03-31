@@ -58,7 +58,7 @@ SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textRenderer, const TextRun&
 
 TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
 {
-    const LayoutStyle& style = text->styleRef();
+    const ComputedStyle& style = text->styleRef();
 
     TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.

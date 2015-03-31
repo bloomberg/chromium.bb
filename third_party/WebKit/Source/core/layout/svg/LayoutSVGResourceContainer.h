@@ -46,7 +46,7 @@ public:
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) = 0;
 
     virtual void layout() override;
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || LayoutSVGHiddenContainer::isOfType(type); }
 
     virtual LayoutSVGResourceType resourceType() const = 0;

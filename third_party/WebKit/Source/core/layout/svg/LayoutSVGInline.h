@@ -33,7 +33,7 @@ public:
     virtual DeprecatedPaintLayerType layerTypeRequired() const override final { return NoDeprecatedPaintLayer; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInline || LayoutInline::isOfType(type); }
 
-    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
     // Chapter 10.4 of the SVG Specification say that we should use the
     // object bounding box of the parent text element.
@@ -53,7 +53,7 @@ private:
     virtual InlineFlowBox* createInlineFlowBox() override final;
 
     virtual void willBeDestroyed() override final;
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
 
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override final;
     virtual void removeChild(LayoutObject*) override final;

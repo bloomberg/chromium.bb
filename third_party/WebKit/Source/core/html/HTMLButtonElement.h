@@ -46,7 +46,7 @@ private:
 
     virtual const AtomicString& formControlType() const override;
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     // HTMLFormControlElement always creates one, but buttons don't need it.
     virtual bool alwaysCreateClosedShadowRoot() const override { return false; }

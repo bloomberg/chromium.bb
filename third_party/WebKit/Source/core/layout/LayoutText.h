@@ -145,8 +145,8 @@ public:
 protected:
     virtual void willBeDestroyed() override;
 
-    virtual void styleWillChange(StyleDifference, const LayoutStyle&) override final { }
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const ComputedStyle&) override final { }
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     virtual void setTextInternal(PassRefPtr<StringImpl>);
     virtual UChar previousCharacter() const;
@@ -240,7 +240,7 @@ inline LayoutText* Text::layoutObject() const
     return toLayoutText(CharacterData::layoutObject());
 }
 
-void applyTextTransform(const LayoutStyle*, String&, UChar);
+void applyTextTransform(const ComputedStyle*, String&, UChar);
 
 } // namespace blink
 

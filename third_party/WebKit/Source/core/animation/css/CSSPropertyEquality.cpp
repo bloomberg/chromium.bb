@@ -7,7 +7,7 @@
 
 #include "core/animation/css/CSSAnimations.h"
 #include "core/layout/style/DataEquivalency.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/style/ShadowList.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ bool fillLayersEqual(const FillLayer& aLayers, const FillLayer& bLayers)
 
 }
 
-bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle& a, const LayoutStyle& b)
+bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyle& a, const ComputedStyle& b)
 {
     switch (prop) {
     case CSSPropertyBackgroundColor:
@@ -117,8 +117,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
     case CSSPropertyColor:
         return a.color() == b.color() && a.visitedLinkColor() == b.visitedLinkColor();
     case CSSPropertyFill: {
-        const SVGLayoutStyle& aSVG = a.svgStyle();
-        const SVGLayoutStyle& bSVG = b.svgStyle();
+        const SVGComputedStyle& aSVG = a.svgStyle();
+        const SVGComputedStyle& bSVG = b.svgStyle();
         return aSVG.fillPaintType() == bSVG.fillPaintType()
             && (aSVG.fillPaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.fillPaintColor() == bSVG.fillPaintColor())
             && aSVG.visitedLinkFillPaintType() == bSVG.visitedLinkFillPaintType()
@@ -215,8 +215,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
     case CSSPropertyStopOpacity:
         return a.stopOpacity() == b.stopOpacity();
     case CSSPropertyStroke: {
-        const SVGLayoutStyle& aSVG = a.svgStyle();
-        const SVGLayoutStyle& bSVG = b.svgStyle();
+        const SVGComputedStyle& aSVG = a.svgStyle();
+        const SVGComputedStyle& bSVG = b.svgStyle();
         return aSVG.strokePaintType() == bSVG.strokePaintType()
             && (aSVG.strokePaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.strokePaintColor() == bSVG.strokePaintColor())
             && aSVG.visitedLinkStrokePaintType() == bSVG.visitedLinkStrokePaintType()

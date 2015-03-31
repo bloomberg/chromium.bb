@@ -36,7 +36,7 @@ class LayoutSVGResourceMarker;
 class LayoutSVGResourceMasker;
 class LayoutSVGResourcePaintServer;
 class SVGElement;
-class SVGLayoutStyle;
+class SVGComputedStyle;
 
 // Holds a set of resources associated with a LayoutObject
 class SVGResources {
@@ -44,7 +44,7 @@ class SVGResources {
 public:
     SVGResources();
 
-    static PassOwnPtr<SVGResources> buildResources(const LayoutObject*, const SVGLayoutStyle&);
+    static PassOwnPtr<SVGResources> buildResources(const LayoutObject*, const SVGComputedStyle&);
     void layoutIfNeeded();
 
     static bool supportsMarkers(const SVGElement&);

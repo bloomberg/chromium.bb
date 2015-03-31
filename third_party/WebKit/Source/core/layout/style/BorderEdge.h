@@ -5,7 +5,7 @@
 #ifndef BorderEdge_h
 #define BorderEdge_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {

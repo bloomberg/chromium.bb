@@ -14,7 +14,7 @@ class LayoutPoint;
 class LayoutRect;
 class LayoutTableCell;
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 
 class TableCellPainter {
 public:
@@ -33,10 +33,10 @@ public:
     LayoutRect paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior);
 
 private:
-    CollapsedBorderValue cachedCollapsedLeftBorder(const LayoutStyle&) const;
-    CollapsedBorderValue cachedCollapsedRightBorder(const LayoutStyle&) const;
-    CollapsedBorderValue cachedCollapsedTopBorder(const LayoutStyle&) const;
-    CollapsedBorderValue cachedCollapsedBottomBorder(const LayoutStyle&) const;
+    CollapsedBorderValue cachedCollapsedLeftBorder(const ComputedStyle&) const;
+    CollapsedBorderValue cachedCollapsedRightBorder(const ComputedStyle&) const;
+    CollapsedBorderValue cachedCollapsedTopBorder(const ComputedStyle&) const;
+    CollapsedBorderValue cachedCollapsedBottomBorder(const ComputedStyle&) const;
 
     LayoutTableCell& m_layoutTableCell;
 };

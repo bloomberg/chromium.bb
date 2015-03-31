@@ -25,7 +25,7 @@
 #ifndef FillLayer_h
 #define FillLayer_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/StyleImage.h"
 #include "platform/Length.h"
 #include "platform/LengthSize.h"
@@ -196,7 +196,7 @@ public:
     static EMaskSourceType initialFillMaskSourceType(EFillLayerType) { return MaskAlpha; }
 
 private:
-    friend class LayoutStyle;
+    friend class ComputedStyle;
 
     void computeClipMax() const;
 

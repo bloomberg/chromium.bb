@@ -28,7 +28,7 @@
 #include "core/layout/LayoutImageResourceStyleImage.h"
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ PassOwnPtr<ContentData> ContentData::clone() const
     return result.release();
 }
 
-LayoutObject* ImageContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* ImageContentData::createLayoutObject(Document& doc, ComputedStyle& pseudoStyle) const
 {
     LayoutImage* image = LayoutImage::createAnonymous(&doc);
     image->setPseudoStyle(&pseudoStyle);
@@ -77,21 +77,21 @@ LayoutObject* ImageContentData::createLayoutObject(Document& doc, LayoutStyle& p
     return image;
 }
 
-LayoutObject* TextContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* TextContentData::createLayoutObject(Document& doc, ComputedStyle& pseudoStyle) const
 {
     LayoutObject* layoutObject = new LayoutTextFragment(&doc, m_text.impl());
     layoutObject->setPseudoStyle(&pseudoStyle);
     return layoutObject;
 }
 
-LayoutObject* CounterContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* CounterContentData::createLayoutObject(Document& doc, ComputedStyle& pseudoStyle) const
 {
     LayoutObject* layoutObject = new LayoutCounter(&doc, *m_counter);
     layoutObject->setPseudoStyle(&pseudoStyle);
     return layoutObject;
 }
 
-LayoutObject* QuoteContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* QuoteContentData::createLayoutObject(Document& doc, ComputedStyle& pseudoStyle) const
 {
     LayoutObject* layoutObject = new LayoutQuote(&doc, m_quote);
     layoutObject->setPseudoStyle(&pseudoStyle);

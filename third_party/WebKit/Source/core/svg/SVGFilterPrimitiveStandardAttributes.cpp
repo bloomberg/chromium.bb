@@ -118,12 +118,12 @@ void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* f
         filterEffect->setHasHeight(true);
 }
 
-LayoutObject* SVGFilterPrimitiveStandardAttributes::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGFilterPrimitiveStandardAttributes::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGResourceFilterPrimitive(this);
 }
 
-bool SVGFilterPrimitiveStandardAttributes::layoutObjectIsNeeded(const LayoutStyle& style)
+bool SVGFilterPrimitiveStandardAttributes::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (isSVGFilterElement(parentNode()))
         return SVGElement::layoutObjectIsNeeded(style);

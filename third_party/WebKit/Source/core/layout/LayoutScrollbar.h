@@ -26,7 +26,7 @@
 #ifndef LayoutScrollbar_h
 #define LayoutScrollbar_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/HashMap.h"
@@ -37,7 +37,7 @@ class LocalFrame;
 class Node;
 class LayoutBox;
 class LayoutScrollbarPart;
-class LayoutStyle;
+class ComputedStyle;
 
 class LayoutScrollbar final : public Scrollbar {
 public:
@@ -76,7 +76,7 @@ private:
 
     void updateScrollbarParts(bool destroy = false);
 
-    PassRefPtr<LayoutStyle> getScrollbarPseudoStyle(ScrollbarPart, PseudoId);
+    PassRefPtr<ComputedStyle> getScrollbarPseudoStyle(ScrollbarPart, PseudoId);
     void updateScrollbarPart(ScrollbarPart, bool destroy = false);
 
     // This Scrollbar(Widget) may outlive the DOM which created it (during tear down),

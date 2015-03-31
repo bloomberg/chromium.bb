@@ -29,7 +29,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -78,7 +78,7 @@ void LayoutMenuList::destroy()
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
-bool LayoutMenuList::isChildAllowed(LayoutObject* object, const LayoutStyle&) const
+bool LayoutMenuList::isChildAllowed(LayoutObject* object, const ComputedStyle&) const
 {
     return object->isAnonymous() && !object->isLayoutFullScreen();
 }
@@ -100,7 +100,7 @@ void LayoutMenuList::createInnerBlock()
 
 void LayoutMenuList::adjustInnerStyle()
 {
-    LayoutStyle& innerStyle = m_innerBlock->mutableStyleRef();
+    ComputedStyle& innerStyle = m_innerBlock->mutableStyleRef();
     innerStyle.setFlexGrow(1);
     innerStyle.setFlexShrink(1);
     // Use margin:auto instead of align-items:center to get safe centering, i.e.
@@ -151,7 +151,7 @@ void LayoutMenuList::removeChild(LayoutObject* oldChild)
     }
 }
 
-void LayoutMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
 
@@ -181,7 +181,7 @@ void LayoutMenuList::updateOptionsWidth()
         if (LayoutTheme::theme().popupOptionSupportsTextIndent()) {
             // Add in the option's text indent.  We can't calculate percentage values for now.
             float optionWidth = 0;
-            if (const LayoutStyle* optionStyle = element->layoutStyle())
+            if (const ComputedStyle* optionStyle = element->computedStyle())
                 optionWidth += minimumValueForLength(optionStyle->textIndent(), 0);
             if (!text.isEmpty())
                 optionWidth += style()->font().width(text);
@@ -245,7 +245,7 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
             HTMLOptionElement* selectedOptionElement = toHTMLOptionElement(listItems[firstSelectedIndex]);
             ASSERT(selectedOptionElement->selected());
             text = selectedOptionElement->textIndentedToRespectGroupLabel();
-            m_optionStyle = selectedOptionElement->mutableLayoutStyle();
+            m_optionStyle = selectedOptionElement->mutableComputedStyle();
         } else {
             Locale& locale = select->locale();
             String localizedNumberString = locale.convertToLocalizedNumber(String::number(selectedCount));
@@ -258,7 +258,7 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
             Element* element = listItems[i];
             if (isHTMLOptionElement(*element)) {
                 text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-                m_optionStyle = element->mutableLayoutStyle();
+                m_optionStyle = element->mutableComputedStyle();
             }
         }
     }
@@ -392,10 +392,10 @@ Element& LayoutMenuList::ownerElement() const
     return *selectElement();
 }
 
-const LayoutStyle* LayoutMenuList::layoutStyleForItem(Element& element) const
+const ComputedStyle* LayoutMenuList::computedStyleForItem(Element& element) const
 {
     document().updateRenderTreeIfNeeded();
-    return element.layoutStyle() ? element.layoutStyle() : element.computedStyle();
+    return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
 }
 
 void LayoutMenuList::didSetSelectedIndex(int listIndex)
@@ -493,7 +493,7 @@ PopupMenuStyle LayoutMenuList::itemStyle(unsigned listIndex) const
     bool itemHasCustomBackgroundColor;
     getItemBackgroundColor(listIndex, itemBackgroundColor, itemHasCustomBackgroundColor);
 
-    const LayoutStyle* style = element->layoutStyle() ? element->layoutStyle() : element->computedStyle();
+    const ComputedStyle* style = element->computedStyle() ? element->computedStyle() : element->ensureComputedStyle();
     return style ? PopupMenuStyle(resolveColor(*style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
         isHTMLOptionElement(*element) ? toHTMLOptionElement(*element).isDisplayNone() : style->display() == NONE,
         style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
@@ -511,7 +511,7 @@ void LayoutMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
     HTMLElement* element = listItems[listIndex];
 
     Color backgroundColor;
-    if (const LayoutStyle* style = element->layoutStyle())
+    if (const ComputedStyle* style = element->computedStyle())
         backgroundColor = resolveColor(*style, CSSPropertyBackgroundColor);
     itemHasCustomBackgroundColor = backgroundColor.alpha();
     // If the item has an opaque background color, return that.
@@ -534,7 +534,7 @@ void LayoutMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
 PopupMenuStyle LayoutMenuList::menuStyle() const
 {
     const LayoutObject* o = m_innerBlock ? m_innerBlock : this;
-    const LayoutStyle& style = o->styleRef();
+    const ComputedStyle& style = o->styleRef();
     return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), style.font(), style.visibility() == VISIBLE,
         style.display() == NONE, style.textIndent(), style.direction(), isOverride(style.unicodeBidi()));
 }

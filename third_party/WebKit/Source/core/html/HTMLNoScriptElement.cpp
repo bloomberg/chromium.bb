@@ -47,7 +47,7 @@ inline HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoScriptElement)
 
-bool HTMLNoScriptElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLNoScriptElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (document().frame()->script().canExecuteScripts(NotAboutToExecuteScript))
         return false;

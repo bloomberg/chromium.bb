@@ -37,9 +37,9 @@ LayoutTextCombine::LayoutTextCombine(Node* node, PassRefPtr<StringImpl> string)
 {
 }
 
-void LayoutTextCombine::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTextCombine::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    setStyleInternal(LayoutStyle::clone(styleRef()));
+    setStyleInternal(ComputedStyle::clone(styleRef()));
     LayoutText::styleDidChange(diff, oldStyle);
 
     updateIsCombined();

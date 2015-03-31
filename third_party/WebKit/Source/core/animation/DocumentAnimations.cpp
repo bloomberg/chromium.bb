@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
@@ -69,7 +69,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     if (!node.isElementNode())
         return;
     const Element& element = toElement(node);
-    if (const LayoutStyle* style = element.layoutStyle()) {
+    if (const ComputedStyle* style = element.computedStyle()) {
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
             || ((property == CSSPropertyTransform || property == CSSPropertyWebkitTransform) && style->isRunningTransformAnimationOnCompositor())
             || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {

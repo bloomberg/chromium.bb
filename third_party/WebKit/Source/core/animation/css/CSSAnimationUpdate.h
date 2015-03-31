@@ -151,11 +151,11 @@ public:
         m_animationsWithUpdates.append(UpdatedAnimation(name, player, animation, specifiedTiming, styleRule));
         m_suppressedAnimationPlayers.add(player);
     }
-    void updateAnimationStyle(AnimationPlayer* player, KeyframeEffectModelBase* effect, LayoutObject* renderer, const LayoutStyle& newStyle)
+    void updateAnimationStyle(AnimationPlayer* player, KeyframeEffectModelBase* effect, LayoutObject* renderer, const ComputedStyle& newStyle)
     {
         UpdatedAnimationStyle::CompositableStyleSnapshot snapshot;
         if (renderer) {
-            const LayoutStyle& oldStyle = renderer->styleRef();
+            const ComputedStyle& oldStyle = renderer->styleRef();
             if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && effect->affects(CSSPropertyOpacity))
                 snapshot.opacity = CSSAnimatableValueFactory::create(CSSPropertyOpacity, newStyle);
             if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && effect->affects(CSSPropertyTransform))

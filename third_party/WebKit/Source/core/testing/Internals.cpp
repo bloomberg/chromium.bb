@@ -55,7 +55,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Iterator.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"
@@ -336,7 +336,7 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
 bool Internals::isSharingStyle(Element* element1, Element* element2) const
 {
     ASSERT(element1 && element2);
-    return element1->layoutStyle() == element2->layoutStyle();
+    return element1->computedStyle() == element2->computedStyle();
 }
 
 bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& exceptionState)

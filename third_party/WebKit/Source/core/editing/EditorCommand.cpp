@@ -271,7 +271,7 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
     if (!renderer || !renderer->isBox())
         return 0;
     LayoutBox& layoutBox = toLayoutBox(*renderer);
-    const LayoutStyle* style = layoutBox.style();
+    const ComputedStyle* style = layoutBox.style();
     if (!style)
         return 0;
     if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedElement->hasEditableStyle()))

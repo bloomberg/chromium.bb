@@ -40,7 +40,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/PinchViewport.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"
@@ -981,7 +981,7 @@ bool WebAXObject::hasComputedStyle() const
     if (!node)
         return false;
 
-    return node->computedStyle();
+    return node->ensureComputedStyle();
 }
 
 WebString WebAXObject::computedStyleDisplay() const
@@ -997,11 +997,11 @@ WebString WebAXObject::computedStyleDisplay() const
     if (!node)
         return WebString();
 
-    const LayoutStyle* layoutStyle = node->computedStyle();
-    if (!layoutStyle)
+    const ComputedStyle* computedStyle = node->ensureComputedStyle();
+    if (!computedStyle)
         return WebString();
 
-    return WebString(CSSPrimitiveValue::create(layoutStyle->display())->getStringValue());
+    return WebString(CSSPrimitiveValue::create(computedStyle->display())->getStringValue());
 }
 
 bool WebAXObject::accessibilityIsIgnored() const

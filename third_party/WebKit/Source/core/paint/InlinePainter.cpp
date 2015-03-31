@@ -28,7 +28,7 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
 
 void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    const LayoutStyle& styleToUse = m_layoutInline.styleRef();
+    const ComputedStyle& styleToUse = m_layoutInline.styleRef();
     if (!styleToUse.hasOutline())
         return;
 
@@ -97,7 +97,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const LayoutPoint& paintOffset,
     const LayoutRect& lastline, const LayoutRect& thisline, const LayoutRect& nextline, const Color outlineColor)
 {
-    const LayoutStyle& styleToUse = m_layoutInline.styleRef();
+    const ComputedStyle& styleToUse = m_layoutInline.styleRef();
     int outlineWidth = styleToUse.outlineWidth();
     EBorderStyle outlineStyle = styleToUse.outlineStyle();
 

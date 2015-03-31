@@ -122,7 +122,7 @@ private:
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     void nextSibling() const = delete;
     void previousSibling() const = delete;

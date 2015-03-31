@@ -7,11 +7,11 @@
 
 namespace blink {
 
-LayoutPagedFlowThread* LayoutPagedFlowThread::createAnonymous(Document& document, const LayoutStyle& parentStyle)
+LayoutPagedFlowThread* LayoutPagedFlowThread::createAnonymous(Document& document, const ComputedStyle& parentStyle)
 {
     LayoutPagedFlowThread* renderer = new LayoutPagedFlowThread();
     renderer->setDocumentForAnonymous(&document);
-    renderer->setStyle(LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    renderer->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
 }
 

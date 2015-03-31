@@ -47,7 +47,7 @@ LayoutListItem::LayoutListItem(Element* element)
     setInline(false);
 }
 
-void LayoutListItem::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutListItem::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlockFlow::styleDidChange(diff, oldStyle);
 

@@ -800,7 +800,7 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
 void InspectorCSSAgent::collectPlatformFontsForRenderer(LayoutText* renderer, HashCountedSet<String>* fontStats)
 {
     for (InlineTextBox* box = renderer->firstTextBox(); box; box = box->nextTextBox()) {
-        const LayoutStyle& style = renderer->styleRef(box->isFirstLineStyle());
+        const ComputedStyle& style = renderer->styleRef(box->isFirstLineStyle());
         const Font& font = style.font();
         TextRun run = box->constructTextRunForInspector(style, font);
         SimpleShaper shaper(&font, run);

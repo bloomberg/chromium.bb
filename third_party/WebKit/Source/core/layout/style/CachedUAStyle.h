@@ -22,17 +22,17 @@
 #ifndef CachedUAStyle_h
 #define CachedUAStyle_h
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 // LayoutTheme::adjustStyle wants the background and borders
 // as specified by the UA sheets, excluding any author rules.
 // We use this class to cache those values during
-// applyMatchedProperties for later use during adjustLayoutStyle.
+// applyMatchedProperties for later use during adjustComputedStyle.
 class CachedUAStyle {
 public:
-    static PassOwnPtr<CachedUAStyle> create(const LayoutStyle* style)
+    static PassOwnPtr<CachedUAStyle> create(const ComputedStyle* style)
     {
         return adoptPtr(new CachedUAStyle(style));
     }
@@ -42,7 +42,7 @@ public:
     StyleColor backgroundColor;
 
 private:
-    explicit CachedUAStyle(const LayoutStyle* style)
+    explicit CachedUAStyle(const ComputedStyle* style)
         : border(style->border())
         , backgroundLayers(style->backgroundLayers())
         , backgroundColor(style->backgroundColor())

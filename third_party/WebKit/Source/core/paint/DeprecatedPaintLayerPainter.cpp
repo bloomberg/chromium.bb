@@ -111,7 +111,7 @@ public:
         const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
         : m_resourceClipper(0), m_renderLayer(renderLayer), m_context(context)
     {
-        const LayoutStyle& style = renderLayer.layoutObject()->styleRef();
+        const ComputedStyle& style = renderLayer.layoutObject()->styleRef();
 
         // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
         // It must, however, still be applied to the mask layer, so that the compositor can properly mask the

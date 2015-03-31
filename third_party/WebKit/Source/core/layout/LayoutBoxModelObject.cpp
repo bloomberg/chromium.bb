@@ -128,7 +128,7 @@ void LayoutBoxModelObject::willBeDestroyed()
     destroyLayer();
 }
 
-void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     // This object's layer may cease to be a stacking context, in which case the paint
     // invalidation container of the children may change. Thus we need to invalidate paint
@@ -146,7 +146,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const LayoutSty
 
     s_wasFloating = isFloating();
 
-    if (const LayoutStyle* oldStyle = style()) {
+    if (const ComputedStyle* oldStyle = style()) {
         if (parent() && diff.needsPaintInvalidationLayer()) {
             if (oldStyle->hasAutoClip() != newStyle.hasAutoClip()
                 || oldStyle->clip() != newStyle.clip())
@@ -157,7 +157,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const LayoutSty
     LayoutObject::styleWillChange(diff, newStyle);
 }
 
-void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     bool hadTransform = hasTransformRelatedProperty();
     bool hadLayer = hasLayer();
@@ -338,13 +338,13 @@ void LayoutBoxModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, con
 
 bool LayoutBoxModelObject::calculateHasBoxDecorations() const
 {
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     return hasBackground() || styleToUse.hasBorder() || styleToUse.hasAppearance() || styleToUse.boxShadow();
 }
 
 void LayoutBoxModelObject::updateFromStyle()
 {
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     setHasBoxDecorationBackground(calculateHasBoxDecorations());
     setInline(styleToUse.isDisplayInlineType());
     setPositionState(styleToUse.position());
@@ -722,7 +722,7 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     // However, as soon as some content is entered, the line boxes will be
     // constructed and this kludge is not called any more. So only the caret size
     // of an empty :first-line'd block is wrong. I think we can live with that.
-    const LayoutStyle& currentStyle = firstLineStyleRef();
+    const ComputedStyle& currentStyle = firstLineStyleRef();
 
     enum CaretAlignment { AlignLeft, AlignRight, AlignCenter };
 

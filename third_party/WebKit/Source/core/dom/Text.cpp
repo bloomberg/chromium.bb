@@ -28,7 +28,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LayoutTreeBuilder.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -289,7 +289,7 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
     return true;
 }
 
-bool Text::textRendererIsNeeded(const LayoutStyle& style, const LayoutObject& parent)
+bool Text::textRendererIsNeeded(const ComputedStyle& style, const LayoutObject& parent)
 {
     if (!parent.canHaveChildren())
         return false;
@@ -350,7 +350,7 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-LayoutText* Text::createTextRenderer(const LayoutStyle& style)
+LayoutText* Text::createTextRenderer(const ComputedStyle& style)
 {
     if (isSVGText(this))
         return new LayoutSVGInlineText(this, dataImpl());
@@ -418,7 +418,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 bool Text::needsWhitespaceRenderer()
 {
     ASSERT(!layoutObject());
-    if (const LayoutStyle* style = parentLayoutStyle())
+    if (const ComputedStyle* style = parentComputedStyle())
         return style->preserveNewline();
     return false;
 }

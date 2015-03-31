@@ -52,7 +52,7 @@ class HTMLInputElement;
 class KeyboardEvent;
 class MouseEvent;
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 class TouchEvent;
 
 struct ClickHandlingState final : public NoBaseWillBeGarbageCollected<ClickHandlingState> {
@@ -98,8 +98,8 @@ public:
     virtual void subtreeHasChanged();
     virtual bool hasTouchEventHandler() const;
     virtual void blur();
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) const;
-    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject(PassRefPtr<LayoutStyle>);
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) const;
+    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject(PassRefPtr<ComputedStyle>);
     virtual void startResourceLoading();
     virtual void closePopupView();
     virtual void createShadowSubtree();

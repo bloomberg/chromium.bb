@@ -59,7 +59,7 @@ InlineBox* EllipsisBox::markupBox() const
 
 IntRect EllipsisBox::selectionRect()
 {
-    const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
     const Font& font = style.font();
     return enclosingIntRect(font.selectionRectForText(constructTextRun(&layoutObject(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
@@ -72,7 +72,7 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     // Hit test the markup box.
     if (InlineBox* markupBox = this->markupBox()) {
-        const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
+        const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
         LayoutUnit mtx = adjustedLocation.x() + m_logicalWidth - markupBox->x();
         LayoutUnit mty = adjustedLocation.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->layoutObject().style(isFirstLineStyle())->fontMetrics().ascent());
         if (markupBox->nodeAtPoint(request, result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {

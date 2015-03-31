@@ -91,7 +91,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<LayoutStyle> PseudoElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> PseudoElement::customStyleForLayoutObject()
 {
     return parentOrShadowHostElement()->layoutObject()->getCachedPseudoStyle(m_pseudoId);
 }
@@ -122,7 +122,7 @@ void PseudoElement::attach(const AttachContext& context)
     if (!renderer)
         return;
 
-    LayoutStyle& style = renderer->mutableStyleRef();
+    ComputedStyle& style = renderer->mutableStyleRef();
     if (style.styleType() != BEFORE && style.styleType() != AFTER)
         return;
     ASSERT(style.contentData());
@@ -138,7 +138,7 @@ void PseudoElement::attach(const AttachContext& context)
     }
 }
 
-bool PseudoElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool PseudoElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return pseudoElementRendererIsNeeded(&style);
 }

@@ -75,7 +75,7 @@ LayoutTable::~LayoutTable()
 {
 }
 
-void LayoutTable::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTable::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
@@ -322,7 +322,7 @@ void LayoutTable::updateLogicalWidth()
     ASSERT(logicalWidth().toInt() >= minPreferredLogicalWidth().toInt());
 }
 
-// This method takes a LayoutStyle's logical width, min-width, or max-width length and computes its actual value.
+// This method takes a ComputedStyle's logical width, min-width, or max-width length and computes its actual value.
 LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(const Length& styleLogicalWidth, LayoutUnit availableWidth)
 {
     if (styleLogicalWidth.isIntrinsic())
@@ -694,7 +694,7 @@ void LayoutTable::computePreferredLogicalWidths()
     for (unsigned i = 0; i < m_captions.size(); i++)
         m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, m_captions[i]->minPreferredLogicalWidth());
 
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     // FIXME: This should probably be checking for isSpecified since you should be able to use percentage or calc values for min-width.
     if (styleToUse.logicalMinWidth().isFixed() && styleToUse.logicalMinWidth().value() > 0) {
         m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMinWidth().value()));
@@ -1341,7 +1341,7 @@ bool LayoutTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
 LayoutTable* LayoutTable::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE);
     LayoutTable* newTable = new LayoutTable(0);
     newTable->setDocumentForAnonymous(&parent->document());
     newTable->setStyle(newStyle.release());

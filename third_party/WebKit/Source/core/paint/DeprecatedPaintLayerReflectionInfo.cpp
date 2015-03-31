@@ -46,7 +46,7 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutReplica.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "platform/transforms/ScaleTransformOperation.h"
@@ -81,9 +81,9 @@ DeprecatedPaintLayer* DeprecatedPaintLayerReflectionInfo::reflectionLayer() cons
     return m_reflection->layer();
 }
 
-void DeprecatedPaintLayerReflectionInfo::updateAfterStyleChange(const LayoutStyle* oldStyle)
+void DeprecatedPaintLayerReflectionInfo::updateAfterStyleChange(const ComputedStyle* oldStyle)
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
     newStyle->inheritFrom(box().styleRef());
 
     // Map in our transform.

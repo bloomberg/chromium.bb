@@ -115,12 +115,12 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
         markForLayoutAndParentResourceInvalidation(object);
 }
 
-LayoutObject* SVGTextPathElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGTextPathElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGTextPath(this);
 }
 
-bool SVGTextPathElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool SVGTextPathElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (parentNode() && (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
         return Element::layoutObjectIsNeeded(style);

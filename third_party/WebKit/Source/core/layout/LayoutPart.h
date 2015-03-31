@@ -57,7 +57,7 @@ public:
 protected:
     virtual DeprecatedPaintLayerType layerTypeRequired() const override;
 
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override final;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
     virtual void layout() override;
     virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;

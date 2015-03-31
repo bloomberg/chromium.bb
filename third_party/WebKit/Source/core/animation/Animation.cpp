@@ -41,7 +41,7 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/UseCounter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 
@@ -135,8 +135,8 @@ void Animation::applyEffects()
         return;
 
     // Cancel composited animation of transform if a motion path has been introduced on the element.
-    if (m_target->layoutStyle()
-        && m_target->layoutStyle()->hasMotionPath()
+    if (m_target->computedStyle()
+        && m_target->computedStyle()->hasMotionPath()
         && player()->hasActiveAnimationsOnCompositor()
         && player()->affects(*m_target, CSSPropertyTransform)) {
         player()->cancelAnimationOnCompositor();
@@ -238,7 +238,7 @@ bool Animation::isCandidateForAnimationOnCompositor(double playerPlaybackRate) c
 {
     if (!effect()
         || !m_target
-        || (m_target->layoutStyle() && m_target->layoutStyle()->hasMotionPath()))
+        || (m_target->computedStyle() && m_target->computedStyle()->hasMotionPath()))
         return false;
 
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, player(), *effect(), playerPlaybackRate);

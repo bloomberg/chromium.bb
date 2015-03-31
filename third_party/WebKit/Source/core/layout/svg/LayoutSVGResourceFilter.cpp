@@ -73,7 +73,7 @@ void LayoutSVGResourceFilter::destroy()
     LayoutSVGResourceContainer::destroy();
 }
 
-bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isSVGResourceFilterPrimitive();
 }

@@ -79,8 +79,8 @@ private:
     bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
 
     virtual bool selfHasRelativeLengths() const override;
 

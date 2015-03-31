@@ -45,7 +45,7 @@ private:
 
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     virtual void defaultEventHandler(Event*) override;
 

@@ -97,12 +97,12 @@ PassRefPtrWillBeRawPtr<HTMLFormElement> InputTypeView::formForSubmission() const
     return element().form();
 }
 
-LayoutObject* InputTypeView::createLayoutObject(const LayoutStyle& style) const
+LayoutObject* InputTypeView::createLayoutObject(const ComputedStyle& style) const
 {
     return LayoutObject::createObject(&element(), style);
 }
 
-PassRefPtr<LayoutStyle> InputTypeView::customStyleForLayoutObject(PassRefPtr<LayoutStyle> originalStyle)
+PassRefPtr<ComputedStyle> InputTypeView::customStyleForLayoutObject(PassRefPtr<ComputedStyle> originalStyle)
 {
     return originalStyle;
 }

@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/layout/LayoutTheme.h"
@@ -30,7 +30,7 @@
 #include "core/layout/style/BorderEdge.h"
 #include "core/layout/style/ContentData.h"
 #include "core/layout/style/DataEquivalency.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/PathStyleMotionPath.h"
 #include "core/layout/style/QuotesData.h"
 #include "core/layout/style/ShadowList.h"
@@ -54,7 +54,7 @@ struct SameSizeAsBorderValue {
 
 static_assert(sizeof(BorderValue) == sizeof(SameSizeAsBorderValue), "BorderValue should stay small");
 
-struct SameSizeAsLayoutStyle : public RefCounted<SameSizeAsLayoutStyle> {
+struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
     void* dataRefs[7];
     void* ownPtrs[1];
     void* dataRefSvgStyle;
@@ -68,33 +68,33 @@ struct SameSizeAsLayoutStyle : public RefCounted<SameSizeAsLayoutStyle> {
     } noninherited_flags;
 };
 
-static_assert(sizeof(LayoutStyle) == sizeof(SameSizeAsLayoutStyle), "LayoutStyle should stay small");
+static_assert(sizeof(ComputedStyle) == sizeof(SameSizeAsComputedStyle), "ComputedStyle should stay small");
 
-PassRefPtr<LayoutStyle> LayoutStyle::create()
+PassRefPtr<ComputedStyle> ComputedStyle::create()
 {
-    return adoptRef(new LayoutStyle());
+    return adoptRef(new ComputedStyle());
 }
 
-PassRefPtr<LayoutStyle> LayoutStyle::createInitialStyle()
+PassRefPtr<ComputedStyle> ComputedStyle::createInitialStyle()
 {
-    return adoptRef(new LayoutStyle(InitialStyle));
+    return adoptRef(new ComputedStyle(InitialStyle));
 }
 
-PassRefPtr<LayoutStyle> LayoutStyle::createAnonymousStyleWithDisplay(const LayoutStyle& parentStyle, EDisplay display)
+PassRefPtr<ComputedStyle> ComputedStyle::createAnonymousStyleWithDisplay(const ComputedStyle& parentStyle, EDisplay display)
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
     newStyle->inheritFrom(parentStyle);
     newStyle->inheritUnicodeBidiFrom(parentStyle);
     newStyle->setDisplay(display);
     return newStyle;
 }
 
-PassRefPtr<LayoutStyle> LayoutStyle::clone(const LayoutStyle& other)
+PassRefPtr<ComputedStyle> ComputedStyle::clone(const ComputedStyle& other)
 {
-    return adoptRef(new LayoutStyle(other));
+    return adoptRef(new ComputedStyle(other));
 }
 
-ALWAYS_INLINE LayoutStyle::LayoutStyle()
+ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : m_box(initialStyle()->m_box)
     , visual(initialStyle()->visual)
     , m_background(initialStyle()->m_background)
@@ -109,7 +109,7 @@ ALWAYS_INLINE LayoutStyle::LayoutStyle()
     static_assert((sizeof(NonInheritedFlags) <= 8), "NonInheritedFlags should not grow");
 }
 
-ALWAYS_INLINE LayoutStyle::LayoutStyle(InitialStyleTag)
+ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
 {
     setBitDefaults();
 
@@ -131,8 +131,8 @@ ALWAYS_INLINE LayoutStyle::LayoutStyle(InitialStyleTag)
     m_svgStyle.init();
 }
 
-ALWAYS_INLINE LayoutStyle::LayoutStyle(const LayoutStyle& o)
-    : RefCounted<LayoutStyle>()
+ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
+    : RefCounted<ComputedStyle>()
     , m_box(o.m_box)
     , visual(o.visual)
     , m_background(o.m_background)
@@ -146,7 +146,7 @@ ALWAYS_INLINE LayoutStyle::LayoutStyle(const LayoutStyle& o)
 {
 }
 
-static StyleRecalcChange diffPseudoStyles(const LayoutStyle& oldStyle, const LayoutStyle& newStyle)
+static StyleRecalcChange diffPseudoStyles(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
 {
     // If the pseudoStyles have changed, we want any StyleRecalcChange that is not NoChange
     // because setStyle will do the right thing with anything else.
@@ -155,17 +155,17 @@ static StyleRecalcChange diffPseudoStyles(const LayoutStyle& oldStyle, const Lay
     for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < FIRST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
         if (!oldStyle.hasPseudoStyle(pseudoId))
             continue;
-        const LayoutStyle* newPseudoStyle = newStyle.getCachedPseudoStyle(pseudoId);
+        const ComputedStyle* newPseudoStyle = newStyle.getCachedPseudoStyle(pseudoId);
         if (!newPseudoStyle)
             return NoInherit;
-        const LayoutStyle* oldPseudoStyle = oldStyle.getCachedPseudoStyle(pseudoId);
+        const ComputedStyle* oldPseudoStyle = oldStyle.getCachedPseudoStyle(pseudoId);
         if (oldPseudoStyle && *oldPseudoStyle != *newPseudoStyle)
             return NoInherit;
     }
     return NoChange;
 }
 
-StyleRecalcChange LayoutStyle::stylePropagationDiff(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
+StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldStyle, const ComputedStyle* newStyle)
 {
     if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
         return Reattach;
@@ -194,7 +194,7 @@ StyleRecalcChange LayoutStyle::stylePropagationDiff(const LayoutStyle* oldStyle,
     return NoInherit;
 }
 
-ItemPosition LayoutStyle::resolveAlignment(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
+ItemPosition ComputedStyle::resolveAlignment(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
 {
     // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
     if (childStyle.alignSelf() == ItemPositionAuto)
@@ -202,14 +202,14 @@ ItemPosition LayoutStyle::resolveAlignment(const LayoutStyle& parentStyle, const
     return childStyle.alignSelf();
 }
 
-ItemPosition LayoutStyle::resolveJustification(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
+ItemPosition ComputedStyle::resolveJustification(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
 {
     if (childStyle.justifySelf() == ItemPositionAuto)
         return (parentStyle.justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.justifyItems();
     return childStyle.justifySelf();
 }
 
-void LayoutStyle::inheritFrom(const LayoutStyle& inheritParent, IsAtShadowBoundary isAtShadowBoundary)
+void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBoundary isAtShadowBoundary)
 {
     if (isAtShadowBoundary == AtShadowBoundary) {
         // Even if surrounding content is user-editable, shadow DOM should act as a single unit, and not necessarily be editable
@@ -225,7 +225,7 @@ void LayoutStyle::inheritFrom(const LayoutStyle& inheritParent, IsAtShadowBounda
         m_svgStyle.access()->inheritFrom(inheritParent.m_svgStyle.get());
 }
 
-void LayoutStyle::copyNonInheritedFromCached(const LayoutStyle& other)
+void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
 {
     m_box = other.m_box;
     visual = other.visual;
@@ -284,7 +284,7 @@ void LayoutStyle::copyNonInheritedFromCached(const LayoutStyle& other)
     ASSERT(zoom() == initialZoom());
 }
 
-bool LayoutStyle::operator==(const LayoutStyle& o) const
+bool ComputedStyle::operator==(const ComputedStyle& o) const
 {
     // compare everything except the pseudoStyle pointer
     return inherited_flags == o.inherited_flags
@@ -299,18 +299,18 @@ bool LayoutStyle::operator==(const LayoutStyle& o) const
         && m_svgStyle == o.m_svgStyle;
 }
 
-bool LayoutStyle::isStyleAvailable() const
+bool ComputedStyle::isStyleAvailable() const
 {
     return this != StyleResolver::styleNotYetAvailable();
 }
 
-bool LayoutStyle::hasUniquePseudoStyle() const
+bool ComputedStyle::hasUniquePseudoStyle() const
 {
     if (!m_cachedPseudoStyles || styleType() != NOPSEUDO)
         return false;
 
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
-        const LayoutStyle& pseudoStyle = *m_cachedPseudoStyles->at(i);
+        const ComputedStyle& pseudoStyle = *m_cachedPseudoStyles->at(i);
         if (pseudoStyle.unique())
             return true;
     }
@@ -318,7 +318,7 @@ bool LayoutStyle::hasUniquePseudoStyle() const
     return false;
 }
 
-LayoutStyle* LayoutStyle::getCachedPseudoStyle(PseudoId pid) const
+ComputedStyle* ComputedStyle::getCachedPseudoStyle(PseudoId pid) const
 {
     if (!m_cachedPseudoStyles || !m_cachedPseudoStyles->size())
         return 0;
@@ -327,7 +327,7 @@ LayoutStyle* LayoutStyle::getCachedPseudoStyle(PseudoId pid) const
         return 0;
 
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
-        LayoutStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
+        ComputedStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
         if (pseudoStyle->styleType() == pid)
             return pseudoStyle;
     }
@@ -335,14 +335,14 @@ LayoutStyle* LayoutStyle::getCachedPseudoStyle(PseudoId pid) const
     return 0;
 }
 
-LayoutStyle* LayoutStyle::addCachedPseudoStyle(PassRefPtr<LayoutStyle> pseudo)
+ComputedStyle* ComputedStyle::addCachedPseudoStyle(PassRefPtr<ComputedStyle> pseudo)
 {
     if (!pseudo)
         return 0;
 
     ASSERT(pseudo->styleType() > NOPSEUDO);
 
-    LayoutStyle* result = pseudo.get();
+    ComputedStyle* result = pseudo.get();
 
     if (!m_cachedPseudoStyles)
         m_cachedPseudoStyles = adoptPtr(new PseudoStyleCache);
@@ -352,12 +352,12 @@ LayoutStyle* LayoutStyle::addCachedPseudoStyle(PassRefPtr<LayoutStyle> pseudo)
     return result;
 }
 
-void LayoutStyle::removeCachedPseudoStyle(PseudoId pid)
+void ComputedStyle::removeCachedPseudoStyle(PseudoId pid)
 {
     if (!m_cachedPseudoStyles)
         return;
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
-        LayoutStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
+        ComputedStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
         if (pseudoStyle->styleType() == pid) {
             m_cachedPseudoStyles->remove(i);
             return;
@@ -365,7 +365,7 @@ void LayoutStyle::removeCachedPseudoStyle(PseudoId pid)
     }
 }
 
-bool LayoutStyle::inheritedNotEqual(const LayoutStyle& other) const
+bool ComputedStyle::inheritedNotEqual(const ComputedStyle& other) const
 {
     return inherited_flags != other.inherited_flags
         || inherited != other.inherited
@@ -374,7 +374,7 @@ bool LayoutStyle::inheritedNotEqual(const LayoutStyle& other) const
         || rareInheritedData != other.rareInheritedData;
 }
 
-bool LayoutStyle::inheritedDataShared(const LayoutStyle& other) const
+bool ComputedStyle::inheritedDataShared(const ComputedStyle& other) const
 {
     // This is a fast check that only looks if the data structures are shared.
     return inherited_flags == other.inherited_flags
@@ -383,7 +383,7 @@ bool LayoutStyle::inheritedDataShared(const LayoutStyle& other) const
         && rareInheritedData.get() == other.rareInheritedData.get();
 }
 
-static bool dependenceOnContentHeightHasChanged(const LayoutStyle& a, const LayoutStyle& b)
+static bool dependenceOnContentHeightHasChanged(const ComputedStyle& a, const ComputedStyle& b)
 {
     // If top or bottom become auto/non-auto then it means we either have to solve height based
     // on the content or stop doing so (http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-height)
@@ -391,7 +391,7 @@ static bool dependenceOnContentHeightHasChanged(const LayoutStyle& a, const Layo
     return a.logicalTop().isAuto() != b.logicalTop().isAuto() || a.logicalBottom().isAuto() != b.logicalBottom().isAuto();
 }
 
-StyleDifference LayoutStyle::visualInvalidationDiff(const LayoutStyle& other) const
+StyleDifference ComputedStyle::visualInvalidationDiff(const ComputedStyle& other) const
 {
     // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
     // compare, which is duplicate work when we're going to compare each property inside
@@ -441,7 +441,7 @@ StyleDifference LayoutStyle::visualInvalidationDiff(const LayoutStyle& other) co
     return diff;
 }
 
-bool LayoutStyle::diffNeedsFullLayoutAndPaintInvalidation(const LayoutStyle& other) const
+bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle& other) const
 {
     // FIXME: Not all cases in this method need both full layout and paint invalidation.
     // Should move cases into diffNeedsFullLayout() if
@@ -613,12 +613,12 @@ bool LayoutStyle::diffNeedsFullLayoutAndPaintInvalidation(const LayoutStyle& oth
     if (hasPseudoStyle(SCROLLBAR) != other.hasPseudoStyle(SCROLLBAR))
         return true;
 
-    // Movement of non-static-positioned object is special cased in LayoutStyle::visualInvalidationDiff().
+    // Movement of non-static-positioned object is special cased in ComputedStyle::visualInvalidationDiff().
 
     return false;
 }
 
-bool LayoutStyle::diffNeedsFullLayout(const LayoutStyle& other) const
+bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
 {
     if (m_box.get() != other.m_box.get()) {
         if (m_box->width() != other.m_box->width()
@@ -656,7 +656,7 @@ bool LayoutStyle::diffNeedsFullLayout(const LayoutStyle& other) const
     return false;
 }
 
-bool LayoutStyle::diffNeedsPaintInvalidationLayer(const LayoutStyle& other) const
+bool ComputedStyle::diffNeedsPaintInvalidationLayer(const ComputedStyle& other) const
 {
     if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasAutoClip != other.visual->hasAutoClip))
         return true;
@@ -675,7 +675,7 @@ bool LayoutStyle::diffNeedsPaintInvalidationLayer(const LayoutStyle& other) cons
     return false;
 }
 
-bool LayoutStyle::diffNeedsPaintInvalidationObject(const LayoutStyle& other) const
+bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other) const
 {
     if (inherited_flags._visibility != other.inherited_flags._visibility
         || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
@@ -712,7 +712,7 @@ bool LayoutStyle::diffNeedsPaintInvalidationObject(const LayoutStyle& other) con
     return false;
 }
 
-void LayoutStyle::updatePropertySpecificDifferences(const LayoutStyle& other, StyleDifference& diff) const
+void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference& diff) const
 {
     // StyleAdjuster has ensured that zIndex is non-auto only if it's applicable.
     if (m_box->zIndex() != other.m_box->zIndex() || m_box->hasAutoZIndex() != other.m_box->hasAutoZIndex())
@@ -754,42 +754,42 @@ void LayoutStyle::updatePropertySpecificDifferences(const LayoutStyle& other, St
     }
 }
 
-void LayoutStyle::addCursor(PassRefPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
+void ComputedStyle::addCursor(PassRefPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
 {
     if (!rareInheritedData.access()->cursorData)
         rareInheritedData.access()->cursorData = CursorList::create();
     rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
 }
 
-void LayoutStyle::setCursorList(PassRefPtr<CursorList> other)
+void ComputedStyle::setCursorList(PassRefPtr<CursorList> other)
 {
     rareInheritedData.access()->cursorData = other;
 }
 
-void LayoutStyle::setQuotes(PassRefPtr<QuotesData> q)
+void ComputedStyle::setQuotes(PassRefPtr<QuotesData> q)
 {
     rareInheritedData.access()->quotes = q;
 }
 
-void LayoutStyle::clearCursorList()
+void ComputedStyle::clearCursorList()
 {
     if (rareInheritedData->cursorData)
         rareInheritedData.access()->cursorData = nullptr;
 }
 
-void LayoutStyle::addCallbackSelector(const String& selector)
+void ComputedStyle::addCallbackSelector(const String& selector)
 {
     if (!rareNonInheritedData->m_callbackSelectors.contains(selector))
         rareNonInheritedData.access()->m_callbackSelectors.append(selector);
 }
 
-void LayoutStyle::clearContent()
+void ComputedStyle::clearContent()
 {
     if (rareNonInheritedData->m_content)
         rareNonInheritedData.access()->m_content = nullptr;
 }
 
-void LayoutStyle::appendContent(PassOwnPtr<ContentData> contentData)
+void ComputedStyle::appendContent(PassOwnPtr<ContentData> contentData)
 {
     OwnPtr<ContentData>& content = rareNonInheritedData.access()->m_content;
     ContentData* lastContent = content.get();
@@ -802,7 +802,7 @@ void LayoutStyle::appendContent(PassOwnPtr<ContentData> contentData)
         content = contentData;
 }
 
-void LayoutStyle::setContent(PassRefPtr<StyleImage> image, bool add)
+void ComputedStyle::setContent(PassRefPtr<StyleImage> image, bool add)
 {
     if (!image)
         return;
@@ -815,7 +815,7 @@ void LayoutStyle::setContent(PassRefPtr<StyleImage> image, bool add)
     rareNonInheritedData.access()->m_content = ContentData::create(image);
 }
 
-void LayoutStyle::setContent(const String& string, bool add)
+void ComputedStyle::setContent(const String& string, bool add)
 {
     OwnPtr<ContentData>& content = rareNonInheritedData.access()->m_content;
     if (add) {
@@ -839,7 +839,7 @@ void LayoutStyle::setContent(const String& string, bool add)
     content = ContentData::create(string);
 }
 
-void LayoutStyle::setContent(PassOwnPtr<CounterContent> counter, bool add)
+void ComputedStyle::setContent(PassOwnPtr<CounterContent> counter, bool add)
 {
     if (!counter)
         return;
@@ -852,7 +852,7 @@ void LayoutStyle::setContent(PassOwnPtr<CounterContent> counter, bool add)
     rareNonInheritedData.access()->m_content = ContentData::create(counter);
 }
 
-void LayoutStyle::setContent(QuoteType quote, bool add)
+void ComputedStyle::setContent(QuoteType quote, bool add)
 {
     if (add) {
         appendContent(ContentData::create(quote));
@@ -862,7 +862,7 @@ void LayoutStyle::setContent(QuoteType quote, bool add)
     rareNonInheritedData.access()->m_content = ContentData::create(quote);
 }
 
-bool LayoutStyle::hasWillChangeCompositingHint() const
+bool ComputedStyle::hasWillChangeCompositingHint() const
 {
     for (size_t i = 0; i < rareNonInheritedData->m_willChange->m_properties.size(); ++i) {
         switch (rareNonInheritedData->m_willChange->m_properties[i]) {
@@ -881,15 +881,15 @@ bool LayoutStyle::hasWillChangeCompositingHint() const
     return false;
 }
 
-inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation>>& transformOperations, LayoutStyle::ApplyTransformOrigin applyOrigin, LayoutStyle::ApplyMotionPath applyMotionPath)
+inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation>>& transformOperations, ComputedStyle::ApplyTransformOrigin applyOrigin, ComputedStyle::ApplyMotionPath applyMotionPath)
 {
     // transform-origin brackets the transform with translate operations.
     // Optimize for the case where the only transform is a translation, since the transform-origin is irrelevant
     // in that case.
-    if (applyOrigin != LayoutStyle::IncludeTransformOrigin)
+    if (applyOrigin != ComputedStyle::IncludeTransformOrigin)
         return false;
 
-    if (applyMotionPath == LayoutStyle::IncludeMotionPath)
+    if (applyMotionPath == ComputedStyle::IncludeMotionPath)
         return true;
 
     unsigned size = transformOperations.size();
@@ -906,12 +906,12 @@ inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation>>& tra
     return false;
 }
 
-void LayoutStyle::applyTransform(TransformationMatrix& transform, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
+void ComputedStyle::applyTransform(TransformationMatrix& transform, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
 {
     applyTransform(transform, FloatRect(FloatPoint(), FloatSize(borderBoxSize)), applyOrigin, applyMotionPath);
 }
 
-void LayoutStyle::applyTransform(TransformationMatrix& transform, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
+void ComputedStyle::applyTransform(TransformationMatrix& transform, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
 {
     if (!hasMotionPath())
         applyMotionPath = ExcludeMotionPath;
@@ -927,7 +927,7 @@ void LayoutStyle::applyTransform(TransformationMatrix& transform, const FloatRec
             transformOriginZ());
     }
 
-    if (applyMotionPath == LayoutStyle::IncludeMotionPath)
+    if (applyMotionPath == ComputedStyle::IncludeMotionPath)
         applyMotionPathTransform(transform);
 
     unsigned size = transformOperations.size();
@@ -941,7 +941,7 @@ void LayoutStyle::applyTransform(TransformationMatrix& transform, const FloatRec
     }
 }
 
-void LayoutStyle::applyMotionPathTransform(TransformationMatrix& transform) const
+void ComputedStyle::applyMotionPathTransform(TransformationMatrix& transform) const
 {
     const StyleMotionData& motionData = rareNonInheritedData->m_transform->m_motion;
     ASSERT(motionData.m_path && motionData.m_path->isPathStyleMotionPath());
@@ -968,12 +968,12 @@ void LayoutStyle::applyMotionPathTransform(TransformationMatrix& transform) cons
     transform.rotate(angle + motionData.m_rotation);
 }
 
-void LayoutStyle::setTextShadow(PassRefPtr<ShadowList> s)
+void ComputedStyle::setTextShadow(PassRefPtr<ShadowList> s)
 {
     rareInheritedData.access()->textShadow = s;
 }
 
-void LayoutStyle::setBoxShadow(PassRefPtr<ShadowList> s)
+void ComputedStyle::setBoxShadow(PassRefPtr<ShadowList> s)
 {
     rareNonInheritedData.access()->m_boxShadow = s;
 }
@@ -991,24 +991,24 @@ static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize
             valueForLength(border.bottomRight().height(), size.height())));
 }
 
-StyleImage* LayoutStyle::listStyleImage() const { return rareInheritedData->listStyleImage.get(); }
-void LayoutStyle::setListStyleImage(PassRefPtr<StyleImage> v)
+StyleImage* ComputedStyle::listStyleImage() const { return rareInheritedData->listStyleImage.get(); }
+void ComputedStyle::setListStyleImage(PassRefPtr<StyleImage> v)
 {
     if (rareInheritedData->listStyleImage != v)
         rareInheritedData.access()->listStyleImage = v;
 }
 
-Color LayoutStyle::color() const { return inherited->color; }
-Color LayoutStyle::visitedLinkColor() const { return inherited->visitedLinkColor; }
-void LayoutStyle::setColor(const Color& v) { SET_VAR(inherited, color, v); }
-void LayoutStyle::setVisitedLinkColor(const Color& v) { SET_VAR(inherited, visitedLinkColor, v); }
+Color ComputedStyle::color() const { return inherited->color; }
+Color ComputedStyle::visitedLinkColor() const { return inherited->visitedLinkColor; }
+void ComputedStyle::setColor(const Color& v) { SET_VAR(inherited, color, v); }
+void ComputedStyle::setVisitedLinkColor(const Color& v) { SET_VAR(inherited, visitedLinkColor, v); }
 
-short LayoutStyle::horizontalBorderSpacing() const { return inherited->horizontal_border_spacing; }
-short LayoutStyle::verticalBorderSpacing() const { return inherited->vertical_border_spacing; }
-void LayoutStyle::setHorizontalBorderSpacing(short v) { SET_VAR(inherited, horizontal_border_spacing, v); }
-void LayoutStyle::setVerticalBorderSpacing(short v) { SET_VAR(inherited, vertical_border_spacing, v); }
+short ComputedStyle::horizontalBorderSpacing() const { return inherited->horizontal_border_spacing; }
+short ComputedStyle::verticalBorderSpacing() const { return inherited->vertical_border_spacing; }
+void ComputedStyle::setHorizontalBorderSpacing(short v) { SET_VAR(inherited, horizontal_border_spacing, v); }
+void ComputedStyle::setVerticalBorderSpacing(short v) { SET_VAR(inherited, vertical_border_spacing, v); }
 
-FloatRoundedRect LayoutStyle::getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+FloatRoundedRect ComputedStyle::getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
     if (hasBorderRadius()) {
@@ -1019,7 +1019,7 @@ FloatRoundedRect LayoutStyle::getRoundedBorderFor(const LayoutRect& borderRect, 
     return roundedRect;
 }
 
-FloatRoundedRect LayoutStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     bool horizontal = isHorizontalWritingMode();
 
@@ -1031,7 +1031,7 @@ FloatRoundedRect LayoutStyle::getRoundedInnerBorderFor(const LayoutRect& borderR
     return getRoundedInnerBorderFor(borderRect, topWidth, bottomWidth, leftWidth, rightWidth, includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-FloatRoundedRect LayoutStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
+FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
     int topWidth, int bottomWidth, int leftWidth, int rightWidth, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     LayoutRect innerRect(borderRect.x() + leftWidth,
@@ -1059,17 +1059,17 @@ static bool allLayersAreFixed(const FillLayer& layer)
     return true;
 }
 
-bool LayoutStyle::hasEntirelyFixedBackground() const
+bool ComputedStyle::hasEntirelyFixedBackground() const
 {
     return allLayersAreFixed(backgroundLayers());
 }
 
-const CounterDirectiveMap* LayoutStyle::counterDirectives() const
+const CounterDirectiveMap* ComputedStyle::counterDirectives() const
 {
     return rareNonInheritedData->m_counterDirectives.get();
 }
 
-CounterDirectiveMap& LayoutStyle::accessCounterDirectives()
+CounterDirectiveMap& ComputedStyle::accessCounterDirectives()
 {
     OwnPtr<CounterDirectiveMap>& map = rareNonInheritedData.access()->m_counterDirectives;
     if (!map)
@@ -1077,14 +1077,14 @@ CounterDirectiveMap& LayoutStyle::accessCounterDirectives()
     return *map;
 }
 
-const CounterDirectives LayoutStyle::getCounterDirectives(const AtomicString& identifier) const
+const CounterDirectives ComputedStyle::getCounterDirectives(const AtomicString& identifier) const
 {
     if (const CounterDirectiveMap* directives = counterDirectives())
         return directives->get(identifier);
     return CounterDirectives();
 }
 
-void LayoutStyle::clearIncrementDirectives()
+void ComputedStyle::clearIncrementDirectives()
 {
     if (!counterDirectives())
         return;
@@ -1098,7 +1098,7 @@ void LayoutStyle::clearIncrementDirectives()
         it->value.clearIncrement();
 }
 
-void LayoutStyle::clearResetDirectives()
+void ComputedStyle::clearResetDirectives()
 {
     if (!counterDirectives())
         return;
@@ -1112,7 +1112,7 @@ void LayoutStyle::clearResetDirectives()
         it->value.clearReset();
 }
 
-const AtomicString& LayoutStyle::hyphenString() const
+const AtomicString& ComputedStyle::hyphenString() const
 {
     const AtomicString& hyphenationString = rareInheritedData.get()->hyphenationString;
     if (!hyphenationString.isNull())
@@ -1124,7 +1124,7 @@ const AtomicString& LayoutStyle::hyphenString() const
     return font().primaryFontHasGlyphForCharacter(hyphen) ? hyphenString : hyphenMinusString;
 }
 
-const AtomicString& LayoutStyle::textEmphasisMarkString() const
+const AtomicString& ComputedStyle::textEmphasisMarkString() const
 {
     switch (textEmphasisMark()) {
     case TextEmphasisMarkNone:
@@ -1165,32 +1165,32 @@ const AtomicString& LayoutStyle::textEmphasisMarkString() const
     return nullAtom;
 }
 
-CSSAnimationData& LayoutStyle::accessAnimations()
+CSSAnimationData& ComputedStyle::accessAnimations()
 {
     if (!rareNonInheritedData.access()->m_animations)
         rareNonInheritedData.access()->m_animations = CSSAnimationData::create();
     return *rareNonInheritedData->m_animations;
 }
 
-CSSTransitionData& LayoutStyle::accessTransitions()
+CSSTransitionData& ComputedStyle::accessTransitions()
 {
     if (!rareNonInheritedData.access()->m_transitions)
         rareNonInheritedData.access()->m_transitions = CSSTransitionData::create();
     return *rareNonInheritedData->m_transitions;
 }
 
-const Font& LayoutStyle::font() const { return inherited->font; }
-const FontMetrics& LayoutStyle::fontMetrics() const { return inherited->font.fontMetrics(); }
-const FontDescription& LayoutStyle::fontDescription() const { return inherited->font.fontDescription(); }
-float LayoutStyle::specifiedFontSize() const { return fontDescription().specifiedSize(); }
-float LayoutStyle::computedFontSize() const { return fontDescription().computedSize(); }
-int LayoutStyle::fontSize() const { return fontDescription().computedPixelSize(); }
-float LayoutStyle::fontSizeAdjust() const { return fontDescription().sizeAdjust(); }
-bool LayoutStyle::hasFontSizeAdjust() const { return fontDescription().hasSizeAdjust(); }
-FontWeight LayoutStyle::fontWeight() const { return fontDescription().weight(); }
-FontStretch LayoutStyle::fontStretch() const { return fontDescription().stretch(); }
+const Font& ComputedStyle::font() const { return inherited->font; }
+const FontMetrics& ComputedStyle::fontMetrics() const { return inherited->font.fontMetrics(); }
+const FontDescription& ComputedStyle::fontDescription() const { return inherited->font.fontDescription(); }
+float ComputedStyle::specifiedFontSize() const { return fontDescription().specifiedSize(); }
+float ComputedStyle::computedFontSize() const { return fontDescription().computedSize(); }
+int ComputedStyle::fontSize() const { return fontDescription().computedPixelSize(); }
+float ComputedStyle::fontSizeAdjust() const { return fontDescription().sizeAdjust(); }
+bool ComputedStyle::hasFontSizeAdjust() const { return fontDescription().hasSizeAdjust(); }
+FontWeight ComputedStyle::fontWeight() const { return fontDescription().weight(); }
+FontStretch ComputedStyle::fontStretch() const { return fontDescription().stretch(); }
 
-TextDecoration LayoutStyle::textDecorationsInEffect() const
+TextDecoration ComputedStyle::textDecorationsInEffect() const
 {
     int decorations = 0;
 
@@ -1202,7 +1202,7 @@ TextDecoration LayoutStyle::textDecorationsInEffect() const
     return static_cast<TextDecoration>(decorations);
 }
 
-const Vector<AppliedTextDecoration>& LayoutStyle::appliedTextDecorations() const
+const Vector<AppliedTextDecoration>& ComputedStyle::appliedTextDecorations() const
 {
     if (!inherited_flags.m_textUnderline && !rareInheritedData->appliedTextDecorations) {
         DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
@@ -1216,10 +1216,10 @@ const Vector<AppliedTextDecoration>& LayoutStyle::appliedTextDecorations() const
     return rareInheritedData->appliedTextDecorations->vector();
 }
 
-float LayoutStyle::wordSpacing() const { return fontDescription().wordSpacing(); }
-float LayoutStyle::letterSpacing() const { return fontDescription().letterSpacing(); }
+float ComputedStyle::wordSpacing() const { return fontDescription().wordSpacing(); }
+float ComputedStyle::letterSpacing() const { return fontDescription().letterSpacing(); }
 
-bool LayoutStyle::setFontDescription(const FontDescription& v)
+bool ComputedStyle::setFontDescription(const FontDescription& v)
 {
     if (inherited->font.fontDescription() != v) {
         inherited.access()->font = Font(v);
@@ -1228,8 +1228,8 @@ bool LayoutStyle::setFontDescription(const FontDescription& v)
     return false;
 }
 
-const Length& LayoutStyle::specifiedLineHeight() const { return inherited->line_height; }
-Length LayoutStyle::lineHeight() const
+const Length& ComputedStyle::specifiedLineHeight() const { return inherited->line_height; }
+Length ComputedStyle::lineHeight() const
 {
     const Length& lh = inherited->line_height;
     // Unlike fontDescription().computedSize() and hence fontSize(), this is
@@ -1243,9 +1243,9 @@ Length LayoutStyle::lineHeight() const
     return lh;
 }
 
-void LayoutStyle::setLineHeight(const Length& specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
+void ComputedStyle::setLineHeight(const Length& specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
 
-int LayoutStyle::computedLineHeight() const
+int ComputedStyle::computedLineHeight() const
 {
     const Length& lh = lineHeight();
 
@@ -1259,7 +1259,7 @@ int LayoutStyle::computedLineHeight() const
     return lh.value();
 }
 
-void LayoutStyle::setWordSpacing(float wordSpacing)
+void ComputedStyle::setWordSpacing(float wordSpacing)
 {
     FontSelector* currentFontSelector = font().fontSelector();
     FontDescription desc(fontDescription());
@@ -1268,7 +1268,7 @@ void LayoutStyle::setWordSpacing(float wordSpacing)
     font().update(currentFontSelector);
 }
 
-void LayoutStyle::setLetterSpacing(float letterSpacing)
+void ComputedStyle::setLetterSpacing(float letterSpacing)
 {
     FontSelector* currentFontSelector = font().fontSelector();
     FontDescription desc(fontDescription());
@@ -1277,7 +1277,7 @@ void LayoutStyle::setLetterSpacing(float letterSpacing)
     font().update(currentFontSelector);
 }
 
-void LayoutStyle::setTextAutosizingMultiplier(float multiplier)
+void ComputedStyle::setTextAutosizingMultiplier(float multiplier)
 {
     SET_VAR(inherited, textAutosizingMultiplier, multiplier);
 
@@ -1303,7 +1303,7 @@ void LayoutStyle::setTextAutosizingMultiplier(float multiplier)
     font().update(currentFontSelector);
 }
 
-void LayoutStyle::addAppliedTextDecoration(const AppliedTextDecoration& decoration)
+void ComputedStyle::addAppliedTextDecoration(const AppliedTextDecoration& decoration)
 {
     RefPtr<AppliedTextDecorationList>& list = rareInheritedData.access()->appliedTextDecorations;
 
@@ -1320,7 +1320,7 @@ void LayoutStyle::addAppliedTextDecoration(const AppliedTextDecoration& decorati
     list->append(decoration);
 }
 
-void LayoutStyle::applyTextDecorations()
+void ComputedStyle::applyTextDecorations()
 {
     if (textDecoration() == TextDecorationNone)
         return;
@@ -1346,7 +1346,7 @@ void LayoutStyle::applyTextDecorations()
         addAppliedTextDecoration(AppliedTextDecoration(TextDecorationLineThrough, style, styleColor));
 }
 
-void LayoutStyle::clearAppliedTextDecorations()
+void ComputedStyle::clearAppliedTextDecorations()
 {
     inherited_flags.m_textUnderline = false;
 
@@ -1354,13 +1354,13 @@ void LayoutStyle::clearAppliedTextDecorations()
         rareInheritedData.access()->appliedTextDecorations = nullptr;
 }
 
-void LayoutStyle::clearMultiCol()
+void ComputedStyle::clearMultiCol()
 {
     rareNonInheritedData.access()->m_multiCol = nullptr;
     rareNonInheritedData.access()->m_multiCol.init();
 }
 
-StyleColor LayoutStyle::decorationColorIncludingFallback(bool visitedLink) const
+StyleColor ComputedStyle::decorationColorIncludingFallback(bool visitedLink) const
 {
     StyleColor styleColor = visitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
 
@@ -1377,7 +1377,7 @@ StyleColor LayoutStyle::decorationColorIncludingFallback(bool visitedLink) const
     return visitedLink ? visitedLinkTextFillColor() : textFillColor();
 }
 
-Color LayoutStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
+Color ComputedStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
 {
     StyleColor result(StyleColor::currentColor());
     EBorderStyle borderStyle = BNONE;
@@ -1449,7 +1449,7 @@ Color LayoutStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
     return visitedLink ? visitedLinkColor() : color();
 }
 
-Color LayoutStyle::visitedDependentColor(int colorProperty) const
+Color ComputedStyle::visitedDependentColor(int colorProperty) const
 {
     Color unvisitedColor = colorIncludingFallback(colorProperty, false);
     if (insideLink() != InsideVisitedLink)
@@ -1469,7 +1469,7 @@ Color LayoutStyle::visitedDependentColor(int colorProperty) const
     return Color(visitedColor.red(), visitedColor.green(), visitedColor.blue(), unvisitedColor.alpha());
 }
 
-const BorderValue& LayoutStyle::borderBefore() const
+const BorderValue& ComputedStyle::borderBefore() const
 {
     switch (writingMode()) {
     case TopToBottomWritingMode:
@@ -1485,7 +1485,7 @@ const BorderValue& LayoutStyle::borderBefore() const
     return borderTop();
 }
 
-const BorderValue& LayoutStyle::borderAfter() const
+const BorderValue& ComputedStyle::borderAfter() const
 {
     switch (writingMode()) {
     case TopToBottomWritingMode:
@@ -1501,21 +1501,21 @@ const BorderValue& LayoutStyle::borderAfter() const
     return borderBottom();
 }
 
-const BorderValue& LayoutStyle::borderStart() const
+const BorderValue& ComputedStyle::borderStart() const
 {
     if (isHorizontalWritingMode())
         return isLeftToRightDirection() ? borderLeft() : borderRight();
     return isLeftToRightDirection() ? borderTop() : borderBottom();
 }
 
-const BorderValue& LayoutStyle::borderEnd() const
+const BorderValue& ComputedStyle::borderEnd() const
 {
     if (isHorizontalWritingMode())
         return isLeftToRightDirection() ? borderRight() : borderLeft();
     return isLeftToRightDirection() ? borderBottom() : borderTop();
 }
 
-unsigned short LayoutStyle::borderBeforeWidth() const
+unsigned short ComputedStyle::borderBeforeWidth() const
 {
     switch (writingMode()) {
     case TopToBottomWritingMode:
@@ -1531,7 +1531,7 @@ unsigned short LayoutStyle::borderBeforeWidth() const
     return borderTopWidth();
 }
 
-unsigned short LayoutStyle::borderAfterWidth() const
+unsigned short ComputedStyle::borderAfterWidth() const
 {
     switch (writingMode()) {
     case TopToBottomWritingMode:
@@ -1547,21 +1547,21 @@ unsigned short LayoutStyle::borderAfterWidth() const
     return borderBottomWidth();
 }
 
-unsigned short LayoutStyle::borderStartWidth() const
+unsigned short ComputedStyle::borderStartWidth() const
 {
     if (isHorizontalWritingMode())
         return isLeftToRightDirection() ? borderLeftWidth() : borderRightWidth();
     return isLeftToRightDirection() ? borderTopWidth() : borderBottomWidth();
 }
 
-unsigned short LayoutStyle::borderEndWidth() const
+unsigned short ComputedStyle::borderEndWidth() const
 {
     if (isHorizontalWritingMode())
         return isLeftToRightDirection() ? borderRightWidth() : borderLeftWidth();
     return isLeftToRightDirection() ? borderBottomWidth() : borderTopWidth();
 }
 
-void LayoutStyle::setMarginStart(const Length& margin)
+void ComputedStyle::setMarginStart(const Length& margin)
 {
     if (isHorizontalWritingMode()) {
         if (isLeftToRightDirection())
@@ -1576,7 +1576,7 @@ void LayoutStyle::setMarginStart(const Length& margin)
     }
 }
 
-void LayoutStyle::setMarginEnd(const Length& margin)
+void ComputedStyle::setMarginEnd(const Length& margin)
 {
     if (isHorizontalWritingMode()) {
         if (isLeftToRightDirection())
@@ -1591,25 +1591,25 @@ void LayoutStyle::setMarginEnd(const Length& margin)
     }
 }
 
-void LayoutStyle::setMotionPath(PassRefPtr<StyleMotionPath> path)
+void ComputedStyle::setMotionPath(PassRefPtr<StyleMotionPath> path)
 {
     ASSERT(path);
     rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
 }
 
-void LayoutStyle::resetMotionPath()
+void ComputedStyle::resetMotionPath()
 {
     rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = nullptr;
 }
 
-bool LayoutStyle::columnRuleEquivalent(const LayoutStyle* otherStyle) const
+bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const
 {
     return columnRuleStyle() == otherStyle->columnRuleStyle()
         && columnRuleWidth() == otherStyle->columnRuleWidth()
         && visitedDependentColor(CSSPropertyWebkitColumnRuleColor) == otherStyle->visitedDependentColor(CSSPropertyWebkitColumnRuleColor);
 }
 
-TextEmphasisMark LayoutStyle::textEmphasisMark() const
+TextEmphasisMark ComputedStyle::textEmphasisMark() const
 {
     TextEmphasisMark mark = static_cast<TextEmphasisMark>(rareInheritedData->textEmphasisMark);
     if (mark != TextEmphasisMarkAuto)
@@ -1621,20 +1621,20 @@ TextEmphasisMark LayoutStyle::textEmphasisMark() const
     return TextEmphasisMarkSesame;
 }
 
-Color LayoutStyle::initialTapHighlightColor()
+Color ComputedStyle::initialTapHighlightColor()
 {
     return LayoutTheme::tapHighlightColor();
 }
 
 #if ENABLE(OILPAN)
-const FilterOperations& LayoutStyle::initialFilter()
+const FilterOperations& ComputedStyle::initialFilter()
 {
     DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops, (FilterOperationsWrapper::create()));
     return ops->operations();
 }
 #endif
 
-LayoutRectOutsets LayoutStyle::imageOutsets(const NinePieceImage& image) const
+LayoutRectOutsets ComputedStyle::imageOutsets(const NinePieceImage& image) const
 {
     return LayoutRectOutsets(
         NinePieceImage::computeOutset(image.outset().top(), borderTopWidth()),
@@ -1643,42 +1643,42 @@ LayoutRectOutsets LayoutStyle::imageOutsets(const NinePieceImage& image) const
         NinePieceImage::computeOutset(image.outset().left(), borderLeftWidth()));
 }
 
-void LayoutStyle::setBorderImageSource(PassRefPtr<StyleImage> image)
+void ComputedStyle::setBorderImageSource(PassRefPtr<StyleImage> image)
 {
     if (surround->border.m_image.image() == image.get())
         return;
     surround.access()->border.m_image.setImage(image);
 }
 
-void LayoutStyle::setBorderImageSlices(const LengthBox& slices)
+void ComputedStyle::setBorderImageSlices(const LengthBox& slices)
 {
     if (surround->border.m_image.imageSlices() == slices)
         return;
     surround.access()->border.m_image.setImageSlices(slices);
 }
 
-void LayoutStyle::setBorderImageSlicesFill(bool fill)
+void ComputedStyle::setBorderImageSlicesFill(bool fill)
 {
     if (surround->border.m_image.fill() == fill)
         return;
     surround.access()->border.m_image.setFill(fill);
 }
 
-void LayoutStyle::setBorderImageWidth(const BorderImageLengthBox& slices)
+void ComputedStyle::setBorderImageWidth(const BorderImageLengthBox& slices)
 {
     if (surround->border.m_image.borderSlices() == slices)
         return;
     surround.access()->border.m_image.setBorderSlices(slices);
 }
 
-void LayoutStyle::setBorderImageOutset(const BorderImageLengthBox& outset)
+void ComputedStyle::setBorderImageOutset(const BorderImageLengthBox& outset)
 {
     if (surround->border.m_image.outset() == outset)
         return;
     surround.access()->border.m_image.setOutset(outset);
 }
 
-bool LayoutStyle::borderObscuresBackground() const
+bool ComputedStyle::borderObscuresBackground() const
 {
     if (!hasBorder())
         return false;
@@ -1699,7 +1699,7 @@ bool LayoutStyle::borderObscuresBackground() const
     return true;
 }
 
-void LayoutStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+void ComputedStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     bool horizontal = isHorizontalWritingMode();
 

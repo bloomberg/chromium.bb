@@ -95,7 +95,7 @@ public:
         return !(m_left.isZero() && m_right.isZero() && m_top.isZero() && m_bottom.isZero());
     }
 
-    // Must be public for SET_VAR in LayoutStyle.h
+    // Must be public for SET_VAR in ComputedStyle.h
     Length m_left;
     Length m_right;
     Length m_top;

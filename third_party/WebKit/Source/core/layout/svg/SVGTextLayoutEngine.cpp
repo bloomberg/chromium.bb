@@ -245,7 +245,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
     ASSERT(text.parent()->node());
     ASSERT(text.parent()->node()->isSVGElement());
 
-    const LayoutStyle& style = text.styleRef();
+    const ComputedStyle& style = text.styleRef();
 
     textBox->clearTextFragments();
     m_isVerticalText = style.svgStyle().isVerticalWritingMode();
@@ -422,7 +422,7 @@ void SVGTextLayoutEngine::advanceToNextVisualCharacter(const SVGTextMetrics& vis
     m_visualCharacterOffset += visualMetrics.length();
 }
 
-void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, const LayoutSVGInlineText& text, const LayoutStyle& style)
+void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, const LayoutSVGInlineText& text, const ComputedStyle& style)
 {
     if (m_inPathLayout && !m_textPathCalculator)
         return;
@@ -430,7 +430,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
     LayoutObject* textParent = text.parent();
     bool definesTextLength = textParent ? parentDefinesTextLength(textParent) : false;
 
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     m_visualMetricsListOffset = 0;
     m_visualCharacterOffset = 0;

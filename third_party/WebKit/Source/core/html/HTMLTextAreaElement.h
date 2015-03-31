@@ -117,7 +117,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual bool appendFormData(FormDataList&, bool) override;
     virtual void resetImpl() override;
     virtual bool hasCustomFocusLogic() const override;

@@ -47,7 +47,7 @@ static bool hasValidPredecessor(const Node* node)
     return false;
 }
 
-bool LayoutSVGTransformableContainer::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutSVGTransformableContainer::isChildAllowed(LayoutObject* child, const ComputedStyle& style) const
 {
     ASSERT(element());
     if (isSVGSwitchElement(*element())) {

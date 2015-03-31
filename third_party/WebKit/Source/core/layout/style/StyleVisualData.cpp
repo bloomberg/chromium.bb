@@ -22,14 +22,14 @@
 #include "config.h"
 #include "core/layout/style/StyleVisualData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleVisualData::StyleVisualData()
     : hasAutoClip(true)
-    , textDecoration(LayoutStyle::initialTextDecoration())
-    , m_zoom(LayoutStyle::initialZoom())
+    , textDecoration(ComputedStyle::initialTextDecoration())
+    , m_zoom(ComputedStyle::initialZoom())
 {
 }
 
@@ -42,7 +42,7 @@ StyleVisualData::StyleVisualData(const StyleVisualData& o)
     , clip(o.clip)
     , hasAutoClip(o.hasAutoClip)
     , textDecoration(o.textDecoration)
-    , m_zoom(LayoutStyle::initialZoom())
+    , m_zoom(ComputedStyle::initialZoom())
 {
 }
 

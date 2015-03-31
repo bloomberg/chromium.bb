@@ -815,12 +815,12 @@ void HTMLInputElement::finishParsingChildren()
     }
 }
 
-bool HTMLInputElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLInputElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return m_inputType->layoutObjectIsNeeded() && HTMLTextFormControlElement::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::createLayoutObject(const LayoutStyle& style)
+LayoutObject* HTMLInputElement::createLayoutObject(const ComputedStyle& style)
 {
     return m_inputTypeView->createLayoutObject(style);
 }
@@ -1895,7 +1895,7 @@ bool HTMLInputElement::supportsAutofocus() const
     return m_inputType->isInteractiveContent();
 }
 
-PassRefPtr<LayoutStyle> HTMLInputElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> HTMLInputElement::customStyleForLayoutObject()
 {
     return m_inputTypeView->customStyleForLayoutObject(originalStyleForLayoutObject());
 }

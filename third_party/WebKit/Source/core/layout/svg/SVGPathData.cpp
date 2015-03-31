@@ -22,7 +22,7 @@
 
 #include "core/SVGNames.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
 #include "core/svg/SVGLineElement.h"
@@ -43,7 +43,7 @@ static void updatePathFromCircleElement(SVGElement* element, Path& path)
     ASSERT(element->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    const LayoutStyle& style = element->layoutObject()->styleRef();
+    const ComputedStyle& style = element->layoutObject()->styleRef();
     float r = lengthContext.valueForLength(style.svgStyle().r(), style, SVGLengthMode::Other);
     if (r > 0) {
         path.addEllipse(FloatRect(
@@ -58,7 +58,7 @@ static void updatePathFromEllipseElement(SVGElement* element, Path& path)
     ASSERT(element->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    const LayoutStyle& style = element->layoutObject()->styleRef();
+    const ComputedStyle& style = element->layoutObject()->styleRef();
     float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);
     if (rx < 0)
         return;
@@ -116,7 +116,7 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
     ASSERT(rect->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    const LayoutStyle& style = rect->layoutObject()->styleRef();
+    const ComputedStyle& style = rect->layoutObject()->styleRef();
     float width = lengthContext.valueForLength(style.width(), style, SVGLengthMode::Width);
     if (width < 0)
         return;

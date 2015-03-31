@@ -804,7 +804,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
         || node->hasTagName(h5Tag)
         || node->hasTagName(h6Tag)
         || node->hasTagName(pTag)) {
-        const LayoutStyle* style = r->style();
+        const ComputedStyle* style = r->style();
         if (style) {
             int bottomMargin = toLayoutBox(r)->collapsedMarginAfter();
             int fontSize = style->fontDescription().computedPixelSize();

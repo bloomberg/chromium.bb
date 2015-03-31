@@ -118,7 +118,7 @@ class LayoutMultiColumnFlowThread : public LayoutFlowThread {
 public:
     virtual ~LayoutMultiColumnFlowThread();
 
-    static LayoutMultiColumnFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
+    static LayoutMultiColumnFlowThread* createAnonymous(Document&, const ComputedStyle& parentStyle);
 
     virtual bool isLayoutMultiColumnFlowThread() const override final { return true; }
 

@@ -182,7 +182,7 @@ CompositingReasons LayoutPart::additionalCompositingReasons() const
     return CompositingReasonNone;
 }
 
-void LayoutPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutPart::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutReplaced::styleDidChange(diff, oldStyle);
     Widget* widget = this->widget();

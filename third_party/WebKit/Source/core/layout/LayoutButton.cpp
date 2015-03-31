@@ -61,7 +61,7 @@ void LayoutButton::removeChild(LayoutObject* oldChild)
     }
 }
 
-void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child, LayoutStyle& childStyle) const
+void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child, ComputedStyle& childStyle) const
 {
     ASSERT(!m_inner || &child == m_inner);
 

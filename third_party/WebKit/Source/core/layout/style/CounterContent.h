@@ -25,7 +25,7 @@
 #ifndef CounterContent_h
 #define CounterContent_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

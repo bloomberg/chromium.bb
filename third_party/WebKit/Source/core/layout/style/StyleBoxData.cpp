@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/layout/style/StyleBoxData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -35,10 +35,10 @@ struct SameSizeAsStyleBoxData : public RefCounted<SameSizeAsStyleBoxData> {
 static_assert(sizeof(StyleBoxData) == sizeof(SameSizeAsStyleBoxData), "StyleBoxData should stay small");
 
 StyleBoxData::StyleBoxData()
-    : m_minWidth(LayoutStyle::initialMinSize())
-    , m_maxWidth(LayoutStyle::initialMaxSize())
-    , m_minHeight(LayoutStyle::initialMinSize())
-    , m_maxHeight(LayoutStyle::initialMaxSize())
+    : m_minWidth(ComputedStyle::initialMinSize())
+    , m_maxWidth(ComputedStyle::initialMaxSize())
+    , m_minHeight(ComputedStyle::initialMinSize())
+    , m_maxHeight(ComputedStyle::initialMaxSize())
     , m_zIndex(0)
     , m_hasAutoZIndex(true)
     , m_boxSizing(CONTENT_BOX)

@@ -34,7 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserverRegistry.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -562,7 +562,7 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
     for (Element* element = ElementTraversal::firstWithin(rootNode()); element; element = ElementTraversal::nextIncludingPseudo(*element)) {
         for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot())
             root->setNeedsStyleRecalcForViewportUnits();
-        const LayoutStyle* style = element->layoutStyle();
+        const ComputedStyle* style = element->computedStyle();
         if (style && style->hasViewportUnits())
             element->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ViewportUnits));
     }

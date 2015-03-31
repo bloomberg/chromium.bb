@@ -215,7 +215,7 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
     }
 }
 
-LayoutObject* VTTCueBox::createLayoutObject(const LayoutStyle&)
+LayoutObject* VTTCueBox::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutVTTCue(this);
 }

@@ -41,9 +41,9 @@ class CSSBasicShape;
 class CSSValue;
 class FloatPoint;
 class StyleResolverState;
-class LayoutStyle;
+class ComputedStyle;
 
-PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const LayoutStyle&, const BasicShape*);
+PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const ComputedStyle&, const BasicShape*);
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShape*);
 FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate&, const BasicShapeCenterCoordinate&, FloatSize);
 

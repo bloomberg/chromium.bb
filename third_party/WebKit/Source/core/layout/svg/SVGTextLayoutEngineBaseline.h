@@ -20,7 +20,7 @@
 #ifndef SVGTextLayoutEngineBaseline_h
 #define SVGTextLayoutEngineBaseline_h
 
-#include "core/layout/style/SVGLayoutStyleDefs.h"
+#include "core/layout/style/SVGComputedStyleDefs.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/unicode/Unicode.h"
 
@@ -28,8 +28,8 @@ namespace blink {
 
 class Font;
 class LayoutObject;
-class LayoutStyle;
-class SVGLayoutStyle;
+class ComputedStyle;
+class SVGComputedStyle;
 class SVGTextMetrics;
 
 // Helper class used by SVGTextLayoutEngine to handle 'alignment-baseline' / 'dominant-baseline' and 'baseline-shift'.
@@ -38,9 +38,9 @@ class SVGTextLayoutEngineBaseline {
 public:
     SVGTextLayoutEngineBaseline(const Font&);
 
-    float calculateBaselineShift(const LayoutStyle&) const;
+    float calculateBaselineShift(const ComputedStyle&) const;
     float calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textRenderer) const;
-    float calculateGlyphOrientationAngle(bool isVerticalText, const SVGLayoutStyle&, const UChar& character) const;
+    float calculateGlyphOrientationAngle(bool isVerticalText, const SVGComputedStyle&, const UChar& character) const;
     float calculateGlyphAdvanceAndOrientation(bool isVerticalText, const SVGTextMetrics&, float angle, float& xOrientationShift, float& yOrientationShift) const;
 
 private:

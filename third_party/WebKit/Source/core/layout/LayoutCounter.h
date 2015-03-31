@@ -39,7 +39,7 @@ public:
     static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
     static void rendererSubtreeAttached(LayoutObject*);
     static void rendererRemovedFromTree(LayoutObject*);
-    static void rendererStyleChanged(LayoutObject&, const LayoutStyle* oldStyle, const LayoutStyle& newStyle);
+    static void rendererStyleChanged(LayoutObject&, const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
     void updateCounter();
 

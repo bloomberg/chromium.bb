@@ -126,7 +126,7 @@ private:
     virtual void finishParsingChildren() override final;
 
     // Element functions:
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual bool supportsFocus() const override final { return true; }
     virtual bool layoutObjectIsFocusable() const override final;
     virtual bool isKeyboardFocusable() const override final;

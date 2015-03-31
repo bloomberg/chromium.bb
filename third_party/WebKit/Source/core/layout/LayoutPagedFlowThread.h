@@ -15,7 +15,7 @@ namespace blink {
 // inherit from that one.
 class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
 public:
-    static LayoutPagedFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
+    static LayoutPagedFlowThread* createAnonymous(Document&, const ComputedStyle& parentStyle);
 
     LayoutBlockFlow* pagedBlockFlow() const { return toLayoutBlockFlow(parent()); }
 

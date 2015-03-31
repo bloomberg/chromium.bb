@@ -37,19 +37,19 @@
 
 // - font
 // The default property handlers call into the FontBuilder instead of setting
-// values directly onto the LayoutStyle
+// values directly onto the ComputedStyle
 // - svg
-// The default property handlers access the SVGLayoutStyle
+// The default property handlers access the SVGComputedStyle
 
 // - name_for_methods=BlendMode
 // Tweaks how we choose defaults for getter, setter, initial and type_name.
 // For example, setting this to BlendMode will make us use a setter of setBlendMode
 // - initial
-// The initial value accessor on the LayoutStyle, defaults to e.g. initialBoxShadow
+// The initial value accessor on the ComputedStyle, defaults to e.g. initialBoxShadow
 // - getter
-// The LayoutStyle getter, defaults to e.g. borderBottomLeft
+// The ComputedStyle getter, defaults to e.g. borderBottomLeft
 // - setter
-// The LayoutStyle setter, defaults to e.g. setBorderBottomLeft
+// The ComputedStyle setter, defaults to e.g. setBorderBottomLeft
 // - type_name
 // The computed type for the property. Only required for the default value
 // application, defaults to e.g. EDisplay

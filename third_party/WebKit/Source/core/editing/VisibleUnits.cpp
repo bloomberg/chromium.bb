@@ -1115,7 +1115,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             n = NodeTraversal::previousPostOrder(*n, startBlock);
             continue;
         }
-        const LayoutStyle& style = r->styleRef();
+        const ComputedStyle& style = r->styleRef();
         if (style.visibility() != VISIBLE) {
             n = NodeTraversal::previousPostOrder(*n, startBlock);
             continue;
@@ -1194,7 +1194,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
             n = NodeTraversal::next(*n, stayInsideBlock);
             continue;
         }
-        const LayoutStyle& style = r->styleRef();
+        const ComputedStyle& style = r->styleRef();
         if (style.visibility() != VISIBLE) {
             n = NodeTraversal::next(*n, stayInsideBlock);
             continue;

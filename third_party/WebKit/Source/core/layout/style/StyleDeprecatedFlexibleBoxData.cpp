@@ -22,18 +22,18 @@
 #include "config.h"
 #include "core/layout/style/StyleDeprecatedFlexibleBoxData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData()
-    : flex(LayoutStyle::initialBoxFlex())
-    , flexGroup(LayoutStyle::initialBoxFlexGroup())
-    , ordinalGroup(LayoutStyle::initialBoxOrdinalGroup())
-    , align(LayoutStyle::initialBoxAlign())
-    , pack(LayoutStyle::initialBoxPack())
-    , orient(LayoutStyle::initialBoxOrient())
-    , lines(LayoutStyle::initialBoxLines())
+    : flex(ComputedStyle::initialBoxFlex())
+    , flexGroup(ComputedStyle::initialBoxFlexGroup())
+    , ordinalGroup(ComputedStyle::initialBoxOrdinalGroup())
+    , align(ComputedStyle::initialBoxAlign())
+    , pack(ComputedStyle::initialBoxPack())
+    , orient(ComputedStyle::initialBoxOrient())
+    , lines(ComputedStyle::initialBoxLines())
 {
 }
 

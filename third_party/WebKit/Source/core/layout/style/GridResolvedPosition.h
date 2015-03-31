@@ -11,7 +11,7 @@ namespace blink {
 
 struct GridSpan;
 class LayoutBox;
-class LayoutStyle;
+class ComputedStyle;
 
 enum GridPositionSide {
     ColumnStartSide,
@@ -43,13 +43,13 @@ public:
         return GridResolvedPosition(resolvedPosition);
     }
 
-    static void initialAndFinalPositionsFromStyle(const LayoutStyle&, const LayoutBox&, GridTrackSizingDirection, GridPosition &initialPosition, GridPosition &finalPosition);
-    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const LayoutStyle&, const LayoutBox&, GridTrackSizingDirection, const GridResolvedPosition&);
-    static PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const LayoutStyle&, const LayoutBox&, GridTrackSizingDirection);
-    static GridResolvedPosition resolveNamedGridLinePositionFromStyle(const LayoutStyle&, const GridPosition&, GridPositionSide);
-    static GridResolvedPosition resolveGridPositionFromStyle(const LayoutStyle&, const GridPosition&, GridPositionSide);
-    static PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(const LayoutStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
-    static PassOwnPtr<GridSpan> resolveNamedGridLinePositionAgainstOppositePosition(const LayoutStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
+    static void initialAndFinalPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, GridPosition &initialPosition, GridPosition &finalPosition);
+    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, const GridResolvedPosition&);
+    static PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
+    static GridResolvedPosition resolveNamedGridLinePositionFromStyle(const ComputedStyle&, const GridPosition&, GridPositionSide);
+    static GridResolvedPosition resolveGridPositionFromStyle(const ComputedStyle&, const GridPosition&, GridPositionSide);
+    static PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
+    static PassOwnPtr<GridSpan> resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
 
     GridResolvedPosition(size_t position)
         : m_integerPosition(position)
@@ -115,12 +115,12 @@ public:
         return GridResolvedPosition(m_integerPosition + 1);
     }
 
-    static size_t explicitGridColumnCount(const LayoutStyle&);
-    static size_t explicitGridRowCount(const LayoutStyle&);
+    static size_t explicitGridColumnCount(const ComputedStyle&);
+    static size_t explicitGridRowCount(const ComputedStyle&);
 
 private:
 
-    static size_t explicitGridSizeForSide(const LayoutStyle&, GridPositionSide);
+    static size_t explicitGridSizeForSide(const ComputedStyle&, GridPositionSide);
 
     size_t m_integerPosition;
 };

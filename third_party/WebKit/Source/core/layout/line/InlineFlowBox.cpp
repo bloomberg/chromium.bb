@@ -119,8 +119,8 @@ void InlineFlowBox::addToLine(InlineBox* child)
     }
 
     if (descendantsHaveSameLineHeightAndBaseline() && !child->layoutObject().isOutOfFlowPositioned()) {
-        const LayoutStyle& parentStyle = layoutObject().styleRef(isFirstLineStyle());
-        const LayoutStyle& childStyle = child->layoutObject().styleRef(isFirstLineStyle());
+        const ComputedStyle& parentStyle = layoutObject().styleRef(isFirstLineStyle());
+        const ComputedStyle& childStyle = child->layoutObject().styleRef(isFirstLineStyle());
         bool shouldClearDescendantsHaveSameLineHeightAndBaseline = false;
         if (child->layoutObject().isReplaced()) {
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
@@ -157,7 +157,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
 
     if (!child->layoutObject().isOutOfFlowPositioned()) {
         if (child->isText()) {
-            const LayoutStyle& childStyle = child->layoutObject().styleRef(isFirstLineStyle());
+            const ComputedStyle& childStyle = child->layoutObject().styleRef(isFirstLineStyle());
             if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.textEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
         } else if (child->layoutObject().isReplaced()) {
@@ -744,7 +744,7 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
     if (!parent())
         return;
 
-    const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
     WritingMode writingMode = style.writingMode();
     ShadowList* boxShadow = style.boxShadow();
     if (!boxShadow)
@@ -766,7 +766,7 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
     if (!parent())
         return;
 
-    const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
     if (!style.hasBorderImageOutsets())
         return;
 
@@ -790,7 +790,7 @@ inline void InlineFlowBox::addOutlineVisualOverflow(LayoutRect& logicalVisualOve
     if (!parent())
         return;
 
-    const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
     if (!style.hasOutline())
         return;
 
@@ -802,7 +802,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     if (textBox->knownToHaveNoOverflow())
         return;
 
-    const LayoutStyle& style = textBox->layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = textBox->layoutObject().styleRef(isFirstLineStyle());
 
     GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.find(textBox);
     GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? 0 : &it->value.second;
@@ -1155,7 +1155,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
         }
 
         if (curr->isInlineTextBox()) {
-            const LayoutStyle& style = curr->layoutObject().styleRef(isFirstLineStyle());
+            const ComputedStyle& style = curr->layoutObject().styleRef(isFirstLineStyle());
             TextEmphasisPosition emphasisMarkPosition;
             if (style.textEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
                 if (!style.isFlippedLinesWritingMode()) {
@@ -1203,7 +1203,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
         }
 
         if (curr->isInlineTextBox()) {
-            const LayoutStyle& style = curr->layoutObject().styleRef(isFirstLineStyle());
+            const ComputedStyle& style = curr->layoutObject().styleRef(isFirstLineStyle());
             if (style.textEmphasisMark() != TextEmphasisMarkNone && style.textEmphasisPosition() == TextEmphasisPositionUnder) {
                 if (!style.isFlippedLinesWritingMode()) {
                     LayoutUnit bottomOfEmphasisMark = curr->logicalBottom() + style.font().emphasisMarkHeight(style.textEmphasisMarkString());

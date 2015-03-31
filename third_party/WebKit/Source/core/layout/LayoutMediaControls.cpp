@@ -130,7 +130,7 @@ static Image* getMediaSliderThumb()
     return mediaSliderThumb;
 }
 
-static void paintRoundedSliderBackground(const IntRect& rect, const LayoutStyle&, GraphicsContext* context)
+static void paintRoundedSliderBackground(const IntRect& rect, const ComputedStyle&, GraphicsContext* context)
 {
     int borderRadius = rect.height() / 2;
     IntSize radii(borderRadius, borderRadius);
@@ -138,7 +138,7 @@ static void paintRoundedSliderBackground(const IntRect& rect, const LayoutStyle&
     context->fillRoundedRect(rect, radii, radii, radii, radii, sliderBackgroundColor);
 }
 
-static void paintSliderRangeHighlight(const IntRect& rect, const LayoutStyle& style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)
+static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)
 {
     // Calculate border radius; need to avoid being smaller than half the slider height
     // because of https://bugs.webkit.org/show_bug.cgi?id=30143.
@@ -200,7 +200,7 @@ static bool paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, c
     if (!mediaElement)
         return false;
 
-    const LayoutStyle& style = object->styleRef();
+    const ComputedStyle& style = object->styleRef();
     GraphicsContext* context = paintInfo.context;
 
     paintRoundedSliderBackground(rect, style, context);
@@ -279,7 +279,7 @@ static bool paintMediaVolumeSlider(LayoutObject* object, const PaintInfo& paintI
         return false;
 
     GraphicsContext* context = paintInfo.context;
-    const LayoutStyle& style = object->styleRef();
+    const ComputedStyle& style = object->styleRef();
 
     paintRoundedSliderBackground(rect, style, context);
 
@@ -421,7 +421,7 @@ bool LayoutMediaControls::paintMediaControlsPart(MediaControlElementType part, L
 const int mediaSliderThumbHeight = 24;
 const int mediaVolumeSliderThumbHeight = 24;
 
-void LayoutMediaControls::adjustMediaSliderThumbSize(LayoutStyle& style)
+void LayoutMediaControls::adjustMediaSliderThumbSize(ComputedStyle& style)
 {
     static Image* mediaSliderThumb = platformResource("mediaplayerSliderThumb");
     static Image* mediaVolumeSliderThumb = platformResource("mediaplayerVolumeSliderThumb");

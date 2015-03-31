@@ -36,7 +36,7 @@ public:
 
     virtual const char* name() const override;
 
-    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
+    virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
 
     virtual void layoutBlock(bool relayoutChildren) override;
     void layoutHorizontalBox(bool relayoutChildren);

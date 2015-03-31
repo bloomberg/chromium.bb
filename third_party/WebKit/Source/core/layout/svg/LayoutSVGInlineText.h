@@ -38,7 +38,7 @@ public:
     float scalingFactor() const { return m_scalingFactor; }
     const Font& scaledFont() const { return m_scaledFont; }
     void updateScaledFont();
-    static void computeNewScaledFontForStyle(LayoutObject*, const LayoutStyle*, float& scalingFactor, Font& scaledFont);
+    static void computeNewScaledFontForStyle(LayoutObject*, const ComputedStyle*, float& scalingFactor, Font& scaledFont);
 
     // Preserves floating point precision for the use in DRT. It knows how to round and does a better job than enclosingIntRect.
     FloatRect floatLinesBoundingBox() const;
@@ -49,7 +49,7 @@ public:
 
 private:
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
-    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
     virtual FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
 

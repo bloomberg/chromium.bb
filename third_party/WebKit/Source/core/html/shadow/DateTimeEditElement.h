@@ -134,7 +134,7 @@ private:
     void updateUIState();
 
     // Element function.
-    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
+    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
     virtual bool isDateTimeEditElement() const override;
 
     // DateTimeFieldElement::FieldOwner functions.

@@ -440,7 +440,7 @@ public:
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 
-    // FIXME: SVG filters should change to store the filter on the LayoutStyle
+    // FIXME: SVG filters should change to store the filter on the ComputedStyle
     // instead of the LayoutObject so we can get rid of this hack.
     void scheduleSVGFilterLayerUpdateHack(Element&);
     void unscheduleSVGFilterLayerUpdateHack(Element&);
@@ -467,7 +467,7 @@ public:
     // Special support for editing
     PassRefPtrWillBeRawPtr<Text> createEditingTextNode(const String&);
 
-    void setupFontBuilder(LayoutStyle& documentStyle);
+    void setupFontBuilder(ComputedStyle& documentStyle);
 
     bool needsRenderTreeUpdate() const;
     void updateRenderTreeIfNeeded() { updateRenderTree(NoChange); }
@@ -478,8 +478,8 @@ public:
         RunPostLayoutTasksSynchronously,
     };
     void updateLayoutIgnorePendingStylesheets(RunPostLayoutTasks = RunPostLayoutTasksAsyhnchronously);
-    PassRefPtr<LayoutStyle> styleForElementIgnoringPendingStylesheets(Element*);
-    PassRefPtr<LayoutStyle> styleForPage(int pageIndex);
+    PassRefPtr<ComputedStyle> styleForElementIgnoringPendingStylesheets(Element*);
+    PassRefPtr<ComputedStyle> styleForPage(int pageIndex);
 
     // Returns true if page box (margin boxes and page borders) is visible.
     bool isPageBoxVisible(int pageIndex);
@@ -787,7 +787,7 @@ public:
     // that as the style for the root element, rather than obtaining it on our own. The reason for
     // this is that style may not have been associated with the elements yet - in which case it may
     // have been calculated on the fly (without associating it with the actual element) somewhere.
-    Element* viewportDefiningElement(const LayoutStyle* rootStyle = nullptr) const;
+    Element* viewportDefiningElement(const ComputedStyle* rootStyle = nullptr) const;
 
     DocumentMarkerController& markers() const { return *m_markers; }
 

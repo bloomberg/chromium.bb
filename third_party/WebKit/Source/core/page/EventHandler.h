@@ -29,7 +29,7 @@
 #include "core/editing/TextGranularity.h"
 #include "core/events/TextEventInputType.h"
 #include "core/layout/HitTestRequest.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/Cursor.h"

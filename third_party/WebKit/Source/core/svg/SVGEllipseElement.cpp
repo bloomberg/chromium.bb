@@ -124,7 +124,7 @@ bool SVGEllipseElement::selfHasRelativeLengths() const
         || m_ry->currentValue()->isRelative();
 }
 
-LayoutObject* SVGEllipseElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGEllipseElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGEllipse(this);
 }

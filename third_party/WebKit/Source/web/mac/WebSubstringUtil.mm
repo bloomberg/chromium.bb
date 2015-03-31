@@ -47,7 +47,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"
@@ -77,7 +77,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
         if (!renderer)
             continue;
 
-        LayoutStyle* style = renderer->style();
+        ComputedStyle* style = renderer->style();
         const FontPlatformData& fontPlatformData = style->font().primaryFont()->platformData();
         NSFont* font = toNSFont(fontPlatformData.ctFont());
         // If the platform font can't be loaded, it's likely that the site is

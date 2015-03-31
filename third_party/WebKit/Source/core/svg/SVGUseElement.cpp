@@ -438,7 +438,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     updateRelativeLengthsInformation();
 }
 
-LayoutObject* SVGUseElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGUseElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGTransformableContainer(this);
 }

@@ -33,7 +33,7 @@ namespace blink {
 
 class CSSValue;
 class FontSelector;
-class LayoutStyle;
+class ComputedStyle;
 
 class FontBuilder {
     STACK_ALLOCATED();
@@ -66,9 +66,9 @@ public:
     void setFontSmoothing(FontSmoothingMode);
 
     // FIXME: These need to just vend a Font object eventually.
-    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, LayoutStyle&);
+    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, ComputedStyle&);
 
-    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, LayoutStyle&);
+    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, ComputedStyle&);
 
     bool fontDirty() const { return m_flags; }
 
@@ -90,12 +90,12 @@ private:
 
     void setFamilyDescription(FontDescription&, const FontDescription::FamilyDescription&);
     void setSize(FontDescription&, const FontDescription::Size&);
-    void updateOrientation(FontDescription&, const LayoutStyle&);
+    void updateOrientation(FontDescription&, const ComputedStyle&);
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
     void checkForGenericFamilyChange(const FontDescription&, FontDescription&);
-    void updateSpecifiedSize(FontDescription&, const LayoutStyle&);
-    void updateComputedSize(FontDescription&, const LayoutStyle&);
-    void updateAdjustedSize(FontDescription&, const LayoutStyle&, FontSelector*);
+    void updateSpecifiedSize(FontDescription&, const ComputedStyle&);
+    void updateComputedSize(FontDescription&, const ComputedStyle&);
+    void updateAdjustedSize(FontDescription&, const ComputedStyle&, FontSelector*);
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 

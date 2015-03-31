@@ -13,7 +13,7 @@ namespace blink {
 class GraphicsContext;
 class LayoutBox;
 
-// Information extracted from LayoutStyle for box painting.
+// Information extracted from ComputedStyle for box painting.
 class BoxDecorationData {
 public:
     BoxDecorationData(const LayoutBox&, GraphicsContext*);
@@ -26,7 +26,7 @@ public:
 
 private:
     BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const LayoutBox&, GraphicsContext*);
-    bool borderObscuresBackgroundEdge(const LayoutStyle&, const FloatSize& contextScale) const;
+    bool borderObscuresBackgroundEdge(const ComputedStyle&, const FloatSize& contextScale) const;
     unsigned m_bleedAvoidance : 2; // BackgroundBleedAvoidance
 };
 

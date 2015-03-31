@@ -23,8 +23,8 @@
 
 #include "core/SVGNames.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/LayoutStyle.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 {
     LayoutObject* renderer = this->layoutObject();
     ASSERT(renderer);
-    const LayoutStyle& style = renderer->styleRef();
+    const ComputedStyle& style = renderer->styleRef();
     FEFlood* flood = static_cast<FEFlood*>(effect);
 
     if (attrName == SVGNames::flood_colorAttr)
@@ -58,7 +58,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*,
         return nullptr;
 
     ASSERT(renderer->style());
-    const SVGLayoutStyle& svgStyle = renderer->style()->svgStyle();
+    const SVGComputedStyle& svgStyle = renderer->style()->svgStyle();
 
     Color color = svgStyle.floodColor();
     float opacity = svgStyle.floodOpacity();

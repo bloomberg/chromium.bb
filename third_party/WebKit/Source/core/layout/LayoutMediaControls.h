@@ -40,7 +40,7 @@ class LayoutObject;
 class LayoutMediaControls {
 public:
     static bool paintMediaControlsPart(MediaControlElementType, LayoutObject*, const PaintInfo&, const IntRect&);
-    static void adjustMediaSliderThumbSize(LayoutStyle&);
+    static void adjustMediaSliderThumbSize(ComputedStyle&);
     static String formatMediaControlsTime(float time);
     static String formatMediaControlsCurrentTime(float currentTime, float duration);
 };

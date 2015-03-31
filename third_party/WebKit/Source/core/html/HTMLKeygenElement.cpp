@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& do
     return keygen.release();
 }
 
-LayoutObject* HTMLKeygenElement::createLayoutObject(const LayoutStyle& style)
+LayoutObject* HTMLKeygenElement::createLayoutObject(const ComputedStyle& style)
 {
     // TODO(mstensho): While it's harmful and meaningless to allow most display types on replaced
     // content (e.g. table, table-row or flex), it would be useful to honor at least some of

@@ -31,7 +31,7 @@
 #include "core/layout/style/BasicShapes.h"
 
 #include "core/css/BasicShapeFunctions.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"

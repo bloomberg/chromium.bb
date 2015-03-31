@@ -510,7 +510,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
     if (fontValue == "inherit" || fontValue == "initial")
         return false;
 
-    RefPtr<LayoutStyle> style = LayoutStyle::create();
+    RefPtr<ComputedStyle> style = ComputedStyle::create();
 
     FontFamily fontFamily;
     fontFamily.setFamily(defaultFontFamily);

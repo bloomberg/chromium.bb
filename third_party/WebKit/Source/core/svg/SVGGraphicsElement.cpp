@@ -131,7 +131,7 @@ PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJav
 
 bool SVGGraphicsElement::hasAnimatedLocalTransform() const
 {
-    const LayoutStyle* style = layoutObject() ? layoutObject()->style() : nullptr;
+    const ComputedStyle* style = layoutObject() ? layoutObject()->style() : nullptr;
 
     // Each of these is used in SVGGraphicsElement::calculateAnimatedLocalTransform to create an animated local transform.
     return (style && style->hasTransform()) || !m_transform->currentValue()->isEmpty() || hasSVGRareData();
@@ -140,7 +140,7 @@ bool SVGGraphicsElement::hasAnimatedLocalTransform() const
 AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
 {
     AffineTransform matrix;
-    const LayoutStyle* style = layoutObject() ? layoutObject()->style() : nullptr;
+    const ComputedStyle* style = layoutObject() ? layoutObject()->style() : nullptr;
 
     // If CSS property was set, use that, otherwise fallback to attribute (if set).
     if (style && style->hasTransform()) {
@@ -150,7 +150,7 @@ AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
         // SVGTextElements need special handling for the text positioning code.
         if (isSVGTextElement(this)) {
             // Do not take into account SVG's zoom rules, transform-origin, or percentage values.
-            style->applyTransform(transform, LayoutSize(0, 0), LayoutStyle::ExcludeTransformOrigin);
+            style->applyTransform(transform, LayoutSize(0, 0), ComputedStyle::ExcludeTransformOrigin);
         } else {
             // CSS transforms operate with pre-scaled lengths. To make this work with SVG
             // (which applies the zoom factor globally, at the root level) we
@@ -261,7 +261,7 @@ PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript
     return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
 }
 
-LayoutObject* SVGGraphicsElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGGraphicsElement::createLayoutObject(const ComputedStyle&)
 {
     // By default, any subclass is expected to do path-based drawing
     return new LayoutSVGPath(this);

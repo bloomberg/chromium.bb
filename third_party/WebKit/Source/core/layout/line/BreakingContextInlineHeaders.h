@@ -119,8 +119,8 @@ private:
     LayoutObject* m_lastObject;
     LayoutObject* m_nextObject;
 
-    const LayoutStyle* m_currentStyle;
-    const LayoutStyle* m_blockStyle;
+    const ComputedStyle* m_currentStyle;
+    const ComputedStyle* m_blockStyle;
 
     LineInfo& m_lineInfo;
 
@@ -153,7 +153,7 @@ private:
     TrailingObjects m_trailingObjects;
 };
 
-inline bool shouldCollapseWhiteSpace(const LayoutStyle& style, const LineInfo& lineInfo, WhitespacePosition whitespacePosition)
+inline bool shouldCollapseWhiteSpace(const ComputedStyle& style, const LineInfo& lineInfo, WhitespacePosition whitespacePosition)
 {
     // CSS2 16.6.1
     // If a space (U+0020) at the beginning of a line has 'white-space' set to 'normal', 'nowrap', or 'pre-line', it is removed.
@@ -248,12 +248,12 @@ inline void BreakingContext::initializeForCurrentObject()
     m_currWS = m_current.object()->isReplaced() ? m_current.object()->parent()->style()->whiteSpace() : m_currentStyle->whiteSpace();
     m_lastWS = m_lastObject->isReplaced() ? m_lastObject->parent()->style()->whiteSpace() : m_lastObject->style()->whiteSpace();
 
-    m_autoWrap = LayoutStyle::autoWrap(m_currWS);
+    m_autoWrap = ComputedStyle::autoWrap(m_currWS);
     m_autoWrapWasEverTrueOnLine = m_autoWrapWasEverTrueOnLine || m_autoWrap;
 
-    m_preservesNewline = m_current.object()->isSVGInlineText() ? false : LayoutStyle::preserveNewline(m_currWS);
+    m_preservesNewline = m_current.object()->isSVGInlineText() ? false : ComputedStyle::preserveNewline(m_currWS);
 
-    m_collapseWhiteSpace = LayoutStyle::collapseWhiteSpace(m_currWS);
+    m_collapseWhiteSpace = ComputedStyle::collapseWhiteSpace(m_currWS);
 }
 
 inline void BreakingContext::increment()
@@ -446,7 +446,7 @@ inline void BreakingContext::handleReplaced()
         m_width.updateAvailableWidth(replacedBox->logicalHeight());
 
     // Break on replaced elements if either has normal white-space.
-    if ((m_autoWrap || LayoutStyle::autoWrap(m_lastWS)) && (!m_current.object()->isImage() || m_allowImagesToBreak)) {
+    if ((m_autoWrap || ComputedStyle::autoWrap(m_lastWS)) && (!m_current.object()->isImage() || m_allowImagesToBreak)) {
         m_width.commit();
         m_lineBreak.moveToStartOf(m_current.object());
     }
@@ -497,7 +497,7 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
 
 inline float measureHyphenWidth(LayoutText* renderer, const Font& font, TextDirection textDirection)
 {
-    const LayoutStyle& style = renderer->styleRef();
+    const ComputedStyle& style = renderer->styleRef();
     return font.width(constructTextRun(renderer, font,
         style.hyphenString().string(), style, style.direction()));
 }
@@ -532,12 +532,12 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     // If we have left a no-wrap inline and entered an autowrap inline while ignoring spaces
     // then we need to mark the start of the autowrap inline as a potential linebreak now.
-    if (m_autoWrap && !LayoutStyle::autoWrap(m_lastWS) && m_ignoringSpaces) {
+    if (m_autoWrap && !ComputedStyle::autoWrap(m_lastWS) && m_ignoringSpaces) {
         m_width.commit();
         m_lineBreak.moveToStartOf(m_current.object());
     }
 
-    const LayoutStyle& style = renderText->styleRef(m_lineInfo.isFirstLine());
+    const ComputedStyle& style = renderText->styleRef(m_lineInfo.isFirstLine());
     const Font& font = style.font();
     bool isFixedPitch = font.isFixedPitch();
 
@@ -883,7 +883,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
     }
 }
 
-inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, const LayoutStyle& style)
+inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, const ComputedStyle& style)
 {
     IndentTextOrNot shouldIndentText = DoNotIndentText;
     if (isFirstLine || (isAfterHardLineBreak && style.textIndentLine()) == TextIndentEachLine)

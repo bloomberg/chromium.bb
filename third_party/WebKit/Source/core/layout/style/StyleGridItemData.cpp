@@ -30,15 +30,15 @@
 #include "config.h"
 #include "core/layout/style/StyleGridItemData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleGridItemData::StyleGridItemData()
-    : m_gridColumnStart(LayoutStyle::initialGridColumnStart())
-    , m_gridColumnEnd(LayoutStyle::initialGridColumnEnd())
-    , m_gridRowStart(LayoutStyle::initialGridRowStart())
-    , m_gridRowEnd(LayoutStyle::initialGridRowEnd())
+    : m_gridColumnStart(ComputedStyle::initialGridColumnStart())
+    , m_gridColumnEnd(ComputedStyle::initialGridColumnEnd())
+    , m_gridRowStart(ComputedStyle::initialGridRowStart())
+    , m_gridRowEnd(ComputedStyle::initialGridRowEnd())
 {
 }
 

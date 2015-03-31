@@ -95,7 +95,7 @@ private:
     // InputType functions
     String badInputText() const override;
     void blur() final;
-    PassRefPtr<LayoutStyle> customStyleForLayoutObject(PassRefPtr<LayoutStyle>) override;
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject(PassRefPtr<ComputedStyle>) override;
     void createShadowSubtree() final;
     void destroyShadowSubtree() final;
     void disabledAttributeChanged() final;

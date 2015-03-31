@@ -29,7 +29,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TextEventInputType.h"
@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<TextControlInnerContainer> TextControlInnerContainer::cre
     return element.release();
 }
 
-LayoutObject* TextControlInnerContainer::createLayoutObject(const LayoutStyle&)
+LayoutObject* TextControlInnerContainer::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutTextControlInnerContainer(this);
 }
@@ -77,12 +77,12 @@ PassRefPtrWillBeRawPtr<EditingViewPortElement> EditingViewPortElement::create(Do
     return element.release();
 }
 
-PassRefPtr<LayoutStyle> EditingViewPortElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject()
 {
     // FXIME: Move these styles to html.css.
 
-    RefPtr<LayoutStyle> style = LayoutStyle::create();
-    style->inheritFrom(shadowHost()->layoutStyleRef());
+    RefPtr<ComputedStyle> style = ComputedStyle::create();
+    style->inheritFrom(shadowHost()->computedStyleRef());
 
     style->setFlexGrow(1);
     style->setDisplay(BLOCK);
@@ -130,12 +130,12 @@ void TextControlInnerEditorElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-LayoutObject* TextControlInnerEditorElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* TextControlInnerEditorElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutTextControlInnerBlock(this);
 }
 
-PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObject()
 {
     LayoutObject* parentRenderer = shadowHost()->layoutObject();
     if (!parentRenderer || !parentRenderer->isTextControl())

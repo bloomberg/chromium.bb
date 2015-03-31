@@ -29,7 +29,7 @@
 namespace blink {
 
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 class LayoutSVGResourceContainer;
 class SVGResources;
 
@@ -42,7 +42,7 @@ public:
     static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
 
     // Called from all SVG layoutObjects addChild() methods.
-    static void clientWasAddedToTree(LayoutObject*, const LayoutStyle& newStyle);
+    static void clientWasAddedToTree(LayoutObject*, const ComputedStyle& newStyle);
 
     // Called from all SVG layoutObjects removeChild() methods.
     static void clientWillBeRemovedFromTree(LayoutObject*);
@@ -54,13 +54,13 @@ public:
     static void clientLayoutChanged(LayoutObject*);
 
     // Called from all SVG layoutObjects styleDidChange() methods.
-    static void clientStyleChanged(LayoutObject*, StyleDifference, const LayoutStyle& newStyle);
+    static void clientStyleChanged(LayoutObject*, StyleDifference, const ComputedStyle& newStyle);
 
     // Called from LayoutSVGResourceContainer::willBeDestroyed().
     static void resourceDestroyed(LayoutSVGResourceContainer*);
 
 private:
-    void addResourcesFromLayoutObject(LayoutObject*, const LayoutStyle&);
+    void addResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
     void removeResourcesFromLayoutObject(LayoutObject*);
 
     typedef HashMap<const LayoutObject*, OwnPtr<SVGResources>> CacheMap;

@@ -211,7 +211,7 @@ bool LayoutSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, con
 {
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
-        const SVGLayoutStyle& svgStyle = style()->svgStyle();
+        const SVGComputedStyle& svgStyle = style()->svgStyle();
         WindRule fillRule = svgStyle.fillRule();
         if (request.svgClipContent())
             fillRule = svgStyle.clipRule();

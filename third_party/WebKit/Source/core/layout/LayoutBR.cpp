@@ -46,11 +46,11 @@ LayoutBR::~LayoutBR()
 
 int LayoutBR::lineHeight(bool firstLine) const
 {
-    const LayoutStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
+    const ComputedStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
     return style.computedLineHeight();
 }
 
-void LayoutBR::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutBR::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutText::styleDidChange(diff, oldStyle);
 }

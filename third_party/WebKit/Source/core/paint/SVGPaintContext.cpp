@@ -111,7 +111,7 @@ void SVGPaintContext::applyCompositingIfNecessary()
     if (m_object->isSVGRoot())
         return;
 
-    const LayoutStyle& style = m_object->styleRef();
+    const ComputedStyle& style = m_object->styleRef();
     float opacity = style.opacity();
     bool hasBlendMode = style.hasBlendMode() && m_object->isBlendingAllowed();
     if (opacity < 1 || hasBlendMode) {

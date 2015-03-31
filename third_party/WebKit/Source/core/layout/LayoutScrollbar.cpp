@@ -145,12 +145,12 @@ void LayoutScrollbar::setPressedPart(ScrollbarPart part)
     updateScrollbarPart(TrackBGPart);
 }
 
-PassRefPtr<LayoutStyle> LayoutScrollbar::getScrollbarPseudoStyle(ScrollbarPart partType, PseudoId pseudoId)
+PassRefPtr<ComputedStyle> LayoutScrollbar::getScrollbarPseudoStyle(ScrollbarPart partType, PseudoId pseudoId)
 {
     if (!owningRenderer())
         return nullptr;
 
-    RefPtr<LayoutStyle> result = owningRenderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId, this, partType), owningRenderer()->style());
+    RefPtr<ComputedStyle> result = owningRenderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId, this, partType), owningRenderer()->style());
     // Scrollbars for root frames should always have background color
     // unless explicitly specified as transparent. So we force it.
     // This is because WebKit assumes scrollbar to be always painted and missing background
@@ -226,7 +226,7 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
     if (partType == NoPart)
         return;
 
-    RefPtr<LayoutStyle> partStyle = !destroy ? getScrollbarPseudoStyle(partType,  pseudoForScrollbarPart(partType)) : PassRefPtr<LayoutStyle>(nullptr);
+    RefPtr<ComputedStyle> partStyle = !destroy ? getScrollbarPseudoStyle(partType,  pseudoForScrollbarPart(partType)) : PassRefPtr<ComputedStyle>(nullptr);
 
     bool needRenderer = !destroy && partStyle && partStyle->display() != NONE;
 

@@ -224,7 +224,7 @@ void FirstLetterPseudoElement::detach(const AttachContext& context)
     PseudoElement::detach(context);
 }
 
-LayoutStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendererContainer)
+ComputedStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendererContainer)
 {
     ASSERT(rendererContainer);
 
@@ -236,7 +236,7 @@ LayoutStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendere
     // into account.
     styleContainer->style()->removeCachedPseudoStyle(FIRST_LETTER);
 
-    LayoutStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
+    ComputedStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
     ASSERT(pseudoStyle);
 
     return pseudoStyle;
@@ -254,7 +254,7 @@ void FirstLetterPseudoElement::attachFirstLetterTextRenderers()
     String oldText = toLayoutText(nextRenderer)->isTextFragment() ? toLayoutTextFragment(nextRenderer)->completeText() : toLayoutText(nextRenderer)->originalText();
     ASSERT(oldText.impl());
 
-    LayoutStyle* pseudoStyle = styleForFirstLetter(nextRenderer->parent());
+    ComputedStyle* pseudoStyle = styleForFirstLetter(nextRenderer->parent());
     layoutObject()->setStyle(pseudoStyle);
 
     // FIXME: This would already have been calculated in firstLetterRenderer. Can we pass the length through?
@@ -297,7 +297,7 @@ void FirstLetterPseudoElement::didRecalcStyle(StyleRecalcChange)
         // We need to re-calculate the correct style for the first letter element
         // and then apply that to the container and the text fragment inside.
         if (child->style()->styleType() == FIRST_LETTER && m_remainingTextRenderer) {
-            if (LayoutStyle* pseudoStyle = styleForFirstLetter(m_remainingTextRenderer->parent()))
+            if (ComputedStyle* pseudoStyle = styleForFirstLetter(m_remainingTextRenderer->parent()))
                 child->setPseudoStyle(pseudoStyle);
             continue;
         }

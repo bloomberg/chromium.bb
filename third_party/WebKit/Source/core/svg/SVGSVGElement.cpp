@@ -528,7 +528,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
     return transform.multiply(viewBoxTransform);
 }
 
-bool SVGSVGElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool SVGSVGElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     // FIXME: We should respect display: none on the documentElement svg element
     // but many things in FrameView and SVGImage depend on the LayoutSVGRoot when
@@ -539,7 +539,7 @@ bool SVGSVGElement::layoutObjectIsNeeded(const LayoutStyle& style)
     return Element::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* SVGSVGElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGSVGElement::createLayoutObject(const ComputedStyle&)
 {
     if (isOutermostSVGSVGElement())
         return new LayoutSVGRoot(this);

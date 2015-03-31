@@ -67,7 +67,7 @@ class HitTestResult;
 class HitTestingTransformState;
 class DeprecatedPaintLayerCompositor;
 class CompositedDeprecatedPaintLayerMapping;
-class LayoutStyle;
+class ComputedStyle;
 class TransformationMatrix;
 
 enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
@@ -117,7 +117,7 @@ public:
     void removeOnlyThisLayer();
     void insertOnlyThisLayer();
 
-    void styleChanged(StyleDifference, const LayoutStyle* oldStyle);
+    void styleChanged(StyleDifference, const ComputedStyle* oldStyle);
 
     // FIXME: Many people call this function while it has out-of-date information.
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
@@ -272,7 +272,7 @@ public:
     // currentTransform computes a transform which takes accelerated animations into account. The
     // resulting transform has transform-origin baked in. If the layer does not have a transform,
     // returns the identity matrix.
-    TransformationMatrix currentTransform(LayoutStyle::ApplyTransformOrigin = LayoutStyle::IncludeTransformOrigin) const;
+    TransformationMatrix currentTransform(ComputedStyle::ApplyTransformOrigin = ComputedStyle::IncludeTransformOrigin) const;
     TransformationMatrix renderableTransform(PaintBehavior) const;
 
     // Get the perspective transform, which is applied to transformed sublayers.
@@ -346,7 +346,7 @@ public:
     bool containsDirtyOverlayScrollbars() const { return m_containsDirtyOverlayScrollbars; }
     void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
 
-    FilterOperations computeFilterOperations(const LayoutStyle&);
+    FilterOperations computeFilterOperations(const ComputedStyle&);
     bool paintsWithFilters() const;
     FilterEffectRenderer* filterRenderer() const
     {
@@ -365,7 +365,7 @@ public:
     bool hasFilterInfo() const { return m_hasFilterInfo; }
     void setHasFilterInfo(bool hasFilterInfo) { m_hasFilterInfo = hasFilterInfo; }
 
-    void updateFilters(const LayoutStyle* oldStyle, const LayoutStyle& newStyle);
+    void updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
     Node* enclosingElement() const;
 
@@ -589,7 +589,7 @@ private:
     bool requiresStackingNode() const { return true; }
     void updateStackingNode();
 
-    void updateReflectionInfo(const LayoutStyle*);
+    void updateReflectionInfo(const ComputedStyle*);
 
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
     // but for now, we are always allocating it for LayoutBox as it's safer. crbug.com/467721.
@@ -598,8 +598,8 @@ private:
 
     void dirtyAncestorChainVisibleDescendantStatus();
 
-    bool attemptDirectCompositingUpdate(StyleDifference, const LayoutStyle* oldStyle);
-    void updateTransform(const LayoutStyle* oldStyle, const LayoutStyle& newStyle);
+    bool attemptDirectCompositingUpdate(StyleDifference, const ComputedStyle* oldStyle);
+    void updateTransform(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.

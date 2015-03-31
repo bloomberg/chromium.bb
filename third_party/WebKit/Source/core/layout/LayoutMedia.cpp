@@ -89,7 +89,7 @@ void LayoutMedia::layout()
     clearNeedsLayout();
 }
 
-bool LayoutMedia::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutMedia::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     // Two types of child layout objects are allowed: media controls
     // and the text track container. Filter children by node type.

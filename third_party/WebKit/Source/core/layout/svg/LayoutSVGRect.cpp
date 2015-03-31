@@ -119,7 +119,7 @@ bool LayoutSVGRect::shapeDependentFillContains(const FloatPoint& point, const Wi
 // Returns true if the stroke is continuous and definitely uses miter joins.
 bool LayoutSVGRect::definitelyHasSimpleStroke() const
 {
-    const SVGLayoutStyle& svgStyle = style()->svgStyle();
+    const SVGComputedStyle& svgStyle = style()->svgStyle();
 
     // The four angles of a rect are 90 degrees. Using the formula at:
     // http://www.w3.org/TR/SVG/painting.html#StrokeMiterlimitProperty

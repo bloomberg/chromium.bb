@@ -77,7 +77,7 @@ void LayoutSVGBlock::willBeDestroyed()
     LayoutBlockFlow::willBeDestroyed();
 }
 
-void LayoutSVGBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();

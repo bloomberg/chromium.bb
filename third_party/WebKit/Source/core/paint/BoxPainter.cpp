@@ -81,7 +81,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     if (recorder.canUseCachedDrawing())
         return;
 
-    const LayoutStyle& style = m_layoutBox.styleRef();
+    const ComputedStyle& style = m_layoutBox.styleRef();
     BoxDecorationData boxDecorationData(m_layoutBox, paintInfo.context);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
@@ -894,7 +894,7 @@ static LayoutUnit computeBorderImageSide(const BorderImageLength& borderSlice, L
     return valueForLength(borderSlice.length(), boxExtent);
 }
 
-bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const LayoutStyle& style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
+bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const ComputedStyle& style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
 {
     StyleImage* styleImage = ninePieceImage.image();
     if (!styleImage)
@@ -1401,7 +1401,7 @@ static inline void drawSolidBorderRect(GraphicsContext* context, const FloatRect
         context->setShouldAntialias(wasAntialias);
 }
 
-void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const LayoutStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const ComputedStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     GraphicsContext* graphicsContext = info.context;
     // border-image is not affected by border-radius.
@@ -1591,7 +1591,7 @@ static inline bool includesAdjacentEdges(BorderEdgeFlags flags)
         || (flags & (LeftBorderEdge | TopBorderEdge)) == (LeftBorderEdge | TopBorderEdge);
 }
 
-void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, const LayoutStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
+void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, const ComputedStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
     const BorderEdge edges[], BorderEdgeFlags edgesToDraw, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias)
 {
     // willBeOverdrawn assumes that we draw in order: top, bottom, left, right.
@@ -1642,7 +1642,7 @@ LayoutRect BoxPainter::borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*
     return (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? shrinkRectByOnePixel(context, rect) : rect;
 }
 
-void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const LayoutStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const ComputedStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
     const FloatRect& sideRect, BoxSide side, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge edges[], const Path* path,
     BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor)
 {
@@ -1689,7 +1689,7 @@ void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const Layo
     }
 }
 
-void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const LayoutStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const ComputedStyle& style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
     const IntPoint& innerBorderAdjustment, const BorderEdge edges[], BorderEdgeFlags edgeSet, BackgroundBleedAvoidance bleedAvoidance,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor)
 {
@@ -1738,7 +1738,7 @@ void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const Layout
 }
 
 void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const LayoutRect& borderRect, const Path& borderPath, const BorderEdge edges[],
-    float thickness, float drawThickness, BoxSide side, const LayoutStyle& style, Color color, EBorderStyle borderStyle, BackgroundBleedAvoidance bleedAvoidance,
+    float thickness, float drawThickness, BoxSide side, const ComputedStyle& style, Color color, EBorderStyle borderStyle, BackgroundBleedAvoidance bleedAvoidance,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     if (thickness <= 0)
@@ -1889,7 +1889,7 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
     graphicsContext->drawRect(pixelSnappedIntRect(borderRect));
 }
 
-void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRect, const LayoutStyle& style, ShadowStyle shadowStyle, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRect, const ComputedStyle& style, ShadowStyle shadowStyle, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     // FIXME: Deal with border-image. Would be great to use border-image as a mask.
     GraphicsContext* context = info.context;

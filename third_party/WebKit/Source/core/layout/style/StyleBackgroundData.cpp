@@ -22,14 +22,14 @@
 #include "config.h"
 #include "core/layout/style/StyleBackgroundData.h"
 
-#include "core/layout/style/LayoutStyle.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyle.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 
 namespace blink {
 
 StyleBackgroundData::StyleBackgroundData()
     : m_background(BackgroundFillLayer, true)
-    , m_color(LayoutStyle::initialBackgroundColor())
+    , m_color(ComputedStyle::initialBackgroundColor())
 {
 }
 

@@ -22,13 +22,13 @@
 #ifndef PseudoStyleRequest_h
 #define PseudoStyleRequest_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
 class LayoutScrollbar;
-class LayoutStyle;
+class ComputedStyle;
 
 class PseudoStyleRequest {
 public:
@@ -52,7 +52,7 @@ public:
     }
 
     // The spec disallows inheritance for ::backdrop.
-    bool allowsInheritance(const LayoutStyle* parentStyle) const
+    bool allowsInheritance(const ComputedStyle* parentStyle) const
     {
         return parentStyle && pseudoId != BACKDROP;
     }

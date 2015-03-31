@@ -32,7 +32,7 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
         result->shrink(resultIndex);
 }
 
-void InterpolationEffect::addInterpolationsFromKeyframes(CSSPropertyID property, Element* element, const LayoutStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
+void InterpolationEffect::addInterpolationsFromKeyframes(CSSPropertyID property, Element* element, const ComputedStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
 {
     RefPtrWillBeRawPtr<Interpolation> interpolation = keyframeA.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
 

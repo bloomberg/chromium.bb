@@ -49,7 +49,7 @@ ElementAnimations::~ElementAnimations()
 #endif
 }
 
-void ElementAnimations::updateAnimationFlags(LayoutStyle& style)
+void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
 {
     for (const auto& entry : m_players) {
         const AnimationPlayer& player = *entry.key;
@@ -90,42 +90,42 @@ DEFINE_TRACE(ElementAnimations)
 #endif
 }
 
-const LayoutStyle* ElementAnimations::baseLayoutStyle() const
+const ComputedStyle* ElementAnimations::baseComputedStyle() const
 {
 #if !ENABLE(ASSERT)
     if (isAnimationStyleChange())
-        return m_baseLayoutStyle.get();
+        return m_baseComputedStyle.get();
 #endif
     return nullptr;
 }
 
-void ElementAnimations::updateBaseLayoutStyle(const LayoutStyle* layoutStyle)
+void ElementAnimations::updateBaseComputedStyle(const ComputedStyle* computedStyle)
 {
     if (!isAnimationStyleChange()) {
-        m_baseLayoutStyle = nullptr;
+        m_baseComputedStyle = nullptr;
         return;
     }
 #if ENABLE(ASSERT)
-    if (m_baseLayoutStyle && layoutStyle)
-        ASSERT(*m_baseLayoutStyle == *layoutStyle);
+    if (m_baseComputedStyle && computedStyle)
+        ASSERT(*m_baseComputedStyle == *computedStyle);
 #endif
-    m_baseLayoutStyle = LayoutStyle::clone(*layoutStyle);
+    m_baseComputedStyle = ComputedStyle::clone(*computedStyle);
 }
 
-void ElementAnimations::clearBaseLayoutStyle()
+void ElementAnimations::clearBaseComputedStyle()
 {
-    m_baseLayoutStyle = nullptr;
+    m_baseComputedStyle = nullptr;
 }
 
 bool ElementAnimations::isAnimationStyleChange() const
 {
     // TODO(rune@opera.com): The FontFaceCache version number may be increased without forcing
-    // a style recalc (see crbug.com/471079). LayoutStyle objects created with different cache
+    // a style recalc (see crbug.com/471079). ComputedStyle objects created with different cache
     // versions will not be considered equal as Font::operator== will compare versions, hence
-    // LayoutStyle::operator== will return false. We avoid using baseLayoutStyle (the check for
-    // isFallbackValid()) in that case to avoid triggering the LayoutStyle comparison ASSERT
-    // in updateBaseLayoutStyle.
-    return m_animationStyleChange && (!m_baseLayoutStyle || m_baseLayoutStyle->font().isFallbackValid());
+    // ComputedStyle::operator== will return false. We avoid using baseComputedStyle (the check for
+    // isFallbackValid()) in that case to avoid triggering the ComputedStyle comparison ASSERT
+    // in updateBaseComputedStyle.
+    return m_animationStyleChange && (!m_baseComputedStyle || m_baseComputedStyle->font().isFallbackValid());
 }
 
 } // namespace blink

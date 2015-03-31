@@ -48,7 +48,7 @@ public:
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(); }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
 private:
     SVGGradientElement* gradientElement() const;

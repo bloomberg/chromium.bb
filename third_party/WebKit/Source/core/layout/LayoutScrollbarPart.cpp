@@ -166,13 +166,13 @@ void LayoutScrollbarPart::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void LayoutScrollbarPart::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutScrollbarPart::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     LayoutBlock::styleWillChange(diff, newStyle);
     setInline(false);
 }
 
-void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
     setInline(false);

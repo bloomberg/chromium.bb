@@ -80,7 +80,7 @@ private:
 
     void positionListMarker();
 
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     virtual void addOverflowFromChildren() override;
 

@@ -126,74 +126,74 @@ LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterFor
 {
     switch (property) {
     case CSSPropertyBottom:
-        return &LayoutStyle::setBottom;
+        return &ComputedStyle::setBottom;
     case CSSPropertyCx:
-        return &LayoutStyle::setCx;
+        return &ComputedStyle::setCx;
     case CSSPropertyCy:
-        return &LayoutStyle::setCy;
+        return &ComputedStyle::setCy;
     case CSSPropertyFlexBasis:
-        return &LayoutStyle::setFlexBasis;
+        return &ComputedStyle::setFlexBasis;
     case CSSPropertyHeight:
-        return &LayoutStyle::setHeight;
+        return &ComputedStyle::setHeight;
     case CSSPropertyLeft:
-        return &LayoutStyle::setLeft;
+        return &ComputedStyle::setLeft;
     case CSSPropertyLineHeight:
-        return &LayoutStyle::setLineHeight;
+        return &ComputedStyle::setLineHeight;
     case CSSPropertyMarginBottom:
-        return &LayoutStyle::setMarginBottom;
+        return &ComputedStyle::setMarginBottom;
     case CSSPropertyMarginLeft:
-        return &LayoutStyle::setMarginLeft;
+        return &ComputedStyle::setMarginLeft;
     case CSSPropertyMarginRight:
-        return &LayoutStyle::setMarginRight;
+        return &ComputedStyle::setMarginRight;
     case CSSPropertyMarginTop:
-        return &LayoutStyle::setMarginTop;
+        return &ComputedStyle::setMarginTop;
     case CSSPropertyMaxHeight:
-        return &LayoutStyle::setMaxHeight;
+        return &ComputedStyle::setMaxHeight;
     case CSSPropertyMaxWidth:
-        return &LayoutStyle::setMaxWidth;
+        return &ComputedStyle::setMaxWidth;
     case CSSPropertyMinHeight:
-        return &LayoutStyle::setMinHeight;
+        return &ComputedStyle::setMinHeight;
     case CSSPropertyMinWidth:
-        return &LayoutStyle::setMinWidth;
+        return &ComputedStyle::setMinWidth;
     case CSSPropertyMotionOffset:
-        return &LayoutStyle::setMotionOffset;
+        return &ComputedStyle::setMotionOffset;
     case CSSPropertyPaddingBottom:
-        return &LayoutStyle::setPaddingBottom;
+        return &ComputedStyle::setPaddingBottom;
     case CSSPropertyPaddingLeft:
-        return &LayoutStyle::setPaddingLeft;
+        return &ComputedStyle::setPaddingLeft;
     case CSSPropertyPaddingRight:
-        return &LayoutStyle::setPaddingRight;
+        return &ComputedStyle::setPaddingRight;
     case CSSPropertyPaddingTop:
-        return &LayoutStyle::setPaddingTop;
+        return &ComputedStyle::setPaddingTop;
     case CSSPropertyR:
-        return &LayoutStyle::setR;
+        return &ComputedStyle::setR;
     case CSSPropertyRx:
-        return &LayoutStyle::setRx;
+        return &ComputedStyle::setRx;
     case CSSPropertyRy:
-        return &LayoutStyle::setRy;
+        return &ComputedStyle::setRy;
     case CSSPropertyRight:
-        return &LayoutStyle::setRight;
+        return &ComputedStyle::setRight;
     case CSSPropertyShapeMargin:
-        return &LayoutStyle::setShapeMargin;
+        return &ComputedStyle::setShapeMargin;
     case CSSPropertyStrokeDashoffset:
-        return &LayoutStyle::setStrokeDashOffset;
+        return &ComputedStyle::setStrokeDashOffset;
     case CSSPropertyTop:
-        return &LayoutStyle::setTop;
+        return &ComputedStyle::setTop;
     case CSSPropertyWidth:
-        return &LayoutStyle::setWidth;
+        return &ComputedStyle::setWidth;
     case CSSPropertyWebkitPerspectiveOriginX:
-        return &LayoutStyle::setPerspectiveOriginX;
+        return &ComputedStyle::setPerspectiveOriginX;
     case CSSPropertyWebkitPerspectiveOriginY:
-        return &LayoutStyle::setPerspectiveOriginY;
+        return &ComputedStyle::setPerspectiveOriginY;
     case CSSPropertyWebkitTransformOriginX:
-        return &LayoutStyle::setTransformOriginX;
+        return &ComputedStyle::setTransformOriginX;
     case CSSPropertyWebkitTransformOriginY:
-        return &LayoutStyle::setTransformOriginY;
+        return &ComputedStyle::setTransformOriginY;
     case CSSPropertyX:
-        return &LayoutStyle::setX;
+        return &ComputedStyle::setX;
     case CSSPropertyY:
-        return &LayoutStyle::setY;
-    // These properties don't have a LayoutStyle setter with the signature void(*)(const Length&).
+        return &ComputedStyle::setY;
+    // These properties don't have a ComputedStyle setter with the signature void(*)(const Length&).
     case CSSPropertyBaselineShift:
     case CSSPropertyBorderBottomWidth:
     case CSSPropertyBorderLeftWidth:

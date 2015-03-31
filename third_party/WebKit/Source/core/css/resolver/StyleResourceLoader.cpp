@@ -32,7 +32,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/layout/style/ContentData.h"
 #include "core/layout/style/FillLayer.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/style/StyleFetchedImage.h"
 #include "core/layout/style/StyleFetchedImageSet.h"
 #include "core/layout/style/StyleGeneratedImage.h"
@@ -51,12 +51,12 @@ DEFINE_TRACE(StyleResourceLoader)
     visitor->trace(m_document);
 }
 
-void StyleResourceLoader::loadPendingSVGDocuments(LayoutStyle* layoutStyle, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingSVGDocuments(ComputedStyle* computedStyle, ElementStyleResources& elementStyleResources)
 {
-    if (!layoutStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
+    if (!computedStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
         return;
 
-    FilterOperations::FilterOperationVector& filterOperations = layoutStyle->mutableFilter().operations();
+    FilterOperations::FilterOperationVector& filterOperations = computedStyle->mutableFilter().operations();
     for (unsigned i = 0; i < filterOperations.size(); ++i) {
         RefPtrWillBeRawPtr<FilterOperation> filterOperation = filterOperations.at(i);
         if (filterOperation->type() == FilterOperation::REFERENCE) {
@@ -103,7 +103,7 @@ PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* 
     return doLoadPendingImage(m_document, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
 }
 
-void StyleResourceLoader::loadPendingShapeImage(LayoutStyle* layoutStyle, ShapeValue* shapeValue, float deviceScaleFactor)
+void StyleResourceLoader::loadPendingShapeImage(ComputedStyle* computedStyle, ShapeValue* shapeValue, float deviceScaleFactor)
 {
     if (!shapeValue)
         return;
@@ -120,7 +120,7 @@ void StyleResourceLoader::loadPendingShapeImage(LayoutStyle* layoutStyle, ShapeV
     shapeValue->setImage(doLoadPendingImage(m_document, toStylePendingImage(image), deviceScaleFactor, options));
 }
 
-void StyleResourceLoader::loadPendingImages(LayoutStyle* style, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingImages(ComputedStyle* style, ElementStyleResources& elementStyleResources)
 {
     if (elementStyleResources.pendingImageProperties().isEmpty())
         return;
@@ -205,13 +205,13 @@ void StyleResourceLoader::loadPendingImages(LayoutStyle* style, ElementStyleReso
     elementStyleResources.clearPendingImageProperties();
 }
 
-void StyleResourceLoader::loadPendingResources(LayoutStyle* layoutStyle, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingResources(ComputedStyle* computedStyle, ElementStyleResources& elementStyleResources)
 {
     // Start loading images referenced by this style.
-    loadPendingImages(layoutStyle, elementStyleResources);
+    loadPendingImages(computedStyle, elementStyleResources);
 
     // Start loading the SVG Documents referenced by this style.
-    loadPendingSVGDocuments(layoutStyle, elementStyleResources);
+    loadPendingSVGDocuments(computedStyle, elementStyleResources);
 }
 
 }

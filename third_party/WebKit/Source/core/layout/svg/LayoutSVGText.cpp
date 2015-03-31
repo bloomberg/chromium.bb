@@ -69,7 +69,7 @@ LayoutSVGText::~LayoutSVGText()
     ASSERT(m_layoutAttributes.isEmpty());
 }
 
-bool LayoutSVGText::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGText::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isSVGInline() || (child->isText() && SVGLayoutSupport::isLayoutableTextNode(child));
 }
@@ -468,7 +468,7 @@ void LayoutSVGText::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 FloatRect LayoutSVGText::strokeBoundingBox() const
 {
     FloatRect strokeBoundaries = objectBoundingBox();
-    const SVGLayoutStyle& svgStyle = style()->svgStyle();
+    const SVGComputedStyle& svgStyle = style()->svgStyle();
     if (!svgStyle.hasStroke())
         return strokeBoundaries;
 

@@ -148,9 +148,9 @@ const Shape& ShapeOutsideInfo::computedShape() const
 
     TemporaryChange<bool> isInComputingShape(m_isComputingShape, true);
 
-    const LayoutStyle& style = *m_renderer.style();
+    const ComputedStyle& style = *m_renderer.style();
     ASSERT(m_renderer.containingBlock());
-    const LayoutStyle& containingBlockStyle = *m_renderer.containingBlock()->style();
+    const ComputedStyle& containingBlockStyle = *m_renderer.containingBlock()->style();
 
     WritingMode writingMode = containingBlockStyle.writingMode();
     LayoutUnit maximumValue = m_renderer.containingBlock() ? m_renderer.containingBlock()->contentWidth() : LayoutUnit();
@@ -220,7 +220,7 @@ LayoutUnit ShapeOutsideInfo::logicalTopOffset() const
     return LayoutUnit();
 }
 
-inline LayoutUnit borderStartWithStyleForWritingMode(const LayoutBox& renderer, const LayoutStyle* style)
+inline LayoutUnit borderStartWithStyleForWritingMode(const LayoutBox& renderer, const ComputedStyle* style)
 {
     if (style->isHorizontalWritingMode()) {
         if (style->isLeftToRightDirection())
@@ -234,7 +234,7 @@ inline LayoutUnit borderStartWithStyleForWritingMode(const LayoutBox& renderer, 
     return renderer.borderBottom();
 }
 
-inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const LayoutBox& renderer, const LayoutStyle* style)
+inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const LayoutBox& renderer, const ComputedStyle* style)
 {
     if (style->isHorizontalWritingMode()) {
         if (style->isLeftToRightDirection())

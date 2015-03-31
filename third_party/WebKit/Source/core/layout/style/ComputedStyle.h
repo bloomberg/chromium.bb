@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef LayoutStyle_h
-#define LayoutStyle_h
+#ifndef ComputedStyle_h
+#define ComputedStyle_h
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
@@ -34,11 +34,11 @@
 #include "core/layout/style/BorderValue.h"
 #include "core/layout/style/CounterDirectives.h"
 #include "core/layout/style/DataRef.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/LineClampValue.h"
 #include "core/layout/style/NinePieceImage.h"
 #include "core/layout/style/OutlineValue.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 #include "core/layout/style/ShapeValue.h"
 #include "core/layout/style/StyleBackgroundData.h"
 #include "core/layout/style/StyleBoxData.h"
@@ -115,15 +115,15 @@ class TransformationMatrix;
 
 class ContentData;
 
-typedef Vector<RefPtr<LayoutStyle>, 4> PseudoStyleCache;
+typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 
-class CORE_EXPORT LayoutStyle: public RefCounted<LayoutStyle> {
+class CORE_EXPORT ComputedStyle: public RefCounted<ComputedStyle> {
     friend class AnimatedStyleBuilder; // Used by Web Animations CSS. Sets the color styles
     friend class CSSAnimatableValueFactory; // Used by Web Animations CSS. Gets visited and unvisited colors separately.
     friend class CSSPropertyEquality; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class ApplyStyleCommand; // Editing has to only reveal unvisited info.
     friend class EditingStyle; // Editing has to only reveal unvisited info.
-    friend class LayoutStyleCSSValueMapping; // Needs to be able to see visited and unvisited colors for devtools.
+    friend class ComputedStyleCSSValueMapping; // Needs to be able to see visited and unvisited colors for devtools.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
 
@@ -149,9 +149,9 @@ protected:
     // list of associated pseudo styles
     OwnPtr<PseudoStyleCache> m_cachedPseudoStyles;
 
-    DataRef<SVGLayoutStyle> m_svgStyle;
+    DataRef<SVGComputedStyle> m_svgStyle;
 
-// !START SYNC!: Keep this in sync with the copy constructor in LayoutStyle.cpp and implicitlyInherited() in StyleResolver.cpp
+// !START SYNC!: Keep this in sync with the copy constructor in ComputedStyle.cpp and implicitlyInherited() in StyleResolver.cpp
 
     // inherit
     struct InheritedFlags {
@@ -250,7 +250,7 @@ protected:
         unsigned unicodeBidi : 3; // EUnicodeBidi
 
         // This is set if we used viewport units when resolving a length.
-        // It is mutable so we can pass around const LayoutStyles to resolve lengths.
+        // It is mutable so we can pass around const ComputedStyles to resolve lengths.
         mutable unsigned hasViewportUnits : 1;
 
         // 32 bits
@@ -272,7 +272,7 @@ protected:
         unsigned affectedByDrag : 1;
 
         unsigned isLink : 1;
-        // If you add more style bits here, you will also need to update LayoutStyle::copyNonInheritedFromCached()
+        // If you add more style bits here, you will also need to update ComputedStyle::copyNonInheritedFromCached()
         // 62 bits
     } noninherited_flags;
 
@@ -326,47 +326,47 @@ protected:
     }
 
 private:
-    ALWAYS_INLINE LayoutStyle();
+    ALWAYS_INLINE ComputedStyle();
 
     enum InitialStyleTag {
         InitialStyle
     };
-    ALWAYS_INLINE explicit LayoutStyle(InitialStyleTag);
-    ALWAYS_INLINE LayoutStyle(const LayoutStyle&);
+    ALWAYS_INLINE explicit ComputedStyle(InitialStyleTag);
+    ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
-    static PassRefPtr<LayoutStyle> createInitialStyle();
-    static inline LayoutStyle* initialStyle()
+    static PassRefPtr<ComputedStyle> createInitialStyle();
+    static inline ComputedStyle* initialStyle()
     {
-        DEFINE_STATIC_REF(LayoutStyle, s_initialStyle, (LayoutStyle::createInitialStyle()));
+        DEFINE_STATIC_REF(ComputedStyle, s_initialStyle, (ComputedStyle::createInitialStyle()));
         return s_initialStyle;
     }
 
 public:
-    static PassRefPtr<LayoutStyle> create();
-    static PassRefPtr<LayoutStyle> createAnonymousStyleWithDisplay(const LayoutStyle& parentStyle, EDisplay);
-    static PassRefPtr<LayoutStyle> clone(const LayoutStyle&);
+    static PassRefPtr<ComputedStyle> create();
+    static PassRefPtr<ComputedStyle> createAnonymousStyleWithDisplay(const ComputedStyle& parentStyle, EDisplay);
+    static PassRefPtr<ComputedStyle> clone(const ComputedStyle&);
 
     // Computes how the style change should be propagated down the tree.
-    static StyleRecalcChange stylePropagationDiff(const LayoutStyle* oldStyle, const LayoutStyle* newStyle);
+    static StyleRecalcChange stylePropagationDiff(const ComputedStyle* oldStyle, const ComputedStyle* newStyle);
 
-    static ItemPosition resolveAlignment(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject);
-    static ItemPosition resolveJustification(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject);
+    static ItemPosition resolveAlignment(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject);
+    static ItemPosition resolveJustification(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject);
 
-    StyleDifference visualInvalidationDiff(const LayoutStyle&) const;
+    StyleDifference visualInvalidationDiff(const ComputedStyle&) const;
 
     enum IsAtShadowBoundary {
         AtShadowBoundary,
         NotAtShadowBoundary,
     };
 
-    void inheritFrom(const LayoutStyle& inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
-    void copyNonInheritedFromCached(const LayoutStyle&);
+    void inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
+    void copyNonInheritedFromCached(const ComputedStyle&);
 
     PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags.styleType); }
     void setStyleType(PseudoId styleType) { noninherited_flags.styleType = styleType; }
 
-    LayoutStyle* getCachedPseudoStyle(PseudoId) const;
-    LayoutStyle* addCachedPseudoStyle(PassRefPtr<LayoutStyle>);
+    ComputedStyle* getCachedPseudoStyle(PseudoId) const;
+    ComputedStyle* addCachedPseudoStyle(PassRefPtr<ComputedStyle>);
     void removeCachedPseudoStyle(PseudoId);
 
     const PseudoStyleCache* cachedPseudoStyles() const { return m_cachedPseudoStyles.get(); }
@@ -384,8 +384,8 @@ public:
     void setAffectedByActive() { noninherited_flags.affectedByActive = true; }
     void setAffectedByDrag() { noninherited_flags.affectedByDrag = true; }
 
-    bool operator==(const LayoutStyle& other) const;
-    bool operator!=(const LayoutStyle& other) const { return !(*this == other); }
+    bool operator==(const ComputedStyle& other) const;
+    bool operator!=(const ComputedStyle& other) const { return !(*this == other); }
     bool isFloating() const { return noninherited_flags.floating != NoFloat; }
     bool hasMargin() const { return surround->margin.nonZero(); }
     bool hasBorder() const { return surround->border.hasBorder(); }
@@ -679,10 +679,10 @@ public:
     const Length& marginAfter() const { return surround->margin.after(writingMode()); }
     const Length& marginStart() const { return surround->margin.start(writingMode(), direction()); }
     const Length& marginEnd() const { return surround->margin.end(writingMode(), direction()); }
-    const Length& marginStartUsing(const LayoutStyle* otherStyle) const { return surround->margin.start(otherStyle->writingMode(), otherStyle->direction()); }
-    const Length& marginEndUsing(const LayoutStyle* otherStyle) const { return surround->margin.end(otherStyle->writingMode(), otherStyle->direction()); }
-    const Length& marginBeforeUsing(const LayoutStyle* otherStyle) const { return surround->margin.before(otherStyle->writingMode()); }
-    const Length& marginAfterUsing(const LayoutStyle* otherStyle) const { return surround->margin.after(otherStyle->writingMode()); }
+    const Length& marginStartUsing(const ComputedStyle* otherStyle) const { return surround->margin.start(otherStyle->writingMode(), otherStyle->direction()); }
+    const Length& marginEndUsing(const ComputedStyle* otherStyle) const { return surround->margin.end(otherStyle->writingMode(), otherStyle->direction()); }
+    const Length& marginBeforeUsing(const ComputedStyle* otherStyle) const { return surround->margin.before(otherStyle->writingMode()); }
+    const Length& marginAfterUsing(const ComputedStyle* otherStyle) const { return surround->margin.after(otherStyle->writingMode()); }
 
     const LengthBox& paddingBox() const { return surround->padding; }
     const Length& paddingTop() const { return surround->padding.top(); }
@@ -783,7 +783,7 @@ public:
 
     EBoxDecorationBreak boxDecorationBreak() const { return m_box->boxDecorationBreak(); }
     StyleReflection* boxReflect() const { return rareNonInheritedData->m_boxReflect.get(); }
-    bool reflectionDataEquivalent(const LayoutStyle* otherStyle) const { return rareNonInheritedData->reflectionDataEquivalent(*otherStyle->rareNonInheritedData); }
+    bool reflectionDataEquivalent(const ComputedStyle* otherStyle) const { return rareNonInheritedData->reflectionDataEquivalent(*otherStyle->rareNonInheritedData); }
 
     // FIXME: reflections should belong to this helper function but they are currently handled
     // through their self-painting layers. So the layout code doesn't account for them.
@@ -823,7 +823,7 @@ public:
     EBorderStyle columnRuleStyle() const { return rareNonInheritedData->m_multiCol->m_rule.style(); }
     unsigned short columnRuleWidth() const { return rareNonInheritedData->m_multiCol->ruleWidth(); }
     bool columnRuleIsTransparent() const { return rareNonInheritedData->m_multiCol->m_rule.isTransparent(); }
-    bool columnRuleEquivalent(const LayoutStyle* otherStyle) const;
+    bool columnRuleEquivalent(const ComputedStyle* otherStyle) const;
     ColumnSpan columnSpan() const { return static_cast<ColumnSpan>(rareNonInheritedData->m_multiCol->m_columnSpan); }
     EPageBreak columnBreakBefore() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakBefore); }
     EPageBreak columnBreakInside() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakInside); }
@@ -835,7 +835,7 @@ public:
     const Length& transformOriginY() const { return transformOrigin().y(); }
     float transformOriginZ() const { return transformOrigin().z(); }
     bool hasTransform() const { return hasTransformOperations() || hasMotionPath() || hasCurrentTransformAnimation(); }
-    bool transformDataEquivalent(const LayoutStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
+    bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
     StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
     bool hasMotionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path; }
@@ -1056,14 +1056,14 @@ public:
     void setOutlineStyleIsAuto(OutlineIsAuto isAuto) { SET_VAR(m_background, m_outline.m_isAuto, isAuto); }
     void setOutlineStyle(EBorderStyle v) { SET_VAR(m_background, m_outline.m_style, v); }
     void setOutlineColor(const StyleColor& v) { SET_BORDERVALUE_COLOR(m_background, m_outline, v); }
-    bool isOutlineEquivalent(const LayoutStyle* otherStyle) const
+    bool isOutlineEquivalent(const ComputedStyle* otherStyle) const
     {
         // No other style, so we don't have an outline then we consider them to be the same.
         if (!otherStyle)
             return !hasOutline();
         return m_background->outline().visuallyEqual(otherStyle->m_background->outline());
     }
-    void setOutlineFromStyle(const LayoutStyle& o)
+    void setOutlineFromStyle(const ComputedStyle& o)
     {
         ASSERT(!isOutlineEquivalent(&o));
         m_background.access()->m_outline = o.m_background->m_outline;
@@ -1075,7 +1075,7 @@ public:
     void setVerticalAlign(EVerticalAlign v) { noninherited_flags.verticalAlign = v; }
     void setVerticalAlignLength(const Length& length) { setVerticalAlign(LENGTH); SET_VAR(m_box, m_verticalAlign, length); }
 
-    void setHasAutoClip() { SET_VAR(visual, hasAutoClip, true); SET_VAR(visual, clip, LayoutStyle::initialClip()); }
+    void setHasAutoClip() { SET_VAR(visual, hasAutoClip, true); SET_VAR(visual, clip, ComputedStyle::initialClip()); }
     void setClip(const LengthBox& box) { SET_VAR(visual, hasAutoClip, false); SET_VAR(visual, clip, box); }
 
     void setUnicodeBidi(EUnicodeBidi b) { noninherited_flags.unicodeBidi = b; }
@@ -1291,7 +1291,7 @@ public:
     // For valid values of column-break-inside see http://www.w3.org/TR/css3-multicol/#break-before-break-after-break-inside
     void setColumnBreakInside(EPageBreak p) { ASSERT(p == PBAUTO || p == PBAVOID); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakInside, p); }
     void setColumnBreakAfter(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakAfter, p); }
-    void inheritColumnPropertiesFrom(const LayoutStyle& parent) { rareNonInheritedData.access()->m_multiCol = parent.rareNonInheritedData->m_multiCol; }
+    void inheritColumnPropertiesFrom(const ComputedStyle& parent) { rareNonInheritedData.access()->m_multiCol = parent.rareNonInheritedData->m_multiCol; }
     void setHasInlineTransform(bool b) { SET_VAR(rareNonInheritedData, m_hasInlineTransform, b); }
     void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
     void setTransformOriginX(const Length& v) { setTransformOrigin(TransformOrigin(v, transformOriginY(), transformOriginZ())); }
@@ -1366,8 +1366,8 @@ public:
     bool requiresAcceleratedCompositingForExternalReasons(bool b) { return rareNonInheritedData->m_requiresAcceleratedCompositingForExternalReasons; }
     void setRequiresAcceleratedCompositingForExternalReasons(bool b) { SET_VAR(rareNonInheritedData, m_requiresAcceleratedCompositingForExternalReasons, b); }
 
-    const SVGLayoutStyle& svgStyle() const { return *m_svgStyle.get(); }
-    SVGLayoutStyle& accessSVGStyle() { return *m_svgStyle.access(); }
+    const SVGComputedStyle& svgStyle() const { return *m_svgStyle.get(); }
+    SVGComputedStyle& accessSVGStyle() { return *m_svgStyle.access(); }
 
     const SVGPaintType& fillPaintType() const { return svgStyle().fillPaintType(); }
     Color fillPaintColor() const { return svgStyle().fillPaintColor(); }
@@ -1441,7 +1441,7 @@ public:
 
     bool hasContent() const { return contentData(); }
     const ContentData* contentData() const { return rareNonInheritedData->m_content.get(); }
-    bool contentDataEquivalent(const LayoutStyle* otherStyle) const { return const_cast<LayoutStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<LayoutStyle*>(otherStyle)->rareNonInheritedData); }
+    bool contentDataEquivalent(const ComputedStyle* otherStyle) const { return const_cast<ComputedStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<ComputedStyle*>(otherStyle)->rareNonInheritedData); }
     void clearContent();
     void setContent(const String&, bool add = false);
     void setContent(PassRefPtr<StyleImage>, bool add = false);
@@ -1459,8 +1459,8 @@ public:
 
     const AtomicString& hyphenString() const;
 
-    bool inheritedNotEqual(const LayoutStyle&) const;
-    bool inheritedDataShared(const LayoutStyle&) const;
+    bool inheritedNotEqual(const ComputedStyle&) const;
+    bool inheritedDataShared(const ComputedStyle&) const;
 
     bool isDisplayReplacedType() const { return isDisplayReplacedType(display()); }
     bool isDisplayInlineType() const { return isDisplayInlineType(display()); }
@@ -1703,7 +1703,7 @@ private:
     void setVisitedLinkTextFillColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextFillColor, setVisitedLinkTextFillColor, v); }
     void setVisitedLinkTextStrokeColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextStrokeColor, setVisitedLinkTextStrokeColor, v); }
 
-    void inheritUnicodeBidiFrom(const LayoutStyle& parent) { noninherited_flags.unicodeBidi = parent.noninherited_flags.unicodeBidi; }
+    void inheritUnicodeBidiFrom(const ComputedStyle& parent) { noninherited_flags.unicodeBidi = parent.noninherited_flags.unicodeBidi; }
 
     bool isDisplayFlexibleBox(EDisplay display) const
     {
@@ -1764,11 +1764,11 @@ private:
     bool hasTransformOperations() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     void applyMotionPathTransform(TransformationMatrix&) const;
 
-    bool diffNeedsFullLayoutAndPaintInvalidation(const LayoutStyle& other) const;
-    bool diffNeedsFullLayout(const LayoutStyle& other) const;
-    bool diffNeedsPaintInvalidationLayer(const LayoutStyle& other) const;
-    bool diffNeedsPaintInvalidationObject(const LayoutStyle& other) const;
-    void updatePropertySpecificDifferences(const LayoutStyle& other, StyleDifference&) const;
+    bool diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle& other) const;
+    bool diffNeedsFullLayout(const ComputedStyle& other) const;
+    bool diffNeedsPaintInvalidationLayer(const ComputedStyle& other) const;
+    bool diffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
+    void updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference&) const;
 };
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.
@@ -1789,22 +1789,22 @@ inline int adjustForAbsoluteZoom(int value, float zoomFactor)
     return roundForImpreciseConversion<int>(fvalue / zoomFactor);
 }
 
-inline int adjustForAbsoluteZoom(int value, const LayoutStyle* style)
+inline int adjustForAbsoluteZoom(int value, const ComputedStyle* style)
 {
     return adjustForAbsoluteZoom(value, style->effectiveZoom());
 }
 
-inline float adjustFloatForAbsoluteZoom(float value, const LayoutStyle& style)
+inline float adjustFloatForAbsoluteZoom(float value, const ComputedStyle& style)
 {
     return value / style.effectiveZoom();
 }
 
-inline double adjustDoubleForAbsoluteZoom(double value, const LayoutStyle& style)
+inline double adjustDoubleForAbsoluteZoom(double value, const ComputedStyle& style)
 {
     return value / style.effectiveZoom();
 }
 
-inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const LayoutStyle& style)
+inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const ComputedStyle& style)
 {
     return value / style.effectiveZoom();
 }
@@ -1814,12 +1814,12 @@ inline double adjustScrollForAbsoluteZoom(double scrollOffset, float zoomFactor)
     return scrollOffset / zoomFactor;
 }
 
-inline double adjustScrollForAbsoluteZoom(double scrollOffset, const LayoutStyle& style)
+inline double adjustScrollForAbsoluteZoom(double scrollOffset, const ComputedStyle& style)
 {
     return adjustScrollForAbsoluteZoom(scrollOffset, style.effectiveZoom());
 }
 
-inline bool LayoutStyle::setZoom(float f)
+inline bool ComputedStyle::setZoom(float f)
 {
     if (compareEqual(visual->m_zoom, f))
         return false;
@@ -1828,7 +1828,7 @@ inline bool LayoutStyle::setZoom(float f)
     return true;
 }
 
-inline bool LayoutStyle::setEffectiveZoom(float f)
+inline bool ComputedStyle::setEffectiveZoom(float f)
 {
     if (compareEqual(rareInheritedData->m_effectiveZoom, f))
         return false;
@@ -1836,7 +1836,7 @@ inline bool LayoutStyle::setEffectiveZoom(float f)
     return true;
 }
 
-inline bool LayoutStyle::isSharable() const
+inline bool ComputedStyle::isSharable() const
 {
     if (unique())
         return false;
@@ -1845,7 +1845,7 @@ inline bool LayoutStyle::isSharable() const
     return true;
 }
 
-inline bool LayoutStyle::setTextOrientation(TextOrientation textOrientation)
+inline bool ComputedStyle::setTextOrientation(TextOrientation textOrientation)
 {
     if (compareEqual(rareInheritedData->m_textOrientation, textOrientation))
         return false;
@@ -1854,30 +1854,30 @@ inline bool LayoutStyle::setTextOrientation(TextOrientation textOrientation)
     return true;
 }
 
-inline bool LayoutStyle::hasAnyPublicPseudoStyles() const
+inline bool ComputedStyle::hasAnyPublicPseudoStyles() const
 {
     return PUBLIC_PSEUDOID_MASK & noninherited_flags.pseudoBits;
 }
 
-inline bool LayoutStyle::hasPseudoStyle(PseudoId pseudo) const
+inline bool ComputedStyle::hasPseudoStyle(PseudoId pseudo) const
 {
     ASSERT(pseudo > NOPSEUDO);
     ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
     return (1 << (pseudo - 1)) & noninherited_flags.pseudoBits;
 }
 
-inline void LayoutStyle::setHasPseudoStyle(PseudoId pseudo)
+inline void ComputedStyle::setHasPseudoStyle(PseudoId pseudo)
 {
     ASSERT(pseudo > NOPSEUDO);
     ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
     noninherited_flags.pseudoBits |= 1 << (pseudo - 1);
 }
 
-inline bool LayoutStyle::hasPseudoElementStyle() const
+inline bool ComputedStyle::hasPseudoElementStyle() const
 {
     return noninherited_flags.pseudoBits & PSEUDO_ELEMENT_MASK;
 }
 
 } // namespace blink
 
-#endif // LayoutStyle_h
+#endif // ComputedStyle_h

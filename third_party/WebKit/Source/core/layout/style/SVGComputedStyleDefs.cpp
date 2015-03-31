@@ -26,20 +26,20 @@
 */
 
 #include "config.h"
-#include "core/layout/style/SVGLayoutStyleDefs.h"
+#include "core/layout/style/SVGComputedStyleDefs.h"
 
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 
 namespace blink {
 
 StyleFillData::StyleFillData()
-    : opacity(SVGLayoutStyle::initialFillOpacity())
-    , paintType(SVGLayoutStyle::initialFillPaintType())
-    , paintColor(SVGLayoutStyle::initialFillPaintColor())
-    , paintUri(SVGLayoutStyle::initialFillPaintUri())
-    , visitedLinkPaintType(SVGLayoutStyle::initialStrokePaintType())
-    , visitedLinkPaintColor(SVGLayoutStyle::initialFillPaintColor())
-    , visitedLinkPaintUri(SVGLayoutStyle::initialFillPaintUri())
+    : opacity(SVGComputedStyle::initialFillOpacity())
+    , paintType(SVGComputedStyle::initialFillPaintType())
+    , paintColor(SVGComputedStyle::initialFillPaintColor())
+    , paintUri(SVGComputedStyle::initialFillPaintUri())
+    , visitedLinkPaintType(SVGComputedStyle::initialStrokePaintType())
+    , visitedLinkPaintColor(SVGComputedStyle::initialFillPaintColor())
+    , visitedLinkPaintUri(SVGComputedStyle::initialFillPaintUri())
 {
 }
 
@@ -67,17 +67,17 @@ bool StyleFillData::operator==(const StyleFillData& other) const
 }
 
 StyleStrokeData::StyleStrokeData()
-    : opacity(SVGLayoutStyle::initialStrokeOpacity())
-    , miterLimit(SVGLayoutStyle::initialStrokeMiterLimit())
-    , width(SVGLayoutStyle::initialStrokeWidth())
-    , dashOffset(SVGLayoutStyle::initialStrokeDashOffset())
-    , dashArray(SVGLayoutStyle::initialStrokeDashArray())
-    , paintType(SVGLayoutStyle::initialStrokePaintType())
-    , paintColor(SVGLayoutStyle::initialStrokePaintColor())
-    , paintUri(SVGLayoutStyle::initialStrokePaintUri())
-    , visitedLinkPaintType(SVGLayoutStyle::initialStrokePaintType())
-    , visitedLinkPaintColor(SVGLayoutStyle::initialStrokePaintColor())
-    , visitedLinkPaintUri(SVGLayoutStyle::initialStrokePaintUri())
+    : opacity(SVGComputedStyle::initialStrokeOpacity())
+    , miterLimit(SVGComputedStyle::initialStrokeMiterLimit())
+    , width(SVGComputedStyle::initialStrokeWidth())
+    , dashOffset(SVGComputedStyle::initialStrokeDashOffset())
+    , dashArray(SVGComputedStyle::initialStrokeDashArray())
+    , paintType(SVGComputedStyle::initialStrokePaintType())
+    , paintColor(SVGComputedStyle::initialStrokePaintColor())
+    , paintUri(SVGComputedStyle::initialStrokePaintUri())
+    , visitedLinkPaintType(SVGComputedStyle::initialStrokePaintType())
+    , visitedLinkPaintColor(SVGComputedStyle::initialStrokePaintColor())
+    , visitedLinkPaintUri(SVGComputedStyle::initialStrokePaintUri())
 {
 }
 
@@ -113,8 +113,8 @@ bool StyleStrokeData::operator==(const StyleStrokeData& other) const
 }
 
 StyleStopData::StyleStopData()
-    : opacity(SVGLayoutStyle::initialStopOpacity())
-    , color(SVGLayoutStyle::initialStopColor())
+    : opacity(SVGComputedStyle::initialStopOpacity())
+    , color(SVGComputedStyle::initialStopColor())
 {
 }
 
@@ -132,10 +132,10 @@ bool StyleStopData::operator==(const StyleStopData& other) const
 }
 
 StyleMiscData::StyleMiscData()
-    : floodColor(SVGLayoutStyle::initialFloodColor())
-    , floodOpacity(SVGLayoutStyle::initialFloodOpacity())
-    , lightingColor(SVGLayoutStyle::initialLightingColor())
-    , baselineShiftValue(SVGLayoutStyle::initialBaselineShiftValue())
+    : floodColor(SVGComputedStyle::initialFloodColor())
+    , floodOpacity(SVGComputedStyle::initialFloodOpacity())
+    , lightingColor(SVGComputedStyle::initialLightingColor())
+    , baselineShiftValue(SVGComputedStyle::initialBaselineShiftValue())
 {
 }
 
@@ -157,9 +157,9 @@ bool StyleMiscData::operator==(const StyleMiscData& other) const
 }
 
 StyleResourceData::StyleResourceData()
-    : clipper(SVGLayoutStyle::initialClipperResource())
-    , filter(SVGLayoutStyle::initialFilterResource())
-    , masker(SVGLayoutStyle::initialMaskerResource())
+    : clipper(SVGComputedStyle::initialClipperResource())
+    , filter(SVGComputedStyle::initialFilterResource())
+    , masker(SVGComputedStyle::initialMaskerResource())
 {
 }
 
@@ -179,9 +179,9 @@ bool StyleResourceData::operator==(const StyleResourceData& other) const
 }
 
 StyleInheritedResourceData::StyleInheritedResourceData()
-    : markerStart(SVGLayoutStyle::initialMarkerStartResource())
-    , markerMid(SVGLayoutStyle::initialMarkerMidResource())
-    , markerEnd(SVGLayoutStyle::initialMarkerEndResource())
+    : markerStart(SVGComputedStyle::initialMarkerStartResource())
+    , markerMid(SVGComputedStyle::initialMarkerMidResource())
+    , markerEnd(SVGComputedStyle::initialMarkerEndResource())
 {
 }
 
@@ -201,13 +201,13 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
 }
 
 StyleLayoutData::StyleLayoutData()
-    : cx(SVGLayoutStyle::initialCx())
-    , cy(SVGLayoutStyle::initialCy())
-    , x(SVGLayoutStyle::initialX())
-    , y(SVGLayoutStyle::initialY())
-    , r(SVGLayoutStyle::initialR())
-    , rx(SVGLayoutStyle::initialRx())
-    , ry(SVGLayoutStyle::initialRy())
+    : cx(SVGComputedStyle::initialCx())
+    , cy(SVGComputedStyle::initialCy())
+    , x(SVGComputedStyle::initialX())
+    , y(SVGComputedStyle::initialY())
+    , r(SVGComputedStyle::initialR())
+    , rx(SVGComputedStyle::initialRx())
+    , ry(SVGComputedStyle::initialRy())
 {
 }
 

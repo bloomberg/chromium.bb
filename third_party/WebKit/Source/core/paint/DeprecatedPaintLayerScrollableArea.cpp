@@ -262,14 +262,14 @@ bool DeprecatedPaintLayerScrollableArea::isScrollCornerVisible() const
     return !scrollCornerRect().isEmpty();
 }
 
-static int cornerStart(const LayoutStyle& style, int minX, int maxX, int thickness)
+static int cornerStart(const ComputedStyle& style, int minX, int maxX, int thickness)
 {
     if (style.shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         return minX + style.borderLeftWidth();
     return maxX - thickness - style.borderRightWidth();
 }
 
-static IntRect cornerRect(const LayoutStyle& style, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
+static IntRect cornerRect(const ComputedStyle& style, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
 {
     int horizontalThickness;
     int verticalThickness;
@@ -775,7 +775,7 @@ static bool canHaveOverflowScrollbars(const LayoutBox& box)
     return (rootLayerScrolls || !box.isLayoutView()) && box.document().viewportDefiningElement() != box.node();
 }
 
-void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const LayoutStyle* oldStyle)
+void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedStyle* oldStyle)
 {
     if (!m_scrollDimensionsDirty)
         updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
@@ -1059,7 +1059,7 @@ void DeprecatedPaintLayerScrollableArea::updateScrollCornerStyle()
         return;
 
     LayoutObject* actualRenderer = rendererForScrollbar(box());
-    RefPtr<LayoutStyle> corner = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<LayoutStyle>(nullptr);
+    RefPtr<ComputedStyle> corner = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<ComputedStyle>(nullptr);
     if (corner) {
         if (!m_scrollCorner) {
             m_scrollCorner = LayoutScrollbarPart::createAnonymous(&box().document());
@@ -1187,7 +1187,7 @@ void DeprecatedPaintLayerScrollableArea::updateResizerStyle()
         return;
 
     LayoutObject* actualRenderer = rendererForScrollbar(box());
-    RefPtr<LayoutStyle> resizer = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<LayoutStyle>(nullptr);
+    RefPtr<ComputedStyle> resizer = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<ComputedStyle>(nullptr);
     if (resizer) {
         if (!m_resizer) {
             m_resizer = LayoutScrollbarPart::createAnonymous(&box().document());

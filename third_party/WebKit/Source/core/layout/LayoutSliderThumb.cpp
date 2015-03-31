@@ -33,7 +33,7 @@
 #include "core/layout/LayoutSliderThumb.h"
 
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
 {
 }
 
-void LayoutSliderThumb::updateAppearance(const LayoutStyle& parentStyle)
+void LayoutSliderThumb::updateAppearance(const ComputedStyle& parentStyle)
 {
     if (parentStyle.appearance() == SliderVerticalPart)
         mutableStyleRef().setAppearance(SliderThumbVerticalPart);

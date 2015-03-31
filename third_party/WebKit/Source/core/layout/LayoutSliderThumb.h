@@ -42,7 +42,7 @@ class SliderThumbElement;
 class LayoutSliderThumb final : public LayoutBlockFlow {
 public:
     LayoutSliderThumb(SliderThumbElement*);
-    void updateAppearance(const LayoutStyle& parentStyle);
+    void updateAppearance(const ComputedStyle& parentStyle);
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSliderThumb || LayoutBlockFlow::isOfType(type); }

@@ -138,7 +138,7 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLElement::parseAttribute(name, value);
 }
 
-LayoutObject* HTMLCanvasElement::createLayoutObject(const LayoutStyle& style)
+LayoutObject* HTMLCanvasElement::createLayoutObject(const ComputedStyle& style)
 {
     LocalFrame* frame = document().frame();
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
@@ -148,7 +148,7 @@ LayoutObject* HTMLCanvasElement::createLayoutObject(const LayoutStyle& style)
 
 void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
 {
-    SkFilterQuality filterQuality = computedStyle()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality;
+    SkFilterQuality filterQuality = ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality;
     if (is3D()) {
         toWebGLRenderingContextBase(m_context.get())->setFilterQuality(filterQuality);
         setNeedsCompositingUpdate();
@@ -250,7 +250,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
             } else {
                 m_context = WebGLRenderingContext::create(this, attributes);
             }
-            const LayoutStyle* style = computedStyle();
+            const ComputedStyle* style = ensureComputedStyle();
             if (style && m_context)
                 toWebGLRenderingContextBase(m_context.get())->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
             setNeedsCompositingUpdate();
@@ -638,7 +638,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     m_imageBuffer->setClient(this);
 
     document().updateRenderTreeIfNeeded();
-    const LayoutStyle* style = computedStyle();
+    const ComputedStyle* style = ensureComputedStyle();
     m_imageBuffer->setFilterQuality((style && (style->imageRendering() == ImageRenderingPixelated)) ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 
     m_didFailToCreateImageBuffer = false;

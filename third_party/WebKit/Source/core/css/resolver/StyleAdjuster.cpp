@@ -44,8 +44,8 @@
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/style/GridPosition.h"
-#include "core/layout/style/LayoutStyle.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyle.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Length.h"
 #include "platform/transforms/TransformOperations.h"
@@ -101,7 +101,7 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
 // CSS requires text-decoration to be reset at each DOM element for tables,
 // inline blocks, inline tables, shadow DOM crossings, floating elements,
 // and absolute or relatively positioned elements.
-static bool doesNotInheritTextDecoration(const LayoutStyle& style, const Element* e)
+static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Element* e)
 {
     return style.display() == TABLE || style.display() == INLINE_TABLE
         || style.display() == INLINE_BLOCK || style.display() == INLINE_BOX || isAtShadowBoundary(e)
@@ -109,18 +109,18 @@ static bool doesNotInheritTextDecoration(const LayoutStyle& style, const Element
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null
-// element to adjustLayoutStyle, so we can't just use element->isInTopLayer().
-static bool isInTopLayer(const Element* element, const LayoutStyle& style)
+// element to adjustComputedStyle, so we can't just use element->isInTopLayer().
+static bool isInTopLayer(const Element* element, const ComputedStyle& style)
 {
     return (element && element->isInTopLayer()) || style.styleType() == BACKDROP;
 }
 
-static bool parentStyleForcesZIndexToCreateStackingContext(const LayoutStyle& parentStyle)
+static bool parentStyleForcesZIndexToCreateStackingContext(const ComputedStyle& parentStyle)
 {
     return parentStyle.isDisplayFlexibleOrGridBox();
 }
 
-static bool hasWillChangeThatCreatesStackingContext(const LayoutStyle& style)
+static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
 {
     for (size_t i = 0; i < style.willChangeProperties().size(); ++i) {
         switch (style.willChangeProperties()[i]) {
@@ -151,7 +151,7 @@ static bool hasWillChangeThatCreatesStackingContext(const LayoutStyle& style)
     return false;
 }
 
-void StyleAdjuster::adjustLayoutStyle(LayoutStyle& style, const LayoutStyle& parentStyle, Element *e, const AuthorStyleInfo& authorStyle)
+void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element *e, const AuthorStyleInfo& authorStyle)
 {
     if (style.display() != NONE) {
         if (e && e->isHTMLElement())
@@ -231,7 +231,7 @@ void StyleAdjuster::adjustLayoutStyle(LayoutStyle& style, const LayoutStyle& par
     if (e && e->isSVGElement()) {
         // Only the root <svg> element in an SVG document fragment tree honors css position
         if (!(isSVGSVGElement(*e) && e->parentNode() && !e->parentNode()->isSVGElement()))
-            style.setPosition(LayoutStyle::initialPosition());
+            style.setPosition(ComputedStyle::initialPosition());
 
         // SVG text layout code expects us to be a block-level style element.
         if ((isSVGForeignObjectElement(*e) || isSVGTextElement(*e)) && style.isDisplayInlineType())
@@ -244,7 +244,7 @@ void StyleAdjuster::adjustLayoutStyle(LayoutStyle& style, const LayoutStyle& par
     adjustStyleForAlignment(style, parentStyle);
 }
 
-void StyleAdjuster::adjustStyleForFirstLetter(LayoutStyle& style)
+void StyleAdjuster::adjustStyleForFirstLetter(ComputedStyle& style)
 {
     if (style.styleType() != FIRST_LETTER)
         return;
@@ -256,7 +256,7 @@ void StyleAdjuster::adjustStyleForFirstLetter(LayoutStyle& style)
     style.setPosition(StaticPosition);
 }
 
-void StyleAdjuster::adjustStyleForAlignment(LayoutStyle& style, const LayoutStyle& parentStyle)
+void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style, const ComputedStyle& parentStyle)
 {
     bool isFlexOrGrid = style.isDisplayFlexibleOrGridBox();
     bool absolutePositioned = style.position() == AbsolutePosition;
@@ -334,7 +334,7 @@ void StyleAdjuster::adjustStyleForAlignment(LayoutStyle& style, const LayoutStyl
     }
 }
 
-void StyleAdjuster::adjustStyleForHTMLElement(LayoutStyle& style, const LayoutStyle& parentStyle, HTMLElement& element)
+void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const ComputedStyle& parentStyle, HTMLElement& element)
 {
     // <div> and <span> are the most common elements on the web, we skip all the work for them.
     if (isHTMLDivElement(element) || isHTMLSpanElement(element))
@@ -424,7 +424,7 @@ void StyleAdjuster::adjustStyleForHTMLElement(LayoutStyle& style, const LayoutSt
     }
 }
 
-void StyleAdjuster::adjustOverflow(LayoutStyle& style)
+void StyleAdjuster::adjustOverflow(ComputedStyle& style)
 {
     ASSERT(style.overflowX() != OVISIBLE || style.overflowY() != OVISIBLE);
 
@@ -455,7 +455,7 @@ void StyleAdjuster::adjustOverflow(LayoutStyle& style)
     }
 }
 
-void StyleAdjuster::adjustStyleForDisplay(LayoutStyle& style, const LayoutStyle& parentStyle)
+void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& parentStyle)
 {
     if (style.display() == BLOCK && !style.isFloating())
         return;

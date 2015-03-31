@@ -5,7 +5,7 @@
 #ifndef SVGInlineTextBoxPainter_h
 #define SVGInlineTextBoxPainter_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 
 namespace blink {
@@ -15,7 +15,7 @@ class Font;
 class GraphicsContext;
 struct PaintInfo;
 class LayoutPoint;
-class LayoutStyle;
+class ComputedStyle;
 class SVGInlineTextBox;
 struct SVGTextFragment;
 class TextRun;
@@ -26,14 +26,14 @@ public:
     SVGInlineTextBoxPainter(SVGInlineTextBox& svgInlineTextBox) : m_svgInlineTextBox(svgInlineTextBox) { }
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintSelectionBackground(const PaintInfo&);
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, const LayoutStyle&, const Font&);
+    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, const ComputedStyle&, const Font&);
 
 private:
     bool shouldPaintSelection() const;
     void paintTextFragments(const PaintInfo&, LayoutObject&);
     void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
-    void paintTextWithShadows(const PaintInfo&, const LayoutStyle&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, LayoutSVGResourceMode);
-    void paintText(const PaintInfo&, const LayoutStyle&, const LayoutStyle& selectionStyle, const SVGTextFragment&, LayoutSVGResourceMode, bool shouldPaintSelection);
+    void paintTextWithShadows(const PaintInfo&, const ComputedStyle&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, LayoutSVGResourceMode);
+    void paintText(const PaintInfo&, const ComputedStyle&, const ComputedStyle& selectionStyle, const SVGTextFragment&, LayoutSVGResourceMode, bool shouldPaintSelection);
 
     SVGInlineTextBox& m_svgInlineTextBox;
 };

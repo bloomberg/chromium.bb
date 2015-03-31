@@ -141,7 +141,7 @@ public:
     }
 
     void updateAfterLayout();
-    void updateAfterStyleChange(const LayoutStyle*);
+    void updateAfterStyleChange(const ComputedStyle*);
     void updateAfterOverflowRecalc();
 
     virtual bool updateAfterCompositingChange() override;

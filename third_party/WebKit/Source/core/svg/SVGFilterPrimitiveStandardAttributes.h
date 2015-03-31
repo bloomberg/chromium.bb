@@ -67,8 +67,8 @@ protected:
 private:
     virtual bool isFilterEffect() const override final { return true; }
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override final;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override final;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;

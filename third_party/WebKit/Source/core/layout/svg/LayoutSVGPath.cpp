@@ -77,7 +77,7 @@ bool LayoutSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
     if (LayoutSVGShape::shapeDependentStrokeContains(point))
         return true;
 
-    const SVGLayoutStyle& svgStyle = style()->svgStyle();
+    const SVGComputedStyle& svgStyle = style()->svgStyle();
     for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i) {
         ASSERT(svgStyle.hasStroke());
         float strokeWidth = this->strokeWidth();

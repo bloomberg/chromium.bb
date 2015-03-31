@@ -45,7 +45,7 @@ public:
 private:
     SearchInputType(HTMLInputElement&);
     void countUsage() override;
-    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) const override;
     const AtomicString& formControlType() const override;
     bool needsContainer() const override;
     void createShadowSubtree() override;

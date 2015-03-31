@@ -31,7 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeChildRemovalTracker.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/SelectorQuery.h"
@@ -1042,11 +1042,11 @@ void ContainerNode::focusStateChanged()
         return;
 
     if (styleChangeType() < SubtreeStyleChange) {
-        if (layoutStyle()->affectedByFocus() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
+        if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
             document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
-        else if (layoutStyle()->affectedByFocus())
+        else if (computedStyle()->affectedByFocus())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
 
@@ -1090,15 +1090,15 @@ void ContainerNode::setActive(bool down)
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (layoutObject()) {
         if (styleChangeType() < SubtreeStyleChange) {
-            if (layoutStyle()->affectedByActive() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
+            if (computedStyle()->affectedByActive() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
                 setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
             else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
                 document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
-            else if (layoutStyle()->affectedByActive())
+            else if (computedStyle()->affectedByActive())
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
         }
 
-        if (layoutStyle()->hasAppearance())
+        if (computedStyle()->hasAppearance())
             LayoutTheme::theme().stateChanged(layoutObject(), PressedControlState);
     }
 }
@@ -1122,11 +1122,11 @@ void ContainerNode::setHovered(bool over)
     }
 
     if (styleChangeType() < SubtreeStyleChange) {
-        if (layoutStyle()->affectedByHover() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
+        if (computedStyle()->affectedByHover() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
             document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
-        else if (layoutStyle()->affectedByHover())
+        else if (computedStyle()->affectedByHover())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }
 

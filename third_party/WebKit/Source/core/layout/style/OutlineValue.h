@@ -30,7 +30,7 @@
 namespace blink {
 
 class OutlineValue : public BorderValue {
-friend class LayoutStyle;
+friend class ComputedStyle;
 public:
     OutlineValue()
         : m_offset(0)

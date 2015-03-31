@@ -1847,9 +1847,9 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
 
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
     // relative to the canvas.
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
     canvas()->document().updateRenderTreeIfNeeded();
-    if (const LayoutStyle* computedStyle = canvas()->computedStyle()) {
+    if (const ComputedStyle* computedStyle = canvas()->ensureComputedStyle()) {
         FontDescription elementFontDescription(computedStyle->fontDescription());
         // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
         elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
@@ -1916,9 +1916,9 @@ void CanvasRenderingContext2D::setTextBaseline(const String& s)
     modifiableState().setTextBaseline(baseline);
 }
 
-static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direction direction, HTMLCanvasElement* canvas, const LayoutStyle** computedStyle = 0)
+static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direction direction, HTMLCanvasElement* canvas, const ComputedStyle** computedStyle = 0)
 {
-    const LayoutStyle* style = (computedStyle || direction == CanvasRenderingContext2DState::DirectionInherit) ? canvas->computedStyle() : nullptr;
+    const ComputedStyle* style = (computedStyle || direction == CanvasRenderingContext2DState::DirectionInherit) ? canvas->ensureComputedStyle() : nullptr;
     if (computedStyle)
         *computedStyle = style;
     switch (direction) {
@@ -2064,7 +2064,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 
     // FIXME: Need to turn off font smoothing.
 
-    const LayoutStyle* computedStyle = 0;
+    const ComputedStyle* computedStyle = 0;
     TextDirection direction = toTextDirection(state().direction(), canvas(), &computedStyle);
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;

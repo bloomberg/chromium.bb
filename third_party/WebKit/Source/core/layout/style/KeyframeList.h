@@ -35,11 +35,11 @@
 namespace blink {
 
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 
 class KeyframeValue {
 public:
-    KeyframeValue(double key, PassRefPtr<LayoutStyle> style)
+    KeyframeValue(double key, PassRefPtr<ComputedStyle> style)
         : m_key(key)
         , m_style(style)
     {
@@ -52,13 +52,13 @@ public:
     double key() const { return m_key; }
     void setKey(double key) { m_key = key; }
 
-    const LayoutStyle* style() const { return m_style.get(); }
-    void setStyle(PassRefPtr<LayoutStyle> style) { m_style = style; }
+    const ComputedStyle* style() const { return m_style.get(); }
+    void setStyle(PassRefPtr<ComputedStyle> style) { m_style = style; }
 
 private:
     double m_key;
     HashSet<CSSPropertyID> m_properties; // The properties specified in this keyframe.
-    RefPtr<LayoutStyle> m_style;
+    RefPtr<ComputedStyle> m_style;
 };
 
 class KeyframeList {

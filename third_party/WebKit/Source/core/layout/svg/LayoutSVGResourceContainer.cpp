@@ -74,7 +74,7 @@ void LayoutSVGResourceContainer::willBeDestroyed()
         svgExtensionsFromElement(element()).removeResource(m_id);
 }
 
-void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutSVGHiddenContainer::styleDidChange(diff, oldStyle);
 

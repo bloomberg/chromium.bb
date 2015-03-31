@@ -54,7 +54,7 @@ namespace blink {
 
 class DeprecatedPaintLayer;
 class DeprecatedPaintLayerCompositor;
-class LayoutStyle;
+class ComputedStyle;
 class LayoutBoxModelObject;
 
 class DeprecatedPaintLayerStackingNode {
@@ -86,7 +86,7 @@ public:
     bool normalFlowListDirty() const { return m_normalFlowListDirty; }
     void dirtyNormalFlowList();
 
-    void updateStackingNodesAfterStyleChange(const LayoutStyle* oldStyle);
+    void updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle);
 
     DeprecatedPaintLayerStackingNode* ancestorStackingContextNode() const;
 

@@ -185,7 +185,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> InsertionPoint::getDistributedNodes()
     return StaticNodeList::adopt(nodes);
 }
 
-bool InsertionPoint::layoutObjectIsNeeded(const LayoutStyle& style)
+bool InsertionPoint::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return !isActive() && HTMLElement::layoutObjectIsNeeded(style);
 }

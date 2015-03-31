@@ -344,12 +344,12 @@ void DeprecatedPaintLayer::updateTransformationMatrix()
         LayoutBox* box = layoutBox();
         ASSERT(box);
         m_transform->makeIdentity();
-        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), LayoutStyle::IncludeTransformOrigin);
+        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::IncludeTransformOrigin);
         makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
     }
 }
 
-void DeprecatedPaintLayer::updateTransform(const LayoutStyle* oldStyle, const LayoutStyle& newStyle)
+void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
 {
     if (oldStyle && newStyle.transformDataEquivalent(*oldStyle))
         return;
@@ -398,16 +398,16 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::renderingContextRoot()
     return renderingContext;
 }
 
-TransformationMatrix DeprecatedPaintLayer::currentTransform(LayoutStyle::ApplyTransformOrigin applyOrigin) const
+TransformationMatrix DeprecatedPaintLayer::currentTransform(ComputedStyle::ApplyTransformOrigin applyOrigin) const
 {
     if (!m_transform)
         return TransformationMatrix();
 
     // m_transform includes transform-origin, so we need to recompute the transform here.
-    if (applyOrigin == LayoutStyle::ExcludeTransformOrigin) {
+    if (applyOrigin == ComputedStyle::ExcludeTransformOrigin) {
         LayoutBox* box = layoutBox();
         TransformationMatrix currTransform;
-        box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
+        box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(currTransform, compositor()->hasAcceleratedCompositing());
         return currTransform;
     }
@@ -904,7 +904,7 @@ TransformationMatrix DeprecatedPaintLayer::perspectiveTransform() const
     if (!layoutObject()->hasTransformRelatedProperty())
         return TransformationMatrix();
 
-    const LayoutStyle& style = layoutObject()->styleRef();
+    const ComputedStyle& style = layoutObject()->styleRef();
     if (!style.hasPerspective())
         return TransformationMatrix();
 
@@ -935,7 +935,7 @@ FloatPoint DeprecatedPaintLayer::perspectiveOrigin() const
         return FloatPoint();
 
     const LayoutRect borderBox = toLayoutBox(layoutObject())->borderBoxRect();
-    const LayoutStyle& style = layoutObject()->styleRef();
+    const ComputedStyle& style = layoutObject()->styleRef();
 
     return FloatPoint(floatValueForLength(style.perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style.perspectiveOriginY(), borderBox.height().toFloat()));
 }
@@ -1524,7 +1524,7 @@ void DeprecatedPaintLayer::didUpdateNeedsCompositedScrolling()
     updateSelfPaintingLayer();
 }
 
-void DeprecatedPaintLayer::updateReflectionInfo(const LayoutStyle* oldStyle)
+void DeprecatedPaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
 {
     ASSERT(!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle));
     if (layoutObject()->hasReflection()) {
@@ -2723,7 +2723,7 @@ bool DeprecatedPaintLayer::hasVisibleBoxDecorations() const
     return hasBoxDecorationsOrBackground() || hasOverflowControls();
 }
 
-void DeprecatedPaintLayer::updateFilters(const LayoutStyle* oldStyle, const LayoutStyle& newStyle)
+void DeprecatedPaintLayer::updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
 {
     if (!newStyle.hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
         return;
@@ -2732,7 +2732,7 @@ void DeprecatedPaintLayer::updateFilters(const LayoutStyle* oldStyle, const Layo
     updateOrRemoveFilterEffectRenderer();
 }
 
-bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const LayoutStyle* oldStyle)
+bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     CompositingReasons oldPotentialCompositingReasonsFromStyle = m_potentialCompositingReasonsFromStyle;
     compositor()->updatePotentialCompositingReasonsFromStyle(this);
@@ -2790,7 +2790,7 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     return true;
 }
 
-void DeprecatedPaintLayer::styleChanged(StyleDifference diff, const LayoutStyle* oldStyle)
+void DeprecatedPaintLayer::styleChanged(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (attemptDirectCompositingUpdate(diff, oldStyle))
         return;
@@ -2826,7 +2826,7 @@ bool DeprecatedPaintLayer::scrollsOverflow() const
     return false;
 }
 
-FilterOperations DeprecatedPaintLayer::computeFilterOperations(const LayoutStyle& style)
+FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedStyle& style)
 {
     const FilterOperations& filters = style.filter();
     if (filters.hasReferenceFilter()) {

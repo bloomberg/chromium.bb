@@ -62,7 +62,7 @@ void LayoutTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChi
         LayoutBlockFlow::addChild(newChild, beforeChild);
 }
 
-void LayoutTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTextControl::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlockFlow::styleDidChange(diff, oldStyle);
     Element* innerEditor = innerEditorElement();
@@ -80,12 +80,12 @@ void LayoutTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* 
     textFormControlElement()->updatePlaceholderVisibility(false);
 }
 
-static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, LayoutStyle& style)
+static inline void updateUserModifyProperty(HTMLTextFormControlElement& node, ComputedStyle& style)
 {
     style.setUserModify(node.isDisabledOrReadOnly() ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
 }
 
-void LayoutTextControl::adjustInnerEditorStyle(LayoutStyle& textBlockStyle) const
+void LayoutTextControl::adjustInnerEditorStyle(ComputedStyle& textBlockStyle) const
 {
     // The inner block, if present, always has its direction set to LTR,
     // so we need to inherit the direction and unicode-bidi style from the element.
@@ -258,7 +258,7 @@ void LayoutTextControl::computePreferredLogicalWidths()
 
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
 
     if (styleToUse.logicalWidth().isFixed() && styleToUse.logicalWidth().value() >= 0)
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalWidth().value());

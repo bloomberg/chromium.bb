@@ -6,7 +6,7 @@
 #define TextPainter_h
 
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
@@ -21,7 +21,7 @@ class GraphicsContext;
 class GraphicsContextStateSaver;
 class LayoutTextCombine;
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 class ShadowList;
 class TextRun;
 struct TextRunPaintInfo;
@@ -57,7 +57,7 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
-    static Style textPaintingStyle(LayoutObject&, const LayoutStyle&, bool forceBlackText, bool isPrinting);
+    static Style textPaintingStyle(LayoutObject&, const ComputedStyle&, bool forceBlackText, bool isPrinting);
     static Style selectionPaintingStyle(LayoutObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };

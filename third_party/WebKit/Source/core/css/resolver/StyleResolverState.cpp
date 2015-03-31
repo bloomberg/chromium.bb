@@ -24,17 +24,17 @@
 
 #include "core/animation/css/CSSAnimations.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
 
 namespace blink {
 
-StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, const LayoutStyle* parentStyle)
+StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, const ComputedStyle* parentStyle)
     : m_elementContext(elementContext)
     , m_document(document)
     , m_style(nullptr)
     // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
-    , m_parentStyle(const_cast<LayoutStyle*>(parentStyle))
+    , m_parentStyle(const_cast<ComputedStyle*>(parentStyle))
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_hasDirAutoAttribute(false)
@@ -42,14 +42,14 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
 {
     if (!m_parentStyle) {
         // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
-        m_parentStyle = const_cast<LayoutStyle*>(m_elementContext.parentStyle());
+        m_parentStyle = const_cast<ComputedStyle*>(m_elementContext.parentStyle());
     }
 
     ASSERT(document.isActive());
     m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
 }
 
-StyleResolverState::StyleResolverState(Document& document, Element* element, const LayoutStyle* parentStyle)
+StyleResolverState::StyleResolverState(Document& document, Element* element, const ComputedStyle* parentStyle)
     : StyleResolverState(document, element ? ElementResolveContext(*element) : ElementResolveContext(document), parentStyle)
 {
 }

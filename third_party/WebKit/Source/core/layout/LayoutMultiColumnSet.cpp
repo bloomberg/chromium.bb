@@ -39,12 +39,12 @@ LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
 {
 }
 
-LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& flowThread, const LayoutStyle& parentStyle)
+LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& flowThread, const ComputedStyle& parentStyle)
 {
     Document& document = flowThread.document();
     LayoutMultiColumnSet* renderer = new LayoutMultiColumnSet(&flowThread);
     renderer->setDocumentForAnonymous(&document);
-    renderer->setStyle(LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    renderer->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
 }
 

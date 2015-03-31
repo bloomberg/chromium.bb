@@ -43,7 +43,7 @@
 
 namespace blink {
 
-LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, LayoutStyle* style)
+LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, ComputedStyle* style)
     : LayoutTreeBuilder(element, nullptr)
     , m_style(style)
 {
@@ -106,7 +106,7 @@ bool LayoutTreeBuilderForElement::shouldCreateLayoutObject() const
     return m_node->layoutObjectIsNeeded(style());
 }
 
-LayoutStyle& LayoutTreeBuilderForElement::style() const
+ComputedStyle& LayoutTreeBuilderForElement::style() const
 {
     if (!m_style)
         m_style = m_node->styleForLayoutObject();
@@ -115,7 +115,7 @@ LayoutStyle& LayoutTreeBuilderForElement::style() const
 
 void LayoutTreeBuilderForElement::createLayoutObject()
 {
-    LayoutStyle& style = this->style();
+    ComputedStyle& style = this->style();
 
     LayoutObject* newLayoutObject = m_node->createLayoutObject(style);
     if (!newLayoutObject)
@@ -149,7 +149,7 @@ void LayoutTreeBuilderForElement::createLayoutObject()
 void LayoutTreeBuilderForText::createLayoutObject()
 {
     LayoutObject* parentLayoutObject = this->parentLayoutObject();
-    LayoutStyle& style = parentLayoutObject->mutableStyleRef();
+    ComputedStyle& style = parentLayoutObject->mutableStyleRef();
 
     ASSERT(m_node->textRendererIsNeeded(style, *parentLayoutObject));
 

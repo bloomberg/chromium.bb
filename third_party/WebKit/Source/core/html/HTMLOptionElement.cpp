@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/Text.h"
@@ -59,7 +59,7 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 // if an implicit destructor is used or an empty destructor is defined in
 // HTMLOptionElement.h, when including HTMLOptionElement.h,
 // msvc tries to expand the destructor and causes
-// a compile error because of lack of LayoutStyle definition.
+// a compile error because of lack of ComputedStyle definition.
 HTMLOptionElement::~HTMLOptionElement()
 {
 }
@@ -96,7 +96,7 @@ void HTMLOptionElement::attach(const AttachContext& context)
         ASSERT(!m_style || m_style == context.resolvedStyle);
         m_style = context.resolvedStyle;
     } else {
-        updateNonLayoutStyle();
+        updateNonComputedStyle();
         optionContext.resolvedStyle = m_style.get();
     }
     HTMLElement::attach(optionContext);
@@ -301,21 +301,21 @@ void HTMLOptionElement::setLabel(const AtomicString& label)
     setAttribute(labelAttr, label);
 }
 
-void HTMLOptionElement::updateNonLayoutStyle()
+void HTMLOptionElement::updateNonComputedStyle()
 {
     m_style = originalStyleForLayoutObject();
     if (HTMLSelectElement* select = ownerSelectElement())
         select->updateListOnRenderer();
 }
 
-LayoutStyle* HTMLOptionElement::nonRendererStyle() const
+ComputedStyle* HTMLOptionElement::nonLayoutObjectComputedStyle() const
 {
     return m_style.get();
 }
 
-PassRefPtr<LayoutStyle> HTMLOptionElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> HTMLOptionElement::customStyleForLayoutObject()
 {
-    updateNonLayoutStyle();
+    updateNonComputedStyle();
     return m_style;
 }
 
@@ -424,7 +424,7 @@ bool HTMLOptionElement::isDisplayNone() const
         Element* parent = parentElement();
         ASSERT(parent);
         if (isHTMLOptGroupElement(*parent)) {
-            const LayoutStyle* parentStyle = parent->layoutStyle() ? parent->layoutStyle() : parent->computedStyle();
+            const ComputedStyle* parentStyle = parent->computedStyle() ? parent->computedStyle() : parent->ensureComputedStyle();
             return !parentStyle || parentStyle->display() == NONE;
         }
     }

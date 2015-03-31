@@ -71,12 +71,12 @@ DEFINE_TRACE(HTMLVideoElement)
     HTMLMediaElement::trace(visitor);
 }
 
-bool HTMLVideoElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLVideoElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return HTMLElement::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLVideoElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* HTMLVideoElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutVideo(this);
 }

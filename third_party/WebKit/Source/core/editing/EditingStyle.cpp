@@ -56,7 +56,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -471,24 +471,24 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
             m_mutableStyle->setProperty(CSSPropertyTextDecoration, value->cssText());
     }
 
-    if (node && node->computedStyle()) {
-        const LayoutStyle* layoutStyle = node->computedStyle();
-        removeTextFillAndStrokeColorsIfNeeded(layoutStyle);
-        replaceFontSizeByKeywordIfPossible(layoutStyle, computedStyleAtPosition.get());
+    if (node && node->ensureComputedStyle()) {
+        const ComputedStyle* computedStyle = node->ensureComputedStyle();
+        removeTextFillAndStrokeColorsIfNeeded(computedStyle);
+        replaceFontSizeByKeywordIfPossible(computedStyle, computedStyleAtPosition.get());
     }
 
     m_fixedPitchFontType = computedStyleAtPosition->fixedPitchFontType();
     extractFontSizeDelta();
 }
 
-void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(const LayoutStyle* layoutStyle)
+void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(const ComputedStyle* computedStyle)
 {
     // If a node's text fill color is currentColor, then its children use
     // their font-color as their text fill color (they don't
     // inherit it).  Likewise for stroke color.
-    if (layoutStyle->textFillColor().isCurrentColor())
+    if (computedStyle->textFillColor().isCurrentColor())
         m_mutableStyle->removeProperty(CSSPropertyWebkitTextFillColor);
-    if (layoutStyle->textStrokeColor().isCurrentColor())
+    if (computedStyle->textStrokeColor().isCurrentColor())
         m_mutableStyle->removeProperty(CSSPropertyWebkitTextStrokeColor);
 }
 
@@ -500,11 +500,11 @@ void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bo
     m_mutableStyle->setProperty(propertyID, value, important);
 }
 
-void EditingStyle::replaceFontSizeByKeywordIfPossible(const LayoutStyle* layoutStyle, CSSComputedStyleDeclaration* computedStyle)
+void EditingStyle::replaceFontSizeByKeywordIfPossible(const ComputedStyle* computedStyle, CSSComputedStyleDeclaration* cssComputedStyle)
 {
-    ASSERT(layoutStyle);
-    if (layoutStyle->fontDescription().keywordSize())
-        m_mutableStyle->setProperty(CSSPropertyFontSize, computedStyle->getFontSizeCSSValuePreferringKeyword()->cssText());
+    ASSERT(computedStyle);
+    if (computedStyle->fontDescription().keywordSize())
+        m_mutableStyle->setProperty(CSSPropertyFontSize, cssComputedStyle->getFontSizeCSSValuePreferringKeyword()->cssText());
 }
 
 void EditingStyle::extractFontSizeDelta()
@@ -1428,7 +1428,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
     if (!style || !style->style() || !document || !document->frame() || !position.element())
         return;
 
-    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyle = position.computedStyle();
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyle = position.ensureComputedStyle();
     // FIXME: take care of background-color in effect
     RefPtrWillBeRawPtr<MutableStylePropertySet> mutableStyle = getPropertiesNotIn(style->style(), computedStyle.get());
     ASSERT(mutableStyle);

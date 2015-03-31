@@ -270,13 +270,13 @@ static void writeSVGPaintingResource(TextStream& ts, const SVGPaintDescription& 
 
 static void writeStyle(TextStream& ts, const LayoutObject& object)
 {
-    const LayoutStyle& style = object.styleRef();
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const ComputedStyle& style = object.styleRef();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     if (!object.localTransform().isIdentity())
         writeNameValuePair(ts, "transform", object.localTransform());
-    writeIfNotDefault(ts, "image rendering", style.imageRendering(), LayoutStyle::initialImageRendering());
-    writeIfNotDefault(ts, "opacity", style.opacity(), LayoutStyle::initialOpacity());
+    writeIfNotDefault(ts, "image rendering", style.imageRendering(), ComputedStyle::initialImageRendering());
+    writeIfNotDefault(ts, "opacity", style.opacity(), ComputedStyle::initialOpacity());
     if (object.isSVGShape()) {
         const LayoutSVGShape& shape = static_cast<const LayoutSVGShape&>(object);
         ASSERT(shape.element());
@@ -401,7 +401,7 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
 
     LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(textBox->layoutObject());
 
-    const SVGLayoutStyle& svgStyle = textLayoutObject.style()->svgStyle();
+    const SVGComputedStyle& svgStyle = textLayoutObject.style()->svgStyle();
     String text = textBox->layoutObject().text();
 
     unsigned fragmentsSize = fragments.size();
@@ -637,8 +637,8 @@ void writeSVGGradientStop(TextStream& ts, const LayoutSVGGradientStop& stop, int
 
 void writeResources(TextStream& ts, const LayoutObject& object, int indent)
 {
-    const LayoutStyle& style = object.styleRef();
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const ComputedStyle& style = object.styleRef();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     // FIXME: We want to use SVGResourcesCache to determine which resources are present, instead of quering the resource <-> id cache.
     // For now leave the DRT output as is, but later on we should change this so cycles are properly ignored in the DRT output.

@@ -23,7 +23,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/frame/FrameView.h"
@@ -32,7 +32,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
@@ -94,8 +94,8 @@ bool nodeRespondsToTapGesture(Node* node)
         if (element->childrenOrSiblingsAffectedByActive() || element->childrenOrSiblingsAffectedByHover())
             return true;
     }
-    if (const LayoutStyle* layoutStyle = node->layoutStyle()) {
-        if (layoutStyle->affectedByActive() || layoutStyle->affectedByHover())
+    if (const ComputedStyle* computedStyle = node->computedStyle()) {
+        if (computedStyle->affectedByActive() || computedStyle->affectedByHover())
             return true;
     }
     return false;

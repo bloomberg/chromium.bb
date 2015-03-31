@@ -88,7 +88,7 @@ LayoutRubyBase* LayoutRubyRun::rubyBaseSafe()
     return base;
 }
 
-bool LayoutRubyRun::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutRubyRun::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isRubyText() || child->isInline();
 }
@@ -185,7 +185,7 @@ void LayoutRubyRun::removeChild(LayoutObject* child)
 LayoutRubyBase* LayoutRubyRun::createRubyBase() const
 {
     LayoutRubyBase* layoutObject = LayoutRubyBase::createAnonymous(&document());
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
     newStyle->setTextAlign(CENTER); // FIXME: use WEBKIT_CENTER?
     layoutObject->setStyle(newStyle.release());
     return layoutObject;
@@ -196,7 +196,7 @@ LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(const LayoutObject* parentRuby
     ASSERT(parentRuby && parentRuby->isRuby());
     LayoutRubyRun* rr = new LayoutRubyRun();
     rr->setDocumentForAnonymous(&parentRuby->document());
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parentRuby->styleRef(), INLINE_BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentRuby->styleRef(), INLINE_BLOCK);
     rr->setStyle(newStyle.release());
     return rr;
 }

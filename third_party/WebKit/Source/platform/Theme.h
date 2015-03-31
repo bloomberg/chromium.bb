@@ -75,7 +75,7 @@ public:
     // How fast the caret blinks in text fields.
     virtual double caretBlinkInterval() const { return 0.5; }
 
-    // Methods used to adjust the LayoutStyles of controls.
+    // Methods used to adjust the ComputedStyles of controls.
 
     // The font description result should have a zoomed font size.
     virtual FontDescription controlFont(ControlPart, const FontDescription& fontDescription, float /*zoomFactor*/) const { return fontDescription; }

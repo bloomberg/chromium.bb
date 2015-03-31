@@ -381,7 +381,7 @@ LayoutUnit LayoutTableCell::cellBaselinePosition() const
     return paddingBefore() + borderBefore() + contentLogicalHeight();
 }
 
-void LayoutTableCell::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTableCell::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     ASSERT(style()->display() == TABLE_CELL);
 
@@ -898,7 +898,7 @@ int LayoutTableCell::borderAfter() const
 
 int LayoutTableCell::borderHalfLeft(bool outer) const
 {
-    const LayoutStyle& styleForCellFlow = this->styleForCellFlow();
+    const ComputedStyle& styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow.isHorizontalWritingMode())
         return styleForCellFlow.isLeftToRightDirection() ? borderHalfStart(outer) : borderHalfEnd(outer);
     return styleForCellFlow.isFlippedBlocksWritingMode() ? borderHalfAfter(outer) : borderHalfBefore(outer);
@@ -906,7 +906,7 @@ int LayoutTableCell::borderHalfLeft(bool outer) const
 
 int LayoutTableCell::borderHalfRight(bool outer) const
 {
-    const LayoutStyle& styleForCellFlow = this->styleForCellFlow();
+    const ComputedStyle& styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow.isHorizontalWritingMode())
         return styleForCellFlow.isLeftToRightDirection() ? borderHalfEnd(outer) : borderHalfStart(outer);
     return styleForCellFlow.isFlippedBlocksWritingMode() ? borderHalfBefore(outer) : borderHalfAfter(outer);
@@ -914,7 +914,7 @@ int LayoutTableCell::borderHalfRight(bool outer) const
 
 int LayoutTableCell::borderHalfTop(bool outer) const
 {
-    const LayoutStyle& styleForCellFlow = this->styleForCellFlow();
+    const ComputedStyle& styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow.isHorizontalWritingMode())
         return styleForCellFlow.isFlippedBlocksWritingMode() ? borderHalfAfter(outer) : borderHalfBefore(outer);
     return styleForCellFlow.isLeftToRightDirection() ? borderHalfStart(outer) : borderHalfEnd(outer);
@@ -922,7 +922,7 @@ int LayoutTableCell::borderHalfTop(bool outer) const
 
 int LayoutTableCell::borderHalfBottom(bool outer) const
 {
-    const LayoutStyle& styleForCellFlow = this->styleForCellFlow();
+    const ComputedStyle& styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow.isHorizontalWritingMode())
         return styleForCellFlow.isFlippedBlocksWritingMode() ? borderHalfBefore(outer) : borderHalfAfter(outer);
     return styleForCellFlow.isLeftToRightDirection() ? borderHalfEnd(outer) : borderHalfStart(outer);
@@ -1051,7 +1051,7 @@ LayoutTableCell* LayoutTableCell::createAnonymous(Document* document)
 LayoutTableCell* LayoutTableCell::createAnonymousWithParentRenderer(const LayoutObject* parent)
 {
     LayoutTableCell* newCell = LayoutTableCell::createAnonymous(&parent->document());
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_CELL);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_CELL);
     newCell->setStyle(newStyle.release());
     return newCell;
 }

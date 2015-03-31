@@ -1076,7 +1076,7 @@ LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item)
     return renderer;
 }
 
-void LayoutListMarker::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutListMarker::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
@@ -1084,7 +1084,7 @@ void LayoutListMarker::styleWillChange(StyleDifference diff, const LayoutStyle& 
     LayoutBox::styleWillChange(diff, newStyle);
 }
 
-void LayoutListMarker::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutListMarker::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
@@ -1636,7 +1636,7 @@ LayoutRect LayoutListMarker::selectionRectForPaintInvalidation(const LayoutBoxMo
 
 void LayoutListMarker::listItemStyleDidChange()
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
     // The marker always inherits from the list item, regardless of where it might end
     // up (e.g., in some deeply nested line box). See CSS3 spec.
     newStyle->inheritFrom(m_listItem->styleRef());

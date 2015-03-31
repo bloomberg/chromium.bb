@@ -10,7 +10,7 @@
 
 namespace blink {
 
-static const NamedGridLinesMap& gridLinesForSide(const LayoutStyle& style, GridPositionSide side)
+static const NamedGridLinesMap& gridLinesForSide(const ComputedStyle& style, GridPositionSide side)
 {
     return (side == ColumnStartSide || side == ColumnEndSide) ? style.namedGridColumnLines() : style.namedGridRowLines();
 }
@@ -20,7 +20,7 @@ static inline String implicitNamedGridLineForSide(const String& lineName, GridPo
     return lineName + ((side == ColumnStartSide || side == RowStartSide) ? "-start" : "-end");
 }
 
-static bool isValidNamedLineOrArea(const String& lineName, const LayoutStyle& style, GridPositionSide side)
+static bool isValidNamedLineOrArea(const String& lineName, const ComputedStyle& style, GridPositionSide side)
 {
     const NamedGridLinesMap& gridLineNames = gridLinesForSide(style, side);
 
@@ -37,7 +37,7 @@ static GridPositionSide calculateFinalPositionSide(GridTrackSizingDirection dire
     return (direction == ForColumns) ? ColumnEndSide : RowEndSide;
 }
 
-void GridResolvedPosition::initialAndFinalPositionsFromStyle(const LayoutStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, GridPosition& initialPosition, GridPosition& finalPosition)
+void GridResolvedPosition::initialAndFinalPositionsFromStyle(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, GridPosition& initialPosition, GridPosition& finalPosition)
 {
     initialPosition = (direction == ForColumns) ? gridItem.style()->gridColumnStart() : gridItem.style()->gridRowStart();
     finalPosition = (direction == ForColumns) ? gridItem.style()->gridColumnEnd() : gridItem.style()->gridRowEnd();
@@ -64,7 +64,7 @@ void GridResolvedPosition::initialAndFinalPositionsFromStyle(const LayoutStyle& 
         initialPosition.setSpanPosition(1, String());
 }
 
-GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const LayoutStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, const GridResolvedPosition& resolvedInitialPosition)
+GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, const GridResolvedPosition& resolvedInitialPosition)
 {
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
@@ -84,7 +84,7 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(con
     return GridSpan(resolvedInitialPosition, resolvedFinalPosition);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const LayoutStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction)
+PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction)
 {
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
@@ -119,22 +119,22 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const L
     return adoptPtr(new GridSpan(resolvedInitialPosition, resolvedFinalPosition));
 }
 
-size_t GridResolvedPosition::explicitGridColumnCount(const LayoutStyle& gridContainerStyle)
+size_t GridResolvedPosition::explicitGridColumnCount(const ComputedStyle& gridContainerStyle)
 {
     return std::min(gridContainerStyle.gridTemplateColumns().size(), kGridMaxTracks);
 }
 
-size_t GridResolvedPosition::explicitGridRowCount(const LayoutStyle& gridContainerStyle)
+size_t GridResolvedPosition::explicitGridRowCount(const ComputedStyle& gridContainerStyle)
 {
     return std::min(gridContainerStyle.gridTemplateRows().size(), kGridMaxTracks);
 }
 
-size_t GridResolvedPosition::explicitGridSizeForSide(const LayoutStyle& gridContainerStyle, GridPositionSide side)
+size_t GridResolvedPosition::explicitGridSizeForSide(const ComputedStyle& gridContainerStyle, GridPositionSide side)
 {
     return (side == ColumnStartSide || side == ColumnEndSide) ? explicitGridColumnCount(gridContainerStyle) : explicitGridRowCount(gridContainerStyle);
 }
 
-GridResolvedPosition GridResolvedPosition::resolveNamedGridLinePositionFromStyle(const LayoutStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
+GridResolvedPosition GridResolvedPosition::resolveNamedGridLinePositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
 {
     ASSERT(!position.namedGridLine().isNull());
 
@@ -155,7 +155,7 @@ GridResolvedPosition GridResolvedPosition::resolveNamedGridLinePositionFromStyle
     return adjustGridPositionForSide(it->value[namedGridLineIndex], side);
 }
 
-GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const LayoutStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
+GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
 {
     switch (position.type()) {
     case ExplicitPosition: {
@@ -212,7 +212,7 @@ GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const La
     return GridResolvedPosition(0);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionAgainstOppositePosition(const LayoutStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     if (position.isAuto())
         return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition);
@@ -228,7 +228,7 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionAgainstOppositePos
     return GridSpan::createWithSpanAgainstOpposite(resolvedOppositePosition, position, side);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveNamedGridLinePositionAgainstOppositePosition(const LayoutStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+PassOwnPtr<GridSpan> GridResolvedPosition::resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     ASSERT(position.isSpan());
     ASSERT(!position.namedGridLine().isNull());

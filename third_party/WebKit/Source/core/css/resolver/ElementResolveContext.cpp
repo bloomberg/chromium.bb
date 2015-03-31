@@ -23,7 +23,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 
 #include "core/dom/Node.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/VisitedLinkState.h"
 
@@ -32,7 +32,7 @@ namespace blink {
 ElementResolveContext::ElementResolveContext(const Document& document)
     : m_element(nullptr)
     , m_parentNode(nullptr)
-    , m_rootElementStyle(document.documentElement() ? document.documentElement()->layoutStyle() : document.layoutStyle())
+    , m_rootElementStyle(document.documentElement() ? document.documentElement()->computedStyle() : document.computedStyle())
     , m_elementLinkState(NotInsideLink)
     , m_distributedToInsertionPoint(false)
 {
@@ -49,8 +49,8 @@ ElementResolveContext::ElementResolveContext(Element& element)
 
     const Document& document = element.document();
     Node* documentElement = document.documentElement();
-    const LayoutStyle* documentStyle = document.layoutStyle();
-    m_rootElementStyle = documentElement && element != documentElement ? documentElement->layoutStyle() : documentStyle;
+    const ComputedStyle* documentStyle = document.computedStyle();
+    m_rootElementStyle = documentElement && element != documentElement ? documentElement->computedStyle() : documentStyle;
     if (!m_rootElementStyle)
         m_rootElementStyle = documentStyle;
 }

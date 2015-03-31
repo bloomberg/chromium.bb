@@ -61,7 +61,7 @@ private:
     virtual void didRecalcStyle(StyleRecalcChange) override;
 
     void attachFirstLetterTextRenderers();
-    LayoutStyle* styleForFirstLetter(LayoutObject*);
+    ComputedStyle* styleForFirstLetter(LayoutObject*);
 
     LayoutTextFragment* m_remainingTextRenderer;
 };

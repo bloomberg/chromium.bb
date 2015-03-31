@@ -233,7 +233,7 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
     return FontSize::getComputedSizeFromSpecifiedSize(&m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }
 
-static FontOrientation fontOrientation(const LayoutStyle& style)
+static FontOrientation fontOrientation(const ComputedStyle& style)
 {
     if (style.isHorizontalWritingMode())
         return FontOrientation::Horizontal;
@@ -257,7 +257,7 @@ static FontOrientation fontOrientation(const LayoutStyle& style)
     }
 }
 
-void FontBuilder::updateOrientation(FontDescription& description, const LayoutStyle& style)
+void FontBuilder::updateOrientation(FontDescription& description, const ComputedStyle& style)
 {
     description.setOrientation(fontOrientation(style));
 }
@@ -295,7 +295,7 @@ void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescript
     newDescription.setSpecifiedSize(size);
 }
 
-void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const LayoutStyle& style)
+void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const ComputedStyle& style)
 {
     float specifiedSize = fontDescription.specifiedSize();
 
@@ -307,7 +307,7 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const La
     checkForGenericFamilyChange(style.fontDescription(), fontDescription);
 }
 
-void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const LayoutStyle& style, FontSelector* fontSelector)
+void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const ComputedStyle& style, FontSelector* fontSelector)
 {
     const float specifiedSize = fontDescription.specifiedSize();
     if (!fontDescription.hasSizeAdjust() || !specifiedSize)
@@ -334,7 +334,7 @@ void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const Lay
     fontDescription.setAdjustedSize(adjustedSize);
 }
 
-void FontBuilder::updateComputedSize(FontDescription& fontDescription, const LayoutStyle& style)
+void FontBuilder::updateComputedSize(FontDescription& fontDescription, const ComputedStyle& style)
 {
     float computedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), fontDescription.specifiedSize());
     float multiplier = style.textAutosizingMultiplier();
@@ -343,7 +343,7 @@ void FontBuilder::updateComputedSize(FontDescription& fontDescription, const Lay
     fontDescription.setComputedSize(computedSize);
 }
 
-void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, LayoutStyle& style)
+void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, ComputedStyle& style)
 {
     if (!m_flags)
         return;
@@ -395,7 +395,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     m_flags = 0;
 }
 
-void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, LayoutStyle& documentStyle)
+void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, ComputedStyle& documentStyle)
 {
     FontDescription fontDescription = FontDescription();
     fontDescription.setLocale(documentStyle.locale());

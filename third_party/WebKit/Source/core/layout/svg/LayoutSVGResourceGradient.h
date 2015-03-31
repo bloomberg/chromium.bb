@@ -47,7 +47,7 @@ public:
 
     virtual SVGPaintServer preparePaintServer(const LayoutObject&) override final;
 
-    virtual bool isChildAllowed(LayoutObject* child, const LayoutStyle&) const override final;
+    virtual bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const override final;
 
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;

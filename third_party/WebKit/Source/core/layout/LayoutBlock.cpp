@@ -60,7 +60,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/layout/style/ContentData.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
@@ -193,7 +193,7 @@ static void appendLayers(Vector<ImageResource*>& images, const FillLayer& styleL
         appendImageIfNotNull(images, layer->image());
 }
 
-static void appendImagesFromStyle(Vector<ImageResource*>& images, const LayoutStyle& blockStyle)
+static void appendImagesFromStyle(Vector<ImageResource*>& images, const ComputedStyle& blockStyle)
 {
     appendLayers(images, blockStyle.backgroundLayers());
     appendLayers(images, blockStyle.maskLayers());
@@ -277,9 +277,9 @@ void LayoutBlock::willBeDestroyed()
     LayoutBox::willBeDestroyed();
 }
 
-void LayoutBlock::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
-    const LayoutStyle* oldStyle = style();
+    const ComputedStyle* oldStyle = style();
 
     setReplaced(newStyle.isDisplayInlineType());
 
@@ -311,7 +311,7 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const LayoutStyle& newSt
     LayoutBox::styleWillChange(diff, newStyle);
 }
 
-static bool borderOrPaddingLogicalWidthChanged(const LayoutStyle& oldStyle, const LayoutStyle& newStyle)
+static bool borderOrPaddingLogicalWidthChanged(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
 {
     if (newStyle.isHorizontalWritingMode()) {
         return oldStyle.borderLeftWidth() != newStyle.borderLeftWidth()
@@ -326,14 +326,14 @@ static bool borderOrPaddingLogicalWidthChanged(const LayoutStyle& oldStyle, cons
         || oldStyle.paddingBottom() != newStyle.paddingBottom();
 }
 
-void LayoutBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
     if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow())
         toLayoutBlock(parent())->removeAnonymousWrappersIfRequired();
 
-    const LayoutStyle& newStyle = styleRef();
+    const ComputedStyle& newStyle = styleRef();
 
     if (!isAnonymousBlock()) {
         // Ensure that all of our continuation blocks pick up the new style.
@@ -1177,7 +1177,7 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             // to clear out inherited column properties by just making a new style, and to also clear the
             // column span flag if it is set.
             ASSERT(!inlineChildrenBlock->continuation());
-            RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
+            RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
             // Cache this value as it might get changed in setStyle() call.
             bool inlineChildrenBlockHasLayer = inlineChildrenBlock->hasLayer();
             inlineChildrenBlock->setStyle(newStyle);
@@ -2978,7 +2978,7 @@ void LayoutBlock::computePreferredLogicalWidths()
 
     // FIXME: The isFixed() calls here should probably be checking for isSpecified since you
     // should be able to use percentage, calc or viewport relative values for width.
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     if (!isTableCell() && styleToUse.logicalWidth().isFixed() && styleToUse.logicalWidth().value() >= 0
         && !(isDeprecatedFlexItem() && !styleToUse.logicalWidth().intValue()))
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalWidth().value());
@@ -3035,7 +3035,7 @@ void LayoutBlock::adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalW
 
 void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     bool nowrap = styleToUse.whiteSpace() == NOWRAP;
 
     LayoutObject* child = firstChild();
@@ -3049,7 +3049,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
             continue;
         }
 
-        RefPtr<LayoutStyle> childStyle = child->style();
+        RefPtr<ComputedStyle> childStyle = child->style();
         if (child->isFloating() || (child->isBox() && toLayoutBox(child)->avoidsFloats())) {
             LayoutUnit floatTotalWidth = floatLeftWidth + floatRightWidth;
             if (childStyle->clear() & CLEFT) {
@@ -3156,7 +3156,7 @@ LayoutUnit LayoutBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
     if (isReplaced() && linePositionMode == PositionOnContainingLine)
         return LayoutBox::lineHeight(firstLine, direction, linePositionMode);
 
-    const LayoutStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
+    const ComputedStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
     return style.computedLineHeight();
 }
 
@@ -3757,7 +3757,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentRendererAndDisplay(const Layo
         newDisplay = BLOCK;
     }
 
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parent->styleRef(), newDisplay);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), newDisplay);
     parent->updateAnonymousChildStyle(*newBox, *newStyle);
     newBox->setStyle(newStyle.release());
     return newBox;
@@ -3765,7 +3765,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentRendererAndDisplay(const Layo
 
 LayoutBlockFlow* LayoutBlock::createAnonymousColumnsWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
     newStyle->inheritColumnPropertiesFrom(parent->styleRef());
 
     LayoutBlockFlow* newBox = LayoutBlockFlow::createAnonymous(&parent->document());
@@ -3776,7 +3776,7 @@ LayoutBlockFlow* LayoutBlock::createAnonymousColumnsWithParentRenderer(const Lay
 
 LayoutBlockFlow* LayoutBlock::createAnonymousColumnSpanWithParentRenderer(const LayoutObject* parent)
 {
-    RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
     newStyle->setColumnSpan(ColumnSpanAll);
 
     LayoutBlockFlow* newBox = LayoutBlockFlow::createAnonymous(&parent->document());

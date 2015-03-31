@@ -182,7 +182,7 @@ bool AXTable::isDataTable() const
         return true;
 
     // Store the background color of the table to check against cell's background colors.
-    const LayoutStyle* tableStyle = table->style();
+    const ComputedStyle* tableStyle = table->style();
     if (!tableStyle)
         return false;
     Color tableBGColor = tableStyle->visitedDependentColor(CSSPropertyBackgroundColor);
@@ -237,12 +237,12 @@ bool AXTable::isDataTable() const
                     return true;
             }
 
-            const LayoutStyle* layoutStyle = cell->style();
-            if (!layoutStyle)
+            const ComputedStyle* computedStyle = cell->style();
+            if (!computedStyle)
                 continue;
 
             // If the empty-cells style is set, we'll call it a data table.
-            if (layoutStyle->emptyCells() == HIDE)
+            if (computedStyle->emptyCells() == HIDE)
                 return true;
 
             // If a cell has matching bordered sides, call it a (fully) bordered cell.
@@ -263,7 +263,7 @@ bool AXTable::isDataTable() const
 
             // If the cell has a different color from the table and there is cell spacing,
             // then it is probably a data table cell (spacing and colors take the place of borders).
-            Color cellColor = layoutStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+            Color cellColor = computedStyle->visitedDependentColor(CSSPropertyBackgroundColor);
             if (table->hBorderSpacing() > 0 && table->vBorderSpacing() > 0
                 && tableBGColor != cellColor && cellColor.alpha() != 1)
                 backgroundDifferenceCellCount++;
@@ -277,10 +277,10 @@ bool AXTable::isDataTable() const
                 LayoutObject* layoutRow = cell->parent();
                 if (!layoutRow || !layoutRow->isBoxModelObject() || !toLayoutBoxModelObject(layoutRow)->isTableRow())
                     continue;
-                const LayoutStyle* rowLayoutStyle = layoutRow->style();
-                if (!rowLayoutStyle)
+                const ComputedStyle* rowComputedStyle = layoutRow->style();
+                if (!rowComputedStyle)
                     continue;
-                Color rowColor = rowLayoutStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+                Color rowColor = rowComputedStyle->visitedDependentColor(CSSPropertyBackgroundColor);
                 alternatingRowColors[alternatingRowColorCount] = rowColor;
                 alternatingRowColorCount++;
             }

@@ -33,7 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/layout/style/CachedUAStyle.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/style/StyleInheritedData.h"
 
 namespace blink {
@@ -45,8 +45,8 @@ class StyleResolverState {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState(Document&, const ElementResolveContext&, const LayoutStyle* parentStyle);
-    StyleResolverState(Document&, Element*, const LayoutStyle* parentStyle = 0);
+    StyleResolverState(Document&, const ElementResolveContext&, const ComputedStyle* parentStyle);
+    StyleResolverState(Document&, Element*, const ComputedStyle* parentStyle = 0);
     ~StyleResolverState();
 
     // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
@@ -55,24 +55,24 @@ public:
     // These are all just pass-through methods to ElementResolveContext.
     Element* element() const { return m_elementContext.element(); }
     const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
-    const LayoutStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
+    const ComputedStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
     EInsideLink elementLinkState() const { return m_elementContext.elementLinkState(); }
     bool distributedToInsertionPoint() const { return m_elementContext.distributedToInsertionPoint(); }
 
     const ElementResolveContext& elementContext() const { return m_elementContext; }
 
-    void setStyle(PassRefPtr<LayoutStyle> style)
+    void setStyle(PassRefPtr<ComputedStyle> style)
     {
         // FIXME: Improve RAII of StyleResolverState to remove this function.
         m_style = style;
         m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutView(), m_style->effectiveZoom());
     }
-    const LayoutStyle* style() const { return m_style.get(); }
-    LayoutStyle* style() { return m_style.get(); }
-    PassRefPtr<LayoutStyle> takeStyle() { return m_style.release(); }
+    const ComputedStyle* style() const { return m_style.get(); }
+    ComputedStyle* style() { return m_style.get(); }
+    PassRefPtr<ComputedStyle> takeStyle() { return m_style.release(); }
 
-    LayoutStyle& mutableStyleRef() const { return *m_style; }
-    const LayoutStyle& styleRef() const { return mutableStyleRef(); }
+    ComputedStyle& mutableStyleRef() const { return *m_style; }
+    const ComputedStyle& styleRef() const { return mutableStyleRef(); }
 
     const CSSToLengthConversionData& cssToLengthConversionData() const { return m_cssToLengthConversionData; }
 
@@ -83,9 +83,9 @@ public:
     const CSSAnimationUpdate* animationUpdate() { return m_animationUpdate.get(); }
     PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> takeAnimationUpdate();
 
-    void setParentStyle(PassRefPtr<LayoutStyle> parentStyle) { m_parentStyle = parentStyle; }
-    const LayoutStyle* parentStyle() const { return m_parentStyle.get(); }
-    LayoutStyle* parentStyle() { return m_parentStyle.get(); }
+    void setParentStyle(PassRefPtr<ComputedStyle> parentStyle) { m_parentStyle = parentStyle; }
+    const ComputedStyle* parentStyle() const { return m_parentStyle.get(); }
+    ComputedStyle* parentStyle() { return m_parentStyle.get(); }
 
     // FIXME: These are effectively side-channel "out parameters" for the various
     // map functions. When we map from CSS to style objects we use this state object
@@ -124,9 +124,9 @@ public:
 
     FontBuilder& fontBuilder() { return m_fontBuilder; }
     // FIXME: These exist as a primitive way to track mutations to font-related properties
-    // on a LayoutStyle. As designed, these are very error-prone, as some callers
-    // set these directly on the LayoutStyle w/o telling us. Presumably we'll
-    // want to design a better wrapper around LayoutStyle for tracking these mutations
+    // on a ComputedStyle. As designed, these are very error-prone, as some callers
+    // set these directly on the ComputedStyle w/o telling us. Presumably we'll
+    // want to design a better wrapper around ComputedStyle for tracking these mutations
     // and separate it from StyleResolverState.
     const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
 
@@ -159,13 +159,13 @@ private:
     RawPtrWillBeMember<Document> m_document;
 
     // m_style is the primary output for each element's style resolve.
-    RefPtr<LayoutStyle> m_style;
+    RefPtr<ComputedStyle> m_style;
 
     CSSToLengthConversionData m_cssToLengthConversionData;
 
     // m_parentStyle is not always just ElementResolveContext::parentStyle,
     // so we keep it separate.
-    RefPtr<LayoutStyle> m_parentStyle;
+    RefPtr<ComputedStyle> m_parentStyle;
 
     OwnPtrWillBeMember<CSSAnimationUpdate> m_animationUpdate;
 

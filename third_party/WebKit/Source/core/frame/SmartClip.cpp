@@ -234,7 +234,7 @@ String SmartClip::extractTextFromNode(Node* node)
 
     StringBuilder result;
     for (Node& currentNode : NodeTraversal::inclusiveDescendantsOf(*node)) {
-        const LayoutStyle* style = currentNode.computedStyle();
+        const ComputedStyle* style = currentNode.ensureComputedStyle();
         if (style && style->userSelect() == SELECT_NONE)
             continue;
 

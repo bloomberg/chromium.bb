@@ -26,23 +26,23 @@
 #include "config.h"
 #include "core/layout/style/StyleGridData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
 StyleGridData::StyleGridData()
-    : m_gridTemplateColumns(LayoutStyle::initialGridTemplateColumns())
-    , m_gridTemplateRows(LayoutStyle::initialGridTemplateRows())
-    , m_namedGridColumnLines(LayoutStyle::initialNamedGridColumnLines())
-    , m_namedGridRowLines(LayoutStyle::initialNamedGridRowLines())
-    , m_orderedNamedGridColumnLines(LayoutStyle::initialOrderedNamedGridColumnLines())
-    , m_orderedNamedGridRowLines(LayoutStyle::initialOrderedNamedGridRowLines())
-    , m_gridAutoFlow(LayoutStyle::initialGridAutoFlow())
-    , m_gridAutoRows(LayoutStyle::initialGridAutoRows())
-    , m_gridAutoColumns(LayoutStyle::initialGridAutoColumns())
-    , m_namedGridArea(LayoutStyle::initialNamedGridArea())
-    , m_namedGridAreaRowCount(LayoutStyle::initialNamedGridAreaCount())
-    , m_namedGridAreaColumnCount(LayoutStyle::initialNamedGridAreaCount())
+    : m_gridTemplateColumns(ComputedStyle::initialGridTemplateColumns())
+    , m_gridTemplateRows(ComputedStyle::initialGridTemplateRows())
+    , m_namedGridColumnLines(ComputedStyle::initialNamedGridColumnLines())
+    , m_namedGridRowLines(ComputedStyle::initialNamedGridRowLines())
+    , m_orderedNamedGridColumnLines(ComputedStyle::initialOrderedNamedGridColumnLines())
+    , m_orderedNamedGridRowLines(ComputedStyle::initialOrderedNamedGridRowLines())
+    , m_gridAutoFlow(ComputedStyle::initialGridAutoFlow())
+    , m_gridAutoRows(ComputedStyle::initialGridAutoRows())
+    , m_gridAutoColumns(ComputedStyle::initialGridAutoColumns())
+    , m_namedGridArea(ComputedStyle::initialNamedGridArea())
+    , m_namedGridAreaRowCount(ComputedStyle::initialNamedGridAreaCount())
+    , m_namedGridAreaColumnCount(ComputedStyle::initialNamedGridAreaCount())
 {
 }
 

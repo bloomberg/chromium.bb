@@ -108,7 +108,7 @@ private:
     virtual void layout() override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void computePreferredLogicalWidths() override;
-    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override;
 
     void setIsResizing(bool);

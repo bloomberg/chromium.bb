@@ -160,10 +160,10 @@ public:
     virtual LayoutUnit marginBottom() const = 0;
     virtual LayoutUnit marginLeft() const = 0;
     virtual LayoutUnit marginRight() const = 0;
-    virtual LayoutUnit marginBefore(const LayoutStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginAfter(const LayoutStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginStart(const LayoutStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginEnd(const LayoutStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginBefore(const ComputedStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginAfter(const ComputedStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginStart(const ComputedStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = 0) const = 0;
     LayoutUnit marginHeight() const { return marginTop() + marginBottom(); }
     LayoutUnit marginWidth() const { return marginLeft() + marginRight(); }
     LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }
@@ -222,8 +222,8 @@ protected:
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
 
-    void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
-    void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
 public:
     // These functions are only used internally to manipulate the render tree structure via remove/insert/appendChildNode.

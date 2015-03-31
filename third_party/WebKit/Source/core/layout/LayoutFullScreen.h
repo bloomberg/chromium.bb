@@ -39,7 +39,7 @@ public:
 
     void setPlaceholder(LayoutBlock*);
     LayoutBlock* placeholder() { return m_placeholder; }
-    void createPlaceholder(PassRefPtr<LayoutStyle>, const LayoutRect& frameRect);
+    void createPlaceholder(PassRefPtr<ComputedStyle>, const LayoutRect& frameRect);
 
 
     static LayoutObject* wrapRenderer(LayoutObject*, LayoutObject*, Document*);

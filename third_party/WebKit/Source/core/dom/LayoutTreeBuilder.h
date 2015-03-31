@@ -37,7 +37,7 @@
 namespace blink {
 
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 
 template <typename NodeType>
 class LayoutTreeBuilder {
@@ -77,7 +77,7 @@ protected:
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
 public:
-    LayoutTreeBuilderForElement(Element&, LayoutStyle*);
+    LayoutTreeBuilderForElement(Element&, ComputedStyle*);
 
     void createLayoutObjectIfNeeded()
     {
@@ -89,10 +89,10 @@ private:
     LayoutObject* parentLayoutObject() const;
     LayoutObject* nextLayoutObject() const;
     bool shouldCreateLayoutObject() const;
-    LayoutStyle& style() const;
+    ComputedStyle& style() const;
     void createLayoutObject();
 
-    mutable RefPtr<LayoutStyle> m_style;
+    mutable RefPtr<ComputedStyle> m_style;
 };
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {

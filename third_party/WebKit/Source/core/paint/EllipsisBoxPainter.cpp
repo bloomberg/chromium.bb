@@ -17,12 +17,12 @@ namespace blink {
 
 void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    const LayoutStyle& style = m_ellipsisBox.layoutObject().styleRef(m_ellipsisBox.isFirstLineStyle());
+    const ComputedStyle& style = m_ellipsisBox.layoutObject().styleRef(m_ellipsisBox.isFirstLineStyle());
     paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
     paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
-void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const LayoutStyle& style)
+void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
     GraphicsContext* context = paintInfo.context;
     FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping().toFloatPoint();
@@ -56,7 +56,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
 }
 
-void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const LayoutStyle& style)
+void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
     InlineBox* markupBox = m_ellipsisBox.markupBox();
     if (!markupBox)
@@ -68,7 +68,7 @@ void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const Layout
     markupBox->paint(paintInfo, adjustedPaintOffset, lineTop, lineBottom);
 }
 
-void EllipsisBoxPainter::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, const LayoutStyle& style, const Font& font)
+void EllipsisBoxPainter::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, const ComputedStyle& style, const Font& font)
 {
     Color textColor = m_ellipsisBox.layoutObject().resolveColor(style, CSSPropertyColor);
     Color c = m_ellipsisBox.layoutObject().selectionBackgroundColor();

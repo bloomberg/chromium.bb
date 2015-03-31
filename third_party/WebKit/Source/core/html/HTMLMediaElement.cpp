@@ -566,12 +566,12 @@ void HTMLMediaElement::finishParsingChildren()
         scheduleDelayedAction(LoadTextTrackResource);
 }
 
-bool HTMLMediaElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLMediaElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return shouldShowControls() && HTMLElement::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLMediaElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* HTMLMediaElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutMedia(this);
 }

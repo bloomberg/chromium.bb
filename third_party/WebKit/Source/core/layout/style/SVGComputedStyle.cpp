@@ -27,13 +27,13 @@
 
 #include "config.h"
 
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 
 namespace blink {
 
-SVGLayoutStyle::SVGLayoutStyle()
+SVGComputedStyle::SVGComputedStyle()
 {
-    static SVGLayoutStyle* initialStyle = new SVGLayoutStyle(CreateInitial);
+    static SVGComputedStyle* initialStyle = new SVGComputedStyle(CreateInitial);
 
     fill = initialStyle->fill;
     stroke = initialStyle->stroke;
@@ -46,7 +46,7 @@ SVGLayoutStyle::SVGLayoutStyle()
     setBitDefaults();
 }
 
-SVGLayoutStyle::SVGLayoutStyle(CreateInitialType)
+SVGComputedStyle::SVGComputedStyle(CreateInitialType)
 {
     setBitDefaults();
 
@@ -59,8 +59,8 @@ SVGLayoutStyle::SVGLayoutStyle(CreateInitialType)
     resources.init();
 }
 
-SVGLayoutStyle::SVGLayoutStyle(const SVGLayoutStyle& other)
-    : RefCounted<SVGLayoutStyle>()
+SVGComputedStyle::SVGComputedStyle(const SVGComputedStyle& other)
+    : RefCounted<SVGComputedStyle>()
 {
     fill = other.fill;
     stroke = other.stroke;
@@ -74,11 +74,11 @@ SVGLayoutStyle::SVGLayoutStyle(const SVGLayoutStyle& other)
     svg_noninherited_flags = other.svg_noninherited_flags;
 }
 
-SVGLayoutStyle::~SVGLayoutStyle()
+SVGComputedStyle::~SVGComputedStyle()
 {
 }
 
-bool SVGLayoutStyle::operator==(const SVGLayoutStyle& other) const
+bool SVGComputedStyle::operator==(const SVGComputedStyle& other) const
 {
     return fill == other.fill
         && stroke == other.stroke
@@ -91,7 +91,7 @@ bool SVGLayoutStyle::operator==(const SVGLayoutStyle& other) const
         && svg_noninherited_flags == other.svg_noninherited_flags;
 }
 
-bool SVGLayoutStyle::inheritedNotEqual(const SVGLayoutStyle* other) const
+bool SVGComputedStyle::inheritedNotEqual(const SVGComputedStyle* other) const
 {
     return fill != other->fill
         || stroke != other->stroke
@@ -99,7 +99,7 @@ bool SVGLayoutStyle::inheritedNotEqual(const SVGLayoutStyle* other) const
         || svg_inherited_flags != other->svg_inherited_flags;
 }
 
-void SVGLayoutStyle::inheritFrom(const SVGLayoutStyle* svgInheritParent)
+void SVGComputedStyle::inheritFrom(const SVGComputedStyle* svgInheritParent)
 {
     if (!svgInheritParent)
         return;
@@ -111,7 +111,7 @@ void SVGLayoutStyle::inheritFrom(const SVGLayoutStyle* svgInheritParent)
     svg_inherited_flags = svgInheritParent->svg_inherited_flags;
 }
 
-void SVGLayoutStyle::copyNonInheritedFromCached(const SVGLayoutStyle* other)
+void SVGComputedStyle::copyNonInheritedFromCached(const SVGComputedStyle* other)
 {
     svg_noninherited_flags = other->svg_noninherited_flags;
     stops = other->stops;
@@ -120,13 +120,13 @@ void SVGLayoutStyle::copyNonInheritedFromCached(const SVGLayoutStyle* other)
     resources = other->resources;
 }
 
-PassRefPtr<SVGDashArray> SVGLayoutStyle::initialStrokeDashArray()
+PassRefPtr<SVGDashArray> SVGComputedStyle::initialStrokeDashArray()
 {
     DEFINE_STATIC_REF(SVGDashArray, initialDashArray, SVGDashArray::create());
     return initialDashArray;
 }
 
-StyleDifference SVGLayoutStyle::diff(const SVGLayoutStyle* other) const
+StyleDifference SVGComputedStyle::diff(const SVGComputedStyle* other) const
 {
     StyleDifference styleDifference;
 
@@ -140,7 +140,7 @@ StyleDifference SVGLayoutStyle::diff(const SVGLayoutStyle* other) const
     return styleDifference;
 }
 
-bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* other) const
+bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyle* other) const
 {
     // If resources change, we need a relayout, as the presence of resources influences the paint invalidation rect.
     if (resources != other->resources)
@@ -203,7 +203,7 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
     return false;
 }
 
-bool SVGLayoutStyle::diffNeedsPaintInvalidation(const SVGLayoutStyle* other) const
+bool SVGComputedStyle::diffNeedsPaintInvalidation(const SVGComputedStyle* other) const
 {
     if (stroke->opacity != other->stroke->opacity)
         return true;
@@ -248,7 +248,7 @@ bool SVGLayoutStyle::diffNeedsPaintInvalidation(const SVGLayoutStyle* other) con
     return false;
 }
 
-EPaintOrderType SVGLayoutStyle::paintOrderType(unsigned index) const
+EPaintOrderType SVGComputedStyle::paintOrderType(unsigned index) const
 {
     ASSERT(index < ((1 << kPaintOrderBitwidth)-1));
     unsigned pt = (paintOrder() >> (kPaintOrderBitwidth*index)) & ((1u << kPaintOrderBitwidth) - 1);

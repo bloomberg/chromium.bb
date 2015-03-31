@@ -31,7 +31,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/Pair.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/IntSize.h"
@@ -70,7 +70,7 @@ PassRefPtr<Image> CSSGradientValue::image(LayoutObject* renderer, const IntSize&
     // We need to create an image.
     RefPtr<Gradient> gradient;
 
-    const LayoutStyle* rootStyle = renderer->document().documentElement()->layoutStyle();
+    const ComputedStyle* rootStyle = renderer->document().documentElement()->computedStyle();
     CSSToLengthConversionData conversionData(renderer->style(), rootStyle, renderer->view(), renderer->style()->effectiveZoom());
     if (isLinearGradientValue())
         gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, *renderer);

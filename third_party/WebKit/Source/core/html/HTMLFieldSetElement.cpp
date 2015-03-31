@@ -107,7 +107,7 @@ const AtomicString& HTMLFieldSetElement::formControlType() const
     return fieldset;
 }
 
-LayoutObject* HTMLFieldSetElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* HTMLFieldSetElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutFieldset(this);
 }

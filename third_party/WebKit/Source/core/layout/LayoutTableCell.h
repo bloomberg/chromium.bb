@@ -172,7 +172,7 @@ public:
     // This means we can safely use the same style in all cases to simplify our code.
     // FIXME: Eventually this function should replaced by style() once we support direction
     // on all table parts and writing-mode on cells.
-    const LayoutStyle& styleForCellFlow() const
+    const ComputedStyle& styleForCellFlow() const
     {
         return row()->styleRef();
     }
@@ -219,7 +219,7 @@ public:
     virtual const char* name() const override { return isAnonymous() ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void computePreferredLogicalWidths() override;
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;

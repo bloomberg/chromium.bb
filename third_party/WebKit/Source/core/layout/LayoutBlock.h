@@ -298,8 +298,8 @@ protected:
 
     void updateScrollInfoAfterLayout();
 
-    virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     virtual bool hasLineIfEmpty() const;
 

@@ -35,7 +35,7 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
@@ -57,9 +57,9 @@ CSSMatrix::CSSMatrix(const String& s, ExceptionState& exceptionState)
     setMatrixValue(s, exceptionState);
 }
 
-static inline PassRefPtr<LayoutStyle> createInitialStyle()
+static inline PassRefPtr<ComputedStyle> createInitialStyle()
 {
-    RefPtr<LayoutStyle> initialStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> initialStyle = ComputedStyle::create();
     initialStyle->font().update(nullptr);
     return initialStyle;
 }
@@ -75,7 +75,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         if (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone)
             return;
 
-        DEFINE_STATIC_REF(LayoutStyle, initialStyle, createInitialStyle());
+        DEFINE_STATIC_REF(ComputedStyle, initialStyle, createInitialStyle());
         TransformOperations operations;
         TransformBuilder::createTransformOperations(*value, CSSToLengthConversionData(initialStyle, initialStyle, nullptr, 1.0f), operations);
 

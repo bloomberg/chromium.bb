@@ -64,12 +64,12 @@ void LayoutReplaced::willBeDestroyed()
     LayoutBox::willBeDestroyed();
 }
 
-void LayoutReplaced::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutReplaced::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
     bool hadStyle = (oldStyle != 0);
-    float oldZoom = hadStyle ? oldStyle->effectiveZoom() : LayoutStyle::initialZoom();
+    float oldZoom = hadStyle ? oldStyle->effectiveZoom() : ComputedStyle::initialZoom();
     if (style() && style()->effectiveZoom() != oldZoom)
         intrinsicSizeChanged();
 }
@@ -222,7 +222,7 @@ LayoutRect LayoutReplaced::replacedContentRect(const LayoutSize* overriddenIntri
     LayoutRect contentRect = contentBoxRect();
     ObjectFit objectFit = style()->objectFit();
 
-    if (objectFit == ObjectFitFill && style()->objectPosition() == LayoutStyle::initialObjectPosition()) {
+    if (objectFit == ObjectFitFill && style()->objectPosition() == ComputedStyle::initialObjectPosition()) {
         return contentRect;
     }
 
@@ -380,7 +380,7 @@ void LayoutReplaced::computePreferredLogicalWidths()
     else
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = computeReplacedLogicalWidth(ComputePreferred);
 
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     if (styleToUse.logicalWidth().isPercent() || styleToUse.logicalMaxWidth().isPercent())
         m_minPreferredLogicalWidth = 0;
 

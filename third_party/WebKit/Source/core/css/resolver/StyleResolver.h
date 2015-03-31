@@ -90,7 +90,7 @@ public:
     RawPtrWillBeMember<CSSValue> value;
 };
 
-// This class selects a LayoutStyle for a given element based on a collection of stylesheets.
+// This class selects a ComputedStyle for a given element based on a collection of stylesheets.
 class StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleResolver);
 public:
@@ -104,19 +104,19 @@ public:
     void pushParentElement(Element&);
     void popParentElement(Element&);
 
-    PassRefPtr<LayoutStyle> styleForElement(Element*, const LayoutStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
+    PassRefPtr<ComputedStyle> styleForElement(Element*, const ComputedStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
 
-    PassRefPtr<LayoutStyle> styleForKeyframe(Element&, const LayoutStyle&, const LayoutStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, const LayoutStyle* baseStyle, CSSPropertyID, CSSValue*);
+    PassRefPtr<ComputedStyle> styleForKeyframe(Element&, const ComputedStyle&, const ComputedStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
+    static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, const ComputedStyle* baseStyle, CSSPropertyID, CSSValue*);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(StyleResolverState&, CSSPropertyID, CSSValue*);
 
-    PassRefPtr<LayoutStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, const LayoutStyle* parentStyle);
+    PassRefPtr<ComputedStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, const ComputedStyle* parentStyle);
 
-    PassRefPtr<LayoutStyle> styleForPage(int pageIndex);
-    PassRefPtr<LayoutStyle> styleForText(Text*);
+    PassRefPtr<ComputedStyle> styleForPage(int pageIndex);
+    PassRefPtr<ComputedStyle> styleForText(Text*);
 
-    static PassRefPtr<LayoutStyle> styleForDocument(Document&);
+    static PassRefPtr<ComputedStyle> styleForDocument(Document&);
 
     // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
@@ -147,7 +147,7 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleList> styleRulesForElement(Element*, unsigned rulesToInclude);
 
     // |properties| is an array with |count| elements.
-    void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, LayoutStyle*);
+    void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, ComputedStyle*);
 
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
@@ -161,8 +161,8 @@ public:
 
     void notifyResizeForViewportUnits();
 
-    // Exposed for LayoutStyle::isStyleAvilable().
-    static LayoutStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
+    // Exposed for ComputedStyle::isStyleAvilable().
+    static ComputedStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
 
     RuleFeatureSet& ensureUpdatedRuleFeatureSet()
     {
@@ -203,7 +203,7 @@ public:
     void addTreeBoundaryCrossingScope(ContainerNode& scope);
 
 private:
-    PassRefPtr<LayoutStyle> initialStyleForElement();
+    PassRefPtr<ComputedStyle> initialStyleForElement();
 
     void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedSelectors);
 
@@ -213,7 +213,7 @@ private:
     static AuthorStyleInfo authorStyleInfo(StyleResolverState&);
 
     void loadPendingResources(StyleResolverState&);
-    void adjustLayoutStyle(StyleResolverState&, Element*);
+    void adjustComputedStyle(StyleResolverState&, Element*);
 
     void appendCSSStyleSheet(CSSStyleSheet&);
     void addRulesFromSheet(CSSStyleSheet&, TreeScope*, unsigned);
@@ -250,13 +250,13 @@ private:
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
 
-    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const LayoutStyle* parentStyle, StyleResolverState&);
+    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const ComputedStyle* parentStyle, StyleResolverState&);
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
 
     Document& document() { return *m_document; }
 
-    static LayoutStyle* s_styleNotYetAvailable;
+    static ComputedStyle* s_styleNotYetAvailable;
 
     void cacheBorderAndBackground();
 

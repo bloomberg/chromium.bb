@@ -34,7 +34,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -65,7 +65,7 @@ private:
     inline DataListIndicatorElement(Document& document) : HTMLDivElement(document) { }
     inline HTMLInputElement* hostInput() const { return toHTMLInputElement(shadowHost()); }
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override
     {
         return new LayoutDetailsMarker(this);
     }
@@ -268,7 +268,7 @@ bool TextFieldInputType::shouldSubmitImplicitly(Event* event)
     return (event->type() == EventTypeNames::textInput && event->hasInterface(EventNames::TextEvent) && toTextEvent(event)->data() == "\n") || InputType::shouldSubmitImplicitly(event);
 }
 
-LayoutObject* TextFieldInputType::createLayoutObject(const LayoutStyle&) const
+LayoutObject* TextFieldInputType::createLayoutObject(const ComputedStyle&) const
 {
     return new LayoutTextControlSingleLine(&element());
 }

@@ -147,14 +147,14 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
         HTMLElement::parseAttribute(name, value);
 }
 
-bool HTMLFrameSetElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLFrameSetElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     // For compatibility, frames render even when display: none is set.
     // However, we delay creating a renderer until stylesheets have loaded.
     return style.isStyleAvailable();
 }
 
-LayoutObject* HTMLFrameSetElement::createLayoutObject(const LayoutStyle& style)
+LayoutObject* HTMLFrameSetElement::createLayoutObject(const ComputedStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);

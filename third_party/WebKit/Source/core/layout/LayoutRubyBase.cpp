@@ -53,7 +53,7 @@ LayoutRubyBase* LayoutRubyBase::createAnonymous(Document* document)
     return layoutObject;
 }
 
-bool LayoutRubyBase::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutRubyBase::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isInline();
 }

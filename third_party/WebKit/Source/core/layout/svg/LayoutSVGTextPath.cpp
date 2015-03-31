@@ -33,7 +33,7 @@ LayoutSVGTextPath::LayoutSVGTextPath(Element* element)
 {
 }
 
-bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     if (child->isText())
         return SVGLayoutSupport::isLayoutableTextNode(child);

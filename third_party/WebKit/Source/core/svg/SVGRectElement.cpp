@@ -139,7 +139,7 @@ bool SVGRectElement::selfHasRelativeLengths() const
         || m_ry->currentValue()->isRelative();
 }
 
-LayoutObject* SVGRectElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGRectElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGRect(this);
 }

@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class LayoutStyle;
+class ComputedStyle;
 class LayoutView;
 class Font;
 
@@ -49,7 +49,7 @@ public:
     public:
         FontSizes() : m_em(0), m_rem(0), m_font(nullptr) { }
         FontSizes(float em, float rem, const Font*);
-        FontSizes(const LayoutStyle*, const LayoutStyle* rootStyle);
+        FontSizes(const ComputedStyle*, const ComputedStyle* rootStyle);
 
         float em() const { return m_em; }
         float rem() const { return m_rem; }
@@ -75,8 +75,8 @@ public:
     };
 
     CSSToLengthConversionData() { }
-    CSSToLengthConversionData(const LayoutStyle*, const FontSizes&, const ViewportSize&, float zoom);
-    CSSToLengthConversionData(const LayoutStyle* currStyle, const LayoutStyle* rootStyle, const LayoutView*, float zoom);
+    CSSToLengthConversionData(const ComputedStyle*, const FontSizes&, const ViewportSize&, float zoom);
+    CSSToLengthConversionData(const ComputedStyle* currStyle, const ComputedStyle* rootStyle, const LayoutView*, float zoom);
 
     float zoom() const { return m_zoom; }
 
@@ -100,7 +100,7 @@ public:
     }
 
 private:
-    const LayoutStyle* m_style;
+    const ComputedStyle* m_style;
     FontSizes m_fontSizes;
     ViewportSize m_viewportSize;
     float m_zoom;

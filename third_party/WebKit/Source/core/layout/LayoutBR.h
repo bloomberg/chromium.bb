@@ -52,7 +52,7 @@ public:
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override final;
 
 protected:
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, isBR());

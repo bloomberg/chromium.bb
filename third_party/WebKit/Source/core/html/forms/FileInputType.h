@@ -58,7 +58,7 @@ private:
     bool valueMissing(const String&) const override;
     String valueMissingText() const override;
     void handleDOMActivateEvent(Event*) override;
-    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) const override;
     bool canSetStringValue() const override;
     FileList* files() override;
     void setFiles(FileList*) override;

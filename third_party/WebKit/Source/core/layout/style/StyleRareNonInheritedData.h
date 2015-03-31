@@ -32,7 +32,7 @@
 #include "core/layout/style/CursorData.h"
 #include "core/layout/style/DataRef.h"
 #include "core/layout/style/FillLayer.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/LineClampValue.h"
 #include "core/layout/style/NinePieceImage.h"
 #include "core/layout/style/ShapeValue.h"
@@ -201,7 +201,7 @@ public:
     unsigned m_scrollBlocksOn: 3; // WebScrollBlocksOn
 
     // Plugins require accelerated compositing for reasons external to blink.
-    // In which case, we need to update the LayoutStyle on the LayoutEmbeddedObject,
+    // In which case, we need to update the ComputedStyle on the LayoutEmbeddedObject,
     // so store this bit so that the style actually changes when the plugin
     // becomes composited.
     unsigned m_requiresAcceleratedCompositingForExternalReasons: 1;

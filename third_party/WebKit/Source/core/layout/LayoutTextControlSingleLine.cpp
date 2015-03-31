@@ -227,7 +227,7 @@ bool LayoutTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, Hit
     return true;
 }
 
-void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     m_desiredInnerEditorLogicalHeight = -1;
     LayoutTextControl::styleDidChange(diff, oldStyle);
@@ -330,8 +330,8 @@ LayoutUnit LayoutTextControlSingleLine::preferredContentLogicalWidth(float charW
         if (LayoutBox* spinRenderer = spinButton ? spinButton->layoutBox() : 0) {
             result += spinRenderer->borderAndPaddingLogicalWidth();
             // Since the width of spinRenderer is not calculated yet, spinRenderer->logicalWidth() returns 0.
-            // So computedStyle()->logicalWidth() is used instead.
-            result += spinButton->computedStyle()->logicalWidth().value();
+            // So ensureComputedStyle()->logicalWidth() is used instead.
+            result += spinButton->ensureComputedStyle()->logicalWidth().value();
         }
     }
 
@@ -343,9 +343,9 @@ LayoutUnit LayoutTextControlSingleLine::computeControlLogicalHeight(LayoutUnit l
     return lineHeight + nonContentHeight;
 }
 
-PassRefPtr<LayoutStyle> LayoutTextControlSingleLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
+PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(const ComputedStyle& startStyle) const
 {
-    RefPtr<LayoutStyle> textBlockStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> textBlockStyle = ComputedStyle::create();
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerEditorStyle(*textBlockStyle);
 
@@ -359,7 +359,7 @@ PassRefPtr<LayoutStyle> LayoutTextControlSingleLine::createInnerEditorStyle(cons
         textBlockStyle->setLogicalHeight(Length(m_desiredInnerEditorLogicalHeight, Fixed));
     // Do not allow line-height to be smaller than our default.
     if (textBlockStyle->fontMetrics().lineSpacing() > lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes))
-        textBlockStyle->setLineHeight(LayoutStyle::initialLineHeight());
+        textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
 
     textBlockStyle->setDisplay(BLOCK);
     textBlockStyle->setUnique();

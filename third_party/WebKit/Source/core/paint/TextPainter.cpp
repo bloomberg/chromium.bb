@@ -10,7 +10,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -115,7 +115,7 @@ static Color textColorForWhiteBackground(Color textColor)
 }
 
 // static
-TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& renderer, const LayoutStyle& style, bool forceBlackText, bool isPrinting)
+TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& renderer, const ComputedStyle& style, bool forceBlackText, bool isPrinting)
 {
     TextPainter::Style textStyle;
 
@@ -164,7 +164,7 @@ TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& renderer, b
             selectionStyle.emphasisMarkColor = renderer.selectionEmphasisMarkColor();
         }
 
-        if (const LayoutStyle* pseudoStyle = renderer.getCachedPseudoStyle(SELECTION)) {
+        if (const ComputedStyle* pseudoStyle = renderer.getCachedPseudoStyle(SELECTION)) {
             selectionStyle.strokeColor = forceBlackText ? Color::black : renderer.resolveColor(*pseudoStyle, CSSPropertyWebkitTextStrokeColor);
             selectionStyle.strokeWidth = pseudoStyle->textStrokeWidth();
             selectionStyle.shadow = forceBlackText ? 0 : pseudoStyle->textShadow();

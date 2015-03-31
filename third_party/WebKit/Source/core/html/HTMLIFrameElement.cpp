@@ -124,12 +124,12 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     }
 }
 
-bool HTMLIFrameElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLIFrameElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return isURLAllowed() && HTMLElement::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLIFrameElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* HTMLIFrameElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutIFrame(this);
 }

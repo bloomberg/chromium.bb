@@ -97,7 +97,7 @@ SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
 
 void SVGTextMetricsCalculator::setupBidiRuns()
 {
-    const LayoutStyle& style = m_text->styleRef();
+    const ComputedStyle& style = m_text->styleRef();
     m_textDirection = style.direction();
     if (isOverride(style.unicodeBidi()))
         return;

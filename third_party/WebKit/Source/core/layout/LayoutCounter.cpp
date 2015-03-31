@@ -30,7 +30,7 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "wtf/StdLibExtras.h"
 
 #ifndef NDEBUG
@@ -111,7 +111,7 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
     // We must have a generating node or else we cannot have a counter.
     if (!generatingNode)
         return false;
-    const LayoutStyle& style = object.styleRef();
+    const ComputedStyle& style = object.styleRef();
 
     switch (style.styleType()) {
     case NOPSEUDO:
@@ -541,7 +541,7 @@ void LayoutCounter::rendererSubtreeAttached(LayoutObject* renderer)
         updateCounters(*descendant);
 }
 
-void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const LayoutStyle* oldStyle, const LayoutStyle& newStyle)
+void LayoutCounter::rendererStyleChanged(LayoutObject& renderer, const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
 {
     Node* node = renderer.generatingNode();
     if (!node || node->needsAttach())

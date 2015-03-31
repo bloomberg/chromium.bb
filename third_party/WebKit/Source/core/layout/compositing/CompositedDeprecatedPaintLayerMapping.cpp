@@ -117,7 +117,7 @@ static inline bool isAcceleratedCanvas(const LayoutObject* renderer)
     return false;
 }
 
-static bool hasBoxDecorationsOrBackgroundImage(const LayoutStyle& style)
+static bool hasBoxDecorationsOrBackgroundImage(const ComputedStyle& style)
 {
     return style.hasBoxDecorations() || style.hasBackgroundImage();
 }
@@ -260,30 +260,30 @@ void CompositedDeprecatedPaintLayerMapping::destroyGraphicsLayers()
     m_scrollingBlockSelectionLayer = nullptr;
 }
 
-void CompositedDeprecatedPaintLayerMapping::updateOpacity(const LayoutStyle& style)
+void CompositedDeprecatedPaintLayerMapping::updateOpacity(const ComputedStyle& style)
 {
     m_graphicsLayer->setOpacity(compositingOpacity(style.opacity()));
 }
 
-void CompositedDeprecatedPaintLayerMapping::updateTransform(const LayoutStyle& style)
+void CompositedDeprecatedPaintLayerMapping::updateTransform(const ComputedStyle& style)
 {
     // FIXME: This could use m_owningLayer.transform(), but that currently has transform-origin
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style.applyTransform(t, LayoutSize(toLayoutBox(layoutObject())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
+        style.applyTransform(t, LayoutSize(toLayoutBox(layoutObject())->pixelSnappedSize()), ComputedStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 
     m_graphicsLayer->setTransform(t);
 }
 
-void CompositedDeprecatedPaintLayerMapping::updateFilters(const LayoutStyle& style)
+void CompositedDeprecatedPaintLayerMapping::updateFilters(const ComputedStyle& style)
 {
     m_graphicsLayer->setFilters(owningLayer().computeFilterOperations(style));
 }
 
-void CompositedDeprecatedPaintLayerMapping::updateLayerBlendMode(const LayoutStyle& style)
+void CompositedDeprecatedPaintLayerMapping::updateLayerBlendMode(const ComputedStyle& style)
 {
     setBlendMode(style.blendMode());
 }
@@ -298,7 +298,7 @@ void CompositedDeprecatedPaintLayerMapping::updateIsRootForIsolatedGroup()
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
 }
 
-void CompositedDeprecatedPaintLayerMapping::updateScrollBlocksOn(const LayoutStyle& style)
+void CompositedDeprecatedPaintLayerMapping::updateScrollBlocksOn(const ComputedStyle& style)
 {
     // Note that blink determines the default scroll blocking policy, even
     // when the scroll-blocks-on CSS feature isn't enabled.
@@ -450,7 +450,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
 
     bool hasPerspective = false;
     // FIXME: Can |style| be really null that late in the DocumentCycle?
-    if (const LayoutStyle* style = renderer->style())
+    if (const ComputedStyle* style = renderer->style())
         hasPerspective = style->hasPerspective();
     bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get()) && renderer->isBox();
     if (updateChildTransformLayer(needsChildTransformLayer))
@@ -1480,7 +1480,7 @@ void CompositedDeprecatedPaintLayerMapping::updateShouldFlattenTransform()
     if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
         bool hasPerspective = false;
         // FIXME: Can |style| be really null here?
-        if (const LayoutStyle* style = m_owningLayer.layoutObject()->style())
+        if (const ComputedStyle* style = m_owningLayer.layoutObject()->style())
             hasPerspective = style->hasPerspective();
         if (hasPerspective)
             childTransformLayer->setShouldFlattenTransform(false);
@@ -1923,7 +1923,7 @@ void CompositedDeprecatedPaintLayerMapping::updateImageContents()
 
 FloatPoint3D CompositedDeprecatedPaintLayerMapping::computeTransformOrigin(const IntRect& borderBox) const
 {
-    const LayoutStyle& style = layoutObject()->styleRef();
+    const ComputedStyle& style = layoutObject()->styleRef();
 
     FloatPoint3D origin;
     origin.setX(floatValueForLength(style.transformOriginX(), borderBox.width()));

@@ -20,12 +20,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef SVGLayoutStyle_h
-#define SVGLayoutStyle_h
+#ifndef SVGComputedStyle_h
+#define SVGComputedStyle_h
 
 #include "core/layout/style/DataRef.h"
-#include "core/layout/style/LayoutStyleConstants.h"
-#include "core/layout/style/SVGLayoutStyleDefs.h"
+#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/layout/style/SVGComputedStyleDefs.h"
 #include "core/layout/style/StyleDifference.h"
 #include "platform/Length.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -33,20 +33,20 @@
 
 namespace blink {
 
-class SVGLayoutStyle : public RefCounted<SVGLayoutStyle> {
+class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
 public:
-    static PassRefPtr<SVGLayoutStyle> create() { return adoptRef(new SVGLayoutStyle); }
-    PassRefPtr<SVGLayoutStyle> copy() const { return adoptRef(new SVGLayoutStyle(*this));}
-    ~SVGLayoutStyle();
+    static PassRefPtr<SVGComputedStyle> create() { return adoptRef(new SVGComputedStyle); }
+    PassRefPtr<SVGComputedStyle> copy() const { return adoptRef(new SVGComputedStyle(*this));}
+    ~SVGComputedStyle();
 
-    bool inheritedNotEqual(const SVGLayoutStyle*) const;
-    void inheritFrom(const SVGLayoutStyle*);
-    void copyNonInheritedFromCached(const SVGLayoutStyle*);
+    bool inheritedNotEqual(const SVGComputedStyle*) const;
+    void inheritFrom(const SVGComputedStyle*);
+    void copyNonInheritedFromCached(const SVGComputedStyle*);
 
-    StyleDifference diff(const SVGLayoutStyle*) const;
+    StyleDifference diff(const SVGComputedStyle*) const;
 
-    bool operator==(const SVGLayoutStyle&) const;
-    bool operator!=(const SVGLayoutStyle& o) const { return !(*this == o); }
+    bool operator==(const SVGComputedStyle&) const;
+    bool operator!=(const SVGComputedStyle& o) const { return !(*this == o); }
 
     // Initial values for all the properties
     static EAlignmentBaseline initialAlignmentBaseline() { return AB_AUTO; }
@@ -449,12 +449,12 @@ protected:
 private:
     enum CreateInitialType { CreateInitial };
 
-    SVGLayoutStyle();
-    SVGLayoutStyle(const SVGLayoutStyle&);
-    SVGLayoutStyle(CreateInitialType); // Used to create the initial style singleton.
+    SVGComputedStyle();
+    SVGComputedStyle(const SVGComputedStyle&);
+    SVGComputedStyle(CreateInitialType); // Used to create the initial style singleton.
 
-    bool diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* other) const;
-    bool diffNeedsPaintInvalidation(const SVGLayoutStyle* other) const;
+    bool diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyle* other) const;
+    bool diffNeedsPaintInvalidation(const SVGComputedStyle* other) const;
 
     void setBitDefaults()
     {
@@ -484,4 +484,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGLayoutStyle_h
+#endif // SVGComputedStyle_h

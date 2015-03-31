@@ -25,8 +25,8 @@
 #include "core/layout/style/AppliedTextDecoration.h"
 #include "core/layout/style/CursorData.h"
 #include "core/layout/style/DataEquivalency.h"
-#include "core/layout/style/LayoutStyle.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyle.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/QuotesData.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/layout/style/StyleImage.h"
@@ -54,12 +54,12 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
 static_assert(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInheritedData), "StyleRareInheritedData should stay small");
 
 StyleRareInheritedData::StyleRareInheritedData()
-    : listStyleImage(LayoutStyle::initialListStyleImage())
-    , textStrokeWidth(LayoutStyle::initialTextStrokeWidth())
-    , indent(LayoutStyle::initialTextIndent())
-    , m_effectiveZoom(LayoutStyle::initialZoom())
-    , widows(LayoutStyle::initialWidows())
-    , orphans(LayoutStyle::initialOrphans())
+    : listStyleImage(ComputedStyle::initialListStyleImage())
+    , textStrokeWidth(ComputedStyle::initialTextStrokeWidth())
+    , indent(ComputedStyle::initialTextIndent())
+    , m_effectiveZoom(ComputedStyle::initialZoom())
+    , widows(ComputedStyle::initialWidows())
+    , orphans(ComputedStyle::initialOrphans())
     , m_hasAutoOrphans(true)
     , m_textStrokeColorIsCurrentColor(true)
     , m_textFillColorIsCurrentColor(true)
@@ -67,33 +67,33 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_visitedLinkTextStrokeColorIsCurrentColor(true)
     , m_visitedLinkTextFillColorIsCurrentColor(true)
     , m_visitedLinkTextEmphasisColorIsCurrentColor(true)
-    , textSecurity(LayoutStyle::initialTextSecurity())
+    , textSecurity(ComputedStyle::initialTextSecurity())
     , userModify(READ_ONLY)
-    , wordBreak(LayoutStyle::initialWordBreak())
-    , overflowWrap(LayoutStyle::initialOverflowWrap())
+    , wordBreak(ComputedStyle::initialWordBreak())
+    , overflowWrap(ComputedStyle::initialOverflowWrap())
     , lineBreak(LineBreakAuto)
-    , userSelect(LayoutStyle::initialUserSelect())
+    , userSelect(ComputedStyle::initialUserSelect())
     , speak(SpeakNormal)
     , hyphens(HyphensManual)
     , textEmphasisFill(TextEmphasisFillFilled)
     , textEmphasisMark(TextEmphasisMarkNone)
     , textEmphasisPosition(TextEmphasisPositionOver)
-    , m_textAlignLast(LayoutStyle::initialTextAlignLast())
-    , m_textJustify(LayoutStyle::initialTextJustify())
+    , m_textAlignLast(ComputedStyle::initialTextAlignLast())
+    , m_textJustify(ComputedStyle::initialTextJustify())
     , m_textOrientation(TextOrientationVerticalRight)
-    , m_textIndentLine(LayoutStyle::initialTextIndentLine())
-    , m_textIndentType(LayoutStyle::initialTextIndentLine())
-    , m_lineBoxContain(LayoutStyle::initialLineBoxContain())
-    , m_imageRendering(LayoutStyle::initialImageRendering())
-    , m_textUnderlinePosition(LayoutStyle::initialTextUnderlinePosition())
-    , m_rubyPosition(LayoutStyle::initialRubyPosition())
+    , m_textIndentLine(ComputedStyle::initialTextIndentLine())
+    , m_textIndentType(ComputedStyle::initialTextIndentLine())
+    , m_lineBoxContain(ComputedStyle::initialLineBoxContain())
+    , m_imageRendering(ComputedStyle::initialImageRendering())
+    , m_textUnderlinePosition(ComputedStyle::initialTextUnderlinePosition())
+    , m_rubyPosition(ComputedStyle::initialRubyPosition())
     , m_subtreeWillChangeContents(false)
     , m_selfOrAncestorHasDirAutoAttribute(false)
     , hyphenationLimitBefore(-1)
     , hyphenationLimitAfter(-1)
     , hyphenationLimitLines(-1)
-    , tapHighlightColor(LayoutStyle::initialTapHighlightColor())
-    , m_tabSize(LayoutStyle::initialTabSize())
+    , tapHighlightColor(ComputedStyle::initialTapHighlightColor())
+    , m_tabSize(ComputedStyle::initialTabSize())
 {
 }
 

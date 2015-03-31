@@ -1052,9 +1052,9 @@ Node* Node::nextLeafNode() const
     return nullptr;
 }
 
-const LayoutStyle* Node::virtualComputedStyle(PseudoId pseudoElementSpecifier)
+const ComputedStyle* Node::virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier)
 {
-    return parentOrShadowHostNode() ? parentOrShadowHostNode()->computedStyle(pseudoElementSpecifier) : nullptr;
+    return parentOrShadowHostNode() ? parentOrShadowHostNode()->ensureComputedStyle(pseudoElementSpecifier) : nullptr;
 }
 
 int Node::maxCharacterOffset() const
@@ -1071,7 +1071,7 @@ bool Node::canStartSelection() const
         return true;
 
     if (layoutObject()) {
-        const LayoutStyle& style = layoutObject()->styleRef();
+        const ComputedStyle& style = layoutObject()->styleRef();
         // We allow selections to begin within an element that has -webkit-user-select: none set,
         // but if the element is draggable then dragging should take priority over selection.
         if (style.userDrag() == DRAG_ELEMENT && style.userSelect() == SELECT_NONE)

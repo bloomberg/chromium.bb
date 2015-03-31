@@ -30,7 +30,7 @@
 #ifndef BasicShapes_h
 #define BasicShapes_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/Length.h"
 #include "platform/LengthSize.h"
 #include "platform/graphics/GraphicsTypes.h"

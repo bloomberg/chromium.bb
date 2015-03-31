@@ -152,16 +152,16 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
     return 0;
 }
 
-static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const LayoutStyle& newStyle, const LayoutStyle& oldStyle)
+static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle)
 {
     for (;block && block->isAnonymousBlock(); block = block->nextSibling()) {
         if (!toLayoutBlock(block)->isAnonymousBlockContinuation())
             continue;
 
-        RefPtr<LayoutStyle> newBlockStyle;
+        RefPtr<ComputedStyle> newBlockStyle;
 
         if (!block->style()->isOutlineEquivalent(&newStyle)) {
-            newBlockStyle = LayoutStyle::clone(block->styleRef());
+            newBlockStyle = ComputedStyle::clone(block->styleRef());
             newBlockStyle->setOutlineFromStyle(newStyle);
         }
 
@@ -172,7 +172,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
                 && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
                 continue;
             if (!newBlockStyle)
-                newBlockStyle = LayoutStyle::clone(block->styleRef());
+                newBlockStyle = ComputedStyle::clone(block->styleRef());
             newBlockStyle->setPosition(newStyle.position());
         }
 
@@ -181,7 +181,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
     }
 }
 
-void LayoutInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBoxModelObject::styleDidChange(diff, oldStyle);
 
@@ -191,7 +191,7 @@ void LayoutInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldSt
     // e.g., <font>foo <h4>goo</h4> moo</font>.  The <font> inlines before
     // and after the block share the same style, but the block doesn't
     // need to pass its style on to anyone else.
-    const LayoutStyle& newStyle = styleRef();
+    const ComputedStyle& newStyle = styleRef();
     LayoutInline* continuation = inlineElementContinuation();
     for (LayoutInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         LayoutBoxModelObject* nextCont = currCont->continuation();
@@ -228,7 +228,7 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
     if (alwaysCreateLineBoxes())
         return;
 
-    const LayoutStyle& parentStyle = parent()->styleRef();
+    const ComputedStyle& parentStyle = parent()->styleRef();
     LayoutInline* parentLayoutInline = parent()->isLayoutInline() ? toLayoutInline(parent()) : 0;
     bool checkFonts = document().inNoQuirksMode();
     bool alwaysCreateLineBoxesNew = (parentLayoutInline && parentLayoutInline->alwaysCreateLineBoxes())
@@ -240,8 +240,8 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
 
     if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine().usesFirstLineRules()) {
         // Have to check the first line style as well.
-        const LayoutStyle& firstLineParentStyle = parent()->styleRef(true);
-        const LayoutStyle& childStyle = styleRef(true);
+        const ComputedStyle& firstLineParentStyle = parent()->styleRef(true);
+        const ComputedStyle& childStyle = styleRef(true);
         alwaysCreateLineBoxesNew = !firstLineParentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
         || childStyle.verticalAlign() != BASELINE
         || firstLineParentStyle.lineHeight() != childStyle.lineHeight();
@@ -331,7 +331,7 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
         // inline into continuations.  This involves creating an anonymous block box to hold
         // |newChild|.  We then make that block box a continuation of this inline.  We take all of
         // the children after |beforeChild| and put them in a clone of this object.
-        RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
+        RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
 
         // If inside an inline affected by in-flow positioning the block needs to be affected by it too.
         // Giving the block a layer like this allows it to collect the x/y offsets from inline parents later.
@@ -756,22 +756,22 @@ LayoutUnit LayoutInline::marginBottom() const
     return computeMargin(this, style()->marginBottom());
 }
 
-LayoutUnit LayoutInline::marginStart(const LayoutStyle* otherStyle) const
+LayoutUnit LayoutInline::marginStart(const ComputedStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginStartUsing(otherStyle ? otherStyle : style()));
 }
 
-LayoutUnit LayoutInline::marginEnd(const LayoutStyle* otherStyle) const
+LayoutUnit LayoutInline::marginEnd(const ComputedStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginEndUsing(otherStyle ? otherStyle : style()));
 }
 
-LayoutUnit LayoutInline::marginBefore(const LayoutStyle* otherStyle) const
+LayoutUnit LayoutInline::marginBefore(const ComputedStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginBeforeUsing(otherStyle ? otherStyle : style()));
 }
 
-LayoutUnit LayoutInline::marginAfter(const LayoutStyle* otherStyle) const
+LayoutUnit LayoutInline::marginAfter(const ComputedStyle* otherStyle) const
 {
     return computeMargin(this, style()->marginAfterUsing(otherStyle ? otherStyle : style()));
 }
@@ -1314,7 +1314,7 @@ InlineFlowBox* LayoutInline::createAndAppendInlineFlowBox()
 LayoutUnit LayoutInline::lineHeight(bool firstLine, LineDirectionMode /*direction*/, LinePositionMode /*linePositionMode*/) const
 {
     if (firstLine && document().styleEngine().usesFirstLineRules()) {
-        const LayoutStyle* s = style(firstLine);
+        const ComputedStyle* s = style(firstLine);
         if (s != style())
             return s->computedLineHeight();
     }

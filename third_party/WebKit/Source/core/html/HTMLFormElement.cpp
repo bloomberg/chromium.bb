@@ -120,7 +120,7 @@ bool HTMLFormElement::isValidElement()
     return !checkInvalidControlsAndCollectUnhandled(0, CheckValidityDispatchNoEvent);
 }
 
-bool HTMLFormElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLFormElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (!m_wasDemoted)
         return HTMLElement::layoutObjectIsNeeded(style);

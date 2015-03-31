@@ -34,7 +34,7 @@ inline SVGGElement::SVGGElement(Document& document, ConstructionType constructio
 
 DEFINE_NODE_FACTORY(SVGGElement)
 
-LayoutObject* SVGGElement::createLayoutObject(const LayoutStyle& style)
+LayoutObject* SVGGElement::createLayoutObject(const ComputedStyle& style)
 {
     // SVG 1.1 testsuite explicitely uses constructs like <g display="none"><linearGradient>
     // We still have to create renderers for the <g> & <linearGradient> element, though the
@@ -46,7 +46,7 @@ LayoutObject* SVGGElement::createLayoutObject(const LayoutStyle& style)
     return new LayoutSVGTransformableContainer(this);
 }
 
-bool SVGGElement::layoutObjectIsNeeded(const LayoutStyle&)
+bool SVGGElement::layoutObjectIsNeeded(const ComputedStyle&)
 {
     // Unlike SVGElement::layoutObjectIsNeeded(), we still create renderers, even if
     // display is set to 'none' - which is special to SVG <g> container elements.

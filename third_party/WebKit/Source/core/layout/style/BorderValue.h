@@ -26,13 +26,13 @@
 #define BorderValue_h
 
 #include "core/css/StyleColor.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
 
 class BorderValue {
-friend class LayoutStyle;
+friend class ComputedStyle;
 public:
     BorderValue()
         : m_color(0)
@@ -63,7 +63,7 @@ public:
         return m_width == o.m_width && m_style == o.m_style && m_color == o.m_color && m_colorIsCurrentColor == o.m_colorIsCurrentColor;
     }
 
-    // The default width is 3px, but if the style is none we compute a value of 0 (in LayoutStyle itself)
+    // The default width is 3px, but if the style is none we compute a value of 0 (in ComputedStyle itself)
     bool visuallyEqual(const BorderValue& o) const
     {
         if (m_style == BNONE && o.m_style == BNONE)

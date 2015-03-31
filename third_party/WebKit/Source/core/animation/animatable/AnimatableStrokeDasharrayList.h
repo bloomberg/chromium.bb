@@ -32,7 +32,7 @@
 #define AnimatableStrokeDasharrayList_h
 
 #include "core/animation/animatable/AnimatableRepeatable.h"
-#include "core/layout/style/SVGLayoutStyleDefs.h"
+#include "core/layout/style/SVGComputedStyleDefs.h"
 
 namespace blink {
 

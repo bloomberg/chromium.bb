@@ -62,7 +62,7 @@
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/PresentationAttributeStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -558,7 +558,7 @@ static float localZoomForRenderer(LayoutObject& renderer)
 {
     // FIXME: This does the wrong thing if two opposing zooms are in effect and canceled each
     // other out, but the alternative is that we'd have to crawl up the whole render tree every
-    // time (or store an additional bit in the LayoutStyle to indicate that a zoom was specified).
+    // time (or store an additional bit in the ComputedStyle to indicate that a zoom was specified).
     float zoomFactor = 1;
     if (renderer.style()->effectiveZoom() != 1) {
         // Need to find the nearest enclosing LayoutObject that set up
@@ -1391,12 +1391,12 @@ const AtomicString Element::imageSourceURL() const
     return getAttribute(srcAttr);
 }
 
-bool Element::layoutObjectIsNeeded(const LayoutStyle& style)
+bool Element::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     return style.display() != NONE;
 }
 
-LayoutObject* Element::createLayoutObject(const LayoutStyle& style)
+LayoutObject* Element::createLayoutObject(const ComputedStyle& style)
 {
     return LayoutObject::createObject(this, style);
 }
@@ -1554,7 +1554,7 @@ void Element::detach(const AttachContext& context)
                 elementAnimations->cssAnimations().cancel();
                 elementAnimations->setAnimationStyleChange(false);
             }
-            elementAnimations->clearBaseLayoutStyle();
+            elementAnimations->clearBaseComputedStyle();
         }
 
         if (ElementShadow* shadow = data->shadow())
@@ -1568,9 +1568,9 @@ void Element::detach(const AttachContext& context)
         document().unscheduleSVGFilterLayerUpdateHack(*this);
 }
 
-bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutStyle* newStyle)
+bool Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle, ComputedStyle* newStyle)
 {
-    ASSERT(currentStyle == layoutStyle());
+    ASSERT(currentStyle == computedStyle());
     ASSERT(layoutObject());
 
     if (!currentStyle)
@@ -1582,7 +1582,7 @@ bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutS
 
     size_t cacheSize = pseudoStyleCache->size();
     for (size_t i = 0; i < cacheSize; ++i) {
-        RefPtr<LayoutStyle> newPseudoStyle;
+        RefPtr<ComputedStyle> newPseudoStyle;
         PseudoId pseudoId = pseudoStyleCache->at(i)->styleType();
         if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
             newPseudoStyle = layoutObject()->uncachedFirstLineStyle(newStyle);
@@ -1606,11 +1606,11 @@ bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutS
     return false;
 }
 
-PassRefPtr<LayoutStyle> Element::styleForLayoutObject()
+PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
 {
     ASSERT(document().inStyleRecalc());
 
-    RefPtr<LayoutStyle> style;
+    RefPtr<ComputedStyle> style;
 
     // FIXME: Instead of clearing updates that may have been added from calls to styleForElement
     // outside recalcStyle, we should just never set them if we're not inside recalcStyle.
@@ -1638,7 +1638,7 @@ PassRefPtr<LayoutStyle> Element::styleForLayoutObject()
     return style.release();
 }
 
-PassRefPtr<LayoutStyle> Element::originalStyleForLayoutObject()
+PassRefPtr<ComputedStyle> Element::originalStyleForLayoutObject()
 {
     ASSERT(document().inStyleRecalc());
     return document().ensureStyleResolver().styleForElement(this);
@@ -1663,7 +1663,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
                     elementAnimations->setAnimationStyleChange(false);
             }
         }
-        if (parentLayoutStyle())
+        if (parentComputedStyle())
             change = recalcOwnStyle(change);
         clearNeedsStyleRecalc();
     }
@@ -1706,11 +1706,11 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     ASSERT(document().inStyleRecalc());
     ASSERT(!parentOrShadowHostNode()->needsStyleRecalc());
     ASSERT(change >= Inherit || needsStyleRecalc());
-    ASSERT(parentLayoutStyle());
+    ASSERT(parentComputedStyle());
 
-    RefPtr<LayoutStyle> oldStyle = mutableLayoutStyle();
-    RefPtr<LayoutStyle> newStyle = styleForLayoutObject();
-    StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
+    RefPtr<ComputedStyle> oldStyle = mutableComputedStyle();
+    RefPtr<ComputedStyle> newStyle = styleForLayoutObject();
+    StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
 
     ASSERT(newStyle);
 
@@ -1753,7 +1753,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     return localChange;
 }
 
-void Element::updateCallbackSelectors(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
+void Element::updateCallbackSelectors(const ComputedStyle* oldStyle, const ComputedStyle* newStyle)
 {
     Vector<String> emptyVector;
     const Vector<String>& oldCallbackSelectors = oldStyle ? oldStyle->callbackSelectors() : emptyVector;
@@ -1766,12 +1766,12 @@ void Element::updateCallbackSelectors(const LayoutStyle* oldStyle, const LayoutS
 
 void Element::addCallbackSelectors()
 {
-    updateCallbackSelectors(0, layoutStyle());
+    updateCallbackSelectors(0, computedStyle());
 }
 
 void Element::removeCallbackSelectors()
 {
-    updateCallbackSelectors(layoutStyle(), 0);
+    updateCallbackSelectors(computedStyle(), 0);
 }
 
 ElementShadow* Element::shadow() const
@@ -1920,7 +1920,7 @@ bool Element::childTypeAllowed(NodeType type) const
 
 void Element::checkForEmptyStyleChange()
 {
-    const LayoutStyle* style = layoutStyle();
+    const ComputedStyle* style = computedStyle();
 
     if (!style && !styleAffectedByEmpty())
         return;
@@ -2598,10 +2598,10 @@ void Element::setMinimumSizeForResizing(const LayoutSize& size)
     ensureElementRareData().setMinimumSizeForResizing(size);
 }
 
-const LayoutStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
+const ComputedStyle* Element::ensureComputedStyle(PseudoId pseudoElementSpecifier)
 {
     if (PseudoElement* element = pseudoElement(pseudoElementSpecifier))
-        return element->computedStyle();
+        return element->ensureComputedStyle();
 
     if (!inActiveDocument()) {
         // FIXME: Try to do better than this. Ensure that styleForElement() works for elements that are not in the
@@ -2612,21 +2612,21 @@ const LayoutStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
     // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
     // properties, which are only known by the renderer because it did the layout, will be correct and so that the
     // values returned for the ":selection" pseudo-element will be correct.
-    LayoutStyle* elementStyle = mutableLayoutStyle();
+    ComputedStyle* elementStyle = mutableComputedStyle();
     if (!elementStyle) {
         ElementRareData& rareData = ensureElementRareData();
-        if (!rareData.computedStyle())
+        if (!rareData.ensureComputedStyle())
             rareData.setComputedStyle(document().styleForElementIgnoringPendingStylesheets(this));
-        elementStyle = rareData.computedStyle();
+        elementStyle = rareData.ensureComputedStyle();
     }
 
     if (!pseudoElementSpecifier)
         return elementStyle;
 
-    if (LayoutStyle* pseudoElementStyle = elementStyle->getCachedPseudoStyle(pseudoElementSpecifier))
+    if (ComputedStyle* pseudoElementStyle = elementStyle->getCachedPseudoStyle(pseudoElementSpecifier))
         return pseudoElementStyle;
 
-    RefPtr<LayoutStyle> result = document().ensureStyleResolver().pseudoStyleForElement(this, PseudoStyleRequest(pseudoElementSpecifier, PseudoStyleRequest::ForComputedStyle), elementStyle);
+    RefPtr<ComputedStyle> result = document().ensureStyleResolver().pseudoStyleForElement(this, PseudoStyleRequest(pseudoElementSpecifier, PseudoStyleRequest::ForComputedStyle), elementStyle);
     ASSERT(result);
     return elementStyle->addCachedPseudoStyle(result.release());
 }
@@ -3182,7 +3182,7 @@ void Element::didRecalcStyle(StyleRecalcChange)
 }
 
 
-PassRefPtr<LayoutStyle> Element::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> Element::customStyleForLayoutObject()
 {
     ASSERT(hasCustomStyleCallbacks());
     return nullptr;

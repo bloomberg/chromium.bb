@@ -83,10 +83,10 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
         if (!childElement->isSVGGraphicsElement())
             continue;
         SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
-        const LayoutStyle* style = childLayoutObject->style();
+        const ComputedStyle* style = childLayoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
-        const SVGLayoutStyle& svgStyle = style->svgStyle();
+        const SVGComputedStyle& svgStyle = style->svgStyle();
         // Current shape in clip-path gets clipped too. Fallback to masking.
         if (!svgStyle.clipperResource().isEmpty())
             return false;
@@ -165,7 +165,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
         if (!layoutObject)
             continue;
 
-        const LayoutStyle* style = layoutObject->style();
+        const ComputedStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
@@ -213,7 +213,7 @@ void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()
             continue;
         if (!layoutObject->isSVGShape() && !layoutObject->isSVGText() && !isSVGUseElement(*childElement))
             continue;
-        const LayoutStyle* style = layoutObject->style();
+        const ComputedStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
         m_clipBoundaries.unite(layoutObject->localToParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalCoordinates()));

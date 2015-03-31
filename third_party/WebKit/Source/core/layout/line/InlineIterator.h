@@ -134,7 +134,7 @@ static inline void notifyObserverEnteredObject(Observer* observer, LayoutObject*
     if (!observer || !object || !object->isLayoutInline())
         return;
 
-    const LayoutStyle& style = object->styleRef();
+    const ComputedStyle& style = object->styleRef();
     EUnicodeBidi unicodeBidi = style.unicodeBidi();
     if (unicodeBidi == UBNormal) {
         // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi

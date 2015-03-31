@@ -75,9 +75,9 @@ int LayoutTextControlMultiLine::baselinePosition(FontBaseline baselineType, bool
     return LayoutBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-PassRefPtr<LayoutStyle> LayoutTextControlMultiLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
+PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::createInnerEditorStyle(const ComputedStyle& startStyle) const
 {
-    RefPtr<LayoutStyle> textBlockStyle = LayoutStyle::create();
+    RefPtr<ComputedStyle> textBlockStyle = ComputedStyle::create();
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerEditorStyle(*textBlockStyle);
     textBlockStyle->setDisplay(BLOCK);

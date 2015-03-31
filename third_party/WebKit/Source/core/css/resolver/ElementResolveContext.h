@@ -23,14 +23,14 @@
 #define ElementResolveContext_h
 
 #include "core/dom/Element.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 
 namespace blink {
 
 class ContainerNode;
 class Document;
 class Element;
-class LayoutStyle;
+class ComputedStyle;
 
 // ElementResolveContext is immutable and serves as an input to the style resolve process.
 class ElementResolveContext {
@@ -42,15 +42,15 @@ public:
 
     Element* element() const { return m_element; }
     const ContainerNode* parentNode() const { return m_parentNode; }
-    const LayoutStyle* rootElementStyle() const { return m_rootElementStyle; }
-    const LayoutStyle* parentStyle() const { return parentNode() ? parentNode()->layoutStyle() : nullptr; }
+    const ComputedStyle* rootElementStyle() const { return m_rootElementStyle; }
+    const ComputedStyle* parentStyle() const { return parentNode() ? parentNode()->computedStyle() : nullptr; }
     EInsideLink elementLinkState() const { return m_elementLinkState; }
     bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
 
 private:
     RawPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<ContainerNode> m_parentNode;
-    const LayoutStyle* m_rootElementStyle;
+    const ComputedStyle* m_rootElementStyle;
     EInsideLink m_elementLinkState;
     bool m_distributedToInsertionPoint;
 };

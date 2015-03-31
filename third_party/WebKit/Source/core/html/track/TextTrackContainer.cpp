@@ -48,7 +48,7 @@ PassRefPtrWillBeRawPtr<TextTrackContainer> TextTrackContainer::create(Document& 
     return element.release();
 }
 
-LayoutObject* TextTrackContainer::createLayoutObject(const LayoutStyle&)
+LayoutObject* TextTrackContainer::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutTextTrackContainer(this);
 }

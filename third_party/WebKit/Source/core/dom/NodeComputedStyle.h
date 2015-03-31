@@ -22,46 +22,46 @@
  *
  */
 
-#ifndef NodeLayoutStyle_h
-#define NodeLayoutStyle_h
+#ifndef NodeComputedStyle_h
+#define NodeComputedStyle_h
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 
-inline const LayoutStyle* Node::layoutStyle() const
+inline const ComputedStyle* Node::computedStyle() const
 {
-    return mutableLayoutStyle();
+    return mutableComputedStyle();
 }
 
-inline LayoutStyle* Node::mutableLayoutStyle() const
+inline ComputedStyle* Node::mutableComputedStyle() const
 {
-    if (LayoutObject* renderer = this->layoutObject())
-        return const_cast<LayoutStyle*>(renderer->style());
-    // <option> and <optgroup> can be styled even if they don't get renderers,
-    // so they store their style internally and return it through nonRendererStyle().
+    if (LayoutObject* layoutObject = this->layoutObject())
+        return const_cast<ComputedStyle*>(layoutObject->style());
+    // <option> and <optgroup> can be styled even if they don't get layout objects,
+    // so they store their style internally and return it through nonLayoutObjectComputedStyle().
     // We check here explicitly to avoid the virtual call in the common case.
     if (isHTMLOptGroupElement(*this) || isHTMLOptionElement(this))
-        return nonRendererStyle();
+        return nonLayoutObjectComputedStyle();
     return 0;
 }
 
-inline const LayoutStyle* Node::parentLayoutStyle() const
+inline const ComputedStyle* Node::parentComputedStyle() const
 {
     ContainerNode* parent = NodeRenderingTraversal::parent(*this);
-    return parent ? parent->layoutStyle() : 0;
+    return parent ? parent->computedStyle() : 0;
 }
 
-inline const LayoutStyle& Node::layoutStyleRef() const
+inline const ComputedStyle& Node::computedStyleRef() const
 {
-    const LayoutStyle* style = layoutStyle();
+    const ComputedStyle* style = computedStyle();
     ASSERT(style);
     return *style;
 }
 
 }
-#endif // NodeLayoutStyle_h
+#endif // NodeComputedStyle_h

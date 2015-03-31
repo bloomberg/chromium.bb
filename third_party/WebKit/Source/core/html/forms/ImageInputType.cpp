@@ -121,7 +121,7 @@ void ImageInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-LayoutObject* ImageInputType::createLayoutObject(const LayoutStyle& style) const
+LayoutObject* ImageInputType::createLayoutObject(const ComputedStyle& style) const
 {
     if (m_useFallbackContent)
         return new LayoutBlockFlow(&element());
@@ -295,7 +295,7 @@ void ImageInputType::createShadowSubtree()
     HTMLImageFallbackHelper::createAltTextShadowTree(element());
 }
 
-PassRefPtr<LayoutStyle> ImageInputType::customStyleForLayoutObject(PassRefPtr<LayoutStyle> newStyle)
+PassRefPtr<ComputedStyle> ImageInputType::customStyleForLayoutObject(PassRefPtr<ComputedStyle> newStyle)
 {
     if (!m_useFallbackContent)
         return newStyle;

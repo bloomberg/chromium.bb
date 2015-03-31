@@ -154,7 +154,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual bool appendFormData(FormDataList&, bool) override;
     virtual void didAddClosedShadowRoot(ShadowRoot&) override;
 

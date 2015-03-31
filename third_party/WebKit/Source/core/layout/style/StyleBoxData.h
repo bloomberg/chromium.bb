@@ -25,7 +25,7 @@
 #ifndef StyleBoxData_h
 #define StyleBoxData_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/Length.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -61,7 +61,7 @@ public:
     EBoxDecorationBreak boxDecorationBreak() const { return static_cast<EBoxDecorationBreak>(m_boxDecorationBreak); }
 
 private:
-    friend class LayoutStyle;
+    friend class ComputedStyle;
 
     StyleBoxData();
     StyleBoxData(const StyleBoxData&);

@@ -200,7 +200,7 @@ void LayoutGeometryMap::pushMappingsToAncestor(const LayoutObject* renderer, con
 static bool canMapBetweenRenderers(const LayoutObject* renderer, const LayoutObject* ancestor)
 {
     for (const LayoutObject* current = renderer; ; current = current->parent()) {
-        const LayoutStyle& style = current->styleRef();
+        const ComputedStyle& style = current->styleRef();
         if (style.position() == FixedPosition || style.isFlippedBlocksWritingMode())
             return false;
 

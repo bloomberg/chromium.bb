@@ -81,7 +81,7 @@ private:
     void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
     void forwardEvent(Event*) final;
     bool shouldSubmitImplicitly(Event*) final;
-    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) const override;
     String sanitizeValue(const String&) const override;
     bool shouldRespectListAttribute() override;
     void listAttributeTargetChanged() override;

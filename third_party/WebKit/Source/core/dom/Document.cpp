@@ -81,7 +81,7 @@
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
@@ -1585,7 +1585,7 @@ void Document::updateStyleInvalidationIfNeeded()
     styleResolver()->ruleFeatureSet().styleInvalidator().invalidate(*this);
 }
 
-void Document::setupFontBuilder(LayoutStyle& documentStyle)
+void Document::setupFontBuilder(ComputedStyle& documentStyle)
 {
     FontBuilder fontBuilder(*this);
     RefPtrWillBeRawPtr<CSSFontSelector> selector = styleEngine().fontSelector();
@@ -1598,7 +1598,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     ASSERT(documentElement());
 
     bool didRecalcDocumentElement = false;
-    RefPtr<LayoutStyle> documentElementStyle = documentElement()->mutableLayoutStyle();
+    RefPtr<ComputedStyle> documentElementStyle = documentElement()->mutableComputedStyle();
     if (change == Force)
         documentElement()->clearAnimationStyleChange();
     if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force) {
@@ -1610,10 +1610,10 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     TextDirection rootDirection = documentElementStyle->direction();
 
     HTMLElement* body = this->body();
-    RefPtr<LayoutStyle> bodyStyle;
+    RefPtr<ComputedStyle> bodyStyle;
 
     if (body) {
-        bodyStyle = body->mutableLayoutStyle();
+        bodyStyle = body->mutableComputedStyle();
         if (didRecalcDocumentElement)
             body->clearAnimationStyleChange();
         if (!bodyStyle || body->needsStyleRecalc() || didRecalcDocumentElement)
@@ -1622,7 +1622,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         rootDirection = bodyStyle->direction();
     }
 
-    RefPtr<LayoutStyle> overflowStyle;
+    RefPtr<ComputedStyle> overflowStyle;
     if (Element* element = viewportDefiningElement(documentElementStyle.get())) {
         if (element == body) {
             overflowStyle = bodyStyle;
@@ -1639,7 +1639,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     // documentElement's style was dirty. We could keep track of which elements depend on
     // rem units like we do for viewport styles, but we assume root font size changes are
     // rare and just invalidate the cache for now.
-    if (styleEngine().usesRemUnits() && (documentElement()->needsAttach() || documentElement()->computedStyle()->fontSize() != documentElementStyle->fontSize())) {
+    if (styleEngine().usesRemUnits() && (documentElement()->needsAttach() || documentElement()->ensureComputedStyle()->fontSize() != documentElementStyle->fontSize())) {
         ensureStyleResolver().invalidateMatchedPropertiesCache();
         documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FontSizeChange));
     }
@@ -1662,14 +1662,14 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
 
-    RefPtr<LayoutStyle> documentStyle = layoutView()->style();
+    RefPtr<ComputedStyle> documentStyle = layoutView()->style();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->overflowX() != overflowX
         || documentStyle->overflowY() != overflowY
         || documentStyle->columnGap() != columnGap
         || documentStyle->scrollBlocksOn() != scrollBlocksOn) {
-        RefPtr<LayoutStyle> newStyle = LayoutStyle::clone(*documentStyle);
+        RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*documentStyle);
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
         newStyle->setColumnGap(columnGap);
@@ -1681,13 +1681,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     if (body) {
-        if (const LayoutStyle* style = body->layoutStyle()) {
+        if (const ComputedStyle* style = body->computedStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
                 body->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
         }
     }
 
-    if (const LayoutStyle* style = documentElement()->layoutStyle()) {
+    if (const ComputedStyle* style = documentElement()->computedStyle()) {
         if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
             documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
     }
@@ -1778,8 +1778,8 @@ void Document::updateStyle(StyleRecalcChange change)
 
     if (change == Force) {
         m_hasNodesWithPlaceholderStyle = false;
-        RefPtr<LayoutStyle> documentStyle = StyleResolver::styleForDocument(*this);
-        StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(documentStyle.get(), layoutView()->style());
+        RefPtr<ComputedStyle> documentStyle = StyleResolver::styleForDocument(*this);
+        StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(documentStyle.get(), layoutView()->style());
         if (localChange != NoChange)
             layoutView()->setStyle(documentStyle.release());
     }
@@ -1926,14 +1926,14 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
         view()->flushAnyPendingPostLayoutTasks();
 }
 
-PassRefPtr<LayoutStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
+PassRefPtr<ComputedStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
     ASSERT_ARG(element, element->document() == this);
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
-    return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
+    return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->ensureComputedStyle() : 0);
 }
 
-PassRefPtr<LayoutStyle> Document::styleForPage(int pageIndex)
+PassRefPtr<ComputedStyle> Document::styleForPage(int pageIndex)
 {
     updateDistribution();
     return ensureStyleResolver().styleForPage(pageIndex);
@@ -1946,7 +1946,7 @@ bool Document::isPageBoxVisible(int pageIndex)
 
 void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
 {
-    RefPtr<LayoutStyle> style = styleForPage(pageIndex);
+    RefPtr<ComputedStyle> style = styleForPage(pageIndex);
 
     int width = pageSize.width();
     int height = pageSize.height();
@@ -2380,7 +2380,7 @@ HTMLHeadElement* Document::head() const
     return Traversal<HTMLHeadElement>::firstChild(*de);
 }
 
-Element* Document::viewportDefiningElement(const LayoutStyle* rootStyle) const
+Element* Document::viewportDefiningElement(const ComputedStyle* rootStyle) const
 {
     // If a BODY element sets non-visible overflow, it is to be propagated to the viewport, as long
     // as the following conditions are all met:
@@ -2393,7 +2393,7 @@ Element* Document::viewportDefiningElement(const LayoutStyle* rootStyle) const
     if (!rootElement)
         return 0;
     if (!rootStyle) {
-        rootStyle = rootElement->layoutStyle();
+        rootStyle = rootElement->computedStyle();
         if (!rootStyle)
             return 0;
     }

@@ -7,7 +7,7 @@
 
 #include "core/layout/LayoutBox.h"
 #include "core/layout/style/BorderEdge.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -72,7 +72,7 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     return BackgroundBleedClipBackground;
 }
 
-bool BoxDecorationData::borderObscuresBackgroundEdge(const LayoutStyle& style, const FloatSize& contextScale) const
+bool BoxDecorationData::borderObscuresBackgroundEdge(const ComputedStyle& style, const FloatSize& contextScale) const
 {
     BorderEdge edges[4];
     style.getBorderEdgeInfo(edges);

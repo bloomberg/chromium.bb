@@ -310,8 +310,8 @@ private:
 
     virtual bool supportsFocus() const override final;
     virtual bool isMouseFocusable() const override final;
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override final;
     virtual void didNotifySubtreeInsertionsToDocument() override;
     virtual void removedFrom(ContainerNode*) override final;

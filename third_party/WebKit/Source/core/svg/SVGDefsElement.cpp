@@ -34,7 +34,7 @@ inline SVGDefsElement::SVGDefsElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGDefsElement)
 
-LayoutObject* SVGDefsElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGDefsElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGHiddenContainer(this);
 }

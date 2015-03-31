@@ -555,7 +555,7 @@ int LayoutFrameSet::hitTestSplit(const GridAxis& axis, int position) const
     return noSplit;
 }
 
-bool LayoutFrameSet::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutFrameSet::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isFrame() || child->isFrameSet();
 }

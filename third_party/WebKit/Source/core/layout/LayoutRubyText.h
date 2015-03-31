@@ -44,7 +44,7 @@ public:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyText || LayoutBlockFlow::isOfType(type); }
 
-    virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
+    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
 private:
     virtual bool avoidsFloats() const override;

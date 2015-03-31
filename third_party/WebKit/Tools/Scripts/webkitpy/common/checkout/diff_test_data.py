@@ -44,10 +44,10 @@ index ce21720..324929e 100644
 --- a/WebCore/layout/style/StyleRareInheritedData.cpp
 +++ b/WebCore/layout/style/StyleRareInheritedData.cpp
 @@ -39,6 +39,7 @@ StyleRareInheritedData::StyleRareInheritedData()
-     , textSizeAdjust(LayoutStyle::initialTextSizeAdjust())
-     , resize(LayoutStyle::initialResize())
-     , userSelect(LayoutStyle::initialUserSelect())
-+    , boxOrient(LayoutStyle::initialBoxOrient())
+     , textSizeAdjust(ComputedStyle::initialTextSizeAdjust())
+     , resize(ComputedStyle::initialResize())
+     , userSelect(ComputedStyle::initialUserSelect())
++    , boxOrient(ComputedStyle::initialBoxOrient())
  {
  }
  

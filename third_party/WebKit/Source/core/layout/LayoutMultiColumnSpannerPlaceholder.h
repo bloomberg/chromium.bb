@@ -17,7 +17,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
 public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder || LayoutBox::isOfType(type); }
 
-    static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const LayoutStyle& parentStyle, LayoutBox&);
+    static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const ComputedStyle& parentStyle, LayoutBox&);
 
     LayoutFlowThread* flowThread() const { return toLayoutBlockFlow(parent())->multiColumnFlowThread(); }
 

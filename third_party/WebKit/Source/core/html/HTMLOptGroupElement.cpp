@@ -26,7 +26,7 @@
 #include "core/html/HTMLOptGroupElement.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLContentElement.h"
@@ -106,7 +106,7 @@ bool HTMLOptGroupElement::supportsFocus() const
     return HTMLElement::supportsFocus();
 }
 
-void HTMLOptGroupElement::updateNonLayoutStyle()
+void HTMLOptGroupElement::updateNonComputedStyle()
 {
     m_style = originalStyleForLayoutObject();
     if (layoutObject()) {
@@ -115,14 +115,14 @@ void HTMLOptGroupElement::updateNonLayoutStyle()
     }
 }
 
-LayoutStyle* HTMLOptGroupElement::nonRendererStyle() const
+ComputedStyle* HTMLOptGroupElement::nonLayoutObjectComputedStyle() const
 {
     return m_style.get();
 }
 
-PassRefPtr<LayoutStyle> HTMLOptGroupElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> HTMLOptGroupElement::customStyleForLayoutObject()
 {
-    updateNonLayoutStyle();
+    updateNonComputedStyle();
     return m_style;
 }
 

@@ -5,7 +5,7 @@
 #ifndef StyleMotionData_h
 #define StyleMotionData_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/StyleMotionPath.h"
 #include "platform/Length.h"
 
@@ -25,7 +25,7 @@ public:
 
     bool operator!=(const StyleMotionData& o) const { return !(*this == o); }
 
-    // Must be public for SET_VAR in LayoutStyle.h
+    // Must be public for SET_VAR in ComputedStyle.h
     RefPtr<StyleMotionPath> m_path; // nullptr indicates path is 'none'
     Length m_offset;
     float m_rotation;

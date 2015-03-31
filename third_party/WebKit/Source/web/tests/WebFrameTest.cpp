@@ -42,7 +42,7 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/NodeLayoutStyle.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -474,7 +474,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     EXPECT_THAT(matchedSelectors(), ElementsAre());
 }
 
-TEST_F(WebFrameCSSCallbackTest, SharedLayoutStyle)
+TEST_F(WebFrameCSSCallbackTest, SharedComputedStyle)
 {
     // Check that adding an element calls back when it matches an existing rule.
     std::vector<WebString> selectors;
@@ -488,9 +488,9 @@ TEST_F(WebFrameCSSCallbackTest, SharedLayoutStyle)
     EXPECT_EQ(1, updateCount());
     EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
-    // Adding a second element that shares a LayoutStyle shouldn't call back.
+    // Adding a second element that shares a ComputedStyle shouldn't call back.
     // We use <span>s to avoid default style rules that can set
-    // LayoutStyle::unique().
+    // ComputedStyle::unique().
     executeScript(
         "i2 = document.createElement('span');"
         "i2.id = 'second_span';"

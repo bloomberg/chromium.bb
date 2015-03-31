@@ -50,7 +50,7 @@ HTMLProgressElement* ProgressShadowElement::progressElement() const
     return toHTMLProgressElement(shadowHost());
 }
 
-bool ProgressShadowElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool ProgressShadowElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     LayoutObject* progressRenderer = progressElement()->layoutObject();
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::layoutObjectIsNeeded(style);
@@ -63,12 +63,12 @@ inline ProgressInnerElement::ProgressInnerElement(Document& document)
 
 DEFINE_NODE_FACTORY(ProgressInnerElement)
 
-LayoutObject* ProgressInnerElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* ProgressInnerElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutProgress(this);
 }
 
-bool ProgressInnerElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool ProgressInnerElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (progressElement()->hasOpenShadowRoot())
         return HTMLDivElement::layoutObjectIsNeeded(style);

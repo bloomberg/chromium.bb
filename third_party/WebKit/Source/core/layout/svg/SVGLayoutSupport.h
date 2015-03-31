@@ -40,7 +40,7 @@ struct PaintInfo;
 class LayoutGeometryMap;
 class LayoutBoxModelObject;
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 class LayoutSVGRoot;
 class SVGLengthContext;
 class StrokeData;
@@ -80,15 +80,15 @@ public:
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
     // Shared between SVG layoutObjects and resources.
-    static void applyStrokeStyleToContext(GraphicsContext&, const LayoutStyle&, const LayoutObject&);
-    static void applyStrokeStyleToStrokeData(StrokeData&, const LayoutStyle&, const LayoutObject&);
+    static void applyStrokeStyleToContext(GraphicsContext&, const ComputedStyle&, const LayoutObject&);
+    static void applyStrokeStyleToStrokeData(StrokeData&, const ComputedStyle&, const LayoutObject&);
 
-    static DashArray resolveSVGDashArray(const SVGDashArray&, const LayoutStyle&, const SVGLengthContext&);
+    static DashArray resolveSVGDashArray(const SVGDashArray&, const ComputedStyle&, const SVGLengthContext&);
 
     // Update the GC state (on |paintInfo.context|) for painting |layoutObject|
     // using |style|. |resourceMode| is used to decide between fill/stroke.
     // Previous state will be saved (if needed) using |stateSaver|.
-    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const LayoutStyle&, LayoutObject&, LayoutSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
+    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const ComputedStyle&, LayoutObject&, LayoutSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(LayoutObject*);
@@ -100,8 +100,8 @@ public:
     // can/will be laid out as part of a <text>.
     static bool isLayoutableTextNode(const LayoutObject*);
 
-    // Determines whether a svg node should isolate or not based on LayoutStyle.
-    static bool willIsolateBlendingDescendantsForStyle(const LayoutStyle&);
+    // Determines whether a svg node should isolate or not based on ComputedStyle.
+    static bool willIsolateBlendingDescendantsForStyle(const ComputedStyle&);
     static bool willIsolateBlendingDescendantsForObject(const LayoutObject*);
     template<typename LayoutObjectType>
     static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);

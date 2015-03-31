@@ -28,7 +28,7 @@
 
 #include "core/layout/style/GridCoordinate.h"
 #include "core/layout/style/GridTrackSize.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

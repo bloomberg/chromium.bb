@@ -171,9 +171,9 @@ void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
         LayoutBlock::removePositionedObject(this);
 }
 
-void LayoutBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutBox::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
-    const LayoutStyle* oldStyle = style();
+    const ComputedStyle* oldStyle = style();
     if (oldStyle) {
         // The background of the root element or the body element could propagate up to
         // the canvas. Just dirty the entire canvas when our style changes substantially.
@@ -205,7 +205,7 @@ void LayoutBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyl
     LayoutBoxModelObject::styleWillChange(diff, newStyle);
 }
 
-void LayoutBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     // Horizontal writing mode definition is updated in LayoutBoxModelObject::updateFromStyle,
     // (as part of the LayoutBoxModelObject::styleDidChange call below). So, we can safely cache the horizontal
@@ -214,7 +214,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle
 
     LayoutBoxModelObject::styleDidChange(diff, oldStyle);
 
-    const LayoutStyle& newStyle = styleRef();
+    const ComputedStyle& newStyle = styleRef();
     if (needsLayout() && oldStyle)
         LayoutBlock::removePercentHeightDescendantIfNeeded(this);
 
@@ -255,16 +255,16 @@ void LayoutBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle
         placeholder->updateMarginProperties();
 }
 
-void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const LayoutStyle& style, const LayoutStyle* oldStyle)
+void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const ComputedStyle& style, const ComputedStyle* oldStyle)
 {
     const ShapeValue* shapeOutside = style.shapeOutside();
-    const ShapeValue* oldShapeOutside = oldStyle ? oldStyle->shapeOutside() : LayoutStyle::initialShapeOutside();
+    const ShapeValue* oldShapeOutside = oldStyle ? oldStyle->shapeOutside() : ComputedStyle::initialShapeOutside();
 
     Length shapeMargin = style.shapeMargin();
-    Length oldShapeMargin = oldStyle ? oldStyle->shapeMargin() : LayoutStyle::initialShapeMargin();
+    Length oldShapeMargin = oldStyle ? oldStyle->shapeMargin() : ComputedStyle::initialShapeMargin();
 
     float shapeImageThreshold = style.shapeImageThreshold();
-    float oldShapeImageThreshold = oldStyle ? oldStyle->shapeImageThreshold() : LayoutStyle::initialShapeImageThreshold();
+    float oldShapeImageThreshold = oldStyle ? oldStyle->shapeImageThreshold() : ComputedStyle::initialShapeImageThreshold();
 
     // FIXME: A future optimization would do a deep comparison for equality. (bug 100811)
     if (shapeOutside == oldShapeOutside && shapeMargin == oldShapeMargin && shapeImageThreshold == oldShapeImageThreshold)
@@ -279,7 +279,7 @@ void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const LayoutStyle& style,
         markShapeOutsideDependentsForLayout();
 }
 
-void LayoutBox::updateGridPositionAfterStyleChange(const LayoutStyle* oldStyle)
+void LayoutBox::updateGridPositionAfterStyleChange(const ComputedStyle* oldStyle)
 {
     if (!oldStyle || !parent() || !parent()->isLayoutGrid())
         return;
@@ -301,7 +301,7 @@ void LayoutBox::updateFromStyle()
 {
     LayoutBoxModelObject::updateFromStyle();
 
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     bool isRootObject = isDocumentElement();
     bool isViewObject = isLayoutView();
     bool rootLayerScrolls = document().settings() && document().settings()->rootLayerScrolls();
@@ -578,7 +578,7 @@ void LayoutBox::updateLayerTransformAfterLayout()
 
 LayoutUnit LayoutBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth, LayoutUnit availableWidth, LayoutBlock* cb) const
 {
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxWidth().isMaxSizeNone())
         logicalWidth = std::min(logicalWidth, computeLogicalWidthUsing(MaxSize, styleToUse.logicalMaxWidth(), availableWidth, cb));
     return std::max(logicalWidth, computeLogicalWidthUsing(MinSize, styleToUse.logicalMinWidth(), availableWidth, cb));
@@ -586,7 +586,7 @@ LayoutUnit LayoutBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth, Lay
 
 LayoutUnit LayoutBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit maxH = computeLogicalHeightUsing(styleToUse.logicalMaxHeight(), intrinsicContentHeight);
         if (maxH != -1)
@@ -597,7 +597,7 @@ LayoutUnit LayoutBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, L
 
 LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit maxH = computeContentLogicalHeight(styleToUse.logicalMaxHeight(), intrinsicContentHeight);
         if (maxH != -1)
@@ -1252,7 +1252,7 @@ bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
 
 static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
 {
-    const LayoutStyle& childStyle = childBox.styleRef();
+    const ComputedStyle& childStyle = childBox.styleRef();
     if (childStyle.position() != StaticPosition && childBox.containingBlock() != childBox.parent())
         return false;
     if (childStyle.visibility() != VISIBLE || childStyle.shapeOutside())
@@ -1560,7 +1560,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
     if (cb->hasOverrideHeight())
         return cb->overrideLogicalContentHeight();
 
-    const LayoutStyle& containingBlockStyle = cb->styleRef();
+    const ComputedStyle& containingBlockStyle = cb->styleRef();
     Length logicalHeightLength = containingBlockStyle.logicalHeight();
 
     // FIXME: For now just support fixed heights.  Eventually should support percentage heights as well.
@@ -1809,7 +1809,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
     // LayoutView::computeRectForPaintInvalidation then converts the rect to physical coordinates. We also convert to
     // physical when we hit a paintInvalidationContainer boundary. Therefore the final rect returned is always in the
     // physical coordinate space of the paintInvalidationContainer.
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
 
     EPosition position = styleToUse.position();
 
@@ -1985,7 +1985,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     bool stretching = (parent()->style()->boxAlign() == BSTRETCH);
     bool treatAsReplaced = shouldComputeSizeAsReplaced() && (!inVerticalBox || !stretching);
 
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     Length logicalWidthLength = treatAsReplaced ? Length(computeReplacedLogicalWidth(), Fixed) : styleToUse.logicalWidth();
 
     LayoutBlock* cb = containingBlock();
@@ -2218,7 +2218,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     if (marginBoxWidth < availableWidth) {
         // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used values are equal. This horizontally centers the element
         // with respect to the edges of the containing block."
-        const LayoutStyle& containingBlockStyle = containingBlock->styleRef();
+        const ComputedStyle& containingBlockStyle = containingBlock->styleRef();
         if ((marginStartLength.isAuto() && marginEndLength.isAuto())
             || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlockStyle.textAlign() == WEBKIT_CENTER)) {
             // Other browsers center the margin box for align=center elements so we match them here.
@@ -2453,7 +2453,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     }
     cb->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
 
-    const LayoutStyle& cbstyle = cb->styleRef();
+    const ComputedStyle& cbstyle = cb->styleRef();
 
     // A positioned element that specified both top/bottom or that specifies height should be treated as though it has a height
     // explicitly specified that can be used for any percentage computations.
@@ -2595,7 +2595,7 @@ bool LayoutBox::logicalHeightComputesAsNone(SizeType sizeType) const
 {
     ASSERT(sizeType == MinSize || sizeType == MaxSize);
     Length logicalHeight = sizeType == MinSize ? style()->logicalMinHeight() : style()->logicalMaxHeight();
-    Length initialLogicalHeight = sizeType == MinSize ? LayoutStyle::initialMinSize() : LayoutStyle::initialMaxSize();
+    Length initialLogicalHeight = sizeType == MinSize ? ComputedStyle::initialMinSize() : ComputedStyle::initialMaxSize();
 
     if (logicalHeight == initialLogicalHeight)
         return true;
@@ -3219,7 +3219,7 @@ void LayoutBox::computePositionedLogicalHeight(LogicalExtentComputedValues& comp
 
     const LayoutUnit containerLogicalHeight = containingBlockLogicalHeightForPositioned(containerBlock);
 
-    const LayoutStyle& styleToUse = styleRef();
+    const ComputedStyle& styleToUse = styleRef();
     const LayoutUnit bordersPlusPadding = borderAndPaddingLogicalHeight();
     const Length marginBefore = styleToUse.marginBefore();
     const Length marginAfter = styleToUse.marginAfter();
@@ -4364,7 +4364,7 @@ DeprecatedPaintLayer* LayoutBox::enclosingFloatPaintingLayer() const
     return 0;
 }
 
-LayoutRect LayoutBox::logicalVisualOverflowRectForPropagation(const LayoutStyle& parentStyle) const
+LayoutRect LayoutBox::logicalVisualOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     LayoutRect rect = visualOverflowRectForPropagation(parentStyle);
     if (!parentStyle.isHorizontalWritingMode())
@@ -4372,7 +4372,7 @@ LayoutRect LayoutBox::logicalVisualOverflowRectForPropagation(const LayoutStyle&
     return rect;
 }
 
-LayoutRect LayoutBox::visualOverflowRectForPropagation(const LayoutStyle& parentStyle) const
+LayoutRect LayoutBox::visualOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     // If the writing modes of the child and parent match, then we don't have to
     // do anything fancy. Just return the result.
@@ -4390,7 +4390,7 @@ LayoutRect LayoutBox::visualOverflowRectForPropagation(const LayoutStyle& parent
     return rect;
 }
 
-LayoutRect LayoutBox::logicalLayoutOverflowRectForPropagation(const LayoutStyle& parentStyle) const
+LayoutRect LayoutBox::logicalLayoutOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     LayoutRect rect = layoutOverflowRectForPropagation(parentStyle);
     if (!parentStyle.isHorizontalWritingMode())
@@ -4398,7 +4398,7 @@ LayoutRect LayoutBox::logicalLayoutOverflowRectForPropagation(const LayoutStyle&
     return rect;
 }
 
-LayoutRect LayoutBox::layoutOverflowRectForPropagation(const LayoutStyle& parentStyle) const
+LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     // Only propagate interior layout overflow if we don't clip it.
     LayoutRect rect = borderBoxRect();

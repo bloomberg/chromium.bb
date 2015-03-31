@@ -67,12 +67,12 @@ public:
 
     void restartAnimationOnCompositor();
 
-    void updateAnimationFlags(LayoutStyle&);
+    void updateAnimationFlags(ComputedStyle&);
     void setAnimationStyleChange(bool animationStyleChange) { m_animationStyleChange = animationStyleChange; }
 
-    const LayoutStyle* baseLayoutStyle() const;
-    void updateBaseLayoutStyle(const LayoutStyle*);
-    void clearBaseLayoutStyle();
+    const ComputedStyle* baseComputedStyle() const;
+    void updateBaseComputedStyle(const ComputedStyle*);
+    void clearBaseComputedStyle();
 
 #if !ENABLE(OILPAN)
     void addAnimation(Animation* animation) { m_animations.append(animation); }
@@ -88,7 +88,7 @@ private:
     CSSAnimations m_cssAnimations;
     AnimationPlayerCountedSet m_players;
     bool m_animationStyleChange;
-    RefPtr<LayoutStyle> m_baseLayoutStyle;
+    RefPtr<ComputedStyle> m_baseComputedStyle;
 
 #if !ENABLE(OILPAN)
     // FIXME: Oilpan: This is to avoid a reference cycle that keeps Elements alive

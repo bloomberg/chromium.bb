@@ -9,7 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/Settings.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/text/LocaleToScriptMapping.h"
 
@@ -51,7 +51,7 @@ class FontBuilderAdditiveTest : public FontBuilderTest, public ::testing::TestWi
 
 TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled)
 {
-    RefPtr<LayoutStyle> initial = LayoutStyle::create();
+    RefPtr<ComputedStyle> initial = ComputedStyle::create();
 
     FontBuilder builder(document());
     builder.setInitial(1.0f); // FIXME: Remove unused param.
@@ -67,7 +67,7 @@ TEST_F(FontBuilderInitTest, NotDirty)
 }
 
 // This test verifies that when you are setting some field F via FontBuilder,
-// only F is actually modified on the incoming LayoutStyle::fontDescription.
+// only F is actually modified on the incoming ComputedStyle::fontDescription.
 TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified)
 {
     FunctionPair funcs = GetParam();
@@ -75,7 +75,7 @@ TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified)
     FontDescription parentDescription;
     funcs.setBaseValue(parentDescription);
 
-    RefPtr<LayoutStyle> style = LayoutStyle::create();
+    RefPtr<ComputedStyle> style = ComputedStyle::create();
     style->setFontDescription(parentDescription);
 
     FontBuilder fontBuilder(document());

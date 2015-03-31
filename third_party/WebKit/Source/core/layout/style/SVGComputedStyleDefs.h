@@ -25,8 +25,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef SVGLayoutStyleDefs_h
-#define SVGLayoutStyleDefs_h
+#ifndef SVGComputedStyleDefs_h
+#define SVGComputedStyleDefs_h
 
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
@@ -302,4 +302,4 @@ class StyleLayoutData : public RefCounted<StyleLayoutData> {
 
 } // namespace blink
 
-#endif // SVGLayoutStyleDefs_h
+#endif // SVGComputedStyleDefs_h

@@ -110,7 +110,7 @@ private:
     void printAccessDeniedMessage(const KURL&) const;
 
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
-    // currently leak because LayoutStyle and its data are not on the heap.
+    // currently leak because ComputedStyle and its data are not on the heap.
     // See crbug.com/383860 for details.
     RawPtrWillBeWeakMember<Document> m_document;
     DocumentLoader* m_documentLoader;

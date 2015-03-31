@@ -30,7 +30,7 @@ namespace blink {
 
 class ElementStyleResources;
 class Document;
-class LayoutStyle;
+class ComputedStyle;
 class RenderStyle;
 class ShapeValue;
 class StyleImage;
@@ -45,16 +45,16 @@ class StyleResourceLoader final {
 public:
     explicit StyleResourceLoader(Document*);
 
-    void loadPendingResources(LayoutStyle*, ElementStyleResources&);
+    void loadPendingResources(ComputedStyle*, ElementStyleResources&);
 
     DECLARE_TRACE();
 
 private:
-    void loadPendingSVGDocuments(LayoutStyle*, ElementStyleResources&);
+    void loadPendingSVGDocuments(ComputedStyle*, ElementStyleResources&);
 
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
-    void loadPendingImages(LayoutStyle*, ElementStyleResources&);
-    void loadPendingShapeImage(LayoutStyle*, ShapeValue*, float deviceScaleFactor);
+    void loadPendingImages(ComputedStyle*, ElementStyleResources&);
+    void loadPendingShapeImage(ComputedStyle*, ShapeValue*, float deviceScaleFactor);
 
     RawPtrWillBeMember<Document> m_document;
 };

@@ -47,11 +47,11 @@ LayoutMultiColumnFlowThread::~LayoutMultiColumnFlowThread()
 {
 }
 
-LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::createAnonymous(Document& document, const LayoutStyle& parentStyle)
+LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::createAnonymous(Document& document, const ComputedStyle& parentStyle)
 {
     LayoutMultiColumnFlowThread* renderer = new LayoutMultiColumnFlowThread();
     renderer->setDocumentForAnonymous(&document);
-    renderer->setStyle(LayoutStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    renderer->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
 }
 
@@ -314,7 +314,7 @@ void LayoutMultiColumnFlowThread::columnRuleStyleDidChange()
 void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const
 {
     LayoutBlock* columnBlock = multiColumnBlockFlow();
-    const LayoutStyle* columnStyle = columnBlock->style();
+    const ComputedStyle* columnStyle = columnBlock->style();
     LayoutUnit availableWidth = columnBlock->contentLogicalWidth();
     LayoutUnit columnGap = columnBlock->columnGap();
     LayoutUnit computedColumnWidth = max<LayoutUnit>(1, LayoutUnit(columnStyle->columnWidth()));
@@ -595,7 +595,7 @@ void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()
     // laid out inside the columns. In order to eventually end up with the desired column width,
     // we need to convert them to values pertaining to the multicol container.
     const LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
-    const LayoutStyle* multicolStyle = multicolContainer->style();
+    const ComputedStyle* multicolStyle = multicolContainer->style();
     int columnCount = multicolStyle->hasAutoColumnCount() ? 1 : multicolStyle->columnCount();
     LayoutUnit columnWidth;
     LayoutUnit gapExtra = (columnCount - 1) * multicolContainer->columnGap();

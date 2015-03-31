@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/ElementRareData.h"
 
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 
 namespace blink {
 

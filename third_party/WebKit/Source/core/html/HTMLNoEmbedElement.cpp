@@ -47,7 +47,7 @@ inline HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoEmbedElement)
 
-bool HTMLNoEmbedElement::layoutObjectIsNeeded(const LayoutStyle& style)
+bool HTMLNoEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
     if (document().frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return false;

@@ -25,7 +25,7 @@
 #ifndef LineClampValue_h
 #define LineClampValue_h
 
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 
 namespace blink {
 

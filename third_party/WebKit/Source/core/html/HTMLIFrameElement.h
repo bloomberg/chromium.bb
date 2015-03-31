@@ -49,8 +49,8 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void removedFrom(ContainerNode*) override;
 
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     virtual bool loadedNonEmptyDocument() const override { return m_didLoadNonEmptyDocument; }
     virtual void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }

@@ -42,7 +42,7 @@ LayoutSVGForeignObject::~LayoutSVGForeignObject()
 {
 }
 
-bool LayoutSVGForeignObject::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
+bool LayoutSVGForeignObject::isChildAllowed(LayoutObject* child, const ComputedStyle& style) const
 {
     // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
     return !child->isSVG() || child->isSVGRoot();
@@ -103,7 +103,7 @@ void LayoutSVGForeignObject::layout()
         updateCachedBoundariesInParents = oldViewport != m_viewport;
 
     // Set box origin to the foreignObject x/y translation, so positioned objects in XHTML content get correct
-    // positions. A regular LayoutBoxModelObject would pull this information from LayoutStyle - in SVG those
+    // positions. A regular LayoutBoxModelObject would pull this information from ComputedStyle - in SVG those
     // properties are ignored for non <svg> elements, so we mimic what happens when specifying them through CSS.
 
     // FIXME: Investigate in location rounding issues - only affects LayoutSVGForeignObject & LayoutSVGText

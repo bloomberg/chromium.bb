@@ -117,7 +117,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
     }
 }
 
-void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutStyle& s, ShadowStyle shadowStyle, const LayoutRect& paintRect)
+void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const ComputedStyle& s, ShadowStyle shadowStyle, const LayoutRect& paintRect)
 {
     if ((!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
         BoxPainter::paintBoxShadow(info, paintRect, s, shadowStyle);
@@ -132,7 +132,7 @@ void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutSty
 static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NinePieceImage& image, const LayoutRect& paintRect)
 {
     LayoutRect clipRect(paintRect);
-    const LayoutStyle& style = box->layoutObject().styleRef();
+    const ComputedStyle& style = box->layoutObject().styleRef();
     LayoutRectOutsets outsets = style.imageOutsets(image);
     if (box->isHorizontal()) {
         clipRect.setY(paintRect.y() - outsets.top());
@@ -193,7 +193,7 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
     if (m_inlineFlowBox.parent() && m_inlineFlowBox.layoutObject().style()->hasBorder()) {
         const NinePieceImage& borderImage = m_inlineFlowBox.layoutObject().style()->borderImage();
         StyleImage* borderImageSource = borderImage.image();
-        const LayoutStyle* styleToUse = m_inlineFlowBox.layoutObject().style(m_inlineFlowBox.isFirstLineStyle());
+        const ComputedStyle* styleToUse = m_inlineFlowBox.layoutObject().style(m_inlineFlowBox.isFirstLineStyle());
         bool hasBorderImage = borderImageSource && borderImageSource->canRender(m_inlineFlowBox.layoutObject(), styleToUse->effectiveZoom());
         if (hasBorderImage && !borderImageSource->isLoaded())
             return DontPaintBorders;
@@ -218,7 +218,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     // You can use p::first-line to specify a background. If so, the root line boxes for
     // a line may actually have to paint a background.
-    const LayoutStyle* styleToUse = m_inlineFlowBox.layoutObject().style(m_inlineFlowBox.isFirstLineStyle());
+    const ComputedStyle* styleToUse = m_inlineFlowBox.layoutObject().style(m_inlineFlowBox.isFirstLineStyle());
     bool shouldPaintBoxDecorationBackground;
     if (m_inlineFlowBox.parent())
         shouldPaintBoxDecorationBackground = m_inlineFlowBox.layoutObject().hasBoxDecorationBackground();

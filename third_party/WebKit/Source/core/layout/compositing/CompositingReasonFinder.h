@@ -13,7 +13,7 @@ namespace blink {
 
 class DeprecatedPaintLayer;
 class LayoutObject;
-class LayoutStyle;
+class ComputedStyle;
 class LayoutView;
 
 class CompositingReasonFinder {
@@ -35,7 +35,7 @@ private:
     CompositingReasons nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer*) const;
 
     bool requiresCompositingForTransform(LayoutObject*) const;
-    bool requiresCompositingForAnimation(const LayoutStyle&) const;
+    bool requiresCompositingForAnimation(const ComputedStyle&) const;
     bool requiresCompositingForPositionFixed(const DeprecatedPaintLayer*) const;
     bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 

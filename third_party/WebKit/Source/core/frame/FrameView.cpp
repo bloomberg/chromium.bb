@@ -60,7 +60,7 @@
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -1299,7 +1299,7 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
 
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         LayoutObject* renderer = viewportConstrainedObject;
-        const LayoutStyle& style = renderer->styleRef();
+        const ComputedStyle& style = renderer->styleRef();
         if (widthChanged) {
             if (style.width().isFixed() && (style.left().isAuto() || style.right().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
@@ -2419,7 +2419,7 @@ void FrameView::updateAnnotatedRegions()
 
 void FrameView::updateScrollCorner()
 {
-    RefPtr<LayoutStyle> cornerStyle;
+    RefPtr<ComputedStyle> cornerStyle;
     IntRect cornerRect = scrollCornerRect();
     Document* doc = m_frame->document();
 

@@ -173,7 +173,7 @@ bool SVGImageElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
-LayoutObject* SVGImageElement::createLayoutObject(const LayoutStyle&)
+LayoutObject* SVGImageElement::createLayoutObject(const ComputedStyle&)
 {
     return new LayoutSVGImage(this);
 }

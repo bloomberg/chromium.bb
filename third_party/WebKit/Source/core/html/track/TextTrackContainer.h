@@ -54,7 +54,7 @@ private:
 
     virtual bool isTextTrackContainer() const override { return true; }
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(TextTrackContainer, isTextTrackContainer());

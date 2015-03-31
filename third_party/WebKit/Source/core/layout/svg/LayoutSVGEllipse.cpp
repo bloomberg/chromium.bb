@@ -128,7 +128,7 @@ bool LayoutSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const
 
 bool LayoutSVGEllipse::hasContinuousStroke() const
 {
-    const SVGLayoutStyle& svgStyle = style()->svgStyle();
+    const SVGComputedStyle& svgStyle = style()->svgStyle();
     return svgStyle.strokeDashArray()->isEmpty();
 }
 

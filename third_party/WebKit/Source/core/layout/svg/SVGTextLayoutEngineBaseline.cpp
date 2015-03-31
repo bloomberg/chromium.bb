@@ -21,7 +21,7 @@
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/SVGLayoutStyle.h"
+#include "core/layout/style/SVGComputedStyle.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Font.h"
@@ -34,9 +34,9 @@ SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font)
 {
 }
 
-float SVGTextLayoutEngineBaseline::calculateBaselineShift(const LayoutStyle& style) const
+float SVGTextLayoutEngineBaseline::calculateBaselineShift(const ComputedStyle& style) const
 {
-    const SVGLayoutStyle& svgStyle = style.svgStyle();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
 
     switch (svgStyle.baselineShift()) {
     case BS_LENGTH:
@@ -58,7 +58,7 @@ EAlignmentBaseline SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBasel
     ASSERT(textRenderer->parent());
     ASSERT(textRenderer->parent()->style());
 
-    const SVGLayoutStyle& style = textRenderer->style()->svgStyle();
+    const SVGComputedStyle& style = textRenderer->style()->svgStyle();
 
     EDominantBaseline baseline = style.dominantBaseline();
     if (baseline == DB_AUTO) {
@@ -141,7 +141,7 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVertic
     }
 }
 
-float SVGTextLayoutEngineBaseline::calculateGlyphOrientationAngle(bool isVerticalText, const SVGLayoutStyle& style, const UChar& character) const
+float SVGTextLayoutEngineBaseline::calculateGlyphOrientationAngle(bool isVerticalText, const SVGComputedStyle& style, const UChar& character) const
 {
     switch (isVerticalText ? style.glyphOrientationVertical() : style.glyphOrientationHorizontal()) {
     case GO_AUTO: {

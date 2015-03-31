@@ -333,7 +333,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
     return ImageCandidate();
 }
 
-LayoutObject* HTMLImageElement::createLayoutObject(const LayoutStyle& style)
+LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);
@@ -706,14 +706,14 @@ void HTMLImageElement::reattachFallbackContent()
         lazyReattachIfAttached();
 }
 
-PassRefPtr<LayoutStyle> HTMLImageElement::customStyleForLayoutObject()
+PassRefPtr<ComputedStyle> HTMLImageElement::customStyleForLayoutObject()
 {
-    RefPtr<LayoutStyle> newStyle = originalStyleForLayoutObject();
+    RefPtr<ComputedStyle> newStyle = originalStyleForLayoutObject();
 
     if (!m_useFallbackContent)
         return newStyle;
 
-    RefPtr<LayoutStyle> style = LayoutStyle::clone(*newStyle);
+    RefPtr<ComputedStyle> style = ComputedStyle::clone(*newStyle);
     return HTMLImageFallbackHelper::customStyleForAltText(*this, style);
 }
 

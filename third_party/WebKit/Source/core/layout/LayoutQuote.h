@@ -23,8 +23,8 @@
 #define LayoutQuote_h
 
 #include "core/layout/LayoutInline.h"
-#include "core/layout/style/LayoutStyle.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyle.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/QuotesData.h"
 
 namespace blink {
@@ -45,7 +45,7 @@ private:
 
     virtual void willBeDestroyed() override;
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || LayoutInline::isOfType(type); }
-    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
     virtual void willBeRemovedFromTree() override;
 
     String computeText() const;

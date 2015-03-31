@@ -81,7 +81,7 @@ DEFINE_TRACE(FilterEffectRenderer)
 
 bool FilterEffectRenderer::build(LayoutObject* renderer, const FilterOperations& operations)
 {
-    const LayoutStyle* style = renderer->style();
+    const ComputedStyle* style = renderer->style();
     float zoom = style ? style->effectiveZoom() : 1.0f;
 
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.

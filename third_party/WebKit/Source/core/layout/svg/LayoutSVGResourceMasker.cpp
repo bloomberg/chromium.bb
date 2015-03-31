@@ -84,7 +84,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
         LayoutObject* layoutObject = childElement->layoutObject();
         if (!layoutObject)
             continue;
-        const LayoutStyle* style = layoutObject->style();
+        const ComputedStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
@@ -103,7 +103,7 @@ void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
         LayoutObject* layoutObject = childElement->layoutObject();
         if (!layoutObject)
             continue;
-        const LayoutStyle* style = layoutObject->style();
+        const ComputedStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
         m_maskContentBoundaries.unite(layoutObject->localToParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalCoordinates()));

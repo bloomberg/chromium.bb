@@ -44,8 +44,8 @@ private:
     virtual bool isURLAttribute(const Attribute&) const override;
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
 
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     virtual LayoutPart* existingLayoutPart() const override;
     virtual void updateWidgetInternal() override;

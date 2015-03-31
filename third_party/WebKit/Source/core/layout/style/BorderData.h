@@ -33,7 +33,7 @@
 namespace blink {
 
 class BorderData {
-friend class LayoutStyle;
+friend class ComputedStyle;
 public:
     BorderData() : m_topLeft(Length(0, Fixed), Length(0, Fixed))
         , m_topRight(Length(0, Fixed), Length(0, Fixed))

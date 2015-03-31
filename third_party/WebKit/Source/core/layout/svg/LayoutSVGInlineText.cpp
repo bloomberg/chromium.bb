@@ -73,7 +73,7 @@ void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
         textLayoutObject->subtreeTextDidChange(this);
 }
 
-void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutText::styleDidChange(diff, oldStyle);
     updateScaledFont();
@@ -208,7 +208,7 @@ void LayoutSVGInlineText::updateScaledFont()
     computeNewScaledFontForStyle(this, style(), m_scalingFactor, m_scaledFont);
 }
 
-void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* layoutObject, const LayoutStyle* style, float& scalingFactor, Font& scaledFont)
+void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* layoutObject, const ComputedStyle* style, float& scalingFactor, Font& scaledFont)
 {
     ASSERT(style);
     ASSERT(layoutObject);

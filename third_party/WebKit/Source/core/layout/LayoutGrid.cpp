@@ -29,7 +29,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/style/GridCoordinate.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/GridPainter.h"
 #include "platform/LengthFunctions.h"
@@ -279,7 +279,7 @@ void LayoutGrid::removeChild(LayoutObject* child)
     return;
 }
 
-void LayoutGrid::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutGrid::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
     if (!oldStyle)
@@ -296,13 +296,13 @@ void LayoutGrid::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyl
         dirtyGrid();
 }
 
-bool LayoutGrid::explicitGridDidResize(const LayoutStyle& oldStyle) const
+bool LayoutGrid::explicitGridDidResize(const ComputedStyle& oldStyle) const
 {
     return oldStyle.gridTemplateColumns().size() != styleRef().gridTemplateColumns().size()
         || oldStyle.gridTemplateRows().size() != styleRef().gridTemplateRows().size();
 }
 
-bool LayoutGrid::namedGridLinesDefinitionDidChange(const LayoutStyle& oldStyle) const
+bool LayoutGrid::namedGridLinesDefinitionDidChange(const ComputedStyle& oldStyle) const
 {
     return oldStyle.namedGridRowLines() != styleRef().namedGridRowLines()
         || oldStyle.namedGridColumnLines() != styleRef().namedGridColumnLines();
@@ -1375,7 +1375,7 @@ LayoutUnit LayoutGrid::columnPositionForChild(const LayoutBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
 
-    switch (LayoutStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    switch (ComputedStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // For orthogonal writing-modes, this computes to 'start'
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
@@ -1480,7 +1480,7 @@ bool LayoutGrid::allowedToStretchLogicalHeightForChild(const LayoutBox& child) c
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 bool LayoutGrid::needToStretchChildLogicalHeight(const LayoutBox& child) const
 {
-    if (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
+    if (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
         return false;
 
     return isHorizontalWritingMode() && child.style()->height().isAuto();
@@ -1544,7 +1544,7 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUnit gridAreaBreadthForChild)
 {
-    if (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
+    if (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
         return;
 
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
@@ -1570,7 +1570,7 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUn
 LayoutUnit LayoutGrid::rowPositionForChild(const LayoutBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    switch (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    switch (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // If orthogonal writing-modes, this computes to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.

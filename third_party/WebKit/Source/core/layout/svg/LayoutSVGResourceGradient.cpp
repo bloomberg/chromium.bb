@@ -99,7 +99,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
     return SVGPaintServer(gradientData->gradient);
 }
 
-bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     if (child->isSVGGradientStop())
         return true;

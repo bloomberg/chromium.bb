@@ -282,7 +282,7 @@ public:
     virtual const char* name() const override { return "LayoutTable"; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void simplifiedNormalFlowLayout() override;
 
 private:

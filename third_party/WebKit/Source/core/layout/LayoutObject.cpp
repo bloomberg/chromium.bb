@@ -151,7 +151,7 @@ void LayoutObject::operator delete(void* ptr)
     partitionFree(ptr);
 }
 
-LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& style)
+LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& style)
 {
     ASSERT(isAllowedToModifyRenderTreeStructure(element->document()));
 
@@ -164,7 +164,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
         // LayoutImageResourceStyleImage requires a style being present on the image but we don't want to
         // trigger a style change now as the node is not fully attached. Moving this code to style change
         // doesn't make sense as it should be run once at renderer creation.
-        image->setStyleInternal(const_cast<LayoutStyle*>(&style));
+        image->setStyleInternal(const_cast<ComputedStyle*>(&style));
         if (const StyleImage* styleImage = toImageContentData(contentData)->image()) {
             image->setImageResource(LayoutImageResourceStyleImage::create(const_cast<StyleImage*>(styleImage)));
             image->setIsGeneratedContent();
@@ -1523,7 +1523,7 @@ Color LayoutObject::selectionBackgroundColor() const
     if (!isSelectable())
         return Color::transparent;
 
-    if (RefPtr<LayoutStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
+    if (RefPtr<ComputedStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
         return resolveColor(*pseudoStyle, CSSPropertyBackgroundColor).blendWithWhite();
     return frame()->selection().isFocusedAndActive() ?
         LayoutTheme::theme().activeSelectionBackgroundColor() :
@@ -1537,7 +1537,7 @@ Color LayoutObject::selectionColor(int colorProperty) const
     if (!isSelectable() || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
         return resolveColor(colorProperty);
 
-    if (RefPtr<LayoutStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
+    if (RefPtr<ComputedStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
         return resolveColor(*pseudoStyle, colorProperty);
     if (!LayoutTheme::theme().supportsSelectionForegroundColors())
         return resolveColor(colorProperty);
@@ -1631,7 +1631,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
     return diff;
 }
 
-void LayoutObject::setPseudoStyle(PassRefPtr<LayoutStyle> pseudoStyle)
+void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle)
 {
     ASSERT(pseudoStyle->styleType() == BEFORE || pseudoStyle->styleType() == AFTER || pseudoStyle->styleType() == FIRST_LETTER);
 
@@ -1645,7 +1645,7 @@ void LayoutObject::setPseudoStyle(PassRefPtr<LayoutStyle> pseudoStyle)
     // getting an inline with positioning or an invalid display.
     //
     if (isImage() || isQuote()) {
-        RefPtr<LayoutStyle> style = LayoutStyle::create();
+        RefPtr<ComputedStyle> style = ComputedStyle::create();
         style->inheritFrom(*pseudoStyle);
         setStyle(style.release());
         return;
@@ -1668,7 +1668,7 @@ void LayoutObject::setNeedsOverflowRecalcAfterStyleChange()
         markContainingBlocksForOverflowRecalc();
 }
 
-void LayoutObject::setStyle(PassRefPtr<LayoutStyle> style)
+void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
 {
     ASSERT(style);
 
@@ -1687,7 +1687,7 @@ void LayoutObject::setStyle(PassRefPtr<LayoutStyle> style)
 
     styleWillChange(diff, *style);
 
-    RefPtr<LayoutStyle> oldStyle = m_style.release();
+    RefPtr<ComputedStyle> oldStyle = m_style.release();
     setStyleInternal(style);
 
     updateFillImages(oldStyle ? &oldStyle->backgroundLayers() : 0, m_style->backgroundLayers());
@@ -1736,7 +1736,7 @@ static inline bool rendererHasBackground(const LayoutObject* renderer)
     return renderer && renderer->hasBackground();
 }
 
-void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutObject::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     if (m_style) {
         // If our z-index changes value or our visibility changes,
@@ -1828,18 +1828,18 @@ void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newS
     }
 }
 
-static bool areNonIdenticalCursorListsEqual(const LayoutStyle* a, const LayoutStyle* b)
+static bool areNonIdenticalCursorListsEqual(const ComputedStyle* a, const ComputedStyle* b)
 {
     ASSERT(a->cursors() != b->cursors());
     return a->cursors() && b->cursors() && *a->cursors() == *b->cursors();
 }
 
-static inline bool areCursorsEqual(const LayoutStyle* a, const LayoutStyle* b)
+static inline bool areCursorsEqual(const ComputedStyle* a, const ComputedStyle* b)
 {
     return a->cursor() == b->cursor() && (a->cursors() == b->cursors() || areNonIdenticalCursorListsEqual(a, b));
 }
 
-void LayoutObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (s_affectsParentBlock)
         handleDynamicFloatPositionChange();
@@ -1890,7 +1890,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (child->isLayoutFullScreen() || child->isLayoutFullScreenPlaceholder())
             continue;
 
-        RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
+        RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
         if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
             if (style()->specifiesColumns()) {
                 if (child->style()->specifiesColumns())
@@ -2654,7 +2654,7 @@ enum StyleCacheState {
     Uncached
 };
 
-static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheState type, const LayoutObject* renderer, LayoutStyle* style)
+static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(StyleCacheState type, const LayoutObject* renderer, ComputedStyle* style)
 {
     const LayoutObject* rendererForFirstLineStyle = renderer;
     if (renderer->isBeforeOrAfterContent())
@@ -2668,7 +2668,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
         }
     } else if (!rendererForFirstLineStyle->isAnonymous() && rendererForFirstLineStyle->isLayoutInline()
         && !rendererForFirstLineStyle->node()->isFirstLetterPseudoElement()) {
-        const LayoutStyle* parentStyle = rendererForFirstLineStyle->parent()->firstLineStyle();
+        const ComputedStyle* parentStyle = rendererForFirstLineStyle->parent()->firstLineStyle();
         if (parentStyle != rendererForFirstLineStyle->parent()->style()) {
             if (type == Cached) {
                 // A first-line style is in effect. Cache a first-line style for ourselves.
@@ -2681,7 +2681,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
     return nullptr;
 }
 
-PassRefPtr<LayoutStyle> LayoutObject::uncachedFirstLineStyle(LayoutStyle* style) const
+PassRefPtr<ComputedStyle> LayoutObject::uncachedFirstLineStyle(ComputedStyle* style) const
 {
     if (!document().styleEngine().usesFirstLineRules())
         return nullptr;
@@ -2691,32 +2691,32 @@ PassRefPtr<LayoutStyle> LayoutObject::uncachedFirstLineStyle(LayoutStyle* style)
     return firstLineStyleForCachedUncachedType(Uncached, this, style);
 }
 
-LayoutStyle* LayoutObject::cachedFirstLineStyle() const
+ComputedStyle* LayoutObject::cachedFirstLineStyle() const
 {
     ASSERT(document().styleEngine().usesFirstLineRules());
 
-    if (RefPtr<LayoutStyle> style = firstLineStyleForCachedUncachedType(Cached, isText() ? parent() : this, m_style.get()))
+    if (RefPtr<ComputedStyle> style = firstLineStyleForCachedUncachedType(Cached, isText() ? parent() : this, m_style.get()))
         return style.get();
 
     return m_style.get();
 }
 
-LayoutStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const LayoutStyle* parentStyle) const
+ComputedStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const ComputedStyle* parentStyle) const
 {
     if (pseudo < FIRST_INTERNAL_PSEUDOID && !style()->hasPseudoStyle(pseudo))
         return 0;
 
-    LayoutStyle* cachedStyle = style()->getCachedPseudoStyle(pseudo);
+    ComputedStyle* cachedStyle = style()->getCachedPseudoStyle(pseudo);
     if (cachedStyle)
         return cachedStyle;
 
-    RefPtr<LayoutStyle> result = getUncachedPseudoStyle(PseudoStyleRequest(pseudo), parentStyle);
+    RefPtr<ComputedStyle> result = getUncachedPseudoStyle(PseudoStyleRequest(pseudo), parentStyle);
     if (result)
         return mutableStyleRef().addCachedPseudoStyle(result.release());
     return 0;
 }
 
-PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, const LayoutStyle* parentStyle, const LayoutStyle* ownStyle) const
+PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, const ComputedStyle* parentStyle, const ComputedStyle* ownStyle) const
 {
     if (pseudoStyleRequest.pseudoId < FIRST_INTERNAL_PSEUDOID && !ownStyle && !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
         return nullptr;
@@ -2734,7 +2734,7 @@ PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRe
         return nullptr;
 
     if (pseudoStyleRequest.pseudoId == FIRST_LINE_INHERITED) {
-        RefPtr<LayoutStyle> result = document().ensureStyleResolver().styleForElement(element, parentStyle, DisallowStyleSharing);
+        RefPtr<ComputedStyle> result = document().ensureStyleResolver().styleForElement(element, parentStyle, DisallowStyleSharing);
         result->setStyleType(FIRST_LINE_INHERITED);
         return result.release();
     }
@@ -2742,7 +2742,7 @@ PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRe
     return document().ensureStyleResolver().pseudoStyleForElement(element, pseudoStyleRequest, parentStyle);
 }
 
-PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadowHost() const
+PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadowHost() const
 {
     if (!node())
         return nullptr;
@@ -2761,7 +2761,7 @@ PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadowHo
 void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)
 {
     LayoutObject* curr = this;
-    const LayoutStyle* styleToUse = 0;
+    const ComputedStyle* styleToUse = 0;
     unsigned currDecs = TextDecorationNone;
     Color resultColor;
     TextDecorationStyle resultStyle;

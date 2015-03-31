@@ -69,10 +69,10 @@ private:
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject*) override;
 
-    virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
+    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
-    bool explicitGridDidResize(const LayoutStyle&) const;
-    bool namedGridLinesDefinitionDidChange(const LayoutStyle&) const;
+    bool explicitGridDidResize(const ComputedStyle&) const;
+    bool namedGridLinesDefinitionDidChange(const ComputedStyle&) const;
 
     class GridIterator;
     struct GridSizingData;

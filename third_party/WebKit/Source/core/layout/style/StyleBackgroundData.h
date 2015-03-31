@@ -52,7 +52,7 @@ public:
     const OutlineValue& outline() const { return m_outline; }
 
 private:
-    friend class LayoutStyle;
+    friend class ComputedStyle;
 
     StyleBackgroundData();
     StyleBackgroundData(const StyleBackgroundData&);

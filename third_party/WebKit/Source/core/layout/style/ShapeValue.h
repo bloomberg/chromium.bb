@@ -33,7 +33,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/layout/style/BasicShapes.h"
 #include "core/layout/style/DataEquivalency.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "core/layout/style/StyleImage.h"
 #include "wtf/PassRefPtr.h"
 

@@ -56,7 +56,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/layout/style/LayoutStyle.h"
+#include "core/layout/style/ComputedStyle.h"
 #include "wtf/MathExtras.h"
 #include "wtf/TypeTraits.h"
 
@@ -275,7 +275,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         StyleBuilder::applyProperty(property, state, toAnimatableUnknown(value)->toCSSValue().get());
         return;
     }
-    LayoutStyle* style = state.style();
+    ComputedStyle* style = state.style();
     switch (property) {
     case CSSPropertyBackgroundColor:
         style->setBackgroundColor(toAnimatableColor(value)->color());

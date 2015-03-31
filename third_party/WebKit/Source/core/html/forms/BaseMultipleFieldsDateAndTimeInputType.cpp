@@ -324,7 +324,7 @@ void BaseMultipleFieldsDateAndTimeInputType::blur()
         edit->blurByOwner();
 }
 
-PassRefPtr<LayoutStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForLayoutObject(PassRefPtr<LayoutStyle> originalStyle)
+PassRefPtr<ComputedStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForLayoutObject(PassRefPtr<ComputedStyle> originalStyle)
 {
     EDisplay originalDisplay = originalStyle->display();
     EDisplay newDisplay = originalDisplay;
@@ -336,7 +336,7 @@ PassRefPtr<LayoutStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForLa
     if (originalStyle->direction() == contentDirection && originalDisplay == newDisplay)
         return originalStyle;
 
-    RefPtr<LayoutStyle> style = LayoutStyle::clone(*originalStyle);
+    RefPtr<ComputedStyle> style = ComputedStyle::clone(*originalStyle);
     style->setDirection(contentDirection);
     style->setDisplay(newDisplay);
     style->setUnique();

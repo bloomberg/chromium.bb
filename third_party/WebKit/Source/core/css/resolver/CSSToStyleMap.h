@@ -25,7 +25,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/animation/Timing.h"
 #include "core/animation/css/CSSTransitionData.h"
-#include "core/layout/style/LayoutStyleConstants.h"
+#include "core/layout/style/ComputedStyleConstants.h"
 #include "platform/animation/TimingFunction.h"
 
 namespace blink {

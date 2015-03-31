@@ -33,7 +33,7 @@ namespace blink {
 class ExceptionState;
 class HTMLDataListElement;
 class HTMLSelectElement;
-class LayoutStyle;
+class ComputedStyle;
 
 class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
@@ -89,9 +89,9 @@ private:
     virtual void childrenChanged(const ChildrenChange&) override;
 
     // <option> never has a renderer so we manually manage a cached style.
-    void updateNonLayoutStyle();
-    virtual LayoutStyle* nonRendererStyle() const override;
-    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
+    void updateNonComputedStyle();
+    virtual ComputedStyle* nonLayoutObjectComputedStyle() const override;
+    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
     virtual void didRecalcStyle(StyleRecalcChange) override;
     virtual void didAddClosedShadowRoot(ShadowRoot&) override;
 
@@ -101,7 +101,7 @@ private:
 
     bool m_disabled;
     bool m_isSelected;
-    RefPtr<LayoutStyle> m_style;
+    RefPtr<ComputedStyle> m_style;
 };
 
 } // namespace blink

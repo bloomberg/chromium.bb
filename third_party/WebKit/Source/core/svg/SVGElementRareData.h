@@ -72,7 +72,7 @@ public:
     MutableStylePropertySet* animatedSMILStyleProperties() const { return m_animatedSMILStyleProperties.get(); }
     MutableStylePropertySet* ensureAnimatedSMILStyleProperties();
 
-    LayoutStyle* overrideComputedStyle(Element*, LayoutStyle*);
+    ComputedStyle* overrideComputedStyle(Element*, ComputedStyle*);
 
     bool useOverrideComputedStyle() const { return m_useOverrideComputedStyle; }
     void setUseOverrideComputedStyle(bool value) { m_useOverrideComputedStyle = value; }
@@ -97,7 +97,7 @@ private:
     bool m_useOverrideComputedStyle : 1;
     bool m_needsOverrideComputedStyleUpdate : 1;
     RefPtrWillBeMember<MutableStylePropertySet> m_animatedSMILStyleProperties;
-    RefPtr<LayoutStyle> m_overrideComputedStyle;
+    RefPtr<ComputedStyle> m_overrideComputedStyle;
     // Used by <animateMotion>
     OwnPtr<AffineTransform> m_animateMotionTransform;
 };

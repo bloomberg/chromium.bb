@@ -41,7 +41,7 @@ namespace blink {
 class ImageInputType final : public BaseButtonInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
-    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject(PassRefPtr<LayoutStyle>);
+    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject(PassRefPtr<ComputedStyle>);
 
 private:
     ImageInputType(HTMLInputElement&);
@@ -50,7 +50,7 @@ private:
     bool appendFormData(FormDataList&, bool) const override;
     String resultForDialogSubmit() const override;
     bool supportsValidation() const override;
-    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) const override;
     void handleDOMActivateEvent(Event*) override;
     void altAttributeChanged() override;
     void srcAttributeChanged() override;

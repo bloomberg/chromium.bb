@@ -65,7 +65,7 @@ public:
 private:
     VTTCueBox(Document&, VTTCue*);
 
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     RawPtrWillBeMember<VTTCue> m_cue;
 };
