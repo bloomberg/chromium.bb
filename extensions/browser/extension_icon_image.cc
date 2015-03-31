@@ -234,9 +234,9 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   // ImageSkia from the image does not contain a source which breaks requests
   // for scaled images.
   std::vector<gfx::ImageSkiaRep> reps = image_skia_.image_reps();
-  for (const auto rep : reps) {
-    if (!ui::IsSupportedScale(rep.scale()))
-      image_skia_.RemoveRepresentation(rep.scale());
+  for (const auto& image_rep : reps) {
+    if (!ui::IsSupportedScale(image_rep.scale()))
+      image_skia_.RemoveRepresentation(image_rep.scale());
   }
 
   image_skia_.RemoveRepresentation(scale);
