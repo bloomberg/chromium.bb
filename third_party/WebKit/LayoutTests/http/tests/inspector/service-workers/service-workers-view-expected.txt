@@ -16,6 +16,8 @@ activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
+LAST-MODIFIED
+RESPONSE-TIME
 
 
 ============================
@@ -30,6 +32,8 @@ activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
+LAST-MODIFIED
+RESPONSE-TIME
 
 
 Scope: /inspector/service-workers/resources/scope2/
@@ -39,6 +43,8 @@ activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
+LAST-MODIFIED
+RESPONSE-TIME
 
 
 ============================
@@ -54,6 +60,8 @@ redundant
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
+LAST-MODIFIED
+RESPONSE-TIME
 
 Scope: /inspector/service-workers/resources/scope2/
 
@@ -62,6 +70,8 @@ activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
+LAST-MODIFIED
+RESPONSE-TIME
 
 
 ============================
