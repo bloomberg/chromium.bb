@@ -2411,8 +2411,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     s_lastGCWasConservative = false;
 
     TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
-        "precise", stackState == ThreadState::NoHeapPointersOnStack,
-        "forced", gcType == ThreadState::GCWithSweep);
+        "lazySweeping", gcType == ThreadState::GCWithoutSweep,
+        "gcReason", gcReasonString(reason));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILING)
