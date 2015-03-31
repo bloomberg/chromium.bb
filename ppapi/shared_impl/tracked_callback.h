@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -52,13 +53,14 @@ class EnterBase;
 // the "owning" |CallbackTracker| will keep a reference until the callback is
 // completed.
 //
-// Subclasses must do several things:
-//  - They must ensure that the callback is executed at most once (by looking at
-//    |completed()| before running the callback).
-//  - They must ensure that the callback is run abortively if it is marked as to
-//    be aborted (by looking at |aborted()| before running the callback).
-//  - They must call |MarkAsCompleted()| immediately before actually running the
-//    callback; see the comment for |MarkAsCompleted()| for a caveat.
+// A note on threading:
+// TrackedCallback is usable on any thread. It is *mostly* only used when
+// ppapi::ProxyLock is held. However, it's necessary that Run() can be called
+// without the ProxyLock. This is used to allow running the callback from
+// the IO thread. In particular, blocking callbacks may not have a message loop
+// to which we could post, so Run() must be able to signal the condition
+// variable to wake up the thread that's waiting on the blocking callback, and
+// Run() must be able to do this while not holding the ProxyLock.
 class PPAPI_SHARED_EXPORT TrackedCallback
     : public base::RefCountedThreadSafe<TrackedCallback> {
  public:
@@ -80,6 +82,7 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // (as determined by target_loop_). If invoked on a different thread, the
   // callback will be scheduled to run later on target_loop_.
   void Run(int32_t result);
+  void AcquireProxyLockAndRun(int32_t result);
   // PostRun is like Run(), except it guarantees that the callback will be run
   // later. In particular, if you invoke PostRun on the same thread on which the
   // callback is targeted to run, it will *not* be run immediately.
@@ -93,25 +96,26 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   typedef base::Callback<int32_t(int32_t /* result */)> CompletionTask;
 
   // Sets a task that is run just before calling back into the plugin. This
-  // should only be called once.
+  // should only be called once. Note that the CompletionTask always runs while
+  // holding the ppapi::ProxyLock.
   void set_completion_task(const CompletionTask& completion_task);
 
   // Returns the ID of the resource which "owns" the callback, or 0 if the
   // callback is not associated with any resource.
   PP_Resource resource_id() const { return resource_id_; }
 
-  // Returns true if the callback was completed (possibly aborted).
-  bool completed() const { return completed_; }
-
-  // Returns true if the callback was or should be aborted; this will be the
-  // case whenever |Abort()| or |PostAbort()| is called before a non-abortive
-  // completion.
-  bool aborted() const { return aborted_; }
-
   // Returns true if this is a blocking callback.
-  bool is_blocking() { return !callback_.func; }
+  bool is_blocking() const {
+    // This is set on construction and never changes after that, so there is
+    // no need to lock.
+    return !callback_.func;
+  }
 
-  MessageLoopShared* target_loop() const { return target_loop_.get(); }
+  MessageLoopShared* target_loop() const {
+    // This is set on construction and never changes after that, so there is
+    // no need to lock.
+    return target_loop_.get();
+  }
 
   // Determines if the given callback is pending. A callback is pending if it
   // has not completed and has not been aborted. When receiving a plugin call,
@@ -127,21 +131,26 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // message loop.
   static bool IsScheduledToRun(const scoped_refptr<TrackedCallback>& callback);
 
- protected:
+ private:
   bool is_required() {
     return (callback_.func &&
             !(callback_.flags & PP_COMPLETIONCALLBACK_FLAG_OPTIONAL));
   }
-  bool is_optional() {
-    return (callback_.func &&
-            (callback_.flags & PP_COMPLETIONCALLBACK_FLAG_OPTIONAL));
-  }
   bool has_null_target_loop() const { return target_loop_.get() == NULL; }
 
- private:
-  // TrackedCallback and EnterBase manage dealing with how to invoke callbacks
-  // appropriately. Pepper interface implementations and proxies should not have
-  // to check the type of callback, block, or mark them complete explicitly.
+  // Same as PostRun(), but lock_ must already be held.
+  void PostRunWithLock(int32_t result);
+
+  void SignalBlockingCallback(int32_t result);
+
+  // TrackedCallback and EnterBase work together to provide appropriate behavior
+  // for callbacks. Pepper interface implementations and proxies should
+  // usually not have to check whether callbacks are required, optional, or
+  // blocking. Nor should interface and proxy implementations have to worry
+  // about blocking on a callback or marking them complete explicitly.
+  //
+  // (There are exceptions; e.g. FileIO checks is_blocking() in order to do
+  // some operations directly on the calling thread if possible.)
   friend class ppapi::thunk::subtle::EnterBase;
 
   // Block until the associated operation has completed. Returns the result.
@@ -152,10 +161,13 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // be called once. Note that running this may result in this object being
   // deleted (so keep a reference if it'll still be needed).
   void MarkAsCompleted();
+  void MarkAsCompletedWithLock();
 
   // This class is ref counted.
   friend class base::RefCountedThreadSafe<TrackedCallback>;
-  virtual ~TrackedCallback();
+  ~TrackedCallback();
+
+  mutable base::Lock lock_;
 
   // Flag used by |PostAbort()| and |PostRun()| to check that we don't schedule
   // the callback more than once.

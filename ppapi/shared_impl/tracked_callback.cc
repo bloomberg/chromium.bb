@@ -30,6 +30,7 @@ bool IsMainThread() {
 
 int32_t RunCompletionTask(TrackedCallback::CompletionTask completion_task,
                           int32_t result) {
+  ProxyLock::AssertAcquired();
   int32_t task_result = completion_task.Run(result);
   if (result != PP_ERROR_ABORTED)
     result = task_result;
@@ -64,6 +65,7 @@ TrackedCallback::TrackedCallback(Resource* resource,
 
   base::Lock* proxy_lock = ProxyLock::Get();
   if (proxy_lock) {
+    ProxyLock::AssertAcquired();
     // If the proxy_lock is valid, we're running out-of-process, and locking
     // is enabled.
     if (is_blocking()) {
@@ -82,17 +84,26 @@ TrackedCallback::TrackedCallback(Resource* resource,
 
 TrackedCallback::~TrackedCallback() {}
 
-void TrackedCallback::Abort() { Run(PP_ERROR_ABORTED); }
+void TrackedCallback::Abort() {
+  Run(PP_ERROR_ABORTED);
+}
 
-void TrackedCallback::PostAbort() { PostRun(PP_ERROR_ABORTED); }
+void TrackedCallback::PostAbort() {
+  PostRun(PP_ERROR_ABORTED);
+}
 
 void TrackedCallback::Run(int32_t result) {
+  // Retain ourselves, since SignalBlockingCallback and MarkAsCompleted might
+  // otherwise cause |this| to be deleted. Do this before acquiring lock_ so
+  // that |this| is definitely valid at the time we release |lock_|.
+  scoped_refptr<TrackedCallback> thiz(this);
+  base::AutoLock acquire(lock_);
   // Only allow the callback to be run once. Note that this also covers the case
   // where the callback was previously Aborted because its associated Resource
   // went away. The callback may live on for a while because of a reference from
   // a Closure. But when the Closure runs, Run() quietly does nothing, and the
   // callback will go away when all referring Closures go away.
-  if (completed())
+  if (completed_)
     return;
   if (result == PP_ERROR_ABORTED)
     aborted_ = true;
@@ -101,56 +112,126 @@ void TrackedCallback::Run(int32_t result) {
   // PostAbort() being called. If we have been told to Abort, that always
   // trumps a result that was scheduled before, so we should make sure to pass
   // PP_ERROR_ABORTED.
-  if (aborted())
+  if (aborted_)
     result = PP_ERROR_ABORTED;
 
   if (is_blocking()) {
-    // If the condition variable is invalid, there are two possibilities. One,
-    // we're running in-process, in which case the call should have come in on
-    // the main thread and we should have returned PP_ERROR_BLOCKS_MAIN_THREAD
-    // well before this. Otherwise, this callback was not created as a
-    // blocking callback. Either way, there's some internal error.
-    if (!operation_completed_condvar_.get()) {
-      NOTREACHED();
-      return;
-    }
-    result_for_blocked_callback_ = result;
-    // Retain ourselves, since MarkAsCompleted will remove us from the
-    // tracker. Then MarkAsCompleted before waking up the blocked thread,
-    // which could potentially re-enter.
-    scoped_refptr<TrackedCallback> thiz(this);
-    MarkAsCompleted();
-    // Wake up the blocked thread. See BlockUntilComplete for where the thread
-    // Wait()s.
-    operation_completed_condvar_->Signal();
+    // This is a blocking callback; signal the condvar to wake up the thread.
+    SignalBlockingCallback(result);
   } else {
     // If there's a target_loop_, and we're not on the right thread, we need to
     // post to target_loop_.
-    if (target_loop_.get() &&
+    if (target_loop_ &&
         target_loop_.get() != PpapiGlobals::Get()->GetCurrentMessageLoop()) {
-      PostRun(result);
+      PostRunWithLock(result);
       return;
     }
-
-    // Copy callback fields now, since |MarkAsCompleted()| may delete us.
-    PP_CompletionCallback callback = callback_;
-    CompletionTask completion_task = completion_task_;
-    completion_task_.Reset();
     // Do this before running the callback in case of reentrancy from running
-    // the completion task.
-    MarkAsCompleted();
+    // the completion callback.
+    MarkAsCompletedWithLock();
 
-    if (!completion_task.is_null())
-      result = RunCompletionTask(completion_task, result);
+    if (!completion_task_.is_null())
+      result = RunCompletionTask(completion_task_, result);
 
-    // TODO(dmichael): Associate a message loop with the callback; if it's not
-    // the same as the current thread's loop, then post it to the right loop.
-    CallWhileUnlocked(PP_RunCompletionCallback, &callback, result);
+    {
+      base::AutoUnlock release(lock_);
+      // Call the callback without lock_ and without the ProxyLock.
+      CallWhileUnlocked(PP_RunCompletionCallback, &callback_, result);
+    }
   }
 }
 
 void TrackedCallback::PostRun(int32_t result) {
-  if (completed()) {
+  base::AutoLock acquire(lock_);
+  PostRunWithLock(result);
+}
+
+void TrackedCallback::set_completion_task(
+    const CompletionTask& completion_task) {
+  base::AutoLock acquire(lock_);
+  DCHECK(completion_task_.is_null());
+  completion_task_ = completion_task;
+}
+
+// static
+bool TrackedCallback::IsPending(
+    const scoped_refptr<TrackedCallback>& callback) {
+  if (!callback)
+    return false;
+  base::AutoLock acquire(callback->lock_);
+  if (callback->aborted_)
+    return false;
+  return !callback->completed_;
+}
+
+// static
+bool TrackedCallback::IsScheduledToRun(
+    const scoped_refptr<TrackedCallback>& callback) {
+  if (!callback)
+    return false;
+  base::AutoLock acquire(callback->lock_);
+  if (callback->aborted_)
+    return false;
+  return !callback->completed_ && callback->is_scheduled_;
+}
+
+int32_t TrackedCallback::BlockUntilComplete() {
+  // Note, we are already holding the proxy lock in this method and many others
+  // (see ppapi/thunk/enter.cc for where it gets acquired).
+  ProxyLock::AssertAcquired();
+  base::AutoLock acquire(lock_);
+
+  // It doesn't make sense to wait on a non-blocking callback. Furthermore,
+  // BlockUntilComplete should never be called for in-process plugins, where
+  // blocking callbacks are not supported.
+  CHECK(is_blocking() && operation_completed_condvar_);
+
+  // Protect us from being deleted to ensure operation_completed_condvar_ is
+  // available to wait on when we drop our lock.
+  scoped_refptr<TrackedCallback> thiz(this);
+  while (!completed_) {
+    // Unlock our lock temporarily; any thread that tries to signal us will need
+    // the lock.
+    lock_.Release();
+    operation_completed_condvar_->Wait();
+    // Note that the condvar releases the ProxyLock during Wait and re-acquires
+    // the ProxyLock when it's signaled. We reacquire lock_ immediately after,
+    // preserving lock order.
+    ProxyLock::AssertAcquired();
+    lock_.Acquire();
+  }
+
+  if (!completion_task_.is_null()) {
+    result_for_blocked_callback_ =
+        RunCompletionTask(completion_task_, result_for_blocked_callback_);
+    completion_task_.Reset();
+  }
+  return result_for_blocked_callback_;
+}
+
+void TrackedCallback::MarkAsCompleted() {
+  base::AutoLock acquire(lock_);
+  MarkAsCompletedWithLock();
+}
+
+void TrackedCallback::MarkAsCompletedWithLock() {
+  lock_.AssertAcquired();
+  DCHECK(!completed_);
+
+  // We will be removed; maintain a reference to ensure we won't be deleted
+  // until we're done.
+  scoped_refptr<TrackedCallback> thiz = this;
+  completed_ = true;
+  // We may not have a valid resource, in which case we're not in the tracker.
+  if (resource_id_)
+    tracker_->Remove(thiz);
+  tracker_ = NULL;
+  target_loop_ = NULL;
+}
+
+void TrackedCallback::PostRunWithLock(int32_t result) {
+  lock_.AssertAcquired();
+  if (completed_) {
     NOTREACHED();
     return;
   }
@@ -161,13 +242,13 @@ void TrackedCallback::PostRun(int32_t result) {
   DCHECK(result == PP_ERROR_ABORTED || !is_scheduled_);
 
   if (is_blocking()) {
-    // We might not have a MessageLoop to post to, so we must call Run()
+    // We might not have a MessageLoop to post to, so we must Signal
     // directly.
-    Run(result);
+    SignalBlockingCallback(result);
   } else {
     base::Closure callback_closure(
         RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
-    if (target_loop_.get()) {
+    if (target_loop_) {
       target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
     } else {
       // We must be running in-process and on the main thread (the Enter
@@ -180,63 +261,27 @@ void TrackedCallback::PostRun(int32_t result) {
   is_scheduled_ = true;
 }
 
-void TrackedCallback::set_completion_task(
-    const CompletionTask& completion_task) {
-  DCHECK(completion_task_.is_null());
-  completion_task_ = completion_task;
-}
-
-// static
-bool TrackedCallback::IsPending(
-    const scoped_refptr<TrackedCallback>& callback) {
-  if (!callback.get())
-    return false;
-  if (callback->aborted())
-    return false;
-  return !callback->completed();
-}
-
-// static
-bool TrackedCallback::IsScheduledToRun(
-    const scoped_refptr<TrackedCallback>& callback) {
-  return IsPending(callback) && callback->is_scheduled_;
-}
-
-int32_t TrackedCallback::BlockUntilComplete() {
-  // Note, we are already holding the proxy lock in all these methods, including
-  // this one (see ppapi/thunk/enter.cc for where it gets acquired).
-
-  // It doesn't make sense to wait on a non-blocking callback. Furthermore,
-  // BlockUntilComplete should never be called for in-process plugins, where
-  // blocking callbacks are not supported.
-  CHECK(operation_completed_condvar_.get());
-  if (!is_blocking() || !operation_completed_condvar_.get()) {
+void TrackedCallback::SignalBlockingCallback(int32_t result) {
+  lock_.AssertAcquired();
+  DCHECK(is_blocking());
+  if (!operation_completed_condvar_) {
+    // If the condition variable is invalid, there are two possibilities. One,
+    // we're running in-process, in which case the call should have come in on
+    // the main thread and we should have returned PP_ERROR_BLOCKS_MAIN_THREAD
+    // well before this. Otherwise, this callback was not created as a
+    // blocking callback. Either way, there's some internal error.
     NOTREACHED();
-    return PP_ERROR_FAILED;
+    return;
   }
-
-  while (!completed())
-    operation_completed_condvar_->Wait();
-
-  if (!completion_task_.is_null()) {
-    result_for_blocked_callback_ =
-        RunCompletionTask(completion_task_, result_for_blocked_callback_);
-    completion_task_.Reset();
-  }
-  return result_for_blocked_callback_;
-}
-
-void TrackedCallback::MarkAsCompleted() {
-  DCHECK(!completed());
-
-  // We will be removed; maintain a reference to ensure we won't be deleted
-  // until we're done.
-  scoped_refptr<TrackedCallback> thiz = this;
-  completed_ = true;
-  // We may not have a valid resource, in which case we're not in the tracker.
-  if (resource_id_)
-    tracker_->Remove(thiz);
-  tracker_ = NULL;
+  result_for_blocked_callback_ = result;
+  // Retain ourselves, since MarkAsCompleted will remove us from the
+  // tracker. Then MarkAsCompleted before waking up the blocked thread,
+  // which could potentially re-enter.
+  scoped_refptr<TrackedCallback> thiz(this);
+  MarkAsCompletedWithLock();
+  // Wake up the blocked thread. See BlockUntilComplete for where the thread
+  // Wait()s.
+  operation_completed_condvar_->Signal();
 }
 
 }  // namespace ppapi
