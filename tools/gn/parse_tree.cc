@@ -634,8 +634,16 @@ Value LiteralNode::Execute(Scope* scope, Err* err) const {
     case Token::FALSE_TOKEN:
       return Value(this, false);
     case Token::INTEGER: {
+      base::StringPiece s = value_.value();
+      if ((s.starts_with("0") && s.size() > 1) || s.starts_with("-0")) {
+        if (s == "-0")
+          *err = MakeErrorDescribing("Negative zero doesn't make sense");
+        else
+          *err = MakeErrorDescribing("Leading zeros not allowed");
+        return Value();
+      }
       int64 result_int;
-      if (!base::StringToInt64(value_.value(), &result_int)) {
+      if (!base::StringToInt64(s, &result_int)) {
         *err = MakeErrorDescribing("This does not look like an integer");
         return Value();
       }

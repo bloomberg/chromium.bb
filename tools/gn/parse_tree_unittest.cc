@@ -212,3 +212,39 @@ TEST(ParseTree, SortRangeExtraction) {
     EXPECT_EQ(3u, ranges[0].end);
   }
 }
+
+TEST(ParseTree, Integers) {
+  static const char* const kGood[] = {
+      "0",
+      "10",
+      "-54321",
+      "9223372036854775807",   // INT64_MAX
+      "-9223372036854775808",  // INT64_MIN
+  };
+  for (auto s : kGood) {
+    TestParseInput input(std::string("x = ") + s);
+    EXPECT_FALSE(input.has_error());
+
+    TestWithScope setup;
+    Err err;
+    input.parsed()->Execute(setup.scope(), &err);
+    EXPECT_FALSE(err.has_error());
+  }
+
+  static const char* const kBad[] = {
+      "-0",
+      "010",
+      "-010",
+      "9223372036854775808",   // INT64_MAX + 1
+      "-9223372036854775809",  // INT64_MIN - 1
+  };
+  for (auto s : kBad) {
+    TestParseInput input(std::string("x = ") + s);
+    EXPECT_FALSE(input.has_error());
+
+    TestWithScope setup;
+    Err err;
+    input.parsed()->Execute(setup.scope(), &err);
+    EXPECT_TRUE(err.has_error());
+  }
+}

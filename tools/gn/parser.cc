@@ -49,6 +49,8 @@ const char kGrammar_Help[] =
     "\n"
     "      integer = [ \"-\" ] digit { digit } .\n"
     "\n"
+    "  Leading zeros and negative zero are disallowed.\n"
+    "\n"
     "String literals\n"
     "\n"
     "  A string literal represents a string value consisting of the quoted\n"
