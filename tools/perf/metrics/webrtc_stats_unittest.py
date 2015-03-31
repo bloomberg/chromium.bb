@@ -17,13 +17,13 @@ SAMPLE_JSON = '''
          "googFrameWidthInput":"640",
          "googFrameRateSent": "23",
          "packetsLost":"-1",
-         "googRtt":"-1",
+         "googRtt":"19",
          "packetsSent":"1",
          "bytesSent":"0"
       },
       {
          "audioInputLevel":"2048",
-         "googRtt":"-1",
+         "googRtt":"20",
          "googCodecName":"opus",
          "packetsSent":"4",
          "bytesSent":"0"
@@ -35,18 +35,25 @@ SAMPLE_JSON = '''
          "googFrameWidthInput":"640",
          "googFrameRateSent": "21",
          "packetsLost":"-1",
-         "googRtt":"-1",
+         "googRtt":"18",
          "packetsSent":"8",
          "bytesSent":"6291"
       },
       {
          "audioInputLevel":"1878",
-         "googRtt":"-1",
+         "googRtt":"17",
          "googCodecName":"opus",
          "packetsSent":"16",
          "bytesSent":"634"
       }
-   ]
+   ],
+   [
+      {
+          "googAvailableSendBandwidth":"30000",
+          "googAvailableRecvBandwidth":"12345",
+          "googTargetEncBitrate":"10000"
+      }
+  ]
 ],
 [
    [
@@ -55,7 +62,8 @@ SAMPLE_JSON = '''
          "googDecodeMs":"0",
          "packetsReceived":"8",
          "googRenderDelayMs":"10",
-         "googMaxDecodeMs":"0"
+         "googMaxDecodeMs":"0",
+         "googRtt":"100"
       }
    ],
    [
@@ -64,9 +72,17 @@ SAMPLE_JSON = '''
          "googDecodeMs":"14",
          "packetsReceived":"1234",
          "googRenderDelayMs":"102",
-         "googMaxDecodeMs":"150"
+         "googMaxDecodeMs":"150",
+         "googRtt":"101"
       }
-   ]
+   ],
+   [
+      {
+          "googAvailableSendBandwidth":"40000",
+          "googAvailableRecvBandwidth":"22345",
+          "googTargetEncBitrate":"20000"
+      }
+  ]
 ]]
 '''
 
@@ -115,27 +131,31 @@ class WebRtcStatsUnittest(unittest.TestCase):
 
     # This also ensures we're clever enough to tell video packetsSent from audio
     # packetsSent.
-    self.assertEqual(results.received_values[0].values,
+    self.assertEqual(results.received_values[3].values,
                      [4.0, 16.0])
-    self.assertEqual(results.received_values[1].values,
+    self.assertEqual(results.received_values[5].values,
                      [1.0, 8.0])
 
   def testExtractsInterestingMetricsOnly(self):
     results = self._RunMetricOnJson(SAMPLE_JSON)
 
-    self.assertEqual(len(results.received_values), 5)
-    self.assertEqual(results.received_values[0].name,
-                     'peer_connection_0_audio_packets_sent',
-                     'The result should be a ListOfScalarValues instance with '
-                     'a name <peer connection id>_<statistic>.')
-    self.assertEqual(results.received_values[1].name,
-                     'peer_connection_0_video_packets_sent')
-    self.assertEqual(results.received_values[2].name,
-                     'peer_connection_1_video_goog_max_decode_ms')
-    self.assertEqual(results.received_values[3].name,
-                     'peer_connection_1_video_packets_received')
-    self.assertEqual(results.received_values[4].name,
-                     'peer_connection_1_video_goog_decode_ms')
+    self.assertTrue(len(results.received_values) > 0)
+    self.assertIn('peer_connection_0', results.received_values[0].name,
+                  'The result should be a ListOfScalarValues instance with '
+                  'a name <peer connection id>_<statistic>.')
+    all_names = [value.name for value in results.received_values]
+    self.assertIn('peer_connection_0_video_packets_sent', all_names)
+    self.assertNotIn('peer_connection_1_video_packets_sent', all_names,
+                     'Peer connection 1 does not have a video packets sent in '
+                     'the JSON above, unlike peer connection 0 which does.')
+    self.assertIn('peer_connection_0_video_goog_rtt', all_names)
+    self.assertIn('peer_connection_1_video_goog_rtt', all_names)
+    # The audio_audio is intentional since the code distinguishes audio repots
+    # from video reports (even though audio_input_level is quite obvious).
+    self.assertNotIn('peer_connection_0_audio_audio_input_level', all_names,
+                     'Input level is in the JSON for both connections but '
+                     'should not be reported since it is not interesting.')
+    self.assertNotIn('peer_connection_1_audio_audio_input_level', all_names)
 
   def testReturnsIfJsonIsEmpty(self):
     results = self._RunMetricOnJson('[]')

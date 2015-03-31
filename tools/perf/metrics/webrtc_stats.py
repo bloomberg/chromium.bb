@@ -29,7 +29,52 @@ INTERESTING_METRICS = {
         'units': 'ms',
         'description': 'Maximum time spent decoding one frame.',
     },
-    # TODO(phoglund): Add much more interesting metrics.
+    'googRtt': {
+        'units': 'ms',
+        'description': 'Measured round-trip time.',
+    },
+    'googJitterReceived': {
+        'units': 'ms',
+        'description': 'Receive-side jitter in milliseconds.',
+    },
+    'googCaptureJitterMs': {
+        'units': 'ms',
+        'description': 'Capture device (audio/video) jitter.',
+    },
+    'googTargetDelayMs': {
+        'units': 'ms',
+        'description': 'The delay we are targeting.',
+    },
+    'googExpandRate': {
+        'units': '%',
+        'description': 'How much we have NetEQ-expanded the audio (0-100%)',
+    },
+    'googFrameRateReceived': {
+        'units': 'fps',
+        'description': 'Receive-side frames per second (video)',
+    },
+    'googFrameRateSent': {
+        'units': 'fps',
+        'description': 'Send-side frames per second (video)',
+    },
+    # Bandwidth estimation stats.
+    'googAvailableSendBandwidth': {
+        'units': 'bit/s',
+        'description': 'How much send bandwidth we estimate we have.'
+    },
+    'googAvailableReceiveBandwidth': {
+        'units': 'bit/s',
+        'description': 'How much receive bandwidth we estimate we have.'
+    },
+    'googTargetEncBitrate': {
+        'units': 'bit/s',
+        'description': ('The target encoding bitrate we estimate is good to '
+                        'aim for given our bandwidth estimates.')
+    },
+    'googTransmitBitrate': {
+        'units': 'bit/s',
+        'description': 'The actual transmit bitrate.'
+    },
 }
 
 
@@ -38,20 +83,23 @@ def GetReportKind(report):
     return 'audio'
   if 'googFrameRateSent' in report or 'googFrameRateReceived' in report:
     return 'video'
+  if 'googAvailableSendBandwidth' in report:
+    return 'bwe'
 
   logging.debug('Did not recognize report batch: %s.', report.keys())
-  # There are other kinds of reports, such as bwestats, which we don't care
-  # about here. For these cases just return 'unknown' which will ignore the
-  # report
+
+  # There are other kinds of reports, such as transport types, which we don't
+  # care about here. For these cases just return 'unknown' which will ignore the
+  # report.
   return 'unknown'
 
 
-def DistinguishAudioAndVideo(report, stat_name):
+def DistinguishAudioVideoOrBwe(report, stat_name):
   return GetReportKind(report) + '_' + stat_name
 
 
-def StripAudioVideoDistinction(stat_name):
-  return re.sub('^(audio|video)_', '', stat_name)
+def StripAudioVideoBweDistinction(stat_name):
+  return re.sub('^(audio|video|bwe)_', '', stat_name)
 
 
 def SortStatsIntoTimeSeries(report_batches):
@@ -63,7 +111,7 @@ def SortStatsIntoTimeSeries(report_batches):
           continue
         if GetReportKind(report) == 'unknown':
           continue
-        full_stat_name = DistinguishAudioAndVideo(report, stat_name)
+        full_stat_name = DistinguishAudioVideoOrBwe(report, stat_name)
         time_series.setdefault(full_stat_name, []).append(float(value))
 
   return time_series
@@ -95,7 +143,7 @@ class WebRtcStatisticsMetric(Metric):
       for stat_name, values in time_series.iteritems():
         stat_name_underscored = camel_case.ToUnderscore(stat_name)
         trace_name = 'peer_connection_%d_%s' % (i, stat_name_underscored)
-        general_name = StripAudioVideoDistinction(stat_name)
+        general_name = StripAudioVideoBweDistinction(stat_name)
         results.AddValue(list_of_scalar_values.ListOfScalarValues(
             results.current_page, trace_name,
             INTERESTING_METRICS[general_name]['units'], values,
