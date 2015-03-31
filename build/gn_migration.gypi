@@ -95,6 +95,7 @@
         '../gpu/gpu.gyp:gl_tests',
         '../gpu/gpu.gyp:gpu_perftests',
         '../gpu/gpu.gyp:gpu_unittests',
+        '../gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test',  # TODO(GYP) crbug.com/471903 to make this complete.
         '../ipc/ipc.gyp:ipc_perftests',
         '../ipc/ipc.gyp:ipc_tests',
         '../ipc/mojo/ipc_mojo.gyp:ipc_mojo_unittests',
@@ -414,10 +415,8 @@
           'dependencies': [
             '../chrome/chrome.gyp:performance_browser_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
-            '../gpu/gpu.gyp:gl_tests',
-            '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',
-            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
-            '../gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test',
+            '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',  # crbug.com/471920
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',  # crbug.com/471920
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
 

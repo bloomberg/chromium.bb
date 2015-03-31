@@ -1,0 +1,23 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+test("khronos_glcts_test") {
+  sources = [
+    "khronos_glcts_test.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//gpu",
+    "//testing/gtest",
+  ]
+
+  # TODO(GYP) - make this work. crbug.com/471903
+  internal_khronos_glcts_tests = false
+  if (internal_khronos_glcts_tests) {
+    # TODO(GYP) implement me ...
+  }
+}
