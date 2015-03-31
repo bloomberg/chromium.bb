@@ -98,7 +98,16 @@ class WorkspaceLibTest(cros_test_lib.TempDirTestCase):
       constants.CHROOT_WORKSPACE_ROOT = orig_root
 
   def testChrootPath(self):
-    self.assertEqual('/work/.chroot', workspace_lib.ChrootPath('/work'))
+    # Check the default value.
+    self.assertEqual(os.path.join(self.workspace_dir, '.chroot'),
+                     workspace_lib.ChrootPath(self.workspace_dir))
+
+    # Set a new value.
+    workspace_lib.SetChrootDir(self.workspace_dir, self.bogus_dir)
+
+    # Check we get it back.
+    self.assertEqual(self.bogus_dir,
+                     workspace_lib.ChrootPath(self.workspace_dir))
 
   def testReadWriteLocalConfig(self):
     # Non-existent config should read as an empty dictionary.

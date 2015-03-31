@@ -82,8 +82,48 @@ def ChrootPath(workspace_path):
   Returns:
     Path to where the chroot is, or where it should be created.
   """
-  # TODO(dgarrett): Check local config for alternate locations.
+  config_value = GetChrootDir(workspace_path)
+
+  if config_value:
+    return config_value
+
+  # Return the default value.
   return os.path.join(workspace_path, WORKSPACE_CHROOT_DIR)
+
+
+def SetChrootDir(workspace_path, chroot_dir):
+  """Set which chroot directory a workspace uses.
+
+  This value will overwrite the default value, if set. This is normally only
+  used if the user overwrites the default value. This method is NOT atomic.
+
+  Args:
+    workspace_path: Root directory of the workspace (WorkspacePath()).
+    chroot_dir: Directory in which this workspaces chroot should be created.
+  """
+  # Read the config, update its chroot_dir, and write it.
+  config = _ReadLocalConfig(workspace_path)
+  config['chroot_dir'] = chroot_dir
+  _WriteLocalConfig(workspace_path, config)
+
+
+def GetChrootDir(workspace_path):
+  """Get override of chroot directory for a workspace.
+
+  You should normally call ChrootPath so that the default value will be
+  found if no explicit value has been set.
+
+  Args:
+    workspace_path: Root directory of the workspace (WorkspacePath()).
+
+  Returns:
+    version string or None.
+  """
+  # Config should always return a dictionary.
+  config = _ReadLocalConfig(workspace_path)
+
+  # If version is present, use it, else return None.
+  return config.get('chroot_dir')
 
 
 def GetActiveSdkVersion(workspace_path):

@@ -6,10 +6,14 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_chroot
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
+from chromite.lib import workspace_lib
 
 
 class MockChrootCommand(command_unittest.MockCommand):
@@ -89,3 +93,32 @@ class ChrootTest(cros_test_lib.MockTestCase):
 
     # Ensure we pass along "--help" instead of processing it directly.
     self.cmd_mock.rc_mock.assertCommandContains(['--help'])
+
+
+class ChrootMoveTest(cros_test_lib.MockTempDirTestCase):
+  """Test the ChrootCommand move functionality."""
+
+  def SetupCommandMock(self, cmd_args):
+    """Sets up the `cros chroot` command mock."""
+    self.cmd_mock = MockChrootCommand(cmd_args)
+    self.StartPatcher(self.cmd_mock)
+
+  def setUp(self):
+    """Patches objects."""
+    self.cmd_mock = None
+
+    self.work_dir = os.path.join(self.tempdir, 'work')
+    osutils.SafeMakedirs(self.work_dir)
+
+    # Force us to be inside the workspace.
+    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.work_dir)
+
+  def testMove(self):
+    """Tests a command name that matches a valid argument, after '--'."""
+    # Technically, this should try to run the command "--help".
+    self.SetupCommandMock(['--move', '/foo'])
+    self.cmd_mock.inst.Run()
+
+    # Verify that it took effect.
+    self.assertEqual('/foo', workspace_lib.ChrootPath(self.work_dir))
+

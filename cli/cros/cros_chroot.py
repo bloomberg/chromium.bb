@@ -11,6 +11,7 @@ import argparse
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import workspace_lib
 
 
 @command.CommandDecorator('chroot')
@@ -20,25 +21,31 @@ class ChrootCommand(command.CliCommand):
   # Override base class property to enable stats upload.
   upload_stats = True
 
-  @classmethod
-  def AddParser(cls, parser):
-    """Adds a parser."""
-    super(cls, ChrootCommand).AddParser(parser)
-    parser.add_argument(
-        'command', nargs=argparse.REMAINDER,
-        help='(optional) Command to execute inside the chroot.')
+  def _SpecifyNewChrootLocation(self, chroot_dir):
+    """Specify a new location for a workspace's chroot.
 
-  def Run(self):
-    """Runs `cros chroot`."""
-    self.options.Freeze()
+    Args:
+      chroot_dir: Directory in which to specify the new chroot.
+    """
+    workspace_path = workspace_lib.WorkspacePath()
 
+    if not workspace_path:
+      cros_build_lib.Die('You must be in a workspace, to move its chroot.')
+
+    # TODO(dgarrett): Validate chroot_dir, somehow.
+    workspace_lib.SetChrootDir(workspace_path, chroot_dir)
+
+  def _RunChrootCommand(self, cmd):
+    """Run the specified command inside the chroot.
+
+    Args:
+      cmd: A list or tuple of strings to use as a command and its arguments.
+           If empty, run 'bash'.
+
+    Returns:
+      The commands result code.
+    """
     commandline.RunInsideChroot(self, auto_detect_brick=False)
-
-    cmd = self.options.command
-
-    # If -- was used to separate out the command from arguments, ignore it.
-    if cmd and cmd[0] == '--':
-      cmd = cmd[1:]
 
     # If there is no command, run bash.
     if not cmd:
@@ -47,3 +54,35 @@ class ChrootCommand(command.CliCommand):
     result = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
                                        mute_output=False)
     return result.returncode
+
+  @classmethod
+  def AddParser(cls, parser):
+    """Adds a parser."""
+    super(cls, ChrootCommand).AddParser(parser)
+    parser.add_argument(
+        '--move', help='Specify new directory for workspace chroot.')
+    parser.add_argument(
+        'command', nargs=argparse.REMAINDER,
+        help='(optional) Command to execute inside the chroot.')
+
+  def Run(self):
+    """Runs `cros chroot`."""
+    self.options.Freeze()
+
+    # Handle the special case of moving the chroot.
+    if self.options.move:
+      if self.options.command:
+        cros_build_lib.Die(
+            "You can't move a chroot, and use it at the same time.")
+
+      self._SpecifyNewChrootLocation(self.options.move)
+      return 0
+
+    # Handle the standard case.
+    cmd = self.options.command
+
+    # If -- was used to separate out the command from arguments, ignore it.
+    if cmd and cmd[0] == '--':
+      cmd = cmd[1:]
+
+    return self._RunChrootCommand(cmd)
