@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class Document;
 class PagePopupClient;
 
 class PagePopupController final : public RefCountedWillBeGarbageCollected<PagePopupController>, public ScriptWrappable {
@@ -47,6 +48,7 @@ public:
     void setValueAndClosePopup(int numValue, const String& stringValue);
     void setValue(const String&);
     void closePopup();
+    void selectFontsFromOwnerDocument(Document* targetDocument);
     String localizeNumberString(const String&);
     String formatMonth(int year, int zeroBaseMonth);
     String formatShortMonth(int year, int zeroBaseMonth);

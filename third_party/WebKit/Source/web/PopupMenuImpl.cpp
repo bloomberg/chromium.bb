@@ -222,7 +222,7 @@ void PopupMenuImpl::addSeparator(HTMLHRElement& element, SharedBuffer* data)
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::didWriteDocument(Document& document)
+void PopupMenuImpl::selectFontsFromOwnerDocument(Document& document)
 {
     Document& ownerDocument = ownerElement().document();
     document.styleEngine().setFontSelector(PopupMenuCSSFontSelector::create(&document, ownerDocument.styleEngine().fontSelector()));

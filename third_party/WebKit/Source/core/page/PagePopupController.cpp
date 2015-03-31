@@ -66,6 +66,13 @@ void PagePopupController::closePopup()
         m_popupClient->closePopup();
 }
 
+void PagePopupController::selectFontsFromOwnerDocument(Document* targetDocument)
+{
+    if (!targetDocument || !m_popupClient)
+        return;
+    m_popupClient->selectFontsFromOwnerDocument(*targetDocument);
+}
+
 String PagePopupController::localizeNumberString(const String& numberString)
 {
     if (m_popupClient)

@@ -56,7 +56,7 @@ public:
     // PagePopupClient functions:
     virtual IntSize contentSize() override;
     virtual void writeDocument(SharedBuffer*) override;
-    virtual void didWriteDocument(Document&) override { }
+    virtual void selectFontsFromOwnerDocument(Document&) override { }
     virtual Locale& locale() override;
     virtual void setValueAndClosePopup(int, const String&) override;
     virtual void setValue(const String&) override;

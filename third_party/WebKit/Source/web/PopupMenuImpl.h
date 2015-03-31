@@ -42,7 +42,7 @@ private:
     // PagePopupClient functions:
     IntSize contentSize() override;
     void writeDocument(SharedBuffer*) override;
-    void didWriteDocument(Document&) override;
+    void selectFontsFromOwnerDocument(Document&) override;
     void setValueAndClosePopup(int, const String&) override;
     void setValue(const String&) override;
     void closePopup() override;

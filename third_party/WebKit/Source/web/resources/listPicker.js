@@ -41,6 +41,7 @@ function handleArgumentsTimeout() {
  */
 function ListPicker(element, config) {
     Picker.call(this, element, config);
+    window.pagePopupController.selectFontsFromOwnerDocument(document);
     this._selectElement = createElement("select");
     this._element.appendChild(this._selectElement);
     this._layout();
@@ -59,12 +60,7 @@ function ListPicker(element, config) {
 
     this._trackingTouchId = null;
 
-    // Not sure why but we need to delay this call so that offsetHeight is
-    // accurate. We wait for the window to resize to work around an issue
-    // of immediate resize requests getting mixed up.
-    this._handleWindowDidHideBound = this._handleWindowDidHide.bind(this);
-    window.addEventListener("didHide", this._handleWindowDidHideBound, false);
-    hideWindow();
+    this._handleWindowDidHide();
 }
 ListPicker.prototype = Object.create(Picker.prototype);
 

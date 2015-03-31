@@ -266,8 +266,6 @@ bool WebPagePopupImpl::initializePage()
     m_popupClient->writeDocument(data.get());
     frame->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
 
-    m_popupClient->didWriteDocument(*frame->document());
-
     return true;
 }
 
