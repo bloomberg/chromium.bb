@@ -5990,6 +5990,25 @@
         ],
       },
     }],
+    # Apply a lower LTO optimization level in non-official builds.
+    ['use_lto==1 and clang==1 and buildtype!="Official"', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'ldflags': [
+              '-Wl,--plugin-opt,O1',
+            ],
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-Wl,-mllvm,-O1',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
     ['use_lto==1 and clang==1 and (target_arch=="ia32" or target_arch=="x64")', {
       'target_defaults': {
         'target_conditions': [
