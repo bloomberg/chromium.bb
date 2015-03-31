@@ -59,6 +59,11 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
 // incognito profiles.
 bool IsRegularOrGuestSession(Browser* browser);
 
+// Returns true if sign in is required to browse as this profile.
+// TODO(mlerman): Refactor appropriate calls to
+// ProfileInfoCache::ProfileIsSigninRequiredAtIndex to call here instead.
+bool IsProfileLocked(Profile* profile);
+
 // If the lock-enabled information for this profile is not up to date, starts
 // an update for the Gaia profile info.
 void UpdateIsProfileLockEnabledIfNeeded(Profile* profile);

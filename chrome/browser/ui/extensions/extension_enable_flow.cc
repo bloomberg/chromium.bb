@@ -8,7 +8,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
@@ -91,6 +93,13 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   // Supervised users can't re-enable custodian-installed extensions.
   if (extensions::util::IsExtensionSupervised(extension, profile_)) {
     delegate_->ExtensionEnableFlowAborted(false);  // |delegate_| may delete us.
+    return;
+  }
+
+  if (profiles::IsProfileLocked(profile_)) {
+    UserManager::Show(base::FilePath(),
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
     return;
   }
 

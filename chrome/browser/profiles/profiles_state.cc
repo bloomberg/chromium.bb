@@ -141,6 +141,17 @@ bool IsRegularOrGuestSession(Browser* browser) {
   return profile->IsGuestSession() || !profile->IsOffTheRecord();
 }
 
+bool IsProfileLocked(Profile* profile) {
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+
+  if (profile_index == std::string::npos)
+    return false;
+
+  return cache.ProfileIsSigninRequiredAtIndex(profile_index);
+}
+
 void UpdateIsProfileLockEnabledIfNeeded(Profile* profile) {
   DCHECK(switches::IsNewProfileManagement());
 
