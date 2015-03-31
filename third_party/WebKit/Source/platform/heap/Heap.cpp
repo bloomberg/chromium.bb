@@ -141,25 +141,18 @@ public:
 
     WARN_UNUSED_RETURN bool commit()
     {
-#if OS(POSIX)
-        return !mprotect(m_base, m_size, PROT_READ | PROT_WRITE);
-#else
-        void* result = VirtualAlloc(m_base, m_size, MEM_COMMIT, PAGE_READWRITE);
-        return !!result;
-#endif
+        return WTF::setSystemPagesAccessible(m_base, m_size);
     }
 
     void decommit()
     {
+        // TODO(haraken): Consider if we can replace the following code
+        // with decommitSystemPages().
 #if OS(POSIX)
-        int err = mprotect(m_base, m_size, PROT_NONE);
-        RELEASE_ASSERT(!err);
-        // FIXME: Consider using MADV_FREE on MacOS.
+        // TODO(haraken): Consider using MADV_FREE on MacOS.
         madvise(m_base, m_size, MADV_DONTNEED);
-#else
-        bool success = VirtualFree(m_base, m_size, MEM_DECOMMIT);
-        RELEASE_ASSERT(success);
 #endif
+        WTF::setSystemPagesInaccessible(m_base, m_size);
     }
 
     Address base() const { return m_base; }

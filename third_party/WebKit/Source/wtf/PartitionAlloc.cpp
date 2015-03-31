@@ -913,7 +913,8 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
         // Grow within the actually allocated memory. Just need to make the
         // pages accessible again.
         size_t recommitSize = newSize - currentSize;
-        setSystemPagesAccessible(charPtr + currentSize, recommitSize);
+        bool ret = setSystemPagesAccessible(charPtr + currentSize, recommitSize);
+        RELEASE_ASSERT(ret);
         partitionRecommitSystemPages(root, charPtr + currentSize, recommitSize);
 
 #if ENABLE(ASSERT)

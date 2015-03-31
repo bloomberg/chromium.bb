@@ -78,7 +78,11 @@ WTF_EXPORT void setSystemPagesInaccessible(void* addr, size_t len);
 // Mark one or more system pages as being accessible.
 // The pages will be readable and writeable.
 // len must be a multiple of kSystemPageSize bytes.
-WTF_EXPORT void setSystemPagesAccessible(void* addr, size_t len);
+// The result bool value indicates whether the permission
+// change succeeded or not. You must check the result
+// (in most cases you need to RELEASE_ASSERT that it is
+// true).
+WTF_EXPORT WARN_UNUSED_RETURN bool setSystemPagesAccessible(void* addr, size_t len);
 
 // Decommit one or more system pages. Decommitted means that the physical memory
 // is released to the system, but the virtual address space remains reserved.
