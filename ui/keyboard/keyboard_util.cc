@@ -326,8 +326,8 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   // map cannot be used directly.
   static const GritResourceMap kKeyboardResources[] = {
       {"keyboard/locales/en.js", IDR_KEYBOARD_LOCALES_EN},
-      {"keyboard/config/emoji.js", IDR_KEYBOARD_CONFIG_EMOJI},
-      {"keyboard/config/hwt.js", IDR_KEYBOARD_CONFIG_HWT},
+      {"keyboard/config/m-emoji.js", IDR_KEYBOARD_CONFIG_EMOJI},
+      {"keyboard/config/m-hwt.js", IDR_KEYBOARD_CONFIG_HWT},
       {"keyboard/config/us.js", IDR_KEYBOARD_CONFIG_US},
       {"keyboard/emoji.css", IDR_KEYBOARD_CSS_EMOJI},
       {"keyboard/images/backspace.png", IDR_KEYBOARD_IMAGES_BACKSPACE},

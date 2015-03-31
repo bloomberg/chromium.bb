@@ -15,8 +15,8 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_KEYBOARD_CONFIG_EMOJI" file="${input_tools_root_dir}/inputview/config/emoji_data.js" type="BINDATA" />
-      <include name="IDR_KEYBOARD_CONFIG_HWT" file="${input_tools_root_dir}/inputview/config/hwt_data.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_CONFIG_EMOJI" file="${input_tools_root_dir}/inputview/config/material/emoji_data.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_CONFIG_HWT" file="${input_tools_root_dir}/inputview/config/material/hwt_data.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_CONFIG_US" file="${input_tools_root_dir}/inputview/config/us_data.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_CSS_EMOJI" file="${input_tools_root_dir}/inputview/emoji.css" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_BACKSPACE" file="${input_tools_root_dir}/inputview/images/backspace.png" type="BINDATA" />

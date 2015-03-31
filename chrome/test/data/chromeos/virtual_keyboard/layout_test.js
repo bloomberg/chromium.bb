@@ -179,26 +179,24 @@ function testHandwritingLayoutAsync(testDoneCallback) {
       var hwtSelectBounds = hwtSelect.getBoundingClientRect();
       assertTrue(hwtSelectBounds.width > 0 && hwtSelectBounds.height > 0,
                  'Expect non-zero size for hwt select button.');
-      // TODO(fengyuan): bring back this handwriting test once found the cause.
-      /*onSwitchToKeyset('hwt', function() {
+      onSwitchToKeyset('hwt', function() {
+        // The tests below for handwriting part is for material design.
         var view = getActiveView();
         assertEquals('hwt', view.id, 'Handwriting layout is not active.');
         var hwtCanvasView = view.querySelector('#canvasView');
         assertTrue(!!hwtCanvasView, 'Unable to find canvas view');
-        var candidateView = document.getElementById('candidateView');
-        assertTrue(!!candidateView, 'Unable to find candidate view');
-        var backButton = candidateView.querySelector(
-            '.inputview-candidate-button');
-        assertEquals('HANDWRITING_BACK', backButton.textContent);
+        var panelView = document.getElementById('panelView');
+        assertTrue(!!panelView, 'Unable to find panel view');
+        var backButton = panelView.querySelector('#backToKeyboard');
+        assertTrue(!!backButton, 'Unable to find back button.');
         onSwitchToKeyset('us.compact.qwerty', function() {
           assertEquals('us-compact-qwerty', getActiveView().id,
-             'compact layout is not active.');
+              'compact layout is not active.');
           testDoneCallback();
         });
         mockTap(backButton);
       });
-      mockTap(hwtSelect);*/
-      testDoneCallback();
+      mockTap(hwtSelect);
     });
   };
   var config = {
