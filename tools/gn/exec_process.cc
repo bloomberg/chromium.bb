@@ -175,6 +175,9 @@ bool ExecProcess(const base::CommandLine& cmdline,
       {
         // DANGER: no calls to malloc are allowed from now on:
         // http://crbug.com/36678
+        //
+        // STL iterators are also not allowed (including those implied
+        // by range-based for loops), since debug iterators use locks.
 
         // Obscure fork() rule: in the child, if you don't end up doing exec*(),
         // you call _exit() instead of exit(). This is because _exit() does not
@@ -194,8 +197,9 @@ bool ExecProcess(const base::CommandLine& cmdline,
         // Adding another element here? Remeber to increase the argument to
         // reserve(), above.
 
-        for (const auto& elem : fd_shuffle1)
-          fd_shuffle2.push_back(elem);
+        // DANGER: Do NOT convert to range-based for loop!
+        for (size_t i = 0; i < fd_shuffle1.size(); ++i)
+          fd_shuffle2.push_back(fd_shuffle1[i]);
 
         if (!ShuffleFileDescriptors(&fd_shuffle1))
           _exit(127);
@@ -205,6 +209,7 @@ bool ExecProcess(const base::CommandLine& cmdline,
         // TODO(brettw) the base version GetAppOutput does a
         // CloseSuperfluousFds call here. Do we need this?
 
+        // DANGER: Do NOT convert to range-based for loop!
         for (size_t i = 0; i < argv.size(); i++)
           argv_cstr[i] = const_cast<char*>(argv[i].c_str());
         argv_cstr[argv.size()] = nullptr;
