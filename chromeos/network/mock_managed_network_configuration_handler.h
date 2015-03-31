@@ -33,12 +33,11 @@ class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
                     const std::string& service_path,
                     const network_handler::DictionaryResultCallback& callback,
                     const network_handler::ErrorCallback& error_callback));
-  MOCK_CONST_METHOD4(
-      SetProperties,
-      void(const std::string& service_path,
-           const base::DictionaryValue& user_settings,
-           const base::Closure& callback,
-           const network_handler::ErrorCallback& error_callback));
+  MOCK_METHOD4(SetProperties,
+               void(const std::string& service_path,
+                    const base::DictionaryValue& user_settings,
+                    const base::Closure& callback,
+                    const network_handler::ErrorCallback& error_callback));
   MOCK_CONST_METHOD4(
       CreateConfiguration,
       void(const std::string& userhash,

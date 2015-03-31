@@ -60,6 +60,11 @@ namespace networkingPrivate {
   dictionary CellularConfigProperties {
     boolean? AutoConnect;
     APNProperties? APN;
+
+    // Specifies which carrier to use for Cellular configurations that support
+    // multiple carriers. May be set with $(ref:setProperties), but will be
+    // ignored by $(ref:createConfiguration).
+    DOMString? Carrier;
   };
 
   dictionary CellularStateProperties {

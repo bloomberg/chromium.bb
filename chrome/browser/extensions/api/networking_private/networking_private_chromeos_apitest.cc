@@ -133,8 +133,9 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
  public:
   NetworkingPrivateChromeOSApiTest()
       : detector_(nullptr),
-        service_test_(nullptr),
         manager_test_(nullptr),
+        profile_test_(nullptr),
+        service_test_(nullptr),
         device_test_(nullptr) {}
 
   bool RunNetworkingSubtest(const std::string& subtest) {
@@ -213,6 +214,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(
         kCellular1ServicePath, shill::kRoamingStateProperty,
         base::StringValue(shill::kRoamingStateHome));
+    profile_test_->AddService(kUser1ProfilePath, kCellular1ServicePath);
     content::RunAllPendingInMessageLoop();
   }
 
@@ -244,19 +246,18 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
     DBusThreadManager* dbus_manager = DBusThreadManager::Get();
     manager_test_ = dbus_manager->GetShillManagerClient()->GetTestInterface();
+    profile_test_ = dbus_manager->GetShillProfileClient()->GetTestInterface();
     service_test_ = dbus_manager->GetShillServiceClient()->GetTestInterface();
     device_test_ = dbus_manager->GetShillDeviceClient()->GetTestInterface();
 
     ShillIPConfigClient::TestInterface* ip_config_test =
         dbus_manager->GetShillIPConfigClient()->GetTestInterface();
-    ShillProfileClient::TestInterface* profile_test =
-        dbus_manager->GetShillProfileClient()->GetTestInterface();
 
     device_test_->ClearDevices();
     service_test_->ClearServices();
 
     // Sends a notification about the added profile.
-    profile_test->AddProfile(kUser1ProfilePath, userhash_);
+    profile_test_->AddProfile(kUser1ProfilePath, userhash_);
 
     // Enable technologies.
     manager_test_->AddTechnology("wimax", true);
@@ -286,8 +287,8 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(
         "stub_ethernet", shill::kProfileProperty,
         base::StringValue(ShillProfileClient::GetSharedProfilePath()));
-    profile_test->AddService(ShillProfileClient::GetSharedProfilePath(),
-                             "stub_ethernet");
+    profile_test_->AddService(ShillProfileClient::GetSharedProfilePath(),
+                              "stub_ethernet");
 
     AddService(kWifi1ServicePath, "wifi1", shill::kTypeWifi,
                shill::kStateOnline);
@@ -316,7 +317,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
         kWifi1ServicePath, shill::kWifiFrequencyListProperty, frequencies1);
     service_test_->SetServiceProperty(kWifi1ServicePath, shill::kWifiFrequency,
                                       base::FundamentalValue(2400));
-    profile_test->AddService(kUser1ProfilePath, kWifi1ServicePath);
+    profile_test_->AddService(kUser1ProfilePath, kWifi1ServicePath);
 
     AddService(kWifi2ServicePath, "wifi2_PSK", shill::kTypeWifi,
                shill::kStateIdle);
@@ -338,7 +339,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                                       base::StringValue(kUser1ProfilePath));
     service_test_->SetServiceProperty("stub_wimax", shill::kConnectableProperty,
                                       base::FundamentalValue(true));
-    profile_test->AddService(kUser1ProfilePath, "stub_wimax");
+    profile_test_->AddService(kUser1ProfilePath, "stub_wimax");
 
     base::ListValue frequencies2;
     frequencies2.AppendInteger(2400);
@@ -350,13 +351,13 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(kWifi2ServicePath,
                                       shill::kProfileProperty,
                                       base::StringValue(kUser1ProfilePath));
-    profile_test->AddService(kUser1ProfilePath, kWifi2ServicePath);
+    profile_test_->AddService(kUser1ProfilePath, kWifi2ServicePath);
 
     AddService("stub_vpn1", "vpn1", shill::kTypeVPN, shill::kStateOnline);
     service_test_->SetServiceProperty(
         "stub_vpn1", shill::kProviderTypeProperty,
         base::StringValue(shill::kProviderOpenVpn));
-    profile_test->AddService(kUser1ProfilePath, "stub_vpn1");
+    profile_test_->AddService(kUser1ProfilePath, "stub_vpn1");
 
     AddService("stub_vpn2", "vpn2", shill::kTypeVPN, shill::kStateOffline);
     service_test_->SetServiceProperty(
@@ -365,7 +366,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(
         "stub_vpn2", shill::kProviderHostProperty,
         base::StringValue("third_party_provider_extension_id"));
-    profile_test->AddService(kUser1ProfilePath, "stub_vpn2");
+    profile_test_->AddService(kUser1ProfilePath, "stub_vpn2");
 
     content::RunAllPendingInMessageLoop();
   }
@@ -374,8 +375,9 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
   NetworkPortalDetectorTestImpl* detector() { return detector_; }
 
   NetworkPortalDetectorTestImpl* detector_;
-  ShillServiceClient::TestInterface* service_test_;
   ShillManagerClient::TestInterface* manager_test_;
+  ShillProfileClient::TestInterface* profile_test_;
+  ShillServiceClient::TestInterface* service_test_;
   ShillDeviceClient::TestInterface* device_test_;
   policy::MockConfigurationPolicyProvider provider_;
   std::string userhash_;
@@ -458,6 +460,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetStateNonExistent) {
   EXPECT_TRUE(RunNetworkingSubtest("getStateNonExistent")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       SetCellularProperties) {
+  SetupCellular();
+  EXPECT_TRUE(RunNetworkingSubtest("setCellularProperties")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, SetWiFiProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("setWiFiProperties")) << message_;
 }
@@ -488,10 +496,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
                                     shill::kAutoConnectProperty,
                                     base::FundamentalValue(false));
 
-  ShillProfileClient::TestInterface* profile_test =
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
   // Update the profile entry.
-  profile_test->AddService(kUser1ProfilePath, kWifi2ServicePath);
+  profile_test_->AddService(kUser1ProfilePath, kWifi2ServicePath);
 
   content::RunAllPendingInMessageLoop();
 

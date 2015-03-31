@@ -26,6 +26,7 @@ namespace chromeos {
 namespace {
 
 std::string kSimPin = "1111";
+std::string kFailedMessage = "Failed";
 
 void ErrorFunction(const std::string& device_path,
                    const std::string& error_name,
@@ -34,12 +35,20 @@ void ErrorFunction(const std::string& device_path,
              << ": " << error_name << " : " << error_message;
 }
 
-void PostNotFoundError(
-    const ShillDeviceClient::ErrorCallback& error_callback) {
-  std::string error_message("Failed");
+void PostError(const std::string& error,
+               const ShillDeviceClient::ErrorCallback& error_callback) {
   base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(error_callback, shill::kErrorResultNotFound, error_message));
+      FROM_HERE, base::Bind(error_callback, error, kFailedMessage));
+}
+
+void PostNotFoundError(const ShillDeviceClient::ErrorCallback& error_callback) {
+  PostError(shill::kErrorResultNotFound, error_callback);
+}
+
+bool IsReadOnlyProperty(const std::string& name) {
+  if (name == shill::kCarrierProperty)
+    return true;
+  return false;
 }
 
 }  // namespace
@@ -92,6 +101,17 @@ void FakeShillDeviceClient::SetProperty(const dbus::ObjectPath& device_path,
                                         const base::Value& value,
                                         const base::Closure& callback,
                                         const ErrorCallback& error_callback) {
+  if (IsReadOnlyProperty(name))
+    PostError(shill::kErrorResultInvalidArguments, error_callback);
+  SetPropertyInternal(device_path, name, value, callback, error_callback);
+}
+
+void FakeShillDeviceClient::SetPropertyInternal(
+    const dbus::ObjectPath& device_path,
+    const std::string& name,
+    const base::Value& value,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
   base::DictionaryValue* device_properties = NULL;
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
                                                        &device_properties)) {
@@ -225,11 +245,8 @@ void FakeShillDeviceClient::SetCarrier(const dbus::ObjectPath& device_path,
                                        const std::string& carrier,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
-  if (!stub_devices_.HasKey(device_path.value())) {
-    PostNotFoundError(error_callback);
-    return;
-  }
-  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  SetPropertyInternal(device_path, shill::kCarrierProperty,
+                      base::StringValue(carrier), callback, error_callback);
 }
 
 void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,

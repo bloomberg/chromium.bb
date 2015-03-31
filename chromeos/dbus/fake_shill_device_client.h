@@ -123,6 +123,12 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   void PostVoidCallback(const VoidDBusMethodCallback& callback,
                         DBusMethodCallStatus status);
 
+  void SetPropertyInternal(const dbus::ObjectPath& device_path,
+                           const std::string& name,
+                           const base::Value& value,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback);
+
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& device_path,
                                       const std::string& property);
   base::DictionaryValue* GetDeviceProperties(const std::string& device_path);

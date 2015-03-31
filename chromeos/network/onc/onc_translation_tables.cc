@@ -166,7 +166,7 @@ const FieldTranslationEntry cellular_fields[] = {
     {::onc::cellular::kActivationType, shill::kActivationTypeProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
-    {::onc::vpn::kAutoConnect, shill::kAutoConnectProperty},
+    {::onc::cellular::kAutoConnect, shill::kAutoConnectProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kNetworkTechnology,
     //   shill::kNetworkTechnologyProperty},

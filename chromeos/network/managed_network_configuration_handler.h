@@ -84,7 +84,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Initially configures an unconfigured network with the given user settings
   // and returns the new identifier to |callback| if successful. Fails if the

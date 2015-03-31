@@ -226,7 +226,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     const std::string& service_path,
     const base::DictionaryValue& user_settings,
     const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
+    const network_handler::ErrorCallback& error_callback) {
   const NetworkState* state =
       network_state_handler_->GetNetworkStateFromServicePath(
           service_path, true /* configured_only */);
@@ -305,6 +305,33 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
                                             network_policy,
                                             validated_user_settings.get()));
 
+  // 'Carrier' needs to be handled specially if set.
+  base::DictionaryValue* cellular = nullptr;
+  if (validated_user_settings->GetDictionaryWithoutPathExpansion(
+          ::onc::network_config::kCellular, &cellular)) {
+    std::string carrier;
+    if (cellular->GetStringWithoutPathExpansion(::onc::cellular::kCarrier,
+                                                &carrier)) {
+      network_device_handler_->SetCarrier(
+          state->device_path(), carrier,
+          base::Bind(
+              &ManagedNetworkConfigurationHandlerImpl::SetShillProperties,
+              weak_ptr_factory_.GetWeakPtr(), service_path,
+              base::Passed(&shill_dictionary), callback, error_callback),
+          error_callback);
+      return;
+    }
+  }
+
+  SetShillProperties(service_path, shill_dictionary.Pass(), callback,
+                     error_callback);
+}
+
+void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
+    const std::string& service_path,
+    scoped_ptr<base::DictionaryValue> shill_dictionary,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
   network_configuration_handler_->SetShillProperties(
       service_path, *shill_dictionary,
       NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,

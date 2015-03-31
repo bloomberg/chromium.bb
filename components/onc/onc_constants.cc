@@ -90,6 +90,7 @@ namespace cellular {
 const char kActivationState[] = "ActivationState";
 const char kActivated[] = "Activated";
 const char kActivating[] = "Activating";
+const char kAutoConnect[] = "AutoConnect";
 const char kNotActivated[] = "NotActivated";
 const char kPartiallyActivated[] = "PartiallyActivated";
 const char kActivationType[] = "ActivationType";

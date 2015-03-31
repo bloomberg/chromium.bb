@@ -108,6 +108,7 @@ namespace cellular {
 ONC_EXPORT extern const char kActivationState[];
 ONC_EXPORT extern const char kActivated[];
 ONC_EXPORT extern const char kActivating[];
+ONC_EXPORT extern const char kAutoConnect[];
 ONC_EXPORT extern const char kNotActivated[];
 ONC_EXPORT extern const char kPartiallyActivated[];
 ONC_EXPORT extern const char kActivationType[];

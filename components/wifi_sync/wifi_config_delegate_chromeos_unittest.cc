@@ -55,7 +55,7 @@ class FakeManagedNetworkConfigurationHandler
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) const override {
+      const ErrorCallback& error_callback) override {
     NOTIMPLEMENTED();
   }
   void CreateConfiguration(

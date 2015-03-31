@@ -56,7 +56,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      const network_handler::ErrorCallback& error_callback) override;
 
   void CreateConfiguration(
       const std::string& userhash,
@@ -178,6 +178,12 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       GetDevicePropertiesCallback send_callback,
       const std::string& error_name,
       scoped_ptr<base::DictionaryValue> error_data);
+
+  // Called from SetProperties, calls NCH::SetShillProperties.
+  void SetShillProperties(const std::string& service_path,
+                          scoped_ptr<base::DictionaryValue> shill_dictionary,
+                          const base::Closure& callback,
+                          const network_handler::ErrorCallback& error_callback);
 
   // Applies policies for |userhash|. |modified_policies| must be not null and
   // contain the GUIDs of the network configurations that changed since the last

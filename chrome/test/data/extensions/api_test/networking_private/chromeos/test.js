@@ -461,8 +461,40 @@ var availableTests = [
         }, result);
       }));
   },
+  function setCellularProperties() {
+    var network_guid = 'stub_cellular1_guid';
+    // Make sure we test Cellular.Carrier since it requires a special call
+    // to Shill.Device.SetCarrier.
+    var newCarrier = 'new_carrier';
+    chrome.networkingPrivate.getProperties(
+        network_guid,
+        callbackPass(function(result) {
+          assertEq(network_guid, result.GUID);
+          assertTrue(!result.Cellular || result.Cellular.Carrier != newCarrier);
+          var new_properties = {
+            Priority: 1,
+            Cellular: {
+              Carrier: newCarrier,
+            },
+          };
+          chrome.networkingPrivate.setProperties(
+              network_guid,
+              new_properties,
+              callbackPass(function() {
+                chrome.networkingPrivate.getProperties(
+                    network_guid,
+                    callbackPass(function(result) {
+                      // Ensure that the GUID doesn't change.
+                      assertEq(network_guid, result.GUID);
+                      // Ensure that the properties were set.
+                      assertEq(1, result['Priority']);
+                      assertTrue('Cellular' in result);
+                      assertEq(newCarrier, result.Cellular.Carrier);
+                    }));
+              }));
+        }));
+  },
   function setWiFiProperties() {
-    var done = chrome.test.callbackAdded();
     var network_guid = 'stub_wifi1_guid';
     chrome.networkingPrivate.getProperties(
         network_guid,
@@ -495,13 +527,11 @@ var availableTests = [
                       assertTrue('StaticIPConfig' in result);
                       assertEq('1.2.3.4',
                                result['StaticIPConfig']['IPAddress']);
-                      done();
                     }));
               }));
         }));
   },
   function setVPNProperties() {
-    var done = chrome.test.callbackAdded();
     var network_guid = 'stub_vpn1_guid';
     chrome.networkingPrivate.getProperties(
         network_guid,
@@ -527,7 +557,6 @@ var availableTests = [
                       assertEq('vpn.host1', result['VPN']['Host']);
                       // Ensure that the GUID doesn't change.
                       assertEq(network_guid, result.GUID);
-                      done();
                     }));
               }));
         }));
