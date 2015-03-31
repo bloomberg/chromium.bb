@@ -45,49 +45,74 @@ void CalculateVisibleRects(
           target_is_root_surface ? 0 : transform_node->data.content_target_id;
       const TransformNode* target_node = transform_tree.Node(target_id);
 
-      gfx::Transform clip_to_target;
-      gfx::Transform content_to_target;
-      gfx::Transform target_to_content;
-      gfx::Transform target_to_layer;
-
       // TODO(ajuma): Try to re-use transforms already stored in the transform
       // tree instead of computing transforms below.
-      bool success =
-          transform_tree.ComputeTransform(clip_transform_node->id,
-                                          target_node->id, &clip_to_target) &&
-          transform_tree.ComputeTransform(transform_node->id, target_node->id,
-                                          &content_to_target) &&
-          transform_tree.ComputeTransform(target_node->id, transform_node->id,
-                                          &target_to_layer);
-
-      // This should only fail if we somehow got here with a singular ancestor.
+      gfx::Transform content_to_target;
+      bool success = transform_tree.ComputeTransform(
+          transform_node->id, target_node->id, &content_to_target);
       DCHECK(success);
-
-      target_to_content.Scale(contents_scale_x, contents_scale_y);
-      target_to_content.Translate(-layer->offset_to_transform_parent().x(),
-                                  -layer->offset_to_transform_parent().y());
-      target_to_content.PreconcatTransform(target_to_layer);
 
       content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                   layer->offset_to_transform_parent().y());
       content_to_target.Scale(1.0 / contents_scale_x, 1.0 / contents_scale_y);
 
-      gfx::Rect layer_content_rect = gfx::Rect(layer_content_bounds);
-      gfx::Rect layer_content_bounds_in_target_space =
-          MathUtil::MapEnclosingClippedRect(content_to_target,
-                                            layer_content_rect);
       gfx::Rect clip_rect_in_target_space;
+      gfx::Transform clip_to_target;
+      success = transform_tree.ComputeTransform(
+          clip_transform_node->id, target_node->id, &clip_to_target);
       if (target_node->id > clip_node->data.transform_id) {
+        if (!success) {
+          DCHECK(target_node->data.to_screen_is_animated);
+
+          // An animated singular transform may become non-singular during the
+          // animation, so we still need to compute a visible rect. In this
+          // situation, we treat the entire layer as visible.
+          layer->set_visible_rect_from_property_trees(
+              gfx::Rect(layer_content_bounds));
+          continue;
+        }
+
         clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
                 clip_to_target, clip_node->data.combined_clip));
       } else {
+        // Computing a transform to an ancestor should always succeed.
+        DCHECK(success);
         clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::MapClippedRect(
                 clip_to_target, clip_node->data.combined_clip));
       }
 
+      gfx::Rect layer_content_rect = gfx::Rect(layer_content_bounds);
+      gfx::Rect layer_content_bounds_in_target_space =
+          MathUtil::MapEnclosingClippedRect(content_to_target,
+                                            layer_content_rect);
       clip_rect_in_target_space.Intersect(layer_content_bounds_in_target_space);
+      if (clip_rect_in_target_space.IsEmpty()) {
+        layer->set_visible_rect_from_property_trees(gfx::Rect());
+        continue;
+      }
+
+      gfx::Transform target_to_content;
+      gfx::Transform target_to_layer;
+
+      success = transform_tree.ComputeTransform(
+          target_node->id, transform_node->id, &target_to_layer);
+      if (!success) {
+        DCHECK(transform_node->data.to_screen_is_animated);
+
+        // An animated singular transform may become non-singular during the
+        // animation, so we still need to compute a visible rect. In this
+        // situation, we treat the entire layer as visible.
+        layer->set_visible_rect_from_property_trees(
+            gfx::Rect(layer_content_bounds));
+        continue;
+      }
+
+      target_to_content.Scale(contents_scale_x, contents_scale_y);
+      target_to_content.Translate(-layer->offset_to_transform_parent().x(),
+                                  -layer->offset_to_transform_parent().y());
+      target_to_content.PreconcatTransform(target_to_layer);
 
       gfx::Rect visible_rect = MathUtil::ProjectEnclosingClippedRect(
           target_to_content, clip_rect_in_target_space);
@@ -158,7 +183,15 @@ static bool IsBackFaceInvisible(Layer* layer, const TransformTree& tree) {
          IsLayerBackFaceExposed(backface_test_layer, tree);
 }
 
+static bool IsAnimatingTransformToScreen(Layer* layer,
+                                         const TransformTree& tree) {
+  const TransformNode* node = tree.Node(layer->transform_tree_index());
+  return node->data.to_screen_is_animated;
+}
+
 static bool IsInvisibleDueToTransform(Layer* layer, const TransformTree& tree) {
+  if (IsAnimatingTransformToScreen(layer, tree))
+    return false;
   return HasSingularTransform(layer, tree) || IsBackFaceInvisible(layer, tree);
 }
 

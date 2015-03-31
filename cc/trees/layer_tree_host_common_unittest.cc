@@ -8809,6 +8809,83 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   EXPECT_FALSE(animated->visible_rect_from_property_trees().IsEmpty());
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       VisibleContentRectForAnimatedLayerWithSingularTransform) {
+  const gfx::Transform identity_matrix;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> clip = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> animated =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> surface =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> descendant_of_animation =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+  root->AddChild(clip);
+  clip->AddChild(animated);
+  animated->AddChild(surface);
+  surface->AddChild(descendant_of_animation);
+
+  clip->SetMasksToBounds(true);
+  surface->SetForceRenderSurface(true);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  gfx::Transform uninvertible_matrix;
+  uninvertible_matrix.Scale3d(6.f, 6.f, 0.f);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(clip.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(animated.get(), uninvertible_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(120, 120), true, false);
+  SetLayerPropertiesForTesting(surface.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(descendant_of_animation.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(200, 200), true, false);
+
+  TransformOperations start_transform_operations;
+  start_transform_operations.AppendMatrix(uninvertible_matrix);
+  TransformOperations end_transform_operations;
+
+  AddAnimatedTransformToLayer(animated.get(), 10.0, start_transform_operations,
+                              end_transform_operations);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  // The animated layer has a singular transform and maps to a non-empty rect in
+  // clipped target space, so is treated as fully visible.
+  EXPECT_EQ(gfx::Rect(120, 120), animated->visible_rect_from_property_trees());
+
+  // The singular transform on |animated| is flattened when inherited by
+  // |surface|, and this happens to make it invertible.
+  EXPECT_EQ(gfx::Rect(2, 2), surface->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(2, 2),
+            descendant_of_animation->visible_rect_from_property_trees());
+
+  gfx::Transform zero_matrix;
+  zero_matrix.Scale3d(0.f, 0.f, 0.f);
+  SetLayerPropertiesForTesting(animated.get(), zero_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(120, 120), true, false);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  // The animated layer maps to the empty rect in clipped target space, so is
+  // treated as having an empty visible rect.
+  EXPECT_EQ(gfx::Rect(), animated->visible_rect_from_property_trees());
+
+  // This time, flattening does not make |animated|'s transform invertible. This
+  // means the clip cannot be projected into |surface|'s space, so we treat
+  // |surface| and layers that draw into it as fully visible.
+  EXPECT_EQ(gfx::Rect(100, 100), surface->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(200, 200),
+            descendant_of_animation->visible_rect_from_property_trees());
+}
+
 // Verify that having an animated filter (but no current filter, as these
 // are mutually exclusive) correctly creates a render surface.
 TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
