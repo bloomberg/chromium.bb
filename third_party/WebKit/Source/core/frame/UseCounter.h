@@ -678,6 +678,7 @@ public:
         DocumentDesignMode = 742,
         GlobalCacheStorage = 743,
         NetInfo = 744,
+        BackgroundSync = 745,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
