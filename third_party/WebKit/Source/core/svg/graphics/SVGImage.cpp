@@ -281,6 +281,15 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     // dropping the current color filter on the floor. Find a proper fix and get rid of it.
     GraphicsContext recordingContext(nullptr, nullptr);
     recordingContext.beginRecording(dstRect);
+
+
+    FrameView* view = frameView();
+    view->resize(containerSize());
+
+    // Always call scrollToFragment, even if the url is empty, because
+    // there may have been a previous url/fragment that needs to be reset.
+    view->scrollToFragment(m_url);
+
     {
         DisplayItemListScope displayItemListScope(&recordingContext);
         GraphicsContext* paintContext = displayItemListScope.context();
@@ -300,13 +309,6 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         AffineTransform transform = AffineTransform::translation(destOffset.x(), destOffset.y());
         transform.scale(scale.width(), scale.height());
         TransformRecorder transformRecorder(*paintContext, *this, transform);
-
-        FrameView* view = frameView();
-        view->resize(containerSize());
-
-        // Always call scrollToFragment, even if the url is empty, because
-        // there may have been a previous url/fragment that needs to be reset.
-        view->scrollToFragment(m_url);
 
         view->updateLayoutAndStyleForPainting();
         view->paint(paintContext, enclosingIntRect(srcRect));
