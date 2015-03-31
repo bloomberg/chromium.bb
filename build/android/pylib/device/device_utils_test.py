@@ -1590,6 +1590,32 @@ class DeviceUtilsParallelTest(mock_calls.TestCase):
         device_utils.DeviceUtils.parallel()
 
 
+class DeviceUtilsClientCache(DeviceUtilsTest):
+
+  def testClientCache_twoCaches(self):
+    self.device._cache['test'] = 0
+    client_cache_one = self.device.GetClientCache('ClientOne')
+    client_cache_one['test'] = 1
+    client_cache_two = self.device.GetClientCache('ClientTwo')
+    client_cache_two['test'] = 2
+    self.assertEqual(self.device._cache, {'test': 0})
+    self.assertEqual(client_cache_one, {'test': 1})
+    self.assertEqual(client_cache_two, {'test': 2})
+    self.device._ClearCache()
+    self.assertEqual(self.device._cache, {})
+    self.assertEqual(client_cache_one, {})
+    self.assertEqual(client_cache_two, {})
+
+  def testClientCache_multipleInstances(self):
+    client_cache_one = self.device.GetClientCache('ClientOne')
+    client_cache_one['test'] = 1
+    client_cache_two = self.device.GetClientCache('ClientOne')
+    self.assertEqual(client_cache_one, {'test': 1})
+    self.assertEqual(client_cache_two, {'test': 1})
+    self.device._ClearCache()
+    self.assertEqual(client_cache_one, {})
+    self.assertEqual(client_cache_two, {})
+
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
   unittest.main(verbosity=2)

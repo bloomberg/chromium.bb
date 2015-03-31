@@ -168,6 +168,7 @@ class DeviceUtils(object):
     self._default_timeout = default_timeout
     self._default_retries = default_retries
     self._cache = {}
+    self._client_caches = {}
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
@@ -406,7 +407,7 @@ class DeviceUtils(object):
       return not self.IsOnline()
 
     self.adb.Reboot()
-    self._cache = {}
+    self._ClearCache()
     timeout_retry.WaitFor(device_offline, wait_period=1)
     if block:
       self.WaitUntilFullyBooted(wifi=wifi)
@@ -1438,6 +1439,7 @@ class DeviceUtils(object):
     """
     return logcat_monitor.LogcatMonitor(self.adb, *args, **kwargs)
 
+  # TODO(rnephew): Remove when battery_utils is switched to.
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetBatteryInfo(self, timeout=None, retries=None):
     """Gets battery info for the device.
@@ -1465,6 +1467,7 @@ class DeviceUtils(object):
         result[k.strip()] = v.strip()
     return result
 
+  # TODO(rnephew): Remove when battery_utils is switched to.
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetCharging(self, timeout=None, retries=None):
     """Gets the charging state of the device.
@@ -1482,6 +1485,7 @@ class DeviceUtils(object):
         return True
     return False
 
+  # TODO(rnephew): Remove when battery_utils is switched to.
   @decorators.WithTimeoutAndRetriesFromInstance()
   def SetCharging(self, enabled, timeout=None, retries=None):
     """Enables or disables charging on the device.
@@ -1512,7 +1516,7 @@ class DeviceUtils(object):
 
     timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
 
-  # TODO(rnephew): Make private when all use cases can use the context manager.
+  # TODO(rnephew): Remove when battery_utils is switched to.
   @decorators.WithTimeoutAndRetriesFromInstance()
   def DisableBatteryUpdates(self, timeout=None, retries=None):
     """ Resets battery data and makes device appear like it is not
@@ -1542,7 +1546,7 @@ class DeviceUtils(object):
                          check_return=True)
     timeout_retry.WaitFor(battery_updates_disabled, wait_period=1)
 
-  # TODO(rnephew): Make private when all use cases can use the context manager.
+  # TODO(rnephew): Remove when battery_utils is switched to.
   @decorators.WithTimeoutAndRetriesFromInstance()
   def EnableBatteryUpdates(self, timeout=None, retries=None):
     """ Restarts device charging so that dumpsys no longer collects power data.
@@ -1559,6 +1563,7 @@ class DeviceUtils(object):
     self.RunShellCommand(['dumpsys', 'battery', 'reset'], check_return=True)
     timeout_retry.WaitFor(battery_updates_enabled, wait_period=1)
 
+  # TODO(rnephew): Remove when battery_utils is switched to.
   @contextlib.contextmanager
   def BatteryMeasurement(self, timeout=None, retries=None):
     """Context manager that enables battery data collection. It makes
@@ -1648,3 +1653,15 @@ class DeviceUtils(object):
       return parallelizer.Parallelizer(devices)
     else:
       return parallelizer.SyncParallelizer(devices)
+
+  def GetClientCache(self, client_name):
+    """Returns client cache."""
+    if client_name not in self._client_caches:
+      self._client_caches[client_name] = {}
+    return self._client_caches[client_name]
+
+  def _ClearCache(self):
+    """Clears all caches."""
+    for client in self._client_caches:
+      self._client_caches[client].clear()
+    self._cache.clear()

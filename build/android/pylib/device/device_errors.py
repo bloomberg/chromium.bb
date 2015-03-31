@@ -42,6 +42,13 @@ class AdbCommandFailedError(CommandFailedError):
     super(AdbCommandFailedError, self).__init__(message, device_serial)
 
 
+class DeviceVersionError(CommandFailedError):
+  """Exception for device version failures."""
+
+  def __init__(self, message, device_serial=None):
+    super(DeviceVersionError, self).__init__(message, device_serial)
+
+
 class AdbShellCommandFailedError(AdbCommandFailedError):
   """Exception for shell command failures run via adb."""
 
