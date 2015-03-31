@@ -486,47 +486,42 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
   std::map<ContentSettingsType, ContentSetting> default_settings;
 
   for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-        type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
-        type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
+    if (content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
+        content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
+        content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
       // These types are excluded because one can't call
       // GetDefaultContentSetting() for them.
-    } else {
-      ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
-      ContentSetting default_setting =
-          host_content_settings_map->GetDefaultContentSetting(content_type,
-                                                              NULL);
-      default_settings[content_type] = default_setting;
-      ContentSetting wildcard_setting =
-          default_setting == CONTENT_SETTING_BLOCK ? CONTENT_SETTING_ALLOW
-                                                   : CONTENT_SETTING_BLOCK;
-      ContentSetting site_setting =
-          default_setting == CONTENT_SETTING_ALLOW ? CONTENT_SETTING_ALLOW
-                                                   : CONTENT_SETTING_BLOCK;
-      if (HostContentSettingsMap::IsSettingAllowedForType(
-              profile()->GetPrefs(),
-              wildcard_setting,
-              content_type)) {
-        host_content_settings_map->SetDefaultContentSetting(
-            content_type,
-            wildcard_setting);
-      }
-      if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) &&
-          HostContentSettingsMap::IsSettingAllowedForType(
-              profile()->GetPrefs(),
-              site_setting,
-              content_type)) {
-        host_content_settings_map->SetContentSetting(
-            pattern,
-            ContentSettingsPattern::Wildcard(),
-            content_type,
-            std::string(),
-            site_setting);
-        ContentSettingsForOneType host_settings;
-        host_content_settings_map->GetSettingsForOneType(
-            content_type, std::string(), &host_settings);
-        EXPECT_EQ(2U, host_settings.size());
-      }
+      continue;
+    }
+    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+      // This has been deprecated so we can neither set nor get it's value.
+      continue;
+    }
+    ContentSetting default_setting =
+        host_content_settings_map->GetDefaultContentSetting(content_type, NULL);
+    default_settings[content_type] = default_setting;
+    ContentSetting wildcard_setting = default_setting == CONTENT_SETTING_BLOCK
+                                          ? CONTENT_SETTING_ALLOW
+                                          : CONTENT_SETTING_BLOCK;
+    ContentSetting site_setting = default_setting == CONTENT_SETTING_ALLOW
+                                      ? CONTENT_SETTING_ALLOW
+                                      : CONTENT_SETTING_BLOCK;
+    if (HostContentSettingsMap::IsSettingAllowedForType(
+            profile()->GetPrefs(), wildcard_setting, content_type)) {
+      host_content_settings_map->SetDefaultContentSetting(content_type,
+                                                          wildcard_setting);
+    }
+    if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) &&
+        HostContentSettingsMap::IsSettingAllowedForType(
+            profile()->GetPrefs(), site_setting, content_type)) {
+      host_content_settings_map->SetContentSetting(
+          pattern, ContentSettingsPattern::Wildcard(), content_type,
+          std::string(), site_setting);
+      ContentSettingsForOneType host_settings;
+      host_content_settings_map->GetSettingsForOneType(
+          content_type, std::string(), &host_settings);
+      EXPECT_EQ(2U, host_settings.size());
     }
   }
 
@@ -535,8 +530,9 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
   for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
     ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
     if (HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) ||
-        type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
+        content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
         content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
+        content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
         content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
       continue;
     ContentSetting default_setting =
