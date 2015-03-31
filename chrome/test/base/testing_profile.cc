@@ -216,12 +216,6 @@ KeyedService* CreateTestDesktopNotificationService(
 }
 #endif
 
-KeyedService* BuildFallbackIconService(content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new FallbackIconService(
-      ChromeFallbackIconClientFactory::GetForBrowserContext(profile));
-}
-
 KeyedService* BuildFaviconService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return new favicon::FaviconService(
@@ -578,11 +572,6 @@ TestingProfile::~TestingProfile() {
     resource_context_ = NULL;
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
-}
-
-void TestingProfile::CreateFallbackIconService() {
-  FaviconServiceFactory::GetInstance()->SetTestingFactory(
-      this, BuildFallbackIconService);
 }
 
 void TestingProfile::CreateFaviconService() {

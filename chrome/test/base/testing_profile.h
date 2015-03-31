@@ -166,9 +166,6 @@ class TestingProfile : public Profile {
 
   ~TestingProfile() override;
 
-  // Creates the fallback icon service.
-  void CreateFallbackIconService();
-
   // Creates the favicon service. Consequent calls would recreate the service.
   void CreateFaviconService();
 
