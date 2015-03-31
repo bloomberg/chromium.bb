@@ -119,7 +119,9 @@ bool VideoCaptureOracle::CompleteCapture(int frame_number,
                                          base::TimeTicks* frame_timestamp) {
   // Drop frame if previous frame number is higher.
   if (last_delivered_frame_number_ > frame_number) {
-    LOG(WARNING) << "Out of order frame delivery detected.  Dropping frame.";
+    LOG(WARNING) << "Out of order frame delivery detected (have #"
+                 << frame_number << ", last was #"
+                 << last_delivered_frame_number_ << ").  Dropping frame.";
     return false;
   }
   last_delivered_frame_number_ = frame_number;

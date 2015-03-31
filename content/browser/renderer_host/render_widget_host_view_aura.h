@@ -389,6 +389,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            UpdateCursorIfOverSelf);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
+                           DedupeFrameSubscriberRequests);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
                            DestroyedAfterCopyRequest);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            VisibleViewportTest);

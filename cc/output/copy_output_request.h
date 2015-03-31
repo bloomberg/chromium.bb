@@ -41,6 +41,12 @@ class CC_EXPORT CopyOutputRequest {
 
   bool IsEmpty() const { return result_callback_.is_null(); }
 
+  // Optionally specify the source of this copy request.  If set when this copy
+  // request is submitted to a layer, a prior uncommitted copy request from the
+  // same |source| will be aborted.
+  void set_source(void* source) { source_ = source; }
+  void* source() const { return source_; }
+
   bool force_bitmap_result() const { return force_bitmap_result_; }
 
   // By default copy requests copy the entire layer's subtree output. If an
@@ -73,6 +79,7 @@ class CC_EXPORT CopyOutputRequest {
   CopyOutputRequest(bool force_bitmap_result,
                     const CopyOutputRequestCallback& result_callback);
 
+  void* source_;
   bool force_bitmap_result_;
   bool has_area_;
   bool has_texture_mailbox_;

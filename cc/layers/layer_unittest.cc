@@ -7,6 +7,8 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -1249,6 +1251,74 @@ TEST_F(LayerTest, DrawsContentChangedInSetLayerTreeHost) {
   becomes_draws_content->SetIsDrawable(true);
   root_layer->AddChild(becomes_draws_content);
   EXPECT_EQ(1, root_layer->NumDescendantsThatDrawContent());
+}
+
+void ReceiveCopyOutputResult(int* result_count,
+                             scoped_ptr<CopyOutputResult> result) {
+  ++(*result_count);
+}
+
+TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
+  scoped_refptr<Layer> layer = Layer::Create();
+  int result_count = 0;
+
+  // Create identical requests without the source being set, and expect the
+  // layer does not abort either one.
+  scoped_ptr<CopyOutputRequest> request = CopyOutputRequest::CreateRequest(
+      base::Bind(&ReceiveCopyOutputResult, &result_count));
+  layer->RequestCopyOfOutput(request.Pass());
+  EXPECT_EQ(0, result_count);
+  request = CopyOutputRequest::CreateRequest(
+      base::Bind(&ReceiveCopyOutputResult, &result_count));
+  layer->RequestCopyOfOutput(request.Pass());
+  EXPECT_EQ(0, result_count);
+
+  // When the layer is destroyed, expect both requests to be aborted.
+  layer = nullptr;
+  EXPECT_EQ(2, result_count);
+
+  layer = Layer::Create();
+  result_count = 0;
+
+  // Create identical requests, but this time the source is being set.  Expect
+  // the first request from |this| source aborts immediately when the second
+  // request from |this| source is made.
+  int did_receive_first_result_from_this_source = 0;
+  request = CopyOutputRequest::CreateRequest(base::Bind(
+      &ReceiveCopyOutputResult, &did_receive_first_result_from_this_source));
+  request->set_source(this);
+  layer->RequestCopyOfOutput(request.Pass());
+  EXPECT_EQ(0, did_receive_first_result_from_this_source);
+  // Make a request from a different source.
+  int did_receive_result_from_different_source = 0;
+  request = CopyOutputRequest::CreateRequest(base::Bind(
+      &ReceiveCopyOutputResult, &did_receive_result_from_different_source));
+  request->set_source(reinterpret_cast<void*>(0xdeadbee0));
+  layer->RequestCopyOfOutput(request.Pass());
+  EXPECT_EQ(0, did_receive_result_from_different_source);
+  // Make a request without specifying the source.
+  int did_receive_result_from_anonymous_source = 0;
+  request = CopyOutputRequest::CreateRequest(base::Bind(
+      &ReceiveCopyOutputResult, &did_receive_result_from_anonymous_source));
+  layer->RequestCopyOfOutput(request.Pass());
+  EXPECT_EQ(0, did_receive_result_from_anonymous_source);
+  // Make the second request from |this| source.
+  int did_receive_second_result_from_this_source = 0;
+  request = CopyOutputRequest::CreateRequest(base::Bind(
+      &ReceiveCopyOutputResult, &did_receive_second_result_from_this_source));
+  request->set_source(this);
+  layer->RequestCopyOfOutput(request.Pass());  // First request to be aborted.
+  EXPECT_EQ(1, did_receive_first_result_from_this_source);
+  EXPECT_EQ(0, did_receive_result_from_different_source);
+  EXPECT_EQ(0, did_receive_result_from_anonymous_source);
+  EXPECT_EQ(0, did_receive_second_result_from_this_source);
+
+  // When the layer is destroyed, the other three requests should be aborted.
+  layer = nullptr;
+  EXPECT_EQ(1, did_receive_first_result_from_this_source);
+  EXPECT_EQ(1, did_receive_result_from_different_source);
+  EXPECT_EQ(1, did_receive_result_from_anonymous_source);
+  EXPECT_EQ(1, did_receive_second_result_from_this_source);
 }
 
 }  // namespace

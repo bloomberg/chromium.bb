@@ -159,33 +159,15 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
     return;
   }
 
-  // Try get a texture to reuse.
-  scoped_refptr<OwnedMailbox> subscriber_texture;
-  if (frame_subscriber_) {
-    if (!idle_frame_subscriber_textures_.empty()) {
-      subscriber_texture = idle_frame_subscriber_textures_.back();
-      idle_frame_subscriber_textures_.pop_back();
-    } else if (GLHelper* helper =
-                   ImageTransportFactory::GetInstance()->GetGLHelper()) {
-      subscriber_texture = new OwnedMailbox(helper);
-    }
-  }
-
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::
                CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
-          subscriber_texture,
+          nullptr,
           target,
           callback));
   request->set_area(src_subrect);
-  if (subscriber_texture.get()) {
-    request->SetTextureMailbox(
-        cc::TextureMailbox(subscriber_texture->mailbox(),
-                           subscriber_texture->target(),
-                           subscriber_texture->sync_point()));
-  }
   RequestCopyOfOutput(request.Pass());
 }
 
@@ -267,13 +249,42 @@ void DelegatedFrameHost::DidReceiveFrameFromRenderer(
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-  if (frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time,
-                                             &frame, &callback)) {
-    CopyFromCompositingSurfaceToVideoFrame(
-        gfx::Rect(current_frame_size_in_dip_),
-        frame,
-        base::Bind(callback, present_time));
+  if (!frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time,
+                                              &frame, &callback))
+    return;
+
+  // Get a texture to re-use; else, create a new one.
+  scoped_refptr<OwnedMailbox> subscriber_texture;
+  if (!idle_frame_subscriber_textures_.empty()) {
+    subscriber_texture = idle_frame_subscriber_textures_.back();
+    idle_frame_subscriber_textures_.pop_back();
+  } else if (GLHelper* helper =
+                 ImageTransportFactory::GetInstance()->GetGLHelper()) {
+    subscriber_texture = new OwnedMailbox(helper);
   }
+
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(base::Bind(
+          &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
+          AsWeakPtr(),
+          subscriber_texture,
+          frame,
+          base::Bind(callback, present_time)));
+  // Setting the source in this copy request asks that the layer abort any prior
+  // uncommitted copy requests made on behalf of the same frame subscriber.
+  // This will not affect any of the copy requests spawned elsewhere from
+  // DelegatedFrameHost (e.g., a call to CopyFromCompositingSurface() for
+  // screenshots) since those copy requests do not specify |frame_subscriber()|
+  // as a source.
+  request->set_source(frame_subscriber());
+  request->set_area(gfx::Rect(current_frame_size_in_dip_));
+  if (subscriber_texture.get()) {
+    request->SetTextureMailbox(
+        cc::TextureMailbox(subscriber_texture->mailbox(),
+                           subscriber_texture->target(),
+                           subscriber_texture->sync_point()));
+  }
+  RequestCopyOfOutput(request.Pass());
 }
 
 void DelegatedFrameHost::SwapDelegatedFrame(
@@ -439,8 +450,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     skipped_latency_info_list_.clear();
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
-                   AsWeakPtr(),
-                   output_surface_id));
+                   AsWeakPtr(), output_surface_id));
   } else {
     AddOnCommitCallbackAndDisableLocks(base::Closure());
   }

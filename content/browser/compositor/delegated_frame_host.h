@@ -230,6 +230,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
+  // Called to consult the current |frame_subscriber_|, to determine and maybe
+  // initiate a copy-into-video-frame request.
   void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
 
   DelegatedFrameHostClient* const client_;

@@ -377,6 +377,13 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
 void Layer::RequestCopyOfOutput(
     scoped_ptr<CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
+  if (void* source = request->source()) {
+    auto it = std::find_if(
+        copy_requests_.begin(), copy_requests_.end(),
+        [source](const CopyOutputRequest* x) { return x->source() == source; });
+    if (it != copy_requests_.end())
+      copy_requests_.erase(it);
+  }
   if (request->IsEmpty())
     return;
   copy_requests_.push_back(request.Pass());
