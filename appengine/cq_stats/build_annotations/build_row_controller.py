@@ -107,8 +107,11 @@ class BuildRow(collections.MutableMapping):
     for annotation in self.annotations:
       summary = annotation.failure_category
       failure_message = annotation.failure_message
-      if failure_message is not None:
+      blame_url = annotation.blame_url
+      if failure_message:
         summary += '(%s)' % failure_message[:30]
+      elif blame_url:
+        summary += '(%s)' % blame_url[:30]
       summaries.append(summary)
 
     result += '; '.join(summaries)
