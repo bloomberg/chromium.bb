@@ -49,7 +49,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsE
     , m_renderVSyncNotificationEnabled(false)
     , m_autoZoomFocusedNodeToLegibleScale(false)
     , m_deferredImageDecodingEnabled(false)
-    , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
     , m_shrinksViewportContentToFit(false)
     , m_viewportMetaLayoutSizeQuirk(false)
@@ -358,7 +357,7 @@ void WebSettingsImpl::setUseWideViewport(bool useWideViewport)
 
 void WebSettingsImpl::setDoubleTapToZoomEnabled(bool doubleTapToZoomEnabled)
 {
-    m_doubleTapToZoomEnabled = doubleTapToZoomEnabled;
+    m_devToolsEmulator->setDoubleTapToZoomEnabled(doubleTapToZoomEnabled);
 }
 
 void WebSettingsImpl::setDownloadableBinaryFontsEnabled(bool enabled)
@@ -681,6 +680,11 @@ WebSettings::HoverType WebSettingsImpl::primaryHoverType() const
 bool WebSettingsImpl::viewportEnabled() const
 {
     return m_settings->viewportEnabled();
+}
+
+bool WebSettingsImpl::doubleTapToZoomEnabled() const
+{
+    return m_devToolsEmulator->doubleTapToZoomEnabled();
 }
 
 bool WebSettingsImpl::mockGestureTapHighlightsEnabled() const

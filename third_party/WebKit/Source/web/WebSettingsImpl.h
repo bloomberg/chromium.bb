@@ -192,7 +192,7 @@ public:
     bool showPaintRects() const { return m_showPaintRects; }
     bool renderVSyncNotificationEnabled() const { return m_renderVSyncNotificationEnabled; }
     bool autoZoomFocusedNodeToLegibleScale() const { return m_autoZoomFocusedNodeToLegibleScale; }
-    bool doubleTapToZoomEnabled() const { return m_doubleTapToZoomEnabled; }
+    bool doubleTapToZoomEnabled() const;
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
     bool viewportMetaLayoutSizeQuirk() const { return m_viewportMetaLayoutSizeQuirk; }
@@ -210,7 +210,6 @@ private:
     bool m_renderVSyncNotificationEnabled;
     bool m_autoZoomFocusedNodeToLegibleScale;
     bool m_deferredImageDecodingEnabled;
-    bool m_doubleTapToZoomEnabled;
     bool m_perTilePaintingEnabled;
     bool m_supportDeprecatedTargetDensityDPI;
     bool m_shrinksViewportContentToFit;
