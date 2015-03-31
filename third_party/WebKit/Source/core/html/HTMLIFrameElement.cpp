@@ -169,6 +169,7 @@ void HTMLIFrameElement::valueChanged()
     setSandboxFlags(m_sandbox->value().isNull() ? SandboxNone : parseSandboxPolicy(m_sandbox->tokens(), invalidTokens));
     if (!invalidTokens.isNull())
         document().addConsoleMessage(ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens));
+    setSynchronizedLazyAttribute(sandboxAttr, m_sandbox->value());
 }
 
 }

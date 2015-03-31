@@ -25,6 +25,8 @@ function childFrameWasNavigated()
 function sandboxWasNavigated()
 {
     shouldBe("document.getElementById('sandboxedFrameId').sandbox", "['allow-scripts', 'allow-same-origin']");
+    document.getElementById('sandboxedFrameId').sandbox = "allow-scripts";
+    shouldBe("document.getElementById('sandboxedFrameId').getAttribute('sandbox')", "'allow-scripts'");
     isSuccessfullyParsed();
 
     if (window.testRunner)
