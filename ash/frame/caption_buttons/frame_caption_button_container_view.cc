@@ -12,6 +12,7 @@
 #include "ash/frame/caption_buttons/frame_size_button.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
+#include "ash/touch/touch_uma.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -334,6 +335,11 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     } else {
       frame_->Maximize();
       action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
+    }
+
+    if (event.IsGestureEvent()) {
+      TouchUMA::GetInstance()->RecordGestureAction(
+          TouchUMA::GESTURE_FRAMEMAXIMIZE_TAP);
     }
   } else if (sender == close_button_) {
     frame_->Close();

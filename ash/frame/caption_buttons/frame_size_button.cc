@@ -7,7 +7,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -123,10 +122,6 @@ void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_SCROLL_FLING_START ||
       event->type() == ui::ET_GESTURE_END) {
     if (CommitSnap(*event)) {
-      if (event->type() == ui::ET_GESTURE_TAP) {
-        TouchUMA::GetInstance()->RecordGestureAction(
-            TouchUMA::GESTURE_FRAMEMAXIMIZE_TAP);
-      }
       event->SetHandled();
       return;
     }
