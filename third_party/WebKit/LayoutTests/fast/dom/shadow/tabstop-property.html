@@ -9,60 +9,108 @@
 <script>
 var div;
 
+function resetAttributes(el)
+{
+    el.removeAttribute("tabindex");
+    el.removeAttribute("tabstop");
+}
+
+function tabStopShouldBe(el, expected)
+{
+    shouldBe(el + ".tabStop", expected);
+    shouldBeEqualToString(el + ".getAttribute('tabstop')", expected);
+}
+
 function test() {
     debug("Testing tabStop property and attribute");
 
     debug("Test tabStop normal assignment behavior");
     div = document.createElement("div");
+
+    resetAttributes(div);
     var flag = div.tabStop;
-    shouldBe("div.tabStop", "false");
+    shouldBeFalse("div.tabStop");
 
     div.tabStop = flag;
-    shouldBe("div.tabStop", "false");
+    tabStopShouldBe("div", "false");
 
-    div.removeAttribute('isTabstop');
-    shouldBe("div.tabStop", "false");
+    div.removeAttribute('tabstop');
+    shouldBeFalse("div.tabStop");
+    shouldBeFalse("div.hasAttribute('tabstop')");
 
-    debug("Test tabStop override by tabindex property");
+    div.tabStop = true;
+    tabStopShouldBe("div", "true");
+
+    div.removeAttribute('tabstop');
+    shouldBeFalse("div.tabStop");
+    shouldBeFalse("div.hasAttribute('tabstop')");
+
+
+    debug("Test tabStop value implicitly set by tabindex property");
+    resetAttributes(div);
     div.tabIndex = 0;
-    shouldBe("div.tabStop", "true");
+    shouldBeTrue("div.tabStop");
 
     div.tabIndex = -1;
-    shouldBe("div.tabStop", "false");
+    shouldBeFalse("div.tabStop");
 
     div.tabIndex = 1;
-    shouldBe("div.tabStop", "true");
+    shouldBeTrue("div.tabStop");
 
-    debug("Test tabStop override by tabindex attribute");
+    resetAttributes(div);
+    shouldBeFalse("div.tabStop");
+
+
+    debug("Test explicit tabStop not overridable by tabindex attribute");
+    resetAttributes(div);
     div.tabStop = false;
     div.setAttribute("tabindex", "0");
-    shouldBe("div.tabStop", "true");
+    tabStopShouldBe("div", "false");
 
     div.tabStop = true;
     div.setAttribute("tabindex", "-1");
-    shouldBe("div.tabStop", "false");
+    tabStopShouldBe("div", "true");
 
     div.tabStop = false;
     div.setAttribute("tabIndex", "1");
-    shouldBe("div.tabStop", "true");
+    tabStopShouldBe("div", "false");
 
-    debug("Test tabStop change after tabindex change");
+    resetAttributes(div);
+    shouldBeFalse("div.tabStop");
+    shouldBeFalse("div.hasAttribute('tabstop')");
+
+
+    debug("Test tabStop change with explicit tabindex change");
+    resetAttributes(div);
+
+    div.tabIndex = 0;
+    shouldBeTrue("div.tabStop");
+    div.tabStop = false;
+    tabStopShouldBe("div", "false");
+    resetAttributes(div);
+
+    div.tabIndex = -1;
+    shouldBeFalse("div.tabStop");
+    div.tabStop = true;
+    tabStopShouldBe("div", "true");
+    resetAttributes(div);
+
+    debug("Test tabStop with invalid value");
+    resetAttributes(div);
+
     div.tabIndex = 0;
     div.tabStop = false;
-    shouldBe("div.tabStop", "false");
+    tabStopShouldBe("div", "false");
+    div.setAttribute("tabstop", "invalid");
+    shouldBeTrue("div.tabStop");
+    shouldBeEqualToString("div.getAttribute('tabstop')", "invalid");
 
     div.tabIndex = -1;
     div.tabStop = true;
-    shouldBe("div.tabStop", "true");
-
-    debug("Test tabStop change before tabindex change which will be overridden");
-    div.tabStop = false;
-    div.tabIndex = 0;
-    shouldBe("div.tabStop", "true");
-
-    div.tabStop = true;
-    div.tabIndex = -1;
-    shouldBe("div.tabStop", "false");
+    tabStopShouldBe("div", "true");
+    div.setAttribute("tabstop", "invalid");
+    shouldBeFalse("div.tabStop");
+    shouldBeEqualToString("div.getAttribute('tabstop')", "invalid");
 }
 
 function run_test() {

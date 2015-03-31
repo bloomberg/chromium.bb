@@ -211,13 +211,20 @@ void Element::clearElementFlag(ElementFlags mask)
 
 void Element::clearTabIndexExplicitlyIfNeeded()
 {
-    if (hasRareData())
+    if (hasRareData()) {
         elementRareData()->clearTabIndexExplicitly();
+        // As tabindex is removed, unless there is an tabstop attribute,
+        // revert tabstop to default to match tabindex at this point (0).
+        if (!fastHasAttribute(tabstopAttr))
+            setTabStopInternal(true);
+    }
 }
 
 void Element::setTabIndexExplicitly(short tabIndex)
 {
     ensureElementRareData().setTabIndexExplicitly(tabIndex);
+    if (!fastHasAttribute(tabstopAttr))
+        setTabStopInternal(tabIndex >= 0);
 }
 
 void Element::setTabIndex(int value)
@@ -2092,6 +2099,26 @@ void Element::parseAttribute(const QualifiedName& name, const AtomicString& valu
             // Clamp tabindex to the range of 'short' to match Firefox's behavior.
             setTabIndexExplicitly(max(static_cast<int>(std::numeric_limits<short>::min()), std::min(tabindex, static_cast<int>(std::numeric_limits<short>::max()))));
         }
+    } else if (RuntimeEnabledFeatures::tabStopAttributeEnabled() && name == tabstopAttr) {
+        if (!hasAttribute(tabstopAttr)) {
+            // tabstop attribute removed.
+            clearElementFlag(TabStopWasSetExplicitly);
+            setTabStopInternal(tabIndex() >= 0);
+        } else {
+            // Treat empty attribute as true.
+            if (equalIgnoringCase(value, "true") || equalIgnoringCase(value, "")) {
+                setTabStopInternal(true);
+                setElementFlag(TabStopWasSetExplicitly, true);
+            } else if (equalIgnoringCase(value, "false")) {
+                setTabStopInternal(false);
+                setElementFlag(TabStopWasSetExplicitly, true);
+            } else {
+                // When value is other than "true", "false", "", the value is ignored and
+                // falls back the default state.
+                clearElementFlag(TabStopWasSetExplicitly);
+                setTabStopInternal(tabIndex() >= 0);
+            }
+        }
     }
 }
 
@@ -2334,11 +2361,20 @@ bool Element::isMouseFocusable() const
 
 bool Element::tabStop() const
 {
-    // Any element which never supports focus will always return false.
-    return supportsFocus() && (hasRareData() ? elementRareData()->tabStop() : true);
+    if (hasElementFlag(TabStopWasSetExplicitly))
+        return elementRareData()->tabStop();
+    return tabIndex() >= 0;
 }
 
 void Element::setTabStop(bool flag)
+{
+    // Reflect the value in the HTML attribute. Note that we cannot use setBooleanAttribute()
+    // because the tabstop attribute is an enumerated attribute.
+    // After tabstop attribute is set, the property value is modified accordingly.
+    setAttribute(tabstopAttr, flag ? "true" : "false");
+}
+
+void Element::setTabStopInternal(bool flag)
 {
     ensureElementRareData().setTabStop(flag);
     focusStateChanged();

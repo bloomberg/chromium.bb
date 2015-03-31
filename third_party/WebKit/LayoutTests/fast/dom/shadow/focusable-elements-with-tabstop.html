@@ -124,8 +124,9 @@ function testAnchor() {
 
     prepareAnchorWithShadow(sandbox);
 
+    // This is questionable, but true; <a> without href returns 0 for tabIndex.
     anchor_host = document.getElementById("anchor-host");
-    shouldBe('anchor_host.tabStop', 'false');
+    shouldBe('anchor_host.tabStop', 'true');
 
     var expectedOrder = [
       'anchor-before',

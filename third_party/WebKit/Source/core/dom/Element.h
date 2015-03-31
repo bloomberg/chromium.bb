@@ -79,8 +79,9 @@ enum ElementFlags {
     ContainsFullScreenElement = 1 << 3,
     IsInTopLayer = 1 << 4,
     HasPendingResources = 1 << 5,
+    TabStopWasSetExplicitly = 1 << 6,
 
-    NumberOfElementFlags = 6, // Required size of bitfield used to store the flags.
+    NumberOfElementFlags = 7, // Required size of bitfield used to store the flags.
 };
 
 class CORE_EXPORT Element : public ContainerNode {
@@ -377,6 +378,7 @@ public:
     bool isFocusable() const;
     bool tabStop() const;
     void setTabStop(bool);
+    void setTabStopInternal(bool);
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType);

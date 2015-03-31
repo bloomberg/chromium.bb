@@ -44,7 +44,7 @@ PASS
 Should move from button-host/button-inner to button-before in backward
 PASS
 Testing tabStop property on anchor without href
-PASS anchor_host.tabStop is false
+PASS anchor_host.tabStop is true
 Should move from anchor-before to anchor-host/anchor-inner in forward
 PASS
 Should move from anchor-host/anchor-inner to anchor-after in forward

@@ -4,21 +4,43 @@ Testing tabStop property and attribute
 Test tabStop normal assignment behavior
 PASS div.tabStop is false
 PASS div.tabStop is false
+PASS div.getAttribute('tabstop') is "false"
 PASS div.tabStop is false
-Test tabStop override by tabindex property
+PASS div.hasAttribute('tabstop') is false
 PASS div.tabStop is true
+PASS div.getAttribute('tabstop') is "true"
 PASS div.tabStop is false
-PASS div.tabStop is true
-Test tabStop override by tabindex attribute
-PASS div.tabStop is true
-PASS div.tabStop is false
-PASS div.tabStop is true
-Test tabStop change after tabindex change
-PASS div.tabStop is false
-PASS div.tabStop is true
-Test tabStop change before tabindex change which will be overridden
+PASS div.hasAttribute('tabstop') is false
+Test tabStop value implicitly set by tabindex property
 PASS div.tabStop is true
 PASS div.tabStop is false
+PASS div.tabStop is true
+PASS div.tabStop is false
+Test explicit tabStop not overridable by tabindex attribute
+PASS div.tabStop is false
+PASS div.getAttribute('tabstop') is "false"
+PASS div.tabStop is true
+PASS div.getAttribute('tabstop') is "true"
+PASS div.tabStop is false
+PASS div.getAttribute('tabstop') is "false"
+PASS div.tabStop is false
+PASS div.hasAttribute('tabstop') is false
+Test tabStop change with explicit tabindex change
+PASS div.tabStop is true
+PASS div.tabStop is false
+PASS div.getAttribute('tabstop') is "false"
+PASS div.tabStop is false
+PASS div.tabStop is true
+PASS div.getAttribute('tabstop') is "true"
+Test tabStop with invalid value
+PASS div.tabStop is false
+PASS div.getAttribute('tabstop') is "false"
+PASS div.tabStop is true
+PASS div.getAttribute('tabstop') is "invalid"
+PASS div.tabStop is true
+PASS div.getAttribute('tabstop') is "true"
+PASS div.tabStop is false
+PASS div.getAttribute('tabstop') is "invalid"
 Test finished.
 PASS successfullyParsed is true
 

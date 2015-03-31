@@ -57,15 +57,12 @@ public:
     void setTabIndexExplicitly(short index)
     {
         m_tabindex = index;
-        // tabStop is overridden by setting tabindex.
-        m_tabStop = (m_tabindex >= 0);
         setElementFlag(TabIndexWasSetExplicitly, true);
     }
 
     void clearTabIndexExplicitly()
     {
         m_tabindex = 0;
-        m_tabStop = true;
         clearElementFlag(TabIndexWasSetExplicitly);
     }
 
