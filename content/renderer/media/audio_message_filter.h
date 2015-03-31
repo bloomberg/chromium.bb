@@ -44,11 +44,6 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   scoped_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(int render_view_id,
                                                          int render_frame_id);
 
-  // When set, AudioMessageFilter will update the AudioHardwareConfig with new
-  // configuration values as received by OnOutputDeviceChanged().  The provided
-  // |config| must outlive AudioMessageFilter.
-  void SetAudioHardwareConfig(media::AudioHardwareConfig* config);
-
   // IO message loop associated with this message filter.
   scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
     return io_message_loop_;
