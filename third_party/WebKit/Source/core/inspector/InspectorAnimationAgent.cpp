@@ -58,6 +58,15 @@ void InspectorAnimationAgent::disable(ErrorString*)
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, false);
     m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
     m_idToAnimationPlayer.clear();
+    m_idToAnimationType.clear();
+}
+
+void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
+{
+    if (frame == m_pageAgent->inspectedFrame()) {
+        m_idToAnimationPlayer.clear();
+        m_idToAnimationType.clear();
+    }
 }
 
 static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation(Animation* animation, bool isTransition)
@@ -186,12 +195,16 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
         animationType = AnimationType::WebAnimation;
     }
 
+    String id = String::number(player.sequenceNumber());
+    m_idToAnimationPlayer.set(id, &player);
+    m_idToAnimationType.set(id, animationType);
+
     RefPtr<TypeBuilder::Animation::AnimationNode> animationObject = buildObjectForAnimation(toAnimation(player.source()), animationType == AnimationType::CSSTransition);
     if (keyframeRule)
         animationObject->setKeyframesRule(keyframeRule);
 
     RefPtr<TypeBuilder::Animation::AnimationPlayer> playerObject = TypeBuilder::Animation::AnimationPlayer::create()
-        .setId(String::number(player.sequenceNumber()))
+        .setId(id)
         .setPausedState(player.paused())
         .setPlayState(player.playState())
         .setPlaybackRate(player.playbackRate())
@@ -274,9 +287,9 @@ void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer* player)
     if (player->startTime() - latestStartTime > 1000) {
         reset = true;
         m_idToAnimationPlayer.clear();
+        m_idToAnimationType.clear();
     }
 
-    m_idToAnimationPlayer.set(playerId, player);
     frontend()->animationPlayerCreated(buildObjectForAnimationPlayer(*player), reset);
 }
 
@@ -304,6 +317,7 @@ DEFINE_TRACE(InspectorAnimationAgent)
     visitor->trace(m_pageAgent);
     visitor->trace(m_domAgent);
     visitor->trace(m_idToAnimationPlayer);
+    visitor->trace(m_idToAnimationType);
 #endif
     InspectorBaseAgent::trace(visitor);
 }

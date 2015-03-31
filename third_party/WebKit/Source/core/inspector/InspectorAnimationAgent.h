@@ -31,6 +31,7 @@ public:
     // Base agent methods.
     void restore() override;
     void disable(ErrorString*) override;
+    void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Protocol method implementations
     virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
@@ -63,6 +64,7 @@ private:
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer>> m_idToAnimationPlayer;
+    WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
 };
 
 }
