@@ -67,7 +67,7 @@ declare_args() {
 
   enable_supervised_users = !is_ios
 
-  enable_autofill_dialog = !is_ios && !(is_android && is_android_webview_build)
+  enable_autofill_dialog = !is_ios
 
   enable_google_now = !is_ios && !is_android
 

@@ -155,10 +155,8 @@
         # default. "default" should be used on non-official builds.
         'android_channel%': 'default',
 
-        # This is set when building the Android WebView inside the Android
-        # build system, using the 'android' gyp backend. The WebView code is
-        # still built when this is unset, but builds using the normal chromium
-        # build system.
+        # WebView now builds in a normal android build; don't use this.
+        # TODO(torne): remove this. http://crbug.com/440793
         'android_webview_build%': 0,
 
         # Set ARM architecture version.
@@ -793,8 +791,8 @@
           'native_memory_pressure_signals%': 1,
         }],
 
-        # Enable autofill dialog for Android, Mac and Views-enabled platforms.
-        ['toolkit_views==1 or (OS=="android" and android_webview_build==0) or OS=="mac"', {
+        # Enable autofill dialog when not on iOS.
+        ['OS!="ios"', {
           'enable_autofill_dialog%': 1,
 
           'conditions': [
@@ -1023,7 +1021,7 @@
 
         # TODO(rmcilroy): Enable v8_use_external_startup_data on ChromeOS
         # http://crbug.com/421063
-        ['android_webview_build==0 and chromecast==0 and chromeos==0 and OS!="ios"', {
+        ['chromecast==0 and chromeos==0 and OS!="ios"', {
           'v8_use_external_startup_data%': 1,
         }, {
           'v8_use_external_startup_data%': 0,
@@ -1574,18 +1572,11 @@
       # it takes effect here.
       ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan_vptr==0', {
         'conditions': [
-          ['OS=="android" and android_webview_build==0', {
+          ['OS=="android"', {
             'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
             # We directly set the gcc version since we know what we use.
             'gcc_version%': 49,
-          }],
-          ['OS=="android" and android_webview_build==1', {
-            # Android WebView uses a hermetic clang toolchain for host builds.
-            'host_gcc_version%': 0,
-            # Android WebView uses the GCC toolchain from the Android build.
-            'gcc_version%': 48,
-          }],
-          ['OS!="android"', {
+          }, {
             'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
             'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
           }],
@@ -2085,11 +2076,6 @@
           '-E', 'ANDROID_JAVA_TAGGED_ONLY=true',
           '--no-output-all-resource-defines',
         ],
-        'conditions': [
-          ['<(android_webview_build)==1', {
-            'grit_defines': ['-D', 'is_android_webview_build'],
-          }],
-        ],
       }],
       ['OS=="mac" or OS=="ios"', {
         'grit_defines': ['-D', 'scale_factors=2x'],
@@ -2310,14 +2296,14 @@
       }],
 
       # Set default compiler flags depending on ARM version.
-      ['arm_version==6 and android_webview_build==0', {
+      ['arm_version==6', {
         'arm_arch%': 'armv6',
         'arm_tune%': '',
         'arm_fpu%': 'vfp',
         'arm_float_abi%': 'softfp',
         'arm_thumb%': 0,
       }],
-      ['arm_version==7 and android_webview_build==0', {
+      ['arm_version==7', {
         'arm_arch%': 'armv7-a',
         'arm_tune%': 'generic-armv7-a',
         'conditions': [
@@ -2333,22 +2319,11 @@
       }],
 
       # Set default compiler flags for MIPS floating-point support.
-      ['target_arch=="mipsel" and android_webview_build==0', {
+      ['target_arch=="mipsel"', {
         'mips_float_abi%': 'hard',
       }],
-      ['target_arch=="mipsel" and mips_arch_variant=="r2" and android_webview_build==0', {
+      ['target_arch=="mipsel" and mips_arch_variant=="r2"', {
         'mips_fpu_mode%': 'fp32',
-      }],
-
-      ['android_webview_build==1', {
-        # The WebView build gets its cpu-specific flags from the Android build system.
-        'arm_arch%': '',
-        'arm_tune%': '',
-        'arm_fpu%': '',
-        'arm_float_abi%': '',
-        'arm_thumb%': 0,
-        'mips_float_abi%': '',
-        'mips_fpu_mode%': '',
       }],
 
       # Enable brlapi by default for chromeos.
@@ -4079,10 +4054,6 @@
                     'cflags!': [
                        '-fstack-protector',  # stack protector is always enabled on arm64.
                     ],
-                  }],
-                  # TODO: Remove webview test once webview fully compiles from
-                  # Chromium. crbug.com/440793
-                  ['OS=="android" and android_webview_build==0', {
                     'ldflags': [
                       '-fuse-ld=gold',
                     ],
@@ -4095,78 +4066,74 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'conditions': [
-                  ['android_webview_build==0', {
+                  ['mips_arch_variant=="r6"', {
                     'conditions': [
-                      ['mips_arch_variant=="r6"', {
-                        'conditions': [
-                          ['clang==1', {
-                            'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r6', ],
-                            'ldflags': [ '-target mipsel-linux-gnu', ],
-                          }, { # clang==0
-                            'cflags': ['-mips32r6', '-Wa,-mips32r6', ],
-                          }],
-                          ['clang==0 and OS=="android"', {
-                            'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
-                          }],
-                        ],
-                      }],
-                      ['mips_arch_variant=="r2"', {
-                        'conditions': [
-                          ['mips_float_abi=="hard" and mips_fpu_mode!=""', {
-                            'cflags': ['-m<(mips_fpu_mode)'],
-                          }],
-                          ['clang==1', {
-                             'conditions': [
-                              ['OS=="android"', {
-                                'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32r2'],
-                                'ldflags': [ '-target mipsel-linux-android', ],
-                              }],
-                             ],
-                          }, { # clang==0
-                            'cflags': ['-mips32r2', '-Wa,-mips32r2', ],
-                          }],
-                        ],
-                      }],
-                      ['mips_arch_variant=="r1"', {
-                        'conditions': [
-                          ['clang==1', {
-                            'conditions': [
-                              ['OS=="android"', {
-                                'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32'],
-                                'ldflags': [ '-target mipsel-linux-android', ],
-                              }],
-                            ],
-                          }, { # clang==0
-                            'cflags': ['-mips32', '-Wa,-mips32', ],
-                          }],
-                        ],
-                      }],
                       ['clang==1', {
-                        'cflags!': [
-                          # Clang does not support the following options.
-                          '-finline-limit=64',
-                        ],
-                        'cflags': [
-                          # TODO(gordanac) Enable integrated-as.
-                          '-no-integrated-as',
-                          '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
-                        ],
-                        'ldflags': [
-                          # Let clang find the ld in the NDK.
-                          '--gcc-toolchain=<(android_toolchain)/..',
-                        ],
+                        'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r6', ],
+                        'ldflags': [ '-target mipsel-linux-gnu', ],
+                      }, { # clang==0
+                        'cflags': ['-mips32r6', '-Wa,-mips32r6', ],
                       }],
-                      ['mips_dsp_rev==1', {
-                        'cflags': ['-mdsp'],
+                      ['clang==0 and OS=="android"', {
+                        'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
                       }],
-                      ['mips_dsp_rev==2', {
-                        'cflags': ['-mdspr2'],
-                      }],
-                    ],
-                    'cflags': [
-                      '-m<(mips_float_abi)-float'
                     ],
                   }],
+                  ['mips_arch_variant=="r2"', {
+                    'conditions': [
+                      ['mips_float_abi=="hard" and mips_fpu_mode!=""', {
+                        'cflags': ['-m<(mips_fpu_mode)'],
+                      }],
+                      ['clang==1', {
+                         'conditions': [
+                          ['OS=="android"', {
+                            'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32r2'],
+                            'ldflags': [ '-target mipsel-linux-android', ],
+                          }],
+                         ],
+                      }, { # clang==0
+                        'cflags': ['-mips32r2', '-Wa,-mips32r2', ],
+                      }],
+                    ],
+                  }],
+                  ['mips_arch_variant=="r1"', {
+                    'conditions': [
+                      ['clang==1', {
+                        'conditions': [
+                          ['OS=="android"', {
+                            'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32'],
+                            'ldflags': [ '-target mipsel-linux-android', ],
+                          }],
+                        ],
+                      }, { # clang==0
+                        'cflags': ['-mips32', '-Wa,-mips32', ],
+                      }],
+                    ],
+                  }],
+                  ['clang==1', {
+                    'cflags!': [
+                      # Clang does not support the following options.
+                      '-finline-limit=64',
+                    ],
+                    'cflags': [
+                      # TODO(gordanac) Enable integrated-as.
+                      '-no-integrated-as',
+                      '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
+                    ],
+                    'ldflags': [
+                      # Let clang find the ld in the NDK.
+                      '--gcc-toolchain=<(android_toolchain)/..',
+                    ],
+                  }],
+                  ['mips_dsp_rev==1', {
+                    'cflags': ['-mdsp'],
+                  }],
+                  ['mips_dsp_rev==2', {
+                    'cflags': ['-mdspr2'],
+                  }],
+                ],
+                'cflags': [
+                  '-m<(mips_float_abi)-float'
                 ],
                 'ldflags': [
                   '-Wl,--no-keep-memory'
@@ -4181,17 +4148,13 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'conditions': [
-                  ['android_webview_build==0', {
-                    'conditions': [
-                      ['mips_arch_variant=="r6"', {
-                        'cflags': ['-mips64r6', '-Wa,-mips64r6'],
-                        'ldflags': ['-mips64r6'],
-                      }],
-                      ['mips_arch_variant=="r2"', {
-                        'cflags': ['-mips64r2', '-Wa,-mips64r2'],
-                        'ldflags': ['-mips64r2'],
-                      }],
-                    ],
+                  ['mips_arch_variant=="r6"', {
+                    'cflags': ['-mips64r6', '-Wa,-mips64r6'],
+                    'ldflags': ['-mips64r6'],
+                  }],
+                  ['mips_arch_variant=="r2"', {
+                    'cflags': ['-mips64r2', '-Wa,-mips64r2'],
+                    'ldflags': ['-mips64r2'],
                   }],
                 ],
                 'cflags_cc': [
@@ -4713,6 +4676,12 @@
               '-finline-limit=64',
               '-Wa,--noexecstack',
               '<@(release_extra_cflags)',
+              '--sysroot=<(android_ndk_sysroot)',
+              # NOTE: The stlport header include paths below are specified in
+              # cflags rather than include_dirs because they need to come
+              # after include_dirs.
+              # The include ordering here is important; change with caution.
+              '-isystem<(android_stlport_include)',
             ],
             'defines': [
               'ANDROID',
@@ -4720,15 +4689,43 @@
               'USE_STLPORT=1',
               '_STLP_USE_PTR_SPECIALIZATIONS=1',
               'CHROME_BUILD_ID="<(chrome_build_id)"',
+              # The NDK has these things, but doesn't define the constants
+              # to say that it does. Define them here instead.
+              'HAVE_SYS_UIO_H',
             ],
             'ldflags!': [
               '-pthread',  # Not supported by Android toolchain.
             ],
             'ldflags': [
               '-Wl,--no-undefined',
+              '--sysroot=<(android_ndk_sysroot)',
+              '-nostdlib',
+              '-L<(android_stlport_libs_dir)',
+              # Don't allow visible symbols from libgcc or stlport to be
+              # re-exported.
+              '-Wl,--exclude-libs=libgcc.a',
+              '-Wl,--exclude-libs=libstlport_static.a',
+              # Don't allow visible symbols from libraries that contain
+              # assembly code with symbols that aren't hidden properly.
+              # http://crbug.com/448386
+              '-Wl,--exclude-libs=libcommon_audio.a',
+              '-Wl,--exclude-libs=libcommon_audio_neon.a',
+              '-Wl,--exclude-libs=libcommon_audio_sse2.a',
+              '-Wl,--exclude-libs=libiSACFix.a',
+              '-Wl,--exclude-libs=libisac_neon.a',
+              '-Wl,--exclude-libs=libopus.a',
+              '-Wl,--exclude-libs=libvpx.a',
+            ],
+            'libraries': [
+              '-l<(android_stlport_library)',
+              # Manually link the libgcc.a that the cross compiler uses.
+              '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
+              '-lc',
+              '-ldl',
+              '-lm',
             ],
             'conditions': [
-              ['component=="static_library" and android_webview_build==0', {
+              ['component=="static_library"', {
                 'target_conditions': [
                   ['use_native_jni_exports==0', {
                     # Use a linker version script to strip JNI exports from
@@ -4784,111 +4781,11 @@
                   '-mllvm -asan-globals=0',
                 ],
               }],
-              ['android_webview_build==0', {
-                'defines': [
-                  # The NDK has these things, but doesn't define the constants
-                  # to say that it does. Define them here instead.
-                  'HAVE_SYS_UIO_H',
-                ],
-                'cflags': [
-                  '--sysroot=<(android_ndk_sysroot)',
-                ],
-                'ldflags': [
-                  '--sysroot=<(android_ndk_sysroot)',
-                  '-nostdlib',
-                  # Don't allow visible symbols from libgcc or stlport to be
-                  # re-exported.
-                  '-Wl,--exclude-libs=libgcc.a',
-                  '-Wl,--exclude-libs=libstlport_static.a',
-                  # Don't allow visible symbols from libraries that contain
-                  # assembly code with symbols that aren't hidden properly.
-                  # http://crbug.com/448386
-                  '-Wl,--exclude-libs=libcommon_audio.a',
-                  '-Wl,--exclude-libs=libcommon_audio_neon.a',
-                  '-Wl,--exclude-libs=libcommon_audio_sse2.a',
-                  '-Wl,--exclude-libs=libiSACFix.a',
-                  '-Wl,--exclude-libs=libisac_neon.a',
-                  '-Wl,--exclude-libs=libopus.a',
-                  '-Wl,--exclude-libs=libvpx.a',
-                ],
-                'libraries': [
-                  '-l<(android_stlport_library)',
-                  # Manually link the libgcc.a that the cross compiler uses.
-                  '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
-                  '-lc',
-                  '-ldl',
-                  '-lm',
-                ],
-              }],
-              ['android_webview_build==1', {
-                'cflags': [
-                  # Android predefines this as 1; undefine it here so Chromium
-                  # can redefine it later to be 2 for chromium code and unset
-                  # for third party code. This works because cflags are added
-                  # before defines.
-                  '-U_FORTIFY_SOURCE',
-                  # Disable any additional warnings enabled by the Android build system but which
-                  # chromium does not build cleanly with (when treating warning as errors).
-                  # Things that are part of -Wextra:
-                  '-Wno-extra', # Enabled by -Wextra, but no specific flag
-                  '-Wno-ignored-qualifiers',
-                  '-Wno-type-limits',
-                  '-Wno-unused-but-set-variable',
-                ],
-                'cflags_cc': [
-                  # Other things unrelated to -Wextra:
-                  '-Wno-non-virtual-dtor',
-                  '-Wno-sign-promo',
-                ],
-                'libraries': [
-                  '-ldl',
-                ],
-              }],
-              ['android_webview_build==1', {
-                'target_conditions': [
-                  ['chromium_code==0', {
-                    'cflags': [
-                      # There is a class of warning which:
-                      #  1) Android always enables and also treats as errors
-                      #  2) Chromium ignores in third party code
-                      # So we re-enable those warnings when building Android.
-                      '-Wno-address',
-                      '-Wno-format-security',
-                      '-Wno-return-type',
-                      '-Wno-sequence-point',
-                    ],
-                    'cflags_cc': [
-                      '-Wno-non-virtual-dtor',
-                    ],
-                  }],
-                ],
-              }],
               ['target_arch == "arm" and order_profiling==0', {
                 'ldflags': [
                   # Enable identical code folding to reduce size.
                   '-Wl,--icf=<(gold_icf_level)',
                 ],
-              }],
-              # NOTE: The stlport header include paths below are specified in
-              # cflags rather than include_dirs because they need to come
-              # after include_dirs. Think of them like system headers, but
-              # don't use '-isystem' because the arm-linux-androideabi-4.4.3
-              # toolchain (circa Gingerbread) will exhibit strange errors.
-              # The include ordering here is important; change with caution.
-              ['android_webview_build==0', {
-                'cflags': [
-                  '-isystem<(android_stlport_include)',
-                ],
-                'ldflags': [
-                  '-L<(android_stlport_libs_dir)',
-                ],
-              }, { # else: android_webview_build!=0
-                'aosp_build_settings': {
-                  # Specify that we want to statically link stlport from the
-                  # NDK. This will provide all the include and library paths
-                  # automatically at build time, and link the right library.
-                  'LOCAL_NDK_STL_VARIANT': 'stlport_static',
-                },
               }],
               ['target_arch=="ia32"', {
                 # The x86 toolchain currently has problems with stack-protector.
@@ -4928,19 +4825,13 @@
               ['_type=="shared_library" or _type=="loadable_module"', {
                 'ldflags': [
                   '-Wl,-shared,-Bsymbolic',
+                  # crtbegin_so.o should be the last item in ldflags.
+                  '<(android_ndk_lib)/crtbegin_so.o',
                 ],
-                'conditions': [
-                  ['android_webview_build==0', {
-                    'ldflags': [
-                      # crtbegin_so.o should be the last item in ldflags.
-                      '<(android_ndk_lib)/crtbegin_so.o',
-                    ],
-                    'libraries': [
-                      # crtend_so.o needs to be the last item in libraries.
-                      # Do not add any libraries after this!
-                      '<(android_ndk_lib)/crtend_so.o',
-                    ],
-                  }],
+                'libraries': [
+                  # crtend_so.o needs to be the last item in libraries.
+                  # Do not add any libraries after this!
+                  '<(android_ndk_lib)/crtend_so.o',
                 ],
               }],
             ],
@@ -5853,45 +5744,6 @@
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="host"', { 'cflags!': [ '-Wno-unused-local-typedefs' ]}],
-        ],
-      },
-    }],
-    # In the android webview build, force host targets to be compiled with clang
-    # as the hermetic host gcc is very old on some platforms. This is already
-    # the default on the current development version of AOSP but we force it
-    # here in case we need to compile against an older release version. We also
-    # explicitly set it to false for target binaries to avoid causing problems
-    # for the work to enable clang by default in AOSP. We also force the use of
-    # libstdc++ on host as peculiarities of the android gyp backend mean that
-    # using libc++ doesn't work, and Chromium doesn't yet require a more modern
-    # C++ library.
-    ['android_webview_build==1', {
-      'target_defaults': {
-        'target_conditions': [
-          ['_toolset=="host"', {
-            'aosp_build_settings': {
-              'LOCAL_CLANG': 'true',
-              'LOCAL_CXX_STL': 'libstdc++',
-            },
-          }, {  # else: _toolset != "host"
-            'aosp_build_settings': {
-              'LOCAL_CLANG': 'false',
-            },
-          }],
-        ],
-      },
-    }],
-    # We need a special case to handle the android webview build on mac because
-    # the host gcc there doesn't accept this flag, but the target gcc may
-    # require it.
-    ['gcc_version>=48 and android_webview_build==1 and host_os=="mac"', {
-      'target_defaults': {
-        'target_conditions': [
-          ['_toolset=="host"', {
-            'cflags!': [
-              '-Wno-unused-local-typedefs',
-            ],
-          }],
         ],
       },
     }],

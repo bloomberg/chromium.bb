@@ -246,93 +246,81 @@ config("compiler") {
         ]
       }
     } else if (current_cpu == "arm") {
-      # Don't set the compiler flags for the WebView build. These will come
-      # from the Android build system.
-      if (!is_android_webview_build) {
+      cflags += [
+        "-march=$arm_arch",
+        "-mfloat-abi=$arm_float_abi",
+      ]
+      if (arm_tune != "") {
+        cflags += [ "-mtune=$arm_tune" ]
+      }
+      if (arm_use_thumb) {
+        cflags += [ "-mthumb" ]
+        if (is_android && !is_clang) {  # Clang doesn't support this option.
+          cflags += [ "-mthumb-interwork" ]
+        }
+      }
+      if (!is_clang) {
+        # Clang doesn't support these flags.
         cflags += [
-          "-march=$arm_arch",
-          "-mfloat-abi=$arm_float_abi",
-        ]
-        if (arm_tune != "") {
-          cflags += [ "-mtune=$arm_tune" ]
-        }
-        if (arm_use_thumb) {
-          cflags += [ "-mthumb" ]
-          if (is_android && !is_clang) {  # Clang doesn't support this option.
-            cflags += [ "-mthumb-interwork" ]
-          }
-        }
-        if (!is_clang) {
-          # Clang doesn't support these flags.
-          cflags += [
-            # The tree-sra optimization (scalar replacement for
-            # aggregates enabling subsequent optimizations) leads to
-            # invalid code generation when using the Android NDK's
-            # compiler (r5-r7). This can be verified using
-            # webkit_unit_tests' WTF.Checked_int8_t test.
-            "-fno-tree-sra",
+          # The tree-sra optimization (scalar replacement for
+          # aggregates enabling subsequent optimizations) leads to
+          # invalid code generation when using the Android NDK's
+          # compiler (r5-r7). This can be verified using
+          # webkit_unit_tests' WTF.Checked_int8_t test.
+          "-fno-tree-sra",
 
-            # The following option is disabled to improve binary
-            # size and performance in gcc 4.9.
-            "-fno-caller-saves",
-          ]
-        }
+          # The following option is disabled to improve binary
+          # size and performance in gcc 4.9.
+          "-fno-caller-saves",
+        ]
       }
     } else if (current_cpu == "mipsel") {
-      # Don't set the compiler flags for the WebView build. These will come
-      # from the Android build system.
-      if (!is_android_webview_build) {
-        if (mips_arch_variant == "r6") {
-          cflags += [
+      if (mips_arch_variant == "r6") {
+        cflags += [
+          "-mips32r6",
+          "-Wa,-mips32r6",
+        ]
+        if (is_android) {
+          ldflags += [
             "-mips32r6",
-            "-Wa,-mips32r6",
-          ]
-          if (is_android) {
-            ldflags += [
-              "-mips32r6",
-              "-Wl,-melf32ltsmip",
-            ]
-          }
-        } else if (mips_arch_variant == "r2") {
-          cflags += [
-            "-mips32r2",
-            "-Wa,-mips32r2",
-          ]
-          if (mips_float_abi == "hard" && mips_fpu_mode != "") {
-            cflags += [ "-m$mips_fpu_mode" ]
-          }
-        } else if (mips_arch_variant == "r1") {
-          cflags += [
-            "-mips32",
-            "-Wa,-mips32",
+            "-Wl,-melf32ltsmip",
           ]
         }
-
-        if (mips_dsp_rev == 1) {
-          cflags += [ "-mdsp" ]
-        } else if (mips_dsp_rev == 2) {
-          cflags += [ "-mdspr2" ]
+      } else if (mips_arch_variant == "r2") {
+        cflags += [
+          "-mips32r2",
+          "-Wa,-mips32r2",
+        ]
+        if (mips_float_abi == "hard" && mips_fpu_mode != "") {
+          cflags += [ "-m$mips_fpu_mode" ]
         }
-
-        cflags += [ "-m${mips_float_abi}-float" ]
+      } else if (mips_arch_variant == "r1") {
+        cflags += [
+          "-mips32",
+          "-Wa,-mips32",
+        ]
       }
+
+      if (mips_dsp_rev == 1) {
+        cflags += [ "-mdsp" ]
+      } else if (mips_dsp_rev == 2) {
+        cflags += [ "-mdspr2" ]
+      }
+
+      cflags += [ "-m${mips_float_abi}-float" ]
     } else if (current_cpu == "mips64el") {
-      # Don't set the compiler flags for the WebView build. These will come
-      # from the Android build system.
-      if (!is_android_webview_build) {
-        if (mips_arch_variant == "r6") {
-          cflags += [
-            "-mips64r6",
-            "-Wa,-mips64r6",
-          ]
-          ldflags += [ "-mips64r6" ]
-        } else if (mips_arch_variant == "r2") {
-          cflags += [
-            "-mips64r2",
-            "-Wa,-mips64r2",
-          ]
-          ldflags += [ "-mips64r2" ]
-        }
+      if (mips_arch_variant == "r6") {
+        cflags += [
+          "-mips64r6",
+          "-Wa,-mips64r6",
+        ]
+        ldflags += [ "-mips64r6" ]
+      } else if (mips_arch_variant == "r2") {
+        cflags += [
+          "-mips64r2",
+          "-Wa,-mips64r2",
+        ]
+        ldflags += [ "-mips64r2" ]
       }
     }
 
@@ -433,15 +421,6 @@ config("compiler") {
       # Clang doesn't support these flags.
       cflags += [ "-finline-limit=64" ]
     }
-    if (is_android_webview_build) {
-      # Android predefines this as 1; undefine it here so Chromium can redefine
-      # it later to be 2 for chromium code and unset for third party code. This
-      # works because cflags are added before defines.
-      # TODO(brettw) the above comment seems incorrect. We specify defines
-      # before cflags on our compiler command lines.
-      cflags += [ "-U_FORTIFY_SOURCE" ]
-    }
-
     if (is_asan) {
       # Android build relies on -Wl,--gc-sections removing unreachable code.
       # ASan instrumentation for globals inhibits this and results in a library
@@ -451,11 +430,10 @@ config("compiler") {
     }
 
     defines += [ "ANDROID" ]
-    if (!is_android_webview_build) {
-      # The NDK has these things, but doesn't define the constants
-      # to say that it does. Define them here instead.
-      defines += [ "HAVE_SYS_UIO_H" ]
-    }
+
+    # The NDK has these things, but doesn't define the constants
+    # to say that it does. Define them here instead.
+    defines += [ "HAVE_SYS_UIO_H" ]
 
     # Use gold for Android for most CPU architectures.
     if (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm") {
@@ -500,7 +478,7 @@ config("compiler") {
 }
 
 config("compiler_arm_fpu") {
-  if (current_cpu == "arm" && !is_android_webview_build) {
+  if (current_cpu == "arm") {
     cflags = [ "-mfpu=$arm_fpu" ]
   }
 }
@@ -683,20 +661,6 @@ config("no_chromium_code") {
       # Don't warn about hash_map in third-party code.
       "-Wno-deprecated",
     ]
-  }
-
-  if (is_android_webview_build) {
-    # There is a class of warning which:
-    #  1) Android always enables and also treats as errors
-    #  2) Chromium ignores in third party code
-    # So we re-enable those warnings when building Android.
-    cflags += [
-      "-Wno-address",
-      "-Wno-format-security",
-      "-Wno-return-type",
-      "-Wno-sequence-point",
-    ]
-    cflags_cc += [ "-Wno-non-virtual-dtor" ]
   }
 }
 
