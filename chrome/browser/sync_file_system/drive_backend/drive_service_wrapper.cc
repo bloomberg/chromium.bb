@@ -21,7 +21,7 @@ DriveServiceWrapper::DriveServiceWrapper(
 void DriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
-    const drive::DriveServiceInterface::AddNewDirectoryOptions& options,
+    const drive::AddNewDirectoryOptions& options,
     const google_apis::FileResourceCallback& callback) {
   DCHECK(sequece_checker_.CalledOnValidSequencedThread());
   drive_service_->AddNewDirectory(parent_resource_id,

@@ -32,6 +32,73 @@ class DriveServiceObserver {
   virtual ~DriveServiceObserver() {}
 };
 
+// Optional parameters for AddNewDirectory().
+struct AddNewDirectoryOptions {
+  AddNewDirectoryOptions();
+  ~AddNewDirectoryOptions();
+
+  // modified_date of the directory.
+  // Pass the null Time if you are not interested in setting this property.
+  base::Time modified_date;
+
+  // last_viewed_by_me_date of the directory.
+  // Pass the null Time if you are not interested in setting this property.
+  base::Time last_viewed_by_me_date;
+
+  // List of properties for a new directory.
+  google_apis::drive::Properties properties;
+};
+
+// Optional parameters for InitiateUploadNewFile() and
+// MultipartUploadNewFile().
+struct UploadNewFileOptions {
+  UploadNewFileOptions();
+  ~UploadNewFileOptions();
+
+  // modified_date of the file.
+  // Pass the null Time if you are not interested in setting this property.
+  base::Time modified_date;
+
+  // last_viewed_by_me_date of the file.
+  // Pass the null Time if you are not interested in setting this property.
+  base::Time last_viewed_by_me_date;
+
+  // List of properties for a new file.
+  google_apis::drive::Properties properties;
+};
+
+// Optional parameters for InitiateUploadExistingFile() and
+// MultipartUploadExistingFile().
+struct UploadExistingFileOptions {
+  UploadExistingFileOptions();
+  ~UploadExistingFileOptions();
+
+  // Expected ETag of the file. UPLOAD_ERROR_CONFLICT error is generated when
+  // matching fails.
+  // Pass the empty string to disable this behavior.
+  std::string etag;
+
+  // New parent of the file.
+  // Pass the empty string to keep the property unchanged.
+  std::string parent_resource_id;
+
+  // New title of the file.
+  // Pass the empty string to keep the property unchanged.
+  std::string title;
+
+  // New modified_date of the file.
+  // Pass the null Time if you are not interested in setting this property.
+  base::Time modified_date;
+
+  // New last_viewed_by_me_date of the file.
+  // Pass the null Time if you are not interested in setting this property.
+  base::Time last_viewed_by_me_date;
+
+  // List of new properties for an existing file (it will be merged with
+  // existing properties).
+  google_apis::drive::Properties properties;
+};
+
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
 //
@@ -39,73 +106,6 @@ class DriveServiceObserver {
 // URLFetcher that runs on UI thread.
 class DriveServiceInterface {
  public:
-  // Optional parameters for AddNewDirectory().
-  struct AddNewDirectoryOptions {
-    AddNewDirectoryOptions();
-    ~AddNewDirectoryOptions();
-
-    // modified_date of the directory.
-    // Pass the null Time if you are not interested in setting this property.
-    base::Time modified_date;
-
-    // last_viewed_by_me_date of the directory.
-    // Pass the null Time if you are not interested in setting this property.
-    base::Time last_viewed_by_me_date;
-
-    // List of properties for a new directory.
-    google_apis::drive::Properties properties;
-  };
-
-  // Optional parameters for InitiateUploadNewFile() and
-  // MultipartUploadNewFile().
-  struct UploadNewFileOptions {
-    UploadNewFileOptions();
-    ~UploadNewFileOptions();
-
-    // modified_date of the file.
-    // Pass the null Time if you are not interested in setting this property.
-    base::Time modified_date;
-
-    // last_viewed_by_me_date of the file.
-    // Pass the null Time if you are not interested in setting this property.
-    base::Time last_viewed_by_me_date;
-
-    // List of properties for a new file.
-    google_apis::drive::Properties properties;
-  };
-
-  // Optional parameters for InitiateUploadExistingFile() and
-  // MultipartUploadExistingFile().
-  struct UploadExistingFileOptions {
-    UploadExistingFileOptions();
-    ~UploadExistingFileOptions();
-
-    // Expected ETag of the file. UPLOAD_ERROR_CONFLICT error is generated when
-    // matching fails.
-    // Pass the empty string to disable this behavior.
-    std::string etag;
-
-    // New parent of the file.
-    // Pass the empty string to keep the property unchanged.
-    std::string parent_resource_id;
-
-    // New title of the file.
-    // Pass the empty string to keep the property unchanged.
-    std::string title;
-
-    // New modified_date of the file.
-    // Pass the null Time if you are not interested in setting this property.
-    base::Time modified_date;
-
-    // New last_viewed_by_me_date of the file.
-    // Pass the null Time if you are not interested in setting this property.
-    base::Time last_viewed_by_me_date;
-
-    // List of new properties for an existing file (it will be merged with
-    // existing properties).
-    google_apis::drive::Properties properties;
-  };
-
   virtual ~DriveServiceInterface() {}
 
   // Common service:

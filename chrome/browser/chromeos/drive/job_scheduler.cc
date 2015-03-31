@@ -74,7 +74,7 @@ struct UploadNewFileParams {
   base::FilePath local_file_path;
   std::string title;
   std::string content_type;
-  DriveUploader::UploadNewFileOptions options;
+  UploadNewFileOptions options;
   UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
 };
@@ -97,7 +97,7 @@ struct UploadExistingFileParams {
   std::string resource_id;
   base::FilePath local_file_path;
   std::string content_type;
-  DriveUploader::UploadExistingFileOptions options;
+  UploadExistingFileOptions options;
   std::string etag;
   UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
@@ -565,7 +565,7 @@ void JobScheduler::RemoveResourceFromDirectory(
 void JobScheduler::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
-    const DriveServiceInterface::AddNewDirectoryOptions& options,
+    const AddNewDirectoryOptions& options,
     const ClientContext& context,
     const google_apis::FileResourceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -628,7 +628,7 @@ void JobScheduler::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
-    const DriveUploader::UploadNewFileOptions& options,
+    const UploadNewFileOptions& options,
     const ClientContext& context,
     const google_apis::FileResourceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -672,7 +672,7 @@ void JobScheduler::UploadExistingFile(
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
-    const DriveUploader::UploadExistingFileOptions& options,
+    const UploadExistingFileOptions& options,
     const ClientContext& context,
     const google_apis::FileResourceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

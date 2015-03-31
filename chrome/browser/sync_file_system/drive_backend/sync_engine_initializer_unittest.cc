@@ -134,8 +134,7 @@ class SyncEngineInitializerTest : public testing::Test {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     sync_context_->GetDriveService()->AddNewDirectory(
-        parent_folder_id, title,
-        drive::DriveServiceInterface::AddNewDirectoryOptions(),
+        parent_folder_id, title, drive::AddNewDirectoryOptions(),
         CreateResultReceiver(&error, &entry));
     base::RunLoop().RunUntilIdle();
 

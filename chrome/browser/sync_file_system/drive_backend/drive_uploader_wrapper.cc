@@ -18,7 +18,7 @@ void DriveUploaderWrapper::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const std::string& content_type,
-    const drive::DriveUploaderInterface::UploadExistingFileOptions& options,
+    const drive::UploadExistingFileOptions& options,
     const drive::UploadCompletionCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   drive_uploader_->UploadExistingFile(
@@ -35,7 +35,7 @@ void DriveUploaderWrapper::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
-    const drive::DriveUploaderInterface::UploadNewFileOptions& options,
+    const drive::UploadNewFileOptions& options,
     const drive::UploadCompletionCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   drive_uploader_->UploadNewFile(

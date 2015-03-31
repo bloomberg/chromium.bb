@@ -20,11 +20,10 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
  public:
   explicit DriveServiceWrapper(drive::DriveServiceInterface* drive_service);
 
-  void AddNewDirectory(
-      const std::string& parent_resource_id,
-      const std::string& directory_title,
-      const drive::DriveServiceInterface::AddNewDirectoryOptions& options,
-      const google_apis::FileResourceCallback& callback);
+  void AddNewDirectory(const std::string& parent_resource_id,
+                       const std::string& directory_title,
+                       const drive::AddNewDirectoryOptions& options,
+                       const google_apis::FileResourceCallback& callback);
 
   void DeleteResource(
       const std::string& resource_id,

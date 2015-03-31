@@ -119,30 +119,24 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "sub_dir_folder_resource_id",
-      "1_folder_resource_id",
-      "Sub Directory Folder",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      "sub_dir_folder_resource_id", "1_folder_resource_id",
+      "Sub Directory Folder", AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != HTTP_CREATED)
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "sub_sub_directory_folder_id",
-      "sub_dir_folder_resource_id",
-      "Sub Sub Directory Folder",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      "sub_sub_directory_folder_id", "sub_dir_folder_resource_id",
+      "Sub Sub Directory Folder", AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != HTTP_CREATED)
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "slash_dir_folder_resource_id",
-      drive_service->GetRootResourceId(),
-      "Slash / in directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      "slash_dir_folder_resource_id", drive_service->GetRootResourceId(),
+      "Slash / in directory", AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != HTTP_CREATED)
@@ -161,10 +155,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "sub_dir_folder_2_self_link",
-      drive_service->GetRootResourceId(),
-      "Directory 2 excludeDir-test",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      "sub_dir_folder_2_self_link", drive_service->GetRootResourceId(),
+      "Directory 2 excludeDir-test", AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != HTTP_CREATED)

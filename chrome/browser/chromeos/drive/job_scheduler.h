@@ -159,12 +159,11 @@ class JobScheduler
       const google_apis::EntryActionCallback& callback);
 
   // Adds a AddNewDirectory operation to the queue.
-  void AddNewDirectory(
-      const std::string& parent_resource_id,
-      const std::string& directory_title,
-      const DriveServiceInterface::AddNewDirectoryOptions& options,
-      const ClientContext& context,
-      const google_apis::FileResourceCallback& callback);
+  void AddNewDirectory(const std::string& parent_resource_id,
+                       const std::string& directory_title,
+                       const AddNewDirectoryOptions& options,
+                       const ClientContext& context,
+                       const google_apis::FileResourceCallback& callback);
 
   // Adds a DownloadFile operation to the queue.
   // The first two arguments |virtual_path| and |expected_file_size| are used
@@ -185,19 +184,18 @@ class JobScheduler
                      const base::FilePath& local_file_path,
                      const std::string& title,
                      const std::string& content_type,
-                     const DriveUploader::UploadNewFileOptions& options,
+                     const UploadNewFileOptions& options,
                      const ClientContext& context,
                      const google_apis::FileResourceCallback& callback);
 
   // Adds an UploadExistingFile operation to the queue.
-  void UploadExistingFile(
-      const std::string& resource_id,
-      const base::FilePath& drive_file_path,
-      const base::FilePath& local_file_path,
-      const std::string& content_type,
-      const DriveUploader::UploadExistingFileOptions& options,
-      const ClientContext& context,
-      const google_apis::FileResourceCallback& callback);
+  void UploadExistingFile(const std::string& resource_id,
+                          const base::FilePath& drive_file_path,
+                          const base::FilePath& local_file_path,
+                          const std::string& content_type,
+                          const UploadExistingFileOptions& options,
+                          const ClientContext& context,
+                          const google_apis::FileResourceCallback& callback);
 
   // Adds AddPermission operation to the queue. |callback| must not be null.
   void AddPermission(const std::string& resource_id,

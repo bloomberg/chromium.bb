@@ -272,11 +272,9 @@ TEST_F(JobSchedulerTest, GetChangeList) {
   {
     scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
-        fake_drive_service_->GetRootResourceId(),
-        "new directory",
-        DriveServiceInterface::AddNewDirectoryOptions(),
-        google_apis::test_util::CreateCopyResultCallback(
-            &error, &entry));
+        fake_drive_service_->GetRootResourceId(), "new directory",
+        AddNewDirectoryOptions(),
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
   }
@@ -473,9 +471,7 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
 
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),  // Root directory.
-      "New Directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      ClientContext(USER_INITIATED),
+      "New Directory", AddNewDirectoryOptions(), ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -506,28 +502,20 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
   std::vector<std::string> titles;
 
   scheduler_->AddNewDirectory(
-      fake_drive_service_->GetRootResourceId(),
-      title_1,
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      ClientContext(USER_INITIATED),
+      fake_drive_service_->GetRootResourceId(), title_1,
+      AddNewDirectoryOptions(), ClientContext(USER_INITIATED),
       base::Bind(&CopyTitleFromFileResourceCallback, &titles));
   scheduler_->AddNewDirectory(
-      fake_drive_service_->GetRootResourceId(),
-      title_2,
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      ClientContext(BACKGROUND),
+      fake_drive_service_->GetRootResourceId(), title_2,
+      AddNewDirectoryOptions(), ClientContext(BACKGROUND),
       base::Bind(&CopyTitleFromFileResourceCallback, &titles));
   scheduler_->AddNewDirectory(
-      fake_drive_service_->GetRootResourceId(),
-      title_3,
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      ClientContext(BACKGROUND),
+      fake_drive_service_->GetRootResourceId(), title_3,
+      AddNewDirectoryOptions(), ClientContext(BACKGROUND),
       base::Bind(&CopyTitleFromFileResourceCallback, &titles));
   scheduler_->AddNewDirectory(
-      fake_drive_service_->GetRootResourceId(),
-      title_4,
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      ClientContext(USER_INITIATED),
+      fake_drive_service_->GetRootResourceId(), title_4,
+      AddNewDirectoryOptions(), ClientContext(USER_INITIATED),
       base::Bind(&CopyTitleFromFileResourceCallback, &titles));
 
   base::RunLoop().RunUntilIdle();
@@ -804,10 +792,8 @@ TEST_F(JobSchedulerTest, JobInfo) {
   // Add many jobs.
   expected_types.insert(TYPE_ADD_NEW_DIRECTORY);
   scheduler_->AddNewDirectory(
-      fake_drive_service_->GetRootResourceId(),
-      "New Directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      ClientContext(USER_INITIATED),
+      fake_drive_service_->GetRootResourceId(), "New Directory",
+      AddNewDirectoryOptions(), ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   expected_types.insert(TYPE_GET_ABOUT_RESOURCE);
   scheduler_->GetAboutResource(
@@ -943,12 +929,8 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
 
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(),
-      base::FilePath::FromUTF8Unsafe("drive/new_file.txt"),
-      path,
-      "dummy title",
-      "plain/plain",
-      DriveUploader::UploadNewFileOptions(),
-      ClientContext(BACKGROUND),
+      base::FilePath::FromUTF8Unsafe("drive/new_file.txt"), path, "dummy title",
+      "plain/plain", UploadNewFileOptions(), ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -976,11 +958,8 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
   scoped_ptr<google_apis::FileResource> entry;
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(),
-      base::FilePath::FromUTF8Unsafe("dummy/path"),
-      upload_path,
-      "dummy title 1",
-      "text/plain",
-      DriveUploader::UploadNewFileOptions(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
+      "dummy title 1", "text/plain", UploadNewFileOptions(),
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error1, &entry));
 
@@ -993,11 +972,8 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
   google_apis::DriveApiErrorCode error2 = google_apis::DRIVE_OTHER_ERROR;
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(),
-      base::FilePath::FromUTF8Unsafe("dummy/path"),
-      upload_path,
-      "dummy title 2",
-      "text/plain",
-      DriveUploader::UploadNewFileOptions(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
+      "dummy title 2", "text/plain", UploadNewFileOptions(),
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error2, &entry));
 
@@ -1026,11 +1002,8 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
   scoped_ptr<google_apis::FileResource> entry;
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(),
-      base::FilePath::FromUTF8Unsafe("dummy/path"),
-      upload_path,
-      "dummy title 1",
-      "text/plain",
-      DriveUploader::UploadNewFileOptions(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
+      "dummy title 1", "text/plain", UploadNewFileOptions(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error1, &entry));
 
@@ -1044,11 +1017,8 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
   google_apis::DriveApiErrorCode error2 = google_apis::DRIVE_OTHER_ERROR;
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(),
-      base::FilePath::FromUTF8Unsafe("dummy/path"),
-      upload_path,
-      "dummy title 2",
-      "text/plain",
-      DriveUploader::UploadNewFileOptions(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
+      "dummy title 2", "text/plain", UploadNewFileOptions(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error2, &entry));
 

@@ -389,9 +389,7 @@ class DriveTestVolume : public TestVolume {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
-        parent_id,
-        target_name,
-        drive::DriveServiceInterface::AddNewDirectoryOptions(),
+        parent_id, target_name, drive::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);

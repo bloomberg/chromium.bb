@@ -21,20 +21,18 @@ class DriveUploaderWrapper
  public:
   explicit DriveUploaderWrapper(drive::DriveUploaderInterface* drive_uploader);
 
-  void UploadExistingFile(
-      const std::string& resource_id,
-      const base::FilePath& local_file_path,
-      const std::string& content_type,
-      const drive::DriveUploaderInterface::UploadExistingFileOptions& options,
-      const drive::UploadCompletionCallback& callback);
+  void UploadExistingFile(const std::string& resource_id,
+                          const base::FilePath& local_file_path,
+                          const std::string& content_type,
+                          const drive::UploadExistingFileOptions& options,
+                          const drive::UploadCompletionCallback& callback);
 
-  void UploadNewFile(
-      const std::string& parent_resource_id,
-      const base::FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      const drive::DriveUploaderInterface::UploadNewFileOptions& options,
-      const drive::UploadCompletionCallback& callback);
+  void UploadNewFile(const std::string& parent_resource_id,
+                     const base::FilePath& local_file_path,
+                     const std::string& title,
+                     const std::string& content_type,
+                     const drive::UploadNewFileOptions& options,
+                     const drive::UploadCompletionCallback& callback);
 
  private:
   drive::DriveUploaderInterface* drive_uploader_;

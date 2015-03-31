@@ -37,7 +37,7 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
-      const UploadNewFileOptions& options,
+      const drive::UploadNewFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
 
@@ -45,7 +45,7 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const UploadExistingFileOptions& options,
+      const drive::UploadExistingFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
 

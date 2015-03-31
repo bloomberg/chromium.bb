@@ -323,7 +323,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       // FinishUpdate() is responsible to resolve conflicts caused by this.
       scoped_ptr<base::ScopedClosureRunner> null_loader_lock;
 
-      DriveUploader::UploadNewFileOptions options;
+      UploadNewFileOptions options;
       options.modified_date = last_modified;
       options.last_viewed_by_me_date = last_accessed;
       options.properties = properties;
@@ -339,7 +339,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
                      base::Passed(&local_state),
                      base::Passed(&null_loader_lock)));
     } else {
-      DriveUploader::UploadExistingFileOptions options;
+      UploadExistingFileOptions options;
       options.title = local_state->entry.title();
       options.parent_resource_id = local_state->parent_entry.resource_id();
       options.modified_date = last_modified;
@@ -366,7 +366,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     scoped_ptr<base::ScopedClosureRunner> loader_lock =
         loader_controller_->GetLock();
 
-    DriveServiceInterface::AddNewDirectoryOptions options;
+    AddNewDirectoryOptions options;
     options.modified_date = last_modified;
     options.last_viewed_by_me_date = last_accessed;
     options.properties = properties;

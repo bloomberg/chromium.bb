@@ -29,7 +29,7 @@ class FakeDriveServiceWrapper : public drive::FakeDriveService {
   google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_name,
-      const AddNewDirectoryOptions& options,
+      const drive::AddNewDirectoryOptions& options,
       const google_apis::FileResourceCallback& callback) override;
 
   void set_make_directory_conflict(bool enable) {
@@ -55,14 +55,14 @@ class FakeDriveUploader : public drive::DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
-      const UploadNewFileOptions& options,
+      const drive::UploadNewFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const UploadExistingFileOptions& options,
+      const drive::UploadExistingFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback ResumeUploadFile(

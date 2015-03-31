@@ -111,8 +111,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     scoped_ptr<google_apis::FileResource> entry;
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
-        parent_id, title,
-        drive::DriveServiceInterface::AddNewDirectoryOptions(),
+        parent_id, title, drive::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     content::RunAllPendingInMessageLoop();
     return error == google_apis::HTTP_CREATED && entry ? entry->file_id() : "";

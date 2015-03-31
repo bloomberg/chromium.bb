@@ -485,11 +485,10 @@ TEST_F(CopyOperationTest, WaitForSyncComplete) {
   google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> file_resource;
   fake_service()->AddNewDirectory(
-      directory_parent.resource_id(),
-      directory.title(),
-      DriveServiceInterface::AddNewDirectoryOptions(),
-      google_apis::test_util::CreateCopyResultCallback(
-          &status, &file_resource));
+      directory_parent.resource_id(), directory.title(),
+      AddNewDirectoryOptions(),
+      google_apis::test_util::CreateCopyResultCallback(&status,
+                                                       &file_resource));
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_CREATED, status);
   ASSERT_TRUE(file_resource);

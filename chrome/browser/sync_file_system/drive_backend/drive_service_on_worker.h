@@ -35,7 +35,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_title,
-      const AddNewDirectoryOptions& options,
+      const drive::AddNewDirectoryOptions& options,
       const google_apis::FileResourceCallback& callback) override;
 
   google_apis::CancelCallback DeleteResource(
@@ -134,13 +134,13 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
-      const UploadNewFileOptions& options,
+      const drive::UploadNewFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) override;
   google_apis::CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
-      const UploadExistingFileOptions& options,
+      const drive::UploadExistingFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) override;
   google_apis::CancelCallback ResumeUpload(
       const GURL& upload_url,
@@ -161,7 +161,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& title,
       const base::FilePath& local_file_path,
-      const UploadNewFileOptions& options,
+      const drive::UploadNewFileOptions& options,
       const google_apis::FileResourceCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback MultipartUploadExistingFile(
@@ -169,7 +169,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       int64 content_length,
       const std::string& resource_id,
       const base::FilePath& local_file_path,
-      const UploadExistingFileOptions& options,
+      const drive::UploadExistingFileOptions& options,
       const google_apis::FileResourceCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback AuthorizeApp(

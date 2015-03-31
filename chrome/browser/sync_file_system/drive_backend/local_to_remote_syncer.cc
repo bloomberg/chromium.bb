@@ -516,7 +516,7 @@ void LocalToRemoteSyncer::UploadExistingFile(scoped_ptr<SyncTaskToken> token) {
   file_type_ = SYNC_FILE_TYPE_FILE;
   sync_action_ = SYNC_ACTION_UPDATED;
 
-  drive::DriveUploader::UploadExistingFileOptions options;
+  drive::UploadExistingFileOptions options;
   options.etag = remote_file_tracker_->synced_details().etag();
   drive_uploader()->UploadExistingFile(
       remote_file_tracker_->file_id(),
@@ -642,14 +642,11 @@ void LocalToRemoteSyncer::UploadNewFile(scoped_ptr<SyncTaskToken> token) {
   sync_action_ = SYNC_ACTION_ADDED;
   base::FilePath title = storage::VirtualPath::BaseName(target_path_);
   drive_uploader()->UploadNewFile(
-      remote_parent_folder_tracker_->file_id(),
-      local_path_,
-      title.AsUTF8Unsafe(),
-      GetMimeTypeFromTitle(title),
-      drive::DriveUploader::UploadNewFileOptions(),
+      remote_parent_folder_tracker_->file_id(), local_path_,
+      title.AsUTF8Unsafe(), GetMimeTypeFromTitle(title),
+      drive::UploadNewFileOptions(),
       base::Bind(&LocalToRemoteSyncer::DidUploadNewFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&token)),
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
       google_apis::ProgressCallback());
 }
 

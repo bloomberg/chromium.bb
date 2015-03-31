@@ -29,13 +29,13 @@ DriveUploaderOnWorker::DriveUploaderOnWorker(
 DriveUploaderOnWorker::~DriveUploaderOnWorker() {}
 
 google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
-      const std::string& parent_resource_id,
-      const base::FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      const UploadNewFileOptions& options,
-      const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) {
+    const std::string& parent_resource_id,
+    const base::FilePath& local_file_path,
+    const std::string& title,
+    const std::string& content_type,
+    const drive::UploadNewFileOptions& options,
+    const drive::UploadCompletionCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
   DCHECK(sequece_checker_.CalledOnValidSequencedThread());
 
   ui_task_runner_->PostTask(
@@ -54,12 +54,12 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
 }
 
 google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
-      const std::string& resource_id,
-      const base::FilePath& local_file_path,
-      const std::string& content_type,
-      const UploadExistingFileOptions& options,
-      const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) {
+    const std::string& resource_id,
+    const base::FilePath& local_file_path,
+    const std::string& content_type,
+    const drive::UploadExistingFileOptions& options,
+    const drive::UploadCompletionCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
   DCHECK(sequece_checker_.CalledOnValidSequencedThread());
 
   ui_task_runner_->PostTask(

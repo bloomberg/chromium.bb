@@ -34,9 +34,7 @@ FolderCreator::~FolderCreator() {
 
 void FolderCreator::Run(const FileIDCallback& callback) {
   drive_service_->AddNewDirectory(
-      parent_folder_id_,
-      title_,
-      drive::DriveServiceInterface::AddNewDirectoryOptions(),
+      parent_folder_id_, title_, drive::AddNewDirectoryOptions(),
       base::Bind(&FolderCreator::DidCreateFolder,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

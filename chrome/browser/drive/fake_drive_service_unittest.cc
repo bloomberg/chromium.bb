@@ -79,9 +79,7 @@ class FakeDriveServiceTest : public testing::Test {
     DriveApiErrorCode error = DRIVE_OTHER_ERROR;
     scoped_ptr<FileResource> entry;
     fake_service_.AddNewDirectory(
-        parent_resource_id,
-        directory_title,
-        DriveServiceInterface::AddNewDirectoryOptions(),
+        parent_resource_id, directory_title, AddNewDirectoryOptions(),
         test_util::CreateCopyResultCallback(&error, &entry));
     base::RunLoop().RunUntilIdle();
     return error == HTTP_CREATED;
@@ -1481,9 +1479,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
-      std::string(),
-      "new directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      std::string(), "new directory", AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1507,9 +1503,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
-      fake_service_.GetRootResourceId(),
-      "new directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      fake_service_.GetRootResourceId(), "new directory",
+      AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1531,9 +1526,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
-      fake_service_.GetRootResourceId(),
-      "new directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      fake_service_.GetRootResourceId(), "new directory",
+      AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1559,9 +1553,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
-      kParentResourceId,
-      "new directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      kParentResourceId, "new directory", AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1585,9 +1577,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
-      kParentResourceId,
-      "new directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      kParentResourceId, "new directory", AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1602,9 +1592,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
-      fake_service_.GetRootResourceId(),
-      "new directory",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      fake_service_.GetRootResourceId(), "new directory",
+      AddNewDirectoryOptions(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1620,7 +1609,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 13, "1_folder_resource_id", "new file.foo",
-      FakeDriveService::UploadNewFileOptions(),
+      UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1635,7 +1624,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 13, "non_existent", "new file.foo",
-      FakeDriveService::UploadNewFileOptions(),
+      UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1650,7 +1639,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 13, "1_folder_resource_id", "new file.foo",
-      FakeDriveService::UploadNewFileOptions(),
+      UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1668,7 +1657,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "test/foo", 13, "2_file_resource_id",
-      FakeDriveService::UploadExistingFileOptions(),
+      UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1686,7 +1675,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Forbidden) {
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "test/foo", 13, "2_file_resource_id",
-      FakeDriveService::UploadExistingFileOptions(),
+      UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1701,7 +1690,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "test/foo", 13, "non_existent",
-      FakeDriveService::UploadExistingFileOptions(),
+      UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1712,7 +1701,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
 TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  FakeDriveService::UploadExistingFileOptions options;
+  UploadExistingFileOptions options;
   options.etag = "invalid_etag";
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1735,7 +1724,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
 
-  FakeDriveService::UploadExistingFileOptions options;
+  UploadExistingFileOptions options;
   options.etag = entry->etag();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1759,7 +1748,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 15, "1_folder_resource_id", "new file.foo",
-      FakeDriveService::UploadNewFileOptions(),
+      UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1791,7 +1780,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 15, "1_folder_resource_id", "new file.foo",
-      FakeDriveService::UploadNewFileOptions(),
+      UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1824,7 +1813,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
 
-  FakeDriveService::UploadExistingFileOptions options;
+  UploadExistingFileOptions options;
   options.etag = entry->etag();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1895,7 +1884,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", contents.size(), "1_folder_resource_id", "new file.foo",
-      FakeDriveService::UploadNewFileOptions(),
+      UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 

@@ -56,9 +56,8 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_service()->AddNewDirectory(
-      fake_service()->GetRootResourceId(),
-      "New Directory 1!",
-      DriveServiceInterface::AddNewDirectoryOptions(),
+      fake_service()->GetRootResourceId(), "New Directory 1!",
+      AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   content::RunAllBlockingPoolTasksUntilIdle();
   ASSERT_EQ(google_apis::HTTP_CREATED, status);

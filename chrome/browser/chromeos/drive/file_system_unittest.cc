@@ -845,9 +845,8 @@ TEST_F(FileSystemTest, ReadDirectoryAfterUpdateWhileLoading) {
   {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
-        fake_drive_service_->GetRootResourceId(),
-        "UpdateWhileLoadingTestDir",
-        DriveServiceInterface::AddNewDirectoryOptions(),
+        fake_drive_service_->GetRootResourceId(), "UpdateWhileLoadingTestDir",
+        AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(&error, &parent));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);

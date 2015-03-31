@@ -224,9 +224,7 @@ scoped_ptr<google_apis::FileResource> AddDirectoryToDriveService(
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry;
   fake_drive_service->AddNewDirectory(
-      parent_resource_id,
-      title,
-      drive::DriveServiceInterface::AddNewDirectoryOptions(),
+      parent_resource_id, title, drive::AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_CREATED)

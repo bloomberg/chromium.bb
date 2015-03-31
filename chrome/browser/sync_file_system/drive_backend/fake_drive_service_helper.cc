@@ -85,10 +85,9 @@ DriveApiErrorCode FakeDriveServiceHelper::AddFolder(
     std::string* folder_id) {
   DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> folder;
-  fake_drive_service_->AddNewDirectory(
-      parent_folder_id, title,
-      drive::DriveServiceInterface::AddNewDirectoryOptions(),
-      CreateResultReceiver(&error, &folder));
+  fake_drive_service_->AddNewDirectory(parent_folder_id, title,
+                                       drive::AddNewDirectoryOptions(),
+                                       CreateResultReceiver(&error, &folder));
   base::RunLoop().RunUntilIdle();
 
   if (error == google_apis::HTTP_CREATED && folder_id)
@@ -106,9 +105,8 @@ DriveApiErrorCode FakeDriveServiceHelper::AddFile(
   DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> file;
   drive_uploader_->UploadNewFile(
-      parent_folder_id, temp_file, title,
-      "application/octet-stream",
-      drive::DriveUploader::UploadNewFileOptions(),
+      parent_folder_id, temp_file, title, "application/octet-stream",
+      drive::UploadNewFileOptions(),
       base::Bind(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
@@ -125,9 +123,8 @@ DriveApiErrorCode FakeDriveServiceHelper::UpdateFile(
   DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> file;
   drive_uploader_->UploadExistingFile(
-      file_id, temp_file,
-      "application/octet-stream",
-      drive::DriveUploader::UploadExistingFileOptions(),
+      file_id, temp_file, "application/octet-stream",
+      drive::UploadExistingFileOptions(),
       base::Bind(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();

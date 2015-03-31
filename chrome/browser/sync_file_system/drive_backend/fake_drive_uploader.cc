@@ -67,7 +67,7 @@ FakeDriveServiceWrapper::~FakeDriveServiceWrapper() {}
 CancelCallback FakeDriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_name,
-    const AddNewDirectoryOptions& options,
+    const drive::AddNewDirectoryOptions& options,
     const FileResourceCallback& callback) {
   if (make_directory_conflict_) {
     FakeDriveService::AddNewDirectory(
@@ -92,7 +92,7 @@ CancelCallback FakeDriveUploader::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
-    const UploadNewFileOptions& options,
+    const drive::UploadNewFileOptions& options,
     const UploadCompletionCallback& callback,
     const ProgressCallback& progress_callback) {
   DCHECK(!callback.is_null());
@@ -124,7 +124,7 @@ CancelCallback FakeDriveUploader::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const std::string& content_type,
-    const UploadExistingFileOptions& options,
+    const drive::UploadExistingFileOptions& options,
     const UploadCompletionCallback& callback,
     const ProgressCallback& progress_callback) {
   DCHECK(!callback.is_null());
@@ -137,7 +137,7 @@ CancelCallback FakeDriveUploader::ResumeUploadFile(
     const GURL& upload_location,
     const base::FilePath& local_file_path,
     const std::string& content_type,
-    const UploadCompletionCallback& callback,
+    const drive::UploadCompletionCallback& callback,
     const ProgressCallback& progress_callback) {
   // At the moment, sync file system doesn't support resuming of the uploading.
   // So this method shouldn't be reached.
