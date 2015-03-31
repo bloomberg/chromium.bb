@@ -336,6 +336,7 @@ cr.define('extensions', function() {
       var hasExtensions = extensionList.getNumExtensions() != 0;
       $('no-extensions').hidden = hasExtensions;
       $('extension-list-wrapper').hidden = !hasExtensions;
+      $('extension-settings-list').updateFocusableElements();
     }.bind(this));
   };
 
