@@ -17,6 +17,32 @@ namespace media {
 // unique IDs.
 static base::StaticAtomicSequenceNumber g_media_log_count;
 
+std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
+  switch (level) {
+    case MEDIALOG_ERROR:
+      return "error";
+    case MEDIALOG_INFO:
+      return "info";
+    case MEDIALOG_DEBUG:
+      return "debug";
+  }
+  NOTREACHED();
+  return NULL;
+}
+
+MediaLogEvent::Type MediaLog::MediaLogLevelToEventType(MediaLogLevel level) {
+  switch (level) {
+    case MEDIALOG_ERROR:
+      return MediaLogEvent::MEDIA_ERROR_LOG_ENTRY;
+    case MEDIALOG_INFO:
+      return MediaLogEvent::MEDIA_INFO_LOG_ENTRY;
+    case MEDIALOG_DEBUG:
+      return MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY;
+  }
+  NOTREACHED();
+  return MediaLogEvent::MEDIA_ERROR_LOG_ENTRY;
+}
+
 std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
   switch (type) {
     case MediaLogEvent::WEBMEDIAPLAYER_CREATED:
@@ -53,8 +79,12 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "TEXT_ENDED";
     case MediaLogEvent::BUFFERED_EXTENTS_CHANGED:
       return "BUFFERED_EXTENTS_CHANGED";
-    case MediaLogEvent::MEDIA_SOURCE_ERROR:
-      return "MEDIA_SOURCE_ERROR";
+    case MediaLogEvent::MEDIA_ERROR_LOG_ENTRY:
+      return "MEDIA_ERROR_LOG_ENTRY";
+    case MediaLogEvent::MEDIA_INFO_LOG_ENTRY:
+      return "MEDIA_INFO_LOG_ENTRY";
+    case MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY:
+      return "MEDIA_DEBUG_LOG_ENTRY";
     case MediaLogEvent::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
   }
@@ -113,14 +143,6 @@ std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
   std::string params_json;
   base::JSONWriter::Write(&event.params, &params_json);
   return EventTypeToString(event.type) + " " + params_json;
-}
-
-LogHelper::LogHelper(const LogCB& log_cb) : log_cb_(log_cb) {}
-
-LogHelper::~LogHelper() {
-  if (log_cb_.is_null())
-    return;
-  log_cb_.Run(stream_.str());
 }
 
 MediaLog::MediaLog() : id_(g_media_log_count.GetNext()) {}
@@ -214,11 +236,12 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
   return event.Pass();
 }
 
-scoped_ptr<MediaLogEvent> MediaLog::CreateMediaSourceErrorEvent(
-    const std::string& error) {
-  scoped_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::MEDIA_SOURCE_ERROR));
-  event->params.SetString("error", error);
+scoped_ptr<MediaLogEvent> MediaLog::CreateLogEvent(MediaLogLevel level,
+                                                   const std::string& message) {
+  const MediaLogEvent::Type type = MediaLogLevelToEventType(level);
+  const std::string param = MediaLogLevelToString(level);
+  scoped_ptr<MediaLogEvent> event(CreateEvent(type));
+  event->params.SetString(param, message);
   return event.Pass();
 }
 
@@ -258,6 +281,16 @@ void MediaLog::SetTimeProperty(
   else
     event->params.SetDouble(key, value.InSecondsF());
   AddEvent(event.Pass());
+}
+
+LogHelper::LogHelper(MediaLog::MediaLogLevel level, const LogCB& log_cb)
+    : level_(level), log_cb_(log_cb) {
+}
+
+LogHelper::~LogHelper() {
+  if (log_cb_.is_null())
+    return;
+  log_cb_.Run(level_, stream_.str());
 }
 
 }  //namespace media

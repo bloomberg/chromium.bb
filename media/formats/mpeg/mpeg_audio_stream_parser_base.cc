@@ -262,7 +262,7 @@ int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8* data, int size) {
   int offset = LocateEndOfHeaders(data, locate_size, 4);
   if (offset < 0) {
     if (locate_size == kMaxIcecastHeaderSize) {
-      MEDIA_LOG(log_cb_) << "Icecast header is too large.";
+      MEDIA_LOG(ERROR, log_cb_) << "Icecast header is too large.";
       return -1;
     }
 
@@ -323,7 +323,7 @@ bool MPEGAudioStreamParserBase::ParseSyncSafeInt(BitReader* reader,
   for (int i = 0; i < 4; ++i) {
     uint8 tmp;
     if (!reader->ReadBits(1, &tmp) || tmp != 0) {
-      MEDIA_LOG(log_cb_) << "ID3 syncsafe integer byte MSb is not 0!";
+      MEDIA_LOG(ERROR, log_cb_) << "ID3 syncsafe integer byte MSb is not 0!";
       return false;
     }
 

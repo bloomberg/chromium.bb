@@ -18,33 +18,18 @@
 
 namespace media {
 
-// Indicates a string should be added to the log.
-// First parameter - The string to add to the log.
-typedef base::Callback<void(const std::string&)> LogCB;
-
-// Helper class to make it easier to use log_cb like DVLOG().
-class LogHelper {
- public:
-  LogHelper(const LogCB& Log_cb);
-  ~LogHelper();
-
-  std::ostream& stream() { return stream_; }
-
- private:
-  LogCB log_cb_;
-  std::stringstream stream_;
-};
-
-#define MEDIA_LOG(log_cb) LogHelper(log_cb).stream()
-
-// Logs only while count < max. Increments count for each log. Use LAZY_STREAM
-// to avoid wasteful evaluation of subsequent stream arguments.
-#define LIMITED_MEDIA_LOG(log_cb, count, max) \
-  LAZY_STREAM(MEDIA_LOG(log_cb), (count) < (max) && ((count)++ || true))
 
 class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
  public:
+  enum MediaLogLevel {
+    MEDIALOG_ERROR,
+    MEDIALOG_INFO,
+    MEDIALOG_DEBUG,
+  };
+
   // Convert various enums to strings.
+  static std::string MediaLogLevelToString(MediaLogLevel level);
+  static MediaLogEvent::Type MediaLogLevelToEventType(MediaLogLevel level);
   static std::string EventTypeToString(MediaLogEvent::Type type);
   static std::string PipelineStatusToString(PipelineStatus status);
 
@@ -75,8 +60,8 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
       size_t width, size_t height);
   scoped_ptr<MediaLogEvent> CreateBufferedExtentsChangedEvent(
       int64 start, int64 current, int64 end);
-  scoped_ptr<MediaLogEvent> CreateMediaSourceErrorEvent(
-      const std::string& error);
+  scoped_ptr<MediaLogEvent> CreateLogEvent(MediaLogLevel level,
+                                           const std::string& message);
 
   // Report a property change without an accompanying event.
   void SetStringProperty(const std::string& key, const std::string& value);
@@ -95,6 +80,35 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
 
   DISALLOW_COPY_AND_ASSIGN(MediaLog);
 };
+
+// Indicates a string should be added to the log.
+// First parameter - The log level for the string.
+// Second parameter - The string to add to the log.
+typedef base::Callback<void(MediaLog::MediaLogLevel, const std::string&)> LogCB;
+
+// Helper class to make it easier to use log_cb like DVLOG().
+class LogHelper {
+ public:
+  LogHelper(MediaLog::MediaLogLevel level, const LogCB& log_cb);
+  ~LogHelper();
+
+  std::ostream& stream() { return stream_; }
+
+ private:
+  MediaLog::MediaLogLevel level_;
+  LogCB log_cb_;
+  std::stringstream stream_;
+};
+
+// Provides a stringstream to collect a log entry to pass to the provided
+// LogCB at the requested level.
+#define MEDIA_LOG(level, log_cb) \
+  LogHelper((MediaLog::MEDIALOG_##level), (log_cb)).stream()
+
+// Logs only while count < max. Increments count for each log. Use LAZY_STREAM
+// to avoid wasteful evaluation of subsequent stream arguments.
+#define LIMITED_MEDIA_LOG(level, log_cb, count, max) \
+  LAZY_STREAM(MEDIA_LOG(level, log_cb), (count) < (max) && ((count)++ || true))
 
 }  // namespace media
 

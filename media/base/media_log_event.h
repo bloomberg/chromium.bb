@@ -82,9 +82,17 @@ struct MediaLogEvent {
     //         "buffer_end": <last buffered byte>.
     BUFFERED_EXTENTS_CHANGED,
 
-    // Errors reported by Media Source Extensions code.
-    MEDIA_SOURCE_ERROR,
+    // Error log reported by media code such as details of an MSE parse error.
+    MEDIA_ERROR_LOG_ENTRY,
     // params: "error": Error string describing the error detected.
+
+    // Informative log reported by media code.
+    MEDIA_INFO_LOG_ENTRY,
+    // params: "info": String with details of an informative log entry.
+
+    // Debug log reported by media code.
+    MEDIA_DEBUG_LOG_ENTRY,
+    // params: "debug": String with details of a debug log entry.
 
     // A property has changed without any special event occurring.
     PROPERTY_CHANGE,

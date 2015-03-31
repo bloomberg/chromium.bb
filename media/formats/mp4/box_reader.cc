@@ -160,8 +160,8 @@ bool BoxReader::IsValidTopLevelBox(const FourCC& type,
       return true;
     default:
       // Hex is used to show nonprintable characters and aid in debugging
-      MEDIA_LOG(log_cb) << "Unrecognized top-level box type "
-                        << FourCCToString(type);
+      MEDIA_LOG(DEBUG, log_cb) << "Unrecognized top-level box type "
+                               << FourCCToString(type);
       return false;
   }
 }

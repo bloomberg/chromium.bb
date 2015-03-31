@@ -185,7 +185,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
       base::TimeDelta::FromMilliseconds(120);
 
   if (size < 1) {
-    LIMITED_MEDIA_LOG(log_cb_, num_duration_errors_, kMaxDurationLogs)
+    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_, kMaxDurationLogs)
         << "Invalid zero-byte Opus packet; demuxed block duration may be "
            "imprecise.";
     return kNoTimestamp();
@@ -206,7 +206,8 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
     case 3:
       // Type 3 indicates an arbitrary frame count described in the next byte.
       if (size < 2) {
-        LIMITED_MEDIA_LOG(log_cb_, num_duration_errors_, kMaxDurationLogs)
+        LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
+                          kMaxDurationLogs)
             << "Second byte missing from 'Code 3' Opus packet; demuxed block "
                "duration may be imprecise.";
         return kNoTimestamp();
@@ -215,7 +216,8 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
       frame_count = data[1] & kFrameCountMask;
 
       if (frame_count == 0) {
-        LIMITED_MEDIA_LOG(log_cb_, num_duration_errors_, kMaxDurationLogs)
+        LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
+                          kMaxDurationLogs)
             << "Illegal 'Code 3' Opus packet with frame count zero; demuxed "
                "block duration may be imprecise.";
         return kNoTimestamp();
@@ -223,7 +225,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
 
       break;
     default:
-      LIMITED_MEDIA_LOG(log_cb_, num_duration_errors_, kMaxDurationLogs)
+      LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_, kMaxDurationLogs)
           << "Unexpected Opus frame count type: " << frame_count_type << "; "
           << "demuxed block duration may be imprecise.";
       return kNoTimestamp();
@@ -241,7 +243,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
     // Intentionally allowing packet to pass through for now. Decoder should
     // either handle or fail gracefully. MEDIA_LOG as breadcrumbs in case
     // things go sideways.
-    LIMITED_MEDIA_LOG(log_cb_, num_duration_errors_, kMaxDurationLogs)
+    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_, kMaxDurationLogs)
         << "Warning, demuxed Opus packet with encoded duration: " << duration
         << ". Should be no greater than " << kPacketDurationMax;
   }
@@ -274,7 +276,7 @@ bool WebMClusterParser::OnListEnd(int id) {
 
   // Make sure the BlockGroup actually had a Block.
   if (block_data_size_ == -1) {
-    MEDIA_LOG(log_cb_) << "Block missing from BlockGroup.";
+    MEDIA_LOG(ERROR, log_cb_) << "Block missing from BlockGroup.";
     return false;
   }
 
@@ -327,7 +329,7 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block,
   // Return an error if the trackNum > 127. We just aren't
   // going to support large track numbers right now.
   if (!(buf[0] & 0x80)) {
-    MEDIA_LOG(log_cb_) << "TrackNumber over 127 not supported";
+    MEDIA_LOG(ERROR, log_cb_) << "TrackNumber over 127 not supported";
     return false;
   }
 
@@ -337,7 +339,8 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block,
   int lacing = (flags >> 1) & 0x3;
 
   if (lacing) {
-    MEDIA_LOG(log_cb_) << "Lacing " << lacing << " is not supported yet.";
+    MEDIA_LOG(ERROR, log_cb_) << "Lacing " << lacing
+                              << " is not supported yet.";
     return false;
   }
 
@@ -359,8 +362,8 @@ bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
 
     case kWebMIdBlock:
       if (block_data_) {
-        MEDIA_LOG(log_cb_) << "More than 1 Block in a BlockGroup is not "
-                              "supported.";
+        MEDIA_LOG(ERROR, log_cb_) << "More than 1 Block in a BlockGroup is not "
+                                     "supported.";
         return false;
       }
       block_data_.reset(new uint8_t[size]);
@@ -375,8 +378,8 @@ bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
         // as per matroska spec. But for now we don't have a use case to
         // support parsing of such files. Take a look at this again when such a
         // case arises.
-        MEDIA_LOG(log_cb_) << "More than 1 BlockAdditional in a BlockGroup is "
-                              "not supported.";
+        MEDIA_LOG(ERROR, log_cb_) << "More than 1 BlockAdditional in a "
+                                     "BlockGroup is not supported.";
         return false;
       }
       // First 8 bytes of side_data in DecoderBuffer is the BlockAddID
@@ -418,20 +421,20 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
                                 int64 discard_padding) {
   DCHECK_GE(size, 0);
   if (cluster_timecode_ == -1) {
-    MEDIA_LOG(log_cb_) << "Got a block before cluster timecode.";
+    MEDIA_LOG(ERROR, log_cb_) << "Got a block before cluster timecode.";
     return false;
   }
 
   // TODO(acolwell): Should relative negative timecode offsets be rejected?  Or
   // only when the absolute timecode is negative?  See http://crbug.com/271794
   if (timecode < 0) {
-    MEDIA_LOG(log_cb_) << "Got a block with negative timecode offset "
-                       << timecode;
+    MEDIA_LOG(ERROR, log_cb_) << "Got a block with negative timecode offset "
+                              << timecode;
     return false;
   }
 
   if (last_block_timecode_ != -1 && timecode < last_block_timecode_) {
-    MEDIA_LOG(log_cb_)
+    MEDIA_LOG(ERROR, log_cb_)
         << "Got a block with a timecode before the previous block.";
     return false;
   }
@@ -460,7 +463,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
     track = text_track;
     buffer_type = DemuxerStream::TEXT;
   } else {
-    MEDIA_LOG(log_cb_) << "Unexpected track number " << track_num;
+    MEDIA_LOG(ERROR, log_cb_) << "Unexpected track number " << track_num;
     return false;
   }
 
@@ -558,7 +561,8 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
       const auto kWarnDurationDiff =
           base::TimeDelta::FromMicroseconds(timecode_multiplier_ * 2);
       if (duration_difference.magnitude() > kWarnDurationDiff) {
-        LIMITED_MEDIA_LOG(log_cb_, num_duration_errors_, kMaxDurationLogs)
+        LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
+                          kMaxDurationLogs)
             << "BlockDuration "
             << "(" << block_duration_time_delta << ") "
             << "differs significantly from encoded duration "
@@ -742,7 +746,8 @@ bool WebMClusterParser::Track::QueueBuffer(
 
   base::TimeDelta duration = buffer->duration();
   if (duration < base::TimeDelta() || duration == kNoTimestamp()) {
-    MEDIA_LOG(log_cb_) << "Invalid buffer duration: " << duration.InSecondsF();
+    MEDIA_LOG(ERROR, log_cb_)
+        << "Invalid buffer duration: " << duration.InSecondsF();
     return false;
   }
 

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/channel_layout.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/sample_format.h"
 #include "media/base/video_decoder_config.h"
@@ -137,6 +138,11 @@ class CallbackPairChecker {
  private:
   bool expecting_b_;
 };
+
+// Test implementation of a media log LogCB that sends media log messages to
+// DVLOG(1).
+void AddLogEntryForTest(MediaLog::MediaLogLevel level,
+                        const std::string& message);
 
 }  // namespace media
 

@@ -37,7 +37,7 @@ bool WebMAudioClient::InitializeConfig(
   } else if (codec_id == "A_OPUS") {
     audio_codec = kCodecOpus;
   } else {
-    MEDIA_LOG(log_cb_) << "Unsupported audio codec_id " << codec_id;
+    MEDIA_LOG(ERROR, log_cb_) << "Unsupported audio codec_id " << codec_id;
     return false;
   }
 
@@ -51,7 +51,7 @@ bool WebMAudioClient::InitializeConfig(
   ChannelLayout channel_layout =  GuessChannelLayout(channels_);
 
   if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
-    MEDIA_LOG(log_cb_) << "Unsupported channel count " << channels_;
+    MEDIA_LOG(ERROR, log_cb_) << "Unsupported channel count " << channels_;
     return false;
   }
 
@@ -100,9 +100,9 @@ bool WebMAudioClient::InitializeConfig(
 bool WebMAudioClient::OnUInt(int id, int64 val) {
   if (id == kWebMIdChannels) {
     if (channels_ != -1) {
-      MEDIA_LOG(log_cb_) << "Multiple values for id " << std::hex << id
-                         << " specified. (" << channels_ << " and " << val
-                         << ")";
+      MEDIA_LOG(ERROR, log_cb_) << "Multiple values for id " << std::hex << id
+                                << " specified. (" << channels_ << " and "
+                                << val << ")";
       return false;
     }
 
@@ -129,8 +129,9 @@ bool WebMAudioClient::OnFloat(int id, double val) {
     return false;
 
   if (*dst != -1) {
-    MEDIA_LOG(log_cb_) << "Multiple values for id " << std::hex << id
-                       << " specified (" << *dst << " and " << val << ")";
+    MEDIA_LOG(ERROR, log_cb_) << "Multiple values for id " << std::hex << id
+                              << " specified (" << *dst << " and " << val
+                              << ")";
     return false;
   }
 

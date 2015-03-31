@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #if !defined(MEDIA_DISABLE_FFMPEG)
+#include "media/base/media_log.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #endif
@@ -23,11 +24,11 @@
 namespace media {
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
-// TODO(xhwang): We are abusing CreateMediaSourceErrorEvent() in a lot of places
-// that are not MediaSource related. Fix this in a separate CL.
-static void LogError(const scoped_refptr<MediaLog>& media_log,
-                     const std::string& error) {
-  media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
+
+static void AddLogEntry(const scoped_refptr<MediaLog>& media_log,
+                        MediaLog::MediaLogLevel level,
+                        const std::string& message) {
+  media_log->AddEvent(media_log->CreateLogEvent(level, message));
 }
 #endif
 
@@ -54,7 +55,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(new FFmpegAudioDecoder(
-      media_task_runner, base::Bind(&LogError, media_log_)));
+      media_task_runner, base::Bind(&AddLogEntry, media_log_)));
 #endif
 
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));

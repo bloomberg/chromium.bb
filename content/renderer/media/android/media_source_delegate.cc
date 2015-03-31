@@ -40,9 +40,10 @@ const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 
 namespace content {
 
-static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
-                                const std::string& error) {
-  media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
+static void AddLogEntry(const scoped_refptr<media::MediaLog>& media_log,
+                        media::MediaLog::MediaLogLevel level,
+                        const std::string& message) {
+  media_log->AddEvent(media_log->CreateLogEvent(level, message));
 }
 
 MediaSourceDelegate::MediaSourceDelegate(
@@ -170,7 +171,7 @@ void MediaSourceDelegate::InitializeMediaSource(
           base::Bind(&MediaSourceDelegate::OnDemuxerOpened, main_weak_this_)),
       media::BindToCurrentLoop(base::Bind(
           &MediaSourceDelegate::OnEncryptedMediaInitData, main_weak_this_)),
-      base::Bind(&LogMediaSourceError, media_log_), media_log_, false));
+      base::Bind(&AddLogEntry, media_log_), media_log_, false));
 
   // |this| will be retained until StopDemuxer() is posted, so Unretained() is
   // safe here.
@@ -669,7 +670,7 @@ void MediaSourceDelegate::OnDemuxerOpened() {
     return;
 
   media_source_opened_cb_.Run(new media::WebMediaSourceImpl(
-      chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
+      chunk_demuxer_.get(), base::Bind(&AddLogEntry, media_log_)));
 }
 
 void MediaSourceDelegate::OnEncryptedMediaInitData(

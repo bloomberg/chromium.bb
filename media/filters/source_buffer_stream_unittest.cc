@@ -50,7 +50,7 @@ class SourceBufferStreamTest : public testing::Test {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new SourceBufferStream(config, LogCB(), true));
+    stream_.reset(new SourceBufferStream(config, log_cb(), true));
     SetStreamInfo(2, 2);
   }
 
@@ -66,7 +66,7 @@ class SourceBufferStreamTest : public testing::Test {
                              false,
                              base::TimeDelta(),
                              0);
-    stream_.reset(new SourceBufferStream(audio_config_, LogCB(), true));
+    stream_.reset(new SourceBufferStream(audio_config_, log_cb(), true));
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -352,10 +352,7 @@ class SourceBufferStreamTest : public testing::Test {
         << "\nActual: " << actual.AsHumanReadableString();
   }
 
-  const LogCB log_cb() {
-    return base::Bind(&SourceBufferStreamTest::DebugMediaLog,
-                      base::Unretained(this));
-  }
+  const LogCB log_cb() { return base::Bind(&AddLogEntryForTest); }
 
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
@@ -626,10 +623,6 @@ class SourceBufferStreamTest : public testing::Test {
       wrapper.push_back(buffers[i]);
       EXPECT_TRUE(stream_->Append(wrapper));
     }
-  }
-
-  void DebugMediaLog(const std::string& log) {
-    DVLOG(1) << log;
   }
 
   int frames_per_second_;

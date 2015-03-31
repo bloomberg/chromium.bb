@@ -155,7 +155,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       break;
     case kWebMIdCluster:
       if (!cluster_parser_) {
-        MEDIA_LOG(log_cb_) << "Found Cluster element before Info.";
+        MEDIA_LOG(ERROR, log_cb_) << "Found Cluster element before Info.";
         return -1;
       }
       ChangeState(kParsingClusters);
@@ -173,7 +173,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       // We've found the element we are looking for.
       break;
     default: {
-      MEDIA_LOG(log_cb_) << "Unexpected element ID 0x" << std::hex << id;
+      MEDIA_LOG(ERROR, log_cb_) << "Unexpected element ID 0x" << std::hex << id;
       return -1;
     }
   }

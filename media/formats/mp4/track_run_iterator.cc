@@ -157,7 +157,8 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
       break;
 
     case kSampleDependsOnReserved:
-      MEDIA_LOG(log_cb) << "Reserved value used in sample dependency info.";
+      MEDIA_LOG(ERROR, log_cb) << "Reserved value used in sample dependency"
+                                  " info.";
       return false;
   }
   return true;
@@ -518,7 +519,7 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
 
   if (cenc_info_.empty()) {
     DCHECK_EQ(0, aux_info_size());
-    MEDIA_LOG(log_cb_) << "Aux Info is not available.";
+    MEDIA_LOG(ERROR, log_cb_) << "Aux Info is not available.";
     return scoped_ptr<DecryptConfig>();
   }
 
@@ -530,7 +531,7 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
   if (!cenc_info.subsamples.empty() &&
       (!cenc_info.GetTotalSizeOfSubsamples(&total_size) ||
        total_size != static_cast<size_t>(sample_size()))) {
-    MEDIA_LOG(log_cb_) << "Incorrect CENC subsample size.";
+    MEDIA_LOG(ERROR, log_cb_) << "Incorrect CENC subsample size.";
     return scoped_ptr<DecryptConfig>();
   }
 

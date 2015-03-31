@@ -324,8 +324,8 @@ class MEDIA_EXPORT SourceBufferStream {
   // appropriately and returns true.  Otherwise returns false.
   bool SetPendingBuffer(scoped_refptr<StreamParserBuffer>* out_buffer);
 
-  // Callback used to report error strings that can help the web developer
-  // figure out what is wrong with the content.
+  // Callback used to report log messages that can help the web developer figure
+  // out what is wrong with the content.
   LogCB log_cb_;
 
   // List of disjoint buffered ranges, ordered by start time.

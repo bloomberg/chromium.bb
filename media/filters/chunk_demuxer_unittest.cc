@@ -12,6 +12,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/media_log.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
@@ -141,8 +142,6 @@ static void OnSeekDone_OKExpected(bool* called, PipelineStatus status) {
   *called = true;
 }
 
-static void LogFunc(const std::string& str) { DVLOG(1) << str; }
-
 class ChunkDemuxerTest : public ::testing::Test {
  protected:
   enum CodecsIndex {
@@ -179,7 +178,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
         &ChunkDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
     demuxer_.reset(new ChunkDemuxer(
-        open_cb, encrypted_media_init_data_cb, base::Bind(&LogFunc),
+        open_cb, encrypted_media_init_data_cb, base::Bind(&AddLogEntryForTest),
         scoped_refptr<MediaLog>(new MediaLog()), true));
   }
 

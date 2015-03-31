@@ -263,11 +263,11 @@ bool FFmpegAudioDecoder::FFmpegDecode(
           << "This is quite possibly a bug in the audio decoder not handling "
           << "end of stream AVPackets correctly.";
 
-      MEDIA_LOG(log_cb_)
+      MEDIA_LOG(DEBUG, log_cb_)
           << "Dropping audio frame which failed decode with timestamp: "
-          << buffer->timestamp().InMicroseconds() << " us, duration: "
-          << buffer->duration().InMicroseconds() << " us, packet size: "
-          << buffer->data_size() << " bytes";
+          << buffer->timestamp().InMicroseconds()
+          << " us, duration: " << buffer->duration().InMicroseconds()
+          << " us, packet size: " << buffer->data_size() << " bytes";
 
       break;
     }
@@ -293,9 +293,9 @@ bool FFmpegAudioDecoder::FFmpegDecode(
 
         if (config_.codec() == kCodecAAC &&
             av_frame_->sample_rate == 2 * config_.samples_per_second()) {
-          MEDIA_LOG(log_cb_) << "Implicit HE-AAC signalling is being used."
-                             << " Please use mp4a.40.5 instead of mp4a.40.2 in"
-                             << " the mimetype.";
+          MEDIA_LOG(DEBUG, log_cb_) << "Implicit HE-AAC signalling is being"
+                                    << " used. Please use mp4a.40.5 instead of"
+                                    << " mp4a.40.2 in the mimetype.";
         }
         // This is an unrecoverable error, so bail out.
         av_frame_unref(av_frame_.get());

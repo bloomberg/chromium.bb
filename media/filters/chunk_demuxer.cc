@@ -334,7 +334,7 @@ bool SourceState::Append(
   // append window and timestamp offset pointer. See http://crbug.com/351454.
   bool result = stream_parser_->Parse(data, length);
   if (!result) {
-    MEDIA_LOG(log_cb_)
+    MEDIA_LOG(ERROR, log_cb_)
         << __FUNCTION__ << ": stream parsing failed."
         << " Data size=" << length
         << " append_window_start=" << append_window_start.InSecondsF()
@@ -572,7 +572,7 @@ bool SourceState::OnNewConfigs(
   // Signal an error if we get configuration info for stream types that weren't
   // specified in AddId() or more configs after a stream is initialized.
   if (allow_audio != audio_config.IsValidConfig()) {
-    MEDIA_LOG(log_cb_)
+    MEDIA_LOG(ERROR, log_cb_)
         << "Initialization segment"
         << (audio_config.IsValidConfig() ? " has" : " does not have")
         << " an audio track, but the mimetype"
@@ -582,7 +582,7 @@ bool SourceState::OnNewConfigs(
   }
 
   if (allow_video != video_config.IsValidConfig()) {
-    MEDIA_LOG(log_cb_)
+    MEDIA_LOG(ERROR, log_cb_)
         << "Initialization segment"
         << (video_config.IsValidConfig() ? " has" : " does not have")
         << " a video track, but the mimetype"
@@ -655,8 +655,8 @@ bool SourceState::OnNewConfigs(
           create_demuxer_stream_cb_.Run(DemuxerStream::TEXT);
       if (!frame_processor_->AddTrack(itr->first, text_stream)) {
         success &= false;
-        MEDIA_LOG(log_cb_) << "Failed to add text track ID " << itr->first
-                           << " to frame processor.";
+        MEDIA_LOG(ERROR, log_cb_) << "Failed to add text track ID "
+                                  << itr->first << " to frame processor.";
         break;
       }
       text_stream->UpdateTextConfig(itr->second, log_cb_);
@@ -667,7 +667,7 @@ bool SourceState::OnNewConfigs(
     const size_t text_count = text_stream_map_.size();
     if (text_configs.size() != text_count) {
       success &= false;
-      MEDIA_LOG(log_cb_) << "The number of text track configs changed.";
+      MEDIA_LOG(ERROR, log_cb_) << "The number of text track configs changed.";
     } else if (text_count == 1) {
       TextConfigItr config_itr = text_configs.begin();
       TextStreamMap::iterator stream_itr = text_stream_map_.begin();
@@ -679,7 +679,8 @@ bool SourceState::OnNewConfigs(
                                  old_config.id());
       if (!new_config.Matches(old_config)) {
         success &= false;
-        MEDIA_LOG(log_cb_) << "New text track config does not match old one.";
+        MEDIA_LOG(ERROR, log_cb_)
+            << "New text track config does not match old one.";
       } else {
         StreamParser::TrackId old_id = stream_itr->first;
         StreamParser::TrackId new_id = config_itr->first;
@@ -689,7 +690,8 @@ bool SourceState::OnNewConfigs(
             text_stream_map_[config_itr->first] = text_stream;
           } else {
             success &= false;
-            MEDIA_LOG(log_cb_) << "Error remapping single text track number";
+            MEDIA_LOG(ERROR, log_cb_)
+                << "Error remapping single text track number";
           }
         }
       }
@@ -700,9 +702,9 @@ bool SourceState::OnNewConfigs(
             text_stream_map_.find(config_itr->first);
         if (stream_itr == text_stream_map_.end()) {
           success &= false;
-          MEDIA_LOG(log_cb_) << "Unexpected text track configuration "
-                                "for track ID "
-                             << config_itr->first;
+          MEDIA_LOG(ERROR, log_cb_)
+              << "Unexpected text track configuration for track ID "
+              << config_itr->first;
           break;
         }
 
@@ -711,9 +713,9 @@ bool SourceState::OnNewConfigs(
         TextTrackConfig old_config = stream->text_track_config();
         if (!new_config.Matches(old_config)) {
           success &= false;
-          MEDIA_LOG(log_cb_) << "New text track config for track ID "
-                             << config_itr->first
-                             << " does not match old one.";
+          MEDIA_LOG(ERROR, log_cb_) << "New text track config for track ID "
+                                    << config_itr->first
+                                    << " does not match old one.";
           break;
         }
       }
@@ -1657,7 +1659,7 @@ void ChunkDemuxer::OnSourceInitDone(
   if (!params.timeline_offset.is_null()) {
     if (!timeline_offset_.is_null() &&
         params.timeline_offset != timeline_offset_) {
-      MEDIA_LOG(log_cb_)
+      MEDIA_LOG(ERROR, log_cb_)
           << "Timeline offset is not the same across all SourceBuffers.";
       ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
       return;
@@ -1669,7 +1671,7 @@ void ChunkDemuxer::OnSourceInitDone(
   if (params.liveness != DemuxerStream::LIVENESS_UNKNOWN) {
     if (liveness_ != DemuxerStream::LIVENESS_UNKNOWN &&
         params.liveness != liveness_) {
-      MEDIA_LOG(log_cb_)
+      MEDIA_LOG(ERROR, log_cb_)
           << "Liveness is not the same across all SourceBuffers.";
       ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
       return;

@@ -136,9 +136,9 @@ bool WebMTracksParser::OnListEnd(int id) {
 
   if (id == kWebMIdTrackEntry) {
     if (track_type_ == -1 || track_num_ == -1) {
-      MEDIA_LOG(log_cb_) << "Missing TrackEntry data for "
-                         << " TrackType " << track_type_
-                         << " TrackNum " << track_num_;
+      MEDIA_LOG(ERROR, log_cb_) << "Missing TrackEntry data for "
+                                << " TrackType " << track_type_ << " TrackNum "
+                                << track_num_;
       return false;
     }
 
@@ -146,7 +146,7 @@ bool WebMTracksParser::OnListEnd(int id) {
         track_type_ != kWebMTrackTypeVideo &&
         track_type_ != kWebMTrackTypeSubtitlesOrCaptions &&
         track_type_ != kWebMTrackTypeDescriptionsOrMetadata) {
-      MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;
+      MEDIA_LOG(ERROR, log_cb_) << "Unexpected TrackType " << track_type_;
       return false;
     }
 
@@ -154,29 +154,29 @@ bool WebMTracksParser::OnListEnd(int id) {
     if (track_type_ == kWebMTrackTypeSubtitlesOrCaptions) {
       text_track_kind = CodecIdToTextKind(codec_id_);
       if (text_track_kind == kTextNone) {
-        MEDIA_LOG(log_cb_) << "Missing TrackEntry CodecID"
-                           << " TrackNum " << track_num_;
+        MEDIA_LOG(ERROR, log_cb_) << "Missing TrackEntry CodecID"
+                                  << " TrackNum " << track_num_;
         return false;
       }
 
       if (text_track_kind != kTextSubtitles &&
           text_track_kind != kTextCaptions) {
-        MEDIA_LOG(log_cb_) << "Wrong TrackEntry CodecID"
-                           << " TrackNum " << track_num_;
+        MEDIA_LOG(ERROR, log_cb_) << "Wrong TrackEntry CodecID"
+                                  << " TrackNum " << track_num_;
         return false;
       }
     } else if (track_type_ == kWebMTrackTypeDescriptionsOrMetadata) {
       text_track_kind = CodecIdToTextKind(codec_id_);
       if (text_track_kind == kTextNone) {
-        MEDIA_LOG(log_cb_) << "Missing TrackEntry CodecID"
-                           << " TrackNum " << track_num_;
+        MEDIA_LOG(ERROR, log_cb_) << "Missing TrackEntry CodecID"
+                                  << " TrackNum " << track_num_;
         return false;
       }
 
       if (text_track_kind != kTextDescriptions &&
           text_track_kind != kTextMetadata) {
-        MEDIA_LOG(log_cb_) << "Wrong TrackEntry CodecID"
-                           << " TrackNum " << track_num_;
+        MEDIA_LOG(ERROR, log_cb_) << "Wrong TrackEntry CodecID"
+                                  << " TrackNum " << track_num_;
         return false;
       }
     }
@@ -196,7 +196,8 @@ bool WebMTracksParser::OnListEnd(int id) {
         audio_encryption_key_id_ = encryption_key_id;
 
         if (default_duration_ == 0) {
-          MEDIA_LOG(log_cb_) << "Illegal 0ns audio TrackEntry DefaultDuration";
+          MEDIA_LOG(ERROR, log_cb_) << "Illegal 0ns audio TrackEntry "
+                                       "DefaultDuration";
           return false;
         }
         audio_default_duration_ = default_duration_;
@@ -208,7 +209,7 @@ bool WebMTracksParser::OnListEnd(int id) {
           return false;
         }
       } else {
-        MEDIA_LOG(log_cb_) << "Ignoring audio track " << track_num_;
+        MEDIA_LOG(DEBUG, log_cb_) << "Ignoring audio track " << track_num_;
         ignored_tracks_.insert(track_num_);
       }
     } else if (track_type_ == kWebMTrackTypeVideo) {
@@ -217,7 +218,8 @@ bool WebMTracksParser::OnListEnd(int id) {
         video_encryption_key_id_ = encryption_key_id;
 
         if (default_duration_ == 0) {
-          MEDIA_LOG(log_cb_) << "Illegal 0ns video TrackEntry DefaultDuration";
+          MEDIA_LOG(ERROR, log_cb_) << "Illegal 0ns video TrackEntry "
+                                       "DefaultDuration";
           return false;
         }
         video_default_duration_ = default_duration_;
@@ -229,13 +231,13 @@ bool WebMTracksParser::OnListEnd(int id) {
           return false;
         }
       } else {
-        MEDIA_LOG(log_cb_) << "Ignoring video track " << track_num_;
+        MEDIA_LOG(DEBUG, log_cb_) << "Ignoring video track " << track_num_;
         ignored_tracks_.insert(track_num_);
       }
     } else if (track_type_ == kWebMTrackTypeSubtitlesOrCaptions ||
                track_type_ == kWebMTrackTypeDescriptionsOrMetadata) {
       if (ignore_text_tracks_) {
-        MEDIA_LOG(log_cb_) << "Ignoring text track " << track_num_;
+        MEDIA_LOG(DEBUG, log_cb_) << "Ignoring text track " << track_num_;
         ignored_tracks_.insert(track_num_);
       } else {
         std::string track_num = base::Int64ToString(track_num_);
@@ -243,7 +245,7 @@ bool WebMTracksParser::OnListEnd(int id) {
             text_track_kind, track_name_, track_language_, track_num);
       }
     } else {
-      MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;
+      MEDIA_LOG(ERROR, log_cb_) << "Unexpected TrackType " << track_type_;
       return false;
     }
 
@@ -288,8 +290,8 @@ bool WebMTracksParser::OnUInt(int id, int64 val) {
   }
 
   if (*dst != -1) {
-    MEDIA_LOG(log_cb_) << "Multiple values for id " << std::hex << id
-                       << " specified";
+    MEDIA_LOG(ERROR, log_cb_) << "Multiple values for id " << std::hex << id
+                              << " specified";
     return false;
   }
 
@@ -304,7 +306,7 @@ bool WebMTracksParser::OnFloat(int id, double val) {
 bool WebMTracksParser::OnBinary(int id, const uint8* data, int size) {
   if (id == kWebMIdCodecPrivate) {
     if (!codec_private_.empty()) {
-      MEDIA_LOG(log_cb_) << "Multiple CodecPrivate fields in a track.";
+      MEDIA_LOG(ERROR, log_cb_) << "Multiple CodecPrivate fields in a track.";
       return false;
     }
     codec_private_.assign(data, data + size);
@@ -316,7 +318,7 @@ bool WebMTracksParser::OnBinary(int id, const uint8* data, int size) {
 bool WebMTracksParser::OnString(int id, const std::string& str) {
   if (id == kWebMIdCodecID) {
     if (!codec_id_.empty()) {
-      MEDIA_LOG(log_cb_) << "Multiple CodecID fields in a track";
+      MEDIA_LOG(ERROR, log_cb_) << "Multiple CodecID fields in a track";
       return false;
     }
 
