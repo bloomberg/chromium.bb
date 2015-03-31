@@ -53513,6 +53513,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
+  <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
   <int value="-1125133283" label="disable-threaded-scrolling"/>
