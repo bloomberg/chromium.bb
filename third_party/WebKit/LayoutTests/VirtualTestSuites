@@ -145,6 +145,12 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/gradients",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/frames",
     "args": ["--enable-slimming-paint"],
     "reference_args": []

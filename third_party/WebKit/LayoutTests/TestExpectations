@@ -1112,6 +1112,8 @@ crbug.com/408123 fast/multicol/pagination-v-vertical-lr.html [ Skip ]
 crbug.com/408123 fast/multicol/pagination-v-vertical-rl.html [ Skip ]
 # END - Old multicol tests that should be removed once the old implementation is gone
 
+crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ ImageOnlyFailure ]
+
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
 crbug.com/453794 virtual/slimmingpaint/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
