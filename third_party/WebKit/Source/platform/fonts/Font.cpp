@@ -180,7 +180,7 @@ void Font::drawBidiText(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const
         //       all subruns could be part of the same blob).
         GlyphBuffer glyphBuffer;
         float runWidth = buildGlyphBuffer(subrunInfo, glyphBuffer);
-        drawGlyphBuffer(canvas, paint, subrunInfo, glyphBuffer, point, deviceScaleFactor);
+        drawGlyphBuffer(canvas, paint, subrunInfo, glyphBuffer, currPoint, deviceScaleFactor);
 
         bidiRun = bidiRun->next();
         currPoint.move(runWidth, 0);
