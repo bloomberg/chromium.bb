@@ -22,41 +22,41 @@ namespace html_viewer {
 class BlinkPlatformImpl : public blink::Platform {
  public:
   explicit BlinkPlatformImpl();
-  virtual ~BlinkPlatformImpl();
+  ~BlinkPlatformImpl() override;
 
   // blink::Platform methods:
-  virtual blink::WebMimeRegistry* mimeRegistry();
-  virtual blink::WebThemeEngine* themeEngine();
-  virtual blink::WebScheduler* scheduler();
-  virtual blink::WebString defaultLocale();
-  virtual double currentTime();
-  virtual double monotonicallyIncreasingTime();
-  virtual void cryptographicallyRandomValues(
-      unsigned char* buffer, size_t length);
-  virtual void setSharedTimerFiredFunction(void (*func)());
-  virtual void setSharedTimerFireInterval(double interval_seconds);
-  virtual void stopSharedTimer();
+  blink::WebMimeRegistry* mimeRegistry() override;
+  blink::WebThemeEngine* themeEngine() override;
+  blink::WebScheduler* scheduler() override;
+  blink::WebString defaultLocale() override;
+  double currentTime() override;
+  double monotonicallyIncreasingTime() override;
+  void cryptographicallyRandomValues(unsigned char* buffer,
+                                     size_t length) override;
+  void setSharedTimerFiredFunction(void (*func)()) override;
+  void setSharedTimerFireInterval(double interval_seconds) override;
+  void stopSharedTimer() override;
   virtual void callOnMainThread(void (*func)(void*), void* context);
-  virtual bool isThreadedCompositingEnabled();
-  virtual blink::WebCompositorSupport* compositorSupport();
-  virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebSocketHandle* createWebSocketHandle();
-  virtual blink::WebString userAgent();
-  virtual blink::WebData parseDataURL(
+  bool isThreadedCompositingEnabled() override;
+  blink::WebCompositorSupport* compositorSupport() override;
+  blink::WebURLLoader* createURLLoader() override;
+  blink::WebSocketHandle* createWebSocketHandle() override;
+  blink::WebString userAgent() override;
+  blink::WebData parseDataURL(
       const blink::WebURL& url, blink::WebString& mime_type,
-      blink::WebString& charset);
-  virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
-  virtual bool isReservedIPAddress(const blink::WebString& host) const;
-  virtual blink::WebThread* createThread(const char* name);
-  virtual blink::WebThread* currentThread();
-  virtual void yieldCurrentThread();
-  virtual blink::WebWaitableEvent* createWaitableEvent();
-  virtual blink::WebWaitableEvent* waitMultipleEvents(
-      const blink::WebVector<blink::WebWaitableEvent*>& events);
-  virtual blink::WebScrollbarBehavior* scrollbarBehavior();
-  virtual const unsigned char* getTraceCategoryEnabledFlag(
-      const char* category_name);
-  virtual blink::WebData loadResource(const char* name);
+      blink::WebString& charset) override;
+  bool isReservedIPAddress(const blink::WebString& host) const override;
+  blink::WebURLError cancelledError(const blink::WebURL& url) const override;
+  blink::WebThread* createThread(const char* name) override;
+  blink::WebThread* currentThread() override;
+  void yieldCurrentThread() override;
+  blink::WebWaitableEvent* createWaitableEvent() override;
+  blink::WebWaitableEvent* waitMultipleEvents(
+      const blink::WebVector<blink::WebWaitableEvent*>& events) override;
+  blink::WebScrollbarBehavior* scrollbarBehavior() override;
+  const unsigned char* getTraceCategoryEnabledFlag(
+      const char* category_name) override;
+  blink::WebData loadResource(const char* name) override;
 
  private:
   void SuspendSharedTimer();

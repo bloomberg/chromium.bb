@@ -33,13 +33,13 @@ namespace {
 
 class TestWebFrameClient : public WebFrameClient {
  public:
-  virtual ~TestWebFrameClient() {}
-  virtual void didStopLoading() { base::MessageLoop::current()->Quit(); }
+  ~TestWebFrameClient() override {}
+  void didStopLoading() override { base::MessageLoop::current()->Quit(); }
 };
 
 class TestWebViewClient : public WebViewClient {
  public:
-  virtual bool allowsBrokenNullLayerTreeView() const { return true; }
+  bool allowsBrokenNullLayerTreeView() const override { return true; }
   virtual ~TestWebViewClient() {}
 };
 

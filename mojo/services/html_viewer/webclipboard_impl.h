@@ -16,23 +16,24 @@ class WebClipboardImpl : public blink::WebClipboard {
   virtual ~WebClipboardImpl();
 
   // blink::WebClipboard methods:
-  virtual uint64_t sequenceNumber(Buffer);
-  virtual bool isFormatAvailable(Format, Buffer);
-  virtual blink::WebVector<blink::WebString> readAvailableTypes(
+  uint64_t sequenceNumber(Buffer) override;
+  bool isFormatAvailable(Format, Buffer) override;
+  blink::WebVector<blink::WebString> readAvailableTypes(
       Buffer,
-      bool* containsFilenames);
-  virtual blink::WebString readPlainText(Buffer);
-  virtual blink::WebString readHTML(Buffer buffer,
-                                    blink::WebURL* pageURL,
-                                    unsigned* fragmentStart,
-                                    unsigned* fragmentEnd);
+      bool* containsFilenames) override;
+  blink::WebString readPlainText(Buffer) override;
+  blink::WebString readHTML(Buffer buffer,
+                            blink::WebURL* pageURL,
+                            unsigned* fragmentStart,
+                            unsigned* fragmentEnd) override;
   // TODO(erg): readImage()
-  virtual blink::WebString readCustomData(Buffer, const blink::WebString& type);
-  virtual void writePlainText(const blink::WebString&);
-  virtual void writeHTML(const blink::WebString& htmlText,
-                         const blink::WebURL&,
-                         const blink::WebString& plainText,
-                         bool writeSmartPaste);
+  blink::WebString readCustomData(Buffer,
+                                  const blink::WebString& type) override;
+  void writePlainText(const blink::WebString&) override;
+  void writeHTML(const blink::WebString& htmlText,
+                 const blink::WebURL&,
+                 const blink::WebString& plainText,
+                 bool writeSmartPaste) override;
 
  private:
   // Changes webkit buffers to mojo Clipboard::Types.

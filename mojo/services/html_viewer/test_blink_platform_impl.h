@@ -15,12 +15,12 @@ namespace html_viewer {
 class TestBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   TestBlinkPlatformImpl();
-  virtual ~TestBlinkPlatformImpl();
+  ~TestBlinkPlatformImpl() override;
 
  private:
   // blink::Platform methods:
-  virtual blink::WebCookieJar* cookieJar();
-  virtual blink::WebClipboard* clipboard();
+  blink::WebCookieJar* cookieJar() override;
+  blink::WebClipboard* clipboard() override;
 
   blink::WebClipboard clipboard_;
   blink::WebCookieJar cookie_jar_;

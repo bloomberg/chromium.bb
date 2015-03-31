@@ -34,10 +34,10 @@ const char kDefaultUserAgentString[] =
 class WebWaitableEventImpl : public blink::WebWaitableEvent {
  public:
   WebWaitableEventImpl() : impl_(new base::WaitableEvent(false, false)) {}
-  virtual ~WebWaitableEventImpl() {}
+  ~WebWaitableEventImpl() override {}
 
-  virtual void wait() { impl_->Wait(); }
-  virtual void signal() { impl_->Signal(); }
+  void wait() override { impl_->Wait(); }
+  void signal() override { impl_->Signal(); }
 
   base::WaitableEvent* impl() {
     return impl_.get();

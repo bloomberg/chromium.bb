@@ -13,13 +13,9 @@ namespace {
 
 class DummyWebStorageAreaImpl : public blink::WebStorageArea {
  public:
-  virtual unsigned length() {
-    return 0;
-  }
-  virtual blink::WebString key(unsigned index) {
-    return blink::WebString();
-  }
-  virtual blink::WebString getItem(const blink::WebString& key) {
+  unsigned length() override { return 0; }
+  blink::WebString key(unsigned index) override { return blink::WebString(); }
+  blink::WebString getItem(const blink::WebString& key) override {
     return blink::WebString();
   }
 };

@@ -15,12 +15,12 @@ class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
   WebStorageNamespaceImpl();
 
  private:
-  virtual ~WebStorageNamespaceImpl();
+  ~WebStorageNamespaceImpl() override;
 
   // blink::WebStorageNamespace methods:
-  virtual blink::WebStorageArea* createStorageArea(
-      const blink::WebString& origin);
-  virtual bool isSameNamespace(const blink::WebStorageNamespace&) const;
+  blink::WebStorageArea* createStorageArea(
+      const blink::WebString& origin) override;
+  bool isSameNamespace(const blink::WebStorageNamespace&) const override;
 
   DISALLOW_COPY_AND_ASSIGN(WebStorageNamespaceImpl);
 };

@@ -28,20 +28,16 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
  private:
   friend class WebSocketClientImpl;
 
-  virtual ~WebSocketHandleImpl();
+  ~WebSocketHandleImpl() override;
 
   // blink::WebSocketHandle methods:
-  virtual void connect(const blink::WebURL& url,
-                       const blink::WebVector<blink::WebString>& protocols,
-                       const blink::WebSerializedOrigin& origin,
-                       blink::WebSocketHandleClient*) override;
-  virtual void send(bool fin,
-                    MessageType,
-                    const char* data,
-                    size_t size) override;
-  virtual void flowControl(int64_t quota) override;
-  virtual void close(unsigned short code,
-                     const blink::WebString& reason) override;
+  void connect(const blink::WebURL& url,
+               const blink::WebVector<blink::WebString>& protocols,
+               const blink::WebSerializedOrigin& origin,
+               blink::WebSocketHandleClient*) override;
+  void send(bool fin, MessageType, const char* data, size_t size) override;
+  void flowControl(int64_t quota) override;
+  void close(unsigned short code, const blink::WebString& reason) override;
 
   // Called when we finished writing to |send_stream_|.
   void DidWriteToSendStream(bool fin,

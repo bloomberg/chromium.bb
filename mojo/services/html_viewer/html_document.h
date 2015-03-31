@@ -67,7 +67,7 @@ class HTMLDocument : public blink::WebViewClient,
                scoped_refptr<base::MessageLoopProxy> compositor_thread,
                WebMediaPlayerFactory* web_media_player_factory,
                bool is_headless);
-  virtual ~HTMLDocument();
+  ~HTMLDocument() override;
 
  private:
   // Updates the size and scale factor of the webview and related classes from
@@ -75,43 +75,43 @@ class HTMLDocument : public blink::WebViewClient,
   void UpdateWebviewSizeFromViewSize();
 
   // WebViewClient methods:
-  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
+  blink::WebStorageNamespace* createSessionStorageNamespace() override;
 
   // WebWidgetClient methods:
-  virtual void initializeLayerTreeView();
-  virtual blink::WebLayerTreeView* layerTreeView();
+  void initializeLayerTreeView() override;
+  blink::WebLayerTreeView* layerTreeView() override;
 
   // WebFrameClient methods:
   virtual blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
-  virtual blink::WebMediaPlayer* createMediaPlayer(
+  blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
-      blink::WebContentDecryptionModule* initial_cdm);
-  virtual blink::WebFrame* createChildFrame(
+      blink::WebContentDecryptionModule* initial_cdm) override;
+  blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       const blink::WebString& frameName,
-      blink::WebSandboxFlags sandboxFlags);
-  virtual void frameDetached(blink::WebFrame*);
-  virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
-  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
+      blink::WebSandboxFlags sandboxFlags) override;
+  void frameDetached(blink::WebFrame*) override;
+  blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame) override;
+  blink::WebNavigationPolicy decidePolicyForNavigation(
       blink::WebLocalFrame* frame,
       blink::WebDataSource::ExtraData* data,
       const blink::WebURLRequest& request,
       blink::WebNavigationType nav_type,
       blink::WebNavigationPolicy default_policy,
-      bool isRedirect);
-  virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
-                                      const blink::WebString& source_name,
-                                      unsigned source_line,
-                                      const blink::WebString& stack_trace);
-  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                     const blink::WebHistoryItem& history_item,
-                                     blink::WebHistoryCommitType commit_type);
-  virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
+      bool isRedirect) override;
+  void didAddMessageToConsole(const blink::WebConsoleMessage& message,
+                              const blink::WebString& source_name,
+                              unsigned source_line,
+                              const blink::WebString& stack_trace) override;
+  void didNavigateWithinPage(blink::WebLocalFrame* frame,
+                             const blink::WebHistoryItem& history_item,
+                             blink::WebHistoryCommitType commit_type) override;
+  blink::WebEncryptedMediaClient* encryptedMediaClient() override;
 
   // ViewManagerDelegate methods:
   void OnEmbed(mojo::View* root,

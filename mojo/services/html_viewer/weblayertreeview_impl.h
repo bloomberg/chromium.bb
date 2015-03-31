@@ -42,7 +42,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
       scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
       mojo::SurfacePtr surface,
       mojo::GpuPtr gpu_service);
-  virtual ~WebLayerTreeViewImpl();
+  ~WebLayerTreeViewImpl() override;
 
   void set_widget(blink::WebWidget* widget) { widget_ = widget; }
   void set_view(mojo::View* view) { view_ = view; }
@@ -72,45 +72,45 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void RateLimitSharedMainThreadContext() override {}
 
   // blink::WebLayerTreeView implementation.
-  virtual void setRootLayer(const blink::WebLayer& layer);
-  virtual void clearRootLayer();
-  virtual void setViewportSize(const blink::WebSize& device_viewport_size);
-  virtual blink::WebSize deviceViewportSize() const;
-  virtual void setDeviceScaleFactor(float);
-  virtual float deviceScaleFactor() const;
-  virtual void setBackgroundColor(blink::WebColor color);
-  virtual void setHasTransparentBackground(bool has_transparent_background);
-  virtual void setVisible(bool visible);
-  virtual void setPageScaleFactorAndLimits(float page_scale_factor,
-                                           float minimum,
-                                           float maximum);
-  virtual void startPageScaleAnimation(const blink::WebPoint& destination,
-                                       bool use_anchor,
-                                       float new_page_scale,
-                                       double duration_sec);
-  virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) {}
-  virtual void setNeedsAnimate();
-  virtual bool commitRequested() const;
-  virtual void didStopFlinging() {}
-  virtual void compositeAndReadbackAsync(
-      blink::WebCompositeAndReadbackAsyncCallback* callback) {}
-  virtual void finishAllRendering();
-  virtual void setDeferCommits(bool defer_commits) {}
-  virtual void registerForAnimations(blink::WebLayer* layer);
-  virtual void registerViewportLayers(
+  void setRootLayer(const blink::WebLayer& layer) override;
+  void clearRootLayer() override;
+  void setViewportSize(const blink::WebSize& device_viewport_size) override;
+  blink::WebSize deviceViewportSize() const override;
+  void setDeviceScaleFactor(float) override;
+  float deviceScaleFactor() const override;
+  void setBackgroundColor(blink::WebColor color) override;
+  void setHasTransparentBackground(bool has_transparent_background) override;
+  void setVisible(bool visible) override;
+  void setPageScaleFactorAndLimits(float page_scale_factor,
+                                   float minimum,
+                                   float maximum) override;
+  void startPageScaleAnimation(const blink::WebPoint& destination,
+                               bool use_anchor,
+                               float new_page_scale,
+                               double duration_sec) override;
+  void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) override {}
+  void setNeedsAnimate() override;
+  bool commitRequested() const override;
+  void didStopFlinging() override {}
+  void compositeAndReadbackAsync(
+      blink::WebCompositeAndReadbackAsyncCallback* callback) override {}
+  void finishAllRendering() override;
+  void setDeferCommits(bool defer_commits) override {}
+  void registerForAnimations(blink::WebLayer* layer) override;
+  void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayerLayer,
       const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer);
-  virtual void clearViewportLayers();
-  virtual void registerSelection(const blink::WebSelectionBound& start,
-                                 const blink::WebSelectionBound& end) {}
-  virtual void clearSelection() {}
-  virtual void setShowFPSCounter(bool) {}
-  virtual void setShowPaintRects(bool) {}
-  virtual void setShowDebugBorders(bool) {}
-  virtual void setContinuousPaintingEnabled(bool) {}
-  virtual void setShowScrollBottleneckRects(bool) {}
+      const blink::WebLayer* outerViewportScrollLayer) override;
+  void clearViewportLayers() override;
+  void registerSelection(const blink::WebSelectionBound& start,
+                         const blink::WebSelectionBound& end) override {}
+  void clearSelection() override {}
+  void setShowFPSCounter(bool) override {}
+  void setShowPaintRects(bool) override {}
+  void setShowDebugBorders(bool) override {}
+  void setContinuousPaintingEnabled(bool) override {}
+  void setShowScrollBottleneckRects(bool) override {}
 
   // OutputSurfaceMojoClient implementation.
   void DidCreateSurface(cc::SurfaceId id) override;

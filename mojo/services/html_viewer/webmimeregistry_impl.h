@@ -16,29 +16,27 @@ class WebMimeRegistryImpl : public blink::WebMimeRegistry {
   virtual ~WebMimeRegistryImpl() {}
 
   // WebMimeRegistry methods:
-  virtual blink::WebMimeRegistry::SupportsType supportsMIMEType(
-      const blink::WebString& mime_type);
-  virtual blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
-      const blink::WebString& mime_type);
-  virtual blink::WebMimeRegistry::SupportsType supportsImagePrefixedMIMEType(
-      const blink::WebString& mime_type);
-  virtual blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
-      const blink::WebString& mime_type);
-  virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+  blink::WebMimeRegistry::SupportsType supportsMIMEType(
+      const blink::WebString& mime_type) override;
+  blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
+      const blink::WebString& mime_type) override;
+  blink::WebMimeRegistry::SupportsType supportsImagePrefixedMIMEType(
+      const blink::WebString& mime_type) override;
+  blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
+      const blink::WebString& mime_type) override;
+  blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const blink::WebString& mime_type,
       const blink::WebString& codecs,
-      const blink::WebString& key_system);
-  virtual bool supportsMediaSourceMIMEType(
-      const blink::WebString& mime_type,
-      const blink::WebString& codecs);
-  virtual blink::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
-      const blink::WebString& mime_type);
-  virtual blink::WebString mimeTypeForExtension(
-      const blink::WebString& extension);
-  virtual blink::WebString wellKnownMimeTypeForExtension(
-      const blink::WebString& extension);
-  virtual blink::WebString mimeTypeFromFile(
-      const blink::WebString& path);
+      const blink::WebString& key_system) override;
+  bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
+                                   const blink::WebString& codecs) override;
+  blink::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
+      const blink::WebString& mime_type) override;
+  blink::WebString mimeTypeForExtension(
+      const blink::WebString& extension) override;
+  blink::WebString wellKnownMimeTypeForExtension(
+      const blink::WebString& extension) override;
+  blink::WebString mimeTypeFromFile(const blink::WebString& path) override;
 };
 
 }  // namespace html_viewer

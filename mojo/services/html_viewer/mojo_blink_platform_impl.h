@@ -21,12 +21,13 @@ class WebCookieJarImpl;
 class MojoBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   MojoBlinkPlatformImpl(mojo::ApplicationImpl* app);
-  virtual ~MojoBlinkPlatformImpl();
+  ~MojoBlinkPlatformImpl() override;
 
  private:
   // BlinkPlatform
   blink::WebCookieJar* cookieJar() override;
   blink::WebClipboard* clipboard() override;
+
   blink::WebURLLoader* createURLLoader() override;
   blink::WebSocketHandle* createWebSocketHandle() override;
 
