@@ -985,12 +985,10 @@ TEST(PartitionAllocTest, MappingCollision)
     pageBase -= WTF::kPartitionPageSize;
     // Map a single system page either side of the mapping for our allocations,
     // with the goal of tripping up alignment of the next mapping.
-    void* map1 = WTF::allocPages(pageBase - WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    void* map1 = WTF::allocPages(pageBase - WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::PageInaccessible);
     EXPECT_TRUE(map1);
-    void* map2 = WTF::allocPages(pageBase + WTF::kSuperPageSize, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    void* map2 = WTF::allocPages(pageBase + WTF::kSuperPageSize, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::PageInaccessible);
     EXPECT_TRUE(map2);
-    WTF::setSystemPagesInaccessible(map1, WTF::kPageAllocationGranularity);
-    WTF::setSystemPagesInaccessible(map2, WTF::kPageAllocationGranularity);
 
     for (i = 0; i < numPartitionPagesNeeded; ++i)
         secondSuperPagePages[i] = GetFullPage(kTestAllocSize);
@@ -1003,9 +1001,9 @@ TEST(PartitionAllocTest, MappingCollision)
     pageBase -= WTF::kPartitionPageSize;
     // Map a single system page either side of the mapping for our allocations,
     // with the goal of tripping up alignment of the next mapping.
-    map1 = WTF::allocPages(pageBase - WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    map1 = WTF::allocPages(pageBase - WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::PageAccessible);
     EXPECT_TRUE(map1);
-    map2 = WTF::allocPages(pageBase + WTF::kSuperPageSize, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    map2 = WTF::allocPages(pageBase + WTF::kSuperPageSize, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::PageAccessible);
     EXPECT_TRUE(map2);
     WTF::setSystemPagesInaccessible(map1, WTF::kPageAllocationGranularity);
     WTF::setSystemPagesInaccessible(map2, WTF::kPageAllocationGranularity);

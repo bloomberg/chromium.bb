@@ -81,18 +81,20 @@ static bool shouldUseAddressHint()
 // This simple internal function wraps the OS-specific page allocation call so
 // that it behaves consistently: the address is a hint and if it cannot be used,
 // the allocation will be placed elsewhere.
-static void* systemAllocPages(void* addr, size_t len)
+static void* systemAllocPages(void* addr, size_t len, PageAccessibilityConfiguration pageAccessibility)
 {
     ASSERT(!(len & kPageAllocationGranularityOffsetMask));
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kPageAllocationGranularityOffsetMask));
     void* ret = 0;
 #if OS(WIN)
+    int accessFlag = pageAccessibility == PageAccessible ? PAGE_READWRITE : PAGE_NOACCESS;
     if (shouldUseAddressHint())
-        ret = VirtualAlloc(addr, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        ret = VirtualAlloc(addr, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
     if (!ret)
-        ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
 #else
-    ret = mmap(addr, len, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    int accessFlag = pageAccessibility == PageAccessible ? (PROT_READ | PROT_WRITE) : PROT_NONE;
+    ret = mmap(addr, len, accessFlag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (ret == MAP_FAILED)
         ret = 0;
 #endif
@@ -122,7 +124,7 @@ static bool trimMapping(void* baseAddr, size_t baseLen, void* trimAddr, size_t t
 #endif
 }
 
-void* allocPages(void* addr, size_t len, size_t align)
+void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfiguration pageAccessibility)
 {
     ASSERT(len >= kPageAllocationGranularity);
     ASSERT(!(len & kPageAllocationGranularityOffsetMask));
@@ -140,7 +142,7 @@ void* allocPages(void* addr, size_t len, size_t align)
 
     // The common case, which is also the least work we can do, is that the
     // address and length are suitable. Just try it.
-    void* ret = systemAllocPages(addr, len);
+    void* ret = systemAllocPages(addr, len, pageAccessibility);
     // If the alignment is to our liking, we're done.
     if (!ret || !(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask))
         return ret;
@@ -156,7 +158,7 @@ void* allocPages(void* addr, size_t len, size_t align)
     // of the aligned location we choose.
     int count = 0;
     while (count++ < 100) {
-        ret = systemAllocPages(addr, tryLen);
+        ret = systemAllocPages(addr, tryLen, pageAccessibility);
         if (!ret)
             return 0;
         // We can now try and trim out a subset of the mapping.
@@ -171,7 +173,7 @@ void* allocPages(void* addr, size_t len, size_t align)
         // a subset. We used to do for all platforms, but OSX 10.8 has a
         // broken mmap() that ignores address hints for valid, unused addresses.
         freePages(ret, tryLen);
-        ret = systemAllocPages(addr, len);
+        ret = systemAllocPages(addr, len, pageAccessibility);
         if (ret == addr || !ret)
             return ret;
 

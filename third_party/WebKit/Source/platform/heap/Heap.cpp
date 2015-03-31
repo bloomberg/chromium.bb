@@ -258,10 +258,9 @@ private:
     {
         // Round size up to the allocation granularity.
         size = (size + WTF::kPageAllocationGranularityOffsetMask) & WTF::kPageAllocationGranularityBaseMask;
-        Address base = static_cast<Address>(WTF::allocPages(nullptr, size, blinkPageSize));
+        Address base = static_cast<Address>(WTF::allocPages(nullptr, size, blinkPageSize, WTF::PageInaccessible));
         if (!base)
             blinkGCOutOfMemory();
-        WTF::setSystemPagesInaccessible(base, size);
         return new PageMemoryRegion(base, size, numPages);
     }
 

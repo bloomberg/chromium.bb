@@ -53,8 +53,12 @@ static const size_t kSystemPageSize = 4096;
 static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
 static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
-// Allocate one or more pages. Addresses in the range will be readable and
-// writeable but not executable.
+enum PageAccessibilityConfiguration {
+    PageAccessible,
+    PageInaccessible,
+};
+
+// Allocate one or more pages.
 // The requested address is just a hint; the actual address returned may
 // differ. The returned address will be aligned at least to align bytes.
 // len is in bytes, and must be a multiple of kPageAllocationGranularity.
@@ -62,8 +66,10 @@ static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 // kPageAllocationGranularity.
 // If addr is null, then a suitable and randomized address will be chosen
 // automatically.
+// PageAccessibilityConfiguration controls the permission of the
+// allocated pages.
 // This call will return null if the allocation cannot be satisfied.
-WTF_EXPORT void* allocPages(void* addr, size_t len, size_t align);
+WTF_EXPORT void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfiguration);
 
 // Free one or more pages.
 // addr and len must match a previous call to allocPages().
