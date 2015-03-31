@@ -94,6 +94,9 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
 
     v8::Local<v8::Context> currentContext = context();
     v8::Context::Scope scope(currentContext);
+    // We shouldn't reach this point for the types that are implemented in v8 suche as typed arrays and
+    // hence don't have domTemplateFunction.
+    ASSERT(type->domTemplateFunction);
     v8::Handle<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
     // Getting the function might fail if we're running out of stack or memory.
     v8::Local<v8::Function> function = functionTemplate->GetFunction();
