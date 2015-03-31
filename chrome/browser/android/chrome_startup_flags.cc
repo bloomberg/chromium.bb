@@ -35,10 +35,6 @@ void SetCommandLineSwitchASCII(const std::string& switch_string,
 }  // namespace
 
 void SetChromeSpecificCommandLineFlags() {
-  // Enable prerender with holdback.
-  SetCommandLineSwitchASCII(switches::kPrerenderMode,
-                            switches::kPrerenderModeSwitchValueAuto);
-
   // Enable prerender for the omnibox.
   SetCommandLineSwitchASCII(switches::kPrerenderFromOmnibox,
                             switches::kPrerenderFromOmniboxSwitchValueEnabled);

@@ -920,9 +920,7 @@ const char kPrerenderFromOmniboxSwitchValueEnabled[] = "enabled";
 // are dispatched from <link rel=prefetch href=...> elements.
 const char kPrerenderMode[]                 = "prerender";
 // These are the values the kPrerenderMode switch may have, as in
-// "--prerender=auto".
-//   auto: Allow field trial selection for prerender.
-const char kPrerenderModeSwitchValueAuto[]  = "auto";
+// "--prerender=disabled".
 //   disabled: No prerendering.
 const char kPrerenderModeSwitchValueDisabled[] = "disabled";
 //   enabled: Prerendering.

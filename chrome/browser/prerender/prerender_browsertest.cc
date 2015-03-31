@@ -1088,16 +1088,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         prefs::kNetworkPredictionOptions, value);
   }
 
-  void CreateTestFieldTrial(const std::string& name,
-                            const std::string& group_name) {
-    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-        name, group_name);
-    trial->group();
-  }
-
-  // Verifies, for the current field trial, whether
-  // ShouldDisableLocalPredictorDueToPreferencesAndNetwork produces the desired
-  // output.
+  // Verifies whether ShouldDisableLocalPredictorDueToPreferencesAndNetwork
+  // produces the desired output.
   void TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
       bool preference_wifi_network_wifi,
       bool preference_wifi_network_4g,
@@ -1726,7 +1718,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   std::string loader_query_;
   Browser* explicitly_set_browser_;
   base::HistogramTester histogram_tester_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -4127,55 +4118,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       false /*preference_always_network_4g*/,
       false /*preference_never_network_wifi*/,
       false /*preference_never_network_4g*/);
-}
-
-// Prefetch should be allowed depending on preference and network type.
-// LocalPredictorOnCellularOnly should disable all wifi cases.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       LocalPredictorDisableWorksCellularOnly) {
-  CreateTestFieldTrial("PrerenderLocalPredictorSpec",
-                       "LocalPredictorOnCellularOnly=Enabled");
-  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
-      true /*preference_wifi_network_wifi*/,
-      false /*preference_wifi_network_4g*/,
-      true /*preference_always_network_wifi*/,
-      false /*preference_always_network_4g*/,
-      true /*preference_never_network_wifi*/,
-      false /*preference_never_network_4g*/);
-}
-
-// Prefetch should be allowed depending on preference and network type.
-// LocalPredictorNetworkPredictionEnabledOnly should disable whenever
-// network predictions will not be exercised.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       LocalPredictorDisableWorksNetworkPredictionEnableOnly) {
-  CreateTestFieldTrial("PrerenderLocalPredictorSpec",
-                       "LocalPredictorNetworkPredictionEnabledOnly=Enabled");
-  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
-      false /*preference_wifi_network_wifi*/,
-      true /*preference_wifi_network_4g*/,
-      false /*preference_always_network_wifi*/,
-      false /*preference_always_network_4g*/,
-      true /*preference_never_network_wifi*/,
-      true /*preference_never_network_4g*/);
-}
-
-// Prefetch should be allowed depending on preference and network type.
-// If LocalPredictorNetworkPredictionEnabledOnly and
-// LocalPredictorOnCellularOnly are both selected, we must disable whenever
-// network predictions are not exercised, or when we are on wifi.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       LocalPredictorDisableWorksBothOptions) {
-  CreateTestFieldTrial("PrerenderLocalPredictorSpec",
-                       "LocalPredictorOnCellularOnly=Enabled:"
-                       "LocalPredictorNetworkPredictionEnabledOnly=Enabled");
-  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
-      true /*preference_wifi_network_wifi*/,
-      true /*preference_wifi_network_4g*/,
-      true /*preference_always_network_wifi*/,
-      false /*preference_always_network_4g*/,
-      true /*preference_never_network_wifi*/,
-      true /*preference_never_network_4g*/);
 }
 
 }  // namespace prerender

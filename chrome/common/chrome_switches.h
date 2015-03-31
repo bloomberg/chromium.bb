@@ -260,7 +260,6 @@ extern const char kPrerenderFromOmniboxSwitchValueAuto[];
 extern const char kPrerenderFromOmniboxSwitchValueDisabled[];
 extern const char kPrerenderFromOmniboxSwitchValueEnabled[];
 extern const char kPrerenderMode[];
-extern const char kPrerenderModeSwitchValueAuto[];
 extern const char kPrerenderModeSwitchValueDisabled[];
 extern const char kPrerenderModeSwitchValueEnabled[];
 extern const char kPrivetIPv6Only[];
