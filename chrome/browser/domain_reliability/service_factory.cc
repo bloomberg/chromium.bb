@@ -50,9 +50,9 @@ bool IsDomainReliabilityMonitoringEnabled() {
 bool IsMetricsReportingEnabled() {
 #if defined(OS_CHROMEOS)
   bool enabled;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enabled);
-  return enabled;
+  bool res = chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kStatsReportingPref, &enabled);
+  return res && enabled;
 #elif defined(OS_ANDROID)
   return g_browser_process->local_state()->GetBoolean(
       prefs::kCrashReportingEnabled);
