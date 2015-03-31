@@ -318,6 +318,11 @@ void WebRuntimeFeatures::enablePushMessagingHasPermission(bool enable)
     RuntimeEnabledFeatures::setPushMessagingHasPermissionEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableStaleWhileRevalidateCacheControl(bool enable)
+{
+    RuntimeEnabledFeatures::setStaleWhileRevalidateCacheControlEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableUnsafeES3APIs(bool enable)
 {
     RuntimeEnabledFeatures::setUnsafeES3APIsEnabled(enable);
