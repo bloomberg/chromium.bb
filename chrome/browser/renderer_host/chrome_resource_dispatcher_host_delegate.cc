@@ -367,9 +367,13 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #if defined(OS_ANDROID)
   // TODO(davidben): This is insufficient to integrate with prerender properly.
   // https://crbug.com/370595
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME && !is_prerendering) {
-    throttles->push_back(
-        InterceptNavigationDelegate::CreateThrottleFor(request));
+  if (!is_prerendering) {
+    if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+      throttles->push_back(
+          InterceptNavigationDelegate::CreateThrottleFor(request));
+    } else if (resource_type == content::RESOURCE_TYPE_XHR) {
+      InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
+    }
   }
 #else
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {

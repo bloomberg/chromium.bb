@@ -10,7 +10,9 @@
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "components/navigation_interception/navigation_params_android.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/InterceptNavigationDelegate_jni.h"
 #include "net/url_request/url_request.h"
@@ -27,6 +29,8 @@ namespace navigation_interception {
 
 namespace {
 
+const int kMaxValidityOfUserGestureCarryoverInSeconds = 10;
+
 const void* kInterceptNavigationDelegateUserDataKey =
     &kInterceptNavigationDelegateUserDataKey;
 
@@ -41,6 +45,24 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(WebContents* source,
     return false;
 
   return intercept_navigation_delegate->ShouldIgnoreNavigation(params);
+}
+
+void UpdateUserGestureCarryoverInfoOnUIThread(int render_process_id,
+                                              int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  InterceptNavigationDelegate* intercept_navigation_delegate =
+      InterceptNavigationDelegate::Get(web_contents);
+
+  if (intercept_navigation_delegate) {
+    intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
+  }
 }
 
 }  // namespace
@@ -67,6 +89,23 @@ content::ResourceThrottle* InterceptNavigationDelegate::CreateThrottleFor(
       request, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread));
 }
 
+// static
+void InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(
+    net::URLRequest* request) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!info || !info->HasUserGesture())
+    return;
+
+  int render_process_id, render_frame_id;
+  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
+    return;
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&UpdateUserGestureCarryoverInfoOnUIThread,
+                                     render_process_id, render_frame_id));
+}
+
 InterceptNavigationDelegate::InterceptNavigationDelegate(
     JNIEnv* env, jobject jdelegate)
     : weak_jdelegate_(env, jdelegate) {
@@ -86,13 +125,23 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
   if (jdelegate.is_null())
     return false;
 
-  ScopedJavaLocalRef<jobject> jobject_params =
-      CreateJavaNavigationParams(env, navigation_params);
+  bool has_user_gesture_carryover =
+      !navigation_params.has_user_gesture() &&
+      base::TimeTicks::Now() - last_user_gesture_carryover_timestamp_ <=
+          base::TimeDelta::FromSeconds(
+              kMaxValidityOfUserGestureCarryoverInSeconds);
+
+  ScopedJavaLocalRef<jobject> jobject_params = CreateJavaNavigationParams(
+      env, navigation_params, has_user_gesture_carryover);
 
   return Java_InterceptNavigationDelegate_shouldIgnoreNavigation(
       env,
       jdelegate.obj(),
       jobject_params.obj());
+}
+
+void InterceptNavigationDelegate::UpdateLastUserGestureCarryoverTimestamp() {
+  last_user_gesture_carryover_timestamp_ = base::TimeTicks::Now();
 }
 
 // Register native methods.

@@ -55,10 +55,22 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   static content::ResourceThrottle* CreateThrottleFor(
       net::URLRequest* request);
 
+  // Updates information to determine whether to have user gesture carryover or
+  // not.
+  static void UpdateUserGestureCarryoverInfo(net::URLRequest* request);
+
   virtual bool ShouldIgnoreNavigation(
       const NavigationParams& navigation_params);
+
+  // Updates |last_user_gesture_carryover_timestamp_| when user gesture is
+  // carried over.
+  void UpdateLastUserGestureCarryoverTimestamp();
+
  private:
   JavaObjectWeakGlobalRef weak_jdelegate_;
+  base::TimeTicks last_user_gesture_carryover_timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptNavigationDelegate);
 };
 
 bool RegisterInterceptNavigationDelegate(JNIEnv* env);
