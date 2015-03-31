@@ -38,8 +38,6 @@ class PasswordFormManager;
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel {
  public:
-  static const char kOtherPossibleUsernamesExperiment[];
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #if defined(OS_WIN)
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
@@ -136,15 +134,6 @@ class PasswordManager : public LoginModel {
   void RecordFailure(ProvisionalSaveFailure failure,
                      const GURL& form_origin,
                      BrowserSavePasswordProgressLogger* logger);
-
-  // Possibly set up FieldTrial for testing other possible usernames. This only
-  // happens if there are other_possible_usernames to be shown and the
-  // experiment hasn't already been initialized. We setup the experiment at
-  // such a late time because this experiment will only affect a small number
-  // of users so we want to include a larger fraction of these users than the
-  // normal 10%.
-  void PossiblyInitializeUsernamesExperiment(
-      const autofill::PasswordFormMap& matches) const;
 
   // Returns true if we can show possible usernames to users in cases where
   // the username for the form is ambigious.

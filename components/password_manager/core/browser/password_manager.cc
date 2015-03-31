@@ -113,9 +113,6 @@ bool IsSignupForm(const PasswordForm& form) {
 
 }  // namespace
 
-const char PasswordManager::kOtherPossibleUsernamesExperiment[] =
-    "PasswordManagerOtherPossibleUsernames";
-
 // static
 void PasswordManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -637,40 +634,8 @@ void PasswordManager::AskUserOrSavePassword() {
   }
 }
 
-void PasswordManager::PossiblyInitializeUsernamesExperiment(
-    const PasswordFormMap& best_matches) const {
-  if (base::FieldTrialList::Find(kOtherPossibleUsernamesExperiment))
-    return;
-
-  bool other_possible_usernames_exist = false;
-  for (autofill::PasswordFormMap::const_iterator it = best_matches.begin();
-       it != best_matches.end(); ++it) {
-    if (!it->second->other_possible_usernames.empty()) {
-      other_possible_usernames_exist = true;
-      break;
-    }
-  }
-
-  if (!other_possible_usernames_exist)
-    return;
-
-  const base::FieldTrial::Probability kDivisor = 100;
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          kOtherPossibleUsernamesExperiment,
-          kDivisor,
-          "Disabled",
-          2013, 12, 31,
-          base::FieldTrial::ONE_TIME_RANDOMIZED,
-          nullptr));
-  base::FieldTrial::Probability enabled_probability =
-      client_->GetProbabilityForExperiment(kOtherPossibleUsernamesExperiment);
-  trial->AppendGroup("Enabled", enabled_probability);
-}
-
 bool PasswordManager::OtherPossibleUsernamesEnabled() const {
-  return base::FieldTrialList::FindFullName(
-             kOtherPossibleUsernamesExperiment) == "Enabled";
+  return false;
 }
 
 void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
@@ -678,8 +643,6 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
                                const PasswordFormMap& best_matches,
                                const PasswordForm& preferred_match,
                                bool wait_for_username) const {
-  PossiblyInitializeUsernamesExperiment(best_matches);
-
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));

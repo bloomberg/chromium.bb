@@ -67,8 +67,6 @@ class ChromePasswordManagerClient
       const autofill::PasswordFormMap& best_matches) const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
-  base::FieldTrial::Probability GetProbabilityForExperiment(
-      const std::string& experiment_name) const override;
   bool IsPasswordSyncEnabled(
       password_manager::CustomPassphraseState state) const override;
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;

@@ -261,24 +261,6 @@ ChromePasswordManagerClient::GetPasswordStore() const {
              profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 }
 
-base::FieldTrial::Probability
-ChromePasswordManagerClient::GetProbabilityForExperiment(
-    const std::string& experiment_name) const {
-  base::FieldTrial::Probability enabled_probability = 0;
-  if (experiment_name ==
-      password_manager::PasswordManager::kOtherPossibleUsernamesExperiment) {
-    switch (chrome::VersionInfo::GetChannel()) {
-      case chrome::VersionInfo::CHANNEL_DEV:
-      case chrome::VersionInfo::CHANNEL_BETA:
-        enabled_probability = 50;
-        break;
-      default:
-        break;
-    }
-  }
-  return enabled_probability;
-}
-
 bool ChromePasswordManagerClient::IsPasswordSyncEnabled(
     password_manager::CustomPassphraseState state) const {
   ProfileSyncService* sync_service =

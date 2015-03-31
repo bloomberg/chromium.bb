@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -119,11 +118,6 @@ class PasswordManagerClient {
 
   // Returns the PasswordStore associated with this instance.
   virtual PasswordStore* GetPasswordStore() const = 0;
-
-  // Returns the probability that the experiment identified by |experiment_name|
-  // should be enabled. The default implementation returns 0.
-  virtual base::FieldTrial::Probability GetProbabilityForExperiment(
-      const std::string& experiment_name) const;
 
   // Returns true if password sync is enabled in the embedder. Return value for
   // custom passphrase users depends on |state|. The default implementation

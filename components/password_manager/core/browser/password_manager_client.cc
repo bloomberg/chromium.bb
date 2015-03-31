@@ -14,12 +14,6 @@ bool PasswordManagerClient::IsPasswordManagerEnabledForCurrentPage() const {
   return true;
 }
 
-base::FieldTrial::Probability
-PasswordManagerClient::GetProbabilityForExperiment(
-    const std::string& experiment_name) const {
-  return 0;
-}
-
 void PasswordManagerClient::AutofillResultsComputed() {
 }
 
