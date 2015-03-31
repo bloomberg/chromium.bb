@@ -133,25 +133,10 @@
       ]
     }
   ],
-  "export": [
-    {
-      "channel": "stable",
-      "extension_types": ["shared_module"],
-      "whitelist": [
-        "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
-        "4EB74897CB187C7633357C2FE832E0AD6A44883A",
-        // Next four: http://crbug.com/357213
-        "mafeflapfdfljijmlienjedomfjfmhpd",
-        "ajchadodoajkaojdidnbblnfcdipbple",
-        "47F838F58D2A3B585DE50F29E3585D94999921D1",
-        "8EBAFB8DEB647EA2FC887A5E01EBD9BDC0FDC536"
-      ]
-    },
-    {
-      "channel": "dev",
-      "extension_types": ["shared_module"]
-    }
-  ],
+  "export": {
+    "channel": "stable",
+    "extension_types": ["shared_module"]
+  },
   "file_browser_handlers": [
     {
       "channel": "stable",
