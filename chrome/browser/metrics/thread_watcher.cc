@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -467,11 +466,9 @@ void ThreadWatcherList::ParseCommandLine(
 
   uint32 crash_seconds = *unresponsive_threshold * kUnresponsiveSeconds;
   std::string crash_on_hang_thread_names;
-  bool has_command_line_overwrite = false;
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_thread_names =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
-    has_command_line_overwrite = true;
   } else if (channel != chrome::VersionInfo::CHANNEL_STABLE) {
     // Default to crashing the browser if UI or IO or FILE threads are not
     // responsive except in stable channel.
@@ -486,43 +483,6 @@ void ThreadWatcherList::ParseCommandLine(
                                      kLiveThreadsThreshold,
                                      crash_seconds,
                                      crash_on_hang_threads);
-
-  if (channel != chrome::VersionInfo::CHANNEL_CANARY ||
-      has_command_line_overwrite) {
-    return;
-  }
-
-  const char* kFieldTrialName = "ThreadWatcher";
-
-  // Nothing else to be done if the trial has already been set (i.e., when
-  // StartWatchingAll() has been already called once).
-  if (base::FieldTrialList::TrialExists(kFieldTrialName))
-    return;
-
-  // Set up a field trial for 100% of the users to crash if either UI or IO
-  // thread is not responsive for 30 seconds (or 15 pings).
-  scoped_refptr<base::FieldTrial> field_trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          kFieldTrialName, 100, "default_hung_threads",
-          2014, 10, 30, base::FieldTrial::SESSION_RANDOMIZED, NULL));
-  int hung_thread_group = field_trial->AppendGroup("hung_thread", 100);
-  if (field_trial->group() == hung_thread_group) {
-    for (CrashOnHangThreadMap::iterator it = crash_on_hang_threads->begin();
-         crash_on_hang_threads->end() != it;
-         ++it) {
-      if (it->first == "FILE")
-        continue;
-      it->second.live_threads_threshold = INT_MAX;
-      if (it->first == "UI") {
-        // TODO(rtenneti): set unresponsive threshold to 120 seconds to catch
-        // the worst UI hangs and for fewer crashes due to ThreadWatcher. Reduce
-        // it to a more reasonable time ala IO thread.
-        it->second.unresponsive_threshold = 60;
-      } else {
-        it->second.unresponsive_threshold = 15;
-      }
-    }
-  }
 }
 
 // static
