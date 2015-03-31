@@ -6,7 +6,6 @@
 #include "core/html/DocumentNameCollection.h"
 
 #include "core/html/HTMLEmbedElement.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLObjectElement.h"
 
 namespace blink {
