@@ -1770,6 +1770,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         // FIXME: This code only handles scrolling the startContainer's layer, but
         // the selection rect could intersect more than just that.
         // See <rdar://problem/4799899>.
+        m_frame->view()->setWasScrolledByUser(true);
         if (start.deprecatedNode()->layoutObject()->scrollRectToVisible(rect, alignment, alignment))
             updateAppearance();
     }
