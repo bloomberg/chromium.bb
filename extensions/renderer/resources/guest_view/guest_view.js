@@ -143,12 +143,13 @@ GuestViewImpl.prototype.attachImpl = function(
   // callback, handle potential attaching failure, register an automatic detach,
   // and advance the queue.
   var callbackWrapper = function(callback, contentWindow) {
-    this.contentWindow = contentWindow;
-
     // Check if attaching failed.
-    if (!this.contentWindow) {
+    if (!contentWindow) {
       this.state = GUEST_STATE_CREATED;
       this.internalInstanceId = 0;
+    } else {
+      // Only update the contentWindow if attaching is successful.
+      this.contentWindow = contentWindow;
     }
 
     this.handleCallback(callback);
