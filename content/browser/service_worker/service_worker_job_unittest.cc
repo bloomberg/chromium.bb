@@ -180,13 +180,10 @@ ServiceWorkerJobTest::FindRegistrationForPattern(
 }
 
 scoped_ptr<ServiceWorkerProviderHost> ServiceWorkerJobTest::CreateControllee() {
-  return scoped_ptr<ServiceWorkerProviderHost>(
-      new ServiceWorkerProviderHost(33 /* dummy render_process id */,
-                                    MSG_ROUTING_NONE /* render_frame_id */,
-                                    1 /* dummy provider_id */,
-                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-                                    helper_->context()->AsWeakPtr(),
-                                    NULL));
+  return scoped_ptr<ServiceWorkerProviderHost>(new ServiceWorkerProviderHost(
+      33 /* dummy render_process id */, MSG_ROUTING_NONE /* render_frame_id */,
+      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      helper_->context()->AsWeakPtr(), NULL));
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {

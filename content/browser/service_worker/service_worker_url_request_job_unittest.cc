@@ -151,13 +151,10 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     version_->SetMainScriptHttpResponseInfo(http_info);
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
-        new ServiceWorkerProviderHost(
-            kProcessID,
-            MSG_ROUTING_NONE,
-            kProviderID,
-            SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-            helper_->context()->AsWeakPtr(),
-            nullptr));
+        new ServiceWorkerProviderHost(kProcessID, MSG_ROUTING_NONE, kProviderID,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      helper_->context()->AsWeakPtr(),
+                                      nullptr));
     provider_host->SetDocumentUrl(GURL("http://example.com/"));
     provider_host->AssociateRegistration(registration_.get());
     registration_->SetActiveVersion(version_.get());

@@ -321,6 +321,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerVersionBrowserTest;
 
   typedef ServiceWorkerVersion self;
+  using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
 
   enum RequestType {
     REQUEST_ACTIVATE,
@@ -427,8 +428,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartWorkerInternal(bool pause_after_download);
 
   void DidSkipWaiting(int request_id);
-  void DidGetClients(
-      int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
+
+  void GetWindowClients(int request_id,
+                        const ServiceWorkerClientQueryOptions& options);
+  void DidGetWindowClients(int request_id,
+                           const ServiceWorkerClientQueryOptions& options,
+                           scoped_ptr<ServiceWorkerClients> clients);
+  void GetNonWindowClients(int request_id,
+                           const ServiceWorkerClientQueryOptions& options,
+                           ServiceWorkerClients* clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.

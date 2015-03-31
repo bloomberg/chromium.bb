@@ -50,7 +50,7 @@ void SuccessReportingCallback(
 
 bool IsSameOriginClientProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
-  return host->provider_type() == SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE &&
+  return host->provider_type() != SERVICE_WORKER_PROVIDER_FOR_CONTROLLER &&
          host->document_url().GetOrigin() == origin;
 }
 

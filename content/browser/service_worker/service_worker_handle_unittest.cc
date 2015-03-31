@@ -101,8 +101,7 @@ class ServiceWorkerHandleTest : public testing::Test {
     ASSERT_EQ(SERVICE_WORKER_OK, status);
 
     provider_host_.reset(new ServiceWorkerProviderHost(
-        kRenderProcessId, kRenderFrameId, 1,
-        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
+        kRenderProcessId, kRenderFrameId, 1, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
         helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
 
     helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);

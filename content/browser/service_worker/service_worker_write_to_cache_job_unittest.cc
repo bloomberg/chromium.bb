@@ -187,12 +187,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId,
-        MSG_ROUTING_NONE,
-        kMockProviderId,
-        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-        context()->AsWeakPtr(),
-        nullptr));
+        kMockRenderProcessId, MSG_ROUTING_NONE, kMockProviderId,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
     provider_host_->running_hosted_version_ = version_;

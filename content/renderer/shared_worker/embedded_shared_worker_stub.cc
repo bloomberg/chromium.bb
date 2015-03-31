@@ -237,7 +237,7 @@ EmbeddedSharedWorkerStub::createServiceWorkerNetworkProvider(
   // we can observe its requests.
   scoped_ptr<ServiceWorkerNetworkProvider> provider(
       new ServiceWorkerNetworkProvider(
-          MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+          MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER));
 
   // The provider is kept around for the lifetime of the DataSource
   // and ownership is transferred to the DataSource.

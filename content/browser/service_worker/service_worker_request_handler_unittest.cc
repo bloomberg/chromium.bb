@@ -51,12 +51,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId,
-        MSG_ROUTING_NONE,
-        kMockProviderId,
-        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-        context()->AsWeakPtr(),
-        nullptr));
+        kMockRenderProcessId, MSG_ROUTING_NONE, kMockProviderId,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
     host->SetDocumentUrl(GURL("http://host/scope/"));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());

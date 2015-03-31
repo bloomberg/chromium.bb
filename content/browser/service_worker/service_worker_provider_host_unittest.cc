@@ -37,13 +37,11 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     // Prepare provider hosts (for the same process).
     scoped_ptr<ServiceWorkerProviderHost> host1(new ServiceWorkerProviderHost(
         kRenderProcessId, MSG_ROUTING_NONE, 1 /* provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-        context_->AsWeakPtr(), NULL));
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context_->AsWeakPtr(), NULL));
     host1->SetDocumentUrl(GURL("http://www.example.com/example1.html"));
     scoped_ptr<ServiceWorkerProviderHost> host2(new ServiceWorkerProviderHost(
         kRenderProcessId, MSG_ROUTING_NONE, 2 /* provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-        context_->AsWeakPtr(), NULL));
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context_->AsWeakPtr(), NULL));
     host2->SetDocumentUrl(GURL("http://www.example.com/example2.html"));
     provider_host1_ = host1->AsWeakPtr();
     provider_host2_ = host2->AsWeakPtr();

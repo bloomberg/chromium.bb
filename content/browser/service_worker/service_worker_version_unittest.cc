@@ -446,13 +446,10 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Adding a controllee resets the idle time.
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      new ServiceWorkerProviderHost(33 /* dummy render process id */,
-                                    MSG_ROUTING_NONE /* render_frame_id */,
-                                    1 /* dummy provider_id */,
-                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-                                    helper_->context()->AsWeakPtr(),
-                                    NULL));
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      33 /* dummy render process id */, MSG_ROUTING_NONE /* render_frame_id */,
+      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      helper_->context()->AsWeakPtr(), NULL));
   version_->AddControllee(host.get());
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   EXPECT_LT(idle_time, version_->idle_time_);

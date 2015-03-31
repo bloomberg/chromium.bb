@@ -55,8 +55,10 @@ static const int kInvalidServiceWorkerClientId = 0;
 enum ServiceWorkerProviderType {
   SERVICE_WORKER_PROVIDER_UNKNOWN,
 
-  // For Documents and SharedWorkers.
-  SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
+  // For ServiceWorker clients.
+  SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+  SERVICE_WORKER_PROVIDER_FOR_WORKER,
+  SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER,
 
   // For ServiceWorkers.
   SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,

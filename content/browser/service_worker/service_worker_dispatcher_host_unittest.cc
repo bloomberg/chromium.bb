@@ -130,12 +130,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   ServiceWorkerProviderHost* CreateServiceWorkerProviderHost(int provider_id) {
-    return new ServiceWorkerProviderHost(kRenderProcessId,
-                                         kRenderFrameId,
-                                         provider_id,
-                                         SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
-                                         context()->AsWeakPtr(),
-                                         dispatcher_host_.get());
+    return new ServiceWorkerProviderHost(
+        kRenderProcessId, kRenderFrameId, provider_id,
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(),
+        dispatcher_host_.get());
   }
 
 
@@ -408,17 +406,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   const int kProviderId = 1001;  // Test with a value != kRenderProcessId.
 
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(
-          kProviderId, MSG_ROUTING_NONE,
-          SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+      kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
   EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
 
   // Two with the same ID should be seen as a bad message.
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(
-          kProviderId, MSG_ROUTING_NONE,
-          SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+      kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 
   dispatcher_host_->OnMessageReceived(
@@ -432,10 +426,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
 
   // Deletion of the dispatcher_host should cause providers for that
   // process to get deleted as well.
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(
-          kProviderId, MSG_ROUTING_NONE,
-          SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+      kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
   EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
   EXPECT_TRUE(dispatcher_host_->HasOneRef());
   dispatcher_host_ = NULL;
@@ -503,10 +495,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_EarlyContextDeletion) {
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // Add a provider and worker.
   const int64 kProviderId = 99;  // Dummy value
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(
-          kProviderId, MSG_ROUTING_NONE,
-          SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+      kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
 
   GURL pattern = GURL("http://www.example.com/");
   scoped_refptr<ServiceWorkerRegistration> registration(
@@ -564,10 +554,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // To show the new dispatcher can operate, simulate provider creation. Since
   // the old dispatcher cleaned up the old provider host, the new one won't
   // complain.
-  new_dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(
-          kProviderId, MSG_ROUTING_NONE,
-          SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE));
+  new_dispatcher_host->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+      kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
   EXPECT_EQ(0, new_dispatcher_host->bad_messages_received_count_);
 }
 

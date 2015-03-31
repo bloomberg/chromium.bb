@@ -53,8 +53,8 @@ ServiceWorkerClientInfo FocusOnUIThread(
   // Move the web contents to the foreground.
   web_contents->Activate();
 
-  return ServiceWorkerProviderHost::GetClientInfoOnUI(
-      render_process_id, render_frame_id);
+  return ServiceWorkerProviderHost::GetWindowClientInfoOnUI(render_process_id,
+                                                            render_frame_id);
 }
 
 }  // anonymous namespace
@@ -182,7 +182,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       is_claiming_ || (previous_version && version && version->skip_waiting());
 
   // SetController message should be sent only for controllees.
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
+  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
   Send(new ServiceWorkerMsg_SetControllerServiceWorker(
       render_thread_id_, provider_id(),
       CreateAndRegisterServiceWorkerHandle(version),
@@ -211,6 +211,23 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
   return true;
 }
 
+blink::WebServiceWorkerClientType ServiceWorkerProviderHost::client_type()
+    const {
+  switch (provider_type_) {
+    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
+      return blink::WebServiceWorkerClientTypeWindow;
+    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
+      return blink::WebServiceWorkerClientTypeWorker;
+    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
+      return blink::WebServiceWorkerClientTypeSharedWorker;
+    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+      NOTREACHED() << provider_type_;
+  }
+  NOTREACHED() << provider_type_;
+  return blink::WebServiceWorkerClientTypeWindow;
+}
+
 void ServiceWorkerProviderHost::AssociateRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(CanAssociateRegistration(registration));
@@ -231,7 +248,7 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
     return;
 
   // Disassociation message should be sent only for controllees.
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
+  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
   Send(new ServiceWorkerMsg_DisassociateRegistration(
       render_thread_id_, provider_id()));
 }
@@ -354,19 +371,19 @@ void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {
       callback);
 }
 
-void ServiceWorkerProviderHost::GetClientInfo(
+void ServiceWorkerProviderHost::GetWindowClientInfo(
     const GetClientInfoCallback& callback) const {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerProviderHost::GetClientInfoOnUI,
-                 render_process_id_,
-                 render_frame_id_),
+      base::Bind(&ServiceWorkerProviderHost::GetWindowClientInfoOnUI,
+                 render_process_id_, render_frame_id_),
       callback);
 }
 
 // static
-ServiceWorkerClientInfo ServiceWorkerProviderHost::GetClientInfoOnUI(
-    int render_process_id, int render_frame_id) {
+ServiceWorkerClientInfo ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
+    int render_process_id,
+    int render_frame_id) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   if (!render_frame_host)
@@ -568,7 +585,7 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
       associated_registration_->active_version());
 
   // Association message should be sent only for controllees.
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
+  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
       render_thread_id_, provider_id(), handle->GetObjectInfo(), attrs));
 }

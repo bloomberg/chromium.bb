@@ -106,6 +106,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const GURL& topmost_frame_url() const { return topmost_frame_url_; }
 
   ServiceWorkerProviderType provider_type() const { return provider_type_; }
+  blink::WebServiceWorkerClientType client_type() const;
 
   // Associates to |registration| to listen for its version change events.
   void AssociateRegistration(ServiceWorkerRegistration* registration);
@@ -157,13 +158,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void Focus(const GetClientInfoCallback& callback);
 
   // Asks the renderer to send back the document information.
-  void GetClientInfo(const GetClientInfoCallback& callback) const;
+  void GetWindowClientInfo(const GetClientInfoCallback& callback) const;
 
   // Same as above but has to be called from the UI thread.
   // It is taking the process and frame ids in parameter because |this| is meant
   // to live on the IO thread.
-  static ServiceWorkerClientInfo GetClientInfoOnUI(int render_process_id,
-                                                   int render_frame_id);
+  static ServiceWorkerClientInfo GetWindowClientInfoOnUI(int render_process_id,
+                                                         int render_frame_id);
 
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.
