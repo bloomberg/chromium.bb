@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import base64
 import datetime
+import filecmp
 import json
 import os
 import shutil
@@ -635,73 +636,61 @@ class _PaygenPayload(object):
     Raises:
       PayloadVerificationError: when an error occurs.
     """
-    with cros_build_lib.ContextManagerStack() as stack:
-      tgt_lb = stack.Add(cros_image.LoopbackPartitions,
-                         self.tgt_image_file, util_path=self.generator_dir)
-      cros_build_lib.SudoRunCommand(['chmod', 'a+r',
-                                     tgt_lb.parts[4], tgt_lb.parts[3]])
-      part_files = {}
-      part_files['new_kernel_part'] = tgt_lb.parts[4]
-      part_files['new_rootfs_part'] = tgt_lb.parts[3]
-      if is_delta:
-        src_lb = stack.Add(cros_image.LoopbackPartitions,
-                           self.src_image_file, util_path=self.generator_dir)
-        cros_build_lib.SudoRunCommand(['chmod', 'a+r',
-                                       src_lb.parts[4], src_lb.parts[3]])
-        part_files['old_kernel_part'] = src_lb.parts[4]
-        part_files['old_rootfs_part'] = src_lb.parts[3]
+    # Extract the source/target kernel/rootfs partitions.
+    # TODO(garnold)(chromium:243561) this is a redundant operation as the
+    # partitions are already extracted (in some form) for the purpose of
+    # payload generation. We should only do this once.
+    cmd = ['cros_generate_update_payload',
+           '--outside_chroot',
+           '--extract',
+           '--image', self.tgt_image_file]
+    part_files = {}
+    part_files['new_kernel_part'] = self._DEFAULT_NEW_KERN_PART
+    part_files['new_rootfs_part'] = self._DEFAULT_NEW_ROOT_PART
+    if is_delta:
+      cmd += ['--src_image', self.src_image_file]
+      part_files['old_kernel_part'] = self._DEFAULT_OLD_KERN_PART
+      part_files['old_rootfs_part'] = self._DEFAULT_OLD_ROOT_PART
 
-      # Apply the payload and verify the result; make sure to pass in the
-      # explicit path to the bspatch binary in the au-generator directory (the
-      # one we need to be using), and not to depend on PATH resolution etc.
-      # Also note that we instruct the call to generate files with a .test
-      # suffix, which we can later compare to the actual target partition
-      # (as it was extracted from the target image above).
-      logging.info('Applying %s payload and verifying result',
-                   'delta' if is_delta else 'full')
-      ref_new_kern_part = part_files['new_kernel_part']
-      part_files['new_kernel_part'] = os.path.join(self.generator_dir,
-                                                   'kern.test')
-      ref_new_root_part = part_files['new_rootfs_part']
-      part_files['new_rootfs_part'] = os.path.join(self.generator_dir,
-                                                   'root.test')
-      bspatch_path = os.path.join(self.generator_dir, 'bspatch')
-      try:
-        payload.Apply(bspatch_path=bspatch_path, **part_files)
-      except self._update_payload.PayloadError as e:
-        raise PayloadVerificationError('Payload failed to apply: %s' % e)
+    self._RunGeneratorCmd(cmd)
 
-      kern_size = os.path.getsize(part_files['new_kernel_part'])
-      root_size = os.path.getsize(part_files['new_rootfs_part'])
+    for part_name, part_file in part_files.items():
+      part_file = os.path.join(self.generator_dir, part_file)
+      if not os.path.isfile(part_file):
+        raise PayloadVerificationError('Failed to extract partition (%s)' %
+                                       part_file)
+      part_files[part_name] = part_file
 
-      def cmp_files(f1, f2, size):
-        """Compare two files, comparing at most "size" bytes.
+    # Apply the payload and verify the result; make sure to pass in the
+    # explicit path to the bspatch binary in the au-generator directory (the
+    # one we need to be using), and not to depend on PATH resolution etc. Also
+    # note that we instruct the call to generate files with a .test suffix,
+    # which we can later compare to the actual target partition (as it was
+    # extracted from the target image above).
+    logging.info('Applying %s payload and verifying result',
+                 'delta' if is_delta else 'full')
+    ref_new_kern_part = part_files['new_kernel_part']
+    part_files['new_kernel_part'] += '.test'
+    ref_new_root_part = part_files['new_rootfs_part']
+    part_files['new_rootfs_part'] += '.test'
+    bspatch_path = os.path.join(self.generator_dir, 'bspatch')
+    try:
+      payload.Apply(bspatch_path=bspatch_path, **part_files)
+    except self._update_payload.PayloadError as e:
+      raise PayloadVerificationError('Payload failed to apply: %s' % e)
 
-        Args:
-          f1: The first file.
-          f2: The second file.
-          size: The number of bytes to compare.
-        """
-        # We'll use the cmp utility here instead of filecmp.cmp because the
-        # utility lets us specify a maximum number of bytes to compare.
-        cmd = ['cmp', f1, f2, '--silent', '-n', str(size)]
-        ret = cros_build_lib.RunCommand(cmd, print_cmd=False,
-                                        capture_output=True,
-                                        error_code_ok=True)
-        if ret.returncode == 0:
-          return True
-        elif ret.returncode == 1:
-          return False
-        else:
-          raise PayloadVerificationError(ret.error)
+    # Prior to comparing, remove unused space past the filesystem boundary
+    # in the extracted target partitions.
+    filelib.TruncateToSize(ref_new_kern_part,
+                           os.path.getsize(part_files['new_kernel_part']))
+    filelib.TruncateToSize(ref_new_root_part,
+                           os.path.getsize(part_files['new_rootfs_part']))
 
-      # Compare resulting partitions with the ones from the target image.
-      if not cmp_files(ref_new_kern_part,
-                       part_files['new_kernel_part'], kern_size):
-        raise PayloadVerificationError('Resulting kernel partition corrupted')
-      if not cmp_files(ref_new_root_part,
-                       part_files['new_rootfs_part'], root_size):
-        raise PayloadVerificationError('Resulting rootfs partition corrupted')
+    # Compare resulting partitions with the ones from the target image.
+    if not filecmp.cmp(ref_new_kern_part, part_files['new_kernel_part']):
+      raise PayloadVerificationError('Resulting kernel partition corrupted')
+    if not filecmp.cmp(ref_new_root_part, part_files['new_rootfs_part']):
+      raise PayloadVerificationError('Resulting rootfs partition corrupted')
 
   def _VerifyPayload(self):
     """Checks the integrity of the generated payload.
