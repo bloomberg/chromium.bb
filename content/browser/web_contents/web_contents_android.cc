@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "jni/WebContentsImpl_jni.h"
+#include "net/android/network_library.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -104,6 +105,12 @@ WebContentsAndroid::WebContentsAndroid(WebContents* web_contents)
                  env,
                  reinterpret_cast<intptr_t>(this),
                  navigation_controller_.GetJavaObject().obj()).obj());
+  RendererPreferences* prefs = web_contents_->GetMutableRendererPrefs();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  prefs->network_contry_iso =
+      command_line->HasSwitch(switches::kNetworkCountryIso) ?
+          command_line->GetSwitchValueASCII(switches::kNetworkCountryIso)
+          : net::android::GetTelephonyNetworkCountryIso();
 }
 
 WebContentsAndroid::~WebContentsAndroid() {

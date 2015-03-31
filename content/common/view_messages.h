@@ -262,6 +262,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(status_font_height)
   IPC_STRUCT_TRAITS_MEMBER(message_font_family_name)
   IPC_STRUCT_TRAITS_MEMBER(message_font_height)
+  IPC_STRUCT_TRAITS_MEMBER(network_contry_iso)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CookieData)

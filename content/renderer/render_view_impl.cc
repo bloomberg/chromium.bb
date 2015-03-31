@@ -189,7 +189,6 @@
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
-#include "net/android/network_library.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -681,15 +680,13 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
 
 #if defined(OS_ANDROID)
-  const std::string region_code =
-      command_line.HasSwitch(switches::kNetworkCountryIso)
-          ? command_line.GetSwitchValueASCII(switches::kNetworkCountryIso)
-          : net::android::GetTelephonyNetworkCountryIso();
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new AddressDetector()));
-  if (!region_code.empty()) {
+  const std::string& contry_iso =
+      params.renderer_preferences.network_contry_iso;
+  if (!contry_iso.empty()) {
     content_detectors_.push_back(linked_ptr<ContentDetector>(
-        new PhoneNumberDetector(region_code)));
+        new PhoneNumberDetector(contry_iso)));
   }
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new EmailDetector()));

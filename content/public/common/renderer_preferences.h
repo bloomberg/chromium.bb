@@ -151,6 +151,9 @@ struct CONTENT_EXPORT RendererPreferences {
 
   base::string16 message_font_family_name;
   int32 message_font_height;
+
+  // Contry iso of the mobile network for content detection purpose.
+  std::string network_contry_iso;
 };
 
 }  // namespace content

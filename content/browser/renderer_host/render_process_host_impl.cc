@@ -1368,7 +1368,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableGestureRequirementForMediaPlayback,
     switches::kDisableWebRTC,
     switches::kMediaDrmEnableNonCompositing,
-    switches::kNetworkCountryIso,
     switches::kDisableWebAudio,
     switches::kRendererWaitForJavaDebugger,
 #endif
