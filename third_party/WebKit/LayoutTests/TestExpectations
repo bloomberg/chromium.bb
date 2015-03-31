@@ -1534,6 +1534,7 @@ crbug.com/425345 [ Mac ] virtual/slimmingpaint/fast/text/line-break-after-questi
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
 crbug.com/433727 [ XP ] http/tests/serviceworker/cache-put.html [ Pass Timeout ]
+crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout ]
 
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
 
