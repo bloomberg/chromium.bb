@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <atk/atk.h>
+#if defined(USE_GCONF)
 #include <gconf/gconf-client.h>
+#endif
 #include <glib-2.0/gmodule.h>
 
 #include "base/files/file_path.h"
@@ -13,6 +15,8 @@
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace {
+
+#if defined(USE_GCONF)
 
 const char kGnomeAccessibilityEnabledKey[] =
     "/desktop/gnome/interface/accessibility";
@@ -38,6 +42,15 @@ bool ShouldEnableAccessibility() {
   g_object_unref(client);
   return value;
 }
+
+#else  // !defined(USE_GCONF)
+
+bool ShouldEnableAccessibility() {
+  // TODO(k.czech): implement this for non-GNOME desktops.
+  return false;
+}
+
+#endif  // defined(USE_GCONF)
 
 }  // namespace
 
