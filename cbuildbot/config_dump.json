@@ -12866,8 +12866,7 @@
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "important": true,
         "internal": true,
@@ -43200,6 +43199,9 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
