@@ -222,7 +222,7 @@ console-format.html:13 [id]
 globals[15]
     id="x"
         "x"
-console-format.html:12 Object {length: (...)}
+console-format.html:12 Object {}
     length: (...)
     get length: function length() { throw "Length called"; }
     __proto__: Object
@@ -231,7 +231,7 @@ console-format.html:13 [Object]
     length: 1
     __proto__: Array[0]
 globals[16]
-Object {length: (...)}
+Object {}
     length: (...)
     get length: function length() { throw "Length called"; }
     __proto__: Object
@@ -277,13 +277,17 @@ console-format.html:13 [Array[1]]
     __proto__: Array[0]
 globals[22]
 [function()]
-console-format.html:12 Object {bar: "bar", foo: "foo"}
+console-format.html:12 Object {bar: "bar"}
+    bar: "bar"
+    __proto__: Object
 console-format.html:13 [Object]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[23]
-Object {bar: "bar", foo: "foo"}
+Object {bar: "bar"}
+    bar: "bar"
+    __proto__: Object
 console-format.html:12 
     <svg id="svg-node"></svg>
 console-format.html:13 [svg#svg-node]
@@ -292,7 +296,7 @@ console-format.html:13 [svg#svg-node]
     __proto__: Array[0]
 globals[24]
     <svg id="svg-node"></svg>
-console-format.html:12 Object {bar: (...), foo: 1}
+console-format.html:12 Object {}
     bar: (...)
     get bar: function () { return this.bar; }
     set bar: function (x) { this.bar = x; }
@@ -303,7 +307,7 @@ console-format.html:13 [Object]
     length: 1
     __proto__: Array[0]
 globals[25]
-Object {bar: (...), foo: 1}
+Object {}
     bar: (...)
     get bar: function () { return this.bar; }
     set bar: function (x) { this.bar = x; }
@@ -328,12 +332,38 @@ console-format.html:13 [function]
 globals[28]
 Object()
 console-format.html:12 Object {}
+    __defineGetter__: function __defineGetter__() { [native code] }
+    __defineSetter__: function __defineSetter__() { [native code] }
+    __lookupGetter__: function __lookupGetter__() { [native code] }
+    __lookupSetter__: function __lookupSetter__() { [native code] }
+    constructor: function Object() { [native code] }
+    hasOwnProperty: function hasOwnProperty() { [native code] }
+    isPrototypeOf: function isPrototypeOf() { [native code] }
+    propertyIsEnumerable: function propertyIsEnumerable() { [native code] }
+    toLocaleString: function toLocaleString() { [native code] }
+    toString: function toString() { [native code] }
+    valueOf: function valueOf() { [native code] }
+    get __proto__: function __proto__() { [native code] }
+    set __proto__: function __proto__() { [native code] }
 console-format.html:13 [Object]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[29]
 Object {}
+    __defineGetter__: function __defineGetter__() { [native code] }
+    __defineSetter__: function __defineSetter__() { [native code] }
+    __lookupGetter__: function __lookupGetter__() { [native code] }
+    __lookupSetter__: function __lookupSetter__() { [native code] }
+    constructor: function Object() { [native code] }
+    hasOwnProperty: function hasOwnProperty() { [native code] }
+    isPrototypeOf: function isPrototypeOf() { [native code] }
+    propertyIsEnumerable: function propertyIsEnumerable() { [native code] }
+    toLocaleString: function toLocaleString() { [native code] }
+    toString: function toString() { [native code] }
+    valueOf: function valueOf() { [native code] }
+    get __proto__: function __proto__() { [native code] }
+    set __proto__: function __proto__() { [native code] }
 console-format.html:12 arrayLikeFunction()
 console-format.html:13 [function]
     0: function () {}

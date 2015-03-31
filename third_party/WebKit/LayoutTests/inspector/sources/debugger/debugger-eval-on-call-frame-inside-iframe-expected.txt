@@ -11,12 +11,12 @@ dir() = "overridden dir() in iframe"
 dirxml() = undefined
 table = "local in iframe"
 clear = 
-x: = VM:1 Uncaught SyntaxError {stack: (...), message: "Unexpected end of input"}pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:34
+x: = VM:1 Uncaught SyntaxError {message: "Unexpected end of input"}pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:34
 
 === Evaluating on top frame ===
 dir() = undefined
 dirxml() = "overridden dirxml() in top frame"
 table = 
 clear = "local in top frame"
-x: = VM:1 Uncaught SyntaxError {stack: (...), message: "Unexpected end of input"}pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:34
+x: = VM:1 Uncaught SyntaxError {message: "Unexpected end of input"}pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:34
 

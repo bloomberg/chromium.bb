@@ -1371,6 +1371,7 @@ InjectedScript.RemoteObject.prototype = {
             var internalProperties = InjectedScriptHost.getInternalProperties(object) || [];
             for (var i = 0; i < internalProperties.length; ++i) {
                 internalProperties[i] = nullifyObjectProto(internalProperties[i]);
+                internalProperties[i].isOwn = true;
                 internalProperties[i].enumerable = true;
             }
             this._appendPropertyDescriptors(preview, internalProperties, propertiesThreshold, secondLevelKeys, isTable);
@@ -1405,30 +1406,53 @@ InjectedScript.RemoteObject.prototype = {
             }
 
             var name = descriptor.name;
+
+            // Ignore __proto__ property, stay lossless.
             if (name === "__proto__")
                 continue;
-            if (this.subtype === "array" && name === "length")
-                continue;
-            if (!descriptor.enumerable && !descriptor.isOwn && !(this.subtype === "array" && isUInt32(name)))
+
+            // Ignore non-enumerable members on prototype, stay lossless.
+            if (!descriptor.isOwn && !descriptor.enumerable)
                 continue;
 
+            // Ignore length property of array, stay lossless.
+            if (this.subtype === "array" && name === "length")
+                continue;
+
+            // Ignore size property of map, set, stay lossless.
+            if ((this.subtype === "map" || this.subtype === "set") && name === "size")
+                continue;
+
+            // Never preview prototype properties, turn lossy.
+            if (!descriptor.isOwn) {
+                preview.lossless = false;
+                continue;
+            }
+
+            // Ignore computed properties, turn lossy.
             if (!("value" in descriptor)) {
                 preview.lossless = false;
-                this._appendPropertyPreview(preview, { name: name, type: "accessor", __proto__: null }, propertiesThreshold);
                 continue;
             }
 
             var value = descriptor.value;
+            var type = typeof value;
+
+            // Never render functions in object preview, turn lossy
+            if (type === "function" && (this.subtype !== "array" || !isUInt32(name))) {
+                preview.lossless = false;
+                continue;
+            }
+
+            // Special-case HTMLAll.
+            if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
+                type = "object";
+
+            // Render own properties.
             if (value === null) {
                 this._appendPropertyPreview(preview, { name: name, type: "object", subtype: "null", value: "null", __proto__: null }, propertiesThreshold);
                 continue;
             }
-
-            var type = typeof value;
-            if (!descriptor.enumerable && type === "function")
-                continue;
-            if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
-                type = "object";
 
             var maxLength = 100;
             if (InjectedScript.primitiveTypes[type]) {

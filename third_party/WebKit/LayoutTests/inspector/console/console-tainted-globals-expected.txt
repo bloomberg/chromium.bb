@@ -11,7 +11,7 @@ testOverriddenArrayPushAndMathMax()
 testOverriddenConstructorName()
 Object {constructor: Object}
 testThrowConstructorName()
-Object {constructor: (...)}
+Object {}
 testOverriddenIsFinite()
 ["arg1", "arg2"]
 testOverriddenError()

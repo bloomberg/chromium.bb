@@ -9,22 +9,6 @@ function log(data)
     console.log(data);
 }
 
-Array.prototype[0] = "arr0";
-Array.prototype[10] = "arr10";
-Object.defineProperty(Object.prototype, "5", {
-    value: "obj5",
-    configurable: true,
-    writable: true,
-    enumerable: false
-});
-
-function tearDown()
-{
-    delete Array.prototype[0];
-    delete Array.prototype[10];
-    delete Object.prototype[5];
-}
-
 var a0 = [];
 var a1 = []; a1.length = 1;
 var a2 = []; a2.length = 5;
