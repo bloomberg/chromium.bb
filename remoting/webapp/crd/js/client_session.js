@@ -35,7 +35,6 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
@@ -45,7 +44,7 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  * @implements {base.Disposable}
  * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
-remoting.ClientSession = function(plugin, host, signalStrategy, mode,
+remoting.ClientSession = function(plugin, host, signalStrategy,
                                   onExtensionMessage) {
   base.inherits(this, base.EventSourceImpl);
 
@@ -63,7 +62,7 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode,
 
   /** @private */
   this.hasReceivedFrame_ = false;
-  this.logToServer = new remoting.LogToServer(signalStrategy, mode);
+  this.logToServer = new remoting.LogToServer(signalStrategy);
 
   /** @private */
   this.signalStrategy_ = signalStrategy;

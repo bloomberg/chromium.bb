@@ -17,13 +17,11 @@ var remoting = remoting || {};
  * @param {remoting.CredentialsProvider} credentialsProvider
  * @param {remoting.ClientSession} session
  * @param {remoting.ClientPlugin} plugin
- * @param {remoting.DesktopConnectedView.Mode} mode
  *
  * @constructor
  * @struct
  */
-remoting.ConnectionInfo =
-    function(host, credentialsProvider, session, plugin, mode) {
+remoting.ConnectionInfo = function(host, credentialsProvider, session, plugin) {
   /** @private */
   this.host_ = host;
   /** @private */
@@ -32,10 +30,6 @@ remoting.ConnectionInfo =
   this.session_ = session;
   /** @private */
   this.plugin_ = plugin;
-  /** @private */
-  // TODO(kelvinp): Remove this when Me2Me and It2Me are abstracted into its
-  // own flow objects.
-  this.mode_ = mode;
 };
 
 /** @returns {remoting.Host} */
@@ -56,11 +50,6 @@ remoting.ConnectionInfo.prototype.session = function() {
 /** @returns {remoting.ClientPlugin} */
 remoting.ConnectionInfo.prototype.plugin = function() {
   return this.plugin_;
-};
-
-/** @returns {remoting.DesktopConnectedView.Mode} */
-remoting.ConnectionInfo.prototype.mode = function() {
-  return this.mode_;
 };
 
 })();

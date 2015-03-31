@@ -44,9 +44,6 @@ remoting.MockSessionConnector = function(clientContainer, onConnected, onError,
   this.requiredCapabilities_ = requiredCapabilities;
   this.defaultRemapKeys_ = defaultRemapKeys;
 
-  /** @type {remoting.DesktopConnectedView.Mode} */
-  this.mode_ = remoting.DesktopConnectedView.Mode.ME2ME;
-
   this.reset();
 };
 
@@ -58,20 +55,17 @@ remoting.MockSessionConnector.prototype.reset = function() {
 remoting.MockSessionConnector.prototype.connectMe2Me =
     function(host, fetchPin, fetchThirdPartyToken,
              clientPairingId, clientPairedSecret) {
-  this.mode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.connect_();
 };
 
 remoting.MockSessionConnector.prototype.retryConnectMe2Me =
     function(host, fetchPin, fetchThirdPartyToken,
              clientPairingId, clientPairedSecret) {
-  this.mode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.connect_();
 };
 
 remoting.MockSessionConnector.prototype.connectMe2App =
     function(host, fetchThirdPartyToken) {
-  this.mode_ = remoting.DesktopConnectedView.Mode.APP_REMOTING;
   this.connect_();
 };
 
@@ -81,20 +75,14 @@ remoting.MockSessionConnector.prototype.updatePairingInfo =
 
 remoting.MockSessionConnector.prototype.connectIT2Me =
     function(accessCode) {
-  this.mode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.connect_();
 };
 
 remoting.MockSessionConnector.prototype.reconnect = function() {
-  base.debug.assert(this.mode_ == remoting.DesktopConnectedView.Mode.ME2ME);
   this.connect_();
 };
 
 remoting.MockSessionConnector.prototype.cancel = function() {
-};
-
-remoting.MockSessionConnector.prototype.getConnectionMode = function() {
-  return this.mode_;
 };
 
 remoting.MockSessionConnector.prototype.getHostId = function() {
@@ -136,7 +124,7 @@ remoting.MockSessionConnector.prototype.connect_ = function() {
       signalling, this.clientContainer_, hostName,
       accessCode, fetchPin, fetchThirdPartyToken,
       authenticationMethods, hostId, hostJid, hostPublicKey,
-      this.mode_, clientPairingId, clientPairedSecret);
+      clientPairingId, clientPairedSecret);
 
   var that = this;
   /** @param {remoting.ClientSession.StateEvent} event */

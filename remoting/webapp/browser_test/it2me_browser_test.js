@@ -66,7 +66,7 @@ browserTest.InvalidAccessCode.prototype.run = function(data) {
     browserTest.clickOnControl('connect-button');
     var ErrorTag = remoting.Error.Tag;
     return browserTest.expectConnectionError(
-        remoting.DesktopConnectedView.Mode.IT2ME,
+        remoting.Application.Mode.IT2ME,
         [ErrorTag.INVALID_ACCESS_CODE, ErrorTag.HOST_IS_OFFLINE]);
   }).then(function() {
     browserTest.pass();

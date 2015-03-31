@@ -182,7 +182,7 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
   }
 
   var sessionConnector = remoting.app.getSessionConnector();
-  if (connectionInfo.mode() === remoting.DesktopConnectedView.Mode.ME2ME) {
+  if (remoting.app.getConnectionMode() === remoting.Application.Mode.ME2ME) {
     if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
       this.sessionConnector_.registerProtocolExtension(
           new remoting.CastExtensionHandler());
@@ -235,8 +235,8 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
  * @override {remoting.ApplicationInterface}
  */
 remoting.DesktopRemoting.prototype.onDisconnected_ = function() {
-  var mode = this.connectedView_.getMode();
-  if (mode === remoting.DesktopConnectedView.Mode.IT2ME) {
+  var mode = this.getConnectionMode();
+  if (mode === remoting.Application.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
@@ -263,9 +263,9 @@ remoting.DesktopRemoting.prototype.onConnectionFailed_ = function(error) {
     that.onError_(error);
   };
 
-  var mode = this.sessionConnector_.getConnectionMode();
+  var mode = this.getConnectionMode();
   if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
-      mode === remoting.DesktopConnectedView.Mode.ME2ME &&
+      mode === remoting.Application.Mode.ME2ME &&
       this.refreshHostJidIfOffline_) {
     this.refreshHostJidIfOffline_ = false;
 
@@ -282,8 +282,7 @@ remoting.DesktopRemoting.prototype.onConnectionFailed_ = function(error) {
  */
 remoting.DesktopRemoting.prototype.onError_ = function(error) {
   console.error('Connection failed: ' + error.toString());
-  var mode = this.connectedView_ ? this.connectedView_.getMode()
-      : this.sessionConnector_.getConnectionMode();
+  var mode = this.getConnectionMode();
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
 
@@ -299,7 +298,7 @@ remoting.DesktopRemoting.prototype.onError_ = function(error) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
 
-  if (mode == remoting.DesktopConnectedView.Mode.IT2ME) {
+  if (mode == remoting.Application.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
@@ -339,10 +338,7 @@ remoting.DesktopRemoting.prototype.isWindowed_ = function(callback) {
  * @private
  */
 remoting.DesktopRemoting.prototype.promptClose_ = function() {
-  var sessionConnector = this.sessionConnector_;
-  if (sessionConnector &&
-      sessionConnector.getConnectionMode() ==
-          remoting.DesktopConnectedView.Mode.IT2ME) {
+  if (this.getConnectionMode() === remoting.Application.Mode.IT2ME) {
     switch (remoting.currentMode) {
       case remoting.AppMode.CLIENT_CONNECTING:
       case remoting.AppMode.HOST_WAITING_FOR_CODE:

@@ -58,7 +58,7 @@ remoting.It2MeConnectFlow.prototype.connect_ = function(accessCode) {
     return that.onHostInfo_(response);
   }).then(function(/** remoting.Host */ host) {
     that.sessionConnector_.connect(
-        remoting.DesktopConnectedView.Mode.IT2ME,
+        remoting.Application.Mode.IT2ME,
         host,
         new remoting.CredentialsProvider({ accessCode: that.passCode_ }));
   }).catch(function(error) {

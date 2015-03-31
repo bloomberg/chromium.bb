@@ -70,7 +70,7 @@ remoting.SessionConnector.prototype.updatePairingInfo =
 /**
  * Initiates a remote connection.
  *
- * @param {remoting.DesktopConnectedView.Mode} mode
+ * @param {remoting.Application.Mode} mode
  * @param {remoting.Host} host
  * @param {remoting.CredentialsProvider} credentialsProvider
  * @return {void} Nothing.
@@ -89,13 +89,6 @@ remoting.SessionConnector.prototype.reconnect = function() {};
  * Cancel a connection-in-progress.
  */
 remoting.SessionConnector.prototype.cancel = function() {};
-
-/**
- * Get the connection mode (Me2Me or IT2Me)
- *
- * @return {remoting.DesktopConnectedView.Mode}
- */
-remoting.SessionConnector.prototype.getConnectionMode = function() {};
 
 /**
  * Get host ID.

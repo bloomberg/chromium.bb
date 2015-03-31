@@ -33,9 +33,6 @@ remoting.DesktopConnectedView = function(container, connectionInfo) {
   /** @private */
   this.host_ = connectionInfo.host();
 
-  /** @private */
-  this.mode_ = connectionInfo.mode();
-
   /** @private {remoting.DesktopViewport} */
   this.viewport_ = null;
 
@@ -73,14 +70,6 @@ remoting.DesktopConnectedView.prototype.dispose = function() {
   this.viewport_ = null;
 };
 
-// The mode of this session.
-/** @enum {number} */
-remoting.DesktopConnectedView.Mode = {
-  IT2ME: 0,
-  ME2ME: 1,
-  APP_REMOTING: 2
-};
-
 // Keys for per-host settings.
 remoting.DesktopConnectedView.KEY_REMAP_KEYS = 'remapKeys';
 remoting.DesktopConnectedView.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
@@ -94,13 +83,6 @@ remoting.DesktopConnectedView.KEY_DESKTOP_SCALE = 'desktopScale';
  */
 remoting.DesktopConnectedView.prototype.getHostDisplayName = function() {
   return this.host_.hostName;
-};
-
-/**
- * @return {remoting.DesktopConnectedView.Mode} The current state.
- */
-remoting.DesktopConnectedView.prototype.getMode = function() {
-  return this.mode_;
 };
 
 /**
@@ -138,14 +120,15 @@ remoting.DesktopConnectedView.prototype.getViewportForTesting = function() {
 
 /** @private */
 remoting.DesktopConnectedView.prototype.initPlugin_ = function() {
+  var mode = remoting.app.getConnectionMode();
   // Show the Send Keys menu only if the plugin has the injectKeyEvent feature,
   // and the Ctrl-Alt-Del button only in Me2Me mode.
   if (!this.plugin_.hasFeature(
           remoting.ClientPlugin.Feature.INJECT_KEY_EVENT)) {
     var sendKeysElement = document.getElementById('send-keys-menu');
     sendKeysElement.hidden = true;
-  } else if (this.mode_ != remoting.DesktopConnectedView.Mode.ME2ME &&
-      this.mode_ != remoting.DesktopConnectedView.Mode.APP_REMOTING) {
+  } else if (mode != remoting.Application.Mode.ME2ME &&
+             mode != remoting.Application.Mode.APP_REMOTING) {
     var sendCadElement = document.getElementById('send-ctrl-alt-del');
     sendCadElement.hidden = true;
   }

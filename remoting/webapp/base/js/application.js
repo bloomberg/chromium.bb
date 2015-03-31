@@ -40,8 +40,25 @@ remoting.Application = function(appCapabilities) {
       this.onConnectionFailed_.bind(this),
       this.appCapabilities_);
 
+  /** @protected {remoting.Application.Mode} */
+  this.connectionMode_ = remoting.Application.Mode.ME2ME;
+
   /** @private {base.Disposable} */
   this.sessionConnectedHooks_ = null;
+};
+
+/**
+ * The current application mode (IT2Me, Me2Me or AppRemoting).
+ *
+ * TODO(kelvinp): Remove this when Me2Me and It2Me are abstracted into its
+ * own flow objects.
+ *
+ * @enum {number}
+ */
+remoting.Application.Mode = {
+  IT2ME: 0,
+  ME2ME: 1,
+  APP_REMOTING: 2
 };
 
 /**
@@ -49,6 +66,24 @@ remoting.Application = function(appCapabilities) {
  */
 remoting.Application.prototype.getSessionConnector = function() {
   return this.sessionConnector_;
+};
+
+/**
+ * Get the connection mode (Me2Me, IT2Me or AppRemoting).
+ *
+ * @return {remoting.Application.Mode}
+ */
+remoting.Application.prototype.getConnectionMode = function() {
+  return this.connectionMode_;
+};
+
+/**
+ * Set the connection mode (Me2Me, IT2Me or AppRemoting).
+ *
+ * @param {remoting.Application.Mode} mode
+ */
+remoting.Application.prototype.setConnectionMode = function(mode) {
+  this.connectionMode_ = mode;
 };
 
 /**
