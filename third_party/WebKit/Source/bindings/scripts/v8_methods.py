@@ -94,7 +94,8 @@ def method_context(interface, method, is_visible=True):
         includes.update(['bindings/core/v8/ScriptCallStackFactory.h',
                          'core/inspector/ScriptArguments.h'])
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
-    if is_call_with_script_state:
+    is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')
+    if is_call_with_script_state or is_call_with_this_value:
         includes.add('bindings/core/v8/ScriptState.h')
     is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
@@ -149,6 +150,7 @@ def method_context(interface, method, is_visible=True):
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
+        'is_call_with_this_value': is_call_with_this_value,
         'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
         'is_check_security_for_window': is_check_security_for_window,

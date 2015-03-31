@@ -9967,6 +9967,20 @@ static void callWithActiveWindowScriptWindowMethodCallback(const v8::FunctionCal
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void callWithThisValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->callWithThisValue(ScriptValue(scriptState, info.This()));
+}
+
+static void callWithThisValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::callWithThisValueMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void checkSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -12455,6 +12469,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"callWithActiveWindow", TestObjectV8Internal::callWithActiveWindowMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"callWithActiveWindowScriptWindow", TestObjectV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"callWithThisValue", TestObjectV8Internal::callWithThisValueMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"checkSecurityForNodeVoidMethod", TestObjectV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 #if ENABLE(CONDITION)
     {"conditionalConditionVoidMethod", TestObjectV8Internal::conditionalConditionVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},

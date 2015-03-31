@@ -510,6 +510,7 @@ interface TestObject {
     [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=(ActiveWindow,FirstWindow)] void callWithActiveWindowScriptWindow();
+    [CallWith=ThisValue] void callWithThisValue();
     [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();
     [Conditional=CONDITION] void conditionalConditionVoidMethod();
     [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();

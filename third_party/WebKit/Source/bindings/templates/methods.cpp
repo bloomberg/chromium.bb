@@ -218,7 +218,7 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {# Local variables #}
-{% if method.is_call_with_script_state %}
+{% if method.is_call_with_script_state or method.is_call_with_this_value %}
 {# [ConstructorCallWith=ScriptState] #}
 {# [CallWith=ScriptState] #}
 ScriptState* scriptState = ScriptState::current(info.GetIsolate());
