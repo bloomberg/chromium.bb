@@ -90,7 +90,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
   // Consider the various reasons not to initiate a capture.
   if (should_capture && !output_buffer.get()) {
-    TRACE_EVENT_INSTANT1("mirroring",
+    TRACE_EVENT_INSTANT1("gpu.capture",
                          "PipelineLimited",
                          TRACE_EVENT_SCOPE_THREAD,
                          "trigger",
@@ -101,7 +101,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       // This is a normal and acceptable way to drop a frame. We've hit our
       // capture rate limit: for example, the content is animating at 60fps but
       // we're capturing at 30fps.
-      TRACE_EVENT_INSTANT1("mirroring", "FpsRateLimited",
+      TRACE_EVENT_INSTANT1("gpu.capture", "FpsRateLimited",
                            TRACE_EVENT_SCOPE_THREAD,
                            "trigger", event_name);
     }
@@ -109,13 +109,13 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   } else if (!should_capture && !output_buffer.get()) {
     // We decided not to capture, but we wouldn't have been able to if we wanted
     // to because no output buffer was available.
-    TRACE_EVENT_INSTANT1("mirroring", "NearlyPipelineLimited",
+    TRACE_EVENT_INSTANT1("gpu.capture", "NearlyPipelineLimited",
                          TRACE_EVENT_SCOPE_THREAD,
                          "trigger", event_name);
     return false;
   }
   int frame_number = oracle_.RecordCapture();
-  TRACE_EVENT_ASYNC_BEGIN2("mirroring", "Capture", output_buffer.get(),
+  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
   // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
@@ -189,7 +189,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     base::TimeTicks timestamp,
     bool success) {
   base::AutoLock guard(lock_);
-  TRACE_EVENT_ASYNC_END2("mirroring", "Capture", buffer.get(),
+  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.get(),
                          "success", success,
                          "timestamp", timestamp.ToInternalValue());
 

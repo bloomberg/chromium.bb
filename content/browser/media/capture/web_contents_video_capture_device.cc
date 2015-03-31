@@ -294,7 +294,7 @@ bool FrameSubscriber::ShouldCaptureFrame(
     base::TimeTicks present_time,
     scoped_refptr<media::VideoFrame>* storage,
     DeliverFrameCallback* deliver_frame_cb) {
-  TRACE_EVENT1("mirroring", "FrameSubscriber::ShouldCaptureFrame",
+  TRACE_EVENT1("gpu.capture", "FrameSubscriber::ShouldCaptureFrame",
                "instance", this);
 
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
@@ -355,7 +355,7 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
 
 void ContentCaptureSubscription::OnTimer() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TRACE_EVENT0("mirroring", "ContentCaptureSubscription::OnTimer");
+  TRACE_EVENT0("gpu.capture", "ContentCaptureSubscription::OnTimer");
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
@@ -414,7 +414,8 @@ void RenderVideoFrame(const SkBitmap& input,
       method = skia::ImageOperations::RESIZE_BOX;
     }
 
-    TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", output.get(), "Scale");
+    TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture",
+                                 "Capture", output.get(), "Scale");
     scaled_bitmap = skia::ImageOperations::Resize(input, method,
                                                   region_in_frame.width(),
                                                   region_in_frame.height());
@@ -422,7 +423,7 @@ void RenderVideoFrame(const SkBitmap& input,
     scaled_bitmap = input;
   }
 
-  TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", output.get(), "YUV");
+  TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", output.get(), "YUV");
   {
     SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
 
@@ -627,7 +628,7 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
   DCHECK(render_thread_.get());
   if (response == READBACK_SUCCESS) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
-    TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", target.get(),
+    TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", target.get(),
                                  "Render");
     render_thread_->message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
         &RenderVideoFrame, bitmap, target,

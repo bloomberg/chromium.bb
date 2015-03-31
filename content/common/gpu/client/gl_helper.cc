@@ -492,7 +492,7 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
     GLenum type,
     size_t bytes_per_pixel,
     const base::Callback<void(bool)>& callback) {
-  TRACE_EVENT0("mirror", "GLHelper::CopyTextureToImpl::ReadbackAsync");
+  TRACE_EVENT0("gpu.capture", "GLHelper::CopyTextureToImpl::ReadbackAsync");
   Request* request =
       new Request(dst_size, bytes_per_row, row_stride_bytes, out, callback);
   request_queue_.push(request);
@@ -707,7 +707,7 @@ GLuint GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
 
 void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
                                                int bytes_per_pixel) {
-  TRACE_EVENT0("mirror",
+  TRACE_EVENT0("gpu.capture",
                "GLHelper::CopyTextureToImpl::CheckReadbackFramebufferComplete");
   finished_request->done = true;
 
@@ -752,7 +752,7 @@ void GLHelper::CopyTextureToImpl::FinishRequest(
     Request* request,
     bool result,
     FinishRequestHelper* finish_request_helper) {
-  TRACE_EVENT0("mirror", "GLHelper::CopyTextureToImpl::FinishRequest");
+  TRACE_EVENT0("gpu.capture", "GLHelper::CopyTextureToImpl::FinishRequest");
   DCHECK(request_queue_.front() == request);
   request_queue_.pop();
   request->result = result;

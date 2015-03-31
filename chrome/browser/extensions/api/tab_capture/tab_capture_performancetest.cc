@@ -181,7 +181,7 @@ class TabCapturePerformanceTest
     }
 
     std::string json_events;
-    ASSERT_TRUE(tracing::BeginTracing("gpu,mirroring"));
+    ASSERT_TRUE(tracing::BeginTracing("gpu,gpu.capture"));
     std::string page = "performance.html";
     page += HasFlag(kTestThroughWebRTC) ? "?WebRTC=1" : "?WebRTC=0";
     // Ideally we'd like to run a higher capture rate when vsync is disabled,
