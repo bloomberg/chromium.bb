@@ -636,8 +636,11 @@ void ThreadState::scheduleIdleCompleteSweep()
     if (!isMainThread())
         return;
 
-    // TODO(haraken): Remove this. Lazy sweeping is not yet enabled in non-oilpan builds.
-#if ENABLE(OILPAN)
+    // TODO(haraken): Temporarily disable complete sweeping in idle tasks
+    // because it turned out that it has a risk of violating the idle task
+    // deadline and thus regressing queueing_durations. We'll enable this
+    // once we finish collecting performance numbers.
+#if 0
     Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleCompleteSweep, this));
 #endif
 }
