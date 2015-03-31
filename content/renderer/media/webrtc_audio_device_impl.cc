@@ -397,13 +397,30 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(renderer);
 
-  base::AutoLock auto_lock(lock_);
-  if (renderer_.get())
-    return false;
+  // Here we acquire |lock_| in order to protect the internal state.
+  {
+    base::AutoLock auto_lock(lock_);
+    if (renderer_.get())
+      return false;
+  }
 
+  // We release |lock_| here because invoking |renderer|->Initialize while
+  // holding |lock_| would result in locks taken in the sequence
+  // (|this->lock_|,  |renderer->lock_|) while another thread (i.e, the
+  // AudioOutputDevice thread) might concurrently invoke a renderer method,
+  // which can itself invoke a method from |this|, resulting in locks taken in
+  // the sequence (|renderer->lock_|, |this->lock_|) in that thread.
+  // This order discrepancy can cause a deadlock (see Issue 433993).
+  // However, we do not need to hold |this->lock_| in order to invoke
+  // |renderer|->Initialize, since it does not involve any unprotected access to
+  // the internal state of |this|.
   if (!renderer->Initialize(this))
     return false;
 
+  // We acquire |lock_| again and assert our precondition, since we are
+  // accessing the internal state again.
+  base::AutoLock auto_lock(lock_);
+  DCHECK(!renderer_.get());
   renderer_ = renderer;
   return true;
 }

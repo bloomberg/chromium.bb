@@ -167,7 +167,9 @@
 //    most methods are called on the same thread. However, some methods are
 //    also called on a Libjingle worker thread. RenderData is called on the
 //    AudioOutputDevice thread and CaptureData on the AudioInputDevice thread.
-//    To summarize: this class lives on four different threads.
+//    To summarize: this class lives on four different threads, so it is
+//    important to be careful with the order in which locks are acquired in
+//    order to avoid potential deadlocks.
 //  - The webrtc::AudioDeviceModule is reference counted.
 //  - AGC is only supported in combination with the WASAPI-based audio layer
 //    on Windows, i.e., it is not supported on Windows XP.
