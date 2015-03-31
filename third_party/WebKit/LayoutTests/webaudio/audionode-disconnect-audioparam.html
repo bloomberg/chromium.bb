@@ -14,10 +14,10 @@
 
     var audit = Audit.createTaskRunner();
 
-    // The long render length (40 seconds) test 1 and 2 is to make sure the
+    // The long render length (20 seconds) test 1 and 2 is to make sure the 
     // |onstatechange| event gets fired to start the source, which can take
     // quite a bit of time.
-    var testDuration = 40;
+    var testDuration = 20;
 
     // Task 1: test disconnect(AudioParam) method.
     audit.defineTask('disconnect(AudioParam)', function (done) {
