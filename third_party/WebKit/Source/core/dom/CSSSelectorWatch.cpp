@@ -31,13 +31,7 @@
 #include "config.h"
 #include "core/dom/CSSSelectorWatch.h"
 
-#include "core/css/CSSSelectorList.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/style/StyleRareNonInheritedData.h"
 #include "core/loader/FrameLoaderClient.h"
 
 namespace blink {
