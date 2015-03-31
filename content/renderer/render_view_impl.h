@@ -145,6 +145,11 @@ class WebMediaPlayerProxyAndroid;
 // RenderView is an object that manages a WebView object, and provides a
 // communication interface with an embedding application process.
 //
+// DEPRECATED: RenderViewImpl is being removed as part of the SiteIsolation
+// project. New code should be added to RenderFrameImpl instead.
+//
+// For context, please see https://crbug.com/467770 and
+// http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewImpl
     : public RenderWidget,
       NON_EXPORTED_BASE(public blink::WebViewClient),

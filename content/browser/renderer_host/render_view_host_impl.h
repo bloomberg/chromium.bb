@@ -83,6 +83,13 @@ struct FileChooserParams;
 // you will not be able to traverse pages back and forward. We need to determine
 // if we want to bring that and other functionality down into this object so it
 // can be shared by others.
+//
+// DEPRECATED: RenderViewHostImpl is being removed as part of the SiteIsolation
+// project. New code should not be added here, but to either RenderFrameHostImpl
+// (if frame specific) or WebContentsImpl (if page specific).
+//
+// For context, please see https://crbug.com/467770 and
+// http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewHostImpl
     : public RenderViewHost,
       public RenderWidgetHostImpl {

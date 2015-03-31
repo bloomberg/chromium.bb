@@ -51,6 +51,13 @@ struct WebPreferences;
 // The intent of this interface is to provide a view-agnostic communication
 // conduit with a renderer. This is so we can build HTML views not only as
 // WebContents (see WebContents for an example) but also as views, etc.
+//
+// DEPRECATED: RenderViewHost is being removed as part of the SiteIsolation
+// project. New code should not be added here, but to either RenderFrameHost
+// (if frame specific) or WebContents (if page specific).
+//
+// For context, please see https://crbug.com/467770 and
+// http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.

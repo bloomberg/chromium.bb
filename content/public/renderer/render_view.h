@@ -38,6 +38,11 @@ class RenderViewVisitor;
 struct SSLStatus;
 struct WebPreferences;
 
+// DEPRECATED: RenderView is being removed as part of the SiteIsolation project.
+// New code should be added to RenderFrame instead.
+//
+// For context, please see https://crbug.com/467770 and
+// http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
   // Returns the RenderView containing the given WebView.
