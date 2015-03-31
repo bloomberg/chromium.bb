@@ -20,6 +20,18 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ui_zoom::ZoomController);
 
 namespace ui_zoom {
 
+double ZoomController::GetZoomLevelForWebContents(
+    const content::WebContents* web_contents) {
+  if (!web_contents)
+    return 0.0;
+
+  auto zoom_controller = FromWebContents(web_contents);
+  if (zoom_controller)
+    return zoom_controller->GetZoomLevel();
+
+  return content::HostZoomMap::GetZoomLevel(web_contents);
+}
+
 ZoomController::ZoomController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       can_show_bubble_(true),

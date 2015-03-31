@@ -773,14 +773,9 @@ double GuestViewBase::GetEmbedderZoomFactor() {
   if (!embedder_web_contents())
     return 1.0;
 
-  auto zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(embedder_web_contents());
-  if (!zoom_controller)
-    return 1.0;
-
-  double zoom_factor =
-      content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
-  return zoom_factor;
+  return content::ZoomLevelToZoomFactor(
+      ui_zoom::ZoomController::GetZoomLevelForWebContents(
+          embedder_web_contents()));
 }
 
 void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
