@@ -619,10 +619,6 @@ void ProfileImpl::DoFinalInit() {
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
 
-  base::FilePath infinite_cache_path = GetPath();
-  infinite_cache_path =
-      infinite_cache_path.Append(FILE_PATH_LITERAL("Infinite Cache"));
-
 #if defined(OS_ANDROID)
   SessionStartupPref::Type startup_pref_type =
       SessionStartupPref::GetDefaultStartupType();
@@ -643,8 +639,8 @@ void ProfileImpl::DoFinalInit() {
 
   io_data_.Init(cookie_path, channel_id_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
-                extensions_cookie_path, GetPath(), infinite_cache_path,
-                predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
+                extensions_cookie_path, GetPath(), predictor_,
+                session_cookie_mode, GetSpecialStoragePolicy(),
                 CreateDomainReliabilityMonitor(local_state));
 
 #if defined(ENABLE_PLUGINS)

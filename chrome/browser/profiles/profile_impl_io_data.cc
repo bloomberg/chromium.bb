@@ -145,7 +145,6 @@ void ProfileImplIOData::Handle::Init(
     int media_cache_max_size,
     const base::FilePath& extensions_cookie_path,
     const base::FilePath& profile_path,
-    const base::FilePath& infinite_cache_path,
     chrome_browser_net::Predictor* predictor,
     content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
     storage::SpecialStoragePolicy* special_storage_policy,
@@ -164,7 +163,6 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->media_cache_path = media_cache_path;
   lazy_params->media_cache_max_size = media_cache_max_size;
   lazy_params->extensions_cookie_path = extensions_cookie_path;
-  lazy_params->infinite_cache_path = infinite_cache_path;
   lazy_params->session_cookie_mode = session_cookie_mode;
   lazy_params->special_storage_policy = special_storage_policy;
 
@@ -574,8 +572,6 @@ void ProfileImplIOData::InitializeInternal(
   tracked_objects::ScopedTracker tracking_profile71(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "436671 ProfileImplIOData::InitializeInternal71"));
-
-  main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
 
   main_http_factory_.reset(main_cache.release());
   main_context->set_http_transaction_factory(main_http_factory_.get());

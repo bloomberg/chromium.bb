@@ -8,19 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/common/content_constants.h"
-#include "net/spdy/spdy_session.h"
-#include "ui/base/layout.h"
 
 namespace chrome {
 
@@ -40,27 +33,6 @@ void AutoLaunchChromeFieldTrial() {
   }
 }
 
-void SetupInfiniteCacheFieldTrial() {
-  const base::FieldTrial::Probability kDivisor = 100;
-
-  base::FieldTrial::Probability infinite_cache_probability = 0;
-
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "InfiniteCache", kDivisor, "No", 2013, 12, 31,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
-  trial->AppendGroup("Yes", infinite_cache_probability);
-  trial->AppendGroup("Control", infinite_cache_probability);
-}
-
-void DisableShowProfileSwitcherTrialIfNecessary() {
-  // This trial is created by the VariationsService, but it needs to be disabled
-  // if multi-profiles isn't enabled.
-  base::FieldTrial* trial = base::FieldTrialList::Find("ShowProfileSwitcher");
-  if (trial && !profiles::IsMultipleProfilesEnabled())
-    trial->Disable();
-}
-
 void SetupLightSpeedTrials() {
   if (!variations::GetVariationParamValue("LightSpeed", "NoGpu").empty()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -73,8 +45,6 @@ void SetupLightSpeedTrials() {
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();
-  SetupInfiniteCacheFieldTrial();
-  DisableShowProfileSwitcherTrialIfNecessary();
   SetupLightSpeedTrials();
 }
 

@@ -62,7 +62,6 @@ class ProfileImplIOData : public ProfileIOData {
         int media_cache_max_size,
         const base::FilePath& extensions_cookie_path,
         const base::FilePath& profile_path,
-        const base::FilePath& infinite_cache_path,
         chrome_browser_net::Predictor* predictor,
         content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
         storage::SpecialStoragePolicy* special_storage_policy,
@@ -162,7 +161,6 @@ class ProfileImplIOData : public ProfileIOData {
     base::FilePath media_cache_path;
     int media_cache_max_size;
     base::FilePath extensions_cookie_path;
-    base::FilePath infinite_cache_path;
     content::CookieStoreConfig::SessionCookieMode session_cookie_mode;
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy;
   };

@@ -29,10 +29,7 @@ ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
-void ChromeBrowserFieldTrials::SetupFieldTrials(
-    const base::Time& install_time) {
-  DCHECK(!install_time.is_null());
-
+void ChromeBrowserFieldTrials::SetupFieldTrials() {
   // Field trials that are shared by all platforms.
   InstantiateDynamicTrials();
 

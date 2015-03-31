@@ -651,8 +651,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     variations_service->CreateTrialsFromSeed();
 
   // This must be called after |local_state_| is initialized.
-  browser_field_trials_.SetupFieldTrials(
-      base::Time::FromTimeT(metrics->GetInstallDate()));
+  browser_field_trials_.SetupFieldTrials();
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
   // for posting tasks via base::Bind. Its deleted when it goes out of scope.

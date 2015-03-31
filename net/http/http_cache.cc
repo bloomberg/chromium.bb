@@ -56,11 +56,6 @@ bool UseCertCache() {
          "ExperimentGroup";
 }
 
-// Adaptor to delete a file on a worker thread.
-void DeletePath(base::FilePath path) {
-  base::DeleteFile(path, false);
-}
-
 }  // namespace
 
 namespace net {
@@ -621,12 +616,6 @@ void HttpCache::OnExternalCacheHit(const GURL& url,
   request_info.method = http_method;
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
-}
-
-void HttpCache::InitializeInfiniteCache(const base::FilePath& path) {
-  if (base::FieldTrialList::FindFullName("InfiniteCache") != "Yes")
-    return;
-  base::WorkerPool::PostTask(FROM_HERE, base::Bind(&DeletePath, path), true);
 }
 
 int HttpCache::CreateTransaction(RequestPriority priority,

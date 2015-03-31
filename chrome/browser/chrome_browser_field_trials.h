@@ -17,9 +17,7 @@ class ChromeBrowserFieldTrials {
   explicit ChromeBrowserFieldTrials(const base::CommandLine& command_line);
   ~ChromeBrowserFieldTrials();
 
-  // Called by the browser main sequence to set up Field Trials for this client.
-  // |local_state| is used to set browser-wide properties.
-  void SetupFieldTrials(const base::Time& install_time);
+  void SetupFieldTrials();
 
  private:
   // Instantiates dynamic trials by querying their state, to ensure they get

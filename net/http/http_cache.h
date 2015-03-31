@@ -199,9 +199,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // referred to by |url| and |http_method|.
   void OnExternalCacheHit(const GURL& url, const std::string& http_method);
 
-  // Initializes the Infinite Cache, if selected by the field trial.
-  void InitializeInfiniteCache(const base::FilePath& path);
-
   // Causes all transactions created after this point to effectively bypass
   // the cache lock whenever there is lock contention.
   void BypassLockForTest() {
