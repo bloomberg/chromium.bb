@@ -108,6 +108,9 @@
     'automation': {
       'filepath': 'chrome/browser/automation/|chrome/test/automation/',
     },
+    'background_sync': {
+      'filepath': 'background_sync',
+    },
     'base': {
       'filepath': '^base/',
     },
@@ -165,6 +168,9 @@
     'bubble': {
       'filepath': 'ui/views/bubble/|'\
                   'chrome/browser/ui/views/bubble/',
+    },
+    'cache_storage': {
+      'filepath': 'cache_storage',
     },
     'cast': {
       'filepath': 'media/cast/'\
@@ -513,6 +519,9 @@
         'chrome/browser/resources/net_internals/|' \
         'chrome/browser/ui/webui/net_internals/'
     },
+    'netinfo': {
+      'filepath': 'netinfo',
+    },
     'notifications': {
       'filepath': 'chrome/browser/extensions/api/notifications/|' \
         'chrome/browser/notifications/|' \
@@ -849,6 +858,7 @@
     'autofill': ['estade+watch@chromium.org',
                  'rouslan+autofillwatch@chromium.org'],
     'automation': ['robertshield@chromium.org'],
+    'background_sync': ['jkarlin+watch@chromium.org'],
     'base': ['erikwright+watch@chromium.org'],
     'base_allocator': ['dmikurube@chromium.org',
                        'wfh+watch@chromium.org'],
@@ -864,6 +874,7 @@
     'browser_resources': ['arv+watch@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
+    'cache_storage': ['jkarlin+watch@chromium.org'],
     'cast': ['avayvod+watch@chromium.org',
              'hclam+watch@chromium.org',
              'hguihot+watch@chromium.org',
@@ -988,6 +999,7 @@
     'navigation': ['creis+watch@chromium.org', 'nasko+codewatch@chromium.org'],
     'net': ['cbentzel+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
+    'netinfo': ['jkarlin+watch@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
     'notifications': ['peter+watch@chromium.org',
                       'mlamouri+watch-notifications@chromium.org'],
@@ -1013,8 +1025,7 @@
     'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
-                  'jkarlin+watch@chromium.org', 'gavinp+prer@chromium.org',
-                  'davidben+watch@chromium.org'],
+                  'gavinp+prer@chromium.org', 'davidben+watch@chromium.org'],
     'push_messaging': ['peter+watch@chromium.org', 'johnme+watch@chromium.org'],
     'pyauto': ['anantha@chromium.org',
                'dyu@chromium.org',
