@@ -136,11 +136,20 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
   // monitor in a multiple-monitor setup.
   //
   // If the last active profile is empty (for example, starting up chrome
-  // when all existing profiles are locked) or we can't find an active
+  // when all existing profiles are locked), not loaded (for example, if guest
+  // was set after locking the only open profile) or we can't find an active
   // browser, bounds will remain empty and the user manager will be centered on
   // the default monitor by default.
+  //
+  // Note the profile is accessed via GetProfileByPath(GetLastUsedProfileDir())
+  // instead of GetLastUsedProfile().  If the last active profile isn't loaded,
+  // the latter may try to synchronously load it, which can only be done on a
+  // thread where disk IO is allowed.
   gfx::Rect bounds;
-  Profile* profile = ProfileManager::GetLastUsedProfile();
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  const base::FilePath& last_used_profile_path =
+      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir());
+  Profile* profile = profile_manager->GetProfileByPath(last_used_profile_path);
   if (profile) {
     Browser* browser = chrome::FindLastActiveWithProfile(profile,
         chrome::GetActiveDesktop());
