@@ -14,7 +14,7 @@ namespace {
 
 class ThreadLocalTesterBase : public base::DelegateSimpleThreadPool::Delegate {
  public:
-  typedef base::ThreadLocalPointer<ThreadLocalTesterBase> TLPType;
+  typedef base::ThreadLocalPointer<char> TLPType;
 
   ThreadLocalTesterBase(TLPType* tlp, base::WaitableEvent* done)
       : tlp_(tlp),
@@ -35,7 +35,7 @@ class SetThreadLocal : public ThreadLocalTesterBase {
   }
   ~SetThreadLocal() override {}
 
-  void set_value(ThreadLocalTesterBase* val) { val_ = val; }
+  void set_value(char* val) { val_ = val; }
 
   void Run() override {
     DCHECK(!done_->IsSignaled());
@@ -44,7 +44,7 @@ class SetThreadLocal : public ThreadLocalTesterBase {
   }
 
  private:
-  ThreadLocalTesterBase* val_;
+  char* val_;
 };
 
 class GetThreadLocal : public ThreadLocalTesterBase {
@@ -55,7 +55,7 @@ class GetThreadLocal : public ThreadLocalTesterBase {
   }
   ~GetThreadLocal() override {}
 
-  void set_ptr(ThreadLocalTesterBase** ptr) { ptr_ = ptr; }
+  void set_ptr(char** ptr) { ptr_ = ptr; }
 
   void Run() override {
     DCHECK(!done_->IsSignaled());
@@ -64,7 +64,7 @@ class GetThreadLocal : public ThreadLocalTesterBase {
   }
 
  private:
-  ThreadLocalTesterBase** ptr_;
+  char** ptr_;
 };
 
 }  // namespace
@@ -77,12 +77,11 @@ TEST(ThreadLocalTest, Pointer) {
   tp1.Start();
   tp2.Start();
 
-  base::ThreadLocalPointer<ThreadLocalTesterBase> tlp;
+  base::ThreadLocalPointer<char> tlp;
 
-  static ThreadLocalTesterBase* const kBogusPointer =
-      reinterpret_cast<ThreadLocalTesterBase*>(0x1234);
+  static char* const kBogusPointer = reinterpret_cast<char*>(0x1234);
 
-  ThreadLocalTesterBase* tls_val;
+  char* tls_val;
   base::WaitableEvent done(true, false);
 
   GetThreadLocal getter(&tlp, &done);
@@ -93,13 +92,13 @@ TEST(ThreadLocalTest, Pointer) {
   done.Reset();
   tp1.AddWork(&getter);
   done.Wait();
-  EXPECT_EQ(static_cast<ThreadLocalTesterBase*>(NULL), tls_val);
+  EXPECT_EQ(static_cast<char*>(NULL), tls_val);
 
   tls_val = kBogusPointer;
   done.Reset();
   tp2.AddWork(&getter);
   done.Wait();
-  EXPECT_EQ(static_cast<ThreadLocalTesterBase*>(NULL), tls_val);
+  EXPECT_EQ(static_cast<char*>(NULL), tls_val);
 
 
   SetThreadLocal setter(&tlp, &done);
@@ -121,7 +120,7 @@ TEST(ThreadLocalTest, Pointer) {
   done.Reset();
   tp2.AddWork(&getter);
   done.Wait();
-  EXPECT_EQ(static_cast<ThreadLocalTesterBase*>(NULL), tls_val);
+  EXPECT_EQ(static_cast<char*>(NULL), tls_val);
 
   // Set thread 2 to kBogusPointer + 1.
   setter.set_value(kBogusPointer + 1);
