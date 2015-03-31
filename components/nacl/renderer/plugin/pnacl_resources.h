@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_RESOURCES_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_RESOURCES_H_
 
-#include <map>
-#include <vector>
-
-#include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -18,12 +14,23 @@ namespace plugin {
 
 class Plugin;
 
+// PNaCl tool files / resources, which are opened by the browser.
+struct PnaclResourceEntry {
+  // The name of the tool that corresponds to the opened file.
+  std::string tool_name;
+
+  // File info for the executables, after they've been opened.
+  // Only valid after StartLoad() has been called, and until
+  // TakeFileInfo(ResourceType) is called.
+  PP_NaClFileInfo file_info;
+};
+
 // Loads a list of resources, providing a way to get file descriptors for
 // these resources.  URLs for resources are resolved by the manifest
-// and point to pnacl component filesystem resources.
+// and point to PNaCl component filesystem resources.
 class PnaclResources {
  public:
-  explicit PnaclResources(Plugin* plugin);
+  PnaclResources(Plugin* plugin, bool use_subzero);
   virtual ~PnaclResources();
 
   // Read the resource info JSON file.  This is the first step after
@@ -33,27 +40,20 @@ class PnaclResources {
   // Start loading the resources.
   bool StartLoad();
 
-  const std::string& GetLlcUrl() { return llc_tool_name_; }
-  const std::string& GetLdUrl() { return ld_tool_name_; }
+  enum ResourceType { LLC, LD, SUBZERO, NUM_TYPES };
 
-  PP_NaClFileInfo TakeLlcFileInfo();
-  PP_NaClFileInfo TakeLdFileInfo();
+  const std::string& GetUrl(ResourceType type) const;
+
+  PP_NaClFileInfo TakeFileInfo(ResourceType type);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclResources);
 
   // The plugin requesting the resource loading.
   Plugin* plugin_;
+  bool use_subzero_;
 
-  // Tool names for llc and ld; read from the resource info file.
-  std::string llc_tool_name_;
-  std::string ld_tool_name_;
-
-  // File info for llc and ld executables, after they've been opened.
-  // Only valid after the callback for StartLoad() has been called, and until
-  // TakeLlcFileInfo()/TakeLdFileInfo() is called.
-  PP_NaClFileInfo llc_file_info_;
-  PP_NaClFileInfo ld_file_info_;
+  PnaclResourceEntry resources_[NUM_TYPES + 1];
 };
 
 }  // namespace plugin

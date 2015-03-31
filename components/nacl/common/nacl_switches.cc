@@ -19,6 +19,9 @@ const char kEnableNaClMojo[]                = "enable-nacl-mojo";
 // sandbox.
 const char kEnableNaClNonSfiMode[]          = "enable-nacl-nonsfi-mode";
 
+// Enable use of the Subzero as the PNaCl translator instead of LLC.
+const char kEnablePNaClSubzero[] = "enable-pnacl-subzero";
+
 // Value for --type that causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";

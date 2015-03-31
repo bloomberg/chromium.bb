@@ -1345,6 +1345,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if !defined(DISABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
+      switches::kEnablePNaClSubzero,
 #endif
       switches::kEnableNetBenchmarking,
       switches::kEnableNewBookmarkApps,
@@ -1391,6 +1392,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if !defined(DISABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
+      switches::kEnablePNaClSubzero,
       switches::kNaClDangerousNoSandboxNonSfi,
       switches::kUseNaClHelperNonSfi,
 #endif

@@ -283,6 +283,12 @@ bool NaClBrowserTestPnacl::IsAPnaclTest() {
   return true;
 }
 
+void NaClBrowserTestPnaclSubzero::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  NaClBrowserTestPnacl::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(switches::kEnablePNaClSubzero);
+}
+
 base::FilePath::StringType NaClBrowserTestNonSfiMode::Variant() {
   return FILE_PATH_LITERAL("libc-free");
 }

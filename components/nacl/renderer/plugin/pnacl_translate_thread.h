@@ -40,12 +40,13 @@ class PnaclTranslateThread {
   // as it is passed in with PutBytes.
   void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const std::vector<TempFile*>* obj_files,
+                    int num_threads,
                     TempFile* nexe_file,
                     nacl::DescWrapper* invalid_desc_wrapper,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
                     PP_PNaClOptions* pnacl_options,
-                    const std::string &architecture_attributes,
+                    const std::string& architecture_attributes,
                     PnaclCoordinator* coordinator,
                     Plugin* plugin);
 
@@ -88,12 +89,12 @@ class PnaclTranslateThread {
 
   nacl::scoped_ptr<NaClThread> translate_thread_;
 
-  // Used to guard llc_subprocess and ld_subprocess
+  // Used to guard compiler_subprocess and ld_subprocess
   struct NaClMutex subprocess_mu_;
-  nacl::scoped_ptr<NaClSubprocess> llc_subprocess_;
+  nacl::scoped_ptr<NaClSubprocess> compiler_subprocess_;
   nacl::scoped_ptr<NaClSubprocess> ld_subprocess_;
   // Used to ensure the subprocesses don't get shutdown more than once.
-  bool llc_subprocess_active_;
+  bool compiler_subprocess_active_;
   bool ld_subprocess_active_;
 
   bool subprocesses_aborted_;
@@ -116,6 +117,7 @@ class PnaclTranslateThread {
 
   // Data about the translation files, owned by the coordinator
   const std::vector<TempFile*>* obj_files_;
+  int num_threads_;
   TempFile* nexe_file_;
   nacl::DescWrapper* invalid_desc_wrapper_;
   ErrorInfo* coordinator_error_info_;

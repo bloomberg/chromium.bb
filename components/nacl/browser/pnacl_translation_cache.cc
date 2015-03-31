@@ -414,7 +414,8 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
     return std::string();
   std::string retval("ABI:");
   retval += IntToString(info.abi_version) + ";" + "opt:" +
-            IntToString(info.opt_level) + ";" + "URL:";
+            IntToString(info.opt_level) +
+            (info.use_subzero ? "subzero;" : ";") + "URL:";
   // Filter the username, password, and ref components from the URL
   GURL::Replacements replacements;
   replacements.ClearUsername();

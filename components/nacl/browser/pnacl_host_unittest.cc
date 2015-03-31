@@ -115,6 +115,7 @@ static nacl::PnaclCacheInfo GetTestCacheInfo() {
   info.abi_version = 0;
   info.opt_level = 0;
   info.has_no_store_header = false;
+  info.use_subzero = false;
   return info;
 }
 

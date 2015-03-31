@@ -142,11 +142,11 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashViaCheckFailure, {
 })
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashViaExitCall, {
-  RunNaClIntegrationTest( FILE_PATH_LITERAL("ppapi_crash_via_exit_call.html"));
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash_via_exit_call.html"));
 })
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashInCallback, {
-  RunNaClIntegrationTest( FILE_PATH_LITERAL("ppapi_crash_in_callback.html"));
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash_in_callback.html"));
 })
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashOffMainThread, {
@@ -382,6 +382,13 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclNMFOptionsO0)) {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
+}
+
+// Test Subzero. Subzero is triggered by the O0 option so reuse that test
+// pexe and test harness.
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero,
                        MAYBE_PNACL(PnaclNMFOptionsO0)) {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 }

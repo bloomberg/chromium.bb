@@ -335,7 +335,7 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
     return;
 
   PP_Var pp_program_url;
-  PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
+  PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, PP_FALSE, 2};
   PP_Bool uses_nonsfi_mode;
   if (nacl_interface_->GetManifestProgramURL(
           pp_instance(), &pp_program_url, &pnacl_options, &uses_nonsfi_mode)) {

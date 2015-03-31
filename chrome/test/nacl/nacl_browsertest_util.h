@@ -123,6 +123,14 @@ class NaClBrowserTestPnacl : public NaClBrowserTestBase {
   bool IsAPnaclTest() override;
 };
 
+// TODO(jvoung): We can remove this and test the Subzero translator
+// with NaClBrowserTestPnacl once Subzero is automatically chosen
+// (not behind a flag).
+class NaClBrowserTestPnaclSubzero : public NaClBrowserTestPnacl {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+};
+
 class NaClBrowserTestPnaclNonSfi : public NaClBrowserTestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override;

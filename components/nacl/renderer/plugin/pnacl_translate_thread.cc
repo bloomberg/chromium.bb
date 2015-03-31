@@ -27,12 +27,11 @@ std::string MakeCommandLineArg(const char* key, const Val val) {
   return ss.str();
 }
 
-void GetLlcCommandLine(Plugin* plugin,
-                       std::vector<char>* split_args,
+void GetLlcCommandLine(std::vector<char>* split_args,
                        size_t obj_files_size,
                        int32_t opt_level,
                        bool is_debug,
-                       const std::string &architecture_attributes) {
+                       const std::string& architecture_attributes) {
   typedef std::vector<std::string> Args;
   Args args;
 
@@ -40,31 +39,53 @@ void GetLlcCommandLine(Plugin* plugin,
   // using the number of modules specified in the first param, and
   // ignore multiple uses of -split-module
   args.push_back(MakeCommandLineArg("-split-module=", obj_files_size));
-  args.push_back(MakeCommandLineArg("-O=", opt_level));
+  args.push_back(MakeCommandLineArg("-O", opt_level));
   if (is_debug)
     args.push_back("-bitcode-format=llvm");
   if (!architecture_attributes.empty())
     args.push_back("-mattr=" + architecture_attributes);
 
-  for (Args::const_iterator arg(args.begin()); arg != args.end(); ++arg) {
-    std::copy(arg->begin(), arg->end(), std::back_inserter(*split_args));
+  for (const std::string& arg : args) {
+    std::copy(arg.begin(), arg.end(), std::back_inserter(*split_args));
+    split_args->push_back('\x00');
+  }
+}
+
+void GetSubzeroCommandLine(std::vector<char>* split_args,
+                           int32_t opt_level,
+                           bool is_debug,
+                           const std::string& architecture_attributes) {
+  typedef std::vector<std::string> Args;
+  Args args;
+
+  args.push_back(MakeCommandLineArg("-O", opt_level));
+  DCHECK(!is_debug);
+  // TODO(stichnot): enable this once the mattr flag formatting is
+  // compatible: https://code.google.com/p/nativeclient/issues/detail?id=4132
+  // if (!architecture_attributes.empty())
+  //   args.push_back("-mattr=" + architecture_attributes);
+
+  for (const std::string& arg : args) {
+    std::copy(arg.begin(), arg.end(), std::back_inserter(*split_args));
     split_args->push_back('\x00');
   }
 }
 
 }  // namespace
 
-PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
-                                               ld_subprocess_active_(false),
-                                               subprocesses_aborted_(false),
-                                               done_(false),
-                                               compile_time_(0),
-                                               obj_files_(NULL),
-                                               nexe_file_(NULL),
-                                               coordinator_error_info_(NULL),
-                                               resources_(NULL),
-                                               coordinator_(NULL),
-                                               plugin_(NULL) {
+PnaclTranslateThread::PnaclTranslateThread()
+    : compiler_subprocess_active_(false),
+      ld_subprocess_active_(false),
+      subprocesses_aborted_(false),
+      done_(false),
+      compile_time_(0),
+      obj_files_(NULL),
+      num_threads_(0),
+      nexe_file_(NULL),
+      coordinator_error_info_(NULL),
+      resources_(NULL),
+      coordinator_(NULL),
+      plugin_(NULL) {
   NaClXMutexCtor(&subprocess_mu_);
   NaClXMutexCtor(&cond_mu_);
   NaClXCondVarCtor(&buffer_cond_);
@@ -73,16 +94,18 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
 void PnaclTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
     const std::vector<TempFile*>* obj_files,
+    int num_threads,
     TempFile* nexe_file,
     nacl::DescWrapper* invalid_desc_wrapper,
     ErrorInfo* error_info,
     PnaclResources* resources,
     PP_PNaClOptions* pnacl_options,
-    const std::string &architecture_attributes,
+    const std::string& architecture_attributes,
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
   obj_files_ = obj_files;
+  num_threads_ = num_threads;
   nexe_file_ = nexe_file;
   invalid_desc_wrapper_ = invalid_desc_wrapper;
   coordinator_error_info_ = error_info;
@@ -140,22 +163,29 @@ void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
 void PnaclTranslateThread::DoTranslate() {
   ErrorInfo error_info;
   SrpcParams params;
-  std::vector<nacl::DescWrapper*> llc_out_files;
+  std::vector<nacl::DescWrapper*> compile_out_files;
   size_t i;
   for (i = 0; i < obj_files_->size(); i++)
-    llc_out_files.push_back((*obj_files_)[i]->write_wrapper());
+    compile_out_files.push_back((*obj_files_)[i]->write_wrapper());
   for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++)
-    llc_out_files.push_back(invalid_desc_wrapper_);
+    compile_out_files.push_back(invalid_desc_wrapper_);
+
+  PLUGIN_PRINTF(
+      ("DoTranslate using subzero: %d\n", pnacl_options_->use_subzero));
 
   pp::Core* core = pp::Module::Get()->core();
-  int64_t llc_start_time = NaClGetTimeOfDayMicroseconds();
-  PP_NaClFileInfo llc_file_info = resources_->TakeLlcFileInfo();
-  // On success, ownership of llc_file_info is transferred.
-  NaClSubprocess* llc_subprocess = plugin_->LoadHelperNaClModule(
-      resources_->GetLlcUrl(), llc_file_info, &error_info);
-  if (llc_subprocess == NULL) {
-    if (llc_file_info.handle != PP_kInvalidFileHandle)
-      CloseFileHandle(llc_file_info.handle);
+  int64_t compiler_load_start_time = NaClGetTimeOfDayMicroseconds();
+  PnaclResources::ResourceType compiler_type = pnacl_options_->use_subzero
+                                                   ? PnaclResources::SUBZERO
+                                                   : PnaclResources::LLC;
+  // On success, ownership of file_info is transferred.
+  PP_NaClFileInfo file_info = resources_->TakeFileInfo(compiler_type);
+  const std::string& url = resources_->GetUrl(compiler_type);
+  NaClSubprocess* compiler_subprocess =
+      plugin_->LoadHelperNaClModule(url, file_info, &error_info);
+  if (compiler_subprocess == NULL) {
+    if (file_info.handle != PP_kInvalidFileHandle)
+      CloseFileHandle(file_info.handle);
     TranslateFailed(PP_NACL_ERROR_PNACL_LLC_SETUP,
                     "Compile process could not be created: " +
                     error_info.message());
@@ -163,57 +193,48 @@ void PnaclTranslateThread::DoTranslate() {
   }
   GetNaClInterface()->LogTranslateTime(
       "NaCl.Perf.PNaClLoadTime.LoadCompiler",
-      NaClGetTimeOfDayMicroseconds() - llc_start_time);
+      NaClGetTimeOfDayMicroseconds() - compiler_load_start_time);
 
   {
     nacl::MutexLocker ml(&subprocess_mu_);
     // If we received a call to AbortSubprocesses() before we had a chance to
-    // set llc_subprocess_, shut down and clean up the subprocess started here.
+    // set compiler_subprocess_, shut down and clean up the subprocess started
+    // here.
     if (subprocesses_aborted_) {
-      llc_subprocess->service_runtime()->Shutdown();
-      delete llc_subprocess;
+      compiler_subprocess->service_runtime()->Shutdown();
+      delete compiler_subprocess;
       return;
     }
-    llc_subprocess_.reset(llc_subprocess);
-    llc_subprocess = NULL;
-    llc_subprocess_active_ = true;
+    compiler_subprocess_.reset(compiler_subprocess);
+    compiler_subprocess = NULL;
+    compiler_subprocess_active_ = true;
   }
 
-  int64_t compile_start_time = NaClGetTimeOfDayMicroseconds();
+  int64_t do_compile_start_time = NaClGetTimeOfDayMicroseconds();
   bool init_success;
 
   std::vector<char> split_args;
-  GetLlcCommandLine(plugin_,
-                    &split_args,
-                    obj_files_->size(),
-                    pnacl_options_->opt_level,
-                    pnacl_options_->is_debug,
-                    architecture_attributes_);
-  init_success = llc_subprocess_->InvokeSrpcMethod(
-      "StreamInitWithSplit",
-      "ihhhhhhhhhhhhhhhhC",
-      &params,
-      static_cast<int>(obj_files_->size()),
-      llc_out_files[0]->desc(),
-      llc_out_files[1]->desc(),
-      llc_out_files[2]->desc(),
-      llc_out_files[3]->desc(),
-      llc_out_files[4]->desc(),
-      llc_out_files[5]->desc(),
-      llc_out_files[6]->desc(),
-      llc_out_files[7]->desc(),
-      llc_out_files[8]->desc(),
-      llc_out_files[9]->desc(),
-      llc_out_files[10]->desc(),
-      llc_out_files[11]->desc(),
-      llc_out_files[12]->desc(),
-      llc_out_files[13]->desc(),
-      llc_out_files[14]->desc(),
-      llc_out_files[15]->desc(),
-      &split_args[0],
-      split_args.size());
+  if (pnacl_options_->use_subzero) {
+    GetSubzeroCommandLine(&split_args, pnacl_options_->opt_level,
+                          pnacl_options_->is_debug, architecture_attributes_);
+  } else {
+    GetLlcCommandLine(&split_args, obj_files_->size(),
+                      pnacl_options_->opt_level, pnacl_options_->is_debug,
+                      architecture_attributes_);
+  }
+  init_success = compiler_subprocess_->InvokeSrpcMethod(
+      "StreamInitWithSplit", "ihhhhhhhhhhhhhhhhC", &params, num_threads_,
+      compile_out_files[0]->desc(), compile_out_files[1]->desc(),
+      compile_out_files[2]->desc(), compile_out_files[3]->desc(),
+      compile_out_files[4]->desc(), compile_out_files[5]->desc(),
+      compile_out_files[6]->desc(), compile_out_files[7]->desc(),
+      compile_out_files[8]->desc(), compile_out_files[9]->desc(),
+      compile_out_files[10]->desc(), compile_out_files[11]->desc(),
+      compile_out_files[12]->desc(), compile_out_files[13]->desc(),
+      compile_out_files[14]->desc(), compile_out_files[15]->desc(),
+      &split_args[0], split_args.size());
   if (!init_success) {
-    if (llc_subprocess_->srpc_client()->GetLastError() ==
+    if (compiler_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {
       // The error message is only present if the error was returned from llc
       TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
@@ -242,12 +263,9 @@ void PnaclTranslateThread::DoTranslate() {
       data_buffers_.pop_front();
       NaClXMutexUnlock(&cond_mu_);
       PLUGIN_PRINTF(("StreamChunk\n"));
-      if (!llc_subprocess_->InvokeSrpcMethod("StreamChunk",
-                                             "C",
-                                             &params,
-                                             &data[0],
-                                             data.size())) {
-        if (llc_subprocess_->srpc_client()->GetLastError() !=
+      if (!compiler_subprocess_->InvokeSrpcMethod("StreamChunk", "C", &params,
+                                                  &data[0], data.size())) {
+        if (compiler_subprocess_->srpc_client()->GetLastError() !=
             NACL_SRPC_RESULT_APP_ERROR) {
           // If the error was reported by the translator, then we fall through
           // and call StreamEnd, which returns a string describing the error,
@@ -272,9 +290,10 @@ void PnaclTranslateThread::DoTranslate() {
   }
   PLUGIN_PRINTF(("PnaclTranslateThread done with chunks\n"));
   // Finish llc.
-  if (!llc_subprocess_->InvokeSrpcMethod("StreamEnd", std::string(), &params)) {
+  if (!compiler_subprocess_->InvokeSrpcMethod("StreamEnd", std::string(),
+                                              &params)) {
     PLUGIN_PRINTF(("PnaclTranslateThread StreamEnd failed\n"));
-    if (llc_subprocess_->srpc_client()->GetLastError() ==
+    if (compiler_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {
       // The error string is only present if the error was sent back from llc.
       TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
@@ -285,14 +304,14 @@ void PnaclTranslateThread::DoTranslate() {
     }
     return;
   }
-  compile_time_ = NaClGetTimeOfDayMicroseconds() - compile_start_time;
+  compile_time_ = NaClGetTimeOfDayMicroseconds() - do_compile_start_time;
   GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.CompileTime",
                                        compile_time_);
 
   // Shut down the llc subprocess.
   NaClXMutexLock(&subprocess_mu_);
-  llc_subprocess_active_ = false;
-  llc_subprocess_.reset(NULL);
+  compiler_subprocess_active_ = false;
+  compiler_subprocess_.reset(NULL);
   NaClXMutexUnlock(&subprocess_mu_);
 
   if(!RunLdSubprocess()) {
@@ -321,12 +340,10 @@ bool PnaclTranslateThread::RunLdSubprocess() {
 
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
-  PP_NaClFileInfo ld_file_info = resources_->TakeLdFileInfo();
+  PP_NaClFileInfo ld_file_info = resources_->TakeFileInfo(PnaclResources::LD);
   // On success, ownership of ld_file_info is transferred.
-  nacl::scoped_ptr<NaClSubprocess> ld_subprocess(
-      plugin_->LoadHelperNaClModule(resources_->GetLdUrl(),
-                                    ld_file_info,
-                                    &error_info));
+  nacl::scoped_ptr<NaClSubprocess> ld_subprocess(plugin_->LoadHelperNaClModule(
+      resources_->GetUrl(PnaclResources::LD), ld_file_info, &error_info));
   if (ld_subprocess.get() == NULL) {
     if (ld_file_info.handle != PP_kInvalidFileHandle)
       CloseFileHandle(ld_file_info.handle);
@@ -341,7 +358,7 @@ bool PnaclTranslateThread::RunLdSubprocess() {
   {
     nacl::MutexLocker ml(&subprocess_mu_);
     // If we received a call to AbortSubprocesses() before we had a chance to
-    // set llc_subprocess_, shut down and clean up the subprocess started here.
+    // set ld_subprocess_, shut down and clean up the subprocess started here.
     if (subprocesses_aborted_) {
       ld_subprocess->service_runtime()->Shutdown();
       return false;
@@ -412,9 +429,9 @@ void PnaclTranslateThread::TranslateFailed(
 void PnaclTranslateThread::AbortSubprocesses() {
   PLUGIN_PRINTF(("PnaclTranslateThread::AbortSubprocesses\n"));
   NaClXMutexLock(&subprocess_mu_);
-  if (llc_subprocess_ != NULL && llc_subprocess_active_) {
-    llc_subprocess_->service_runtime()->Shutdown();
-    llc_subprocess_active_ = false;
+  if (compiler_subprocess_ != NULL && compiler_subprocess_active_) {
+    compiler_subprocess_->service_runtime()->Shutdown();
+    compiler_subprocess_active_ = false;
   }
   if (ld_subprocess_ != NULL && ld_subprocess_active_) {
     ld_subprocess_->service_runtime()->Shutdown();

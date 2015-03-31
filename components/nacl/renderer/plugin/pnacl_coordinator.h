@@ -161,8 +161,10 @@ class PnaclCoordinator {
   // Object file, produced by the translator and consumed by the linker.
   std::vector<TempFile*> obj_files_;
   nacl::scoped_ptr<nacl::DescWrapper> invalid_desc_wrapper_;
-  // Number of split modules (threads) for llc
+  // Number of split modules for llc.
   int split_module_count_;
+  // Number of threads for llc / subzero.
+  int num_threads_;
 
   // Translated nexe file, produced by the linker.
   nacl::scoped_ptr<TempFile> temp_nexe_file_;

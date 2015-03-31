@@ -27,6 +27,7 @@ struct PnaclCacheInfo {
   base::Time last_modified;
   std::string etag;
   bool has_no_store_header;
+  bool use_subzero;
   std::string sandbox_isa;
   std::string extra_flags;
 };

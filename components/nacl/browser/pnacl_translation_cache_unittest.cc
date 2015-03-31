@@ -177,6 +177,13 @@ TEST(PnaclTranslationCacheKeyTest, CacheKeyTest) {
             "modified:1995:11:15:6:25:24:0:UTC;etag:;"
             "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
+  // Check that Subzero gets a different cache key.
+  info.use_subzero = true;
+  EXPECT_EQ("ABI:2;opt:2subzero;URL:http://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
+            PnaclTranslationCache::GetKey(info));
+  info.use_subzero = false;
   info.etag = std::string("etag");
   EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
             "modified:1995:11:15:6:25:24:0:UTC;etag:etag;"

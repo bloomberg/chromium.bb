@@ -101,8 +101,12 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
 
   GetNaClInterface()->SetPNaClStartTime(plugin->pp_instance());
   int cpus = plugin->nacl_interface()->GetNumberOfProcessors();
-  coordinator->split_module_count_ = std::min(4, std::max(1, cpus));
-
+  coordinator->num_threads_ = std::min(4, std::max(1, cpus));
+  if (pnacl_options.use_subzero) {
+    coordinator->split_module_count_ = 1;
+  } else {
+    coordinator->split_module_count_ = coordinator->num_threads_;
+  }
   // First start a network request for the pexe, to tickle the component
   // updater's On-Demand resource throttler, and to get Last-Modified/ETag
   // cache information. We can cancel the request later if there's
@@ -116,18 +120,19 @@ PnaclCoordinator::PnaclCoordinator(
     const std::string& pexe_url,
     const PP_PNaClOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback)
-  : translate_finish_error_(PP_OK),
-    plugin_(plugin),
-    translate_notify_callback_(translate_notify_callback),
-    translation_finished_reported_(false),
-    pexe_url_(pexe_url),
-    pnacl_options_(pnacl_options),
-    architecture_attributes_(GetArchitectureAttributes(plugin)),
-    split_module_count_(1),
-    error_already_reported_(false),
-    pexe_size_(0),
-    pexe_bytes_compiled_(0),
-    expected_pexe_size_(-1) {
+    : translate_finish_error_(PP_OK),
+      plugin_(plugin),
+      translate_notify_callback_(translate_notify_callback),
+      translation_finished_reported_(false),
+      pexe_url_(pexe_url),
+      pnacl_options_(pnacl_options),
+      architecture_attributes_(GetArchitectureAttributes(plugin)),
+      split_module_count_(0),
+      num_threads_(0),
+      error_already_reported_(false),
+      pexe_size_(0),
+      pexe_bytes_compiled_(0),
+      expected_pexe_size_(-1) {
   callback_factory_.Initialize(this);
 }
 
@@ -144,8 +149,8 @@ PnaclCoordinator::~PnaclCoordinator() {
     translate_thread_->AbortSubprocesses();
   if (!translation_finished_reported_) {
     plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance(),
-        PP_FALSE, 0, 0, 0);
+        plugin_->pp_instance(), PP_FALSE, pnacl_options_.opt_level,
+        pnacl_options_.use_subzero, 0, 0);
   }
   // Force deleting the translate_thread now. It must be deleted
   // before any scoped_* fields hanging off of PnaclCoordinator
@@ -193,8 +198,8 @@ void PnaclCoordinator::ExitWithError() {
     error_already_reported_ = true;
     translation_finished_reported_ = true;
     plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance(),
-        PP_FALSE, 0, 0, 0);
+        plugin_->pp_instance(), PP_FALSE, pnacl_options_.opt_level,
+        pnacl_options_.use_subzero, 0, 0);
     translate_notify_callback_.Run(PP_ERROR_FAILED);
   }
 }
@@ -242,7 +247,8 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   translation_finished_reported_ = true;
   plugin_->nacl_interface()->ReportTranslationFinished(
       plugin_->pp_instance(), PP_TRUE, pnacl_options_.opt_level,
-      pexe_size_, translate_thread_->GetCompileTime());
+      pnacl_options_.use_subzero, pexe_size_,
+      translate_thread_->GetCompileTime());
 
   NexeReadDidOpen(PP_OK);
 }
@@ -285,11 +291,9 @@ void PnaclCoordinator::OpenBitcodeStream() {
     return;
   }
 
-  GetNaClInterface()->StreamPexe(plugin_->pp_instance(),
-                                 pexe_url_.c_str(),
-                                 pnacl_options_.opt_level,
-                                 &kPexeStreamHandler,
-                                 this);
+  GetNaClInterface()->StreamPexe(
+      plugin_->pp_instance(), pexe_url_.c_str(), pnacl_options_.opt_level,
+      pnacl_options_.use_subzero, &kPexeStreamHandler, this);
 }
 
 void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
@@ -314,7 +318,7 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   // The component updater's resource throttles + OnDemand update/install
   // should block the URL request until the compiler is present. Now we
   // can load the resources (e.g. llc and ld nexes).
-  resources_.reset(new PnaclResources(plugin_));
+  resources_.reset(new PnaclResources(plugin_, pnacl_options_.use_subzero));
   CHECK(resources_ != NULL);
 
   // The first step of loading resources: read the resource info file.
@@ -441,16 +445,11 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
       callback_factory_.NewCallback(&PnaclCoordinator::TranslateFinished);
 
   CHECK(translate_thread_ != NULL);
-  translate_thread_->RunTranslate(report_translate_finished,
-                                  &obj_files_,
-                                  temp_nexe_file_.get(),
-                                  invalid_desc_wrapper_.get(),
-                                  &error_info_,
-                                  resources_.get(),
-                                  &pnacl_options_,
-                                  architecture_attributes_,
-                                  this,
-                                  plugin_);
+  translate_thread_->RunTranslate(report_translate_finished, &obj_files_,
+                                  num_threads_, temp_nexe_file_.get(),
+                                  invalid_desc_wrapper_.get(), &error_info_,
+                                  resources_.get(), &pnacl_options_,
+                                  architecture_attributes_, this, plugin_);
 }
 
 }  // namespace plugin

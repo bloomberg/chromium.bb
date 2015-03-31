@@ -169,6 +169,7 @@ typedef enum {
 struct PP_PNaClOptions {
   PP_Bool translate;
   PP_Bool is_debug;
+  PP_Bool use_subzero;
   int32_t opt_level;
 };
 /**
@@ -261,6 +262,7 @@ struct PPB_NaCl_Private {
   void (*ReportTranslationFinished)(PP_Instance instance,
                                     PP_Bool success,
                                     int32_t opt_level,
+                                    PP_Bool use_subzero,
                                     int64_t pexe_size,
                                     int64_t compile_time_us);
   /* Dispatch a progress event on the DOM element where the given instance is
@@ -307,7 +309,8 @@ struct PPB_NaCl_Private {
   /* Returns the filenames for the llc and ld tools. */
   PP_Bool (*GetPnaclResourceInfo)(PP_Instance instance,
                                   struct PP_Var* llc_tool_name,
-                                  struct PP_Var* ld_tool_name);
+                                  struct PP_Var* ld_tool_name,
+                                  struct PP_Var* subzero_tool_name);
   /* PP_Var string of attributes describing the CPU features supported
    * by the current architecture. The string is a comma-delimited list
    * of attributes supported by LLVM in its -mattr= option:
@@ -348,6 +351,7 @@ struct PPB_NaCl_Private {
   void (*StreamPexe)(PP_Instance instance,
                      const char* pexe_url,
                      int32_t opt_level,
+                     PP_Bool use_subzero,
                      const struct PPP_PexeStreamHandler_1_0* stream_handler,
                      void* stream_handler_user_data);
 };
