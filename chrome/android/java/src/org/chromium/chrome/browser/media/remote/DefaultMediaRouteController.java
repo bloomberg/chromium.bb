@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
-import org.apache.http.Header;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
@@ -93,7 +92,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private static final String ACTION_RECEIVE_MEDIA_STATUS_UPDATE =
             "com.google.android.apps.chrome.videofling.RECEIVE_MEDIA_STATUS_UPDATE";
     private static final String MIME_TYPE = "video/mp4";
-
     private boolean mDebug;
     private String mCurrentSessionId;
     private String mCurrentItemId;
@@ -119,14 +117,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private MediaUrlResolver mMediaUrlResolver;
 
     private int mSessionState = MediaSessionStatus.SESSION_STATE_INVALIDATED;
-
-    // Media types supported for cast, see
-    // media/base/container_names.h for the actual enum where these are defined
-    private static final int UNKNOWN_MEDIA = 0;
-    private static final int SMOOTHSTREAM_MEDIA = 39;
-    private static final int DASH_MEDIA = 38;
-    private static final int HLS_MEDIA = 22;
-    private static final int MPEG4_MEDIA = 29;
 
     private final ApplicationStatus.ApplicationStateListener
             mApplicationStateListener = new ApplicationStatus.ApplicationStateListener() {
@@ -156,8 +146,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                 }
 
                 @Override
-                public void setUri(Uri uri, Header[] headers) {
-                    if (canPlayMedia(uri, headers)) {
+                public void setUri(Uri uri, boolean playable) {
+                    if (playable) {
                         mLocalVideoUri = uri;
                         playMedia();
                         return;
@@ -376,7 +366,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private void playUri(final Uri videoUri,
             @Nullable final String preferredTitle, final long startPositionMillis) {
 
-        RecordCastAction.castMediaType(getMediaType(videoUri));
+        RecordCastAction.castMediaType(MediaUrlResolver.getMediaType(videoUri.toString()));
         installBroadcastReceivers();
 
         // Check if we are reconnecting or have reconnected and are playing the same video
@@ -1047,19 +1037,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         mMediaUrlResolver.execute();
     }
 
-    private boolean canPlayMedia(Uri uri, Header[] headers) {
-        if (uri == Uri.EMPTY) return false;
-
-        // HLS media requires Cors headers. Since these are the only ones
-        // sent now we can just check that headers is not empty but
-        // if more headers are added we should be more strict in the check.
-        if ((headers == null || headers.length == 0) && isEnhancedMedia(uri)) {
-            if (mDebug) Log.d(TAG, "HLS stream without CORs header: " + uri);
-            return false;
-        }
-        return true;
-    }
-
     private void playMedia() {
         String title = null;
         if (getMediaStateListener() != null) title = getMediaStateListener().getTitle();
@@ -1076,27 +1053,5 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         mSessionState = MediaSessionStatus.SESSION_STATE_INVALIDATED;
         RemotePlaybackSettings.setSessionId(getContext(), mCurrentSessionId);
         if (mDebug) Log.d(TAG, "Got a session id: " + mCurrentSessionId);
-    }
-
-    private int getMediaType(Uri videoUri) {
-        String uriString = videoUri.toString();
-        if (uriString.contains(".m3u8")) {
-            return HLS_MEDIA;
-        }
-        if (uriString.contains(".mp4")) {
-            return MPEG4_MEDIA;
-        }
-        if (uriString.contains(".mpd")) {
-            return DASH_MEDIA;
-        }
-        if (uriString.contains(".ism")) {
-            return SMOOTHSTREAM_MEDIA;
-        }
-        return UNKNOWN_MEDIA;
-    }
-
-    private boolean isEnhancedMedia(Uri videoUri) {
-        int mediaType = getMediaType(videoUri);
-        return mediaType == HLS_MEDIA || mediaType == DASH_MEDIA || mediaType == SMOOTHSTREAM_MEDIA;
     }
 }

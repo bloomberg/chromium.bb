@@ -10,8 +10,8 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+import org.chromium.base.CommandLine;
+import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.browser.ChromiumApplication;
 
 import java.io.IOException;
@@ -20,7 +20,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Resolves the final URL if it's a redirect. Works asynchronously, uses HTTP
@@ -48,46 +49,49 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
          *
          * @param uri the resolved URL.
          */
-        void setUri(Uri uri, Header[] headers);
+        void setUri(Uri uri, boolean palyable);
     }
 
 
     protected static final class Result {
         private final String mUri;
-        private final Header[] mRelevantHeaders;
+        private final boolean mPlayable;
 
-        public Result(String uri, Header[] relevantHeaders) {
+        public Result(String uri, boolean playable) {
             mUri = uri;
-            mRelevantHeaders =
-                    relevantHeaders != null
-                    ? Arrays.copyOf(relevantHeaders, relevantHeaders.length)
-                    : null;
+            mPlayable = playable;
         }
 
         public String getUri() {
             return mUri;
         }
 
-        public Header[] getRelevantHeaders() {
-            return mRelevantHeaders != null
-                    ? Arrays.copyOf(mRelevantHeaders, mRelevantHeaders.length)
-                    : null;
+        public  boolean isPlayable() {
+            return mPlayable;
         }
     }
 
     private static final String TAG = "MediaUrlResolver";
 
-    private static final String CORS_HEADER_NAME = "Access-Control-Allow-Origin";
     private static final String COOKIES_HEADER_NAME = "Cookies";
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
     private static final String RANGE_HEADER_NAME = "Range";
+    private static final String CORS_HEADER_NAME = "Access-Control-Allow-Origin";
+
+    // Media types supported for cast, see
+    // media/base/container_names.h for the actual enum where these are defined
+    private static final int UNKNOWN_MEDIA = 0;
+    private static final int SMOOTHSTREAM_MEDIA = 39;
+    private static final int DASH_MEDIA = 38;
+    private static final int HLS_MEDIA = 22;
+    private static final int MPEG4_MEDIA = 29;
 
     // We don't want to necessarily fetch the whole video but we don't want to miss the CORS header.
     // Assume that 64k should be more than enough to keep all the headers.
     private static final String RANGE_HEADER_VALUE = "bytes: 0-65536";
 
-    private final Context mContext;
     private final Delegate mDelegate;
+    private boolean mDebug;
 
     /**
      * The constructor
@@ -95,7 +99,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
      * @param delegate The customer for this URL resolver.
      */
     public MediaUrlResolver(Context context, Delegate delegate) {
-        mContext = context;
+        mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
         mDelegate = delegate;
     }
 
@@ -103,12 +107,12 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     protected MediaUrlResolver.Result doInBackground(Void... params) {
         Uri uri = mDelegate.getUri();
         String url = uri.toString();
-        Header[] relevantHeaders = null;
         String cookies = mDelegate.getCookies();
         String userAgent = ChromiumApplication.getBrowserUserAgent();
         // URL may already be partially percent encoded; double percent encoding will break
         // things, so decode it before sanitizing it.
         String sanitizedUrl = sanitizeUrl(Uri.decode(url));
+        Map<String, List<String>> headers = null;
 
         // If we failed to sanitize the URL (e.g. because the host name contains underscores) then
         // HttpURLConnection won't work,so we can't follow redirections. Just try to use it as is.
@@ -126,28 +130,23 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
                 urlConnection.setRequestProperty(RANGE_HEADER_NAME, RANGE_HEADER_VALUE);
 
                 // This triggers resolving the URL and receiving the headers.
-                urlConnection.getHeaderFields();
+                headers = urlConnection.getHeaderFields();
 
                 url = urlConnection.getURL().toString();
-                String corsHeader = urlConnection.getHeaderField(CORS_HEADER_NAME);
-                if (corsHeader != null) {
-                    relevantHeaders = new Header[1];
-                    relevantHeaders[0] = new BasicHeader(CORS_HEADER_NAME, corsHeader);
-                }
             } catch (IOException e) {
                 Log.e(TAG, "Failed to fetch the final URI", e);
                 url = "";
             }
             if (urlConnection != null) urlConnection.disconnect();
         }
-        return new MediaUrlResolver.Result(url, relevantHeaders);
+        return new MediaUrlResolver.Result(url, canPlayMedia(url, headers));
     }
 
     @Override
     protected void onPostExecute(MediaUrlResolver.Result result) {
         String url = result.getUri();
         Uri uri = "".equals(url) ? Uri.EMPTY : Uri.parse(url);
-        mDelegate.setUri(uri, result.getRelevantHeaders());
+        mDelegate.setUri(uri, result.isPlayable());
     }
 
     private String sanitizeUrl(String unsafeUrl) {
@@ -164,5 +163,29 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
             Log.w(TAG, "MalformedURLException " + malformedUrlException);
         }
         return "";
+    }
+
+    private boolean canPlayMedia(String url, Map<String, List<String>> headers) {
+        if (url.isEmpty()) return false;
+
+        // HLS media requires Cors headers.
+        if ((headers == null || isEnhancedMedia(url) && !headers.containsKey(CORS_HEADER_NAME))) {
+            if (mDebug) Log.d(TAG, "HLS stream without CORs header: " + url);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isEnhancedMedia(String url) {
+        int mediaType = getMediaType(url);
+        return mediaType == HLS_MEDIA || mediaType == DASH_MEDIA || mediaType == SMOOTHSTREAM_MEDIA;
+    }
+
+    static int getMediaType(String url) {
+        if (url.contains(".m3u8")) return HLS_MEDIA;
+        if (url.contains(".mp4")) return MPEG4_MEDIA;
+        if (url.contains(".mpd")) return DASH_MEDIA;
+        if (url.contains(".ism")) return SMOOTHSTREAM_MEDIA;
+        return UNKNOWN_MEDIA;
     }
 }
