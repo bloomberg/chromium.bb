@@ -1934,8 +1934,12 @@ void FrameView::scrollToAnchor()
         return;
 
     LayoutRect rect;
-    if (anchorNode != m_frame->document())
+    if (anchorNode != m_frame->document()) {
         rect = anchorNode->boundingBox();
+    } else if (m_frame->settings()->rootLayerScrolls()) {
+        if (Element* documentElement = m_frame->document()->documentElement())
+            rect = documentElement->boundingBox();
+    }
 
     RefPtrWillBeRawPtr<Frame> boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
 
