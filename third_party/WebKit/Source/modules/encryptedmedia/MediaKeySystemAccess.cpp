@@ -125,9 +125,18 @@ MediaKeySystemAccess::~MediaKeySystemAccess()
 void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
 {
     WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
-    result.setInitDataTypes(convertInitDataTypes(configuration.initDataTypes));
-    result.setAudioCapabilities(convertCapabilities(configuration.audioCapabilities));
-    result.setVideoCapabilities(convertCapabilities(configuration.videoCapabilities));
+
+    // |initDataTypes|, |audioCapabilities|, and |videoCapabilities| can only be
+    // empty if they were not present in the requested configuration.
+    if (!configuration.initDataTypes.isEmpty())
+        result.setInitDataTypes(convertInitDataTypes(configuration.initDataTypes));
+    if (!configuration.audioCapabilities.isEmpty())
+        result.setAudioCapabilities(convertCapabilities(configuration.audioCapabilities));
+    if (!configuration.videoCapabilities.isEmpty())
+        result.setVideoCapabilities(convertCapabilities(configuration.videoCapabilities));
+
+    // |distinctiveIdentifier|, |persistentState|, and |sessionTypes| are always
+    // set by requestMediaKeySystemAccess().
     result.setDistinctiveIdentifier(convertMediaKeysRequirement(configuration.distinctiveIdentifier));
     result.setPersistentState(convertMediaKeysRequirement(configuration.persistentState));
     result.setSessionTypes(convertSessionTypes(configuration.sessionTypes));

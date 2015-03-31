@@ -18,17 +18,22 @@ struct WebMediaKeySystemConfiguration {
         NotAllowed,
     };
 
-    WebMediaKeySystemConfiguration()
-        : distinctiveIdentifier(Requirement::Optional)
-        , persistentState(Requirement::Optional)
-    {
-    }
-
+    // In MediaKeySystemConfiguration, sequence members may be not-present, and
+    // requestMediaKeySystemAccess() distinguishes non-present from empty. Here
+    // we have a flag for each one to signal that state.
+    bool hasInitDataTypes = false;
     WebVector<WebEncryptedMediaInitDataType> initDataTypes;
+
+    bool hasAudioCapabilities = false;
     WebVector<WebMediaKeySystemMediaCapability> audioCapabilities;
+
+    bool hasVideoCapabilities = false;
     WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
-    Requirement distinctiveIdentifier;
-    Requirement persistentState;
+
+    Requirement distinctiveIdentifier = Requirement::Optional;
+    Requirement persistentState = Requirement::Optional;
+
+    bool hasSessionTypes = false;
     WebVector<WebEncryptedMediaSessionType> sessionTypes;
 };
 

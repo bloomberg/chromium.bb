@@ -108,21 +108,25 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
     for (size_t i = 0; i < supportedConfigurations.size(); ++i) {
         const MediaKeySystemConfiguration& config = supportedConfigurations[i];
         WebMediaKeySystemConfiguration webConfig;
-        if (config.hasInitDataTypes())
+        if (config.hasInitDataTypes()) {
+            webConfig.hasInitDataTypes = true;
             webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
-        if (config.hasAudioCapabilities())
+        }
+        if (config.hasAudioCapabilities()) {
+            webConfig.hasAudioCapabilities = true;
             webConfig.audioCapabilities = convertCapabilities(config.audioCapabilities());
-        if (config.hasVideoCapabilities())
+        }
+        if (config.hasVideoCapabilities()) {
+            webConfig.hasVideoCapabilities = true;
             webConfig.videoCapabilities = convertCapabilities(config.videoCapabilities());
+        }
         ASSERT(config.hasDistinctiveIdentifier());
         webConfig.distinctiveIdentifier = convertMediaKeysRequirement(config.distinctiveIdentifier());
         ASSERT(config.hasPersistentState());
         webConfig.persistentState = convertMediaKeysRequirement(config.persistentState());
         if (config.hasSessionTypes()) {
+            webConfig.hasSessionTypes = true;
             webConfig.sessionTypes = convertSessionTypes(config.sessionTypes());
-        } else {
-            webConfig.sessionTypes = WebVector<WebEncryptedMediaSessionType>(static_cast<size_t>(1));
-            webConfig.sessionTypes[0] = WebEncryptedMediaSessionType::Temporary;
         }
         m_supportedConfigurations[i] = webConfig;
     }
