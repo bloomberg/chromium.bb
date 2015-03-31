@@ -80,13 +80,15 @@ class WebFrameTestProxy : public Base {
     Base::didReceiveServerRedirectForProvisionalLoad(frame);
   }
 
-  virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame,
-                                      const blink::WebURLError& error) {
+  virtual void didFailProvisionalLoad(
+      blink::WebLocalFrame* frame,
+      const blink::WebURLError& error,
+      blink::WebHistoryCommitType commit_type) {
     // If the test finished, don't notify the embedder of the failed load,
     // as we already destroyed the document loader.
-    if (base_proxy_->DidFailProvisionalLoad(frame, error))
+    if (base_proxy_->DidFailProvisionalLoad(frame, error, commit_type))
       return;
-    Base::didFailProvisionalLoad(frame, error);
+    Base::didFailProvisionalLoad(frame, error, commit_type);
   }
 
   virtual void didCommitProvisionalLoad(
@@ -121,9 +123,10 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void didFailLoad(blink::WebLocalFrame* frame,
-                           const blink::WebURLError& error) {
-    base_proxy_->DidFailLoad(frame, error);
-    Base::didFailLoad(frame, error);
+                           const blink::WebURLError& error,
+                           blink::WebHistoryCommitType commit_type) {
+    base_proxy_->DidFailLoad(frame, error, commit_type);
+    Base::didFailLoad(frame, error, commit_type);
   }
 
   virtual void didFinishLoad(blink::WebLocalFrame* frame) {

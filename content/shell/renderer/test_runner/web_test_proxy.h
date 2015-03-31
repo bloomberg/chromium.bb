@@ -187,7 +187,8 @@ class WebTestProxyBase {
   void DidStartProvisionalLoad(blink::WebLocalFrame*);
   void DidReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame);
   bool DidFailProvisionalLoad(blink::WebLocalFrame* frame,
-                              const blink::WebURLError& error);
+                              const blink::WebURLError& error,
+                              blink::WebHistoryCommitType commit_type);
   void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                 const blink::WebHistoryItem& history_item,
                                 blink::WebHistoryCommitType history_type);
@@ -199,7 +200,8 @@ class WebTestProxyBase {
   void DidFinishDocumentLoad(blink::WebLocalFrame* frame);
   void DidHandleOnloadEvents(blink::WebLocalFrame* frame);
   void DidFailLoad(blink::WebLocalFrame* frame,
-                   const blink::WebURLError& error);
+                   const blink::WebURLError& error,
+                   blink::WebHistoryCommitType commit_type);
   void DidFinishLoad(blink::WebLocalFrame* frame);
   void DidChangeLocationWithinPage(blink::WebLocalFrame* frame);
   void DidDetectXSS(blink::WebLocalFrame* frame,

@@ -1026,8 +1026,10 @@ void WebTestProxyBase::DidReceiveServerRedirectForProvisionalLoad(
   }
 }
 
-bool WebTestProxyBase::DidFailProvisionalLoad(blink::WebLocalFrame* frame,
-                                              const blink::WebURLError& error) {
+bool WebTestProxyBase::DidFailProvisionalLoad(
+    blink::WebLocalFrame* frame,
+    const blink::WebURLError& error,
+    blink::WebHistoryCommitType commit_type) {
   if (test_interfaces_->GetTestRunner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFailProvisionalLoadWithError\n");
@@ -1092,7 +1094,8 @@ void WebTestProxyBase::DidHandleOnloadEvents(blink::WebLocalFrame* frame) {
 }
 
 void WebTestProxyBase::DidFailLoad(blink::WebLocalFrame* frame,
-                                   const blink::WebURLError& error) {
+                                   const blink::WebURLError& error,
+                                   blink::WebHistoryCommitType commit_type) {
   if (test_interfaces_->GetTestRunner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFailLoadWithError\n");

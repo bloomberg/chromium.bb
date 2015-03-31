@@ -403,9 +403,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(
       blink::WebLocalFrame* frame,
-      const blink::WebURLError& error);
-  virtual void didFailProvisionalLoad(
-      blink::WebLocalFrame* frame,
       const blink::WebURLError& error,
       blink::WebHistoryCommitType commit_type);
   virtual void didCommitProvisionalLoad(
@@ -422,8 +419,6 @@ class CONTENT_EXPORT RenderFrameImpl
                              blink::WebIconURL::Type icon_type);
   virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame);
   virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
-  virtual void didFailLoad(blink::WebLocalFrame* frame,
-                           const blink::WebURLError& error);
   virtual void didFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error,
                            blink::WebHistoryCommitType commit_type);

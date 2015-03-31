@@ -2477,8 +2477,10 @@ void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
   render_view_->history_controller()->RemoveChildrenForRedirect(this);
 }
 
-void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
-                                             const blink::WebURLError& error) {
+void RenderFrameImpl::didFailProvisionalLoad(
+    blink::WebLocalFrame* frame,
+    const blink::WebURLError& error,
+    blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didFailProvisionalLoad",
                "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
@@ -2572,13 +2574,6 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
 
   // Load an error page.
   LoadNavigationErrorPage(failed_request, error, replace);
-}
-
-void RenderFrameImpl::didFailProvisionalLoad(
-    blink::WebLocalFrame* frame,
-    const blink::WebURLError& error,
-    blink::WebHistoryCommitType commit_type) {
-  didFailProvisionalLoad(frame, error);
 }
 
 void RenderFrameImpl::didCommitProvisionalLoad(
@@ -2821,7 +2816,8 @@ void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
 }
 
 void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
-                                  const blink::WebURLError& error) {
+                                  const blink::WebURLError& error,
+                                  blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didFailLoad",
                "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
@@ -2845,12 +2841,6 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
                                              failed_request.url(),
                                              error.reason,
                                              error_description));
-}
-
-void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
-                                  const blink::WebURLError& error,
-                                  blink::WebHistoryCommitType commit_type) {
-  didFailLoad(frame, error);
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
