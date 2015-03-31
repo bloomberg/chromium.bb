@@ -458,6 +458,10 @@ class SigninScreenHandler
   // NOTIFICATION_AUTH_CANCELLED.
   bool has_pending_auth_ui_ = false;
 
+  // Used for pending GAIA reloads.
+  NetworkError::ErrorReason gaia_reload_reason_ =
+      NetworkError::ERROR_REASON_NONE;
+
   bool caps_lock_enabled_;
 
   // Non-owning ptr.

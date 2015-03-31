@@ -111,6 +111,7 @@ class CallOnReturn {
       callback_.Run();
   }
 
+  void CancelScheduledCall() { call_scheduled_ = false; }
   void ScheduleCall() { call_scheduled_ = true; }
 
  private:
@@ -538,7 +539,10 @@ void SigninScreenHandler::OnNetworkReady() {
 }
 
 void SigninScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
-  UpdateStateInternal(reason, false);
+  // ERROR_REASON_FRAME_ERROR is an explicit signal from GAIA frame so it shoud
+  // force network error UI update.
+  bool force_update = reason == NetworkError::ERROR_REASON_FRAME_ERROR;
+  UpdateStateInternal(reason, force_update);
 }
 
 void SigninScreenHandler::SetFocusPODCallbackForTesting(
@@ -696,6 +700,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
       from_not_online_to_online_transition) {
     // Schedules a immediate retry.
     LOG(WARNING) << "Retry frame load since network has been changed.";
+    gaia_reload_reason_ = reason;
     reload_gaia.ScheduleCall();
   }
 
@@ -703,18 +708,22 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
       error_screen_should_overlay) {
     // Schedules a immediate retry.
     LOG(WARNING) << "Retry frameload since proxy settings has been changed.";
+    gaia_reload_reason_ = reason;
     reload_gaia.ScheduleCall();
   }
 
   if (reason == NetworkError::ERROR_REASON_FRAME_ERROR &&
+      reason != gaia_reload_reason_ &&
       !IsProxyError(state, reason, FrameError())) {
     LOG(WARNING) << "Retry frame load due to reason: "
                  << NetworkError::ErrorReasonString(reason);
+    gaia_reload_reason_ = reason;
     reload_gaia.ScheduleCall();
   }
 
   if (is_gaia_loading_timeout) {
     LOG(WARNING) << "Retry frame load due to loading timeout.";
+    LOG(ERROR) << "UpdateStateInternal reload 4";
     reload_gaia.ScheduleCall();
   }
 
@@ -723,6 +732,9 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
     SetupAndShowOfflineMessage(state, reason);
   } else {
     HideOfflineMessage(state, reason);
+
+    // Cancel scheduled GAIA reload (if any) to prevent double reloads.
+    reload_gaia.CancelScheduledCall();
   }
 }
 
@@ -782,6 +794,8 @@ void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
                                              NetworkError::ErrorReason reason) {
   if (!IsSigninScreenHiddenByError())
     return;
+
+  gaia_reload_reason_ = NetworkError::ERROR_REASON_NONE;
 
   network_error_model_->Hide();
   histogram_helper_->OnErrorHide();

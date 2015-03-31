@@ -21,6 +21,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'loadAuthExtension',
       'updateAuthExtension',
       'doReload',
+      'onWebviewError',
       'onFrameError',
       'updateCancelButtonState'
     ],
@@ -135,6 +136,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.onAuthFlowChange_.bind(this));
       this.gaiaAuthHost_.addEventListener('authCompleted',
           this.onAuthCompletedMessage_.bind(this));
+      this.gaiaAuthHost_.addEventListener('loadAbort',
+        this.onLoadAbortMessage_.bind(this));
 
       $('enterprise-info-hint-link').addEventListener('click', function(e) {
         chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
@@ -627,6 +630,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Invoked when onLoadAbort message received.
+     * @param {!Object} e Payload of the received HTML5 message.
+     * @private
+     */
+    onLoadAbortMessage_: function(e) {
+      this.onWebviewError(e.detail);
+    },
+
+    /**
      * Clears input fields and switches to input mode.
      * @param {boolean} takeFocus True to take focus.
      * @param {boolean} forceOnline Whether online sign-in should be forced.
@@ -747,6 +759,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onFrameError: function(error, url) {
       this.error_ = error;
       chrome.send('frameLoadingCompleted', [this.error_]);
+    },
+
+    /**
+     * Handler for webview error handling.
+     * @param {!Object} data Additional information about error event like:
+     * {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+     * {string} url The URL that failed to load.
+     */
+    onWebviewError: function(data) {
+      chrome.send('webviewLoadAborted', [data.error]);
     },
   };
 });

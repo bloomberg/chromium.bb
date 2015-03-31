@@ -358,6 +358,8 @@ void GaiaScreenHandler::Initialize() {
 void GaiaScreenHandler::RegisterMessages() {
   AddCallback("frameLoadingCompleted",
               &GaiaScreenHandler::HandleFrameLoadingCompleted);
+  AddCallback("webviewLoadAborted",
+              &GaiaScreenHandler::HandleWebviewLoadAborted);
   AddCallback("completeLogin", &GaiaScreenHandler::HandleCompleteLogin);
   AddCallback("completeAuthentication",
               &GaiaScreenHandler::HandleCompleteAuthentication);
@@ -396,6 +398,40 @@ void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
     UpdateState(NetworkError::ERROR_REASON_UPDATE);
   else if (frame_state_ == FRAME_STATE_ERROR)
     UpdateState(NetworkError::ERROR_REASON_FRAME_ERROR);
+}
+
+void GaiaScreenHandler::HandleWebviewLoadAborted(
+    const std::string& error_reason_str) {
+  // TODO(nkostylev): Switch to int code once webview supports that.
+  // http://crbug.com/470483
+  if (error_reason_str == "ERR_ABORTED") {
+    LOG(WARNING) << "Ignoring Gaia webview error: " << error_reason_str;
+    return;
+  }
+
+  // TODO(nkostylev): Switch to int code once webview supports that.
+  // http://crbug.com/470483
+  // Extract some common codes used by SigninScreenHandler for now.
+  if (error_reason_str == "ERR_NAME_NOT_RESOLVED")
+    frame_error_ = net::ERR_NAME_NOT_RESOLVED;
+  else if (error_reason_str == "ERR_INTERNET_DISCONNECTED")
+    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
+  else if (error_reason_str == "ERR_NETWORK_CHANGED")
+    frame_error_ = net::ERR_NETWORK_CHANGED;
+  else if (error_reason_str == "ERR_INTERNET_DISCONNECTED")
+    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
+  else if (error_reason_str == "ERR_PROXY_CONNECTION_FAILED")
+    frame_error_ = net::ERR_PROXY_CONNECTION_FAILED;
+  else if (error_reason_str == "ERR_TUNNEL_CONNECTION_FAILED")
+    frame_error_ = net::ERR_TUNNEL_CONNECTION_FAILED;
+  else
+    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
+
+  LOG(ERROR) << "Gaia webview error: " << error_reason_str;
+  NetworkError::ErrorReason error_reason =
+      NetworkError::ERROR_REASON_FRAME_ERROR;
+  frame_state_ = FRAME_STATE_ERROR;
+  UpdateState(error_reason);
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(

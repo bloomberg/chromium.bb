@@ -37,16 +37,22 @@ class NetworkError {
   // Possible network error reasons.
   enum ErrorReason {
     ERROR_REASON_PROXY_AUTH_CANCELLED = 0,
-    ERROR_REASON_PROXY_AUTH_SUPPLIED,
-    ERROR_REASON_PROXY_CONNECTION_FAILED,
-    ERROR_REASON_PROXY_CONFIG_CHANGED,
-    ERROR_REASON_LOADING_TIMEOUT,
-    ERROR_REASON_PORTAL_DETECTED,
+    ERROR_REASON_PROXY_AUTH_SUPPLIED = 1,
+    ERROR_REASON_PROXY_CONNECTION_FAILED = 2,
+    ERROR_REASON_PROXY_CONFIG_CHANGED = 3,
+    ERROR_REASON_LOADING_TIMEOUT = 4,
+    ERROR_REASON_PORTAL_DETECTED = 5,
+
     // Reason for a case when default network has changed.
-    ERROR_REASON_NETWORK_STATE_CHANGED,
+    ERROR_REASON_NETWORK_STATE_CHANGED = 6,
+
     // Reason for a case when JS side requires error screen update.
-    ERROR_REASON_UPDATE,
-    ERROR_REASON_FRAME_ERROR
+    ERROR_REASON_UPDATE = 7,
+    ERROR_REASON_FRAME_ERROR = 8,
+
+    // Used as an "uninitialized" state for cases when limiting number of
+    // GAIA reloads due to a single network error reason.
+    ERROR_REASON_NONE = 9
   };
 
   static const char* ErrorReasonString(ErrorReason reason);

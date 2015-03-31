@@ -133,6 +133,8 @@ cr.define('cr.login', function() {
     this.webview_.addEventListener(
         'contentload', this.onContentLoad_.bind(this));
     this.webview_.addEventListener(
+        'loadabort', this.onLoadAbort_.bind(this));
+    this.webview_.addEventListener(
         'loadstop', this.onLoadStop_.bind(this));
     this.webview_.addEventListener(
         'loadcommit', this.onLoadCommit_.bind(this));
@@ -525,6 +527,16 @@ cr.define('cr.login', function() {
       };
       this.webview_.contentWindow.postMessage(msg, currentUrl);
     }
+  };
+
+  /**
+   * Invoked when the webview fails loading a page.
+   * @private
+   */
+  Authenticator.prototype.onLoadAbort_ = function(e) {
+    this.dispatchEvent(new CustomEvent('loadAbort',
+        {detail: {error: e.reason,
+                  src: this.webview_.src}}));
   };
 
   /**
