@@ -539,7 +539,7 @@ static int radeon_get_device_id(int fd, uint32_t *device_id)
     return r;
 }
 
-drm_public struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd)
+struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd)
 {
     struct radeon_cs_manager_gem *csm;
 
@@ -553,7 +553,7 @@ drm_public struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd)
     return &csm->base;
 }
 
-drm_public void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm)
+void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm)
 {
     free(csm);
 }

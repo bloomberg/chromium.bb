@@ -249,7 +249,7 @@ FENCE_LTE(unsigned a, unsigned b)
 	return 0;
 }
 
-drm_public void
+void
 drm_intel_bufmgr_fake_set_fence_callback(drm_intel_bufmgr *bufmgr,
 					 unsigned int (*emit) (void *priv),
 					 void (*wait) (unsigned int fence,
@@ -772,7 +772,7 @@ drm_intel_fake_bo_wait_rendering(drm_intel_bo *bo)
  *  -- just evict everything
  *  -- and wait for idle
  */
-drm_public void
+void
 drm_intel_bufmgr_fake_contended_lock_take(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_fake *bufmgr_fake = (drm_intel_bufmgr_fake *) bufmgr;
@@ -868,7 +868,7 @@ drm_intel_fake_bo_alloc_tiled(drm_intel_bufmgr * bufmgr,
 				       4096);
 }
 
-drm_public drm_intel_bo *
+drm_intel_bo *
 drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
 			       const char *name,
 			       unsigned long offset,
@@ -963,7 +963,7 @@ drm_intel_fake_bo_unreference(drm_intel_bo *bo)
  * Set the buffer as not requiring backing store, and instead get the callback
  * invoked whenever it would be set dirty.
  */
-drm_public void
+void
 drm_intel_bo_fake_disable_backing_store(drm_intel_bo *bo,
 					void (*invalidate_cb) (drm_intel_bo *bo,
 							       void *ptr),
@@ -1417,7 +1417,7 @@ drm_intel_bo_fake_post_submit(drm_intel_bo *bo)
 	bo_fake->write_domain = 0;
 }
 
-drm_public void
+void
 drm_intel_bufmgr_fake_set_exec_callback(drm_intel_bufmgr *bufmgr,
 					     int (*exec) (drm_intel_bo *bo,
 							  unsigned int used,
@@ -1540,7 +1540,7 @@ drm_intel_fake_check_aperture_space(drm_intel_bo ** bo_array, int count)
  * Used by the X Server on LeaveVT, when the card memory is no longer our
  * own.
  */
-drm_public void
+void
 drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_fake *bufmgr_fake = (drm_intel_bufmgr_fake *) bufmgr;
@@ -1575,7 +1575,7 @@ drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr)
 	pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
-drm_public void
+void
 drm_intel_bufmgr_fake_set_last_dispatch(drm_intel_bufmgr *bufmgr,
 					volatile unsigned int
 					*last_dispatch)
@@ -1585,7 +1585,7 @@ drm_intel_bufmgr_fake_set_last_dispatch(drm_intel_bufmgr *bufmgr,
 	bufmgr_fake->last_dispatch = (volatile int *)last_dispatch;
 }
 
-drm_public drm_intel_bufmgr *
+drm_intel_bufmgr *
 drm_intel_bufmgr_fake_init(int fd, unsigned long low_offset,
 			   void *low_virtual, unsigned long size,
 			   volatile unsigned int *last_dispatch)

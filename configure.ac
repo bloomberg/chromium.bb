@@ -403,14 +403,13 @@ AC_ARG_WITH([kernel-source],
 	    [kernel_source="$with_kernel_source"])
 AC_SUBST(kernel_source)
 
-AC_MSG_CHECKING([whether $CC supports __attribute__((visibility))])
+AC_MSG_CHECKING([whether $CC supports __attribute__(("hidden"))])
 AC_LINK_IFELSE([AC_LANG_PROGRAM([
-    int foo_default( void ) __attribute__((visibility("default")));
     int foo_hidden( void ) __attribute__((visibility("hidden")));
 ])], HAVE_ATTRIBUTE_VISIBILITY="yes"; AC_MSG_RESULT([yes]), AC_MSG_RESULT([no]));
 
 if test "x$HAVE_ATTRIBUTE_VISIBILITY" = xyes; then
-    AC_DEFINE(HAVE_VISIBILITY, 1, [Compiler supports __attribute__((visibility))])
+    AC_DEFINE(HAVE_VISIBILITY, 1, [Compiler supports __attribute__(("hidden"))])
 fi
 
 AC_SUBST(WARN_CFLAGS)

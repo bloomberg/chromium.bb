@@ -49,7 +49,7 @@
  *
  * if true, return the device object else NULL.
  */
-drm_public struct exynos_device * exynos_device_create(int fd)
+struct exynos_device * exynos_device_create(int fd)
 {
 	struct exynos_device *dev;
 
@@ -70,7 +70,7 @@ drm_public struct exynos_device * exynos_device_create(int fd)
  *
  * @dev: exynos drm device object.
  */
-drm_public void exynos_device_destroy(struct exynos_device *dev)
+void exynos_device_destroy(struct exynos_device *dev)
 {
 	free(dev);
 }
@@ -88,7 +88,7 @@ drm_public void exynos_device_destroy(struct exynos_device *dev)
  *
  * if true, return a exynos buffer object else NULL.
  */
-drm_public struct exynos_bo * exynos_bo_create(struct exynos_device *dev,
+struct exynos_bo * exynos_bo_create(struct exynos_device *dev,
 					       size_t size, uint32_t flags)
 {
 	struct exynos_bo *bo;
@@ -142,7 +142,7 @@ fail:
  *
  * if true, return 0 else negative.
  */
-drm_public int exynos_bo_get_info(struct exynos_device *dev, uint32_t handle,
+int exynos_bo_get_info(struct exynos_device *dev, uint32_t handle,
 				  size_t *size, uint32_t *flags)
 {
 	int ret;
@@ -168,7 +168,7 @@ drm_public int exynos_bo_get_info(struct exynos_device *dev, uint32_t handle,
  *
  * @bo: a exynos buffer object to be destroyed.
  */
-drm_public void exynos_bo_destroy(struct exynos_bo *bo)
+void exynos_bo_destroy(struct exynos_bo *bo)
 {
 	if (!bo)
 		return;
@@ -200,7 +200,7 @@ drm_public void exynos_bo_destroy(struct exynos_bo *bo)
  * if true, return a exynos buffer object else NULL.
  *
  */
-drm_public struct exynos_bo *
+struct exynos_bo *
 exynos_bo_from_name(struct exynos_device *dev, uint32_t name)
 {
 	struct exynos_bo *bo;
@@ -243,7 +243,7 @@ err_free_bo:
  *
  * if true, return 0 else negative.
  */
-drm_public int exynos_bo_get_name(struct exynos_bo *bo, uint32_t *name)
+int exynos_bo_get_name(struct exynos_bo *bo, uint32_t *name)
 {
 	if (!bo->name) {
 		struct drm_gem_flink req = {
@@ -266,7 +266,7 @@ drm_public int exynos_bo_get_name(struct exynos_bo *bo, uint32_t *name)
 	return 0;
 }
 
-drm_public uint32_t exynos_bo_handle(struct exynos_bo *bo)
+uint32_t exynos_bo_handle(struct exynos_bo *bo)
 {
 	return bo->handle;
 }
@@ -279,7 +279,7 @@ drm_public uint32_t exynos_bo_handle(struct exynos_bo *bo)
  *
  * if true, user pointer mmaped else NULL.
  */
-drm_public void *exynos_bo_map(struct exynos_bo *bo)
+void *exynos_bo_map(struct exynos_bo *bo)
 {
 	if (!bo->vaddr) {
 		struct exynos_device *dev = bo->dev;
@@ -316,7 +316,7 @@ drm_public void *exynos_bo_map(struct exynos_bo *bo)
  *
  * @return: 0 on success, -1 on error, and errno will be set
  */
-drm_public int
+int
 exynos_prime_handle_to_fd(struct exynos_device *dev, uint32_t handle, int *fd)
 {
 	return drmPrimeHandleToFD(dev->fd, handle, 0, fd);
@@ -331,7 +331,7 @@ exynos_prime_handle_to_fd(struct exynos_device *dev, uint32_t handle, int *fd)
  *
  * @return: 0 on success, -1 on error, and errno will be set
  */
-drm_public int
+int
 exynos_prime_fd_to_handle(struct exynos_device *dev, int fd, uint32_t *handle)
 {
 	return drmPrimeFDToHandle(dev->fd, fd, handle);
@@ -354,7 +354,7 @@ exynos_prime_fd_to_handle(struct exynos_device *dev, int fd, uint32_t *handle)
  *
  * if true, return 0 else negative.
  */
-drm_public int
+int
 exynos_vidi_connection(struct exynos_device *dev, uint32_t connect,
 		       uint32_t ext, void *edid)
 {

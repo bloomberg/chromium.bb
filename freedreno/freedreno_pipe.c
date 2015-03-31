@@ -33,7 +33,7 @@
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
-drm_public struct fd_pipe *
+struct fd_pipe *
 fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 {
 	struct fd_pipe *pipe = NULL;
@@ -59,18 +59,18 @@ fail:
 	return NULL;
 }
 
-drm_public void fd_pipe_del(struct fd_pipe *pipe)
+void fd_pipe_del(struct fd_pipe *pipe)
 {
 	pipe->funcs->destroy(pipe);
 }
 
-drm_public int fd_pipe_get_param(struct fd_pipe *pipe,
+int fd_pipe_get_param(struct fd_pipe *pipe,
 				 enum fd_param_id param, uint64_t *value)
 {
 	return pipe->funcs->get_param(pipe, param, value);
 }
 
-drm_public int fd_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
+int fd_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
 {
 	return pipe->funcs->wait(pipe, timestamp);
 }

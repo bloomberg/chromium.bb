@@ -25,10 +25,8 @@
 
 #if defined(HAVE_VISIBILITY)
 #  define drm_private __attribute__((visibility("hidden")))
-#  define drm_public __attribute__((visibility("default")))
 #else
 #  define drm_private
-#  define drm_public
 #endif
 
 

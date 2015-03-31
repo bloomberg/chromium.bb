@@ -3817,7 +3817,7 @@ decode_3d_i830(struct drm_intel_decode *ctx)
 	return 1;
 }
 
-drm_public struct drm_intel_decode *
+struct drm_intel_decode *
 drm_intel_decode_context_alloc(uint32_t devid)
 {
 	struct drm_intel_decode *ctx;
@@ -3851,20 +3851,20 @@ drm_intel_decode_context_alloc(uint32_t devid)
 	return ctx;
 }
 
-drm_public void
+void
 drm_intel_decode_context_free(struct drm_intel_decode *ctx)
 {
 	free(ctx);
 }
 
-drm_public void
+void
 drm_intel_decode_set_dump_past_end(struct drm_intel_decode *ctx,
 				   int dump_past_end)
 {
 	ctx->dump_past_end = !!dump_past_end;
 }
 
-drm_public void
+void
 drm_intel_decode_set_batch_pointer(struct drm_intel_decode *ctx,
 				   void *data, uint32_t hw_offset, int count)
 {
@@ -3873,7 +3873,7 @@ drm_intel_decode_set_batch_pointer(struct drm_intel_decode *ctx,
 	ctx->base_count = count;
 }
 
-drm_public void
+void
 drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
 			       uint32_t head, uint32_t tail)
 {
@@ -3881,7 +3881,7 @@ drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
 	ctx->tail = tail;
 }
 
-drm_public void
+void
 drm_intel_decode_set_output_file(struct drm_intel_decode *ctx,
 				 FILE *out)
 {
@@ -3895,7 +3895,7 @@ drm_intel_decode_set_output_file(struct drm_intel_decode *ctx,
  * \param count number of DWORDs to decode in the batch buffer
  * \param hw_offset hardware address for the buffer
  */
-drm_public void
+void
 drm_intel_decode(struct drm_intel_decode *ctx)
 {
 	int ret;

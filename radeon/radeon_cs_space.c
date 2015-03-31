@@ -165,7 +165,7 @@ static int radeon_cs_do_space_check(struct radeon_cs_int *cs, struct radeon_cs_s
     return RADEON_CS_SPACE_OK;
 }
 
-drm_public void
+void
 radeon_cs_space_add_persistent_bo(struct radeon_cs *cs, struct radeon_bo *bo,
                                   uint32_t read_domains, uint32_t write_domain)
 {
@@ -209,7 +209,7 @@ again:
     return 0;
 }
 
-drm_public int
+int
 radeon_cs_space_check_with_bo(struct radeon_cs *cs, struct radeon_bo *bo,
                               uint32_t read_domains, uint32_t write_domain)
 {
@@ -230,13 +230,13 @@ radeon_cs_space_check_with_bo(struct radeon_cs *cs, struct radeon_bo *bo,
     return ret;
 }
 
-drm_public int radeon_cs_space_check(struct radeon_cs *cs)
+int radeon_cs_space_check(struct radeon_cs *cs)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     return radeon_cs_check_space_internal(csi, NULL);
 }
 
-drm_public void radeon_cs_space_reset_bos(struct radeon_cs *cs)
+void radeon_cs_space_reset_bos(struct radeon_cs *cs)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     int i;
