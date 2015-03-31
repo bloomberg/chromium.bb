@@ -19,6 +19,7 @@ from chromite.cbuildbot import failures_lib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import parallel
 
 from chromite.lib.paygen import download_cache
@@ -1225,10 +1226,10 @@ DOC = "Faux doc"
             self.basic_image.version,
             '*', bucket=self.basic_image.bucket)).AndReturn(
                 ['gs://foo/bar.tar.bz2'])
-    urilib.ListFiles(
-        gspaths.ChromeosImageArchive.BuildUri(
-            'foo_board', '*', self.basic_image.version)).AndReturn(
-                ['gs://foo-archive/src-build'])
+    self.mox.StubOutWithMock(gs.GSContext, 'Cat')
+    gs.GSContext().Cat(
+        os.path.join(gspaths.ChromeosImageArchive.BoardUri(
+            'foo_board'), 'LATEST-1.2.3')).AndReturn('R11-1.2.3')
 
     self.mox.StubOutWithMock(
         paygen_build_lib.test_control, 'get_control_file_name')
@@ -1398,19 +1399,18 @@ DOC = "Faux doc"
     cbuildbot_config.FindFullConfigsForBoard().MultipleTimes().AndReturn(
         ([{'boards': ['foo_board', 'bar_board', 'bar-board']}], []))
 
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
-    urilib.ListFiles(
-        gspaths.ChromeosImageArchive.BuildUri(
-            'foo_board', '*', '1.2.3')).AndReturn(
-                ['gs://foo-archive/foo_board/R11-1.2.3/somefile'])
+    self.mox.StubOutWithMock(gs.GSContext, 'Cat')
+    gs.GSContext().Cat(
+        os.path.join(gspaths.ChromeosImageArchive.BoardUri(
+            'foo_board'), 'LATEST-1.2.3')).AndReturn('R11-1.2.3')
 
     self.mox.ReplayAll()
 
     # Case 1: mapping successful.
     self.assertEqual(
         paygen_build_lib._PaygenBuild._MapToArchive('foo-board', '1.2.3'),
-        ('foo_board', 'foo_board/R11-1.2.3',
-         'gs://foo-archive/foo_board/R11-1.2.3'))
+        ('foo_board', 'foo_board-release/R11-1.2.3',
+         'gs://chromeos-image-archive/foo_board-release/R11-1.2.3'))
 
     # Case 2: failure, too many build board names found.
     with self.assertRaises(paygen_build_lib.ArchiveError):

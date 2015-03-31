@@ -619,6 +619,23 @@ class ChromeosImageArchive(object):
   BUCKET = 'chromeos-image-archive'
 
   @classmethod
+  def BoardUri(cls, board, bucket=None):
+    """Creates the gspath for a given board.
+
+    Args:
+      board: What board is the build for? "x86-alex", "lumpy", etc.
+      bucket: the bucket the build in (None means cls.BUCKET)
+
+    Returns:
+      The url for the specified board artifacts. Should be of the form:
+      gs://chromeos-image-archive/board-release
+    """
+
+    bucket = bucket or cls.BUCKET
+
+    return os.path.join('gs://', bucket, '%s-release' % board)
+
+  @classmethod
   def BuildUri(cls, board, milestone, version, bucket=None):
     """Creates the gspath for a given build.
 
@@ -635,7 +652,31 @@ class ChromeosImageArchive(object):
 
     bucket = bucket or cls.BUCKET
 
-    return 'gs://%s/%s-release/R%s-%s' % (bucket, board, milestone, version)
+    return os.path.join(cls.BoardUri(board, bucket),
+                        'R%s-%s' % (milestone, version))
+
+  @classmethod
+  def LatestBuildUri(cls, board, version, bucket=None):
+    """Creates the gspath for the "LATEST" file for a given build.
+
+    That file holds the milestone/version string for that board. For example,
+    gs://chromeos-image-archive/lumpy-release/LATEST-6537.0.0 holds the text
+    R41-6537.0.0
+
+    Args:
+      board: What board is the build for? "x86-alex", "lumpy", etc.
+      version: "What is the build version. "3015.0.0", "1945.76.3", etc
+      bucket: the bucket the build in (None means cls.BUCKET)
+
+    Returns:
+      The url for the specified "LATEST" file. Should be of the form:
+      gs://chromeos-image-archive/board-release/LATEST-4.5.6
+    """
+
+    bucket = bucket or cls.BUCKET
+
+    return os.path.join(cls.BoardUri(board, bucket),
+                        'LATEST-%s' % version)
 
 
 def VersionKey(version):
