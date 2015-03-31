@@ -196,7 +196,7 @@ public:
     virtual HRESULT StreamingDeviceModeChanged (/* in */ IDeckLink* device, /* in */ BMDStreamingDeviceMode mode) = 0;
 
 protected:
-    virtual ~IBMDStreamingDeviceNotificationCallback () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingDeviceNotificationCallback () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingH264InputCallback - H264 input callbacks. */
@@ -212,7 +212,7 @@ public:
     virtual HRESULT H264VideoInputModeChanged (void) = 0;
 
 protected:
-    virtual ~IBMDStreamingH264InputCallback () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingH264InputCallback () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingDiscovery - Installs device notifications */
@@ -224,7 +224,7 @@ public:
     virtual HRESULT UninstallDeviceNotifications (void) = 0;
 
 protected:
-    virtual ~IBMDStreamingDiscovery () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingDiscovery () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingVideoEncodingMode - Represents an encoded video mode. */
@@ -247,7 +247,7 @@ public:
     virtual HRESULT CreateMutableVideoEncodingMode (/* out */ IBMDStreamingMutableVideoEncodingMode** newEncodingMode) = 0; // Creates a mutable copy of the encoding mode
 
 protected:
-    virtual ~IBMDStreamingVideoEncodingMode () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingVideoEncodingMode () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingMutableVideoEncodingMode - Represents a mutable encoded video mode. */
@@ -263,7 +263,7 @@ public:
     virtual HRESULT SetString (/* in */ BMDStreamingEncodingModePropertyID cfgID, /* in */ CFStringRef value) = 0;
 
 protected:
-    virtual ~IBMDStreamingMutableVideoEncodingMode () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingMutableVideoEncodingMode () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingVideoEncodingModePresetIterator - Enumerates encoding mode presets */
@@ -274,7 +274,7 @@ public:
     virtual HRESULT Next (/* out */ IBMDStreamingVideoEncodingMode** videoEncodingMode) = 0;
 
 protected:
-    virtual ~IBMDStreamingVideoEncodingModePresetIterator () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingVideoEncodingModePresetIterator () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingDeviceInput - Created by QueryInterface from IDeckLink */
@@ -304,7 +304,7 @@ public:
     virtual HRESULT SetCallback (/* in */ IUnknown* theCallback) = 0;
 
 protected:
-    virtual ~IBMDStreamingDeviceInput () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingDeviceInput () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingH264NALPacket - Represent an H.264 NAL packet */
@@ -319,7 +319,7 @@ public:
     virtual HRESULT GetPacketIndex (/* out */ uint32_t* packetIndex) = 0; // Deprecated
 
 protected:
-    virtual ~IBMDStreamingH264NALPacket () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingH264NALPacket () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingAudioPacket - Represents a chunk of audio data */
@@ -334,7 +334,7 @@ public:
     virtual HRESULT GetPacketIndex (/* out */ uint32_t* packetIndex) = 0; // Deprecated
 
 protected:
-    virtual ~IBMDStreamingAudioPacket () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingAudioPacket () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingMPEG2TSPacket - Represent an MPEG2 Transport Stream packet */
@@ -346,7 +346,7 @@ public:
     virtual HRESULT GetBytes (/* out */ void** buffer) = 0;
 
 protected:
-    virtual ~IBMDStreamingMPEG2TSPacket () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingMPEG2TSPacket () {} // call Release method to drop reference count
 };
 
 /* Interface IBMDStreamingH264NALParser - For basic NAL parsing */
@@ -359,7 +359,7 @@ public:
     virtual HRESULT GetProfileAndLevelFromSPS (/* in */ IBMDStreamingH264NALPacket* nal, /* out */ uint32_t* profileIdc, /* out */ uint32_t* profileCompatability, /* out */ uint32_t* levelIdc) = 0;
 
 protected:
-    virtual ~IBMDStreamingH264NALParser () {}; // call Release method to drop reference count
+    virtual ~IBMDStreamingH264NALParser () {} // call Release method to drop reference count
 };
 
 /* Functions */
@@ -369,7 +369,7 @@ extern "C" {
     IBMDStreamingDiscovery* CreateBMDStreamingDiscoveryInstance (void);
     IBMDStreamingH264NALParser* CreateBMDStreamingH264NALParser (void);
 
-};
+}
 
 
 #endif /* defined(BMD_DECKLINKAPISTREAMING_H) */

@@ -53,7 +53,8 @@ BMD_CONST REFIID IID_IDeckLinkTimecode                            = /* BC6CFBD3-
 typedef uint32_t BMDTimecodeFlags;
 enum _BMDTimecodeFlags {
     bmdTimecodeFlagDefault                                       = 0,
-    bmdTimecodeIsDropFrame                                       = 1 << 0
+    bmdTimecodeIsDropFrame                                       = 1 << 0,
+    bmdTimecodeFieldMark                                         = 1 << 1
 };
 
 /* Enum BMDVideoConnection - Video connection types */
@@ -66,6 +67,17 @@ enum _BMDVideoConnection {
     bmdVideoConnectionComponent                                  = 1 << 3,
     bmdVideoConnectionComposite                                  = 1 << 4,
     bmdVideoConnectionSVideo                                     = 1 << 5
+};
+
+/* Enum BMDAudioConnection - Audio connection types */
+
+typedef uint32_t BMDAudioConnection;
+enum _BMDAudioConnection {
+    bmdAudioConnectionEmbedded                                   = 1 << 0,
+    bmdAudioConnectionAESEBU                                     = 1 << 1,
+    bmdAudioConnectionAnalog                                     = 1 << 2,
+    bmdAudioConnectionAnalogXLR                                  = 1 << 3,
+    bmdAudioConnectionAnalogRCA                                  = 1 << 4
 };
 
 // Forward Declarations
@@ -84,7 +96,7 @@ public:
     virtual HRESULT GetTimecodeUserBits (/* out */ BMDTimecodeUserBits *userBits) = 0;
 
 protected:
-    virtual ~IDeckLinkTimecode () {}; // call Release method to drop reference count
+    virtual ~IDeckLinkTimecode () {} // call Release method to drop reference count
 };
 
 /* Functions */
@@ -92,7 +104,7 @@ protected:
 extern "C" {
 
 
-};
+}
 
 
 #endif /* defined(BMD_DECKLINKAPITYPES_H) */

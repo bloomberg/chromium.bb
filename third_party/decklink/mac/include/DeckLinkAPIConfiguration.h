@@ -42,7 +42,7 @@
 
 // Interface ID Declarations
 
-BMD_CONST REFIID IID_IDeckLinkConfiguration                       = /* C679A35B-610C-4D09-B748-1D0478100FC0 */ {0xC6,0x79,0xA3,0x5B,0x61,0x0C,0x4D,0x09,0xB7,0x48,0x1D,0x04,0x78,0x10,0x0F,0xC0};
+BMD_CONST REFIID IID_IDeckLinkConfiguration                       = /* 1E69FCF6-4203-4936-8076-2A9F4CFD50CB */ {0x1E,0x69,0xFC,0xF6,0x42,0x03,0x49,0x36,0x80,0x76,0x2A,0x9F,0x4C,0xFD,0x50,0xCB};
 
 /* Enum BMDDeckLinkConfigurationID - DeckLink Configuration ID */
 
@@ -72,7 +72,7 @@ enum _BMDDeckLinkConfigurationID {
     bmdDeckLinkConfigFieldFlickerRemoval                         = 'fdfr',
     bmdDeckLinkConfigHD1080p24ToHD1080i5994Conversion            = 'to59',
     bmdDeckLinkConfig444SDIVideoOutput                           = '444o',
-    bmdDeckLinkConfig3GBpsVideoOutput                            = '3gbs',
+    bmdDeckLinkConfigSingleLinkVideoOutput                       = 'sglo',
     bmdDeckLinkConfigBlackVideoOutputDuringCapture               = 'bvoc',
     bmdDeckLinkConfigLowLatencyVideoOutput                       = 'llvo',
 
@@ -167,7 +167,7 @@ public:
     virtual HRESULT WriteConfigurationToPreferences (void) = 0;
 
 protected:
-    virtual ~IDeckLinkConfiguration () {}; // call Release method to drop reference count
+    virtual ~IDeckLinkConfiguration () {} // call Release method to drop reference count
 };
 
 /* Functions */
@@ -175,7 +175,7 @@ protected:
 extern "C" {
 
 
-};
+}
 
 
 #endif /* defined(BMD_DECKLINKAPICONFIGURATION_H) */

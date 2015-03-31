@@ -158,7 +158,7 @@ public:
     virtual HRESULT DeckControlStatusChanged (/* in */ BMDDeckControlStatusFlags flags, /* in */ uint32_t mask) = 0;
 
 protected:
-    virtual ~IDeckLinkDeckControlStatusCallback () {}; // call Release method to drop reference count
+    virtual ~IDeckLinkDeckControlStatusCallback () {} // call Release method to drop reference count
 };
 
 /* Interface IDeckLinkDeckControl - Deck Control main interface */
@@ -201,7 +201,7 @@ public:
     virtual HRESULT SetCallback (/* in */ IDeckLinkDeckControlStatusCallback *callback) = 0;
 
 protected:
-    virtual ~IDeckLinkDeckControl () {}; // call Release method to drop reference count
+    virtual ~IDeckLinkDeckControl () {} // call Release method to drop reference count
 };
 
 /* Functions */
@@ -209,7 +209,7 @@ protected:
 extern "C" {
 
 
-};
+}
 
 
 #endif /* defined(BMD_DECKLINKAPIDECKCONTROL_H) */
