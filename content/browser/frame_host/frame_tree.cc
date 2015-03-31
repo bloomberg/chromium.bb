@@ -337,8 +337,10 @@ void FrameTree::UnregisterRenderFrameHost(
 
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {
   // No notification for the root frame.
-  if (frame == root_.get())
+  if (!frame->parent()) {
+    CHECK_EQ(frame, root_.get());
     return;
+  }
 
   // Notify observers of the frame removal.
   if (!on_frame_removed_.is_null())

@@ -111,7 +111,6 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
     // observers are notified of its deletion.
     scoped_ptr<FrameTreeNode> node_to_delete(*iter);
     children_.weak_erase(iter);
-    node_to_delete->set_parent(NULL);
     node_to_delete.reset();
   }
 }
