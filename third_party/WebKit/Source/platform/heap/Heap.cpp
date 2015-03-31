@@ -1507,6 +1507,7 @@ void NormalPage::sweep()
 
 void NormalPage::markUnmarkedObjectsDead()
 {
+    size_t markedObjectSize = 0;
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
@@ -1517,12 +1518,16 @@ void NormalPage::markUnmarkedObjectsDead()
             continue;
         }
         header->checkHeader();
-        if (header->isMarked())
+        if (header->isMarked()) {
             header->unmark();
-        else
+            markedObjectSize += header->size();
+        } else {
             header->markDead();
+        }
         headerAddress += header->size();
     }
+    if (markedObjectSize)
+        Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
 void NormalPage::populateObjectStartBitMap()
@@ -1765,17 +1770,19 @@ void LargeObjectPage::removeFromHeap()
 
 void LargeObjectPage::sweep()
 {
-    Heap::increaseMarkedObjectSize(size());
     heapObjectHeader()->unmark();
+    Heap::increaseMarkedObjectSize(size());
 }
 
 void LargeObjectPage::markUnmarkedObjectsDead()
 {
     HeapObjectHeader* header = heapObjectHeader();
-    if (header->isMarked())
+    if (header->isMarked()) {
         header->unmark();
-    else
+        Heap::increaseMarkedObjectSize(size());
+    } else {
         header->markDead();
+    }
 }
 
 void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address)
