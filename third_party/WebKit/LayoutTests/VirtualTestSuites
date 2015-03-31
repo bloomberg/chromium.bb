@@ -317,6 +317,12 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/cookies",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "compositing/gestures",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
