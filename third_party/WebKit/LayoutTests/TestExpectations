@@ -571,6 +571,13 @@ crbug.com/472267 ietestcenter/Javascript/15.2.3.2-1.html [ Pass Failure ]
 
 crbug.com/472189 ietestcenter/Javascript/15.2.3.3-1.html [ Pass Failure ]
 
+crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-12.html [ Pass Failure ]
+crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-13.html [ Pass Failure ]
+crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-14.html [ Pass Failure ]
+crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-15.html [ Pass Failure ]
+crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-16.html [ Pass Failure ]
+crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-17.html [ Pass Failure ]
+
 crbug.com/316148 crbug.com/465864 http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Failure Crash ]
 crbug.com/398295 [ Debug ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
 crbug.com/398295 [ Win Release ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
