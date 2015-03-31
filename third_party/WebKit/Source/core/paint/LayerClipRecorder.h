@@ -49,4 +49,4 @@ private:
 
 } // namespace blink
 
-#endif // LayerDisplayList_h
+#endif // LayerClipRecorder_h
