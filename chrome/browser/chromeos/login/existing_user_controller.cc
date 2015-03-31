@@ -1200,11 +1200,8 @@ void ExistingUserController::OnBootstrapUserContextInitialized(
 
   // Setting a customized login user flow to perform additional initializations
   // for bootstrap after the user session is started.
-  ChromeUserManager::Get()->SetUserFlow(
-      user_context.GetUserID(),
-      new BootstrapUserFlow(
-          user_context,
-          bootstrap_user_context_initializer_->random_key_used()));
+  ChromeUserManager::Get()->SetUserFlow(user_context.GetUserID(),
+                                        new BootstrapUserFlow(user_context));
 
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
 }

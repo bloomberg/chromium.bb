@@ -17,11 +17,9 @@
 
 namespace chromeos {
 
-BootstrapUserFlow::BootstrapUserFlow(const UserContext& user_context,
-                                     bool is_new_account)
+BootstrapUserFlow::BootstrapUserFlow(const UserContext& user_context)
     : ExtendedUserFlow(user_context.GetUserID()),
       user_context_(user_context),
-      is_new_account_(is_new_account),
       finished_(false),
       user_profile_(nullptr),
       weak_ptr_factory_(this) {
@@ -156,14 +154,7 @@ void BootstrapUserFlow::HandleOAuthTokenStatusChange(
 
 void BootstrapUserFlow::LaunchExtraSteps(Profile* user_profile) {
   user_profile_ = user_profile;
-
-  // Auto pairing only when a random key is used to boostrap cryptohome.
-  if (is_new_account_) {
-    StartAutoPairing();
-    return;
-  }
-
-  Finish();
+  StartAutoPairing();
 }
 
 bool BootstrapUserFlow::SupportsEarlyRestartToApplyFlags() {

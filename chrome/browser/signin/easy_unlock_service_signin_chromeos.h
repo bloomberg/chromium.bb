@@ -25,10 +25,6 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   explicit EasyUnlockServiceSignin(Profile* profile);
   ~EasyUnlockServiceSignin() override;
 
-  // Sets |user_id| as the current user of the service. Note this does
-  // not change the focused user on the login screen.
-  void SetCurrentUser(const std::string& user_id);
-
  private:
   // The load state of a user's cryptohome key data.
   enum UserDataState {

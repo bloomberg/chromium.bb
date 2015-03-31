@@ -24,11 +24,7 @@ class BootstrapUserFlow final
     : public ExtendedUserFlow,
       public ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
-  // Constructs a BootstrapUserFlow. |user_context| is the user this flow
-  // represents and contains the user id and key needed for cryptohome
-  // operations. |is_new_account| is a boolean flag of whether the user
-  // is being added to the device.
-  BootstrapUserFlow(const UserContext& user_context, bool is_new_account);
+  explicit BootstrapUserFlow(const UserContext& user_context);
   ~BootstrapUserFlow() override;
 
  private:
@@ -56,7 +52,6 @@ class BootstrapUserFlow final
   void OnAuthenticationFailure(ExtendedAuthenticator::AuthState state) override;
 
   UserContext user_context_;
-  const bool is_new_account_;
 
   bool finished_;
   Profile* user_profile_;

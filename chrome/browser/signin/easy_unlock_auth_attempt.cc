@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
@@ -44,51 +43,15 @@ std::string UnwrapSecret(const std::string& wrapped_secret,
   return secret;
 }
 
-void DefaultAuthAttemptFinalizedHandler(
-    EasyUnlockAuthAttempt::Type auth_attempt_type,
-    bool success,
-    const std::string& user_id,
-    const std::string& key_secret,
-    const std::string& key_label) {
-  if (!ScreenlockBridge::Get()->IsLocked())
-    return;
-
-  switch (auth_attempt_type) {
-    case EasyUnlockAuthAttempt::TYPE_UNLOCK:
-      if (success) {
-        ScreenlockBridge::Get()->lock_handler()->Unlock(user_id);
-      } else {
-        ScreenlockBridge::Get()->lock_handler()->EnableInput();
-      }
-      return;
-    case EasyUnlockAuthAttempt::TYPE_SIGNIN:
-      if (success) {
-        ScreenlockBridge::Get()->lock_handler()->AttemptEasySignin(
-            user_id, key_secret, key_label);
-      } else {
-        // Attempting signin with an empty secret is equivalent to canceling the
-        // attempt.
-        ScreenlockBridge::Get()->lock_handler()->AttemptEasySignin(
-            user_id, std::string(), std::string());
-      }
-      return;
-  }
-}
-
 }  // namespace
 
-EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(
-    EasyUnlockAppManager* app_manager,
-    const std::string& user_id,
-    Type type,
-    const FinalizedCallback& finalized_callback)
+EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
+                                             const std::string& user_id,
+                                             Type type)
     : app_manager_(app_manager),
       state_(STATE_IDLE),
       user_id_(user_id),
-      type_(type),
-      finalized_callback_(finalized_callback) {
-  if (finalized_callback_.is_null())
-    finalized_callback_ = base::Bind(&DefaultAuthAttemptFinalizedHandler);
+      type_(type) {
 }
 
 EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
@@ -97,7 +60,7 @@ EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
 }
 
 bool EasyUnlockAuthAttempt::Start() {
-  DCHECK_EQ(STATE_IDLE, state_);
+  DCHECK(state_ == STATE_IDLE);
 
   if (!ScreenlockBridge::Get()->IsLocked())
     return false;
@@ -133,8 +96,12 @@ void EasyUnlockAuthAttempt::FinalizeUnlock(const std::string& user_id,
     return;
   }
 
-  finalized_callback_.Run(type_, success, user_id, std::string(),
-                          std::string());
+  if (success) {
+    ScreenlockBridge::Get()->lock_handler()->Unlock(user_id_);
+  } else {
+    ScreenlockBridge::Get()->lock_handler()->EnableInput();
+  }
+
   state_ = STATE_DONE;
 }
 
@@ -164,16 +131,24 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
   key_label = chromeos::EasyUnlockKeyManager::GetKeyLabel(0u);
 #endif  // defined(OS_CHROMEOS)
 
-  const bool kSuccess = true;
-  finalized_callback_.Run(type_, kSuccess, user_id, unwrapped_secret,
-                          key_label);
+  ScreenlockBridge::Get()->lock_handler()->AttemptEasySignin(
+      user_id,
+      unwrapped_secret,
+      key_label);
   state_ = STATE_DONE;
 }
 
 void EasyUnlockAuthAttempt::Cancel(const std::string& user_id) {
   state_ = STATE_DONE;
 
-  const bool kFailure = false;
-  finalized_callback_.Run(type_, kFailure, user_id, std::string(),
-                          std::string());
+  if (!ScreenlockBridge::Get()->IsLocked())
+    return;
+
+  if (type_ == TYPE_UNLOCK) {
+    ScreenlockBridge::Get()->lock_handler()->EnableInput();
+  } else {
+    // Attempting signin with an empty secret is equivalent to canceling the
+    // attempt.
+    ScreenlockBridge::Get()->lock_handler()->AttemptEasySignin(user_id, "", "");
+  }
 }

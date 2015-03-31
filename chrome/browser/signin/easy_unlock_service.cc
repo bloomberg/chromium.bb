@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
+#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
@@ -480,34 +481,16 @@ bool EasyUnlockService::UpdateScreenlockState(
     if (!handler->InStateValidOnRemoteAuthFailure())
       HandleAuthFailure(GetUserEmail());
   }
-
-  FOR_EACH_OBSERVER(
-      EasyUnlockServiceObserver, observers_, OnScreenlockStateChanged(state));
   return true;
 }
 
-EasyUnlockScreenlockStateHandler::State
-EasyUnlockService::GetScreenlockState() {
-  EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
-  if (!handler)
-    return EasyUnlockScreenlockStateHandler::STATE_INACTIVE;
-
-  return handler->state();
-}
-
 void EasyUnlockService::AttemptAuth(const std::string& user_id) {
-  AttemptAuth(user_id, AttemptAuthCallback());
-}
-
-void EasyUnlockService::AttemptAuth(const std::string& user_id,
-                                    const AttemptAuthCallback& callback) {
   CHECK_EQ(GetUserEmail(), user_id);
 
   auth_attempt_.reset(new EasyUnlockAuthAttempt(
-      app_manager_.get(), user_id,
-      GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
-                                : EasyUnlockAuthAttempt::TYPE_SIGNIN,
-      callback));
+      app_manager_.get(), user_id, GetType() == TYPE_REGULAR
+                                       ? EasyUnlockAuthAttempt::TYPE_UNLOCK
+                                       : EasyUnlockAuthAttempt::TYPE_SIGNIN));
   if (!auth_attempt_->Start())
     auth_attempt_.reset();
 }

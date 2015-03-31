@@ -8,11 +8,6 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
-#include "components/user_manager/user_manager.h"
 #include "crypto/random.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -35,9 +30,7 @@ void BootstrapUserContextInitializer::SetCompleteCallbackForTesting(
   complete_callback_for_testing_ = callback;
 }
 
-BootstrapUserContextInitializer::BootstrapUserContextInitializer()
-    : random_key_used_(false),
-      weak_ptr_factory_(this) {
+BootstrapUserContextInitializer::BootstrapUserContextInitializer() {
 }
 
 BootstrapUserContextInitializer::~BootstrapUserContextInitializer() {
@@ -48,7 +41,7 @@ void BootstrapUserContextInitializer::Start(const std::string& auth_code,
   DCHECK(!callback.is_null());
   callback_ = callback;
 
-  user_context_.SetAuthFlow(UserContext::AUTH_FLOW_EASY_BOOTSTRAP);
+  InitializeUserContext();
   StartTokenFetch(auth_code);
 }
 
@@ -67,67 +60,14 @@ void BootstrapUserContextInitializer::StartTokenFetch(
                                         this);
 }
 
-void BootstrapUserContextInitializer::StartCheckExistingKeys() {
-  const std::string& user_id = user_context_.GetUserID();
+void BootstrapUserContextInitializer::InitializeUserContext() {
+  user_context_.SetAuthFlow(UserContext::AUTH_FLOW_EASY_BOOTSTRAP);
 
-  // Use random key for the first time user.
-  if (!user_manager::UserManager::Get()->IsKnownUser(user_id)) {
-    CreateRandomKey();
-    return;
-  }
-
-  EasyUnlockKeyManager* key_manager =
-      UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
-  key_manager->GetDeviceDataList(
-      UserContext(user_id),
-      base::Bind(&BootstrapUserContextInitializer::OnGetEasyUnlockData,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BootstrapUserContextInitializer::OnGetEasyUnlockData(
-    bool success,
-    const EasyUnlockDeviceKeyDataList& data_list) {
-  // Existing user must have Smart lock keys to use bootstrap flow.
-  if (!success || data_list.empty()) {
-    LOG(ERROR) << "Unable to get Easy unlock key data.";
-    Notify(false);
-    return;
-  }
-
-  EasyUnlockService* service =
-      EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
-  service->AddObserver(this);
-
-  static_cast<EasyUnlockServiceSignin*>(service)
-      ->SetCurrentUser(user_context_.GetUserID());
-  OnScreenlockStateChanged(service->GetScreenlockState());
-}
-
-void BootstrapUserContextInitializer::OnEasyUnlockAuthenticated(
-    EasyUnlockAuthAttempt::Type auth_attempt_type,
-    bool success,
-    const std::string& user_id,
-    const std::string& key_secret,
-    const std::string& key_label) {
-  DCHECK_EQ(EasyUnlockAuthAttempt::TYPE_SIGNIN, auth_attempt_type);
-  if (!success || key_secret.empty()) {
-    LOG(ERROR) << "Failed to sign-in using existing Smart lock key.";
-    Notify(false);
-    return;
-  }
-
-  user_context_.SetKey(Key(key_secret));
-  user_context_.GetKey()->SetLabel(key_label);
-  Notify(true);
-}
-
-void BootstrapUserContextInitializer::CreateRandomKey() {
   std::string random_initial_key;
   crypto::RandBytes(WriteInto(&random_initial_key, kUserKeyByteSize + 1),
                     kUserKeyByteSize);
+
   user_context_.SetKey(Key(random_initial_key));
-  random_key_used_ = true;
-  Notify(true);
 }
 
 void BootstrapUserContextInitializer::Notify(bool success) {
@@ -177,8 +117,7 @@ void BootstrapUserContextInitializer::OnGetUserInfoResponse(
   }
 
   user_context_.SetUserID(email);
-  user_context_.SetGaiaID(gaia_id);
-  StartCheckExistingKeys();
+  Notify(true);
 }
 
 void BootstrapUserContextInitializer::OnOAuthError() {
@@ -189,23 +128,6 @@ void BootstrapUserContextInitializer::OnOAuthError() {
 void BootstrapUserContextInitializer::OnNetworkError(int response_code) {
   LOG(ERROR) << "Network error.";
   Notify(false);
-}
-
-void BootstrapUserContextInitializer::OnScreenlockStateChanged(
-    EasyUnlockScreenlockStateHandler::State state) {
-  // TODO(xiyuan): Add timeout and hook up with error UI after
-  //     http://crbug.com/471067.
-  if (state != EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED)
-    return;
-
-  EasyUnlockService* service =
-      EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
-  service->RemoveObserver(this);
-
-  service->AttemptAuth(
-      user_context_.GetUserID(),
-      base::Bind(&BootstrapUserContextInitializer::OnEasyUnlockAuthenticated,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

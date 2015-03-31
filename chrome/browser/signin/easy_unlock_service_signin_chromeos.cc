@@ -102,10 +102,6 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
 EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {
 }
 
-void EasyUnlockServiceSignin::SetCurrentUser(const std::string& user_id) {
-  OnFocusedUserChanged(user_id);
-}
-
 EasyUnlockService::Type EasyUnlockServiceSignin::GetType() const {
   return EasyUnlockService::TYPE_SIGNIN;
 }
