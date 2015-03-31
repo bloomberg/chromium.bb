@@ -204,7 +204,9 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
       result.button = WebMouseEvent::ButtonNone;
     break;
   case WM_MOUSELEAVE:
-    result.type = WebInputEvent::MouseLeave;
+    // TODO(rbyers): This should be MouseLeave but is disabled temporarily.
+    // See http://crbug.com/450631
+    result.type = WebInputEvent::MouseMove;
     result.button = WebMouseEvent::ButtonNone;
     // set the current mouse position (relative to the client area of the
     // current window) since none is specified for this event
