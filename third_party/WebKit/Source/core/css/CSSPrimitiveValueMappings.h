@@ -1423,7 +1423,6 @@ template<> inline CSSPrimitiveValue::operator EFloat() const
     case CSSValueRight:
         return RightFloat;
     case CSSValueNone:
-    case CSSValueCenter: // Non-standard CSS value.
         return NoFloat;
     default:
         break;
