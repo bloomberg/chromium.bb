@@ -1008,7 +1008,6 @@ crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-f
 
 # Tests which become flaky with the Blink Scheduler enabled
 crbug.com/432129 [ Win Debug ] inspector-protocol/timeline/timeline-raf.html [ Pass Failure ]
-crbug.com/432129 virtual/slimmingpaint/fast/text/descent-clip-in-scaled-page.html [ Pass ImageOnlyFailure ]
 
 crbug.com/231921 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Pass ImageOnlyFailure ]
 
@@ -1589,7 +1588,10 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-t
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
 crbug.com/438281 [ Debug Snowleopard ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
 crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
+
+crbug.com/471975 [ Debug ] virtual/antialiasedtext/fast/text/descent-clip-in-scaled-page.html [ Crash ]
+crbug.com/471975 [ Debug ] virtual/slimmingpaint/fast/text/aat-morx.html [ Crash ]
+crbug.com/471975 [ Debug ] virtual/slimmingpaint/fast/text/descent-clip-in-scaled-page.html [ Crash ]
 
 crbug.com/417782 [ Win Linux ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Pass ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
