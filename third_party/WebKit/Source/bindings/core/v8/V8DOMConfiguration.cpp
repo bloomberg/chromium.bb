@@ -74,8 +74,10 @@ v8::Local<v8::FunctionTemplate> functionOrTemplate(v8::Isolate* isolate, v8::Fun
     v8::Local<v8::FunctionTemplate> functionTemplate;
     if (callback) {
         functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(wrapperTypeInfo)), signature, length);
-        if (!functionTemplate.IsEmpty())
+        if (!functionTemplate.IsEmpty()) {
             functionTemplate->RemovePrototype();
+            functionTemplate->SetAcceptAnyReceiver(false);
+        }
     }
     return functionTemplate;
 }

@@ -25,8 +25,8 @@ var timerId = window.setInterval(function() {
         return;
     }
     if (targetWindow) {
-        shouldThrow("pathnameDescriptor.get.call(targetWindow.location)", '"SecurityError: Failed to read the \'pathname\' property from \'Location\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
-        shouldThrow("pathnameDescriptor.set.call(targetWindow.location, 1)", '"SecurityError: Failed to set the \'pathname\' property on \'Location\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+        shouldThrow("pathnameDescriptor.get.call(targetWindow.location)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+        shouldThrow("pathnameDescriptor.set.call(targetWindow.location, 1)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
         window.clearInterval(timerId);
         finishJSTest();
     }
