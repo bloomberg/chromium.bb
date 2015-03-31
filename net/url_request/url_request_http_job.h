@@ -66,7 +66,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   typedef base::RefCountedData<bool> SharedBoolean;
 
   class HttpFilterContext;
-  class HttpTransactionDelegateImpl;
 
   // Shadows URLRequestJob's version of this method so we can grab cookies.
   void NotifyHeadersComplete();
