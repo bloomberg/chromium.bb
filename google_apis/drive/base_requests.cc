@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/request_sender.h"
@@ -270,17 +271,49 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   DCHECK(!access_token.empty());
   DCHECK(!callback.is_null());
   DCHECK(re_authenticate_callback_.is_null());
+  Prepare(base::Bind(&UrlFetchRequestBase::StartAfterPrepare,
+                     weak_ptr_factory_.GetWeakPtr(), access_token,
+                     custom_user_agent, callback));
+}
 
-  re_authenticate_callback_ = callback;
+void UrlFetchRequestBase::Prepare(const PrepareCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!callback.is_null());
+  callback.Run(HTTP_SUCCESS);
+}
 
-  GURL url = GetURL();
-  if (url.is_empty()) {
-    // Error is found on generating the url. Send the error message to the
-    // callback, and then return immediately without trying to connect
-    // to the server.
-    RunCallbackOnPrematureFailure(DRIVE_OTHER_ERROR);
+void UrlFetchRequestBase::StartAfterPrepare(
+    const std::string& access_token,
+    const std::string& custom_user_agent,
+    const ReAuthenticateCallback& callback,
+    DriveApiErrorCode code) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!access_token.empty());
+  DCHECK(!callback.is_null());
+  DCHECK(re_authenticate_callback_.is_null());
+
+  const GURL url = GetURL();
+  DriveApiErrorCode error_code;
+  if (code != HTTP_SUCCESS && code != HTTP_CREATED && code != HTTP_NO_CONTENT)
+    error_code = code;
+  else if (url.is_empty())
+    error_code = DRIVE_OTHER_ERROR;
+  else
+    error_code = HTTP_SUCCESS;
+
+  if (error_code != HTTP_SUCCESS) {
+    // Error is found on generating the url or preparing the request. Send the
+    // error message to the callback, and then return immediately without trying
+    // to connect to the server.  We need to call CompleteRequestWithError
+    // asynchronously because client code does not assume result callback is
+    // called synchronously.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&UrlFetchRequestBase::CompleteRequestWithError,
+                              weak_ptr_factory_.GetWeakPtr(), error_code));
     return;
   }
+
+  re_authenticate_callback_ = callback;
   DVLOG(1) << "URL: " << url.spec();
 
   URLFetcher::RequestType request_type = GetRequestType();
@@ -380,8 +413,7 @@ void UrlFetchRequestBase::GetOutputFilePath(
 void UrlFetchRequestBase::Cancel() {
   response_writer_ = NULL;
   url_fetcher_.reset(NULL);
-  RunCallbackOnPrematureFailure(DRIVE_CANCELLED);
-  sender_->RequestFinished(this);
+  CompleteRequestWithError(DRIVE_CANCELLED);
 }
 
 DriveApiErrorCode UrlFetchRequestBase::GetErrorCode() {
@@ -473,9 +505,13 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
   ProcessURLFetchResults(source);
 }
 
-void UrlFetchRequestBase::OnAuthFailed(DriveApiErrorCode code) {
+void UrlFetchRequestBase::CompleteRequestWithError(DriveApiErrorCode code) {
   RunCallbackOnPrematureFailure(code);
   sender_->RequestFinished(this);
+}
+
+void UrlFetchRequestBase::OnAuthFailed(DriveApiErrorCode code) {
+  CompleteRequestWithError(code);
 }
 
 base::WeakPtr<AuthenticatedRequestInterface>
@@ -775,9 +811,7 @@ MultipartUploadRequestBase::MultipartUploadRequestBase(
 MultipartUploadRequestBase::~MultipartUploadRequestBase() {
 }
 
-void MultipartUploadRequestBase::Start(const std::string& access_token,
-                                       const std::string& custom_user_agent,
-                                       const ReAuthenticateCallback& callback) {
+void MultipartUploadRequestBase::Prepare(const PrepareCallback& callback) {
   // If the request is cancelled, the request instance will be deleted in
   // |UrlFetchRequestBase::Cancel| and OnPrepareUploadContent won't be called.
   std::string* const upload_content_type = new std::string();
@@ -788,25 +822,23 @@ void MultipartUploadRequestBase::Start(const std::string& access_token,
                  local_path_, base::Unretained(upload_content_type),
                  base::Unretained(upload_content_data)),
       base::Bind(&MultipartUploadRequestBase::OnPrepareUploadContent,
-                 weak_ptr_factory_.GetWeakPtr(), access_token,
-                 custom_user_agent, callback, base::Owned(upload_content_type),
+                 weak_ptr_factory_.GetWeakPtr(), callback,
+                 base::Owned(upload_content_type),
                  base::Owned(upload_content_data)));
 }
 
 void MultipartUploadRequestBase::OnPrepareUploadContent(
-    const std::string& access_token,
-    const std::string& custom_user_agent,
-    const ReAuthenticateCallback& callback,
+    const PrepareCallback& callback,
     std::string* upload_content_type,
     std::string* upload_content_data,
     bool result) {
   if (!result) {
-    RunCallbackOnPrematureFailure(DRIVE_FILE_ERROR);
+    callback.Run(DRIVE_FILE_ERROR);
     return;
   }
   upload_content_type_.swap(*upload_content_type);
   upload_content_data_.swap(*upload_content_data);
-  UrlFetchRequestBase::Start(access_token, custom_user_agent, callback);
+  callback.Run(HTTP_SUCCESS);
 }
 
 void MultipartUploadRequestBase::SetBoundaryForTesting(
