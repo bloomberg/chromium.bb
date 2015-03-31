@@ -71,6 +71,10 @@ class ServiceWorkerContextWatcher
   void OnVersionStateChanged(
       int64 version_id,
       content::ServiceWorkerVersion::Status status) override;
+  void OnMainScriptHttpResponseInfoSet(
+      int64 version_id,
+      base::Time script_response_time,
+      base::Time script_last_modified) override;
   void OnErrorReported(int64 version_id,
                        int process_id,
                        int thread_id,

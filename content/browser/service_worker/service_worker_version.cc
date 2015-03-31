@@ -34,6 +34,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 
 namespace content {
@@ -386,10 +387,17 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return ServiceWorkerVersionInfo(
+  ServiceWorkerVersionInfo info(
       running_status(), status(), script_url(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
+  if (!main_script_http_info_)
+    return info;
+  info.script_response_time = main_script_http_info_->response_time;
+  if (main_script_http_info_->headers)
+    main_script_http_info_->headers->GetLastModifiedValue(
+        &info.script_last_modified);
+  return info;
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
@@ -832,6 +840,8 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
     const net::HttpResponseInfo& http_info) {
   main_script_http_info_.reset(new net::HttpResponseInfo(http_info));
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnMainScriptHttpResponseInfoSet(this));
 }
 
 const net::HttpResponseInfo*

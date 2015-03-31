@@ -116,6 +116,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // ServiceWorkerVersion::Listener overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
+  void OnMainScriptHttpResponseInfoSet(ServiceWorkerVersion* version) override;
   void OnErrorReported(ServiceWorkerVersion* version,
                        const base::string16& error_message,
                        int line_number,

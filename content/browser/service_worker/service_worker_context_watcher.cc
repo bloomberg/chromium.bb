@@ -199,6 +199,17 @@ void ServiceWorkerContextWatcher::OnVersionStateChanged(
     version_info_map_.erase(version_id);
 }
 
+void ServiceWorkerContextWatcher::OnMainScriptHttpResponseInfoSet(
+    int64 version_id,
+    base::Time script_response_time,
+    base::Time script_last_modified) {
+  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
+  DCHECK(version);
+  version->script_response_time = script_response_time;
+  version->script_last_modified = script_last_modified;
+  SendVersionInfo(*version);
+}
+
 void ServiceWorkerContextWatcher::OnErrorReported(int64 version_id,
                                                   int process_id,
                                                   int thread_id,

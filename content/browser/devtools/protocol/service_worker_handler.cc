@@ -87,7 +87,11 @@ scoped_refptr<ServiceWorkerVersion> CreateVersionDictionaryValue(
           ->set_script_url(version_info.script_url.spec())
           ->set_running_status(
                 GetVersionRunningStatusString(version_info.running_status))
-          ->set_status(GetVersionStatusString(version_info.status)));
+          ->set_status(GetVersionStatusString(version_info.status))
+          ->set_script_last_modified(
+                version_info.script_last_modified.ToDoubleT())
+          ->set_script_response_time(
+              version_info.script_response_time.ToDoubleT()));
   return version;
 }
 

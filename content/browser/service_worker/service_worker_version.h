@@ -95,6 +95,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
    public:
     virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
+    virtual void OnMainScriptHttpResponseInfoSet(
+        ServiceWorkerVersion* version) {}
     virtual void OnErrorReported(ServiceWorkerVersion* version,
                                  const base::string16& error_message,
                                  int line_number,

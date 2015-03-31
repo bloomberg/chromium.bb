@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -34,6 +35,8 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   int process_id;
   int thread_id;
   int devtools_agent_route_id;
+  base::Time script_response_time;
+  base::Time script_last_modified;
 };
 
 struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {

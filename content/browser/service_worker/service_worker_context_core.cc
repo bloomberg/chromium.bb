@@ -22,6 +22,8 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "url/gurl.h"
 
@@ -499,6 +501,20 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnVersionStateChanged,
                          version->version_id(), version->status());
+}
+
+void ServiceWorkerContextCore::OnMainScriptHttpResponseInfoSet(
+    ServiceWorkerVersion* version) {
+  if (!observer_list_.get())
+    return;
+  const net::HttpResponseInfo* info = version->GetMainScriptHttpResponseInfo();
+  DCHECK(info);
+  base::Time lastModified;
+  if (info->headers)
+    info->headers->GetLastModifiedValue(&lastModified);
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextObserver::OnMainScriptHttpResponseInfoSet,
+      version->version_id(), info->response_time, lastModified);
 }
 
 void ServiceWorkerContextCore::OnErrorReported(

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "url/gurl.h"
 
@@ -54,6 +55,10 @@ class ServiceWorkerContextObserver {
       ServiceWorkerVersion::RunningStatus running_status) {}
   virtual void OnVersionStateChanged(int64 version_id,
                                      ServiceWorkerVersion::Status status) {}
+  virtual void OnMainScriptHttpResponseInfoSet(
+      int64 version_id,
+      base::Time script_response_time,
+      base::Time script_last_modified) {}
   virtual void OnErrorReported(int64 version_id,
                                int process_id,
                                int thread_id,
