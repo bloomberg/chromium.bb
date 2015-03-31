@@ -23,3 +23,6 @@ libdrm_exynosinclude_HEADERS = exynos_drmif.h
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_exynos.pc
+
+TESTS = exynos-symbol-check
+EXTRA_DIST = $(TESTS)
