@@ -85,7 +85,7 @@ class MigrationTest : public testing::TestWithParam<int> {
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
 
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
  private:
@@ -2896,10 +2896,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
 
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
   ASSERT_TRUE(dbs->MigrateVersion67To68());
   ASSERT_EQ(68, dbs->GetVersion());
-  ASSERT_TRUE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
@@ -2911,10 +2911,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion68To69());
     ASSERT_EQ(69, dbs->GetVersion());
-    ASSERT_TRUE(dbs->needs_column_refresh_);
+    ASSERT_TRUE(dbs->needs_column_refresh());
   }
 
   ASSERT_TRUE(connection.DoesColumnExist("metas", "specifics"));
@@ -2952,10 +2952,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion69To70());
     ASSERT_EQ(70, dbs->GetVersion());
-    ASSERT_TRUE(dbs->needs_column_refresh_);
+    ASSERT_TRUE(dbs->needs_column_refresh());
   }
 
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_server_tag"));
@@ -2979,10 +2979,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion70To71());
     ASSERT_EQ(71, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
   ASSERT_FALSE(connection.DoesColumnExist("share_info", "last_sync_timestamp"));
@@ -3015,10 +3015,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion71To72) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion71To72());
     ASSERT_EQ(72, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
   ASSERT_FALSE(connection.DoesTableExist("extended_attributes"));
@@ -3035,10 +3035,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion72To73) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion72To73());
     ASSERT_EQ(73, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
   ASSERT_TRUE(connection.DoesColumnExist("share_info", "notification_state"));
@@ -3068,10 +3068,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion73To74());
     ASSERT_EQ(74, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
   ASSERT_TRUE(
@@ -3102,10 +3102,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion74To75) {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion74To75());
     ASSERT_EQ(75, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
   ASSERT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
@@ -3130,10 +3130,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
 
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
   ASSERT_TRUE(dbs->MigrateVersion75To76());
   ASSERT_EQ(76, dbs->GetVersion());
-  ASSERT_TRUE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->needs_column_refresh());
   // Cannot actual refresh columns due to version 76 not containing all
   // necessary columns.
 }
@@ -3145,7 +3145,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
 
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
 
   EXPECT_EQ(GetExpectedLegacyMetaProtoTimes(INCLUDE_DELETED_ITEMS),
             GetMetaProtoTimes(dbs->db_.get()));
@@ -3159,7 +3159,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
             GetMetaProtoTimes(dbs->db_.get()));
   // Cannot actually load entries due to version 77 not having all required
   // columns.
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
@@ -3172,11 +3172,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
   {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_TRUE(dbs->MigrateVersion77To78());
     ASSERT_EQ(78, dbs->GetVersion());
 
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
 
   ASSERT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
@@ -3197,10 +3197,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
 
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
   ASSERT_TRUE(dbs->MigrateVersion78To79());
   ASSERT_EQ(79, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
 
   // Ensure the next_id has been incremented.
   Directory::MetahandlesMap handles_map;
@@ -3222,10 +3222,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
 
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
   ASSERT_TRUE(dbs->MigrateVersion79To80());
   ASSERT_EQ(80, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
 
   // Ensure the bag_of_chips has been set.
   Directory::MetahandlesMap handles_map;
@@ -3280,10 +3280,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
 
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
   ASSERT_TRUE(dbs->MigrateVersion81To82());
   ASSERT_EQ(82, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_FALSE(dbs->needs_column_refresh());
 
   ASSERT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
 }
@@ -3347,7 +3347,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_position"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "server_unique_position"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
-  ASSERT_TRUE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion86To87) {
@@ -3361,7 +3361,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion86To87) {
   EXPECT_TRUE(dbs->MigrateVersion86To87());
   EXPECT_EQ(87, dbs->GetVersion());
   EXPECT_TRUE(connection.DoesColumnExist("metas", "attachment_metadata"));
-  EXPECT_TRUE(dbs->needs_column_refresh_);
+  EXPECT_TRUE(dbs->needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion87To88) {
@@ -3389,7 +3389,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion88To89) {
   ASSERT_EQ(89, dbs->GetVersion());
   EXPECT_TRUE(
       connection.DoesColumnExist("metas", "server_attachment_metadata"));
-  EXPECT_TRUE(dbs->needs_column_refresh_);
+  EXPECT_TRUE(dbs->needs_column_refresh());
 }
 
 // The purpose of this test case is to make it easier to get a dump of the
@@ -3420,7 +3420,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateToLatestAndDump) {
     ASSERT_TRUE(dbs->MigrateVersion88To89());  // Update this.
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     EXPECT_EQ(89, dbs->GetVersion());  // Update this.
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
   }
   // Set breakpoint here.
 }
@@ -3548,7 +3548,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
                                 &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
       dbs->DeleteEntries(metahandles_to_purge);
-    ASSERT_FALSE(dbs->needs_column_refresh_);
+    ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
   }
 

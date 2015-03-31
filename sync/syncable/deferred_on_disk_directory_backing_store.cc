@@ -37,9 +37,7 @@ bool DeferredOnDiskDirectoryBackingStore::SaveChanges(
       return false;
 
     // Reopen DB on disk.
-    db_.reset(new sql::Connection);
-    db_->set_exclusive_locking();
-    db_->set_page_size(databasePageSize_);
+    ResetAndCreateConnection();
     if (!db_->Open(backing_filepath_) || !InitializeTables())
       return false;
 

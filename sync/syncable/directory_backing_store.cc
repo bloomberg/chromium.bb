@@ -28,6 +28,16 @@
 
 using std::string;
 
+namespace {
+
+bool IsSyncBackingDatabase32KEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
+  return group_name == "Enabled";
+}
+
+}  // namespace
+
 namespace syncer {
 namespace syncable {
 
@@ -172,20 +182,18 @@ void AppendColumnList(std::string* output) {
 // DirectoryBackingStore implementation.
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
-  : db_(new sql::Connection()),
-    dir_name_(dir_name),
-    needs_column_refresh_(false) {
-  db_->set_histogram_tag("SyncDirectory");
-  db_->set_cache_size(32);
-  databasePageSize_ = IsSyncBackingDatabase32KEnabled() ? 32768 : 4096;
-  db_->set_page_size(databasePageSize_);
+    : dir_name_(dir_name),
+      database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
+      needs_column_refresh_(false) {
+  ResetAndCreateConnection();
 }
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
                                              sql::Connection* db)
-  : db_(db),
-    dir_name_(dir_name),
-    needs_column_refresh_(false) {
+    : db_(db),
+      dir_name_(dir_name),
+      database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
+      needs_column_refresh_(false) {
 }
 
 DirectoryBackingStore::~DirectoryBackingStore() {
@@ -238,11 +246,11 @@ bool DirectoryBackingStore::SaveChanges(
   if (!transaction.Begin())
     return false;
 
-  PrepareSaveEntryStatement(METAS_TABLE, &save_meta_statment_);
+  PrepareSaveEntryStatement(METAS_TABLE, &save_meta_statement_);
   for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
     DCHECK((*i)->is_dirty());
-    if (!SaveEntryToDB(&save_meta_statment_, **i))
+    if (!SaveEntryToDB(&save_meta_statement_, **i))
       return false;
   }
 
@@ -250,10 +258,10 @@ bool DirectoryBackingStore::SaveChanges(
     return false;
 
   PrepareSaveEntryStatement(DELETE_JOURNAL_TABLE,
-                            &save_delete_journal_statment_);
+                            &save_delete_journal_statement_);
   for (EntryKernelSet::const_iterator i = snapshot.delete_journals.begin();
        i != snapshot.delete_journals.end(); ++i) {
-    if (!SaveEntryToDB(&save_delete_journal_statment_, **i))
+    if (!SaveEntryToDB(&save_delete_journal_statement_, **i))
       return false;
   }
 
@@ -1608,12 +1616,6 @@ bool DirectoryBackingStore::GetDatabasePageSize(int* page_size) {
   return true;
 }
 
-bool DirectoryBackingStore::IsSyncBackingDatabase32KEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
-  return group_name == "Enabled";
-}
-
 bool DirectoryBackingStore::IncreasePageSizeTo32K() {
   if (!db_->Execute("PRAGMA page_size=32768;") || !Vacuum()) {
     return false;
@@ -1627,6 +1629,18 @@ bool DirectoryBackingStore::Vacuum() {
     return false;
   }
   return true;
+}
+
+bool DirectoryBackingStore::needs_column_refresh() const {
+  return needs_column_refresh_;
+}
+
+void DirectoryBackingStore::ResetAndCreateConnection() {
+  db_.reset(new sql::Connection());
+  db_->set_histogram_tag("SyncDirectory");
+  db_->set_exclusive_locking();
+  db_->set_cache_size(32);
+  db_->set_page_size(database_page_size_);
 }
 
 }  // namespace syncable

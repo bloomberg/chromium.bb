@@ -28,8 +28,6 @@ OnDiskDirectoryBackingStore::OnDiskDirectoryBackingStore(
     : DirectoryBackingStore(dir_name),
       allow_failure_for_test_(false),
       backing_filepath_(backing_filepath) {
-  db_->set_exclusive_locking();
-  db_->set_page_size(databasePageSize_);
 }
 
 OnDiskDirectoryBackingStore::~OnDiskDirectoryBackingStore() { }
@@ -80,13 +78,9 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   // fetch the user's data from the cloud.
   STLDeleteValues(handles_map);
   STLDeleteElements(delete_journals);
-  db_.reset(new sql::Connection);
-  // TODO: Manually propagating the default database settings is
-  // brittle.  Either have a helper to set these up (or generate a new
-  // connection), or add something like Reset() to sql::Connection.
-  db_->set_exclusive_locking();
-  db_->set_page_size(databasePageSize_);
-  db_->set_histogram_tag("SyncDirectory");
+
+  ResetAndCreateConnection();
+
   base::DeleteFile(backing_filepath_, false);
 
   result = TryLoad(handles_map, delete_journals, metahandles_to_purge,

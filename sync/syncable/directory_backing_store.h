@@ -149,12 +149,6 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool SetVersion(int version);
   int GetVersion();
 
-  bool GetDatabasePageSize(int* page_size);
-  bool IsSyncBackingDatabase32KEnabled();
-  bool IncreasePageSizeTo32K();
-  bool Vacuum();
-  int databasePageSize_;
-
   bool MigrateToSpecifics(const char* old_columns,
                           const char* specifics_column,
                           void(*handler_function) (
@@ -186,19 +180,31 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion87To88();
   bool MigrateVersion88To89();
 
+  // Accessor for needs_column_refresh_.  Used in tests.
+  bool needs_column_refresh() const;
+
+  // Destroys the existing Connection and creates a new one.
+  void ResetAndCreateConnection();
+
   scoped_ptr<sql::Connection> db_;
-  sql::Statement save_meta_statment_;
-  sql::Statement save_delete_journal_statment_;
-  std::string dir_name_;
+
+ private:
+  bool Vacuum();
+  bool IncreasePageSizeTo32K();
+  bool GetDatabasePageSize(int* page_size);
+
+  // Prepares |save_statement| for saving entries in |table|.
+  void PrepareSaveEntryStatement(EntryTable table,
+                                 sql::Statement* save_statement);
+
+  const std::string dir_name_;
+  const int database_page_size_;
+  sql::Statement save_meta_statement_;
+  sql::Statement save_delete_journal_statement_;
 
   // Set to true if migration left some old columns around that need to be
   // discarded.
   bool needs_column_refresh_;
-
- private:
-  // Prepares |save_statement| for saving entries in |table|.
-  void PrepareSaveEntryStatement(EntryTable table,
-                                 sql::Statement* save_statement);
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);
 };
