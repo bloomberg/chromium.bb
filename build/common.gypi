@@ -246,14 +246,8 @@
 
           # Set the default "target_subarch" on iOS. Valid values are "arm32",
           # "arm64" and "both" (meaning a fat binary).
-          #
-          # TODO(sdefresne): change the default from "arm32" to "both" for
-          # "target_subarch" once http://crbug.com/339477 is fixed.
-          #
-          # TODO(sdefresne): set the "target_arch" to "arm" once compilation
-          # of skia has been fixed for simulator. http://crbug.com/342377
           ['OS=="ios"', {
-            'target_subarch%': 'arm32',
+            'target_subarch%': 'arm64',
           }],
 
           # Set arch variants for MIPS platforms.
