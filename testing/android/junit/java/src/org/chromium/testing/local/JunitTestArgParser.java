@@ -4,6 +4,7 @@
 
 package org.chromium.testing.local;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +16,7 @@ public class JunitTestArgParser {
     private final Set<String> mPackageFilters;
     private final Set<Class<?>> mRunnerFilters;
     private final Set<String> mGtestFilters;
+    private File mJsonOutput;
 
     public static JunitTestArgParser parse(String[] args) {
 
@@ -38,6 +40,9 @@ public class JunitTestArgParser {
                     } else if ("gtest-filter".equals(argName)) {
                         // Read the command line argument after the flag.
                         parsed.addGtestFilter(args[++i]);
+                    } else if ("json-results-file".equals(argName)) {
+                        // Read the command line argument after the flag.
+                        parsed.setJsonOutputFile(args[++i]);
                     } else {
                         System.out.println("Ignoring flag: \"" + argName + "\"");
                     }
@@ -60,6 +65,7 @@ public class JunitTestArgParser {
         mPackageFilters = new HashSet<String>();
         mRunnerFilters = new HashSet<Class<?>>();
         mGtestFilters = new HashSet<String>();
+        mJsonOutput = null;
     }
 
     public Set<String> getPackageFilters() {
@@ -74,6 +80,10 @@ public class JunitTestArgParser {
         return mGtestFilters;
     }
 
+    public File getJsonOutputFile() {
+        return mJsonOutput;
+    }
+
     private void addPackageFilter(String packageFilter) {
         mPackageFilters.add(packageFilter);
     }
@@ -84,6 +94,10 @@ public class JunitTestArgParser {
 
     private void addGtestFilter(String gtestFilter) {
         mGtestFilters.add(gtestFilter);
+    }
+
+    private void setJsonOutputFile(String path) {
+        mJsonOutput = new File(path);
     }
 
 }

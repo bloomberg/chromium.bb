@@ -768,7 +768,13 @@ def _RunUIAutomatorTests(args, devices):
 def _RunJUnitTests(args):
   """Subcommand of RunTestsCommand which runs junit tests."""
   runner_factory, tests = junit_setup.Setup(args)
-  _, exit_code = junit_dispatcher.RunTests(tests, runner_factory)
+  results, exit_code = junit_dispatcher.RunTests(tests, runner_factory)
+
+  report_results.LogFull(
+      results=results,
+      test_type='JUnit',
+      test_package=args.test_suite)
+
   return exit_code
 
 

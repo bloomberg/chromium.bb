@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from pylib import constants
+from pylib.base import base_test_result
+
 def RunTests(tests, runner_factory):
   """Runs a set of java tests on the host.
 
@@ -11,9 +14,15 @@ def RunTests(tests, runner_factory):
   def run(t):
     runner = runner_factory(None, None)
     runner.SetUp()
-    result = runner.RunTest(t)
+    results_list, return_code = runner.RunTest(t)
     runner.TearDown()
-    return result == 0
+    return (results_list, return_code == 0)
 
-  return (None, 0 if all(run(t) for t in tests) else 1)
-
+  test_run_results = base_test_result.TestRunResults()
+  exit_code = 0
+  for t in tests:
+    results_list, passed = run(t)
+    test_run_results.AddResults(results_list)
+    if not passed:
+      exit_code = constants.ERROR_EXIT_CODE
+  return (test_run_results, exit_code)

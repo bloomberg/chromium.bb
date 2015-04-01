@@ -76,10 +76,12 @@ public final class JunitTestMain {
         JunitTestArgParser parser = JunitTestArgParser.parse(args);
 
         JUnitCore core = new JUnitCore();
-        GtestLogger logger = new GtestLogger(System.out);
-        core.addListener(new GtestListener(logger));
+        GtestLogger gtestLogger = new GtestLogger(System.out);
+        core.addListener(new GtestListener(gtestLogger));
+        JsonLogger jsonLogger = new JsonLogger(parser.getJsonOutputFile());
+        core.addListener(new JsonListener(jsonLogger));
         Class[] classes = findClassesFromClasspath();
-        Request testRequest = Request.classes(new GtestComputer(logger), classes);
+        Request testRequest = Request.classes(new GtestComputer(gtestLogger), classes);
         for (String packageFilter : parser.getPackageFilters()) {
             testRequest = testRequest.filterWith(new PackageFilter(packageFilter));
         }

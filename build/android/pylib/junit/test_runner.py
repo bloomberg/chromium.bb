@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
+import tempfile
 
 from pylib import cmd_helper
 from pylib import constants
+from pylib.base import base_test_result
+from pylib.results import json_results
 
 class JavaTestRunner(object):
   """Runs java tests on the host."""
@@ -22,22 +26,25 @@ class JavaTestRunner(object):
 
   def RunTest(self, _test):
     """Runs junit tests from |self._test_suite|."""
-
-    command = ['java',
-               '-Drobolectric.dependency.dir=%s' %
-                    os.path.join(constants.GetOutDirectory(), 'lib.java'),
-               '-jar', os.path.join(constants.GetOutDirectory(), 'lib.java',
-                                    '%s.jar' % self._test_suite)]
-
-    if self._test_filter:
-      command.extend(['-gtest-filter', self._test_filter])
-    if self._package_filter:
-      command.extend(['-package-filter', self._package_filter])
-    if self._runner_filter:
-      command.extend(['-runner-filter', self._runner_filter])
-    if self._sdk_version:
-      command.extend(['-sdk-version', self._sdk_version])
-    return cmd_helper.RunCmd(command)
+    with tempfile.NamedTemporaryFile() as json_file:
+      command = ['java',
+                 '-Drobolectric.dependency.dir=%s' %
+                      os.path.join(constants.GetOutDirectory(), 'lib.java'),
+                 '-jar', os.path.join(constants.GetOutDirectory(), 'lib.java',
+                                      '%s.jar' % self._test_suite),
+                 '-json-results-file', json_file.name]
+      if self._test_filter:
+        command.extend(['-gtest-filter', self._test_filter])
+      if self._package_filter:
+        command.extend(['-package-filter', self._package_filter])
+      if self._runner_filter:
+        command.extend(['-runner-filter', self._runner_filter])
+      if self._sdk_version:
+        command.extend(['-sdk-version', self._sdk_version])
+      return_code = cmd_helper.RunCmd(command)
+      results_list = json_results.ParseResultsFromJson(
+          json.loads(json_file.read()))
+      return (results_list, return_code)
 
   def TearDown(self):
     pass
