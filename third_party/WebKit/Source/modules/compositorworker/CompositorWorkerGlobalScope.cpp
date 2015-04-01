@@ -24,6 +24,7 @@ PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> CompositorWorkerGlobalScope:
 
 CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOrigin, workerClients)
+    , m_callbackCollection(this)
 {
 }
 
@@ -43,6 +44,21 @@ void CompositorWorkerGlobalScope::postMessage(ExecutionContext*, PassRefPtr<Seri
     if (exceptionState.hadException())
         return;
     thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
+}
+
+int CompositorWorkerGlobalScope::requestAnimationFrame(FrameRequestCallback* callback)
+{
+    return m_callbackCollection.registerCallback(callback);
+}
+
+void CompositorWorkerGlobalScope::cancelAnimationFrame(int id)
+{
+    m_callbackCollection.cancelCallback(id);
+}
+
+void CompositorWorkerGlobalScope::executeAnimationFrameCallbacks(double highResTimeNow)
+{
+    m_callbackCollection.executeCallbacks(highResTimeNow, highResTimeNow);
 }
 
 CompositorWorkerThread* CompositorWorkerGlobalScope::thread() const

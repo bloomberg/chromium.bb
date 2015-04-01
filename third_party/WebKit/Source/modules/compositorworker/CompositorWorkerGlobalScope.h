@@ -5,6 +5,7 @@
 #ifndef CompositorWorkerGlobalScope_h
 #define CompositorWorkerGlobalScope_h
 
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerGlobalScope.h"
 
@@ -25,7 +26,9 @@ public:
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionState&);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-    void executeCompositorFrameCallbacks(double monotonicTimeNow);
+    int requestAnimationFrame(FrameRequestCallback*);
+    void cancelAnimationFrame(int id);
+    void executeAnimationFrameCallbacks(double highResTimeNow);
 
     // ExecutionContext:
     bool isCompositorWorkerGlobalScope() const override { return true; }
@@ -33,6 +36,8 @@ public:
 private:
     CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     CompositorWorkerThread* thread() const;
+
+    FrameRequestCallbackCollection m_callbackCollection;
 };
 
 } // namespace blink
