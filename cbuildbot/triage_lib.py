@@ -455,17 +455,23 @@ class CalculateSuspects(object):
     return [x for x, y in zip(changes, reloaded_changes) if y.WasVetoed()]
 
   @classmethod
-  def _FindPackageBuildFailureSuspects(cls, changes, messages):
+  def _FindPackageBuildFailureSuspects(cls, changes, messages, sanity):
     """Figure out what CLs are at fault for a set of build failures.
 
     Args:
         changes: A list of cros_patch.GerritPatch instances to consider.
-        messages: A list of build failure messages, of type
-                  BuildFailureMessage.
+        messages: A list of failure messages. We will only look at the ones of
+                  type BuildFailureMessage.
+        sanity: The sanity checker builder passed and the tree was open when
+                the build started.
     """
     suspects = set()
     for message in messages:
-      suspects.update(message.FindPackageBuildFailureSuspects(changes))
+      if message:
+        suspects.update(
+            message.FindPackageBuildFailureSuspects(changes, sanity))
+      elif sanity:
+        suspects.update(changes)
     return suspects
 
   @classmethod
@@ -528,12 +534,13 @@ class CalculateSuspects(object):
                 messages, failures_lib.InfrastructureFailure, strict=False))
 
   @classmethod
-  def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False):
+  def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False,
+                   sanity=True):
     """Find out what changes probably caused our failure.
 
     In cases where there were no internal failures, we can assume that the
     external failures are at fault. Otherwise, this function just defers to
-    _FindPackageBuildFailureSuspects and FindPreviouslyFailedChanges as needed.
+    _FindPackageBuildFailureSuspects and GetBlamedChanges as needed.
     If the failures don't match either case, just fail everything.
 
     Args:
@@ -543,6 +550,8 @@ class CalculateSuspects(object):
       infra_fail: The build failed purely due to infrastructure failures.
       lab_fail: The build failed purely due to test lab infrastructure
         failures.
+      sanity: The sanity checker builder passed and the tree was open when
+              the build started.
 
     Returns:
        A set of changes as suspects.
@@ -560,7 +569,7 @@ class CalculateSuspects(object):
       logging.warning('Detected that the build failed purely due to HW '
                       'Test Lab failure(s). Will not reject any changes')
       return set()
-    elif not lab_fail and infra_fail:
+    elif infra_fail:
       # The non-lab infrastructure errors might have been caused
       # by chromite changes.
       logging.warning(
@@ -568,14 +577,7 @@ class CalculateSuspects(object):
           'issue(s). Will only reject chromite changes')
       return set(cls.FilterChangesForInfraFail(changes))
 
-    if all(message and message.IsPackageBuildFailure()
-           for message in messages):
-      # If we are here, there are no None messages.
-      suspects = cls._FindPackageBuildFailureSuspects(changes, messages)
-    else:
-      suspects = set(changes)
-
-    return suspects
+    return cls._FindPackageBuildFailureSuspects(changes, messages, sanity)
 
   @classmethod
   def GetResponsibleOverlays(cls, build_root, messages):

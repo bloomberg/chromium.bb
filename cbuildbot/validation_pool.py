@@ -2426,16 +2426,15 @@ class ValidationPool(object):
     else:
       candidates.extend(changes)
 
-    suspects = set()
-    infra_fail = lab_fail = False
-    if sanity:
-      # If the build was sane, determine the cause of the failures and
-      # the changes that are likely at fault for the failure.
-      lab_fail = triage_lib.CalculateSuspects.OnlyLabFailures(messages, no_stat)
-      infra_fail = triage_lib.CalculateSuspects.OnlyInfraFailures(
-          messages, no_stat)
-      suspects = triage_lib.CalculateSuspects.FindSuspects(
-          candidates, messages, infra_fail=infra_fail, lab_fail=lab_fail)
+    # Determine the cause of the failures and the changes that are likely at
+    # fault for the failure.
+    lab_fail = triage_lib.CalculateSuspects.OnlyLabFailures(messages, no_stat)
+    infra_fail = triage_lib.CalculateSuspects.OnlyInfraFailures(
+        messages, no_stat)
+    suspects = triage_lib.CalculateSuspects.FindSuspects(
+        candidates, messages, infra_fail=infra_fail, lab_fail=lab_fail,
+        sanity=sanity)
+
     # Send out failure notifications for each change.
     inputs = [[change, messages, suspects, sanity, infra_fail,
                lab_fail, no_stat] for change in candidates]

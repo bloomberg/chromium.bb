@@ -74,7 +74,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
-                      internal=False, infra_fail=False, lab_fail=False):
+                      internal=False, infra_fail=False, lab_fail=False,
+                      sanity=True):
     """Run _FindSuspects and verify its output.
 
     Args:
@@ -85,11 +86,14 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
       internal: Whether the failures occurred on an internal bot.
       infra_fail: Whether the build failed due to infrastructure issues.
       lab_fail: Whether the build failed due to lab infrastructure issues.
+      sanity: The sanity checker builder passed and the tree was open when
+              the build started.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
     message = GetFailedMessage(all_exceptions, internal=internal)
     results = triage_lib.CalculateSuspects.FindSuspects(
-        patches, [message], lab_fail=lab_fail, infra_fail=infra_fail)
+        patches, [message], lab_fail=lab_fail, infra_fail=infra_fail,
+        sanity=sanity)
     self.assertEquals(set(suspects), results)
 
   @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
@@ -98,6 +102,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     suspects = [self.kernel_patch]
     patches = suspects + [self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(patches, suspects, [self.kernel_pkg])
+    self._AssertSuspects(patches, suspects, [self.kernel_pkg], sanity=False)
 
   @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
   def testFailSameProjectPlusOverlay(self):
@@ -105,22 +110,29 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     suspects = [self.overlay_patch, self.kernel_patch]
     patches = suspects + [self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(patches, suspects, [self.kernel_pkg])
+    self._AssertSuspects(patches, [self.kernel_patch], [self.kernel_pkg],
+                         sanity=False)
 
   def testFailUnknownPackage(self):
     """If no patches changed the package, all patches should fail."""
     changes = [self.overlay_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(changes, changes, [self.kernel_pkg])
+    self._AssertSuspects(changes, [], [self.kernel_pkg], sanity=False)
 
   def testFailUnknownException(self):
     """An unknown exception should cause all patches to fail."""
     changes = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(changes, changes, exceptions=[Exception('foo bar')])
+    self._AssertSuspects(changes, [], exceptions=[Exception('foo bar')],
+                         sanity=False)
 
   def testFailUnknownInternalException(self):
     """An unknown exception should cause all patches to fail."""
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')],
                          internal=True)
+    self._AssertSuspects(suspects, [], exceptions=[Exception('foo bar')],
+                         internal=True, sanity=False)
 
   def testFailUnknownCombo(self):
     """Unknown exceptions should cause all patches to fail.
@@ -130,23 +142,40 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
                          [Exception('foo bar')])
+    self._AssertSuspects(suspects, [self.kernel_patch], [self.kernel_pkg],
+                         [Exception('foo bar')], sanity=False)
+
+  def testFailNone(self):
+    """If a message is just 'None', it should cause all patches to fail."""
+    patches = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
+    results = triage_lib.CalculateSuspects.FindSuspects(patches, [None])
+    self.assertItemsEqual(results, patches)
+
+    results = triage_lib.CalculateSuspects.FindSuspects(
+        patches, [None], sanity=False)
+    self.assertItemsEqual(results, [])
 
   def testFailNoExceptions(self):
     """If there are no exceptions, all patches should be failed."""
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(suspects, suspects)
+    self._AssertSuspects(suspects, [], sanity=False)
 
   def testLabFail(self):
     """If there are only lab failures, no suspect is chosen."""
     suspects = []
     changes = [self.kernel_patch, self.power_manager_patch]
     self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=True)
+    self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=True,
+                         sanity=False)
 
   def testInfraFail(self):
-    """If there are only non-lab infra faliures, pick chromite changes."""
+    """If there are only non-lab infra failures, pick chromite changes."""
     suspects = [self.chromite_patch]
     changes = [self.kernel_patch, self.power_manager_patch] + suspects
     self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True)
+    self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True,
+                         sanity=False)
 
   def testManualBlame(self):
     """If there are changes that were manually blamed, pick those changes."""
@@ -163,6 +192,14 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=False)
     self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=True)
     self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True)
+    self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=False,
+                         sanity=False)
+    self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=False,
+                         sanity=False)
+    self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=True,
+                         sanity=False)
+    self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True,
+                         sanity=False)
 
   def _GetMessages(self, lab_fail=0, infra_fail=0, other_fail=0):
     """Returns a list of BuildFailureMessage objects."""
