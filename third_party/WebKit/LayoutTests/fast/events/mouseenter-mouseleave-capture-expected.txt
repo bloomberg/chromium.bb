@@ -4,8 +4,8 @@ mouseenter on outer
 mouseenter on inner1
 // Entering #inner3 (and therefore also #inner2)
 mouseleave on inner1
-mouseenter on inner3
 mouseenter on inner2
+mouseenter on inner3
 // Leaving #inner3 and #inner2, but not #outer
 mouseleave on inner3
 mouseleave on inner2

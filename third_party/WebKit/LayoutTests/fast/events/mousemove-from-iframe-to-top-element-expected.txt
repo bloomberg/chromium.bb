@@ -18,10 +18,10 @@ PASS targetIds[1] is "target"
 
 PASS bgColor is "rgb(255, 255, 0)"
 
-PASS events[2] is "mouseleave"
+FAIL events[2] should be mouseleave. Was mouseout.
 PASS targetIds[2] is "target"
 
-PASS events[3] is "mouseout"
+FAIL events[3] should be mouseout. Was mouseleave.
 PASS targetIds[3] is "target"
 
 

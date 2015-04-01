@@ -3107,7 +3107,7 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
     layoutView()->hitTest(request, result);
 
     if (!request.readOnly())
-        updateHoverActiveState(request, result.innerElement(), &event);
+        updateHoverActiveState(request, result.innerElement());
 
     return MouseEventWithHitTestResults(event, result);
 }
@@ -5208,7 +5208,7 @@ static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1, LayoutObject
     return 0;
 }
 
-void Document::updateHoverActiveState(const HitTestRequest& request, Element* innerElement, const PlatformMouseEvent* event)
+void Document::updateHoverActiveState(const HitTestRequest& request, Element* innerElement)
 {
     ASSERT(!request.readOnly());
 
@@ -5217,7 +5217,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     Element* innerElementInDocument = innerElement;
     while (innerElementInDocument && innerElementInDocument->document() != this) {
-        innerElementInDocument->document().updateHoverActiveState(request, innerElementInDocument, event);
+        innerElementInDocument->document().updateHoverActiveState(request, innerElementInDocument);
         innerElementInDocument = innerElementInDocument->document().ownerElement();
     }
 
@@ -5291,6 +5291,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             if (curr->node() && !curr->isText() && (!mustBeInActiveChain || curr->node()->inActiveChain()))
                 nodesToRemoveFromChain.append(curr->node());
         }
+
+        // TODO(mustaq): The two loops above may push a single node twice into nodesToRemoveFromChain. There must be a better way.
     }
 
     // Now set the hover state for our new object up to the root.
@@ -5299,37 +5301,9 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             nodesToAddToChain.append(curr->node());
     }
 
-    // mouseenter and mouseleave events do not bubble, so they are dispatched iff there is a capturing
-    // event handler on an ancestor or a normal event handler on the element itself. This special
-    // handling is necessary to avoid O(n^2) capturing event handler checks. We'll check the previously
-    // hovered node's ancestor tree for 'mouseleave' handlers here, then check the newly hovered node's
-    // ancestor tree for 'mouseenter' handlers after dispatching the 'mouseleave' events (as the handler
-    // for 'mouseleave' might set a capturing 'mouseenter' handler, odd as that might be).
-    bool ancestorHasCapturingMouseleaveListener = false;
-    if (event && newHoverNode != oldHoverNode.get()) {
-        for (Node* node = oldHoverNode.get(); node; node = node->parentOrShadowHostNode()) {
-            if (node->hasCapturingEventListeners(EventTypeNames::mouseleave)) {
-                ancestorHasCapturingMouseleaveListener = true;
-                break;
-            }
-        }
-    }
-
     size_t removeCount = nodesToRemoveFromChain.size();
     for (size_t i = 0; i < removeCount; ++i) {
         nodesToRemoveFromChain[i]->setHovered(false);
-        if (event && (ancestorHasCapturingMouseleaveListener || nodesToRemoveFromChain[i]->hasEventListeners(EventTypeNames::mouseleave)))
-            nodesToRemoveFromChain[i]->dispatchMouseEvent(*event, EventTypeNames::mouseleave, 0, newHoverNode);
-    }
-
-    bool ancestorHasCapturingMouseenterListener = false;
-    if (event && newHoverNode != oldHoverNode.get()) {
-        for (Node* node = newHoverNode; node; node = node->parentOrShadowHostNode()) {
-            if (node->hasCapturingEventListeners(EventTypeNames::mouseenter)) {
-                ancestorHasCapturingMouseenterListener = true;
-                break;
-            }
-        }
     }
 
     bool sawCommonAncestor = false;
@@ -5342,8 +5316,6 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             nodesToAddToChain[i]->setActive(true);
         if (!sawCommonAncestor) {
             nodesToAddToChain[i]->setHovered(true);
-            if (event && (ancestorHasCapturingMouseenterListener || nodesToAddToChain[i]->hasEventListeners(EventTypeNames::mouseenter)))
-                nodesToAddToChain[i]->dispatchMouseEvent(*event, EventTypeNames::mouseenter, 0, oldHoverNode.get());
         }
     }
 }

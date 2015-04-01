@@ -266,7 +266,10 @@ private:
 
     void invalidateClick();
 
-    void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&, bool fireMouseOverOut);
+    void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&, bool);
+
+    /* Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another. */
+    void sendMouseEventsForNodeTransition(Node*, Node*, const PlatformMouseEvent&);
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 

@@ -1478,7 +1478,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     // We don't want to do a hit-test in forceLeave scenarios because there might actually be some other frame above this one at the specified co-ordinate.
     // So we must force the hit-test to fail, while still clearing hover/active state.
     if (forceLeave)
-        m_frame->document()->updateHoverActiveState(request, 0, &mouseEvent);
+        m_frame->document()->updateHoverActiveState(request, 0);
     else
         mev = prepareMouseEvent(request, mouseEvent);
 
@@ -1590,7 +1590,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
         invalidateClick();
         m_lastScrollbarUnderMouse->mouseUp(mouseEvent);
         bool setUnder = false;
-        return !dispatchMouseEvent(EventTypeNames::mouseup, m_lastNodeUnderMouse.get(), m_clickCount, mouseEvent, setUnder);
+        return !dispatchMouseEvent(EventTypeNames::mouseup, m_nodeUnderMouse.get(), m_clickCount, mouseEvent, setUnder);
     }
 
     // Mouse events simulated from touch should not hit-test again.
@@ -1866,7 +1866,7 @@ MouseEventWithHitTestResults EventHandler::prepareMouseEvent(const HitTestReques
     return m_frame->document()->prepareMouseEvent(request, contentPointFromRootFrame(m_frame, mev.position()), mev);
 }
 
-void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMouseEvent& mouseEvent, bool fireMouseOverOut)
+void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMouseEvent& mouseEvent, bool fireMouseEvents)
 {
     Node* result = targetNode;
 
@@ -1880,8 +1880,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
     }
     m_nodeUnderMouse = result;
 
-    // Fire mouseout/mouseover if the mouse has shifted to a different node.
-    if (fireMouseOverOut) {
+    if (fireMouseEvents) {
         DeprecatedPaintLayer* layerForLastNode = layerForNode(m_lastNodeUnderMouse.get());
         DeprecatedPaintLayer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
         Page* page = m_frame->page();
@@ -1915,19 +1914,95 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
             m_lastScrollbarUnderMouse = nullptr;
         }
 
-        if (m_lastNodeUnderMouse != m_nodeUnderMouse) {
-            // send mouseout event to the old node
-            if (m_lastNodeUnderMouse)
-                m_lastNodeUnderMouse->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseout, 0, m_nodeUnderMouse.get());
-            // send mouseover event to the new node
-            if (m_nodeUnderMouse)
-                m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, m_lastNodeUnderMouse.get());
-        }
+        if (m_lastNodeUnderMouse != m_nodeUnderMouse)
+            sendMouseEventsForNodeTransition(m_lastNodeUnderMouse.get(), m_nodeUnderMouse.get(), mouseEvent);
+
         m_lastNodeUnderMouse = m_nodeUnderMouse;
     }
 }
 
+void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* enteredNode, const PlatformMouseEvent& mouseEvent)
+{
+    ASSERT(exitedNode != enteredNode);
+
+    // First, dispatch mouseout and mouseover events (which bubble to ancestors)
+    if (exitedNode)
+        exitedNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseout, 0, enteredNode);
+    if (enteredNode)
+        enteredNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, exitedNode);
+
+    // Then dispatch mouseenter and mouseleave events. These are non-bubbling events, and they are dispatched if there
+    // is a capturing event handler on an ancestor or a normal event handler on the element itself. This special
+    // handling is necessary to avoid O(n^2) capturing event handler checks.
+    //
+    //   Note, however, that this optimization can possibly cause some unanswered/missing/redundant mouseenter or
+    // mouseleave events in certain contrived eventhandling scenarios, e.g., when:
+    // - the mouseleave handler for a node sets the only capturing-mouseleave-listener in its ancestor, or
+    // - DOM mods in any mouseenter/mouseleave handler changes the common ancestor of exited & entered nodes, etc.
+    // We think the spec specifies a "frozen" state to avoid such corner cases (check the discussion on "candidate event
+    // listeners" at http://www.w3.org/TR/uievents), but our code below preserves one such behavior from past only to
+    // match Firefox and IE behavior.
+    //
+    // TODO(mustaq): Confirm spec conformance, double-check with other browsers.
+
+    // Create lists of all exited/entered ancestors.
+    WillBeHeapVector<RefPtrWillBeMember<Node>, 32> exitedAncestors;
+    WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
+    for (Node* node = exitedNode; node; node = NodeRenderingTraversal::parent(*node)) {
+        exitedAncestors.append(node);
+    }
+    for (Node* node = enteredNode; node; node = NodeRenderingTraversal::parent(*node)) {
+        enteredAncestors.append(node);
+    }
+
+    size_t numExitedAncestors = exitedAncestors.size();
+    size_t numEnteredAncestors = enteredAncestors.size();
+
+    // Locate the common ancestor in the two lists. Start with the assumption that it's off both the lists.
+    size_t exitedAncestorIndex = numExitedAncestors;
+    size_t enteredAncestorIndex = numEnteredAncestors;
+    for (size_t j = 0; j < numExitedAncestors; j++) {
+        for (size_t i = 0; i < numEnteredAncestors; i++) {
+            if (exitedAncestors[j] == enteredAncestors[i]) {
+                exitedAncestorIndex = j;
+                enteredAncestorIndex = i;
+                break;
+            }
+        }
+        if (exitedAncestorIndex < numExitedAncestors)
+            break;
+    }
+
+    // Determine if there is a capturing mouseleave listener in an ancestor.
+    bool exitedNodeHasCapturingAncestor = false;
+    for (size_t j = 0; j < numExitedAncestors; j++) {
+        if (exitedAncestors[j]->hasCapturingEventListeners(EventTypeNames::mouseleave))
+            exitedNodeHasCapturingAncestor = true;
+    }
+
+    // Send mouseleave events to appropriate exited ancestors, in child-to-parent order.
+    for (size_t j = 0; j < exitedAncestorIndex; j++) {
+        if (exitedNodeHasCapturingAncestor || exitedAncestors[j]->hasEventListeners(EventTypeNames::mouseleave))
+            exitedAncestors[j]->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseleave, 0, enteredNode);
+    }
+
+    // Determine if there is a capturing mouseenter listener in an ancestor. This must be done /after/ dispatching the
+    // mouseleave events because the handler for mouseleave might set a capturing mouseenter handler.
+    bool enteredNodeHasCapturingAncestor = false;
+    for (size_t i = 0; i < numEnteredAncestors; i++) {
+        if (enteredAncestors[i]->hasCapturingEventListeners(EventTypeNames::mouseenter))
+            enteredNodeHasCapturingAncestor = true;
+    }
+
+    // Send mouseenter events to appropriate entered ancestors, in parent-to-child order.
+    for (size_t i = enteredAncestorIndex; i > 0; i--) {
+        if (enteredNodeHasCapturingAncestor || enteredAncestors[i-1]->hasEventListeners(EventTypeNames::mouseenter))
+            enteredAncestors[i-1]->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseenter, 0, exitedNode);
+    }
+}
+
 // The return value means 'continue default handling.'
+// TODO(mustaq): setUnder needs a more informative name.
 bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent, bool setUnder)
 {
     updateMouseEventTargetNode(targetNode, mouseEvent, setUnder);
