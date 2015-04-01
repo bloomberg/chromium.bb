@@ -532,9 +532,12 @@ public class ChromeDownloadDelegate
      * @return whether the DownloadManager should intercept the download.
      */
     public boolean shouldInterceptContextMenuDownload(String url) {
-        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        Uri uri = Uri.parse(url);
+        String scheme = uri.normalizeScheme().getScheme();
+        if (!"http".equals(scheme) && !"https".equals(scheme)) return false;
+        String path = uri.getPath();
         // OMA downloads have extension "dm" or "dd".
-        if ("dm".equals(extension) || "dd".equals(extension)) {
+        if (path != null && (path.endsWith(".dm") || path.endsWith(".dd"))) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder().setUrl(url).build();
             onDownloadStartNoStream(downloadInfo);
             return true;

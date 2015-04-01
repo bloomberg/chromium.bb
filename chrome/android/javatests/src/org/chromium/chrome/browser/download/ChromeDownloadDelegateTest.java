@@ -4,15 +4,30 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.DownloadInfo;
 
 /**
  * Tests for ChromeDownloadDelegate class.
  */
 public class ChromeDownloadDelegateTest extends InstrumentationTestCase {
+
+    /**
+     * Mock class for test.
+     */
+    static class MockChromeDownloadDelegate extends ChromeDownloadDelegate {
+        public MockChromeDownloadDelegate(Context context) {
+            super(context, null, null);
+        }
+
+        @Override
+        protected void onDownloadStartNoStream(DownloadInfo downloadInfo) {
+        }
+    }
 
     /**
      * Test to make sure {@link ChromeDownloadDelegate#fileName} returns the
@@ -59,5 +74,23 @@ public class ChromeDownloadDelegateTest extends InstrumentationTestCase {
                 "attachment; filename=\"bar\"; name=\"foo\""));
         assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf",
                 "attachment; filename=\"bar\"; filename*=utf-8''baz"));
+    }
+
+    /**
+     * Test to make sure {@link ChromeDownloadDelegate#shouldInterceptContextMenuDownload}
+     * returns true only for ".dd" or ".dm" extensions with http/https scheme.
+     */
+    @SmallTest
+    @Feature({"Download"})
+    public void testShouldInterceptContextMenuDownload() {
+        ChromeDownloadDelegate delegate =
+                new MockChromeDownloadDelegate(getInstrumentation().getTargetContext());
+        assertFalse(delegate.shouldInterceptContextMenuDownload("file://test/test.html"));
+        assertFalse(delegate.shouldInterceptContextMenuDownload("http://test/test.html"));
+        assertFalse(delegate.shouldInterceptContextMenuDownload("ftp://test/test.dm"));
+        assertFalse(delegate.shouldInterceptContextMenuDownload("data://test.dd"));
+        assertFalse(delegate.shouldInterceptContextMenuDownload("http://test.dd"));
+        assertTrue(delegate.shouldInterceptContextMenuDownload("http://test/test.dd"));
+        assertTrue(delegate.shouldInterceptContextMenuDownload("https://test/test.dm"));
     }
 }
