@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<style>
+  body {
+    background: #d0d0d0;
+  }
+
+  img {
+    border: 1px solid teal;
+    margin: 0.5ex;
+  }
+
+  canvas {
+    border: 1px solid #000;
+    margin: 0.5ex;
+  }
+</style>
+
+<body>
+
+<div id="status">Running ...</div>
+<div id="container"></div>
+<div id="output"></div>
+<pre>Canvas</pre>
+<canvas id="canvas" width="152" height="256" > </canvas>
+
+<script>
+
+var c = document.getElementById('canvas');
+var ctx = c.getContext('2d');
+var debug = false;
+var image_obj = [];
+var IMAGES = 300;
+var loaded = 0;
+
+function check_results()
+{
+  var uniques = [];
+
+  uniques.push(image_obj[0].imgdata);
+
+  document.getElementById('output').innerHTML += '<img src="' + image_obj[0].imgdata + '">';
+
+  for (var i = 1; i < IMAGES; ++i)
+  {
+    if (image_obj[0].imgdata != image_obj[i].imgdata)
+    {
+      for (var j = 1; j < uniques.length; ++j)
+      {
+        if (uniques[j] == image_obj[i].imgdata) break;
+      }
+
+      if (j == uniques.length)
+      {
+        uniques.push(image_obj[i].imgdata);
+
+        document.getElementById('output').innerHTML += '<img src="' + image_obj[i].imgdata + '">';
+      }
+    }
+  }
+
+  document.getElementById('status').textContent = 'Test results: ' + uniques.length;
+
+  if (window.testRunner) {
+    testRunner.notifyDone();
+  }
+}
+
+function count_image()
+{
+  ++loaded;
+
+  ctx.clearRect(0, 0, 152, 256);
+
+  try {
+    ctx.drawImage(this, 0, 0, 152, 256);
+  } catch (x) {
+    console.log('Canvas draw image ' + this.index_ + ' failed: ' + x);
+  }
+
+  this.imgdata = c.toDataURL();
+
+  if (loaded == IMAGES) {
+    check_results();
+  }
+}
+
+function set_images()
+{
+  loaded = 0;
+
+  create_images();
+
+  for (var i = 0; i < IMAGES; ++i)
+  {
+    image_obj[i].src = imageURL();
+  }
+}
+
+function create_images()
+{
+  for (var i = 0; i < IMAGES; ++i)
+  {
+    image_obj[i] = new Image();
+    image_obj[i].width = 152;
+    image_obj[i].height = 256;
+    image_obj[i].onerror = count_image;
+    image_obj[i].onload = count_image;
+    image_obj[i].index_ = i;
+
+    document.getElementById('container').appendChild(image_obj[i]);
+  }
+}
+
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  if (debug) {
+    testRunner.dumpAsTextWithPixelResults();
+  } else {
+    testRunner.dumpAsText();
+  }
+}
+
+function imageURL()
+{
+  if (!window.filename_)
+  {
+     filename_ = "jpeg-image-00" + Math.floor(Math.random() * 3) + ".jpg";
+  }
+
+  function image()
+  {
+    return "?name=../images/resources/" + filename_ + "&" + Math.random() + "&mimeType=image/jpeg";
+  }
+
+  function jitter(value, delta)
+  {
+    return Math.round(value + ((Math.random() - 0.5) * delta));
+  }
+
+  return "http://127.0.0.1:8000/resources/slow-image.php" + image() + "&sleep=" + jitter(100, 80);
+}
+
+window.onload = function()
+{
+  setTimeout(set_images, 10);
+}
+</script>
+</body>
+</html>

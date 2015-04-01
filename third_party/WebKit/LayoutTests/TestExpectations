@@ -77,8 +77,9 @@ crbug.com/460198 virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash Nee
 
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 
-# This directly has manual tests that don't have to run with run-webkit-tests
+# These are manual or other http tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
+Bug(http) http/tests/images/multiple-jpeg-decodes.html [ Skip ]
 
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
