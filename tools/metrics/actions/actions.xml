@@ -2385,26 +2385,41 @@ should be able to be added at any place in this file.
 <action name="DataReductionProxy_PromoDisplayed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 3/2015, replaced by histogram DataReductionProxy.UIAction.
+  </obsolete>
 </action>
 
 <action name="DataReductionProxy_PromoLearnMore">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 3/2015, replaced by histogram DataReductionProxy.UIAction.
+  </obsolete>
 </action>
 
 <action name="DataReductionProxy_TurnedOff">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 3/2015, replaced by histogram DataReductionProxy.UIAction.
+  </obsolete>
 </action>
 
 <action name="DataReductionProxy_TurnedOn">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 3/2015, replaced by histogram DataReductionProxy.UIAction.
+  </obsolete>
 </action>
 
 <action name="DataReductionProxy_TurnedOnFromPromo">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 3/2015, replaced by histogram DataReductionProxy.UIAction.
+  </obsolete>
 </action>
 
 <action name="Debugger">

@@ -4178,6 +4178,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DataReductionProxy.PromoAction"
     enum="DataReductionProxyPromoAction">
+  <obsolete>
+    Deprecated as of 3/2015, replaced by DataReductionProxy.UIAction.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -4210,6 +4213,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DataReductionProxy.SettingsConversion"
     enum="DataReductionProxySettingsConversion">
+  <obsolete>
+    Deprecated as of 3/2015, replaced by DataReductionProxy.UIAction.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -4231,6 +4237,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     proxy will either be unavailable (the feature hasn't been rolled out to this
     user yet), not enabled (the feature is available but the user doesn't have
     it turned on), or enabled (the feature is enabled and turned on).
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.UIAction" enum="DataReductionProxyUIAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the promo and settings menu. All samples
+    are mutually exclusive. These samples include:
+
+    The user interactions with the promo. On Android, there are three actions
+    that dismiss the promo (enable, dismiss, and learn more) and on iOS there is
+    a toggle to enable the proxy. This is sampled when the promo leaves view. If
+    the user clicks the link to the settings menu, the state of the ON/OFF
+    switch in the menu is sampled when the view is exited.
+
+    Any other user interaction with the the ON/OFF switch in the settings menu
+    for reducing data usage. Only the setting changes between entering the
+    reducing data usage setting menu and leaving the menu will be sampled
+    regardless of how many times he or she toggles the ON/OFF switch. Other
+    samples that report ON/OFF settings menu changes are not also reported here.
   </summary>
 </histogram>
 
@@ -47084,6 +47111,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Proxy not available"/>
   <int value="1" label="Proxy available but not enabled"/>
   <int value="2" label="Proxy available and enabled"/>
+</enum>
+
+<enum name="DataReductionProxyUIAction" type="int">
+  <int value="0" label="Enabled directly from the promo"/>
+  <int value="1" label="Enabled then disabled from promo (iOS-only)"/>
+  <int value="2"
+      label="Promo settings link clicked, then enabled from settings"/>
+  <int value="3"
+      label="Promo settings link clicked, but not enabled from settings"/>
+  <int value="4" label="Promo dismissed (no action performed)"/>
+  <int value="5"
+      label="Arrived at settings menu by another path: entered off, exited
+             off"/>
+  <int value="6"
+      label="Arrived at settings menu by another path: entered off, exited on"/>
+  <int value="7"
+      label="Arrived at settings menu by another path: entered on, exited off"/>
+  <int value="8"
+      label="Arrived at settings menu by another path: entered on, exited on"/>
 </enum>
 
 <enum name="DefaultSearchChangeOrigin" type="int">

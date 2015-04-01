@@ -24,7 +24,6 @@ import android.widget.Toast;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
-import org.chromium.chrome.browser.metrics.UmaBridge;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.ui.text.SpanApplier;
@@ -35,11 +34,6 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  */
 public class DataReductionPromoScreen extends Dialog implements View.OnClickListener,
         DialogInterface.OnDismissListener {
-    // Represent the possible user actions at the promotion screen. This must remain in sync with
-    // DataReductionProxyPromoAction in tools/metrics/histograms/histograms.xml.
-    private static final int ACTION_DISMISSED_FIRST_SCREEN = 0;
-    private static final int ACTION_ENABLED_FIRST_SCREEN = 2;
-    public static final int ACTION_INDEX_BOUNDARY = 4;
     public static final String FROM_PROMO = "FromPromo";
     private static final String SHARED_PREF_DISPLAYED_PROMO = "displayed_data_reduction_promo";
 
@@ -96,8 +90,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         addListenerOnButton();
         addClickableSpan();
 
-        mState = ACTION_DISMISSED_FIRST_SCREEN;
-        UmaBridge.dataReductionProxyPromoDisplayed();
+        mState = DataReductionProxyUma.ACTION_DISMISSED;
     }
 
     private void addListenerOnButton() {
@@ -123,6 +116,10 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
                         context, BandwidthReductionPreferences.class.getName());
                 intent.putExtra(FROM_PROMO, true);
                 context.startActivity(intent);
+                // Don't report an action. One will be reported in the settings
+                // menu saying if the user proceeded to enable the proxy or not
+                // after viewing the promo.
+                mState = DataReductionProxyUma.ACTION_INDEX_BOUNDARY;
                 dismiss();
             }
 
@@ -145,7 +142,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         if (id == R.id.no_thanks_button) {
             handleCloseButtonPressed();
         } else if (id == R.id.enable_button_front) {
-            mState = ACTION_ENABLED_FIRST_SCREEN;
+            mState = DataReductionProxyUma.ACTION_ENABLED;
             handleEnableButtonPressed();
         } else if (id == R.id.close_button_front) {
             handleCloseButtonPressed();
@@ -162,7 +159,6 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
     private void handleEnableButtonPressed() {
         DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                 getContext(), true);
-        UmaBridge.dataReductionProxyTurnedOnFromPromo();
         dismiss();
         Toast.makeText(getContext(), getContext().getString(R.string.data_reduction_enabled_toast),
                 Toast.LENGTH_LONG).show();
@@ -174,9 +170,9 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
 
     @Override
     public void dismiss() {
-        if (mState < ACTION_INDEX_BOUNDARY) {
-            UmaBridge.dataReductionProxyPromoAction(mState);
-            mState = ACTION_INDEX_BOUNDARY;
+        if (mState < DataReductionProxyUma.ACTION_INDEX_BOUNDARY) {
+            DataReductionProxyUma.dataReductionProxyUIAction(mState);
+            mState = DataReductionProxyUma.ACTION_INDEX_BOUNDARY;
         }
         super.dismiss();
     }
