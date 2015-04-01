@@ -51,10 +51,10 @@ void WaitableEvent::Wait() {
 bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
   base::ThreadRestrictions::AssertWaitAllowed();
   DCHECK_GE(max_time, TimeDelta());
-  // Be careful here.  TimeDelta has a precision of microseconds, but this API
-  // is in milliseconds.  If there are 5.5ms left, should the delay be 5 or 6?
-  // It should be 6 to avoid returning too early.
-  DWORD timeout = saturated_cast<DWORD>(max_time.InMillisecondsRoundedUp());
+  // Truncate the timeout to milliseconds. The API specifies that this method
+  // can return in less than |max_time| (when returning false), as the argument
+  // is the maximum time that a caller is willing to wait.
+  DWORD timeout = saturated_cast<DWORD>(max_time.InMilliseconds());
 
   DWORD result = WaitForSingleObject(handle_.Get(), timeout);
   switch (result) {
