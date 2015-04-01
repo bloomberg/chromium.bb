@@ -258,6 +258,9 @@ void FilePathWatcherFSEvents::StartEventStream(
   UpdateEventStream(start_event);
 }
 
-FilePathWatcherFSEvents::~FilePathWatcherFSEvents() {}
+FilePathWatcherFSEvents::~FilePathWatcherFSEvents() {
+  DCHECK(!fsevent_stream_)
+      << "File path watcher destroyed before event stream.";
+}
 
 }  // namespace base
