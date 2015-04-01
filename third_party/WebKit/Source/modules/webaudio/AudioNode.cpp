@@ -839,7 +839,6 @@ DEFINE_TRACE(AudioNode)
                 visitor->trace(input->renderingOutput(i)->node());
         }
     }
-    visitor->trace(m_outputs);
     visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
