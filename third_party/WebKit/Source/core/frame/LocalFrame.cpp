@@ -69,7 +69,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemListScope.h"
+#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -583,18 +583,18 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
         return nullptr;
 
     {
-        DisplayItemListScope displayItemListScope(buffer->context());
-        GraphicsContext* paintContext = displayItemListScope.context();
+        DisplayItemListContextRecorder contextRecorder(*buffer->context());
+        GraphicsContext& paintContext = contextRecorder.context();
 
         AffineTransform transform;
         transform.scale(deviceScaleFactor, deviceScaleFactor);
         transform.translate(-paintingRect.x(), -paintingRect.y());
-        TransformRecorder transformRecorder(*paintContext, displayItemClient, transform);
+        TransformRecorder transformRecorder(paintContext, displayItemClient, transform);
 
-        ClipRecorder clipRecorder(displayItemClient, paintContext, clipType,
+        ClipRecorder clipRecorder(displayItemClient, &paintContext, clipType,
             LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
-        m_view->paintContents(paintContext, paintingRect);
+        m_view->paintContents(&paintContext, paintingRect);
     }
 
     RefPtr<Image> image = buffer->copyImage();

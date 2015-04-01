@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItemListScope_h
-#define DisplayItemListScope_h
+#ifndef DisplayItemListContextRecorder_h
+#define DisplayItemListContextRecorder_h
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -12,44 +12,38 @@
 
 namespace blink {
 
-class DisplayItemListScope {
-    WTF_MAKE_NONCOPYABLE(DisplayItemListScope);
+class DisplayItemListContextRecorder {
+    WTF_MAKE_NONCOPYABLE(DisplayItemListContextRecorder);
     STACK_ALLOCATED();
 public:
-    DisplayItemListScope(GraphicsContext* context)
+    DisplayItemListContextRecorder(GraphicsContext& context)
         : m_initialContext(context)
     {
-        ASSERT(context);
-
-        if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            m_activeContext = context;
+        if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
             return;
-        }
 
         m_displayItemList = DisplayItemList::create();
         m_displayItemListContext = adoptPtr(new GraphicsContext(nullptr, m_displayItemList.get(),
-            context->contextDisabled() ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled));
-        m_activeContext = m_displayItemListContext.get();
+            context.contextDisabled() ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled));
     }
 
-    ~DisplayItemListScope()
+    ~DisplayItemListContextRecorder()
     {
         if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
             return;
 
         ASSERT(m_displayItemList);
-        m_displayItemList->replay(m_initialContext);
+        m_displayItemList->replay(&m_initialContext);
     }
 
-    GraphicsContext* context() const { return m_activeContext; }
+    GraphicsContext& context() const { return m_displayItemList ? *m_displayItemListContext : m_initialContext; }
 
 private:
-    GraphicsContext* m_initialContext;
-    GraphicsContext* m_activeContext;
+    GraphicsContext& m_initialContext;
     OwnPtr<DisplayItemList> m_displayItemList;
     OwnPtr<GraphicsContext> m_displayItemListContext;
 };
 
 } // namespace blink
 
-#endif // DisplayItemListScope_h
+#endif // DisplayItemListContextRecorder_h

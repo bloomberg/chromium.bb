@@ -19,7 +19,7 @@
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
-#include "platform/graphics/paint/DisplayItemListScope.h"
+#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -190,9 +190,9 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
         return;
 
     {
-        DisplayItemListScope displayItemListScope(paintInfo.context);
+        DisplayItemListContextRecorder contextRecorder(*paintInfo.context);
         PaintInfo markerPaintInfo(paintInfo);
-        markerPaintInfo.context = displayItemListScope.context();
+        markerPaintInfo.context = &contextRecorder.context();
 
         TransformRecorder transformRecorder(*markerPaintInfo.context, marker, marker.markerTransformation(position.origin, position.angle, strokeWidth));
         OwnPtr<FloatClipRecorder> clipRecorder;

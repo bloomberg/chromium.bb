@@ -39,7 +39,6 @@
 #include "core/layout/style/ShadowData.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"

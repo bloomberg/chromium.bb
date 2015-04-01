@@ -34,7 +34,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/paint/DisplayItemListScope.h"
+#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -179,10 +179,10 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(LayoutObject
 
     context->beginRecording(FloatRect(FloatPoint(), dstRect.size()));
     {
-        DisplayItemListScope displayItemListScope(context);
+        DisplayItemListContextRecorder contextRecorder(*context);
 
-        TransformRecorder transformRecorder(*displayItemListScope.context(), layoutObject, transform);
-        SVGPaintContext::paintSubtree(displayItemListScope.context(), &layoutObject);
+        TransformRecorder transformRecorder(contextRecorder.context(), layoutObject, transform);
+        SVGPaintContext::paintSubtree(&contextRecorder.context(), &layoutObject);
     }
 
     RefPtr<const SkPicture> recording = context->endRecording();

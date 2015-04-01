@@ -51,7 +51,7 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/PictureSnapshot.h"
-#include "platform/graphics/paint/DisplayItemListScope.h"
+#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
@@ -331,8 +331,8 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     GraphicsContext recordingContext(pictureRecorder.beginRecording(size.width(), size.height()), nullptr);
 
     {
-        DisplayItemListScope displayItemListScope(&recordingContext);
-        layer->paint(*displayItemListScope.context(), IntRect(IntPoint(0, 0), size));
+        DisplayItemListContextRecorder contextRecorder(recordingContext);
+        layer->paint(contextRecorder.context(), IntRect(IntPoint(0, 0), size));
     }
 
     RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(pictureRecorder.endRecording()));

@@ -56,7 +56,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemListScope.h"
+#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 
@@ -291,15 +291,15 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     view->scrollToFragment(m_url);
 
     {
-        DisplayItemListScope displayItemListScope(&recordingContext);
-        GraphicsContext* paintContext = displayItemListScope.context();
+        DisplayItemListContextRecorder contextRecorder(recordingContext);
+        GraphicsContext& paintContext = contextRecorder.context();
 
-        ClipRecorder clipRecorder(*this, paintContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
+        ClipRecorder clipRecorder(*this, &paintContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;
         if (hasCompositing || opacity < 1)
-            compositingRecorder = adoptPtr(new CompositingRecorder(paintContext, *this, compositeOp, opacity));
+            compositingRecorder = adoptPtr(new CompositingRecorder(&paintContext, *this, compositeOp, opacity));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.
@@ -308,10 +308,10 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         FloatPoint destOffset = dstRect.location() - topLeftOffset;
         AffineTransform transform = AffineTransform::translation(destOffset.x(), destOffset.y());
         transform.scale(scale.width(), scale.height());
-        TransformRecorder transformRecorder(*paintContext, *this, transform);
+        TransformRecorder transformRecorder(paintContext, *this, transform);
 
         view->updateLayoutAndStyleForPainting();
-        view->paint(paintContext, enclosingIntRect(srcRect));
+        view->paint(&paintContext, enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());
     }
     RefPtr<const SkPicture> recording = recordingContext.endRecording();
