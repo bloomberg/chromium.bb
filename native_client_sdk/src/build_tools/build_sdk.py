@@ -262,7 +262,6 @@ NACL_HEADER_MAP = {
       ('native_client/src/include/nacl/nacl_minidump.h', 'nacl/'),
       ('native_client/src/untrusted/irt/irt.h', ''),
       ('native_client/src/untrusted/irt/irt_dev.h', ''),
-      ('native_client/src/untrusted/irt/irt_extension.h', ''),
       ('native_client/src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
       ('native_client/src/untrusted/nacl/nacl_startup.h', 'nacl/'),
       ('native_client/src/untrusted/pthread/pthread.h', ''),
