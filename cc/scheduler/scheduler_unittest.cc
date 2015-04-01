@@ -504,26 +504,21 @@ TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
   scheduler_->SetDeferCommits(true);
 
   scheduler_->SetNeedsCommit();
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
-
-  client_->Reset();
-  AdvanceFrame();
-  // BeginMainFrame is not sent during the defer commit is on.
-  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
-
-  client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  // There is no posted deadline.
   EXPECT_NO_ACTION(client_);
-  EXPECT_TRUE(client_->needs_begin_frames());
+
+  client_->Reset();
+  task_runner().RunPendingTasks();
+  // There are no pending tasks or actions.
+  EXPECT_NO_ACTION(client_);
+  EXPECT_FALSE(client_->needs_begin_frames());
 
   client_->Reset();
   scheduler_->SetDeferCommits(false);
-  EXPECT_NO_ACTION(client_);
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
 
   // Start new BeginMainFrame after defer commit is off.
   client_->Reset();
-  AdvanceFrame();
+  EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -536,11 +531,13 @@ TEST_F(SchedulerTest, DeferCommitWithRedraw) {
   scheduler_->SetDeferCommits(true);
 
   scheduler_->SetNeedsCommit();
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  EXPECT_NO_ACTION(client_);
 
+  // The SetNeedsRedraw will override the SetDeferCommits(true), to allow a
+  // begin frame to be needed.
   client_->Reset();
   scheduler_->SetNeedsRedraw();
-  EXPECT_NO_ACTION(client_);
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
 
   client_->Reset();
   AdvanceFrame();

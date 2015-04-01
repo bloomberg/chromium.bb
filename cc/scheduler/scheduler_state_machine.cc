@@ -746,8 +746,11 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
     return false;
 
   // We should proactively request a BeginImplFrame if a commit is pending
-  // because we will want to draw if the commit completes quickly.
-  if (needs_commit_ || commit_state_ != COMMIT_STATE_IDLE)
+  // because we will want to draw if the commit completes quickly. Do not
+  // request frames when commits are disabled, because the frame requests will
+  // not provide the needed commit (and will wake up the process when it could
+  // stay idle).
+  if ((needs_commit_ || commit_state_ != COMMIT_STATE_IDLE) && !defer_commits_)
     return true;
 
   // If the pending tree activates quickly, we'll want a BeginImplFrame soon
