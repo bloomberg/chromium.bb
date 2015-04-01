@@ -407,7 +407,7 @@ public:
     virtual bool isMultiSelectable() const { return false; }
     virtual bool isOffScreen() const { return false; }
     virtual bool isPressed() const { return false; }
-    virtual bool isReadOnly() const;
+    virtual bool isReadOnly() const { return false; }
     virtual bool isRequired() const { return false; }
     virtual bool isSelected() const { return false; }
     virtual bool isSelectedOptionActive() const { return false; }

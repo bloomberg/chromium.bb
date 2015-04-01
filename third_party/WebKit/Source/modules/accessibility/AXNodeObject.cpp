@@ -800,7 +800,7 @@ bool AXNodeObject::isReadOnly() const
             return input.isReadOnly();
     }
 
-    return AXObject::isReadOnly();
+    return !node->hasEditableStyle();
 }
 
 bool AXNodeObject::isRequired() const
