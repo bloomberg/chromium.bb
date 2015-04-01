@@ -10,6 +10,21 @@ cr.define('options.contentSettings', function() {
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
+   * Returns whether exceptions list for the type is editable.
+   *
+   * @param {string} contentType The type of the list.
+   */
+  function IsEditableType(contentType) {
+    // Exceptions of the following lists are not editable for now.
+    return !(contentType == 'notifications' ||
+             contentType == 'location' ||
+             contentType == 'fullscreen' ||
+             contentType == 'media-stream' ||
+             contentType == 'midi-sysex' ||
+             contentType == 'zoomlevels');
+  }
+
+  /**
    * Creates a new exceptions list item.
    *
    * @param {string} contentType The type of the list.
@@ -124,7 +139,6 @@ cr.define('options.contentSettings', function() {
 
       if (this.contentType == 'zoomlevels') {
         this.deletable = true;
-        this.editable = false;
 
         var zoomLabel = cr.doc.createElement('span');
         zoomLabel.textContent = this.dataItem.zoom;
@@ -151,14 +165,7 @@ cr.define('options.contentSettings', function() {
       this.select = select;
 
       this.updateEditables();
-
-      // Editing notifications, geolocation and media-stream is disabled for
-      // now.
-      if (this.contentType == 'notifications' ||
-          this.contentType == 'location' ||
-          this.contentType == 'media-stream') {
-        this.editable = false;
-      }
+      this.editable = this.editable && IsEditableType(this.contentType);
 
       // If the source of the content setting exception is not a user
       // preference, that source controls the exception and the user cannot edit
@@ -540,11 +547,7 @@ cr.define('options.contentSettings', function() {
      */
     isEditable: function() {
       // Exceptions of the following lists are not editable for now.
-      return !(this.contentType == 'notifications' ||
-               this.contentType == 'location' ||
-               this.contentType == 'fullscreen' ||
-               this.contentType == 'media-stream' ||
-               this.contentType == 'zoomlevels');
+      return IsEditableType(this.contentType);
     },
 
     /**
