@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
 
@@ -60,6 +61,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  private:
   bool AllowsRetry(AutofillClient::GetRealPanResult result);
   void LogOnCloseEvents();
+  AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
   content::WebContents* web_contents_;
   CreditCard card_;
@@ -69,6 +71,9 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   AutofillClient::GetRealPanResult unmasking_result_;
   bool unmasking_initial_should_store_pan_;
   int unmasking_number_of_attempts_;
+  base::Time shown_timestamp_;
+  // Timestamp of the last time the user clicked the Verify button.
+  base::Time verify_timestamp_;
 
   CardUnmaskDelegate::UnmaskResponse pending_response_;
 

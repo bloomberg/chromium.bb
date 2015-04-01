@@ -1463,6 +1463,79 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
 }
 
 // Test that we log submitted form events for credit cards.
+TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
+  EnableWalletSync();
+  // Creating masked card
+  personal_data_->RecreateCreditCards(
+      false /* include_local_credit_card */,
+      true /* include_masked_server_credit_card */,
+      false /* include_full_server_credit_card */);
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Year", "card_year", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating filling a masked card server suggestion.
+    base::HistogramTester histogram_tester;
+    SuggestionBackendID guid("10000000-0000-0000-0000-000000000002",
+                             0);  // masked server card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
+    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                       "6011000990139424");
+    histogram_tester.ExpectTotalCount(
+        "Autofill.UnmaskPrompt.GetRealPanDuration", 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.UnmaskPrompt.GetRealPanDuration.Success", 1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+  // Creating masked card
+  personal_data_->RecreateCreditCards(
+      false /* include_local_credit_card */,
+      true /* include_masked_server_credit_card */,
+      false /* include_full_server_credit_card */);
+
+  {
+    // Simulating filling a masked card server suggestion.
+    base::HistogramTester histogram_tester;
+    SuggestionBackendID guid("10000000-0000-0000-0000-000000000002",
+                             0);  // masked server card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
+    autofill_manager_->OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE,
+                                       std::string());
+    histogram_tester.ExpectTotalCount(
+        "Autofill.UnmaskPrompt.GetRealPanDuration", 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.UnmaskPrompt.GetRealPanDuration.Failure", 1);
+  }
+}
+
+// Test that we log submitted form events for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
   EnableWalletSync();
   // Creating all kinds of cards.

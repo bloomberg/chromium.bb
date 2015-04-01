@@ -60,6 +60,11 @@ class AutofillClient {
   };
 
   enum GetRealPanResult {
+    // Empty result. Used for initializing variables and should generally
+    // not be returned nor passed as arguments unless explicitly allowed by
+    // the API.
+    NONE,
+
     // Request succeeded.
     SUCCESS,
 

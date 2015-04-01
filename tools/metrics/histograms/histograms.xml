@@ -2087,11 +2087,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.UnmaskPrompt.Duration" units="ms">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Duration of the interaction with the UnmaskPrompt since it was shown until
+    it was closed. This prompt is triggered when a user selects a masked card in
+    an autofill dropdown.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.UnmaskPrompt.Events" enum="AutofillUnmaskPromptEvent">
   <owner>waltercacau@chromium.org</owner>
   <summary>
     Events tracking the usage of the unmasking prompt. This prompt is triggered
     when a user selects a masked card in a autofill dropdown.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.UnmaskPrompt.GetRealPanDuration" units="ms">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Duration of the GetRealPan API call. This API call is triggered by the
+    unmasking prompt when the user types information to verify his ownership of
+    the card being fetched.
   </summary>
 </histogram>
 
@@ -2102,6 +2120,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Tracks the result of the GetRealPan API call. This API call is triggered by
     the unmasking prompt when the user types information to verify his ownership
     of the card being fetched.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking" units="ms">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Time the user waited before abandoning an unmasking operation. In such a
+    scenario, the user is cancelling a pending unmasking operation (possibly
+    because it is taking too long).  The time measured here corresponds to the
+    time between the user clicking the &quot;Verify&quot; button and then
+    clicking &quot;Cancel&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.UnmaskPrompt.UnmaskingDuration" units="ms">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Duration between the user clicking the Verify button within the unmasking
+    prompt until we get a response back from the server. This prompt is
+    triggered when a user selects a masked card in an autofill dropdown.
   </summary>
 </histogram>
 
@@ -45451,6 +45489,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="Local save stayed disabled"/>
   <int value="9" label="Did opt out of local save"/>
   <int value="10" label="Local save stayed enabled"/>
+  <int value="11" label="Closed, abandon unmasking"/>
 </enum>
 
 <enum name="AutofillUserHappiness" type="int">
@@ -62489,6 +62528,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Autofill.FormEvents.CreditCard"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="AutofillRealPanResultGroups" separator=".">
+  <suffix name="Failure" label="Failure"/>
+  <suffix name="NetworkError" label="Network errors"/>
+  <suffix name="Success" label="Success"/>
+  <affected-histogram name="Autofill.UnmaskPrompt.GetRealPanDuration"/>
+  <affected-histogram name="Autofill.UnmaskPrompt.UnmaskingDuration"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="AutofillServerExperiments">
   <suffix name="ar06" label="Acceptance ratio: 0.6"/>
   <suffix name="ar1" label="Acceptance ratio: 1.0"/>
@@ -62526,6 +62573,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Autofill.Quality.PredictedType.ByFieldType"/>
   <affected-histogram name="Autofill.Quality.ServerType"/>
   <affected-histogram name="Autofill.Quality.ServerType.ByFieldType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AutofillUnmaskPromptCloseReasonEvents" separator=".">
+  <suffix name="Failure" label="Failure"/>
+  <suffix name="NoAttempts" label="No attempts"/>
+  <suffix name="Success" label="Success"/>
+  <suffix name="AbandonUnmasking" label="Abandon unmasking"/>
+  <affected-histogram name="Autofill.UnmaskPrompt.Duration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BadBlockCounts" separator=".">

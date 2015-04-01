@@ -417,6 +417,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   int unmasking_query_id_;
   FormData unmasking_form_;
   FormFieldData unmasking_field_;
+  // Time when we requested the last real pan
+  base::Time real_pan_request_timestamp_;
 
   // SuggestionBackendID to ID mapping. We keep two maps to convert back and
   // forth. These should be used only by BackendIDToInt and IntToBackendID.
@@ -448,6 +450,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSelectedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardFilledFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardGetRealPanDuration);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardWillSubmitFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);

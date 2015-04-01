@@ -167,6 +167,17 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedNoAttempts) {
       AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS, 1);
 }
 
+TEST_F(CardUnmaskPromptControllerImplTest, LogClosedAbandonUnmasking) {
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING, 1);
+}
+
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
   ShowPromptAndSimulateResponse(false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
@@ -301,6 +312,92 @@ TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
       AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT, 0);
 }
 
+TEST_F(CardUnmaskPromptControllerImplTest, LogDurationNoAttempts) {
+  ShowPrompt();
+  base::HistogramTester histogram_tester;
+
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration", 1);
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration.NoAttempts",
+                                    1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDurationAbandonUnmasking) {
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.UnmaskPrompt.Duration.AbandonUnmasking", 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDurationFailedToUnmaskRetriable) {
+  ShowPromptAndSimulateResponse(false);
+  controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration", 1);
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration.Failure",
+                                    1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest,
+       LogDurationFailedToUnmaskNonRetriable) {
+  ShowPromptAndSimulateResponse(false);
+  controller_->OnVerificationResult(AutofillClient::PERMANENT_FAILURE);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration", 1);
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration.Failure",
+                                    1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDurationCardFirstAttempt) {
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration", 1);
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration.Success",
+                                    1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest,
+       LogDurationUnmaskedCardAfterFailure) {
+  ShowPromptAndSimulateResponse(false);
+  controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
+  controller_->OnUnmaskResponse(
+      base::ASCIIToUTF16("444"), base::ASCIIToUTF16("01"),
+      base::ASCIIToUTF16("2015"), false /* should_store_pan */);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration", 1);
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.Duration.Success",
+                                    1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogTimeBeforeAbandonUnmasking) {
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectTotalCount(
+      "Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking", 1);
+}
+
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {
   ShowPromptAndSimulateResponse(false);
   base::HistogramTester histogram_tester;
@@ -320,6 +417,31 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanTryAgainFailure) {
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.GetRealPanResult",
       AutofillMetrics::GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskingDurationResultSuccess) {
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.UnmaskingDuration",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.UnmaskPrompt.UnmaskingDuration.Success", 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest,
+       LogUnmaskingDurationTryAgainFailure) {
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
+
+  histogram_tester.ExpectTotalCount("Autofill.UnmaskPrompt.UnmaskingDuration",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.UnmaskPrompt.UnmaskingDuration.Failure", 1);
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {

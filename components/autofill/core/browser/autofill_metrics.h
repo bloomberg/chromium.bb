@@ -324,6 +324,9 @@ class AutofillMetrics {
     // User did not opt out when he had a chance (left the checkbox checked).
     // Only logged if there was an attempt to unmask.
     UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT,
+    // The prompt was closed while chrome was unmasking the card (user pressed
+    // verify and we were waiting for the server response).
+    UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING,
     NUM_UNMASK_PROMPT_EVENTS,
   };
 
@@ -469,8 +472,26 @@ class AutofillMetrics {
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
 
+  // Logs the time elapsed between the unmask prompt being shown and it
+  // being closed.
+  static void LogUnmaskPromptEventDuration(const base::TimeDelta& duration,
+                                           UnmaskPromptEvent close_event);
+
+  // Logs the time elapsed between the user clicking Verify and
+  // hitting cancel when abandoning a pending unmasking operation
+  // (aka GetRealPan).
+  static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration);
+
   // Logs |result| to the get real pan result histogram.
   static void LogRealPanResult(AutofillClient::GetRealPanResult result);
+
+  // Logs |result| to duration of the GetRealPan RPC.
+  static void LogRealPanDuration(const base::TimeDelta& duration,
+                                 AutofillClient::GetRealPanResult result);
+
+  // Logs |result| to the get real pan result histogram.
+  static void LogUnmaskingDuration(const base::TimeDelta& duration,
+                                   AutofillClient::GetRealPanResult result);
 
   // Logs |metric| to the Wallet errors histogram.
   static void LogWalletErrorMetric(WalletErrorMetric metric);

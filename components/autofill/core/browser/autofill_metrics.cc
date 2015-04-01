@@ -347,6 +347,42 @@ void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
 }
 
 // static
+void AutofillMetrics::LogUnmaskPromptEventDuration(
+    const base::TimeDelta& duration,
+    UnmaskPromptEvent close_event) {
+  std::string suffix;
+  switch (close_event) {
+    case UNMASK_PROMPT_CLOSED_NO_ATTEMPTS:
+      suffix = "NoAttempts";
+      break;
+    case UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE:
+    case UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE:
+      suffix = "Failure";
+      break;
+    case UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING:
+      suffix = "AbandonUnmasking";
+      break;
+    case UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT:
+    case UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS:
+      suffix = "Success";
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.Duration", duration);
+  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.Duration." + suffix,
+                           duration);
+}
+
+// static
+void AutofillMetrics::LogTimeBeforeAbandonUnmasking(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_LONG_TIMES("Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking",
+                           duration);
+}
+
+// static
 void AutofillMetrics::LogRealPanResult(
     AutofillClient::GetRealPanResult result) {
   GetRealPanResult metric_result;
@@ -370,6 +406,57 @@ void AutofillMetrics::LogRealPanResult(
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.GetRealPanResult",
                             metric_result,
                             NUM_GET_REAL_PAN_RESULTS);
+}
+
+// static
+void AutofillMetrics::LogRealPanDuration(
+    const base::TimeDelta& duration,
+    AutofillClient::GetRealPanResult result) {
+  std::string suffix;
+  switch (result) {
+    case AutofillClient::SUCCESS:
+      suffix = "Success";
+      break;
+    case AutofillClient::TRY_AGAIN_FAILURE:
+    case AutofillClient::PERMANENT_FAILURE:
+      suffix = "Failure";
+      break;
+    case AutofillClient::NETWORK_ERROR:
+      suffix = "NetworkError";
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.GetRealPanDuration",
+                           duration);
+  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.GetRealPanDuration." + suffix,
+                           duration);
+}
+
+// static
+void AutofillMetrics::LogUnmaskingDuration(
+    const base::TimeDelta& duration,
+    AutofillClient::GetRealPanResult result) {
+  std::string suffix;
+  switch (result) {
+    case AutofillClient::SUCCESS:
+      suffix = "Success";
+      break;
+    case AutofillClient::TRY_AGAIN_FAILURE:
+    case AutofillClient::PERMANENT_FAILURE:
+      suffix = "Failure";
+      break;
+    case AutofillClient::NETWORK_ERROR:
+      suffix = "NetworkError";
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration", duration);
+  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration." + suffix,
+                           duration);
 }
 
 // static
