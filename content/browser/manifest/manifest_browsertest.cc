@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/manifest.h"
@@ -40,7 +41,15 @@ class ManifestBrowserTest : public ContentBrowserTest  {
  protected:
   friend MockWebContentsDelegate;
 
-  ManifestBrowserTest() : console_error_count_(0) {}
+  ManifestBrowserTest()
+      : console_error_count_(0) {
+    cors_embedded_test_server_.reset(new net::test_server::EmbeddedTestServer);
+    base::FilePath test_data_dir;
+    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    cors_embedded_test_server_->ServeFilesFromDirectory(
+        test_data_dir.AppendASCII("content/test/data/"));
+  }
+
   ~ManifestBrowserTest() override {}
 
   void SetUpOnMainThread() override {
@@ -78,9 +87,14 @@ class ManifestBrowserTest : public ContentBrowserTest  {
     console_error_count_++;
   }
 
+  net::test_server::EmbeddedTestServer* cors_embedded_test_server() const {
+    return cors_embedded_test_server_.get();
+  }
+
  private:
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
   scoped_ptr<MockWebContentsDelegate> mock_web_contents_delegate_;
+  scoped_ptr<net::test_server::EmbeddedTestServer> cors_embedded_test_server_;
   Manifest manifest_;
   int console_error_count_;
 
@@ -213,12 +227,10 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
 // rules and requesting the manifest should return an empty manifest (unless the
 // response contains CORS headers).
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
-  scoped_ptr<net::test_server::EmbeddedTestServer> cors_embedded_test_server(
-      new net::test_server::EmbeddedTestServer);
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(cors_embedded_test_server->InitializeAndWaitUntilReady());
-  ASSERT_NE(embedded_test_server()->port(), cors_embedded_test_server->port());
+  ASSERT_TRUE(cors_embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_NE(embedded_test_server()->port(),
+            cors_embedded_test_server()->port());
 
   GURL test_url =
       embedded_test_server()->GetURL("/manifest/dynamic-manifest.html");
@@ -227,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
   shell()->LoadURL(test_url);
   navigation_observer.Wait();
 
-  std::string manifest_url =
-      cors_embedded_test_server->GetURL("/manifest/dummy-manifest.json").spec();
+  std::string manifest_url = cors_embedded_test_server()->GetURL(
+      "/manifest/dummy-manifest.json").spec();
   ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
                                      "setManifestTo('" + manifest_url + "')"));
 
@@ -238,7 +250,33 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
   EXPECT_EQ(0u, console_error_count());
 }
 
-// If a page's manifest is in an unsecure origin while the page is in a secure
+// If a page's manifest lives in a different origin, it should be accessible if
+// it has valid access controls headers.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifestWithAcessControls) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(cors_embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_NE(embedded_test_server()->port(),
+            cors_embedded_test_server()->port());
+
+  GURL test_url =
+      embedded_test_server()->GetURL("/manifest/dynamic-manifest.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+  navigation_observer.Wait();
+
+  std::string manifest_url = cors_embedded_test_server()->GetURL(
+      "/manifest/manifest-cors.json").spec();
+  ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
+                                     "setManifestTo('" + manifest_url + "')"));
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+
+  EXPECT_EQ(0u, console_error_count());
+}
+
+// If a page's manifest is in an insecure origin while the page is in a secure
 // origin, requesting the manifest should return the empty manifest.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
   scoped_ptr<net::SpawnedTestServer> https_server(new net::SpawnedTestServer(

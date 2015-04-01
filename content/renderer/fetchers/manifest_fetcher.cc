@@ -24,6 +24,12 @@ ManifestFetcher::~ManifestFetcher() {
 
 void ManifestFetcher::Start(blink::WebFrame* frame, const Callback& callback) {
   callback_ = callback;
+
+  blink::WebURLLoaderOptions options;
+  options.crossOriginRequestPolicy =
+      blink::WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+  fetcher_->SetLoaderOptions(options);
+
   fetcher_->Start(frame,
                   blink::WebURLRequest::RequestContextManifest,
                   blink::WebURLRequest::FrameTypeNone,
