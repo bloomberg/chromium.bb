@@ -37,6 +37,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/layout/HitTestLocation.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
@@ -344,6 +345,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     if (!relayoutChildren && simplifiedLayout())
         return;
 
+    LayoutRect prevRect = frameRect();
     SubtreeLayoutScope layoutScope(*this);
 
     // Multiple passes might be required for column and pagination based layout
@@ -378,6 +380,10 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
 
     if (isHTMLDialogElement(node()) && isOutOfFlowPositioned())
         positionDialog();
+
+    LayoutAnalyzer* analyzer = frameView()->layoutAnalyzer();
+    if (UNLIKELY(analyzer != nullptr))
+        analyzer->increment((frameRect() == prevRect) ? LayoutAnalyzer::LayoutBlockRectangleDidNotChange : LayoutAnalyzer::LayoutBlockRectangleChanged);
 
     clearNeedsLayout();
 }

@@ -29,55 +29,56 @@ LayoutAnalyzer::Scope::~Scope()
 void LayoutAnalyzer::reset()
 {
     m_counters.resize(NumCounters);
-    m_counters[BlockRectChanged] = 0;
-    m_counters[BlockRectUnchanged] = 0;
-    m_counters[Columns] = 0;
-    m_counters[Depth] = 0;
-    m_counters[Float] = 0;
-    m_counters[Layer] = 0;
-    m_counters[LineBoxes] = 0;
-    m_counters[New] = 0;
-    m_counters[OutOfFlow] = 0;
-    m_counters[PositionedMovement] = 0;
-    m_counters[Roots] = 0;
-    m_counters[SelfNeeds] = 0;
-    m_counters[TableCell] = 0;
-    m_counters[TextComplex] = 0;
-    m_counters[TextComplexChar] = 0;
-    m_counters[TextSimple] = 0;
-    m_counters[TextSimpleChar] = 0;
-    m_counters[Total] = 0;
+    m_counters[LayoutBlockRectangleChanged] = 0;
+    m_counters[LayoutBlockRectangleDidNotChange] = 0;
+    m_counters[LayoutObjectsThatSpecifyColumns] = 0;
+    m_counters[LayoutAnalyzerStackMaximumDepth] = 0;
+    m_counters[LayoutObjectsThatAreFloating] = 0;
+    m_counters[LayoutObjectsThatHaveALayer] = 0;
+    m_counters[LayoutInlineObjectsThatAlwaysCreateLineBoxes] = 0;
+    m_counters[LayoutObjectsThatHadNeverHadLayout] = 0;
+    m_counters[LayoutObjectsThatAreOutOfFlowPositioned] = 0;
+    m_counters[LayoutObjectsThatNeedPositionedMovementLayout] = 0;
+    m_counters[PerformLayoutRootLayoutObjects] = 0;
+    m_counters[LayoutObjectsThatNeedLayoutForThemselves] = 0;
+    m_counters[LayoutObjectsThatNeedSimplifiedLayout] = 0;
+    m_counters[LayoutObjectsThatAreTableCells] = 0;
+    m_counters[LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath] = 0;
+    m_counters[CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath] = 0;
+    m_counters[LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath] = 0;
+    m_counters[CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath] = 0;
+    m_counters[TotalLayoutObjectsThatWereLaidOut] = 0;
 }
 
 void LayoutAnalyzer::push(const LayoutObject& o)
 {
-    increment(Total);
+    increment(TotalLayoutObjectsThatWereLaidOut);
     if (!o.everHadLayout())
-        increment(New);
+        increment(LayoutObjectsThatHadNeverHadLayout);
     if (o.selfNeedsLayout())
-        increment(SelfNeeds);
+        increment(LayoutObjectsThatNeedLayoutForThemselves);
     if (o.needsPositionedMovementLayout())
-        increment(PositionedMovement);
+        increment(LayoutObjectsThatNeedPositionedMovementLayout);
     if (o.isOutOfFlowPositioned())
-        increment(OutOfFlow);
+        increment(LayoutObjectsThatAreOutOfFlowPositioned);
     if (o.isTableCell())
-        increment(TableCell);
+        increment(LayoutObjectsThatAreTableCells);
     if (o.isFloating())
-        increment(Float);
+        increment(LayoutObjectsThatAreFloating);
     if (o.style()->specifiesColumns())
-        increment(Columns);
+        increment(LayoutObjectsThatSpecifyColumns);
     if (o.hasLayer())
-        increment(Layer);
+        increment(LayoutObjectsThatHaveALayer);
     if (o.isLayoutInline() && o.alwaysCreateLineBoxesForLayoutInline())
-        increment(LineBoxes);
+        increment(LayoutInlineObjectsThatAlwaysCreateLineBoxes);
     if (o.isText()) {
         const LayoutText& t = *toLayoutText(&o);
         if (t.canUseSimpleFontCodePath()) {
-            increment(TextSimple);
-            increment(TextSimpleChar, t.textLength());
+            increment(LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath);
+            increment(CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath, t.textLength());
         } else {
-            increment(TextComplex);
-            increment(TextComplexChar, t.textLength());
+            increment(LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath);
+            increment(CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath, t.textLength());
         }
     }
 
@@ -103,8 +104,8 @@ void LayoutAnalyzer::push(const LayoutObject& o)
     // depth. LayoutAnalyzer depth is generally closer to C++ stack recursion
     // depth. See above exceptions for when LayoutAnalyzer depth != layout tree
     // depth.
-    if (m_stack.size() > m_counters[Depth])
-        m_counters[Depth] = m_stack.size();
+    if (m_stack.size() > m_counters[LayoutAnalyzerStackMaximumDepth])
+        m_counters[LayoutAnalyzerStackMaximumDepth] = m_stack.size();
 
 }
 
@@ -127,24 +128,25 @@ PassRefPtr<TracedValue> LayoutAnalyzer::toTracedValue()
 const char* LayoutAnalyzer::nameForCounter(Counter counter) const
 {
     switch (counter) {
-    case BlockRectChanged: return "BlockRectChanged";
-    case BlockRectUnchanged: return "BlockRectUnchanged";
-    case Columns: return "Columns";
-    case Depth: return "Depth";
-    case Float: return "Float";
-    case Layer: return "Layer";
-    case LineBoxes: return "LineBoxes";
-    case New: return "New";
-    case OutOfFlow: return "OutOfFlow";
-    case PositionedMovement: return "PositionedMovement";
-    case Roots: return "Roots";
-    case SelfNeeds: return "SelfNeeds";
-    case TableCell: return "TableCell";
-    case TextComplex: return "TextComplex";
-    case TextComplexChar: return "TextComplexChar";
-    case TextSimple: return "TextSimple";
-    case TextSimpleChar: return "TextSimpleChar";
-    case Total: return "Total";
+    case LayoutBlockRectangleChanged: return "LayoutBlockRectangleChanged";
+    case LayoutBlockRectangleDidNotChange: return "LayoutBlockRectangleDidNotChange";
+    case LayoutObjectsThatSpecifyColumns: return "LayoutObjectsThatSpecifyColumns";
+    case LayoutAnalyzerStackMaximumDepth: return "LayoutAnalyzerStackMaximumDepth";
+    case LayoutObjectsThatAreFloating: return "LayoutObjectsThatAreFloating";
+    case LayoutObjectsThatHaveALayer: return "LayoutObjectsThatHaveALayer";
+    case LayoutInlineObjectsThatAlwaysCreateLineBoxes: return "LayoutInlineObjectsThatAlwaysCreateLineBoxes";
+    case LayoutObjectsThatHadNeverHadLayout: return "LayoutObjectsThatHadNeverHadLayout";
+    case LayoutObjectsThatAreOutOfFlowPositioned: return "LayoutObjectsThatAreOutOfFlowPositioned";
+    case LayoutObjectsThatNeedPositionedMovementLayout: return "LayoutObjectsThatNeedPositionedMovementLayout";
+    case PerformLayoutRootLayoutObjects: return "PerformLayoutRootLayoutObjects";
+    case LayoutObjectsThatNeedLayoutForThemselves: return "LayoutObjectsThatNeedLayoutForThemselves";
+    case LayoutObjectsThatNeedSimplifiedLayout: return "LayoutObjectsThatNeedSimplifiedLayout";
+    case LayoutObjectsThatAreTableCells: return "LayoutObjectsThatAreTableCells";
+    case LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath: return "LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath";
+    case CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath: return "CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath";
+    case LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath: return "LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath";
+    case CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath: return "CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath";
+    case TotalLayoutObjectsThatWereLaidOut: return "TotalLayoutObjectsThatWereLaidOut";
     }
     ASSERT_NOT_REACHED();
     return "";

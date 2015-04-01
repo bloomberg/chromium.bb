@@ -63,6 +63,7 @@ class LayoutObject;
 class LayoutScrollbarPart;
 class LayoutView;
 class ScrollingCoordinator;
+class TracedValue;
 struct CompositedSelectionBound;
 
 typedef unsigned long long DOMTimeStamp;
@@ -718,6 +719,7 @@ private:
     ScrollingCoordinator* scrollingCoordinator();
 
     void prepareAnalyzer();
+    PassRefPtr<TracedValue> analyzerCounters();
 
     LayoutSize m_size;
 

@@ -19,26 +19,27 @@ class TracedValue;
 class LayoutAnalyzer {
 public:
     enum Counter {
-        BlockRectChanged,
-        BlockRectUnchanged,
-        Columns,
-        Depth,
-        Float,
-        Layer,
-        LineBoxes,
-        New,
-        OutOfFlow,
-        PositionedMovement,
-        Roots,
-        SelfNeeds,
-        TableCell,
-        TextComplex,
-        TextComplexChar,
-        TextSimple,
-        TextSimpleChar,
-        Total,
+        LayoutBlockRectangleChanged,
+        LayoutBlockRectangleDidNotChange,
+        LayoutObjectsThatSpecifyColumns,
+        LayoutAnalyzerStackMaximumDepth,
+        LayoutObjectsThatAreFloating,
+        LayoutObjectsThatHaveALayer,
+        LayoutInlineObjectsThatAlwaysCreateLineBoxes,
+        LayoutObjectsThatHadNeverHadLayout,
+        LayoutObjectsThatAreOutOfFlowPositioned,
+        LayoutObjectsThatNeedPositionedMovementLayout,
+        PerformLayoutRootLayoutObjects,
+        LayoutObjectsThatNeedLayoutForThemselves,
+        LayoutObjectsThatNeedSimplifiedLayout,
+        LayoutObjectsThatAreTableCells,
+        LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+        CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+        LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
+        CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
+        TotalLayoutObjectsThatWereLaidOut,
     };
-    static const size_t NumCounters = 18;
+    static const size_t NumCounters = 19;
 
     class Scope {
     public:

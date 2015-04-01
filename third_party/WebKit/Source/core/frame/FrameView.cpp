@@ -871,6 +871,13 @@ void FrameView::prepareAnalyzer()
     m_analyzer->reset();
 }
 
+PassRefPtr<TracedValue> FrameView::analyzerCounters()
+{
+    RefPtr<TracedValue> value = layoutAnalyzer() ? layoutAnalyzer()->toTracedValue() : TracedValue::create();
+    value->setString("host", layoutView()->document().location()->host());
+    return value;
+}
+
 void FrameView::performLayout(bool inSubtreeLayout)
 {
     ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
@@ -892,6 +899,8 @@ void FrameView::performLayout(bool inSubtreeLayout)
     forceLayoutParentViewIfNeeded();
 
     if (inSubtreeLayout) {
+        if (layoutAnalyzer())
+            layoutAnalyzer()->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
         while (m_layoutSubtreeRoots.size()) {
             LayoutObject& root = *m_layoutSubtreeRoots.takeAny();
             if (!root.needsLayout())
@@ -912,7 +921,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
     TRACE_EVENT_END1("blink,benchmark", "FrameView::performLayout",
-        "counters", layoutAnalyzer() ? layoutAnalyzer()->toTracedValue() : TracedValue::create());
+        "counters", analyzerCounters());
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()

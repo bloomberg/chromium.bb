@@ -1629,6 +1629,11 @@ bool LayoutBlock::simplifiedLayout()
     updateScrollInfoAfterLayout();
 
     clearNeedsLayout();
+
+    LayoutAnalyzer* analyzer = frameView()->layoutAnalyzer();
+    if (UNLIKELY(analyzer != nullptr))
+        analyzer->increment(LayoutAnalyzer::LayoutObjectsThatNeedSimplifiedLayout);
+
     return true;
 }
 
