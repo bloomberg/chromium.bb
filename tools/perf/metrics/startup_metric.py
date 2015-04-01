@@ -47,12 +47,23 @@ class StartupMetric(Metric):
     tab_load_times = []
     TabLoadTime = collections.namedtuple(
         'TabLoadTime',
-        ['request_start_ms', 'load_end_ms'])
+        ['load_start_ms', 'load_duration_ms', 'request_start_ms'])
 
     def RecordTabLoadTime(t):
       try:
-        t.WaitForJavaScriptExpression(
-            'window.performance.timing["loadEventEnd"] > 0', 10)
+        t.WaitForDocumentReadyStateToBeComplete()
+
+        result = t.EvaluateJavaScript(
+            'statsCollectionController.tabLoadTiming()')
+        result = json.loads(result)
+
+        if 'load_start_ms' not in result or 'load_duration_ms' not in result:
+          raise Exception("Outdated Chrome version, "
+              "statsCollectionController.tabLoadTiming() not present")
+        if result['load_duration_ms'] is None:
+          tab_title = t.EvaluateJavaScript('document.title')
+          print "Page: ", tab_title, " didn't finish loading."
+          return
 
         perf_timing = t.EvaluateJavaScript('window.performance.timing')
         if 'requestStart' not in perf_timing:
@@ -60,8 +71,9 @@ class StartupMetric(Metric):
           print 'requestStart is not supported by this browser'
 
         tab_load_times.append(TabLoadTime(
-            int(perf_timing['requestStart']),
-            int(perf_timing['loadEventEnd'])))
+            int(result['load_start_ms']),
+            int(result['load_duration_ms']),
+            int(perf_timing['requestStart'])))
       except exceptions.TimeoutException:
         # Low memory Android devices may not be able to load more than
         # one tab at a time, so may timeout when the test attempts to
@@ -77,8 +89,8 @@ class StartupMetric(Metric):
     RecordTabLoadTime(tab.browser.foreground_tab)
 
     foreground_tab_stats = tab_load_times[0]
-    foreground_tab_load_complete = (
-        foreground_tab_stats.load_end_ms - browser_main_entry_time_ms)
+    foreground_tab_load_complete = ((foreground_tab_stats.load_start_ms +
+        foreground_tab_stats.load_duration_ms) - browser_main_entry_time_ms)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'foreground_tab_load_complete', 'ms',
         foreground_tab_load_complete))
