@@ -3,71 +3,39 @@
 <script src="../inspector-test.js"></script>
 <script src="service-workers-test.js"></script>
 <script src="../resources-test.js"></script>
-<script src="../console-test.js"></script>
 <script>
 function test()
 {
     var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
     var scope1 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
     var scope2 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope2/";
-    var expectedTitle1 = "Scope: /inspector/service-workers/resources/scope1/";
-    var expectedTitle2 = "Scope: /inspector/service-workers/resources/scope2/";
+    var scopes = [scope1, scope2];
     var step = 0;
 
     InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
-    function replaceInnerTextAll(rootElement, selectors, replacementString)
-    {
-        var elements = rootElement.querySelectorAll(selectors);
-        for (var i = 0; i < elements.length; i++)
-            elements[i].innerText = replacementString;
-    }
-    function modifyTestUnfriendlyText(rootElement)
-    {
-        replaceInnerTextAll(rootElement, ".service-worker-script-last-modified", "LAST-MODIFIED");
-        replaceInnerTextAll(rootElement, ".service-worker-script-response-time", "RESPONSE-TIME");
-    }
-    function dumpServiceWorkersView()
-    {
-        var swView = WebInspector.panels.resources.visibleView;
-
-        modifyTestUnfriendlyText(swView._root);
-        InspectorTest.addResult("==== ServiceWorkersView ====");
-        InspectorTest.addResult(swView._root.querySelector(".service-workers-origin-title").innerText);
-        var registrationElements = swView._root.querySelectorAll(".service-workers-registration");
-        for (var i = 0; i < registrationElements.length; i++) {
-            var registrationElement = registrationElements[i];
-            var title = registrationElement.querySelector(".service-workers-registration-title").innerText;
-            if (title.indexOf(expectedTitle1) == -1 && title.indexOf(expectedTitle2) == -1)
-                continue;
-            InspectorTest.addResult(title);
-            var versionElements = registrationElement.querySelectorAll(".service-workers-version-row");
-            for (var j = 0; j < versionElements.length; j++)
-                InspectorTest.addResult(versionElements[j].innerText);
-        }
-        InspectorTest.addResult("============================");
-    }
-
     function registrationUpdated(event)
     {
         var registration = event.data;
         for (var version of registration.versions.values()) {
             if (step == 0 && registration.scopeURL == scope1 && version.isActivated() && version.isRunning()) {
                 ++step;
-                dumpServiceWorkersView();
+                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
                 InspectorTest.addResult("Register ServiceWorker for scope2");
                 InspectorTest.registerServiceWorker(scriptURL, scope2);
             } else if (step == 1 && registration.scopeURL == scope2 && version.isActivated() && version.isRunning()) {
                 ++step;
-                dumpServiceWorkersView();
+                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
                 InspectorTest.addResult("Unegister ServiceWorker for scope1");
                 InspectorTest.unregisterServiceWorker(scope1);
             } else if (step == 2 && registration.scopeURL == scope1 && version.isRedundant() && version.isRunning()) {
                 ++step;
-                dumpServiceWorkersView();
+                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
                 InspectorTest.addResult("Unegister ServiceWorker for scope1");
                 InspectorTest.unregisterServiceWorker(scope2);
             } else if (step == 3 && registration.scopeURL == scope2 && version.isRedundant()) {
                 ++step;
+                InspectorTest.deleteServiceWorkerRegistration(scope1);
+                InspectorTest.deleteServiceWorkerRegistration(scope2);
                 InspectorTest.completeTest();
             }
         }

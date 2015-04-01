@@ -1,0 +1,58 @@
+CONSOLE MESSAGE: line 78: registerServiceWorker success
+ServiceWorkers must be shown correctly even if there is a redundant worker.
+
+The first ServiceWorker is activated.
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
+activated
+running
+/inspector/service-workers/resources/changing-worker.php
+inspect
+RESPONSE-TIME
+
+============================
+The second Serviceworker is installed.
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
+installed
+running
+/inspector/service-workers/resources/changing-worker.php
+inspect
+RESPONSE-TIME
+
+activated
+running
+/inspector/service-workers/resources/changing-worker.php
+inspect
+RESPONSE-TIME
+
+============================
+The first ServiceWorker worker became redundant and stopped.
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
+activated
+running
+/inspector/service-workers/resources/changing-worker.php
+inspect
+RESPONSE-TIME
+
+============================
+DevTools frontend is reopened.
+==== ServiceWorkersView ====
+127.0.0.1
+
+Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
+activated
+running
+/inspector/service-workers/resources/changing-worker.php
+inspect
+RESPONSE-TIME
+
+============================
+

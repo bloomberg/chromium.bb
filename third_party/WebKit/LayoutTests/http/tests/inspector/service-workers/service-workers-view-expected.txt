@@ -1,7 +1,7 @@
-CONSOLE MESSAGE: line 52: registerServiceWorker success
-CONSOLE MESSAGE: line 52: registerServiceWorker success
-CONSOLE MESSAGE: line 69: unregisterServiceWorker success
-CONSOLE MESSAGE: line 69: unregisterServiceWorker success
+CONSOLE MESSAGE: line 78: registerServiceWorker success
+CONSOLE MESSAGE: line 78: registerServiceWorker success
+CONSOLE MESSAGE: line 95: unregisterServiceWorker success
+CONSOLE MESSAGE: line 95: unregisterServiceWorker success
 Tests ServiceWorkersView on resources panel.
 
 Select ServiceWorkers tree element.
@@ -10,15 +10,12 @@ Register ServiceWorker for scope1
 127.0.0.1
 
 Scope: /inspector/service-workers/resources/scope1/
-
-
 activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
 LAST-MODIFIED
 RESPONSE-TIME
-
 
 ============================
 Register ServiceWorker for scope2
@@ -26,26 +23,20 @@ Register ServiceWorker for scope2
 127.0.0.1
 
 Scope: /inspector/service-workers/resources/scope1/
-
-
 activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
 LAST-MODIFIED
 RESPONSE-TIME
-
 
 Scope: /inspector/service-workers/resources/scope2/
-
-
 activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
 LAST-MODIFIED
 RESPONSE-TIME
-
 
 ============================
 Unegister ServiceWorker for scope1
@@ -53,9 +44,6 @@ Unegister ServiceWorker for scope1
 127.0.0.1
 
 Scope: /inspector/service-workers/resources/scope1/ - deleted
-
-
-
 redundant
 running
 /inspector/service-workers/resources/service-worker-empty.js
@@ -64,15 +52,12 @@ LAST-MODIFIED
 RESPONSE-TIME
 
 Scope: /inspector/service-workers/resources/scope2/
-
-
 activated
 running
 /inspector/service-workers/resources/service-worker-empty.js
 inspect
 LAST-MODIFIED
 RESPONSE-TIME
-
 
 ============================
 Unegister ServiceWorker for scope1
