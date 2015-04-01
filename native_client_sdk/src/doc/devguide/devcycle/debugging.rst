@@ -231,6 +231,7 @@ that matches the SDK version. Developers who may have left the
 copy of your application (which may or may not work, depending on
 their version of Chrome).
 
+.. _debugging_pexes_via_nexes:
 
 Debugging PNaCl pexes (with older Pepper toolchains)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

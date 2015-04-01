@@ -19,6 +19,16 @@ PNaCl
   SDK can therefore generate them.
 * Fix a `code generation bug on ARM`_ when dealing with 16-bit load/store and
   ``bswap`` which led to a NaCl validation failure.
+* PNaCl is now based on LLVM 3.6. If you are using GDB to debug PNaCl
+  :ref:`BC files with debug metadata in the browser<debugging_pnacl_pexes>`,
+  remember that debug info from SDK version ``X`` is only compatible with the
+  PNaCl translator in chrome version ``X``. The bitcode debug metadata format
+  changed from LLVM 3.5 to 3.6. If you need to debug an app built with SDK
+  version ``X`` running in Chrome version ``Y`` (with ``X != Y``), it is still
+  possible to do so. Simply translate the pexe to a nexe using the
+  :ref:`offline pnacl-translate tool from SDK version X
+  <debugging_pexes_via_nexes>` instead of using the translator in the
+  browser (version ``Y``).
 
 .. _`code generation bug on ARM`: https://code.google.com/p/chromium/issues/detail?id=460432
 
