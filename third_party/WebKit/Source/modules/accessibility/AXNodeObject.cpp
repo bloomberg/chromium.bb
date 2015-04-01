@@ -669,7 +669,7 @@ bool AXNodeObject::isPasswordField() const
         return false;
 
     AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != TextFieldRole && ariaRole != TextAreaRole)
+    if (ariaRole != TextFieldRole && ariaRole != TextAreaRole && ariaRole != UnknownRole)
         return false;
 
     return toHTMLInputElement(node)->type() == InputTypeNames::password;
