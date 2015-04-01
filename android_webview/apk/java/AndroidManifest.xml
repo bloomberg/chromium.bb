@@ -5,8 +5,6 @@
   LICENSE file.
 -->
 
-<!-- Please keep this in sync with the downstream android_webview manifest.
--->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="{{package|default('com.android.webview')}}">
     <uses-sdk android:minSdkVersion="{{minsdk|default(21)}}"

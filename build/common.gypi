@@ -1081,6 +1081,11 @@
       'google_default_client_secret%': '',
       # Native Client is enabled by default.
       'disable_nacl%': '0',
+
+      # Sets the default version name and code for Android app, by default we
+      # do a developer build.
+      'android_app_version_name%': 'Developer Build',
+      'android_app_version_code%': 1,
     },
 
     # Copy conditionally-set variables out one scope.
@@ -1236,6 +1241,8 @@
     'cfi_unrelated_cast%': '<(cfi_unrelated_cast)',
     'cfi_blacklist%': '<(cfi_blacklist)',
     'mac_views_browser%': '<(mac_views_browser)',
+    'android_app_version_name%': '<(android_app_version_name)',
+    'android_app_version_code%': '<(android_app_version_code)',
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
@@ -1466,11 +1473,6 @@
     # has no full v8 debug, has size optimization and linker gc section, so that
     # we can build a debug version with acceptable size and performance.
     'android_full_debug%': 0,
-
-    # Sets the default version name and code for Android app, by default we
-    # do a developer build.
-    'android_app_version_name%': 'Developer Build',
-    'android_app_version_code%': 1,
 
     # Contains data about the attached devices for gyp_managed_install.
     'build_device_config_path': '<(PRODUCT_DIR)/build_devices.cfg',
