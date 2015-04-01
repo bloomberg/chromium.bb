@@ -127,6 +127,7 @@ stage_install_common() {
   # only the public repository).
   if [ -r "${BUILDDIR}/chrome_100_percent.pak" ]; then
     install -m 644 "${BUILDDIR}/chrome_100_percent.pak" "${STAGEDIR}/${INSTALLDIR}/"
+    install -m 644 "${BUILDDIR}/chrome_200_percent.pak" "${STAGEDIR}/${INSTALLDIR}/"
   else
     install -m 644 "${BUILDDIR}/theme_resources_100_percent.pak" "${STAGEDIR}/${INSTALLDIR}/"
     install -m 644 "${BUILDDIR}/ui_resources_100_percent.pak" "${STAGEDIR}/${INSTALLDIR}/"
