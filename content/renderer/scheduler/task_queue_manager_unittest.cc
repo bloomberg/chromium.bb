@@ -442,10 +442,12 @@ TEST_F(TaskQueueManagerTest, PendingDelayedTasksRemovedOnShutdown) {
   runner->PostDelayedTask(
       FROM_HERE, base::Bind(&TestObject::Run, base::Owned(new TestObject())),
       delay);
+  runner->PostTask(
+      FROM_HERE, base::Bind(&TestObject::Run, base::Owned(new TestObject())));
 
   manager_.reset();
 
-  EXPECT_EQ(1, TestObject::destructor_count_);
+  EXPECT_EQ(2, TestObject::destructor_count_);
 }
 
 TEST_F(TaskQueueManagerTest, ManualPumping) {

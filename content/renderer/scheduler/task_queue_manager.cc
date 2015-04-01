@@ -154,8 +154,9 @@ TaskQueue::~TaskQueue() {
 void TaskQueue::WillDeleteTaskQueueManager() {
   base::AutoLock lock(lock_);
   task_queue_manager_ = nullptr;
-  // TODO(scheduler-dev): Should we also clear the other queues here too?
   delayed_task_queue_ = base::DelayedTaskQueue();
+  incoming_queue_ = base::TaskQueue();
+  work_queue_ = base::TaskQueue();
 }
 
 bool TaskQueue::RunsTasksOnCurrentThread() const {
