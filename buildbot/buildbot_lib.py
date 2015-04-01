@@ -359,7 +359,8 @@ def RemovePath(path):
   if os.path.isdir(path):
     RemoveDirectory(path)
   else:
-    os.chmod(path, stat.S_IWUSR)
+    if os.path.isfile(path) and not os.access(path, os.W_OK):
+      os.chmod(path, stat.S_IWUSR)
     os.remove(path)
 
 
