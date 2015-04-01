@@ -14,8 +14,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -37,6 +39,7 @@
 #include "components/content_settings/core/browser/local_shared_objects_counter.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/user_metrics.h"
@@ -232,6 +235,29 @@ void WebsiteSettings::RecordWebsiteSettingsAction(
   }
 }
 
+// Get corresponding Rappor Metric.
+const std::string GetRapporMetric(ContentSettingsType permission) {
+  std::string permission_str;
+  switch (permission) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      permission_str = "Geolocation";
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      permission_str = "Notifications";
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      permission_str = "Mic";
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      permission_str = "Camera";
+      break;
+    default:
+      return "";
+  }
+
+  return base::StringPrintf("ContentSettings.PermissionActions_%s.Revoked.Url",
+                            permission_str.c_str());
+}
 
 void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
                                               ContentSetting setting) {
@@ -253,6 +279,12 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     UMA_HISTOGRAM_ENUMERATION(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
         CONTENT_SETTINGS_HISTOGRAM_NUM_TYPES);
+    // Trigger Rappor sampling if it is a permission revoke action.
+    const std::string& rappor_metric = GetRapporMetric(type);
+    if (!rappor_metric.empty()) {
+      rappor::SampleDomainAndRegistryFromGURL(
+          g_browser_process->rappor_service(), rappor_metric, this->site_url_);
+    }
   }
 
   // This is technically redundant given the histogram above, but putting the
@@ -295,18 +327,18 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
       break;
   }
 
-    // Permission settings are specified via rules. There exists always at least
-    // one rule for the default setting. Get the rule that currently defines
-    // the permission for the given permission |type|. Then test whether the
-    // existing rule is more specific than the rule we are about to create. If
-    // the existing rule is more specific, than change the existing rule instead
-    // of creating a new rule that would be hidden behind the existing rule.
-    content_settings::SettingInfo info;
-    scoped_ptr<base::Value> v =
-        content_settings_->GetWebsiteSettingWithoutOverride(
-            site_url_, site_url_, type, std::string(), &info);
-    content_settings_->SetNarrowestWebsiteSetting(
-        primary_pattern, secondary_pattern, type, std::string(), setting, info);
+  // Permission settings are specified via rules. There exists always at least
+  // one rule for the default setting. Get the rule that currently defines
+  // the permission for the given permission |type|. Then test whether the
+  // existing rule is more specific than the rule we are about to create. If
+  // the existing rule is more specific, than change the existing rule instead
+  // of creating a new rule that would be hidden behind the existing rule.
+  content_settings::SettingInfo info;
+  scoped_ptr<base::Value> v =
+      content_settings_->GetWebsiteSettingWithoutOverride(
+          site_url_, site_url_, type, std::string(), &info);
+  content_settings_->SetNarrowestWebsiteSetting(
+      primary_pattern, secondary_pattern, type, std::string(), setting, info);
 
   show_info_bar_ = true;
 

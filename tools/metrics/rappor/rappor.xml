@@ -117,6 +117,14 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.PermissionActions_Camera.Revoked.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The domain for which a camera permission was revoked.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.PermissionActions_Geolocation.Denied.Url"
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
@@ -147,6 +155,22 @@ components/rappor/rappor_service.cc.
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain for which a Geolocation permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Geolocation.Revoked.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The domain for which a Geolocation permission was revoked.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Mic.Revoked.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The domain for which a microphone permission was revoked.
   </summary>
 </rappor-metric>
 
@@ -183,6 +207,15 @@ components/rappor/rappor_service.cc.
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain for which a Notification permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Revoked.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The domain for which a Notification permission was revoked.
   </summary>
 </rappor-metric>
 
