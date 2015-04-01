@@ -108,9 +108,12 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
     v8::Handle<v8::Context> context = m_scriptState->context();
     if (m_frame->isLocalFrame()) {
         LocalFrame* frame = toLocalFrame(m_frame);
+        // The embedder could run arbitrary code in response to the willReleaseScriptContext callback, so all disposing should happen after it returns.
         frame->loader().client()->willReleaseScriptContext(context, m_world->worldId());
         InspectorInstrumentation::willReleaseScriptContext(frame, m_scriptState.get());
     }
+
+    m_document.clear();
 
     if (behavior == DetachGlobal)
         m_scriptState->detachGlobalObject();
@@ -128,7 +131,6 @@ void WindowProxy::clearForClose()
     if (!isContextInitialized())
         return;
 
-    m_document.clear();
     disposeContext(DoNotDetachGlobal);
 }
 
@@ -139,7 +141,6 @@ void WindowProxy::clearForNavigation()
 
     ScriptState::Scope scope(m_scriptState.get());
 
-    m_document.clear();
     disposeContext(DetachGlobal);
 }
 
