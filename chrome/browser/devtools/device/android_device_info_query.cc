@@ -46,6 +46,26 @@ struct BrowserDescriptor {
 
 const BrowserDescriptor kBrowserDescriptors[] = {
   {
+    "com.google.android.apps.chrome",
+    kChromeDefaultSocket,
+    "Chromium"
+  },
+  {
+    "com.chrome.canary",
+    kChromeDefaultSocket,
+    "Chrome Canary"
+  },
+  {
+    "com.google.android.apps.chrome_dev",
+    kChromeDefaultSocket,
+    "Chrome Dev"
+  },
+  {
+    "com.chrome.beta",
+    kChromeDefaultSocket,
+    "Chrome Beta"
+  },
+  {
     "com.android.chrome",
     kChromeDefaultSocket,
     kChromeDefaultName
@@ -56,24 +76,9 @@ const BrowserDescriptor kBrowserDescriptors[] = {
     "Work Chrome"
   },
   {
-    "com.chrome.beta",
-    kChromeDefaultSocket,
-    "Chrome Beta"
-  },
-  {
-    "com.google.android.apps.chrome_dev",
-    kChromeDefaultSocket,
-    "Chrome Dev"
-  },
-  {
-    "com.chrome.canary",
-    kChromeDefaultSocket,
-    "Chrome Canary"
-  },
-  {
-    "com.google.android.apps.chrome",
-    kChromeDefaultSocket,
-    "Chromium"
+    "org.chromium.android_webview.shell",
+    "webview_devtools_remote",
+    "WebView Test Shell"
   },
   {
     "org.chromium.content_shell_apk",
@@ -85,20 +90,29 @@ const BrowserDescriptor kBrowserDescriptors[] = {
     "chrome_shell_devtools_remote",
     "Chrome Shell"
   },
-  {
-    "org.chromium.android_webview.shell",
-    "webview_devtools_remote",
-    "WebView Test Shell"
-  }
 };
 
 const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
-  int count = sizeof(kBrowserDescriptors) / sizeof(kBrowserDescriptors[0]);
-  for (int i = 0; i < count; i++) {
+  size_t count = arraysize(kBrowserDescriptors);
+  for (size_t i = 0; i < count; i++) {
     if (kBrowserDescriptors[i].package == package)
       return &kBrowserDescriptors[i];
   }
   return nullptr;
+}
+
+bool BrowserCompare(const AndroidDeviceManager::BrowserInfo& a,
+                    const AndroidDeviceManager::BrowserInfo& b) {
+  size_t count = arraysize(kBrowserDescriptors);
+  for (size_t i = 0; i < count; i++) {
+    bool isA = kBrowserDescriptors[i].display_name == a.display_name;
+    bool isB = kBrowserDescriptors[i].display_name == b.display_name;
+    if (isA != isB)
+      return isA;
+    if (isA && isB)
+      break;
+  }
+  return a.socket_name < b.socket_name;
 }
 
 using StringMap = std::map<std::string, std::string>;
@@ -306,6 +320,9 @@ void ReceivedResponse(const AndroidDeviceManager::DeviceInfoCallback& callback,
 
     device_info.browser_info.push_back(browser_info);
   }
+  std::sort(device_info.browser_info.begin(),
+            device_info.browser_info.end(),
+            &BrowserCompare);
   callback.Run(device_info);
 }
 

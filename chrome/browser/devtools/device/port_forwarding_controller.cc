@@ -4,7 +4,6 @@
 
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
 
-#include <algorithm>
 #include <map>
 
 #include "base/bind.h"
@@ -47,7 +46,6 @@ enum {
 namespace tethering = ::chrome::devtools::Tethering;
 
 static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
-const int kMinVersionPortForwarding = 28;
 
 class SocketTunnel : public base::NonThreadSafe {
  public:
@@ -223,36 +221,6 @@ class SocketTunnel : public base::NonThreadSafe {
   CounterCallback callback_;
   bool about_to_destroy_;
 };
-
-typedef DevToolsAndroidBridge::RemoteBrowser::ParsedVersion ParsedVersion;
-
-static bool IsVersionLower(const ParsedVersion& left,
-                           const ParsedVersion& right) {
-  return std::lexicographical_compare(
-    left.begin(), left.end(), right.begin(), right.end());
-}
-
-static bool IsPortForwardingSupported(const ParsedVersion& version) {
-  return !version.empty() && version[0] >= kMinVersionPortForwarding;
-}
-
-static scoped_refptr<DevToolsAndroidBridge::RemoteBrowser>
-FindBestBrowserForTethering(
-    const DevToolsAndroidBridge::RemoteBrowsers browsers) {
-  scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> best_browser;
-  ParsedVersion newest_version;
-  for (DevToolsAndroidBridge::RemoteBrowsers::const_iterator it =
-      browsers.begin(); it != browsers.end(); ++it) {
-    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser = *it;
-    ParsedVersion current_version = browser->GetParsedVersion();
-    if (IsPortForwardingSupported(current_version) &&
-        IsVersionLower(newest_version, current_version)) {
-      best_browser = browser;
-      newest_version = current_version;
-    }
-  }
-  return best_browser;
-}
 
 }  // namespace
 
@@ -553,10 +521,8 @@ PortForwardingController::DeviceListChanged(
       continue;
     Registry::iterator rit = registry_.find(device->serial());
     if (rit == registry_.end()) {
-      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser(
-          FindBestBrowserForTethering(device->browsers()));
-      if (browser.get())
-        new Connection(this, browser, forwarding_map_);
+      if (device->browsers().size() > 0)
+        new Connection(this, device->browsers()[0], forwarding_map_);
     } else {
       status.push_back(std::make_pair(rit->second->browser(),
                                       rit->second->GetPortStatusMap()));
