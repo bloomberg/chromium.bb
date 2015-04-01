@@ -18,6 +18,7 @@ class GURL;
 namespace leveldb {
 class DB;
 class Env;
+class FilterPolicy;
 class WriteBatch;
 }
 
@@ -174,6 +175,8 @@ class CONTENT_EXPORT NotificationDatabase {
   base::FilePath path_;
 
   int64_t next_notification_id_ = 0;
+
+  scoped_ptr<const leveldb::FilterPolicy> filter_policy_;
 
   // The declaration order for these members matters, as |db_| depends on |env_|
   // and thus has to be destructed first.

@@ -18,6 +18,7 @@
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/gurl.h"
 
@@ -111,6 +112,8 @@ NotificationDatabase::Status NotificationDatabase::Open(
       return NotificationDatabase::STATUS_ERROR_NOT_FOUND;
     }
   }
+
+  filter_policy_.reset(leveldb::NewBloomFilterPolicy(10));
 
   leveldb::Options options;
   options.create_if_missing = create_if_missing;
