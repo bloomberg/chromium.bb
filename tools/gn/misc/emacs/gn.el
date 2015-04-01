@@ -21,7 +21,7 @@
 
 (defvar gn-font-lock-target-declaration-keywords
   '("action" "action_foreach" "copy" "executable" "group"
-    "shared_library" "source_set" "static_library"))
+    "shared_library" "source_set" "static_library" "if" "else"))
 
 (defvar gn-font-lock-buildfile-fun-keywords
   '("assert" "config" "declare_args" "defined" "exec_script" "foreach"
@@ -89,7 +89,6 @@
   (modify-syntax-entry ?_ "w" gn-mode-syntax-table))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("^BUILD.gn$" . gn-mode))
-(add-to-list 'auto-mode-alist '("\\.gni$'" . gn-mode))
+(add-to-list 'auto-mode-alist '("\\.gni?\\'" . gn-mode))
 
 (provide 'gn-mode)
