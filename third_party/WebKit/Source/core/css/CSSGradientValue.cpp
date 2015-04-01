@@ -1005,7 +1005,7 @@ float CSSRadialGradientValue::resolveRadius(CSSPrimitiveValue* radius, const CSS
     else
         result = radius->computeLength<float>(conversionData);
 
-    return result;
+    return std::max(result, 0.0f);
 }
 
 namespace {
