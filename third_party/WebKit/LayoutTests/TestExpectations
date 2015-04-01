@@ -1939,6 +1939,8 @@ crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
 crbug.com/469767 webaudio/audiochannelmerger-disconnect.html [ Pass Failure ]
 
+crbug.com/472488 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure Timeout Crash ]
+
 crbug.com/470429 inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
 crbug.com/470429 virtual/deferred/inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
 
