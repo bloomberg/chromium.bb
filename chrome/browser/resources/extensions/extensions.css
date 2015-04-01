@@ -23,7 +23,7 @@ html:not(.focus-outline-visible)
 /* Developer mode */
 
 #dev-controls {
-  -webkit-margin-end: 20px;
+  -webkit-margin-end: 0;
   height: 0;
   overflow: hidden;
 }
@@ -41,6 +41,8 @@ html:not(.focus-outline-visible)
 }
 
 #dev-controls .button-container {
+  -webkit-padding-end: 12px;
+  -webkit-padding-start: 12px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -54,6 +56,8 @@ html:not(.focus-outline-visible)
 }
 
 #apps-developer-tools-promo {
+  -webkit-padding-end: 12px;
+  -webkit-padding-start: 6px;
   align-items: center;
   border-top: 1px solid #eee;
   display: flex;
@@ -62,10 +66,13 @@ html:not(.focus-outline-visible)
 
 #apps-developer-tools-promo img {
   -webkit-margin-end: 5px;
-  -webkit-margin-start: -5px;
   content: url(apps_developer_tools_promo_48.png);
   margin-bottom: -5px;
   margin-top: -5px;
+}
+
+#apps-developer-tools-promo-text {
+  -webkit-margin-start: 14px;
 }
 
 #apps-developer-tools-promo-close-wrapper {
@@ -120,14 +127,36 @@ html:not(.focus-outline-visible)
   text-align: right;
 }
 
-.developer-extras > div,
-.permanent-warnings > div {
+.extension-details > .developer-extras > div,
+.extension-details > .permanent-warnings > div {
   margin: 5px 0;
+}
+
+.dependent-extensions-message,
+.suspicious-install-message {
+  line-height: 150%;
+}
+
+#page-header > .page-banner > .page-banner-gradient {
+  -webkit-margin-end: 0;
+}
+
+#header-controls {
+  right: 13px;
+}
+
+html[dir='rtl'] #header-controls {
+  left: 13px;
+  right: auto;
+}
+
+#page-header > h1::after {
+  -webkit-margin-end: 0;
 }
 
 #extension-settings #page-header {
   /* These values match the .page values. */
-  -webkit-margin-end: 24px;
+  -webkit-margin-end: 0;
   min-width: 576px;
 }
 
@@ -153,6 +182,7 @@ html:not(.focus-outline-visible)
   background: url(chrome://theme/IDR_WEBSTORE_ICON_32) no-repeat left center;
   background-size: 32px 32px;
   font-size: 1.25em;
+  margin: 24px 12px 12px 12px;
 }
 
 html[dir=rtl] #footer-section {
@@ -165,7 +195,8 @@ html[dir=rtl] #footer-section {
 }
 
 .extension-list-item-wrapper {
-  margin: 23px 0;
+  margin: 12px 0;
+  padding: 12px;
 }
 
 .extension-list-item {
@@ -180,7 +211,7 @@ html[dir=rtl] #footer-section {
 }
 
 html[dir='rtl'] .extension-list-item {
-  background-position: right;
+  background-position-x: 100%;
 }
 
 .extension-title {
@@ -224,7 +255,8 @@ html[dir='rtl'] .extension-list-item {
 .extension-details {
   -webkit-box-flex: 1;
   -webkit-padding-end: 7px;
-  -webkit-padding-start: 55px;
+  -webkit-padding-start: 60px;
+  padding-top: 6px;
 }
 
 .extension-description,
@@ -238,8 +270,17 @@ html[dir='rtl'] .extension-list-item {
 
 .enable-controls {
   /* Matches right: position of dev controls toggle. */
-  -webkit-margin-end: 20px;
+  -webkit-margin-end: 0;
   position: relative;
+}
+
+.enable-controls > .controlled-setting-indicator {
+  width: 23px;
+}
+
+.enable-controls > .controlled-setting-indicator > div {
+  left: 11px;
+  right: 11px;
 }
 
 /* We use x[is='action-link'] here so that we get higher specifity than the
@@ -265,6 +306,10 @@ html[dir='rtl'] .extension-list-item {
   display: none;
 }
 
+.optional-controls .checkbox {
+  -webkit-margin-end: 12px;
+}
+
 .load-path > span {
   word-wrap: break-word;
 }
@@ -283,8 +328,9 @@ html[dir='rtl'] .extension-list-item {
 .install-warnings,
 .extension-warnings {
   border-radius: 3px;
-  margin-top: 5px;
-  padding: 2px 5px;
+  line-height: 150%;
+  margin: 8px 0;
+  padding: 8px 12px;
 }
 
 .butter-bar {
@@ -356,13 +402,13 @@ html[dir=rtl] .extension-commands-config {
   height: 22px;
   opacity: 0.8;
   position: relative;
-  right: 0;
+  right: -8px;
   top: 6px;
   transition: opacity 200ms;
 }
 
 html[dir='rtl'] #extension-settings .trash {
-  left: 0;
+  left: -8px;
   right: auto;
 }
 
@@ -409,4 +455,9 @@ html[dir='rtl'] #extension-settings .trash {
 .sideload-wipeout-banner .page-banner-text {
   -webkit-padding-start: 8px;
   background-image: none;
+}
+
+.focus-row-active {
+  background-color: rgba(0, 0, 0, .05);
+  border-radius: 3px;
 }
