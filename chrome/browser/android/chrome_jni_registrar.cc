@@ -105,6 +105,7 @@
 #include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_view_util.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
+#include "chrome/browser/ui/android/tab_model/single_tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
@@ -239,6 +240,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ServiceTabLauncher", ServiceTabLauncher::RegisterServiceTabLauncher},
     {"SigninManager", SigninManagerAndroid::Register},
+    {"SingleTabModel", RegisterSingleTabModel},
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
     {"SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid},
     {"StartupMetricUtils", RegisterStartupMetricUtils},

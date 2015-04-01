@@ -59,6 +59,8 @@
       'browser/ui/android/status_tray_android.cc',
       'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.cc',
       'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h',
+      'browser/ui/android/tab_model/single_tab_model.cc',
+      'browser/ui/android/tab_model/single_tab_model.h',
       'browser/ui/android/tab_model/tab_model.cc',
       'browser/ui/android/tab_model/tab_model.h',
       'browser/ui/android/tab_model/tab_model_jni_bridge.cc',
