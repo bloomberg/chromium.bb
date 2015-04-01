@@ -44,8 +44,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
-    : MarkupAccumulator(nodes, shouldResolveURLs, start, end)
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
+    : MarkupAccumulator(nullptr, shouldResolveURLs, start, end)
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
@@ -61,8 +61,6 @@ void StyledMarkupAccumulator::wrapWithNode(ContainerNode& node, bool convertBloc
     m_reversedPrecedingMarkup.append(markup.toString());
     if (node.isElementNode())
         appendEndTag(toElement(node));
-    if (m_nodes)
-        m_nodes->append(&node);
 }
 
 void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style, const Document& document, bool isBlock)

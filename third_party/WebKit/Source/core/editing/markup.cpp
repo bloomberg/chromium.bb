@@ -267,7 +267,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
     if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))
         fullySelectedRoot = body;
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
-    StyledMarkupAccumulator accumulator(nullptr, shouldResolveURLs, shouldAnnotate, updatedRange->startPosition(), updatedRange->endPosition(), specialCommonAncestor);
+    StyledMarkupAccumulator accumulator(shouldResolveURLs, shouldAnnotate, updatedRange->startPosition(), updatedRange->endPosition(), specialCommonAncestor);
     Node* pastEnd = updatedRange->pastLastNode();
 
     Node* startNode = updatedRange->firstNode();
@@ -769,7 +769,7 @@ String createStyledMarkupForNavigationTransition(Node* node)
 {
     node->document().updateLayoutIgnorePendingStylesheets();
 
-    StyledMarkupAccumulator accumulator(0, ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
+    StyledMarkupAccumulator accumulator(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
     accumulator.serializeNodes(node, NodeTraversal::nextSkippingChildren(*node));
 
     static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
