@@ -1,3 +1,4 @@
+# Undo everything in the include_rules section of src/DEPS.
 include_rules = [
   '-base',
   '-build',
@@ -7,11 +8,4 @@ include_rules = [
   '-third_party/icu/source/common/unicode',
   '-third_party/icu/source/i18n/unicode',
   '-url',
-]
-
-
-# TODO(jam): bring down to 0. http://crbug.com/469692
-skip_child_includes = [
-  'mojo',
-  'mojo_services',
 ]

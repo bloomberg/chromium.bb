@@ -1,0 +1,4 @@
+include_rules = [
+  # This code is checked into the chromium repo so it's fine to depend on this.
+  "+native_client",
+]
