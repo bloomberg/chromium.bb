@@ -9,13 +9,13 @@ window.testIsAsync = true;
 
 // Tests that a repaint of the image occurs during the 200ms waiting period.
 
-function myfunc() {
-  testRunner.displayAsyncThen(finishRepaintTest);
-}
-
 function targetImageOnload() {
+  // After loading the image, force a paint via displayAsyncThen. This will then set off a timer
+  // for paint invalidation of 100ms (100ms is the duration of the initial red frame of the GIF).
+  // After an interval safely larger than that, the timer should have fired and registered the
+  // paint invalidation.
   testRunner.displayAsyncThen(function() {
-    setTimeout(myfunc, 400); // The initial red frame of the GIF has a 100ms duration
+    setTimeout(finishRepaintTest, 400);
   });
 }
 
