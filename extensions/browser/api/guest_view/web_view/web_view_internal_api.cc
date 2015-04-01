@@ -23,6 +23,7 @@
 using content::WebContents;
 using extensions::core_api::web_view_internal::SetPermission::Params;
 using extensions::core_api::extension_types::InjectDetails;
+using ui_zoom::ZoomController;
 namespace web_view_internal = extensions::core_api::web_view_internal;
 
 namespace {
@@ -332,8 +333,71 @@ bool WebViewInternalGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
       web_view_internal::GetZoom::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  double zoom_factor = guest->zoom();
+  double zoom_factor = guest->GetZoom();
   SetResult(new base::FundamentalValue(zoom_factor));
+  SendResponse(true);
+  return true;
+}
+
+WebViewInternalSetZoomModeFunction::WebViewInternalSetZoomModeFunction() {
+}
+
+WebViewInternalSetZoomModeFunction::~WebViewInternalSetZoomModeFunction() {
+}
+
+bool WebViewInternalSetZoomModeFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<web_view_internal::SetZoomMode::Params> params(
+      web_view_internal::SetZoomMode::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  ZoomController::ZoomMode zoom_mode = ZoomController::ZOOM_MODE_DEFAULT;
+  switch (params->zoom_mode) {
+    case web_view_internal::ZOOM_MODE_PER_ORIGIN:
+      zoom_mode = ZoomController::ZOOM_MODE_DEFAULT;
+      break;
+    case web_view_internal::ZOOM_MODE_PER_VIEW:
+      zoom_mode = ZoomController::ZOOM_MODE_ISOLATED;
+      break;
+    case web_view_internal::ZOOM_MODE_DISABLED:
+      zoom_mode = ZoomController::ZOOM_MODE_DISABLED;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  guest->SetZoomMode(zoom_mode);
+
+  SendResponse(true);
+  return true;
+}
+
+WebViewInternalGetZoomModeFunction::WebViewInternalGetZoomModeFunction() {
+}
+
+WebViewInternalGetZoomModeFunction::~WebViewInternalGetZoomModeFunction() {
+}
+
+bool WebViewInternalGetZoomModeFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<web_view_internal::GetZoomMode::Params> params(
+      web_view_internal::GetZoomMode::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  web_view_internal::ZoomMode zoom_mode = web_view_internal::ZOOM_MODE_NONE;
+  switch (guest->GetZoomMode()) {
+    case ZoomController::ZOOM_MODE_DEFAULT:
+      zoom_mode = web_view_internal::ZOOM_MODE_PER_ORIGIN;
+      break;
+    case ZoomController::ZOOM_MODE_ISOLATED:
+      zoom_mode = web_view_internal::ZOOM_MODE_PER_VIEW;
+      break;
+    case ZoomController::ZOOM_MODE_DISABLED:
+      zoom_mode = web_view_internal::ZOOM_MODE_DISABLED;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  SetResult(new base::StringValue(web_view_internal::ToString(zoom_mode)));
   SendResponse(true);
   return true;
 }

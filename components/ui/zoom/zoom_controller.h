@@ -57,8 +57,8 @@ class ZoomController : public content::WebContentsObserver,
     // These zoom changes can be handled manually by listening for the
     // |onZoomChange| event. Zooming in this mode is also on a per-tab basis.
     ZOOM_MODE_MANUAL,
-    // Disables all zooming in this tab. The tab will revert to default (100%)
-    // zoom, and all attempted zoom changes will be ignored.
+    // Disables all zooming in this tab. The tab will revert to the default
+    // zoom level, and all attempted zoom changes will be ignored.
     ZOOM_MODE_DISABLED,
   };
 

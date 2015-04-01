@@ -63,6 +63,25 @@
             "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the <code>getTime</code> method of the JavaScript <code>Date</code> object). If absent, defaults to 0 (which would remove all browsing data)."
           }
         }
+      },
+      {
+        "id": "ZoomMode",
+        "type": "string",
+        "description": "Defines the how zooming is handled in the webview.",
+        "enum": [
+          {
+            "name": "per-origin",
+            "description": "Zoom changes will persist in the zoomed page's origin, i.e. all other webviews in the same partition that are navigated to that same origin will be zoomed as well. Moreover, <code>per-origin</code> zoom changes are saved with the origin, meaning that when navigating to other pages in the same origin, they will all be zoomed to the same zoom factor."
+          },
+          {
+            "name": "per-view",
+            "description": "Zoom changes only take effect in this webview, and zoom changes in other webviews will not affect the zooming of this webview. Also, <code>per-view</code> zoom changes are reset on navigation; navigating a webview will always load pages with their per-origin zoom factors (within the scope of the partition)."
+          },
+          {
+            "name": "disabled",
+            "description": "Disables all zooming in the webview. The content will revert to the default zoom level, and all attempted zoom changes will be ignored."
+          }
+        ]
       }
     ],
     "functions": [
@@ -173,6 +192,54 @@
                 "type": "number",
                 "name": "zoomFactor",
                 "description": "The current zoom factor."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setZoomMode",
+        "type": "function",
+        "description": "Sets the zoom mode of the webview.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "$ref": "ZoomMode",
+            "name": "ZoomMode",
+            "description": "Defines how zooming is handled in the webview."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the zoom mode has been changed.",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getZoomMode",
+        "type": "function",
+        "description": "Gets the current zoom mode.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with the webview's current zoom mode.",
+            "parameters": [
+              {
+                "$ref": "ZoomMode",
+                "name": "ZoomMode",
+                "description": "The webview's current zoom mode."
               }
             ]
           }

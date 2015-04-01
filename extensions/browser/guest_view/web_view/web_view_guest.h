@@ -62,6 +62,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       int embedder_process_id,
       int web_view_instance_id);
 
+  // Get the current zoom.
+  double GetZoom() const;
+
+  // Get the current zoom mode.
+  ui_zoom::ZoomController::ZoomMode GetZoomMode();
+
   // Request navigating the guest to the provided |src| URL.
   void NavigateGuest(const std::string& src, bool force_navigation);
 
@@ -78,6 +84,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // Set the zoom factor.
   void SetZoom(double zoom_factor);
+
+  // Set the zoom mode.
+  void SetZoomMode(ui_zoom::ZoomController::ZoomMode zoom_mode);
 
   void SetAllowScaling(bool allow);
 
@@ -106,6 +115,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void GuestReady() override;
   void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
                                      const gfx::Size& new_size) override;
+  void GuestZoomChanged(double old_zoom_level, double new_zoom_level) override;
   bool IsAutoSizeSupported() const override;
   bool IsDragAndDropEnabled() const override;
   void WillAttachToEmbedder() override;
@@ -175,9 +185,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // Returns the current zoom factor.
-  double zoom() const { return current_zoom_factor_; }
 
   // Begin or continue a find request.
   void StartFindInternal(
@@ -384,9 +391,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   using PendingWindowMap = std::map<WebViewGuest*, NewWindowInfo>;
   PendingWindowMap pending_new_windows_;
-
-  // Stores the current zoom factor.
-  double current_zoom_factor_;
 
   // Determines if this guest accepts pinch-zoom gestures.
   bool allow_scaling_;

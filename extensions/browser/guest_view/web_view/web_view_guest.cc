@@ -55,6 +55,7 @@ using content::RenderFrameHost;
 using content::ResourceType;
 using content::StoragePartition;
 using content::WebContents;
+using ui_zoom::ZoomController;
 
 namespace extensions {
 
@@ -167,6 +168,14 @@ void RemoveWebViewEventListenersOnIOThread(
       extension_id,
       embedder_process_id,
       view_instance_id);
+}
+
+double ConvertZoomLevelToZoomFactor(double zoom_level) {
+  double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
+  // Because the conversion from zoom level to zoom factor isn't perfect, the
+  // resulting zoom factor is rounded to the nearest 6th decimal place.
+  zoom_factor = round(zoom_factor * 1000000) / 1000000;
+  return zoom_factor;
 }
 
 }  // namespace
@@ -443,6 +452,18 @@ bool WebViewGuest::IsDragAndDropEnabled() const {
   return true;
 }
 
+void WebViewGuest::GuestZoomChanged(double old_zoom_level,
+                                    double new_zoom_level) {
+  // Dispatch the zoomchange event.
+  double old_zoom_factor = ConvertZoomLevelToZoomFactor(old_zoom_level);
+  double new_zoom_factor = ConvertZoomLevelToZoomFactor(new_zoom_level);
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetDouble(webview::kOldZoomFactor, old_zoom_factor);
+  args->SetDouble(webview::kNewZoomFactor, new_zoom_factor);
+  DispatchEventToView(
+      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
+}
+
 void WebViewGuest::WillDestroy() {
   if (!attached() && GetOpener())
     GetOpener()->pending_new_windows_.erase(this);
@@ -481,6 +502,16 @@ void WebViewGuest::FindReply(WebContents* source,
                          selection_rect,
                          active_match_ordinal,
                          final_update);
+}
+
+double WebViewGuest::GetZoom() const {
+  double zoom_level =
+      ZoomController::FromWebContents(web_contents())->GetZoomLevel();
+  return ConvertZoomLevelToZoomFactor(zoom_level);
+}
+
+ZoomController::ZoomMode WebViewGuest::GetZoomMode() {
+  return ZoomController::FromWebContents(web_contents())->zoom_mode();
 }
 
 bool WebViewGuest::HandleContextMenu(
@@ -692,7 +723,6 @@ WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents)
       is_overriding_user_agent_(false),
       guest_opaque_(true),
       javascript_dialog_helper_(this),
-      current_zoom_factor_(1.0),
       allow_scaling_(false),
       is_guest_fullscreen_(false),
       is_embedder_fullscreen_(false),
@@ -730,13 +760,6 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
 
   find_helper_.CancelAllFindSessions();
-
-  // Update the current zoom factor for the new page.
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents());
-  DCHECK(zoom_controller);
-  current_zoom_factor_ =
-      content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
 
   if (web_view_guest_delegate_) {
     web_view_guest_delegate_->OnDidCommitProvisionalLoadForFrame(
@@ -1048,18 +1071,14 @@ void WebViewGuest::SetName(const std::string& name) {
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
-  auto zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents());
+  auto zoom_controller = ZoomController::FromWebContents(web_contents());
   DCHECK(zoom_controller);
   double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
   zoom_controller->SetZoomLevel(zoom_level);
+}
 
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
-  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
-  DispatchEventToView(
-      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
-  current_zoom_factor_ = zoom_factor;
+void WebViewGuest::SetZoomMode(ZoomController::ZoomMode zoom_mode) {
+  ZoomController::FromWebContents(web_contents())->SetZoomMode(zoom_mode);
 }
 
 void WebViewGuest::SetAllowTransparency(bool allow) {

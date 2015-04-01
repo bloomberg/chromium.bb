@@ -42,6 +42,9 @@ var WEB_VIEW_API_METHODS = [
   // Gets the current zoom factor.
   'getZoom',
 
+  // Gets the current zoom mode of the webview.
+  'getZoomMode',
+
   // Navigates to a history entry using a history index relative to the current
   // navigation.
   'go',
@@ -69,6 +72,9 @@ var WEB_VIEW_API_METHODS = [
 
   // Changes the zoom factor of the page.
   'setZoom',
+
+  // Changes the zoom mode of the webview.
+  'setZoomMode',
 
   // Stops loading the current navigation if one is in progress.
   'stop',

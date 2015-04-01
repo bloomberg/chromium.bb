@@ -265,6 +265,11 @@ void GuestViewBase::InitWithWebContents(
   if (CanRunInDetachedState())
     SetUpSizing(create_params);
 
+  // Observe guest zoom changes.
+  auto zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents());
+  zoom_controller->AddObserver(this);
+
   // Give the derived class an opportunity to perform additional initialization.
   DidInitialize(create_params);
 }
@@ -701,15 +706,26 @@ GuestViewBase::~GuestViewBase() {
 
 void GuestViewBase::OnZoomChanged(
     const ui_zoom::ZoomController::ZoomChangedEventData& data) {
-  auto guest_zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents());
-  if (content::ZoomValuesEqual(data.new_zoom_level,
-                               guest_zoom_controller->GetZoomLevel())) {
+  if (data.web_contents == embedder_web_contents()) {
+    // The embedder's zoom level has changed.
+    auto guest_zoom_controller =
+        ui_zoom::ZoomController::FromWebContents(web_contents());
+    if (content::ZoomValuesEqual(data.new_zoom_level,
+                                 guest_zoom_controller->GetZoomLevel())) {
+      return;
+    }
+    // When the embedder's zoom level doesn't match the guest's, then update the
+    // guest's zoom level to match.
+    guest_zoom_controller->SetZoomLevel(data.new_zoom_level);
+
+    EmbedderZoomChanged(data.old_zoom_level, data.new_zoom_level);
     return;
   }
-  // When the embedder's zoom level doesn't match the guest's, then update the
-  // guest's zoom level to match.
-  guest_zoom_controller->SetZoomLevel(data.new_zoom_level);
+
+  if (data.web_contents == web_contents()) {
+    // The guest's zoom level has changed.
+    GuestZoomChanged(data.old_zoom_level, data.new_zoom_level);
+  }
 }
 
 void GuestViewBase::DispatchEventToGuestProxy(Event* event) {

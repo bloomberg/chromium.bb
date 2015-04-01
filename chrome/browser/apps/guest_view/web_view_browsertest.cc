@@ -2628,6 +2628,18 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeEvents) {
   TestHelper("testResizeEvents", "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPerOriginZoomMode) {
+  TestHelper("testPerOriginZoomMode", "web_view/shim", NO_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPerViewZoomMode) {
+  TestHelper("testPerViewZoomMode", "web_view/shim", NO_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisabledZoomMode) {
+  TestHelper("testDisabledZoomMode", "web_view/shim", NO_TEST_SERVER);
+}
+
 // This test verify that the set of rules registries of a webview will be
 // removed from RulesRegistryService after the webview is gone.
 // http://crbug.com/438327

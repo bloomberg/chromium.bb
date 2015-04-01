@@ -112,6 +112,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // web contents.
   virtual void EmbedderWillBeDestroyed() {}
 
+  // This method is called when the embedder's zoom changes.
+  virtual void EmbedderZoomChanged(double old_zoom_level,
+                                   double new_zoom_level) {}
+
   // This method is called when the guest WebContents has been destroyed. This
   // object will be destroyed after this call returns.
   //
@@ -124,6 +128,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // This gives the derived class an opportunity to perform some initialization
   // work.
   virtual void GuestReady() {}
+
+  // This method is called when the guest's zoom changes.
+  virtual void GuestZoomChanged(double old_zoom_level, double new_zoom_level) {}
 
   // This method is called when embedder WebContents's fullscreen is toggled.
   //
@@ -296,7 +303,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // ui_zoom::ZoomObserver implementation.
   void OnZoomChanged(
-      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
+      const ui_zoom::ZoomController::ZoomChangedEventData& data) final;
 
   // Dispatches an event to the guest proxy.
   void DispatchEventToGuestProxy(Event* event);

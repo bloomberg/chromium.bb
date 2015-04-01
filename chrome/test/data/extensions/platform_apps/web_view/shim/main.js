@@ -2043,7 +2043,7 @@ function testLoadDataAPI() {
             embedder.test.succeed();
           });
         });
-  }
+  };
 
   var loadstopListener1 = function(e) {
     webview.removeEventListener('loadstop', loadstopListener1);
@@ -2055,7 +2055,7 @@ function testLoadDataAPI() {
         "BhIHRlc3QuPGJyPgogIDxpbWcgc3JjPSJ0ZXN0LmJtcCI+PGJyPgo8L2h0bWw+Cg==",
                                 embedder.testImageBaseURL,
                                 embedder.virtualURL);
-  }
+  };
 
   webview.addEventListener('loadstop', loadstopListener1);
   document.body.appendChild(webview);
@@ -2103,6 +2103,103 @@ function testResizeEvents() {
   webview.addEventListener('loadstop', loadstopListener);
   document.body.appendChild(webview);
 };
+
+function testPerOriginZoomMode() {
+  var webview1 = new WebView();
+  var webview2 = new WebView();
+  webview1.src = 'about:blank';
+  webview2.src = 'about:blank';
+
+  webview1.addEventListener('loadstop', function(e) {
+    document.body.appendChild(webview2);
+  });
+  webview2.addEventListener('loadstop', function(e) {
+    webview1.getZoomMode(function(zoomMode) {
+      // Check that |webview1| is in 'per-origin' mode and zoom it. Check that
+      // both webviews zoomed.
+      embedder.test.assertEq(zoomMode, 'per-origin');
+      webview1.setZoom(3.14, function() {
+        webview1.getZoom(function(zoom) {
+          embedder.test.assertEq(zoom, 3.14);
+          webview2.getZoom(function(zoom) {
+            embedder.test.assertEq(zoom, 3.14);
+            embedder.test.succeed();
+          });
+        });
+      });
+    });
+  });
+
+  document.body.appendChild(webview1);
+}
+
+function testPerViewZoomMode() {
+  var webview1 = new WebView();
+  var webview2 = new WebView();
+  webview1.src = 'about:blank';
+  webview2.src = 'about:blank';
+
+  webview1.addEventListener('loadstop', function(e) {
+    document.body.appendChild(webview2);
+  });
+  webview2.addEventListener('loadstop', function(e) {
+    // Set |webview2| to 'per-view' mode and zoom it. Make sure that the
+    // zoom did not affect |webview1|.
+    webview2.setZoomMode('per-view', function() {
+      webview2.getZoomMode(function(zoomMode) {
+        embedder.test.assertEq(zoomMode, 'per-view');
+        webview2.setZoom(0.45, function() {
+          webview1.getZoom(function(zoom) {
+            embedder.test.assertFalse(zoom == 0.45);
+            webview2.getZoom(function(zoom) {
+              embedder.test.assertEq(zoom, 0.45);
+              embedder.test.succeed();
+            });
+          });
+        });
+      });
+    });
+  });
+
+  document.body.appendChild(webview1);
+}
+
+function testDisabledZoomMode() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+
+  var zoomchanged = false;
+  var zoomchangeListener = function(e) {
+    // TODO (paulmeyer): This is currently broken because ZoomObservers do not
+    // get the correct new zoom level when changing the zoom mode to
+    // 'disabled'. Will add back in after http://crbug.com/472621 is fixed.
+    //embedder.test.assertEq(e.newZoomFactor, 1);
+    zoomchanged = true;
+  };
+
+  webview.addEventListener('loadstop', function(e) {
+    // Set |webview| to 'disabled' mode and check that
+    // zooming is actually disabled. Also check that the
+    // "zoomchange" event pick up changes from changing the
+    // zoom mode.
+    webview.addEventListener('zoomchange', zoomchangeListener);
+    webview.setZoomMode('disabled', function() {
+      webview.getZoomMode(function(zoomMode) {
+        embedder.test.assertEq(zoomMode, 'disabled');
+        webview.removeEventListener('zoomchange', zoomchangeListener);
+        webview.setZoom(1.39, function() {
+          webview.getZoom(function(zoom) {
+            embedder.test.assertEq(zoom, 1);
+            embedder.test.assertTrue(zoomchanged);
+            embedder.test.succeed();
+          });
+        });
+      });
+    });
+  });
+
+  document.body.appendChild(webview);
+}
 
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
@@ -2182,7 +2279,10 @@ embedder.test.testList = {
   'testFindAPI': testFindAPI,
   'testFindAPI_findupdate': testFindAPI,
   'testLoadDataAPI': testLoadDataAPI,
-  'testResizeEvents': testResizeEvents
+  'testResizeEvents': testResizeEvents,
+  'testPerOriginZoomMode': testPerOriginZoomMode,
+  'testPerViewZoomMode': testPerViewZoomMode,
+  'testDisabledZoomMode': testDisabledZoomMode,
 };
 
 onload = function() {

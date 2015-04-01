@@ -211,6 +211,40 @@ class WebViewInternalGetZoomFunction : public WebViewInternalExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalGetZoomFunction);
 };
 
+class WebViewInternalSetZoomModeFunction
+    : public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.setZoomMode",
+                             WEBVIEWINTERNAL_SETZOOMMODE);
+
+  WebViewInternalSetZoomModeFunction();
+
+ protected:
+  ~WebViewInternalSetZoomModeFunction() override;
+
+ private:
+  bool RunAsyncSafe(WebViewGuest* guest) override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetZoomModeFunction);
+};
+
+class WebViewInternalGetZoomModeFunction
+    : public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.getZoomMode",
+                             WEBVIEWINTERNAL_GETZOOMMODE);
+
+  WebViewInternalGetZoomModeFunction();
+
+ protected:
+  ~WebViewInternalGetZoomModeFunction() override;
+
+ private:
+  bool RunAsyncSafe(WebViewGuest* guest) override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalGetZoomModeFunction);
+};
+
 class WebViewInternalFindFunction : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.find", WEBVIEWINTERNAL_FIND);

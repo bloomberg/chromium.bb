@@ -49889,6 +49889,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="990" label="SETTINGSPRIVATE_GETPREF"/>
   <int value="991" label="NETWORKINGPRIVATE_FORGETNETWORK"/>
   <int value="992" label="EASYUNLOCKPRIVATE_HIDEERRORBUBBLE"/>
+  <int value="993" label="WEBVIEWINTERNAL_SETZOOMMODE"/>
+  <int value="994" label="WEBVIEWINTERNAL_GETZOOMMODE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

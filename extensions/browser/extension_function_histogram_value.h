@@ -1051,6 +1051,8 @@ enum HistogramValue {
   SETTINGSPRIVATE_GETPREF,
   NETWORKINGPRIVATE_FORGETNETWORK,
   EASYUNLOCKPRIVATE_HIDEERRORBUBBLE,
+  WEBVIEWINTERNAL_SETZOOMMODE,
+  WEBVIEWINTERNAL_GETZOOMMODE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
