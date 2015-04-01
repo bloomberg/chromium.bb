@@ -166,7 +166,7 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_NonRepeatableNeedingWindowActions) {
 }
 
 // Tests a sample of ChromeOS specific accelerators.
-TEST_F(AcceleratorInteractiveUITest, ChromeOsAccelerators) {
+TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
   // Test TAKE_SCREENSHOT and TAKE_PARTIAL_SCREENSHOT.
   TestScreenshotDelegate* screenshot_delegate = GetScreenshotDelegate();
   screenshot_delegate->set_can_take_screenshot(true);
