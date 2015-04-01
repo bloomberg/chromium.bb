@@ -13,24 +13,14 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/transform.h"
 
 namespace cc {
 
 class FakeContentLayerClient : public ContentLayerClient {
  public:
   struct BitmapData {
-    BitmapData(const SkBitmap& bitmap,
-               const gfx::Point& point,
-               const SkPaint& paint);
-    BitmapData(const SkBitmap& bitmap,
-               const gfx::Transform& transform,
-               const SkPaint& paint);
-    ~BitmapData();
-
     SkBitmap bitmap;
     gfx::Point point;
-    gfx::Transform transform;
     SkPaint paint;
   };
 
@@ -56,14 +46,10 @@ class FakeContentLayerClient : public ContentLayerClient {
   void add_draw_bitmap(const SkBitmap& bitmap,
                        const gfx::Point& point,
                        const SkPaint& paint) {
-    BitmapData data(bitmap, point, paint);
-    draw_bitmaps_.push_back(data);
-  }
-
-  void add_draw_bitmap_with_transform(const SkBitmap& bitmap,
-                                      const gfx::Transform& transform,
-                                      const SkPaint& paint) {
-    BitmapData data(bitmap, transform, paint);
+    BitmapData data;
+    data.bitmap = bitmap;
+    data.point = point;
+    data.paint = paint;
     draw_bitmaps_.push_back(data);
   }
 

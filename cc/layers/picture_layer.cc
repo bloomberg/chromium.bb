@@ -87,8 +87,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (!recording_source_) {
     if (host->settings().use_display_lists) {
-      recording_source_.reset(new DisplayListRecordingSource(
-          host->settings().default_tile_grid_size));
+      recording_source_.reset(new DisplayListRecordingSource);
     } else {
       recording_source_.reset(
           new PicturePile(host->settings().minimum_contents_scale,

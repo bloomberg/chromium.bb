@@ -761,7 +761,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
                                         this->quad_rect_.size());
   blue_recording->add_draw_rect_with_paint(outer_rect, black_paint);
   blue_recording->add_draw_rect_with_paint(inner_rect, blue_paint);
-  blue_recording->Rerecord();
+  blue_recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> blue_pile =
       FakePicturePileImpl::CreateFromPile(blue_recording.get(), nullptr);
 
@@ -777,7 +777,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
                                         this->quad_rect_.size());
   green_recording->add_draw_rect_with_paint(outer_rect, green_paint);
   green_recording->add_draw_rect_with_paint(inner_rect, black_paint);
-  green_recording->Rerecord();
+  green_recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> green_pile =
       FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
@@ -2195,7 +2195,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   blue_recording->add_draw_rect_with_paint(blue_clip_rect, blue_paint);
-  blue_recording->Rerecord();
+  blue_recording->RerecordPile();
 
   scoped_refptr<FakePicturePileImpl> blue_pile =
       FakePicturePileImpl::CreateFromPile(blue_recording.get(), nullptr);
@@ -2225,7 +2225,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_paint(viewport, green_paint);
-  green_recording->Rerecord();
+  green_recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> green_pile =
       FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
@@ -2267,7 +2267,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_paint(viewport, green_paint);
-  green_recording->Rerecord();
+  green_recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> green_pile =
       FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
@@ -2288,7 +2288,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   SkPaint white_paint;
   white_paint.setColor(SK_ColorWHITE);
   white_recording->add_draw_rect_with_paint(viewport, white_paint);
-  white_recording->Rerecord();
+  white_recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> white_pile =
       FakePicturePileImpl::CreateFromPile(white_recording.get(), nullptr);
 
@@ -2359,7 +2359,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
   recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
-  recording->Rerecord();
+  recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
 
@@ -2411,7 +2411,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
   recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
-  recording->Rerecord();
+  recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
 
@@ -2515,7 +2515,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   green_paint.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_paint(green_rect1, green_paint);
   green_recording->add_draw_rect_with_paint(green_rect2, green_paint);
-  green_recording->Rerecord();
+  green_recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> green_pile =
       FakePicturePileImpl::CreateFromPile(green_recording.get(), nullptr);
 
@@ -2585,7 +2585,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   blue_paint.setColor(SK_ColorBLUE);
   recording->add_draw_rect_with_paint(blue_layer_rect1, blue_paint);
   recording->add_draw_rect_with_paint(blue_layer_rect2, blue_paint);
-  recording->Rerecord();
+  recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFromPile(recording.get(), nullptr);
 

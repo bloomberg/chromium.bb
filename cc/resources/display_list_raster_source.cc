@@ -159,16 +159,7 @@ void DisplayListRasterSource::GatherPixelRefs(
     const gfx::Rect& content_rect,
     float contents_scale,
     std::vector<SkPixelRef*>* pixel_refs) const {
-  DCHECK_EQ(0u, pixel_refs->size());
-
-  gfx::Rect layer_rect =
-      gfx::ScaleToEnclosingRect(content_rect, 1.0f / contents_scale);
-
-  PixelRefMap::Iterator iterator(layer_rect, display_list_.get());
-  while (iterator) {
-    pixel_refs->push_back(*iterator);
-    ++iterator;
-  }
+  // TODO(ajuma): Implement this.
 }
 
 bool DisplayListRasterSource::CoversRect(const gfx::Rect& content_rect,
