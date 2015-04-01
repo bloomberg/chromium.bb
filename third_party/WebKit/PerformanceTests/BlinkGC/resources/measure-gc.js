@@ -6,11 +6,16 @@ if (!window.GCController && !window.gc)
     console.log("measure-gc.js requires GCController or exposed gc().");
 
 (function (PerfTestRunner) {
+    var warmUpCount = 3;
+    var completedIterations = 0;
+
     PerfTestRunner.measureBlinkGCTime = function(test) {
         if (!test.unit)
             test.unit = 'ms';
         if (!test.warmUpCount)
-            test.warmUpCount = 3;
+            test.warmUpCount = warmUpCount;
+
+        completedIterations = 0;
         PerfTestRunner.prepareToMeasureValuesAsync(test);
 
         // Force a V8 GC before running Blink GC test to avoid measuring marking from stale V8 wrappers.
@@ -26,6 +31,9 @@ if (!window.GCController && !window.gc)
     var NumberOfGCRunsPerForceBlinkGC = 5;
 
     function runTest() {
+        if (completedIterations > warmUpCount)
+            console.time("BlinkGCTimeMeasurement");
+
         // forceBlinkGCWithoutV8GC will schedule 5 Blink GCs at the end of event loop.
         // setTimeout function runs on next event loop, so assuming that event loop is not busy,
         // we can estimate GC time by measuring the delay of setTimeout function.
@@ -35,6 +43,10 @@ if (!window.GCController && !window.gc)
             var end = PerfTestRunner.now();
             PerfTestRunner.measureValueAsync((end - start) / NumberOfGCRunsPerForceBlinkGC);
             setTimeout(runTest, 0);
+
+            if (completedIterations > warmUpCount)
+                console.timeEnd("BlinkGCTimeMeasurement");
+            completedIterations++;
         }, 0);
     }
 })(window.PerfTestRunner);
