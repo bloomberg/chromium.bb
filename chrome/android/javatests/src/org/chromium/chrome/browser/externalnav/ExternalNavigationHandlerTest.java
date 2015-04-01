@@ -603,6 +603,30 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testFallback_UseFallbackUrlForRedirectionFromTypedInUrl() {
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, 0, 0);
+        check("http://goo.gl/abcdefg", null, /* referrer */
+                false, /* incognito */
+                PageTransition.TYPED, NO_REDIRECT, true, false, redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, 0, 0);
+        check(INTENT_URL_WITH_FALLBACK_URL_WITHOUT_PACKAGE_NAME, null, /* referrer */
+                false, /* incognito */
+                PageTransition.TYPED, REDIRECT, true, false, redirectHandler,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
+
+        // Now the user opens a link.
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, 0, 1);
+        check("http://m.youtube.com/", null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK, NO_REDIRECT, true, false, redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @SmallTest
     public void testIgnoreEffectiveRedirectFromIntentFallbackUrl() {
         // We cannot resolve any intent, so fall-back URL will be used.
         mDelegate.setCanResolveActivity(false);

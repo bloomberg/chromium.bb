@@ -74,8 +74,42 @@ public class ExternalNavigationHandler {
      * @return Whether the URL generated an intent, caused a navigation in
      *         current tab, or wasn't handled at all.
      */
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     public OverrideUrlLoadingResult shouldOverrideUrlLoading(ExternalNavigationParams params) {
+        Intent intent;
+        // Perform generic parsing of the URI to turn it into an Intent.
+        try {
+            intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
+        } catch (URISyntaxException ex) {
+            Log.w(TAG, "Bad URI " + params.getUrl() + ": " + ex.getMessage());
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        boolean hasBrowserFallbackUrl = false;
+        String browserFallbackUrl =
+                IntentUtils.safeGetStringExtra(intent, EXTRA_BROWSER_FALLBACK_URL);
+        if (browserFallbackUrl != null
+                && UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
+            hasBrowserFallbackUrl = true;
+        } else {
+            browserFallbackUrl = null;
+        }
+
+        OverrideUrlLoadingResult result = shouldOverrideUrlLoadingInternal(
+                params, intent, hasBrowserFallbackUrl, browserFallbackUrl);
+
+        if (result == OverrideUrlLoadingResult.NO_OVERRIDE && hasBrowserFallbackUrl
+                && (params.getRedirectHandler() == null
+                        // For instance, if this is a chained fallback URL, we ignore it.
+                        || !params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
+            return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
+        }
+        return result;
+    }
+
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+    private OverrideUrlLoadingResult shouldOverrideUrlLoadingInternal(
+            ExternalNavigationParams params, Intent intent, boolean hasBrowserFallbackUrl,
+            String browserFallbackUrl) {
         // http://crbug.com/441284 : Disallow firing external intent while Chrome is in the
         // background.
         if (params.isApplicationMustBeInForeground() && !mDelegate.isChromeAppInForeground()) {
@@ -111,9 +145,11 @@ public class ExternalNavigationHandler {
 
         // http://crbug/331571 : Do not override a navigation started from user typing.
         // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
-        if (params.getRedirectHandler() != null
-                && params.getRedirectHandler().shouldStayInChrome()) {
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        if (params.getRedirectHandler() != null) {
+            if (params.getRedirectHandler().shouldStayInChrome()
+                    || params.getRedirectHandler().shouldNotOverrideUrlLoading()) {
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
         }
 
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
@@ -149,10 +185,9 @@ public class ExternalNavigationHandler {
         if (params.getUrl().startsWith(SCHEME_WTAI_MC)) {
             // wtai://wp/mc;number
             // number=string(phone-number)
-            Intent intent = new Intent(Intent.ACTION_VIEW,
+            mDelegate.startActivity(new Intent(Intent.ACTION_VIEW,
                     Uri.parse(WebView.SCHEME_TEL
-                            + params.getUrl().substring(SCHEME_WTAI_MC.length())));
-            mDelegate.startActivity(intent);
+                            + params.getUrl().substring(SCHEME_WTAI_MC.length()))));
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         } else if (params.getUrl().startsWith(SCHEME_WTAI)) {
             // TODO: handle other WTAI schemes.
@@ -184,37 +219,11 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        Intent intent;
-        // perform generic parsing of the URI to turn it into an Intent.
-        try {
-            intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
-        } catch (URISyntaxException ex) {
-            Log.w(TAG, "Bad URI " + params.getUrl() + ": " + ex.getMessage());
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        boolean hasBrowserFallbackUrl = false;
-        String browserFallbackUrl = IntentUtils.safeGetStringExtra(
-                intent, EXTRA_BROWSER_FALLBACK_URL);
-        if (browserFallbackUrl != null
-                && UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
-            hasBrowserFallbackUrl = true;
-        }
-
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
         if (!mDelegate.canResolveActivity(intent)) {
             if (hasBrowserFallbackUrl) {
-                // NOTE: any further redirection from fall-back URL should not override URL loading.
-                // Otherwise, it can be used in chain for fingerprinting multiple app installation
-                // status in one shot. In order to prevent this scenario, we notify redirection
-                // handler that redirection from the current navigation should stay in Chrome.
-                if (params.getRedirectHandler() != null) {
-                    params.getRedirectHandler()
-                            .setShouldStayInChromeUntilNewUrlLoading();
-                }
-                return mDelegate.clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl(),
-                        params.getTab());
+                return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
             }
             String packagename = intent.getPackage();
             if (packagename != null) {
@@ -338,6 +347,27 @@ public class ExternalNavigationHandler {
         }
 
         return OverrideUrlLoadingResult.NO_OVERRIDE;
+    }
+
+    /**
+     * Clobber the current tab with fallback URL.
+     *
+     * @param browserFallbackUrl The fallback URL.
+     * @param params The external navigation params.
+     * @return {@link OverrideUrlLoadingResult} if the tab was clobbered, or we launched an
+     *         intent.
+     */
+    private OverrideUrlLoadingResult clobberCurrentTabWithFallbackUrl(
+            String browserFallbackUrl, ExternalNavigationParams params) {
+        // NOTE: any further redirection from fall-back URL should not override URL loading.
+        // Otherwise, it can be used in chain for fingerprinting multiple app installation
+        // status in one shot. In order to prevent this scenario, we notify redirection
+        // handler that redirection from the current navigation should stay in Chrome.
+        if (params.getRedirectHandler() != null) {
+            params.getRedirectHandler().setShouldNotOverrideUrlLoadingUntilNewUrlLoading();
+        }
+        return mDelegate.clobberCurrentTab(
+                browserFallbackUrl, params.getReferrerUrl(), params.getTab());
     }
 
     /**

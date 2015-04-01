@@ -41,7 +41,7 @@ public class TabRedirectHandler {
     private int mInitialNavigationType;
     private int mLastCommittedEntryIndexBeforeStartingNavigation;
 
-    private boolean mShouldStayInChromeUntilNewUrlLoading;
+    private boolean mShouldNotOverrideUrlLoadingUntilNewUrlLoading;
 
     private final Context mContext;
 
@@ -96,11 +96,11 @@ public class TabRedirectHandler {
         mInitialNavigationType = NAVIGATION_TYPE_NONE;
         mIsOnEffectiveRedirectChain = false;
         mLastCommittedEntryIndexBeforeStartingNavigation = 0;
-        mShouldStayInChromeUntilNewUrlLoading = false;
+        mShouldNotOverrideUrlLoadingUntilNewUrlLoading = false;
     }
 
-    public void setShouldStayInChromeUntilNewUrlLoading() {
-        mShouldStayInChromeUntilNewUrlLoading = true;
+    public void setShouldNotOverrideUrlLoadingUntilNewUrlLoading() {
+        mShouldNotOverrideUrlLoadingUntilNewUrlLoading = true;
     }
 
     /**
@@ -154,7 +154,7 @@ public class TabRedirectHandler {
                 clearIntentHistory();
             }
             mLastCommittedEntryIndexBeforeStartingNavigation = lastCommittedEntryIndex;
-            mShouldStayInChromeUntilNewUrlLoading = false;
+            mShouldNotOverrideUrlLoadingUntilNewUrlLoading = false;
         } else if (mInitialNavigationType != NAVIGATION_TYPE_NONE) {
             // Redirect chain starts from the second url loading.
             mIsOnEffectiveRedirectChain = true;
@@ -169,12 +169,18 @@ public class TabRedirectHandler {
     }
 
     /**
-     * @return whether we should stay in Chrome or not.
+     * @return whether we should stay in Chrome or not. There are two different
      */
     public boolean shouldStayInChrome() {
         return mIsInitialIntentHeadingToChrome
-                || mInitialNavigationType == NAVIGATION_TYPE_FROM_USER_TYPING
-                || mShouldStayInChromeUntilNewUrlLoading;
+                || mInitialNavigationType == NAVIGATION_TYPE_FROM_USER_TYPING;
+    }
+
+    /**
+     * @return whether we should stay in Chrome or not.
+     */
+    public boolean shouldNotOverrideUrlLoading() {
+        return mShouldNotOverrideUrlLoadingUntilNewUrlLoading;
     }
 
     /**

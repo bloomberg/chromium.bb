@@ -258,34 +258,34 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"IntentHandling"})
-    public void testRedirectFromCurrentNavigationShouldStayInChrome() {
+    public void testRedirectFromCurrentNavigationShouldNotOverrideUrlLoading() {
         /////////////////////////////////////////////////////
-        // 1. 3XX redirection should stay in Chrome.
+        // 1. 3XX redirection should not override URL loading.
         /////////////////////////////////////////////////////
         TabRedirectHandler handler = new TabRedirectHandler(mContext);
         handler.updateIntent(sYtIntent);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldNotOverrideUrlLoading());
 
         handler.updateNewUrlLoading(PageTransition.LINK, false, 0, 0);
-        handler.setShouldStayInChromeUntilNewUrlLoading();
+        handler.setShouldNotOverrideUrlLoadingUntilNewUrlLoading();
 
         handler.updateNewUrlLoading(PageTransition.LINK, true, 0, 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldNotOverrideUrlLoading());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
 
         /////////////////////////////////////////////////////
-        // 2. Effective redirection should stay in Chrome.
+        // 2. Effective redirection should not override URL loading.
         /////////////////////////////////////////////////////
         handler = new TabRedirectHandler(mContext);
         handler.updateIntent(sYtIntent);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldNotOverrideUrlLoading());
 
         handler.updateNewUrlLoading(PageTransition.LINK, false, 0, 0);
-        handler.setShouldStayInChromeUntilNewUrlLoading();
+        handler.setShouldNotOverrideUrlLoadingUntilNewUrlLoading();
 
-        // Effective redirection should stay in Chrome.
+        // Effective redirection occurred.
         handler.updateNewUrlLoading(PageTransition.LINK, false, 0, 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldNotOverrideUrlLoading());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
 
         /////////////////////////////////////////////////////
@@ -293,7 +293,7 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         /////////////////////////////////////////////////////
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(PageTransition.LINK, false, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldNotOverrideUrlLoading());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
     }
 
