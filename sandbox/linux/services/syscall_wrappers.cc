@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
+#include "sandbox/linux/system_headers/capability.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
 namespace sandbox {
@@ -45,6 +46,8 @@ long sys_clone(unsigned long flags,
     RAW_LOG(FATAL, "Invalid usage of sys_clone");
   }
 
+  if (ptid) MSAN_UNPOISON(ptid, sizeof(*ptid));
+  if (ctid) MSAN_UNPOISON(ctid, sizeof(*ctid));
   // See kernel/fork.c in Linux. There is different ordering of sys_clone
   // parameters depending on CONFIG_CLONE_BACKWARDS* configuration options.
 #if defined(ARCH_CPU_X86_64)
@@ -74,11 +77,18 @@ int sys_prlimit64(pid_t pid,
                   int resource,
                   const struct rlimit64* new_limit,
                   struct rlimit64* old_limit) {
-  return syscall(__NR_prlimit64, pid, resource, new_limit, old_limit);
+  int res = syscall(__NR_prlimit64, pid, resource, new_limit, old_limit);
+  if (res == 0 && old_limit) MSAN_UNPOISON(old_limit, sizeof(*old_limit));
+  return res;
 }
 
 int sys_capget(cap_hdr* hdrp, cap_data* datap) {
-  return syscall(__NR_capget, hdrp, datap);
+  int res = syscall(__NR_capget, hdrp, datap);
+  if (res == 0) {
+    if (hdrp) MSAN_UNPOISON(hdrp, sizeof(*hdrp));
+    if (datap) MSAN_UNPOISON(datap, sizeof(*datap));
+  }
+  return res;
 }
 
 int sys_capset(cap_hdr* hdrp, const cap_data* datap) {
@@ -86,23 +96,37 @@ int sys_capset(cap_hdr* hdrp, const cap_data* datap) {
 }
 
 int sys_getresuid(uid_t* ruid, uid_t* euid, uid_t* suid) {
+  int res;
 #if defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL)
   // On 32-bit x86 or 32-bit arm, getresuid supports 16bit values only.
   // Use getresuid32 instead.
-  return syscall(__NR_getresuid32, ruid, euid, suid);
+  res = syscall(__NR_getresuid32, ruid, euid, suid);
 #else
-  return syscall(__NR_getresuid, ruid, euid, suid);
+  res = syscall(__NR_getresuid, ruid, euid, suid);
 #endif
+  if (res == 0) {
+    if (ruid) MSAN_UNPOISON(ruid, sizeof(*ruid));
+    if (euid) MSAN_UNPOISON(euid, sizeof(*euid));
+    if (suid) MSAN_UNPOISON(suid, sizeof(*suid));
+  }
+  return res;
 }
 
 int sys_getresgid(gid_t* rgid, gid_t* egid, gid_t* sgid) {
+  int res;
 #if defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL)
   // On 32-bit x86 or 32-bit arm, getresgid supports 16bit values only.
   // Use getresgid32 instead.
-  return syscall(__NR_getresgid32, rgid, egid, sgid);
+  res = syscall(__NR_getresgid32, rgid, egid, sgid);
 #else
-  return syscall(__NR_getresgid, rgid, egid, sgid);
+  res = syscall(__NR_getresgid, rgid, egid, sgid);
 #endif
+  if (res == 0) {
+    if (rgid) MSAN_UNPOISON(rgid, sizeof(*rgid));
+    if (egid) MSAN_UNPOISON(egid, sizeof(*egid));
+    if (sgid) MSAN_UNPOISON(sgid, sizeof(*sgid));
+  }
+  return res;
 }
 
 int sys_chroot(const char* path) {
