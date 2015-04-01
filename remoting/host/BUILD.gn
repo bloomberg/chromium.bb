@@ -37,7 +37,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
     deps = [
       "//base:i18n",
-      "//components/policy:policy",
       "//components/policy:policy_component_common",
       "//crypto",
       "//google_apis",
@@ -48,6 +47,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "//ui/events/platform",
       "//ui/events:dom4_keycode_converter",
     ]
+
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy:policy" ]
+    }
 
     if (is_linux && !is_chromeos) {
       libs += [ "pam" ]
@@ -248,7 +251,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     deps = [
       ":host",
       ":test_support",
-      "//components/policy:policy_component_test_support",
       "//remoting/host/setup",
       "//remoting/host/it2me:common",
       "//remoting/host/native_messaging",
@@ -257,6 +259,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "//testing/gmock",
       "//testing/gtest",
     ]
+
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy:policy_component_test_support" ]
+    }
   }
 
   if (is_win) {

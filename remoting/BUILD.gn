@@ -61,7 +61,6 @@ source_set("test_support") {
 
   deps = [
     "//base",
-    "//components/policy:test_support",
     "//net",
     "//remoting/base",
     "//remoting/client",
@@ -71,6 +70,10 @@ source_set("test_support") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy:test_support" ]
+  }
 
   if (enable_remoting_host) {
     deps += [ "//remoting/host:test_support" ]
