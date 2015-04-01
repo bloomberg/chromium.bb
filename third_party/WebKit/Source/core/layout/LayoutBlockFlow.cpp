@@ -2652,7 +2652,7 @@ LayoutUnit LayoutBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight
     return logicalBottom;
 }
 
-bool LayoutBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
+bool LayoutBlockFlow::hitTestFloats(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
 {
     if (!m_floatingObjects)
         return false;
@@ -2672,7 +2672,7 @@ bool LayoutBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult
             LayoutUnit xOffset = xPositionForFloatIncludingMargin(floatingObject) - floatingObject->layoutObject()->location().x();
             LayoutUnit yOffset = yPositionForFloatIncludingMargin(floatingObject) - floatingObject->layoutObject()->location().y();
             LayoutPoint childPoint = flipFloatForWritingModeForChild(floatingObject, adjustedLocation + LayoutSize(xOffset, yOffset));
-            if (floatingObject->layoutObject()->hitTest(request, result, locationInContainer, childPoint)) {
+            if (floatingObject->layoutObject()->hitTest(result, locationInContainer, childPoint)) {
                 updateHitTestResult(result, locationInContainer.point() - toLayoutSize(childPoint));
                 return true;
             }

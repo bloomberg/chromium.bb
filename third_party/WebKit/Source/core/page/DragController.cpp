@@ -314,8 +314,8 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
     LayoutPoint point = roundedLayoutPoint(FloatPoint(p.x() * zoomFactor, p.y() * zoomFactor));
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-    HitTestResult result(point);
-    documentUnderMouse->layoutView()->hitTest(request, result);
+    HitTestResult result(request, point);
+    documentUnderMouse->layoutView()->hitTest(result);
 
     Node* n = result.innerNode();
     while (n && !n->isElementNode())
@@ -541,11 +541,10 @@ bool DragController::canProcessDrag(DragData* dragData)
         return false;
 
     IntPoint point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(dragData->clientPosition());
-    HitTestResult result = HitTestResult(point);
     if (!m_page->deprecatedLocalMainFrame()->contentRenderer())
         return false;
 
-    result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point);
+    HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point);
 
     if (!result.innerNonSharedNode())
         return false;

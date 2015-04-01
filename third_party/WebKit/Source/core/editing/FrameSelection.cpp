@@ -1299,8 +1299,8 @@ bool FrameSelection::contains(const LayoutPoint& point)
         return false;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-    HitTestResult result(point);
-    document->layoutView()->hitTest(request, result);
+    HitTestResult result(request, point);
+    document->layoutView()->hitTest(result);
     Node* innerNode = result.innerNode();
     if (!innerNode || !innerNode->layoutObject())
         return false;

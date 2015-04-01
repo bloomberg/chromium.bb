@@ -123,11 +123,11 @@ void LayoutFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, L
     }
 }
 
-bool LayoutFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutFlowThread::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     if (hitTestAction == HitTestBlockBackground)
         return false;
-    return LayoutBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction);
+    return LayoutBlockFlow::nodeAtPoint(result, locationInContainer, accumulatedOffset, hitTestAction);
 }
 
 LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)

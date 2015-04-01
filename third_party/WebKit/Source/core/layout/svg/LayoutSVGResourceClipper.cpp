@@ -247,8 +247,8 @@ bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
         if (!layoutObject->isSVGShape() && !layoutObject->isSVGText() && !isSVGUseElement(*childElement))
             continue;
         IntPoint hitPoint;
-        HitTestResult result(hitPoint);
-        if (layoutObject->nodeAtFloatPoint(HitTestRequest(HitTestRequest::SVGClipContent), result, point, HitTestForeground))
+        HitTestResult result(HitTestRequest::SVGClipContent, hitPoint);
+        if (layoutObject->nodeAtFloatPoint(result, point, HitTestForeground))
             return true;
     }
 

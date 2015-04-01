@@ -50,7 +50,7 @@ public:
     virtual ~LayoutView();
     void willBeDestroyed() override;
 
-    bool hitTest(const HitTestRequest&, HitTestResult&);
+    bool hitTest(HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
 
     // Returns the total count of calls to HitTest, for testing.

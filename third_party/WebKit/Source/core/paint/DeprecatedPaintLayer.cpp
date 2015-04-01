@@ -1660,9 +1660,9 @@ static inline LayoutRect frameVisibleRect(LayoutObject* renderer)
     return LayoutRect(frameView->visibleContentRect());
 }
 
-bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, HitTestResult& result)
+bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
 {
-    return hitTest(request, result.hitTestLocation(), result);
+    return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
 }
 
 bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
@@ -1678,7 +1678,7 @@ bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestL
     if (request.ignoreClipping())
         hitTestArea.unite(LayoutRect(layoutObject()->view()->documentRect()));
 
-    DeprecatedPaintLayer* insideLayer = hitTestLayer(this, 0, request, result, hitTestArea, hitTestLocation, false);
+    DeprecatedPaintLayer* insideLayer = hitTestLayer(this, 0, result, hitTestArea, hitTestLocation, false);
     if (!insideLayer) {
         // We didn't hit any layer. If we are the root layer and the mouse is -- or just was -- down,
         // return ourselves. We do this so mouse events continue getting delivered after a drag has
@@ -1799,7 +1799,7 @@ static bool isHitCandidate(const DeprecatedPaintLayer* hitLayer, bool canDepthSo
 //
 // If zOffset is non-null (which indicates that the caller wants z offset information),
 //  *zOffset on return is the z offset of the hit point relative to the containing flattening layer.
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
+DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, bool appliedTransform,
     const HitTestingTransformState* transformState, double* zOffset)
 {
@@ -1811,7 +1811,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     // Apply a transform if we have one.
     if (transform() && !appliedTransform) {
         if (enclosingPaginationLayer())
-            return hitTestTransformedLayerInFragments(rootLayer, containerLayer, request, result, hitTestRect, hitTestLocation, transformState, zOffset);
+            return hitTestTransformedLayerInFragments(rootLayer, containerLayer, result, hitTestRect, hitTestLocation, transformState, zOffset);
 
         // Make sure the parent's clip rects have been calculated.
         if (parent()) {
@@ -1821,7 +1821,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
                 return 0;
         }
 
-        return hitTestLayerByApplyingTransform(rootLayer, containerLayer, request, result, hitTestRect, hitTestLocation, transformState, zOffset);
+        return hitTestLayerByApplyingTransform(rootLayer, containerLayer, result, hitTestRect, hitTestLocation, transformState, zOffset);
     }
 
     // Ensure our lists and 3d status are up-to-date.
@@ -1876,7 +1876,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     DeprecatedPaintLayer* candidateLayer = 0;
 
     // Begin by walking our list of positive layers from highest z-index down to the lowest z-index.
-    DeprecatedPaintLayer* hitLayer = hitTestChildren(PositiveZOrderChildren, rootLayer, request, result, hitTestRect, hitTestLocation,
+    DeprecatedPaintLayer* hitLayer = hitTestChildren(PositiveZOrderChildren, rootLayer, result, hitTestRect, hitTestLocation,
         localTransformState.get(), zOffsetForDescendantsPtr, zOffset, unflattenedTransformState.get(), depthSortDescendants);
     if (hitLayer) {
         if (!depthSortDescendants)
@@ -1885,7 +1885,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     }
 
     // Now check our overflow objects.
-    hitLayer = hitTestChildren(NormalFlowChildren, rootLayer, request, result, hitTestRect, hitTestLocation,
+    hitLayer = hitTestChildren(NormalFlowChildren, rootLayer, result, hitTestRect, hitTestLocation,
         localTransformState.get(), zOffsetForDescendantsPtr, zOffset, unflattenedTransformState.get(), depthSortDescendants);
     if (hitLayer) {
         if (!depthSortDescendants)
@@ -1909,25 +1909,25 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     // every fragment in reverse order.
     if (isSelfPaintingLayer()) {
         // Hit test with a temporary HitTestResult, because we only want to commit to 'result' if we know we're frontmost.
-        HitTestResult tempResult(result.hitTestLocation());
+        HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
         bool insideFragmentForegroundRect = false;
-        if (hitTestContentsForFragments(layerFragments, request, tempResult, hitTestLocation, HitTestDescendants, insideFragmentForegroundRect)
+        if (hitTestContentsForFragments(layerFragments, tempResult, hitTestLocation, HitTestDescendants, insideFragmentForegroundRect)
             && isHitCandidate(this, false, zOffsetForContentsPtr, unflattenedTransformState.get())) {
-            if (request.listBased())
-                result.append(tempResult, request);
+            if (result.hitTestRequest().listBased())
+                result.append(tempResult);
             else
                 result = tempResult;
             if (!depthSortDescendants)
                 return this;
             // Foreground can depth-sort with descendant layers, so keep this as a candidate.
             candidateLayer = this;
-        } else if (insideFragmentForegroundRect && request.listBased()) {
-            result.append(tempResult, request);
+        } else if (insideFragmentForegroundRect && result.hitTestRequest().listBased()) {
+            result.append(tempResult);
         }
     }
 
     // Now check our negative z-index children.
-    hitLayer = hitTestChildren(NegativeZOrderChildren, rootLayer, request, result, hitTestRect, hitTestLocation,
+    hitLayer = hitTestChildren(NegativeZOrderChildren, rootLayer, result, hitTestRect, hitTestLocation,
         localTransformState.get(), zOffsetForDescendantsPtr, zOffset, unflattenedTransformState.get(), depthSortDescendants);
     if (hitLayer) {
         if (!depthSortDescendants)
@@ -1940,24 +1940,24 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
         return candidateLayer;
 
     if (isSelfPaintingLayer()) {
-        HitTestResult tempResult(result.hitTestLocation());
+        HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
         bool insideFragmentBackgroundRect = false;
-        if (hitTestContentsForFragments(layerFragments, request, tempResult, hitTestLocation, HitTestSelf, insideFragmentBackgroundRect)
+        if (hitTestContentsForFragments(layerFragments, tempResult, hitTestLocation, HitTestSelf, insideFragmentBackgroundRect)
             && isHitCandidate(this, false, zOffsetForContentsPtr, unflattenedTransformState.get())) {
             if (result.isRectBasedTest())
-                result.append(tempResult, request);
+                result.append(tempResult);
             else
                 result = tempResult;
             return this;
         }
-        if (insideFragmentBackgroundRect && request.listBased())
-            result.append(tempResult, request);
+        if (insideFragmentBackgroundRect && result.hitTestRequest().listBased())
+            result.append(tempResult);
     }
 
     return 0;
 }
 
-bool DeprecatedPaintLayer::hitTestContentsForFragments(const DeprecatedPaintLayerFragments& layerFragments, const HitTestRequest& request, HitTestResult& result,
+bool DeprecatedPaintLayer::hitTestContentsForFragments(const DeprecatedPaintLayerFragments& layerFragments, HitTestResult& result,
     const HitTestLocation& hitTestLocation, HitTestFilter hitTestFilter, bool& insideClipRect) const
 {
     if (layerFragments.isEmpty())
@@ -1969,14 +1969,14 @@ bool DeprecatedPaintLayer::hitTestContentsForFragments(const DeprecatedPaintLaye
             || (hitTestFilter == HitTestDescendants && !fragment.foregroundRect.intersects(hitTestLocation)))
             continue;
         insideClipRect = true;
-        if (hitTestContents(request, result, fragment.layerBounds, hitTestLocation, hitTestFilter))
+        if (hitTestContents(result, fragment.layerBounds, hitTestLocation, hitTestFilter))
             return true;
     }
 
     return false;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
+DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset)
 {
     DeprecatedPaintLayerFragments enclosingPaginationFragments;
@@ -2004,7 +2004,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(D
         if (!hitTestLocation.intersects(clipRect))
             continue;
 
-        DeprecatedPaintLayer* hitLayer = hitTestLayerByApplyingTransform(rootLayer, containerLayer, request, result, hitTestRect, hitTestLocation,
+        DeprecatedPaintLayer* hitLayer = hitTestLayerByApplyingTransform(rootLayer, containerLayer, result, hitTestRect, hitTestLocation,
             transformState, zOffset, fragment.paginationOffset);
         if (hitLayer)
             return hitLayer;
@@ -2013,7 +2013,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(D
     return 0;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayerByApplyingTransform(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
+DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayerByApplyingTransform(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset,
     const LayoutPoint& translationOffset)
 {
@@ -2040,17 +2040,17 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayerByApplyingTransform(Depr
         newHitTestLocation = HitTestLocation(localPoint);
 
     // Now do a hit test with the root layer shifted to be us.
-    return hitTestLayer(this, containerLayer, request, result, localHitTestRect, newHitTestLocation, true, newTransformState.get(), zOffset);
+    return hitTestLayer(this, containerLayer, result, localHitTestRect, newHitTestLocation, true, newTransformState.get(), zOffset);
 }
 
-bool DeprecatedPaintLayer::hitTestContents(const HitTestRequest& request, HitTestResult& result, const LayoutRect& layerBounds, const HitTestLocation& hitTestLocation, HitTestFilter hitTestFilter) const
+bool DeprecatedPaintLayer::hitTestContents(HitTestResult& result, const LayoutRect& layerBounds, const HitTestLocation& hitTestLocation, HitTestFilter hitTestFilter) const
 {
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
-    if (!layoutObject()->hitTest(request, result, hitTestLocation, toLayoutPoint(layerBounds.location() - layoutBoxLocation()), hitTestFilter)) {
+    if (!layoutObject()->hitTest(result, hitTestLocation, toLayoutPoint(layerBounds.location() - layoutBoxLocation()), hitTestFilter)) {
         // It's wrong to set innerNode, but then claim that you didn't hit anything, unless it is
         // a rect-based test.
-        ASSERT(!result.innerNode() || (request.listBased() && result.listBasedTestResult().size()));
+        ASSERT(!result.innerNode() || (result.hitTestRequest().listBased() && result.listBasedTestResult().size()));
         return false;
     }
 
@@ -2080,7 +2080,7 @@ bool DeprecatedPaintLayer::hitTestContents(const HitTestRequest& request, HitTes
 }
 
 DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, DeprecatedPaintLayer* rootLayer,
-    const HitTestRequest& request, HitTestResult& result,
+    HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation,
     const HitTestingTransformState* transformState,
     double* zOffsetForDescendants, double* zOffset,
@@ -2095,21 +2095,21 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
     while (DeprecatedPaintLayerStackingNode* child = iterator.next()) {
         DeprecatedPaintLayer* childLayer = child->layer();
         DeprecatedPaintLayer* hitLayer = 0;
-        HitTestResult tempResult(result.hitTestLocation());
+        HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
         if (childLayer->isPaginated())
-            hitLayer = hitTestPaginatedChildLayer(childLayer, rootLayer, request, tempResult, hitTestRect, hitTestLocation, transformState, zOffsetForDescendants);
+            hitLayer = hitTestPaginatedChildLayer(childLayer, rootLayer, tempResult, hitTestRect, hitTestLocation, transformState, zOffsetForDescendants);
         else
-            hitLayer = childLayer->hitTestLayer(rootLayer, this, request, tempResult, hitTestRect, hitTestLocation, false, transformState, zOffsetForDescendants);
+            hitLayer = childLayer->hitTestLayer(rootLayer, this, tempResult, hitTestRect, hitTestLocation, false, transformState, zOffsetForDescendants);
 
         // If it is a list-based test, we can safely append the temporary result since it might had hit
         // nodes but not necesserily had hitLayer set.
-        ASSERT(!result.isRectBasedTest() || request.listBased());
-        if (request.listBased())
-            result.append(tempResult, request);
+        ASSERT(!result.isRectBasedTest() || result.hitTestRequest().listBased());
+        if (result.hitTestRequest().listBased())
+            result.append(tempResult);
 
         if (isHitCandidate(hitLayer, depthSortDescendants, zOffset, unflattenedTransformState)) {
             resultLayer = hitLayer;
-            if (!request.listBased())
+            if (!result.hitTestRequest().listBased())
                 result = tempResult;
             if (!depthSortDescendants)
                 break;
@@ -2119,7 +2119,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
     return resultLayer;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestPaginatedChildLayer(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, const HitTestRequest& request, HitTestResult& result,
+DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestPaginatedChildLayer(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset)
 {
     Vector<DeprecatedPaintLayer*> columnLayers;
@@ -2132,11 +2132,11 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestPaginatedChildLayer(Deprecate
     }
 
     ASSERT(columnLayers.size());
-    return hitTestChildLayerColumns(childLayer, rootLayer, request, result, hitTestRect, hitTestLocation, transformState, zOffset,
+    return hitTestChildLayerColumns(childLayer, rootLayer, result, hitTestRect, hitTestLocation, transformState, zOffset,
         columnLayers, columnLayers.size() - 1);
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildLayerColumns(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, const HitTestRequest& request, HitTestResult& result,
+DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildLayerColumns(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset,
     const Vector<DeprecatedPaintLayer*>& columnLayers, size_t columnIndex)
 {
@@ -2206,7 +2206,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildLayerColumns(DeprecatedP
                 newTransform.translateRight(offset.width(), offset.height());
 
                 childLayer->m_transform = adoptPtr(new TransformationMatrix(newTransform));
-                hitLayer = childLayer->hitTestLayer(rootLayer, columnLayers[0], request, result, localClipRect, hitTestLocation, false, transformState, zOffset);
+                hitLayer = childLayer->hitTestLayer(rootLayer, columnLayers[0], result, localClipRect, hitTestLocation, false, transformState, zOffset);
                 if (oldHasTransform)
                     childLayer->m_transform = adoptPtr(new TransformationMatrix(oldTransform));
                 else
@@ -2227,7 +2227,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildLayerColumns(DeprecatedP
                     newHitTestLocation = HitTestLocation(localPoint);
                 newTransformState->flatten();
 
-                hitLayer = hitTestChildLayerColumns(childLayer, columnLayers[columnIndex - 1], request, result, localHitTestRect, newHitTestLocation,
+                hitLayer = hitTestChildLayerColumns(childLayer, columnLayers[columnIndex - 1], result, localHitTestRect, newHitTestLocation,
                     newTransformState.get(), zOffset, columnLayers, columnIndex - 1);
             }
 

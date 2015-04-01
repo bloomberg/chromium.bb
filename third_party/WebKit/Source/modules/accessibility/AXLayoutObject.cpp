@@ -1343,8 +1343,8 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
     DeprecatedPaintLayer* layer = toLayoutBox(m_layoutObject)->layer();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-    HitTestResult hitTestResult = HitTestResult(point);
-    layer->hitTest(request, hitTestResult);
+    HitTestResult hitTestResult = HitTestResult(request, point);
+    layer->hitTest(hitTestResult);
     if (!hitTestResult.innerNode())
         return 0;
 

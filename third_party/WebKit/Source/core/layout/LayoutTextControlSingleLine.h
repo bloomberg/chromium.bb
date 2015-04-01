@@ -54,7 +54,7 @@ private:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
     virtual void autoscroll(const IntPoint&) override final;
 

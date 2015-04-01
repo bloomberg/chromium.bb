@@ -2165,7 +2165,7 @@ Node* LayoutBlock::nodeForHitTest() const
     return isAnonymousBlockContinuation() ? continuation()->node() : node();
 }
 
-bool LayoutBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint adjustedLocation(accumulatedOffset + location());
     LayoutSize localOffset = toLayoutSize(adjustedLocation);
@@ -2181,11 +2181,11 @@ bool LayoutBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     }
 
     if ((hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground)
-        && visibleToHitTestRequest(request)
+        && visibleToHitTestRequest(result.hitTestRequest())
         && isPointInOverflowControl(result, locationInContainer.point(), adjustedLocation)) {
         updateHitTestResult(result, locationInContainer.point() - localOffset);
         // FIXME: isPointInOverflowControl() doesn't handle rect-based tests yet.
-        if (!result.addNodeToListBasedTestResult(nodeForHitTest(), request, locationInContainer))
+        if (!result.addNodeToListBasedTestResult(nodeForHitTest(), locationInContainer))
             return true;
     }
 
@@ -2227,13 +2227,13 @@ bool LayoutBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
         // Hit test contents if we don't have columns.
         if (!hasColumns()) {
-            if (hitTestContents(request, result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
+            if (hitTestContents(result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
                 updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
                 return true;
             }
-            if (hitTestAction == HitTestFloat && hitTestFloats(request, result, locationInContainer, toLayoutPoint(scrolledOffset)))
+            if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, toLayoutPoint(scrolledOffset)))
                 return true;
-        } else if (hitTestColumns(request, result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
+        } else if (hitTestColumns(result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
             return true;
         }
@@ -2251,9 +2251,9 @@ bool LayoutBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     // Now hit test our background
     if (hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground) {
         LayoutRect boundsRect(adjustedLocation, size());
-        if (visibleToHitTestRequest(request) && locationInContainer.intersects(boundsRect)) {
+        if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(boundsRect)) {
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
-            if (!result.addNodeToListBasedTestResult(nodeForHitTest(), request, locationInContainer, boundsRect))
+            if (!result.addNodeToListBasedTestResult(nodeForHitTest(), locationInContainer, boundsRect))
                 return true;
         }
     }
@@ -2320,7 +2320,7 @@ private:
     LayoutRect m_colRect;
 };
 
-bool LayoutBlock::hitTestColumns(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutBlock::hitTestColumns(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     // We need to do multiple passes, breaking up our hit testing into strips.
     if (!hasColumns())
@@ -2337,9 +2337,9 @@ bool LayoutBlock::hitTestColumns(const HitTestRequest& request, HitTestResult& r
             it.adjust(offset);
             LayoutPoint finalLocation = accumulatedOffset + offset;
             if (!result.isRectBasedTest() || colRect.contains(hitRect))
-                return hitTestContents(request, result, locationInContainer, finalLocation, hitTestAction) || (hitTestAction == HitTestFloat && hitTestFloats(request, result, locationInContainer, finalLocation));
+                return hitTestContents(result, locationInContainer, finalLocation, hitTestAction) || (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, finalLocation));
 
-            hitTestContents(request, result, locationInContainer, finalLocation, hitTestAction);
+            hitTestContents(result, locationInContainer, finalLocation, hitTestAction);
         }
     }
 
@@ -2357,11 +2357,11 @@ void LayoutBlock::adjustForColumnRect(LayoutSize& offset, const LayoutPoint& loc
     }
 }
 
-bool LayoutBlock::hitTestContents(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutBlock::hitTestContents(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     if (childrenInline() && !isTable()) {
         // We have to hit-test our line boxes.
-        if (m_lineBoxes.hitTest(this, request, result, locationInContainer, accumulatedOffset, hitTestAction))
+        if (m_lineBoxes.hitTest(this, result, locationInContainer, accumulatedOffset, hitTestAction))
             return true;
     } else {
         // Hit test our children.
@@ -2370,7 +2370,7 @@ bool LayoutBlock::hitTestContents(const HitTestRequest& request, HitTestResult& 
             childHitTest = HitTestChildBlockBackground;
         for (LayoutBox* child = lastChildBox(); child; child = child->previousSiblingBox()) {
             LayoutPoint childPoint = flipForWritingModeForChild(child, accumulatedOffset);
-            if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(request, result, locationInContainer, childPoint, childHitTest))
+            if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(result, locationInContainer, childPoint, childHitTest))
                 return true;
         }
     }

@@ -49,7 +49,7 @@ void LayoutSVGHiddenContainer::absoluteQuads(Vector<FloatQuad>&, bool*) const
     // This subtree does not take up space or paint
 }
 
-bool LayoutSVGHiddenContainer::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint&, HitTestAction)
+bool LayoutSVGHiddenContainer::nodeAtFloatPoint(HitTestResult&, const FloatPoint&, HitTestAction)
 {
     return false;
 }

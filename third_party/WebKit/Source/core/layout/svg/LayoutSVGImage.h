@@ -65,7 +65,7 @@ private:
 
     FloatSize computeImageViewportSize(ImageResource&) const;
 
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+    virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
     virtual AffineTransform localTransform() const override { return m_localTransform; }
 

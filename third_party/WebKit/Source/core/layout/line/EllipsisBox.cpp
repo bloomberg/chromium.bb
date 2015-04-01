@@ -64,7 +64,7 @@ IntRect EllipsisBox::selectionRect()
     return enclosingIntRect(font.selectionRectForText(constructTextRun(&layoutObject(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
 
-bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+bool EllipsisBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
     // the transition to LayoutUnit-based types is complete (crbug.com/321237)
@@ -75,7 +75,7 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
         LayoutUnit mtx = adjustedLocation.x() + m_logicalWidth - markupBox->x();
         LayoutUnit mty = adjustedLocation.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->layoutObject().style(isFirstLineStyle())->fontMetrics().ascent());
-        if (markupBox->nodeAtPoint(request, result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {
+        if (markupBox->nodeAtPoint(result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {
             layoutObject().updateHitTestResult(result, locationInContainer.point() - LayoutSize(mtx, mty));
             return true;
         }
@@ -84,11 +84,11 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     FloatPointWillBeLayoutPoint boxOrigin = locationIncludingFlipping();
     boxOrigin.moveBy(accumulatedOffset);
     FloatRectWillBeLayoutRect boundsRect(boxOrigin, size());
-    if (visibleToHitTestRequest(request) && boundsRect.intersects(FloatRectWillBeLayoutRect(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0)))) {
+    if (visibleToHitTestRequest(result.hitTestRequest()) && boundsRect.intersects(FloatRectWillBeLayoutRect(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0)))) {
         layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
-        if (!result.addNodeToListBasedTestResult(layoutObject().node(), request, locationInContainer, boundsRect.rawValue()))
+        if (!result.addNodeToListBasedTestResult(layoutObject().node(), locationInContainer, boundsRect.rawValue()))
             return true;
     }
 

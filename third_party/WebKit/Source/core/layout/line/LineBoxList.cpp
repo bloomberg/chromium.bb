@@ -193,7 +193,7 @@ bool LineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* renderer, Inline
     return rangeIntersectsRect(renderer, logicalTop, logicalBottom, LayoutRect(paintInfo.rect), offset);
 }
 
-bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
+bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
 {
     if (hitTestAction != HitTestForeground)
         return false;
@@ -218,7 +218,7 @@ bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& 
     for (InlineFlowBox* curr = lastLineBox(); curr; curr = curr->prevLineBox()) {
         RootInlineBox& root = curr->root();
         if (rangeIntersectsRect(renderer, curr->logicalTopVisualOverflow(root.lineTop()), curr->logicalBottomVisualOverflow(root.lineBottom()), rect, accumulatedOffset)) {
-            bool inside = curr->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, root.lineTop(), root.lineBottom());
+            bool inside = curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, root.lineTop(), root.lineBottom());
             if (inside) {
                 renderer->updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
                 return true;

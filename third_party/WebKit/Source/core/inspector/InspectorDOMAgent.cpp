@@ -158,8 +158,8 @@ static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootF
     if (ignorePointerEventsNone)
         hitType |= HitTestRequest::IgnorePointerEventsNone;
     HitTestRequest request(hitType);
-    HitTestResult result(frame->view()->rootFrameToContents(pointInRootFrame));
-    frame->contentRenderer()->hitTest(request, result);
+    HitTestResult result(request, frame->view()->rootFrameToContents(pointInRootFrame));
+    frame->contentRenderer()->hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();
@@ -1533,8 +1533,8 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     if (!pushDocumentUponHandlelessOperation(errorString))
         return;
     HitTestRequest request(HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
-    HitTestResult result(IntPoint(x, y));
-    m_document->frame()->contentRenderer()->hitTest(request, result);
+    HitTestResult result(request, IntPoint(x, y));
+    m_document->frame()->contentRenderer()->hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();

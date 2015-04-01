@@ -122,7 +122,7 @@ void LayoutSVGForeignObject::layout()
         SVGResourcesCache::clientLayoutChanged(this);
 }
 
-bool LayoutSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGForeignObject::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // Embedded content is drawn in the foreground phase.
     if (hitTestAction != HitTestForeground)
@@ -140,9 +140,9 @@ bool LayoutSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, Hit
 
     // FOs establish a stacking context, so we need to hit-test all layers.
     HitTestLocation hitTestLocation(roundedLayoutPoint(localPoint));
-    return LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestForeground)
-        || LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestFloat)
-        || LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestChildBlockBackgrounds);
+    return LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestForeground)
+        || LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestFloat)
+        || LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestChildBlockBackgrounds);
 }
 
 }

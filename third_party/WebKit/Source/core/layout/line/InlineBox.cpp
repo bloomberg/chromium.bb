@@ -211,7 +211,7 @@ void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset
         BlockPainter::paintInlineBox(*this, paintInfo, paintOffset);
 }
 
-bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
+bool InlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
 {
     // Hit test all phases of replaced elements atomically, as though the replaced element established its
     // own stacking context.  (See Appendix E.2, section 6.4 on inline block/table elements in the CSS2.1
@@ -228,7 +228,7 @@ bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
             return false;
     }
 
-    return layoutObject().hitTest(request, result, locationInContainer, childPoint);
+    return layoutObject().hitTest(result, locationInContainer, childPoint);
 }
 
 const RootInlineBox& InlineBox::root() const

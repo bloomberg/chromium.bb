@@ -90,7 +90,7 @@ public:
     const BorderValue& borderAdjoiningStartCell(const LayoutTableCell*) const;
     const BorderValue& borderAdjoiningEndCell(const LayoutTableCell*) const;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     void addOverflowFromCell(const LayoutTableCell*);
 

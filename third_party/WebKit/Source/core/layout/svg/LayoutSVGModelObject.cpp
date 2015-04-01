@@ -113,7 +113,7 @@ void LayoutSVGModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
-bool LayoutSVGModelObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)
+bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)
 {
     ASSERT_NOT_REACHED();
     return false;

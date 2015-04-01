@@ -104,9 +104,9 @@ void LayoutMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, cons
         m_rendererInFlowThread->paint(paintInfo, paintOffset);
 }
 
-bool LayoutMultiColumnSpannerPlaceholder::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutMultiColumnSpannerPlaceholder::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
-    return !m_rendererInFlowThread->hasSelfPaintingLayer() && m_rendererInFlowThread->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
+    return !m_rendererInFlowThread->hasSelfPaintingLayer() && m_rendererInFlowThread->nodeAtPoint(result, locationInContainer, accumulatedOffset, action);
 }
 
 }

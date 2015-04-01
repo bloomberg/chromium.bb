@@ -389,7 +389,7 @@ public:
 
     virtual void layout() override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     virtual LayoutUnit minPreferredLogicalWidth() const override;
     virtual LayoutUnit maxPreferredLogicalWidth() const override;

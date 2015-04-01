@@ -60,7 +60,7 @@ private:
 
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     AffineTransform m_cachedPaintInvalidationTransform;
 };

@@ -1305,8 +1305,8 @@ void WebLocalFrameImpl::setCaretVisible(bool visible)
 VisiblePosition WebLocalFrameImpl::visiblePositionForViewportPoint(const WebPoint& pointInViewport)
 {
     HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
-    HitTestResult result(frame()->view()->viewportToContents(pointInViewport));
-    frame()->document()->layoutView()->layer()->hitTest(request, result);
+    HitTestResult result(request, frame()->view()->viewportToContents(pointInViewport));
+    frame()->document()->layoutView()->layer()->hitTest(result);
 
     if (Node* node = result.innerNode())
         return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);

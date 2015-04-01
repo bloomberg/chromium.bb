@@ -231,7 +231,7 @@ public:
     LayoutPoint visualOffsetFromAncestor(const DeprecatedPaintLayer* ancestorLayer) const;
 
     // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
-    bool hitTest(const HitTestRequest&, HitTestResult&);
+    bool hitTest(HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
 
     // Pass offsetFromRoot if known.
@@ -553,20 +553,20 @@ private:
     void setLastChild(DeprecatedPaintLayer* last) { m_last = last; }
 
     void updateHasSelfPaintingLayerDescendant() const;
-    DeprecatedPaintLayer* hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, const HitTestRequest&, HitTestResult&,
+    DeprecatedPaintLayer* hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, bool appliedTransform,
         const HitTestingTransformState* = 0, double* zOffset = 0);
-    DeprecatedPaintLayer* hitTestLayerByApplyingTransform(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, const HitTestRequest&, HitTestResult&,
+    DeprecatedPaintLayer* hitTestLayerByApplyingTransform(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState* = 0, double* zOffset = 0,
         const LayoutPoint& translationOffset = LayoutPoint());
-    DeprecatedPaintLayer* hitTestChildren(ChildrenIteration, DeprecatedPaintLayer* rootLayer, const HitTestRequest&, HitTestResult&,
+    DeprecatedPaintLayer* hitTestChildren(ChildrenIteration, DeprecatedPaintLayer* rootLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&,
         const HitTestingTransformState*, double* zOffsetForDescendants, double* zOffset,
         const HitTestingTransformState* unflattenedTransformState, bool depthSortDescendants);
-    DeprecatedPaintLayer* hitTestPaginatedChildLayer(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, const HitTestRequest&, HitTestResult&,
+    DeprecatedPaintLayer* hitTestPaginatedChildLayer(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&,
         const HitTestingTransformState*, double* zOffset);
-    DeprecatedPaintLayer* hitTestChildLayerColumns(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, const HitTestRequest&, HitTestResult&,
+    DeprecatedPaintLayer* hitTestChildLayerColumns(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&,
         const HitTestingTransformState*, double* zOffset,
         const Vector<DeprecatedPaintLayer*>& columnLayers, size_t columnIndex);
@@ -576,9 +576,9 @@ private:
         const HitTestingTransformState* containerTransformState,
         const LayoutPoint& translationOffset = LayoutPoint()) const;
 
-    bool hitTestContents(const HitTestRequest&, HitTestResult&, const LayoutRect& layerBounds, const HitTestLocation&, HitTestFilter) const;
-    bool hitTestContentsForFragments(const DeprecatedPaintLayerFragments&, const HitTestRequest&, HitTestResult&, const HitTestLocation&, HitTestFilter, bool& insideClipRect) const;
-    DeprecatedPaintLayer* hitTestTransformedLayerInFragments(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, const HitTestRequest&, HitTestResult&,
+    bool hitTestContents(HitTestResult&, const LayoutRect& layerBounds, const HitTestLocation&, HitTestFilter) const;
+    bool hitTestContentsForFragments(const DeprecatedPaintLayerFragments&, HitTestResult&, const HitTestLocation&, HitTestFilter, bool& insideClipRect) const;
+    DeprecatedPaintLayer* hitTestTransformedLayerInFragments(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState* = 0, double* zOffset = 0);
 
     bool childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;

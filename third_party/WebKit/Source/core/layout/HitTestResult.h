@@ -53,10 +53,10 @@ public:
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node>> NodeSet;
 
     HitTestResult();
-    HitTestResult(const LayoutPoint&);
+    HitTestResult(const HitTestRequest&, const LayoutPoint&);
     // Pass positive padding values to perform a rect-based hit test.
-    HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding);
-    HitTestResult(const HitTestLocation&);
+    HitTestResult(const HitTestRequest&, const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding);
+    HitTestResult(const HitTestRequest&, const HitTestLocation&);
     HitTestResult(const HitTestResult&);
     ~HitTestResult();
     HitTestResult& operator=(const HitTestResult&);
@@ -96,6 +96,7 @@ public:
     void setToShadowHostIfInClosedShadowRoot();
 
     const HitTestLocation& hitTestLocation() const { return m_hitTestLocation; }
+    const HitTestRequest& hitTestRequest() const { return m_hitTestRequest; }
 
     void setInnerNode(Node*);
     void setInnerNonSharedNode(Node*);
@@ -120,9 +121,9 @@ public:
     bool isOverLink() const;
 
     // Return true if the test is a list-based test and we should continue testing.
-    bool addNodeToListBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
-    bool addNodeToListBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const FloatRect&);
-    void append(const HitTestResult&, const HitTestRequest&);
+    bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
+    bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const FloatRect&);
+    void append(const HitTestResult&);
 
     // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return *m_listBasedTestResult. Lazy allocation makes
     // sense because the NodeSet is seldom necessary, and it's somewhat expensive to allocate and initialize. This method does
@@ -137,6 +138,7 @@ private:
     HTMLMediaElement* mediaElement() const;
 
     HitTestLocation m_hitTestLocation;
+    HitTestRequest m_hitTestRequest;
 
     RefPtrWillBeMember<Node> m_innerNode;
     RefPtrWillBeMember<Node> m_innerPossiblyPseudoNode;

@@ -294,10 +294,10 @@ HTMLMapElement* LayoutImage::imageMap() const
     return i ? i->treeScope().getImageMap(i->fastGetAttribute(usemapAttr)) : 0;
 }
 
-bool LayoutImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutImage::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    HitTestResult tempResult(result.hitTestLocation());
-    bool inside = LayoutReplaced::nodeAtPoint(request, tempResult, locationInContainer, accumulatedOffset, hitTestAction);
+    HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
+    bool inside = LayoutReplaced::nodeAtPoint(tempResult, locationInContainer, accumulatedOffset, hitTestAction);
 
     if (tempResult.innerNode() && node()) {
         if (HTMLMapElement* map = imageMap()) {
@@ -311,8 +311,8 @@ bool LayoutImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         }
     }
 
-    if (!inside && request.listBased())
-        result.append(tempResult, request);
+    if (!inside && result.hitTestRequest().listBased())
+        result.append(tempResult);
     if (inside)
         result = tempResult;
     return inside;

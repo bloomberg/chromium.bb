@@ -1372,8 +1372,8 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
         return nullptr;
 
     WillBeHeapVector<RefPtrWillBeMember<Node>> matches;
-    HitTestResult result(point, topPadding, rightPadding, bottomPadding, leftPadding);
-    layoutView->hitTest(request, result);
+    HitTestResult result(request, point, topPadding, rightPadding, bottomPadding, leftPadding);
+    layoutView->hitTest(result);
     copyToVector(result.listBasedTestResult(), matches);
 
     return StaticNodeList::adopt(matches);

@@ -74,7 +74,7 @@ public:
     virtual void flowThreadDescendantWasInserted(LayoutObject*) { }
     virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) { }
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
     virtual void addRegionToThread(LayoutMultiColumnSet*) = 0;
     virtual void removeRegionFromThread(LayoutMultiColumnSet*);

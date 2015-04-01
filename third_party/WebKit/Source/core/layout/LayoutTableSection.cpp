@@ -1501,7 +1501,7 @@ void LayoutTableSection::splitColumn(unsigned pos, unsigned first)
 }
 
 // Hit Testing
-bool LayoutTableSection::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutTableSection::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     // If we have no children then we have nothing to do.
     if (!firstRow())
@@ -1522,7 +1522,7 @@ bool LayoutTableSection::nodeAtPoint(const HitTestRequest& request, HitTestResul
             // then we can remove this check.
             if (!row->hasSelfPaintingLayer()) {
                 LayoutPoint childPoint = flipForWritingModeForChild(row, adjustedLocation);
-                if (row->nodeAtPoint(request, result, locationInContainer, childPoint, action)) {
+                if (row->nodeAtPoint(result, locationInContainer, childPoint, action)) {
                     updateHitTestResult(result, toLayoutPoint(locationInContainer.point() - childPoint));
                     return true;
                 }
@@ -1553,15 +1553,15 @@ bool LayoutTableSection::nodeAtPoint(const HitTestRequest& request, HitTestResul
                 --i;
                 LayoutTableCell* cell = current.cells[i];
                 LayoutPoint cellPoint = flipForWritingModeForChild(cell, adjustedLocation);
-                if (static_cast<LayoutObject*>(cell)->nodeAtPoint(request, result, locationInContainer, cellPoint, action)) {
+                if (static_cast<LayoutObject*>(cell)->nodeAtPoint(result, locationInContainer, cellPoint, action)) {
                     updateHitTestResult(result, locationInContainer.point() - toLayoutSize(cellPoint));
                     return true;
                 }
             }
-            if (!request.listBased())
+            if (!result.hitTestRequest().listBased())
                 break;
         }
-        if (!request.listBased())
+        if (!result.hitTestRequest().listBased())
             break;
     }
 

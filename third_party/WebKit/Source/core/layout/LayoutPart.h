@@ -39,7 +39,7 @@ public:
 
     virtual bool needsPreferredWidthsRecalculation() const override final;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     void ref() { ++m_refCount; }
     void deref();
@@ -71,7 +71,7 @@ private:
 
     bool setWidgetGeometry(const LayoutRect&);
 
-    bool nodeAtPointOverWidget(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
+    bool nodeAtPointOverWidget(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
     int m_refCount;
 };

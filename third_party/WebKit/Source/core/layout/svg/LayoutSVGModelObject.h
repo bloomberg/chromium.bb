@@ -73,7 +73,7 @@ private:
     void node() const = delete;
 
     // This method should never be called, SVG uses a different nodeAtPoint method
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
     virtual IntRect absoluteFocusRingBoundingBoxRect() const override final;
 
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override final;

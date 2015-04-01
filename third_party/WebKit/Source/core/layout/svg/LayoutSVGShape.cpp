@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 
-#include "core/layout/HitTestRequest.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -188,7 +188,7 @@ void LayoutSVGShape::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPo
         rects.append(rect);
 }
 
-bool LayoutSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // We only draw in the foreground phase, so we only hit-test then.
     if (hitTestAction != HitTestForeground)
@@ -198,8 +198,8 @@ bool LayoutSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
     if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
         return false;
 
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, style()->pointerEvents());
-    if (nodeAtFloatPointInternal(request, localPoint, hitRules)) {
+    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, result.hitTestRequest(), style()->pointerEvents());
+    if (nodeAtFloatPointInternal(result.hitTestRequest(), localPoint, hitRules)) {
         updateHitTestResult(result, roundedLayoutPoint(localPoint));
         return true;
     }

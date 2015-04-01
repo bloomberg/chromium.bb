@@ -967,7 +967,7 @@ void InlineFlowBox::setOverflowFromLogicalRects(const LayoutRect& logicalLayoutO
     setVisualOverflow(visualOverflow, frameBox);
 }
 
-bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     LayoutRect overflowRect(visualOverflowRect(lineTop, lineBottom));
     flipForWritingMode(overflowRect);
@@ -992,14 +992,14 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
             if (newParent != culledParent) {
                 if (!newParent || !newParent->isDescendantOf(culledParent)) {
                     while (culledParent && culledParent != layoutObject() && culledParent != newParent) {
-                        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
+                        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
                             return true;
                         culledParent = culledParent->parent();
                     }
                 }
                 culledParent = newParent;
             }
-            if (curr->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
+            if (curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
                 layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
                 return true;
             }
@@ -1007,7 +1007,7 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     }
     // Check any culled ancestor of the final children tested.
     while (culledParent && culledParent != layoutObject()) {
-        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
+        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
             return true;
         culledParent = culledParent->parent();
     }
@@ -1035,9 +1035,9 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     flipForWritingMode(rect);
     rect.moveBy(accumulatedOffset);
 
-    if (visibleToHitTestRequest(request) && locationInContainer.intersects(rect)) {
+    if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(rect)) {
         layoutObject().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_x or m_y here, we want coords in the containing block's space.
-        if (!result.addNodeToListBasedTestResult(layoutObject().node(), request, locationInContainer, rect))
+        if (!result.addNodeToListBasedTestResult(layoutObject().node(), locationInContainer, rect))
             return true;
     }
 

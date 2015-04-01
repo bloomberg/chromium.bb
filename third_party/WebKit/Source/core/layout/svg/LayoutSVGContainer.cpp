@@ -162,7 +162,7 @@ void LayoutSVGContainer::updateCachedBoundaries()
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
-bool LayoutSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // Give LayoutSVGViewportContainer a chance to apply its viewport clip
     if (!pointIsInsideViewportClip(pointInParent))
@@ -173,7 +173,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(const HitTestRequest& request, HitTest
         return false;
 
     for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
-        if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
+        if (child->nodeAtFloatPoint(result, localPoint, hitTestAction)) {
             updateHitTestResult(result, roundedLayoutPoint(localPoint));
             return true;
         }

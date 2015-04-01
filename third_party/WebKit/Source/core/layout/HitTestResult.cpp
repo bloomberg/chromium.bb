@@ -47,26 +47,30 @@ namespace blink {
 using namespace HTMLNames;
 
 HitTestResult::HitTestResult()
-    : m_isOverWidget(false)
+    : m_hitTestRequest(HitTestRequest::ReadOnly | HitTestRequest::Active)
+    , m_isOverWidget(false)
 {
 }
 
-HitTestResult::HitTestResult(const LayoutPoint& point)
+HitTestResult::HitTestResult(const HitTestRequest& request, const LayoutPoint& point)
     : m_hitTestLocation(point)
+    , m_hitTestRequest(request)
     , m_pointInInnerNodeFrame(point)
     , m_isOverWidget(false)
 {
 }
 
-HitTestResult::HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding)
+HitTestResult::HitTestResult(const HitTestRequest& request, const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding)
     : m_hitTestLocation(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding)
+    , m_hitTestRequest(request)
     , m_pointInInnerNodeFrame(centerPoint)
     , m_isOverWidget(false)
 {
 }
 
-HitTestResult::HitTestResult(const HitTestLocation& other)
+HitTestResult::HitTestResult(const HitTestRequest& otherRequest, const HitTestLocation& other)
     : m_hitTestLocation(other)
+    , m_hitTestRequest(otherRequest)
     , m_pointInInnerNodeFrame(m_hitTestLocation.point())
     , m_isOverWidget(false)
 {
@@ -74,6 +78,7 @@ HitTestResult::HitTestResult(const HitTestLocation& other)
 
 HitTestResult::HitTestResult(const HitTestResult& other)
     : m_hitTestLocation(other.m_hitTestLocation)
+    , m_hitTestRequest(other.m_hitTestRequest)
     , m_innerNode(other.innerNode())
     , m_innerPossiblyPseudoNode(other.m_innerPossiblyPseudoNode)
     , m_innerNonSharedNode(other.innerNonSharedNode())
@@ -94,6 +99,7 @@ HitTestResult::~HitTestResult()
 HitTestResult& HitTestResult::operator=(const HitTestResult& other)
 {
     m_hitTestLocation = other.m_hitTestLocation;
+    m_hitTestRequest = other.m_hitTestRequest;
     m_innerNode = other.innerNode();
     m_innerPossiblyPseudoNode = other.innerPossiblyPseudoNode();
     m_innerNonSharedNode = other.innerNonSharedNode();
@@ -372,13 +378,11 @@ bool HitTestResult::isContentEditable() const
     return m_innerNonSharedNode->hasEditableStyle();
 }
 
-bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const LayoutRect& rect)
+bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& locationInContainer, const LayoutRect& rect)
 {
     // If not a list-based test, this function should be a no-op.
-    if (!request.listBased()) {
-        ASSERT(!isRectBasedTest());
+    if (!hitTestRequest().listBased())
         return false;
-    }
 
     // If node is null, return true so the hit test can continue.
     if (!node)
@@ -386,20 +390,18 @@ bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestReques
 
     mutableListBasedTestResult().add(node);
 
-    if (request.penetratingList())
+    if (hitTestRequest().penetratingList())
         return true;
 
     bool regionFilled = rect.contains(LayoutRect(locationInContainer.boundingBox()));
     return !regionFilled;
 }
 
-bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const FloatRect& rect)
+bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& locationInContainer, const FloatRect& rect)
 {
     // If not a list-based test, this function should be a no-op.
-    if (!request.listBased()) {
-        ASSERT(!isRectBasedTest());
+    if (!hitTestRequest().listBased())
         return false;
-    }
 
     // If node is null, return true so the hit test can continue.
     if (!node)
@@ -407,16 +409,16 @@ bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestReques
 
     mutableListBasedTestResult().add(node);
 
-    if (request.penetratingList())
+    if (hitTestRequest().penetratingList())
         return true;
 
     bool regionFilled = rect.contains(locationInContainer.boundingBox());
     return !regionFilled;
 }
 
-void HitTestResult::append(const HitTestResult& other, const HitTestRequest& request)
+void HitTestResult::append(const HitTestResult& other)
 {
-    ASSERT(request.listBased());
+    ASSERT(hitTestRequest().listBased());
 
     if (!m_scrollbar && other.scrollbar()) {
         setScrollbar(other.scrollbar());

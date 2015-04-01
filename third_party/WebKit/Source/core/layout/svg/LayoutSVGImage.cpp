@@ -27,6 +27,7 @@
 
 #include "core/layout/svg/LayoutSVGImage.h"
 
+#include "core/layout/HitTestResult.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutImageResource.h"
@@ -153,13 +154,13 @@ void LayoutSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&)
     SVGImagePainter(*this).paint(paintInfo);
 }
 
-bool LayoutSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
+bool LayoutSVGImage::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // We only draw in the forground phase, so we only hit-test then.
     if (hitTestAction != HitTestForeground)
         return false;
 
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_IMAGE_HITTESTING, request, style()->pointerEvents());
+    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_IMAGE_HITTESTING, result.hitTestRequest(), style()->pointerEvents());
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
         FloatPoint localPoint;

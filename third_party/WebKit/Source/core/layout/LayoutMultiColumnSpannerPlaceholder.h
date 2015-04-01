@@ -35,7 +35,7 @@ protected:
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override;
     virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset) override;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
     LayoutMultiColumnSpannerPlaceholder(LayoutBox*);

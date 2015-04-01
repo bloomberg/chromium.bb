@@ -2583,25 +2583,25 @@ CompositingReasons LayoutObject::additionalCompositingReasons() const
     return CompositingReasonNone;
 }
 
-bool LayoutObject::hitTest(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter hitTestFilter)
+bool LayoutObject::hitTest(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter hitTestFilter)
 {
     bool inside = false;
     if (hitTestFilter != HitTestSelf) {
         // First test the foreground layer (lines and inlines).
-        inside = nodeAtPoint(request, result, locationInContainer, accumulatedOffset, HitTestForeground);
+        inside = nodeAtPoint(result, locationInContainer, accumulatedOffset, HitTestForeground);
 
         // Test floats next.
         if (!inside)
-            inside = nodeAtPoint(request, result, locationInContainer, accumulatedOffset, HitTestFloat);
+            inside = nodeAtPoint(result, locationInContainer, accumulatedOffset, HitTestFloat);
 
         // Finally test to see if the mouse is in the background (within a child block's background).
         if (!inside)
-            inside = nodeAtPoint(request, result, locationInContainer, accumulatedOffset, HitTestChildBlockBackgrounds);
+            inside = nodeAtPoint(result, locationInContainer, accumulatedOffset, HitTestChildBlockBackgrounds);
     }
 
     // See if the mouse is inside us but not any of our descendants
     if (hitTestFilter != HitTestDescendants && !inside)
-        inside = nodeAtPoint(request, result, locationInContainer, accumulatedOffset, HitTestBlockBackground);
+        inside = nodeAtPoint(result, locationInContainer, accumulatedOffset, HitTestBlockBackground);
 
     return inside;
 }
@@ -2628,7 +2628,7 @@ void LayoutObject::updateHitTestResult(HitTestResult& result, const LayoutPoint&
     }
 }
 
-bool LayoutObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& /*locationInContainer*/, const LayoutPoint& /*accumulatedOffset*/, HitTestAction)
+bool LayoutObject::nodeAtPoint(HitTestResult&, const HitTestLocation& /*locationInContainer*/, const LayoutPoint& /*accumulatedOffset*/, HitTestAction)
 {
     return false;
 }
@@ -3098,7 +3098,7 @@ const AffineTransform& LayoutObject::localToParentTransform() const
     return identity;
 }
 
-bool LayoutObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint&, HitTestAction)
+bool LayoutObject::nodeAtFloatPoint(HitTestResult&, const FloatPoint&, HitTestAction)
 {
     ASSERT_NOT_REACHED();
     return false;

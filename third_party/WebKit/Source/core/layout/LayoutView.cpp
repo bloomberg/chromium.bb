@@ -76,9 +76,9 @@ LayoutView::~LayoutView()
 {
 }
 
-bool LayoutView::hitTest(const HitTestRequest& request, HitTestResult& result)
+bool LayoutView::hitTest(HitTestResult& result)
 {
-    return hitTest(request, result.hitTestLocation(), result);
+    return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
 }
 
 bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)

@@ -269,8 +269,8 @@ HitTestResult hitTestInDocument(const Document* document, int x, int y)
         return HitTestResult();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-    HitTestResult result(hitPoint);
-    document->layoutView()->hitTest(request, result);
+    HitTestResult result(request, hitPoint);
+    document->layoutView()->hitTest(result);
     return result;
 }
 
@@ -299,8 +299,8 @@ Vector<Element*> TreeScope::elementsFromPoint(int x, int y) const
         return elements;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
-    HitTestResult result(hitPoint);
-    document.layoutView()->hitTest(request, result);
+    HitTestResult result(request, hitPoint);
+    document.layoutView()->hitTest(result);
 
     Node* lastNode = nullptr;
     for (const auto rectBasedNode : result.listBasedTestResult()) {

@@ -785,10 +785,10 @@ const char* LayoutInline::name() const
     return "LayoutInline";
 }
 
-bool LayoutInline::nodeAtPoint(const HitTestRequest& request, HitTestResult& result,
+bool LayoutInline::nodeAtPoint(HitTestResult& result,
     const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    return m_lineBoxes.hitTest(this, request, result, locationInContainer, accumulatedOffset, hitTestAction);
+    return m_lineBoxes.hitTest(this, result, locationInContainer, accumulatedOffset, hitTestAction);
 }
 
 namespace {
@@ -810,10 +810,10 @@ private:
 
 } // unnamed namespace
 
-bool LayoutInline::hitTestCulledInline(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
+bool LayoutInline::hitTestCulledInline(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
 {
     ASSERT(result.isRectBasedTest() && !alwaysCreateLineBoxes());
-    if (!visibleToHitTestRequest(request))
+    if (!visibleToHitTestRequest(result.hitTestRequest()))
         return false;
 
     HitTestLocation tmpLocation(locationInContainer, -toLayoutSize(accumulatedOffset));
@@ -826,7 +826,7 @@ bool LayoutInline::hitTestCulledInline(const HitTestRequest& request, HitTestRes
         updateHitTestResult(result, tmpLocation.point());
         // We can not use addNodeToListBasedTestResult to determine if we fully enclose the hit-test area
         // because it can only handle rectangular targets.
-        result.addNodeToListBasedTestResult(node(), request, locationInContainer);
+        result.addNodeToListBasedTestResult(node(), locationInContainer);
         return regionResult.contains(tmpLocation.boundingBox());
     }
     return false;

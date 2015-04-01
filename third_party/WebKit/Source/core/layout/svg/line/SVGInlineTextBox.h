@@ -64,7 +64,7 @@ private:
     virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool) override final;
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) override final;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
     FloatWillBeLayoutUnit m_logicalHeight;
     bool m_startsNewTextChunk : 1;

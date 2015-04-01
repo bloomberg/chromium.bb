@@ -392,7 +392,7 @@ void LayoutSVGRoot::updateCachedBoundaries()
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
-bool LayoutSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutSVGRoot::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint pointInParent = locationInContainer.point() - toLayoutSize(accumulatedOffset);
     LayoutPoint pointInBorderBox = pointInParent - toLayoutSize(location());
@@ -407,9 +407,9 @@ bool LayoutSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
 
             for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
                 // FIXME: nodeAtFloatPoint() doesn't handle rect-based hit tests yet.
-                if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
+                if (child->nodeAtFloatPoint(result, localPoint, hitTestAction)) {
                     updateHitTestResult(result, pointInBorderBox);
-                    if (!result.addNodeToListBasedTestResult(child->node(), request, locationInContainer))
+                    if (!result.addNodeToListBasedTestResult(child->node(), locationInContainer))
                         return true;
                 }
             }
@@ -417,7 +417,7 @@ bool LayoutSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     }
 
     // If we didn't early exit above, we've just hit the container <svg> element. Unlike SVG 1.1, 2nd Edition allows container elements to be hit.
-    if ((hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground) && visibleToHitTestRequest(request)) {
+    if ((hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground) && visibleToHitTestRequest(result.hitTestRequest())) {
         // Only return true here, if the last hit testing phase 'BlockBackground' (or 'ChildBlockBackground' - depending on context) is executed.
         // If we'd return true in the 'Foreground' phase, hit testing would stop immediately. For SVG only trees this doesn't matter.
         // Though when we have a <foreignObject> subtree we need to be able to detect hits on the background of a <div> element.
@@ -425,7 +425,7 @@ bool LayoutSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
         LayoutRect boundsRect(accumulatedOffset + location(), size());
         if (locationInContainer.intersects(boundsRect)) {
             updateHitTestResult(result, pointInBorderBox);
-            if (!result.addNodeToListBasedTestResult(node(), request, locationInContainer, boundsRect))
+            if (!result.addNodeToListBasedTestResult(node(), locationInContainer, boundsRect))
                 return true;
         }
     }

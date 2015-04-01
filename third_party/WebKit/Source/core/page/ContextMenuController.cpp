@@ -158,10 +158,11 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
 
 PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* frame, const LayoutPoint& location)
 {
-    HitTestResult result(location);
+    HitTestRequest::HitTestRequestType type = HitTestRequest::ReadOnly | HitTestRequest::Active;
+    HitTestResult result(type, location);
 
     if (frame)
-        result = frame->eventHandler().hitTestResultAtPoint(location, HitTestRequest::ReadOnly | HitTestRequest::Active);
+        result = frame->eventHandler().hitTestResultAtPoint(location, type);
 
     if (!result.innerNonSharedNode())
         return nullptr;

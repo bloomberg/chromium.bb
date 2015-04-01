@@ -235,7 +235,7 @@ public:
 
 protected:
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }

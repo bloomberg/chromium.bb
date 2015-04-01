@@ -658,8 +658,8 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
     dummyEvent.x = pointInRootFrame.x;
     dummyEvent.y = pointInRootFrame.y;
     IntPoint transformedPoint = PlatformMouseEventBuilder(m_webLocalFrameImpl->frameView(), dummyEvent).position();
-    HitTestResult result(m_webLocalFrameImpl->frameView()->rootFrameToContents(transformedPoint));
-    m_webLocalFrameImpl->frame()->contentRenderer()->hitTest(request, result);
+    HitTestResult result(request, m_webLocalFrameImpl->frameView()->rootFrameToContents(transformedPoint));
+    m_webLocalFrameImpl->frame()->contentRenderer()->hitTest(result);
     Node* node = result.innerNode();
     if (!node && m_webLocalFrameImpl->frame()->document())
         node = m_webLocalFrameImpl->frame()->document()->documentElement();

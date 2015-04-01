@@ -135,10 +135,10 @@ bool LayoutPart::needsPreferredWidthsRecalculation() const
     return embeddedContentBox();
 }
 
-bool LayoutPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutPart::nodeAtPointOverWidget(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     bool hadResult = result.innerNode();
-    bool inside = LayoutReplaced::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
+    bool inside = LayoutReplaced::nodeAtPoint(result, locationInContainer, accumulatedOffset, action);
 
     // Check to see if we are really over the widget itself (and not just in the border/padding area).
     if ((inside || result.isRectBasedTest()) && !hadResult && result.innerNode() == node())
@@ -146,25 +146,25 @@ bool LayoutPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestRes
     return inside;
 }
 
-bool LayoutPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
-    if (!widget() || !widget()->isFrameView() || !request.allowsChildFrameContent())
-        return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
+    if (!widget() || !widget()->isFrameView() || !result.hitTestRequest().allowsChildFrameContent())
+        return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset, action);
 
     FrameView* childFrameView = toFrameView(widget());
     LayoutView* childRoot = childFrameView->layoutView();
 
-    if (visibleToHitTestRequest(request) && childRoot) {
+    if (visibleToHitTestRequest(result.hitTestRequest()) && childRoot) {
         LayoutPoint adjustedLocation = accumulatedOffset + location();
         LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(), borderTop() + paddingTop()) - LayoutSize(childFrameView->scrollOffset());
         HitTestLocation newHitTestLocation(locationInContainer, -adjustedLocation - contentOffset);
-        HitTestRequest newHitTestRequest(request.type() | HitTestRequest::ChildFrameHitTest);
-        HitTestResult childFrameResult(newHitTestLocation);
+        HitTestRequest newHitTestRequest(result.hitTestRequest().type() | HitTestRequest::ChildFrameHitTest);
+        HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
 
         bool isInsideChildFrame = childRoot->hitTest(newHitTestRequest, newHitTestLocation, childFrameResult);
 
-        if (request.listBased())
-            result.append(childFrameResult, request);
+        if (result.hitTestRequest().listBased())
+            result.append(childFrameResult);
         else if (isInsideChildFrame)
             result = childFrameResult;
 
@@ -172,7 +172,7 @@ bool LayoutPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
             return true;
     }
 
-    return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
+    return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset, action);
 }
 
 CompositingReasons LayoutPart::additionalCompositingReasons() const

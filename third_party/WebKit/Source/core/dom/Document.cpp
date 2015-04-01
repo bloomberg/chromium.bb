@@ -3101,10 +3101,10 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
     // happening, which could show a flash of white.
     // See also the similar code in EventHandler::hitTestResultAtPoint.
     if (!layoutView() || !view() || !view()->didFirstLayout())
-        return MouseEventWithHitTestResults(event, HitTestResult(LayoutPoint()));
+        return MouseEventWithHitTestResults(event, HitTestResult(request, LayoutPoint()));
 
-    HitTestResult result(documentPoint);
-    layoutView()->hitTest(request, result);
+    HitTestResult result(request, documentPoint);
+    layoutView()->hitTest(result);
 
     if (!request.readOnly())
         updateHoverActiveState(request, result.innerElement());

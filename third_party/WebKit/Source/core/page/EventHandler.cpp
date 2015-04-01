@@ -715,8 +715,8 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 
     if (m_selectionInitiationState != ExtendedSelection) {
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-        HitTestResult result(m_mouseDownPos);
-        m_frame->document()->layoutView()->hitTest(request, result);
+        HitTestResult result(request, m_mouseDownPos);
+        m_frame->document()->layoutView()->hitTest(result);
 
         updateSelectionForMouseDrag(result);
     }
@@ -734,8 +734,8 @@ void EventHandler::updateSelectionForMouseDrag()
         return;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::Move);
-    HitTestResult result(view->rootFrameToContents(m_lastKnownMousePosition));
-    renderer->hitTest(request, result);
+    HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
+    renderer->hitTest(result);
     updateSelectionForMouseDrag(result);
 }
 
@@ -899,7 +899,9 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
         }
     }
 
-    HitTestResult result(point, padding.height(), padding.width(), padding.height(), padding.width());
+    // hitTestResultAtPoint is specifically used to hitTest into all frames, thus it always allows child frame content.
+    HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
+    HitTestResult result(request, point, padding.height(), padding.width(), padding.height(), padding.width());
 
     // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
@@ -910,9 +912,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     if (!m_frame->contentRenderer() || !m_frame->view() || !m_frame->view()->didFirstLayout())
         return result;
 
-    // hitTestResultAtPoint is specifically used to hitTest into all frames, thus it always allows child frame content.
-    HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
-    m_frame->contentRenderer()->hitTest(request, result);
+    m_frame->contentRenderer()->hitTest(result);
     if (!request.readOnly())
         m_frame->document()->updateHoverActiveState(request, result.innerElement());
 
@@ -1060,8 +1060,8 @@ void EventHandler::updateCursor()
     m_frame->document()->updateLayout();
 
     HitTestRequest request(HitTestRequest::ReadOnly);
-    HitTestResult result(view->rootFrameToContents(m_lastKnownMousePosition));
-    layoutView->hitTest(request, result);
+    HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
+    layoutView->hitTest(result);
 
     OptionalCursor optionalCursor = selectCursor(result);
     if (optionalCursor.isCursorChange()) {
@@ -1397,7 +1397,7 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
-    HitTestResult hoveredNode = HitTestResult(LayoutPoint());
+    HitTestResult hoveredNode = HitTestResult();
     bool result = handleMouseMoveOrLeaveEvent(event, &hoveredNode);
 
     Page* page = m_frame->page();
@@ -1473,7 +1473,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     if (m_touchPressed)
         hitType |= HitTestRequest::Active | HitTestRequest::ReadOnly;
     HitTestRequest request(hitType);
-    MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(mouseEvent, HitTestResult(LayoutPoint()));
+    MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(mouseEvent, HitTestResult(request, LayoutPoint()));
 
     // We don't want to do a hit-test in forceLeave scenarios because there might actually be some other frame above this one at the specified co-ordinate.
     // So we must force the hit-test to fail, while still clearing hover/active state.
@@ -2119,8 +2119,8 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     LayoutPoint vPoint = view->rootFrameToContents(event.position());
 
     HitTestRequest request(HitTestRequest::ReadOnly);
-    HitTestResult result(vPoint);
-    doc->layoutView()->hitTest(request, result);
+    HitTestResult result(request, vPoint);
+    doc->layoutView()->hitTest(result);
 
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
@@ -2327,8 +2327,8 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
         FrameView* view = m_frame->view();
         LayoutPoint viewPoint = view->rootFrameToContents(gestureEvent.position());
         HitTestRequest request(HitTestRequest::ReadOnly);
-        HitTestResult result(viewPoint);
-        document->layoutView()->hitTest(request, result);
+        HitTestResult result(request, viewPoint);
+        document->layoutView()->hitTest(result);
 
         eventTarget = result.innerNode();
 
@@ -3024,9 +3024,10 @@ bool EventHandler::sendContextMenuEventForKey()
         targetNode = doc;
 
     // Use the focused node as the target for hover and active.
-    HitTestResult result(locationInRootFrame);
+    HitTestRequest request(HitTestRequest::Active);
+    HitTestResult result(request, locationInRootFrame);
     result.setInnerNode(targetNode);
-    doc->updateHoverActiveState(HitTestRequest::Active, result.innerElement());
+    doc->updateHoverActiveState(request, result.innerElement());
 
     // The contextmenu event is a mouse event even when invoked using the keyboard.
     // This is required for web compatibility.
@@ -3172,8 +3173,8 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
     if (LayoutView* renderer = m_frame->contentRenderer()) {
         if (FrameView* view = m_frame->view()) {
             HitTestRequest request(HitTestRequest::Move);
-            HitTestResult result(view->rootFrameToContents(m_lastKnownMousePosition));
-            renderer->hitTest(request, result);
+            HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
+            renderer->hitTest(result);
             m_frame->document()->updateHoverActiveState(request, result.innerElement());
         }
     }
@@ -3431,8 +3432,8 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, DragIni
 
     if (m_mouseDownMayStartDrag) {
         HitTestRequest request(HitTestRequest::ReadOnly);
-        HitTestResult result(m_mouseDownPos);
-        m_frame->contentRenderer()->hitTest(request, result);
+        HitTestResult result(request, m_mouseDownPos);
+        m_frame->contentRenderer()->hitTest(result);
         Node* node = result.innerNode();
         if (node) {
             DragController::SelectionDragPolicy selectionDragPolicy = event.event().timestamp() - m_mouseDownTimestamp < TextDragDelay
@@ -3713,7 +3714,7 @@ static const AtomicString& eventNameForTouchPointState(PlatformTouchPoint::State
 
 HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType)
 {
-    HitTestResult result(point);
+    HitTestResult result(HitTestRequest(hitType), point);
 
     if (!frame || !frame->contentRenderer())
         return result;
@@ -3722,7 +3723,7 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
         if (!rect.contains(roundedIntPoint(point)))
             return result;
     }
-    frame->contentRenderer()->hitTest(HitTestRequest(hitType), result);
+    frame->contentRenderer()->hitTest(result);
     return result;
 }
 

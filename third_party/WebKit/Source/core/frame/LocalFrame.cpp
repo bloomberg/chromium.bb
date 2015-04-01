@@ -668,10 +668,10 @@ Document* LocalFrame::documentAtPoint(const IntPoint& pointInRootFrame)
         return nullptr;
 
     IntPoint pt = view()->rootFrameToContents(pointInRootFrame);
-    HitTestResult result = HitTestResult(pt);
 
-    if (contentRenderer())
-        result = eventHandler().hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active);
+    if (!contentRenderer())
+        return nullptr;
+    HitTestResult result = eventHandler().hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active);
     return result.innerNode() ? &result.innerNode()->document() : nullptr;
 }
 

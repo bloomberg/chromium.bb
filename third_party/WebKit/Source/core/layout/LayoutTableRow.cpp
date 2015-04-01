@@ -194,7 +194,7 @@ void LayoutTableRow::layout()
 }
 
 // Hit Testing
-bool LayoutTableRow::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutTableRow::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     // Table rows cannot ever be hit tested.  Effectively they do not exist.
     // Just forward to our children always.
@@ -205,7 +205,7 @@ bool LayoutTableRow::nodeAtPoint(const HitTestRequest& request, HitTestResult& r
         // then we can remove this check.
         if (!cell->hasSelfPaintingLayer()) {
             LayoutPoint cellPoint = flipForWritingModeForChild(cell, accumulatedOffset);
-            if (cell->nodeAtPoint(request, result, locationInContainer, cellPoint, action)) {
+            if (cell->nodeAtPoint(result, locationInContainer, cellPoint, action)) {
                 updateHitTestResult(result, locationInContainer.point() - toLayoutSize(cellPoint));
                 return true;
             }

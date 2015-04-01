@@ -68,7 +68,7 @@ protected:
 
     virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }
 
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+    virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
     // Allow LayoutSVGTransformableContainer to hook in at the right time in layout().
     virtual bool calculateLocalTransform() { return false; }
