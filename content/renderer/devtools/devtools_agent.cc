@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/devtools/devtools_client.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
@@ -70,6 +69,7 @@ DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
       is_attached_(false),
       is_devtools_client_(false),
       paused_in_mouse_move_(false),
+      paused_(false),
       frame_(frame) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
   frame_->GetWebFrame()->setDevToolsAgentClient(this);
@@ -95,11 +95,14 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (message.type() == FrameMsg_Navigate::ID ||
-      message.type() == ViewMsg_Close::ID)
+  if (message.type() == FrameMsg_Navigate::ID)
     ContinueProgram();  // Don't want to swallow the message.
 
   return handled;
+}
+
+void DevToolsAgent::WidgetWillClose() {
+  ContinueProgram();
 }
 
 void DevToolsAgent::sendProtocolMessage(
@@ -116,11 +119,13 @@ blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
 }
 
 void DevToolsAgent::willEnterDebugLoop() {
+  paused_ = true;
   if (RenderWidget* widget = frame_->GetRenderWidget())
     paused_in_mouse_move_ = widget->SendAckForMouseMoveFromDebugger();
 }
 
 void DevToolsAgent::didExitDebugLoop() {
+  paused_ = false;
   if (!paused_in_mouse_move_)
     return;
   if (RenderWidget* widget = frame_->GetRenderWidget()) {

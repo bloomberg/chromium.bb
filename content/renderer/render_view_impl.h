@@ -511,6 +511,7 @@ class CONTENT_EXPORT RenderViewImpl
 
  private:
   // For unit tests.
+  friend class DevToolsAgentTest;
   friend class PepperDeviceTest;
   friend class RenderViewImplTest;
   friend class RenderViewTest;

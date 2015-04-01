@@ -31,6 +31,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
+#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/navigation_state_impl.h"
@@ -286,6 +287,36 @@ class RenderViewImplTest : public RenderViewTest {
 
  private:
   scoped_ptr<MockKeyboard> mock_keyboard_;
+};
+
+class DevToolsAgentTest : public RenderViewImplTest {
+ public:
+  void Attach() {
+    std::string host_id = "host_id";
+    agent()->OnAttach(host_id);
+  }
+
+  void Detach() {
+    agent()->OnDetach();
+  }
+
+  bool IsPaused() {
+    return agent()->paused_;
+  }
+
+  void DispatchDevToolsMessage(const std::string& message) {
+    agent()->OnDispatchOnInspectorBackend(message);
+  }
+
+  void CloseWhilePaused() {
+    EXPECT_TRUE(IsPaused());
+    view()->NotifyOnClose();
+  }
+
+ private:
+  DevToolsAgent* agent() {
+    return frame()->devtools_agent();
+  }
 };
 
 // Test for https://crbug.com/461191.
@@ -2338,6 +2369,22 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   EXPECT_EQ(1, view()->historyBackListCount());
   EXPECT_EQ(2, view()->historyBackListCount() +
       view()->historyForwardListCount() + 1);
+}
+
+TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
+  Attach();
+  EXPECT_FALSE(IsPaused());
+  DispatchDevToolsMessage("{\"id\":1,\"method\":\"Debugger.enable\"}");
+
+  // Executing javascript will pause the thread and create nested message loop.
+  // Posting task simulates message coming from browser.
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &DevToolsAgentTest::CloseWhilePaused, base::Unretained(this)));
+  ExecuteJavaScript("debugger;");
+
+  // CloseWhilePaused should resume execution and continue here.
+  EXPECT_FALSE(IsPaused());
+  Detach();
 }
 
 }  // namespace content

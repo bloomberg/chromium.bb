@@ -45,6 +45,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WasHidden() {}
   virtual void WasShown() {}
 
+  // Called when associated widget is about to close.
+  virtual void WidgetWillClose() {}
+
   // These match the Blink API notifications
   virtual void DidCommitProvisionalLoad(bool is_new_navigation,
                                         bool is_same_page_navigation) {}

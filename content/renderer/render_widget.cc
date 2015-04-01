@@ -854,6 +854,7 @@ void RenderWidget::SetWindowRectSynchronously(
 void RenderWidget::OnClose() {
   if (closing_)
     return;
+  NotifyOnClose();
   closing_ = true;
 
   // Browser correspondence is no longer needed at this point.
@@ -1535,6 +1536,10 @@ void RenderWidget::didBlur() {
 void RenderWidget::DoDeferredClose() {
   WillCloseLayerTreeView();
   Send(new ViewHostMsg_Close(routing_id_));
+}
+
+void RenderWidget::NotifyOnClose() {
+  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_, WidgetWillClose());
 }
 
 void RenderWidget::closeWidgetSoon() {
