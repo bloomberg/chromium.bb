@@ -60,9 +60,8 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
       size_t width, size_t height);
   scoped_ptr<MediaLogEvent> CreateBufferedExtentsChangedEvent(
       int64 start, int64 current, int64 end);
-
-  // Report a log message at the specified log level.
-  void AddLogEvent(MediaLogLevel level, const std::string& message);
+  scoped_ptr<MediaLogEvent> CreateLogEvent(MediaLogLevel level,
+                                           const std::string& message);
 
   // Report a property change without an accompanying event.
   void SetStringProperty(const std::string& key, const std::string& value);
