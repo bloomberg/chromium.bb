@@ -33,6 +33,8 @@ public:
     // ExecutionContext:
     bool isCompositorWorkerGlobalScope() const override { return true; }
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     CompositorWorkerThread* thread() const;
