@@ -46,7 +46,7 @@ Document* HTMLImportTreeRoot::document() const
     return m_document;
 }
 
-bool HTMLImportTreeRoot::isDone() const
+bool HTMLImportTreeRoot::hasFinishedLoading() const
 {
     return !m_document->parsing() && m_document->styleEngine().haveStylesheetsLoaded();
 }

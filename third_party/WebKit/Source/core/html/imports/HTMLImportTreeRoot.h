@@ -23,7 +23,7 @@ public:
 
     // HTMLImport
     virtual Document* document() const override;
-    virtual bool isDone() const override;
+    virtual bool hasFinishedLoading() const override;
     virtual void stateWillChange() override;
     virtual void stateDidChange() override;
 

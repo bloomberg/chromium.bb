@@ -130,7 +130,7 @@ bool LinkImport::hasLoaded() const
 {
     // Should never be called after importChildWasDestroyed was called.
     ASSERT(m_owner);
-    return m_child && m_child->isDone() && !m_child->loader()->hasError();
+    return m_child && m_child->hasFinishedLoading() && !m_child->loader()->hasError();
 }
 
 void LinkImport::ownerInserted()

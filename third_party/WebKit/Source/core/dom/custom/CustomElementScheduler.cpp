@@ -124,7 +124,7 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
 {
-    ASSERT(!import->isDone());
+    ASSERT(!import->hasFinishedLoading());
     ASSERT(import->parent());
 
     // Ownership of the new step is transferred to the parent

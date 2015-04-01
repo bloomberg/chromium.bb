@@ -67,7 +67,7 @@ inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
 
 inline bool HTMLImportStateResolver::isActive() const
 {
-    return !m_import->isDone();
+    return !m_import->hasFinishedLoading();
 }
 
 HTMLImportState HTMLImportStateResolver::resolve() const

@@ -141,7 +141,7 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
 {
     ASSERT(!m_customElementMicrotaskStep);
 
-    if (!isDone() && !formsCycle()) {
+    if (!hasFinishedLoading() && !formsCycle()) {
 #if ENABLE(OILPAN)
         m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
 #else
@@ -150,7 +150,7 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
     }
 }
 
-bool HTMLImportChild::isDone() const
+bool HTMLImportChild::hasFinishedLoading() const
 {
     ASSERT(m_loader);
 
