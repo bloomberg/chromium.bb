@@ -48,7 +48,7 @@ class CONTENT_EXPORT PushMessagingService {
                                     const std::string& sender_id,
                                     int renderer_id,
                                     int render_frame_id,
-                                    bool user_visible_only,
+                                    bool user_visible,
                                     const RegisterCallback& callback) = 0;
 
   // Register the given |sender_id| with the push messaging service. The frame
@@ -57,6 +57,7 @@ class CONTENT_EXPORT PushMessagingService {
   virtual void RegisterFromWorker(const GURL& requesting_origin,
                                   int64 service_worker_registration_id,
                                   const std::string& sender_id,
+                                  bool user_visible,
                                   const RegisterCallback& callback) = 0;
 
   // Unregister the given |sender_id| from the push messaging service. The
@@ -69,10 +70,12 @@ class CONTENT_EXPORT PushMessagingService {
 
   // Checks the permission status for the requesting origin. Permission is only
   // ever granted when the requesting origin matches the top level embedding
-  // origin.
+  // origin. The |user_visible| boolean indicates whether the permission status
+  // only has to cover push messages resulting in visible effects to the user.
   virtual blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
-      const GURL& embedding_origin) = 0;
+      const GURL& embedding_origin,
+      bool user_visible) = 0;
 
  protected:
   // Provide a storage mechanism to read/write an opaque

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
 #define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/id_map.h"
@@ -14,6 +15,10 @@
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 class GURL;
+
+namespace blink {
+struct WebPushSubscriptionOptions;
+}
 
 namespace IPC {
 class Message;
@@ -34,24 +39,30 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebPushClient implementation.
+  virtual void subscribe(
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      const blink::WebPushSubscriptionOptions& options,
+      blink::WebPushSubscriptionCallbacks* callbacks);
+  // TODO(peter): Remove this method when Blink switched over to the above.
   virtual void registerPushMessaging(
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebPushRegistrationCallbacks* callbacks);  // override
+      blink::WebPushSubscriptionCallbacks* callbacks);  // override
 
   void DoRegister(
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebPushRegistrationCallbacks* callbacks,
+      const blink::WebPushSubscriptionOptions& options,
+      blink::WebPushSubscriptionCallbacks* callbacks,
       const Manifest& manifest);
 
-  void OnRegisterFromDocumentSuccess(int32 request_id,
+  void OnRegisterFromDocumentSuccess(int32_t request_id,
                                      const GURL& endpoint,
                                      const std::string& registration_id);
 
-  void OnRegisterFromDocumentError(int32 request_id,
+  void OnRegisterFromDocumentError(int32_t request_id,
                                    PushRegistrationStatus status);
 
-  IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
-      registration_callbacks_;
+  IDMap<blink::WebPushSubscriptionCallbacks, IDMapOwnPointer>
+      subscription_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingDispatcher);
 };

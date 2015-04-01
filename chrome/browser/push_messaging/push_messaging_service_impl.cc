@@ -455,7 +455,7 @@ void PushMessagingServiceImpl::RegisterFromDocument(
     const std::string& sender_id,
     int renderer_id,
     int render_frame_id,
-    bool user_visible_only,
+    bool user_visible,
     const content::PushMessagingService::RegisterCallback& callback) {
   PushMessagingApplicationId application_id =
       PushMessagingApplicationId::Generate(requesting_origin,
@@ -490,15 +490,15 @@ void PushMessagingServiceImpl::RegisterFromDocument(
   PushMessagingPermissionContext* permission_context =
       PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
-  if (permission_context == NULL || !user_visible_only) {
+  if (permission_context == NULL || !user_visible) {
     RegisterEnd(callback,
                 std::string(),
                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 
-  // TODO(miguelg): Consider the value of |user_visible_only| when making
-  // the permission request.
+  // TODO(miguelg): Consider the value of |user_visible| when making the
+  // permission request.
   // TODO(mlamouri): Move requesting Push permission over to using Mojo, and
   // re-introduce the ability of |user_gesture| when bubbles require this.
   // https://crbug.com/423770.
@@ -513,6 +513,7 @@ void PushMessagingServiceImpl::RegisterFromWorker(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
+    bool user_visible,
     const content::PushMessagingService::RegisterCallback& register_callback) {
   PushMessagingApplicationId application_id =
       PushMessagingApplicationId::Generate(requesting_origin,
@@ -526,10 +527,14 @@ void PushMessagingServiceImpl::RegisterFromWorker(
     return;
   }
 
+  // TODO(peter): Consider |user_visible| when getting the permission status
+  // for registering from a worker.
+
   GURL embedding_origin = requesting_origin;
   blink::WebPushPermissionStatus permission_status =
       PushMessagingServiceImpl::GetPermissionStatus(requesting_origin,
-                                                    embedding_origin);
+                                                    embedding_origin,
+                                                    user_visible);
   if (permission_status != blink::WebPushPermissionStatusGranted) {
     RegisterEnd(register_callback, std::string(),
                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
@@ -547,7 +552,10 @@ void PushMessagingServiceImpl::RegisterFromWorker(
 
 blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
     const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+    const GURL& embedding_origin,
+    bool user_visible) {
+  // TODO(peter): Consider |user_visible| when checking Push permission.
+
   PushMessagingPermissionContext* permission_context =
       PushMessagingPermissionContextFactory::GetForProfile(profile_);
   return ToPushPermission(permission_context->GetPermissionStatus(

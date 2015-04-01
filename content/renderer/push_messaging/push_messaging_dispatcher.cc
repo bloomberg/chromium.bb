@@ -13,7 +13,8 @@
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushRegistration.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
+#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
 #include "url/gurl.h"
 
 using blink::WebString;
@@ -38,24 +39,36 @@ bool PushMessagingDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PushMessagingDispatcher::registerPushMessaging(
+void PushMessagingDispatcher::subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushRegistrationCallbacks* callbacks) {
+    const blink::WebPushSubscriptionOptions& options,
+    blink::WebPushSubscriptionCallbacks* callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
   RenderFrameImpl::FromRoutingID(routing_id())
       ->manifest_manager()
       ->GetManifest(base::Bind(&PushMessagingDispatcher::DoRegister,
                                base::Unretained(this),
-                               service_worker_registration, callbacks));
+                               service_worker_registration,
+                               options,
+                               callbacks));
+}
+
+void PushMessagingDispatcher::registerPushMessaging(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebPushSubscriptionCallbacks* callbacks) {
+  subscribe(service_worker_registration,
+            blink::WebPushSubscriptionOptions(),
+            callbacks);
 }
 
 void PushMessagingDispatcher::DoRegister(
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushRegistrationCallbacks* callbacks,
+    const blink::WebPushSubscriptionOptions& options,
+    blink::WebPushSubscriptionCallbacks* callbacks,
     const Manifest& manifest) {
-  int request_id = registration_callbacks_.Add(callbacks);
-  int64 service_worker_registration_id =
+  int request_id = subscription_callbacks_.Add(callbacks);
+  int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)->registration_id();
 
@@ -69,42 +82,49 @@ void PushMessagingDispatcher::DoRegister(
     return;
   }
 
+  // TODO(peter): Display a deprecation warning if gcm_user_visible_only is
+  // set to true. See https://crbug.com/471534
+  const bool user_visible = manifest.gcm_user_visible_only ||
+                            options.userVisible;
+
   Send(new PushMessagingHostMsg_RegisterFromDocument(
       routing_id(), request_id,
       manifest.gcm_sender_id.is_null()
           ? std::string()
           : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
-      manifest.gcm_user_visible_only, service_worker_registration_id));
+      user_visible, service_worker_registration_id));
 }
 
 void PushMessagingDispatcher::OnRegisterFromDocumentSuccess(
-    int32 request_id,
+    int32_t request_id,
     const GURL& endpoint,
     const std::string& registration_id) {
-  blink::WebPushRegistrationCallbacks* callbacks =
-      registration_callbacks_.Lookup(request_id);
+  blink::WebPushSubscriptionCallbacks* callbacks =
+      subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
-  scoped_ptr<blink::WebPushRegistration> registration(
-      new blink::WebPushRegistration(
+  scoped_ptr<blink::WebPushSubscription> subscription(
+      new blink::WebPushSubscription(
           WebString::fromUTF8(endpoint.spec()),
           WebString::fromUTF8(registration_id)));
-  callbacks->onSuccess(registration.release());
-  registration_callbacks_.Remove(request_id);
+  callbacks->onSuccess(subscription.release());
+
+  subscription_callbacks_.Remove(request_id);
 }
 
 void PushMessagingDispatcher::OnRegisterFromDocumentError(
-    int32 request_id,
+    int32_t request_id,
     PushRegistrationStatus status) {
-  blink::WebPushRegistrationCallbacks* callbacks =
-      registration_callbacks_.Lookup(request_id);
+  blink::WebPushSubscriptionCallbacks* callbacks =
+      subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
   scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
       blink::WebPushError::ErrorTypeAbort,
       WebString::fromUTF8(PushRegistrationStatusToString(status))));
   callbacks->onError(error.release());
-  registration_callbacks_.Remove(request_id);
+
+  subscription_callbacks_.Remove(request_id);
 }
 
 }  // namespace content

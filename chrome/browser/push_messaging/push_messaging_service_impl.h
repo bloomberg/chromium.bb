@@ -63,12 +63,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& sender_id,
       int renderer_id,
       int render_frame_id,
-      bool user_visible_only,
+      bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
   void RegisterFromWorker(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       const std::string& sender_id,
+      bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
   void Unregister(
       const GURL& requesting_origin,
@@ -77,7 +78,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::UnregisterCallback&) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
-      const GURL& embedding_origin) override;
+      const GURL& embedding_origin,
+      bool user_visible) override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,

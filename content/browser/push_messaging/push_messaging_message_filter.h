@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MESSAGE_FILTER_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -49,11 +50,12 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnRegisterFromDocument(int render_frame_id,
                               int request_id,
                               const std::string& sender_id,
-                              bool user_visible_only,
-                              int64 service_worker_registration_id);
+                              bool user_visible,
+                              int64_t service_worker_registration_id);
 
   void OnRegisterFromWorker(int request_id,
-                            int64 service_worker_registration_id);
+                            int64_t service_worker_registration_id,
+                            bool user_visible);
 
   void DidPersistSenderId(const RegisterData& data,
                           const std::string& sender_id,
@@ -94,25 +96,25 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   // Unregister methods on IO thread -------------------------------------------
 
-  void OnUnregister(int request_id, int64 service_worker_registration_id);
+  void OnUnregister(int request_id, int64_t service_worker_registration_id);
 
   void UnregisterHavingGottenPushRegistrationId(
       int request_id,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const GURL& requesting_origin,
       const std::string& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 
   void UnregisterHavingGottenSenderId(
       int request_id,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const GURL& requesting_origin,
       const std::string& sender_id,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
   void ClearRegistrationData(int request_id,
-                             int64 service_worker_registration_id,
+                             int64_t service_worker_registration_id,
                              PushUnregistrationStatus unregistration_status);
 
   void DidClearRegistrationData(int request_id,
@@ -125,7 +127,8 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   // GetRegistration methods on IO thread --------------------------------------
 
-  void OnGetRegistration(int request_id, int64 service_worker_registration_id);
+  void OnGetRegistration(int request_id,
+                         int64_t service_worker_registration_id);
 
   void DidGetRegistration(int request_id,
                           const std::string& push_registration_id,
@@ -134,7 +137,8 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // GetPermission methods on IO thread ----------------------------------------
 
   void OnGetPermissionStatus(int request_id,
-                             int64 service_worker_registration_id);
+                             int64_t service_worker_registration_id,
+                             bool user_visible);
 
   // Helper methods on IO thread -----------------------------------------------
 
