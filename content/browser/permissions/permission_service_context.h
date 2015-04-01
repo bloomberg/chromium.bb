@@ -43,7 +43,7 @@ class PermissionServiceContext : public WebContentsObserver {
                            const LoadCommittedDetails& details,
                            const FrameNavigateParams& params) override;
 
-  void CancelPendingRequests(RenderFrameHost*) const;
+  void CancelPendingOperations(RenderFrameHost*) const;
 
   RenderFrameHost* render_frame_host_;
   RenderProcessHost* render_process_host_;

@@ -26,9 +26,10 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
  public:
   ~PermissionServiceImpl() override;
 
-  // Clear pending permissions associated with a given frame and request the
-  // browser to cancel the permission requests.
-  void CancelPendingRequests();
+  // Clear pending operations currently run by the service. This will be called
+  // by PermissionServiceContext when it will need the service to clear its
+  // state for example, if the frame changes.
+  void CancelPendingOperations();
 
  protected:
   friend PermissionServiceContext;
@@ -36,43 +37,51 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
   PermissionServiceImpl(PermissionServiceContext* context);
 
  private:
+  using PermissionStatusCallback = mojo::Callback<void(PermissionStatus)>;
+
   struct PendingRequest {
     PendingRequest(PermissionType permission, const GURL& origin,
-                   const mojo::Callback<void(PermissionStatus)>& callback);
+                   const PermissionStatusCallback& callback);
     ~PendingRequest();
 
     PermissionType permission;
     GURL origin;
-    mojo::Callback<void(PermissionStatus)> callback;
+    PermissionStatusCallback callback;
   };
-  typedef IDMap<PendingRequest, IDMapOwnPointer> RequestsMap;
+  using RequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
+
+  struct PendingSubscription {
+    PendingSubscription(PermissionType permission, const GURL& origin,
+                        const PermissionStatusCallback& callback);
+    ~PendingSubscription();
+
+    PermissionType permission;
+    GURL origin;
+    PermissionStatusCallback callback;
+  };
+  using SubscriptionsMap = IDMap<PendingSubscription, IDMapOwnPointer>;
 
   // PermissionService.
-  void HasPermission(
-      PermissionName permission,
-      const mojo::String& origin,
-      const mojo::Callback<void(PermissionStatus)>& callback) override;
-  void RequestPermission(
-      PermissionName permission,
-      const mojo::String& origin,
-      bool user_gesture,
-      const mojo::Callback<void(PermissionStatus)>& callback) override;
-  void RevokePermission(
-      PermissionName permission,
-      const mojo::String& origin,
-      const mojo::Callback<void(PermissionStatus)>& callback) override;
+  void HasPermission(PermissionName permission,
+                     const mojo::String& origin,
+                     const PermissionStatusCallback& callback) override;
+  void RequestPermission(PermissionName permission,
+                         const mojo::String& origin,
+                         bool user_gesture,
+                         const PermissionStatusCallback& callback) override;
+  void RevokePermission(PermissionName permission,
+                        const mojo::String& origin,
+                        const PermissionStatusCallback& callback) override;
   void GetNextPermissionChange(
       PermissionName permission,
       const mojo::String& origin,
       PermissionStatus last_known_status,
-      const mojo::Callback<void(PermissionStatus)>& callback) override;
+      const PermissionStatusCallback& callback) override;
 
   // mojo::InterfaceImpl.
   void OnConnectionError() override;
 
-  void OnRequestPermissionResponse(
-      int request_id,
-      PermissionStatus status);
+  void OnRequestPermissionResponse(int request_id, PermissionStatus status);
 
   PermissionStatus GetPermissionStatusFromName(PermissionName permission,
                                                const GURL& origin);
@@ -80,12 +89,11 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
                                                const GURL& origin);
   void ResetPermissionStatus(PermissionType type, const GURL& origin);
 
-  void OnPermissionStatusChanged(
-      const mojo::Callback<void(PermissionStatus)>& callback,
-      const int* subscription_id,
-      PermissionStatus status);
+  void OnPermissionStatusChanged(const int* subscription_id,
+                                 PermissionStatus status);
 
   RequestsMap pending_requests_;
+  SubscriptionsMap pending_subscriptions_;
   // context_ owns |this|.
   PermissionServiceContext* context_;
   base::WeakPtrFactory<PermissionServiceImpl> weak_factory_;

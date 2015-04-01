@@ -207,6 +207,8 @@ void PermissionManager::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
+  std::list<base::Closure> callbacks;
+
   for (SubscriptionsMap::iterator iter(&subscriptions_);
        !iter.IsAtEnd(); iter.Advance()) {
     Subscription* subscription = iter.GetCurrentValue();
@@ -230,6 +232,14 @@ void PermissionManager::OnContentSettingChanged(
       continue;
 
     subscription->current_value = new_value;
-    subscription->callback.Run(ContentSettingToPermissionStatus(new_value));
+
+    // Add the callback to |callbacks| which will be run after the loop to
+    // prevent re-entrance issues.
+    callbacks.push_back(
+        base::Bind(subscription->callback,
+                   ContentSettingToPermissionStatus(new_value)));
   }
+
+  for (const auto& callback : callbacks)
+    callback.Run();
 }

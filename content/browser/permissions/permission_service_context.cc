@@ -47,7 +47,7 @@ void PermissionServiceContext::ServiceHadConnectionError(
 
 void PermissionServiceContext::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  CancelPendingRequests(render_frame_host);
+  CancelPendingOperations(render_frame_host);
 }
 
 void PermissionServiceContext::DidNavigateAnyFrame(
@@ -57,16 +57,16 @@ void PermissionServiceContext::DidNavigateAnyFrame(
   if (details.is_in_page)
     return;
 
-  CancelPendingRequests(render_frame_host);
+  CancelPendingOperations(render_frame_host);
 }
 
-void PermissionServiceContext::CancelPendingRequests(
+void PermissionServiceContext::CancelPendingOperations(
     RenderFrameHost* render_frame_host) const {
   if (render_frame_host != render_frame_host_)
     return;
 
   for (auto* service : services_)
-    service->CancelPendingRequests();
+    service->CancelPendingOperations();
 }
 
 BrowserContext* PermissionServiceContext::GetBrowserContext() const {
