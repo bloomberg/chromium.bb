@@ -258,6 +258,7 @@ group("gn_all") {
       "//chrome/test/chromedriver:chromedriver",
       "//chrome/test/chromedriver:chromedriver_tests",
       "//chrome/tools/profile_reset:jtl_compiler",
+      "//cloud_print:cloud_print_unittests",
       "//components:components_perftests",
       "//components/network_hints/browser",
       "//components/webui_generator",

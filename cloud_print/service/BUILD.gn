@@ -1,0 +1,50 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+source_set("cloud_print_service_lib") {
+  sources = [
+    "//cloud_print/common/win/cloud_print_utils.cc",
+    "//cloud_print/common/win/cloud_print_utils.h",
+    "service_constants.cc",
+    "service_constants.h",
+    "service_state.cc",
+    "service_state.h",
+    "service_switches.cc",
+    "service_switches.h",
+    "win/chrome_launcher.cc",
+    "win/chrome_launcher.h",
+    "win/local_security_policy.cc",
+    "win/local_security_policy.h",
+    "win/service_controller.cc",
+    "win/service_controller.h",
+    "win/service_listener.cc",
+    "win/service_listener.h",
+    "win/service_utils.cc",
+    "win/service_utils.h",
+    "win/setup_listener.cc",
+    "win/setup_listener.h",
+  ]
+
+  deps = [
+    ":service_resources",
+    "//base",
+    "//base:base_static",
+    "//base/third_party/dynamic_annotations",
+    "//content/public/common",
+    "//google_apis",
+    "//ipc",
+    "//net",
+    "//url",
+  ]
+}
+
+grit("service_resources") {
+  source = "win/service_resources.grd"
+  outputs = [
+    "resources.h",
+    "service_resources_en.rc",
+  ]
+}

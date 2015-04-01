@@ -1,0 +1,29 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+test("cloud_print_unittests") {
+  sources = [
+    "service/service_state_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:run_all_unittests",
+    "//cloud_print/service:cloud_print_service_lib",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  # TODO(GYP)
+  # if (is_win) {
+  #  sources += [
+  #    "service/win/service_ipc_unittest.cc",
+  #    "virtual_driver/win/port_monitor/port_monitor_unittest.cc",
+  #  ]
+  #
+  #  deps += [ "virtual_driver/win:gcp_portmon_lib" ]
+  #}
+}

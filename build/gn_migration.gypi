@@ -62,6 +62,7 @@
         '../chrome/chrome.gyp:sync_performance_tests',
         '../chrome/chrome.gyp:unit_tests',
         '../chrome/tools/profile_reset/jtl_compiler.gyp:jtl_compiler',
+        '../cloud_print/cloud_print.gyp:cloud_print_unittests',
         '../components/components.gyp:network_hints_browser',
         '../components/components.gyp:policy_templates',
         '../components/components.gyp:webui_generator',
@@ -436,7 +437,6 @@
       'conditions': [
         ['OS=="linux"', {
           'dependencies': [
-            '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
 
