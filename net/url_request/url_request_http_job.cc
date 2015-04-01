@@ -615,7 +615,14 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 void URLRequestHttpJob::DoLoadCookies() {
   CookieOptions options;
   options.set_include_httponly();
-  options.set_first_party_url(request_->first_party_for_cookies());
+
+  // TODO(mkwst): Drop this `if` once we decide whether or not to ship
+  // first-party cookies: https://crbug.com/459154
+  if (network_delegate() &&
+      network_delegate()->FirstPartyOnlyCookieExperimentEnabled())
+    options.set_first_party_url(request_->first_party_for_cookies());
+  else
+    options.set_include_first_party_only();
 
   request_->context()->cookie_store()->GetCookiesWithOptionsAsync(
       request_->url(), options, base::Bind(&URLRequestHttpJob::OnCookiesLoaded,
