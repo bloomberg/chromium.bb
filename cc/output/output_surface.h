@@ -151,6 +151,12 @@ class CC_EXPORT OutputSurface {
   void DidLoseOutputSurface();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
 
+  // Support for a pull-model where draws are requested by the output surface.
+  //
+  // OutputSurface::Invalidate is called by the compositor to notify that
+  // there's new content.
+  virtual void Invalidate() {}
+
  protected:
   OutputSurfaceClient* client_;
 

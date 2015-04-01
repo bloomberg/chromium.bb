@@ -101,6 +101,7 @@ class FakeOutputSurface : public OutputSurface {
 
   void SwapBuffers(CompositorFrame* frame) override;
 
+  OutputSurfaceClient* client() { return client_; }
   bool BindToClient(OutputSurfaceClient* client) override;
 
   void set_framebuffer(unsigned framebuffer) { framebuffer_ = framebuffer; }

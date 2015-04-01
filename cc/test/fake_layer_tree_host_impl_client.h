@@ -40,6 +40,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidActivateSyncTree() override {}
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {}
+  void OnDrawForOutputSurface() override {}
 };
 
 }  // namespace cc

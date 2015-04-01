@@ -87,6 +87,11 @@ class CONTENT_EXPORT SynchronousCompositor {
   // SynchronousCompositorClient::GetTotalRootLayerScrollOffset).
   virtual void DidChangeRootLayerScrollOffset() = 0;
 
+  // Called by the embedder to notify that the compositor is active. The
+  // compositor won't ask for vsyncs when it's inactive. NOTE: The compositor
+  // starts off as inactive and needs a SetActive(true) call to begin.
+  virtual void SetIsActive(bool is_active) = 0;
+
  protected:
   virtual ~SynchronousCompositor() {}
 };

@@ -73,7 +73,8 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
       contents_(contents),
       routing_id_(contents->GetRoutingID()),
       input_handler_(NULL),
-      invoking_composite_(false),
+      is_active_(false),
+      renderer_needs_begin_frames_(false),
       weak_ptr_factory_(this) {
   DCHECK(contents);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
@@ -120,11 +121,14 @@ void SynchronousCompositorImpl::DidInitializeRendererObjects(
   begin_frame_source_ = begin_frame_source;
 
   begin_frame_source_->SetCompositor(this);
-  output_surface_->SetBeginFrameSource(begin_frame_source_);
+  output_surface_->SetCompositor(this);
+
   output_surface_->SetTreeActivationCallback(
       base::Bind(&SynchronousCompositorImpl::DidActivatePendingTree,
                  weak_ptr_factory_.GetWeakPtr()));
-  NeedsBeginFramesChanged();
+
+  OnNeedsBeginFramesChange(begin_frame_source_->NeedsBeginFrames());
+
   compositor_client_->DidInitializeCompositor(this);
 }
 
@@ -133,7 +137,7 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
   DCHECK(begin_frame_source_);
 
   begin_frame_source_->SetCompositor(nullptr);
-  output_surface_->SetBeginFrameSource(nullptr);
+  output_surface_->SetCompositor(nullptr);
   if (compositor_client_)
     compositor_client_->DidDestroyCompositor(this);
   compositor_client_ = nullptr;
@@ -181,12 +185,9 @@ scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
     const gfx::Transform& transform_for_tile_priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-  DCHECK(!invoking_composite_);
   DCHECK(compositor_client_);
   DCHECK(begin_frame_source_);
 
-  base::AutoReset<bool> invoking_composite_resetter(&invoking_composite_,
-                                                    true);
   scoped_ptr<cc::CompositorFrame> frame =
       output_surface_->DemandDrawHw(surface_size,
                                     transform,
@@ -194,11 +195,9 @@ scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
                                     clip,
                                     viewport_rect_for_tile_priority,
                                     transform_for_tile_priority);
+
   if (frame.get())
     UpdateFrameMetaData(frame->metadata);
-
-  compositor_client_->SetContinuousInvalidate(
-      begin_frame_source_->NeedsBeginFrames());
 
   return frame.Pass();
 }
@@ -212,19 +211,14 @@ void SynchronousCompositorImpl::ReturnResources(
 bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-  DCHECK(!invoking_composite_);
   DCHECK(compositor_client_);
   DCHECK(begin_frame_source_);
 
-  base::AutoReset<bool> invoking_composite_resetter(&invoking_composite_,
-                                                    true);
   scoped_ptr<cc::CompositorFrame> frame =
       output_surface_->DemandDrawSw(canvas);
+
   if (frame.get())
     UpdateFrameMetaData(frame->metadata);
-
-  compositor_client_->SetContinuousInvalidate(
-      begin_frame_source_->NeedsBeginFrames());
 
   return !!frame.get();
 }
@@ -245,9 +239,40 @@ void SynchronousCompositorImpl::SetMemoryPolicy(size_t bytes_limit) {
   output_surface_->SetMemoryPolicy(bytes_limit);
 }
 
+void SynchronousCompositorImpl::PostInvalidate() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(compositor_client_);
+  compositor_client_->PostInvalidate();
+}
+
 void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {
   if (input_handler_)
     input_handler_->OnRootLayerDelegatedScrollOffsetChanged();
+}
+
+void SynchronousCompositorImpl::SetIsActive(bool is_active) {
+  TRACE_EVENT1("cc", "SynchronousCompositorImpl::SetIsActive", "is_active",
+               is_active);
+  is_active_ = is_active;
+  UpdateNeedsBeginFrames();
+}
+
+void SynchronousCompositorImpl::OnNeedsBeginFramesChange(
+    bool needs_begin_frames) {
+  renderer_needs_begin_frames_ = needs_begin_frames;
+  UpdateNeedsBeginFrames();
+}
+
+void SynchronousCompositorImpl::BeginFrame(const cc::BeginFrameArgs& args) {
+  if (begin_frame_source_)
+    begin_frame_source_->BeginFrame(args);
+}
+
+void SynchronousCompositorImpl::UpdateNeedsBeginFrames() {
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      contents_->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->OnSetNeedsBeginFrames(is_active_ && renderer_needs_begin_frames_);
 }
 
 void SynchronousCompositorImpl::SetInputHandler(
@@ -277,18 +302,6 @@ void SynchronousCompositorImpl::DidStopFlinging() {
       contents_->GetRenderWidgetHostView());
   if (rwhv)
     rwhv->DidStopFlinging();
-}
-
-void SynchronousCompositorImpl::NeedsBeginFramesChanged() const {
-  DCHECK(CalledOnValidThread());
-  DCHECK(begin_frame_source_);
-  if (invoking_composite_)
-    return;
-
-  if (compositor_client_) {
-    compositor_client_->SetContinuousInvalidate(
-        begin_frame_source_->NeedsBeginFrames());
-  }
 }
 
 InputEventAckState SynchronousCompositorImpl::HandleInputEvent(

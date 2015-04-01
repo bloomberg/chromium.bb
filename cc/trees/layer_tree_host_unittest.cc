@@ -2707,9 +2707,25 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
 
 class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     : public LayerTreeHostTestAbortedCommitDoesntStall {
+ protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
     settings->using_synchronous_renderer_compositor = true;
+  }
+
+  void ScheduledActionInvalidateOutputSurface() override {
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
+                CallOnDraw,
+            base::Unretained(this)));
+  }
+
+  void CallOnDraw() {
+    // Synchronous compositor does not draw unless told to do so by the output
+    // surface.
+    output_surface()->client()->OnDraw();
   }
 };
 

@@ -211,6 +211,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void DidActivateSyncTree() override;
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
+  void OnDrawForOutputSurface() override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -222,6 +223,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
+  void ScheduledActionInvalidateOutputSurface() override;
   void DidAnticipatedDrawTimeChange(base::TimeTicks time) override;
   base::TimeDelta DrawDurationEstimate() override;
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;

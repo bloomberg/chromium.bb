@@ -26,6 +26,8 @@ class BrowserViewRendererClient {
   virtual void OnNewPicture() = 0;
 
   // Called to trigger view invalidations.
+  // This calls postInvalidateOnAnimation if outside of a vsync, otherwise it
+  // calls invalidate.
   virtual void PostInvalidate() = 0;
 
   // Call postInvalidateOnAnimation for invalidations. This is only used to
