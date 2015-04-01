@@ -311,21 +311,5 @@ TEST(DiscardableSharedMemoryTest, MappedSize) {
   EXPECT_EQ(0u, memory.mapped_size());
 }
 
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-TEST(DiscardableSharedMemoryTest, Shrink) {
-  const uint32 kDataSize = 1024;
-
-  TestDiscardableSharedMemory memory;
-  bool rv = memory.CreateAndMap(kDataSize);
-  ASSERT_TRUE(rv);
-
-  EXPECT_NE(0u, memory.mapped_size());
-
-  // Mapped size should be 0 after shrinking memory segment.
-  memory.Shrink();
-  EXPECT_EQ(0u, memory.mapped_size());
-}
-#endif
-
 }  // namespace
 }  // namespace base

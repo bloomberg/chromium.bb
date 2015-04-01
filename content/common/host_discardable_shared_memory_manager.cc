@@ -359,8 +359,12 @@ void HostDiscardableSharedMemoryManager::ReduceMemoryUsageUntilWithinLimit(
     scoped_refptr<MemorySegment> segment = segments_.back();
     segments_.pop_back();
 
-    // Attempt to purge LRU segment. When successful, released the memory.
-    if (segment->memory()->Purge(current_time)) {
+    // Attempt to purge and truncate LRU segment. When successful, as much
+    // memory as possible will be released to the OS. How much memory is
+    // released depends on the platform. The child process should perform
+    // periodic cleanup to ensure that all memory is release within a
+    // reasonable amount of time.
+    if (segment->memory()->PurgeAndTruncate(current_time)) {
       ReleaseMemory(segment->memory());
       continue;
     }
@@ -382,11 +386,6 @@ void HostDiscardableSharedMemoryManager::ReleaseMemory(
   size_t size = memory->mapped_size();
   DCHECK_GE(bytes_allocated_, size);
   bytes_allocated_ -= size;
-
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-  // Shrink memory segment. This will immediately release the memory to the OS.
-  memory->Shrink();
-#endif
 
   // This will unmap the memory segment and drop our reference. The result
   // is that the memory will be released to the OS if the child process is

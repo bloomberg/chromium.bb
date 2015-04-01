@@ -15,12 +15,6 @@
 #include <set>
 #endif
 
-// Define DISCARDABLE_SHARED_MEMORY_SHRINKING if platform supports shrinking
-// of discardable shared memory segments.
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-#define DISCARDABLE_SHARED_MEMORY_SHRINKING
-#endif
-
 namespace base {
 
 // Platform abstraction for discardable shared memory.
@@ -99,6 +93,12 @@ class BASE_EXPORT DiscardableSharedMemory {
   // each call.
   bool Purge(Time current_time);
 
+  // Purge and release as much memory as possible to the OS.
+  // Note: The amount of memory that can be released to the OS is platform
+  // specific. Best case, all but one page is released. Worst case, nothing
+  // is released.
+  bool PurgeAndTruncate(Time current_time);
+
   // Returns true if memory is still resident.
   bool IsMemoryResident() const;
 
@@ -115,12 +115,6 @@ class BASE_EXPORT DiscardableSharedMemory {
                       SharedMemoryHandle* new_handle) {
     return shared_memory_.ShareToProcess(process_handle, new_handle);
   }
-
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-  // Release as much memory as possible to the OS. The change in size will
-  // be reflected by the return value of mapped_size().
-  void Shrink();
-#endif
 
  private:
   // Virtual for tests.

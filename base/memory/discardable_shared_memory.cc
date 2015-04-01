@@ -325,6 +325,22 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
   return true;
 }
 
+bool DiscardableSharedMemory::PurgeAndTruncate(Time current_time) {
+  if (!Purge(current_time))
+    return false;
+
+#if defined(OS_POSIX)
+  // Truncate shared memory to size of SharedState.
+  SharedMemoryHandle handle = shared_memory_.handle();
+  if (SharedMemory::IsHandleValid(handle)) {
+    if (HANDLE_EINTR(ftruncate(handle.fd, sizeof(SharedState))) != 0)
+      DPLOG(ERROR) << "ftruncate() failed";
+  }
+#endif
+
+  return true;
+}
+
 bool DiscardableSharedMemory::IsMemoryResident() const {
   DCHECK(shared_memory_.memory());
 
@@ -340,26 +356,6 @@ void DiscardableSharedMemory::Close() {
   shared_memory_.Close();
   mapped_size_ = 0;
 }
-
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-void DiscardableSharedMemory::Shrink() {
-#if defined(OS_POSIX)
-  SharedMemoryHandle handle = shared_memory_.handle();
-  if (!SharedMemory::IsHandleValid(handle))
-    return;
-
-  // Truncate shared memory to size of SharedState.
-  if (HANDLE_EINTR(
-          ftruncate(handle.fd, AlignToPageSize(sizeof(SharedState)))) != 0) {
-    DPLOG(ERROR) << "ftruncate() failed";
-    return;
-  }
-  mapped_size_ = 0;
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-#endif
 
 Time DiscardableSharedMemory::Now() const {
   return Time::Now();
