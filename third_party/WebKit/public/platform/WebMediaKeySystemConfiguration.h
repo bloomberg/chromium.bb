@@ -18,9 +18,9 @@ struct WebMediaKeySystemConfiguration {
         NotAllowed,
     };
 
-    // In MediaKeySystemConfiguration, sequence members may be not-present, and
-    // requestMediaKeySystemAccess() distinguishes non-present from empty. Here
-    // we have a flag for each one to signal that state.
+    // As MediaKeySystemConfiguration is a dictionary, some members may be
+    // not-present. Because requestMediaKeySystemAccess() distinguishes empty
+    // from not-present, we require a presence flag for each member.
     bool hasInitDataTypes = false;
     WebVector<WebEncryptedMediaInitDataType> initDataTypes;
 
@@ -30,11 +30,16 @@ struct WebMediaKeySystemConfiguration {
     bool hasVideoCapabilities = false;
     WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
 
+    // |distinctiveIdentifier| and |persistentState| are always present because
+    // they have default values.
     Requirement distinctiveIdentifier = Requirement::Optional;
     Requirement persistentState = Requirement::Optional;
 
     bool hasSessionTypes = false;
     WebVector<WebEncryptedMediaSessionType> sessionTypes;
+
+    // |label| may be not-present, but we use a null string to represent that.
+    WebString label;
 };
 
 } // namespace blink

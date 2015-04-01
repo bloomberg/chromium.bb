@@ -140,6 +140,9 @@ void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
     result.setDistinctiveIdentifier(convertMediaKeysRequirement(configuration.distinctiveIdentifier));
     result.setPersistentState(convertMediaKeysRequirement(configuration.persistentState));
     result.setSessionTypes(convertSessionTypes(configuration.sessionTypes));
+
+    // |label| will (and should) be a null string if it was not set.
+    result.setLabel(configuration.label);
 }
 
 ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)

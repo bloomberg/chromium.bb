@@ -19,4 +19,5 @@ enum MediaKeysRequirement {
     MediaKeysRequirement distinctiveIdentifier = "optional";
     MediaKeysRequirement persistentState = "optional";
     sequence<MediaKeySessionType> sessionTypes;
+    DOMString label;
 };

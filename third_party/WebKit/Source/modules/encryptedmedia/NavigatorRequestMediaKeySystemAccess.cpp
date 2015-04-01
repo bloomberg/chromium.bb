@@ -128,6 +128,8 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
             webConfig.hasSessionTypes = true;
             webConfig.sessionTypes = convertSessionTypes(config.sessionTypes());
         }
+        // If |label| is not present, it will be a null string.
+        webConfig.label = config.label();
         m_supportedConfigurations[i] = webConfig;
     }
 }
