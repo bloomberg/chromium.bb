@@ -13,7 +13,7 @@ You may need to get your SVN password from https://chromium-access.appspot.com/.
 
 Usage:
   $ cd /tmp
-  $ /path/to/update_reference_build.py VERSION  # e.g. 37.0.2062.94
+  $ /path/to/update_reference_build.py
   $ cd reference_builds/reference_builds
   $ gcl change
   $ gcl upload <change>
@@ -21,7 +21,6 @@ Usage:
 """
 
 import logging
-import optparse
 import os
 import shutil
 import subprocess
@@ -37,7 +36,26 @@ import zipfile
 CHROME_GS_URL_FMT = ('gs://chrome-unsigned/desktop-*/%s/%s/%s')
 
 
+def _ReportValueError(error_string):
+  #TODO(aiolos): alert sheriffs via email when an error is seen.
+  #This should be added when alerts are added when updating the build.
+  raise ValueError(error_string)
+
+
 class BuildUpdater(object):
+  _REF_BUILD_PLATFORMS = ['Mac', 'Win', 'Linux', 'Linux_x64']
+  _OMAHA_PLATFORMS = ['mac', 'linux', 'win']
+  # Omaha is Chrome's autoupdate server. It reports the current versions used
+  # by each platform on each channel.
+
+  # Map of platform names to omaha platform names.
+  _OMAHA_PLATFORM_MAP = {
+    'Mac': 'mac',
+    'Win': 'win',
+    'Linux': 'linux',
+    'Linux_x64': 'linux'
+  }
+
   _CHROME_PLATFORM_FILES_MAP = {
       'Win': [
           'chrome-win.zip',
@@ -68,9 +86,57 @@ class BuildUpdater(object):
       'Mac': 'chrome_mac',
   }
 
-  def __init__(self, version, options):
-    self._version = version
-    self._platforms = options.platforms.split(',')
+  def __init__(self):
+    stable_versions = self._StableVersionsMap()
+    current_versions = self._CurrentRefBuildsMap()
+    self._platform_to_version_map = {}
+    for platform in stable_versions:
+      if (platform not in current_versions or
+          stable_versions[platform] != current_versions[platform]):
+        self._platform_to_version_map[platform] = stable_versions[platform]
+
+  @classmethod
+  def _StableVersionsMap(cls):
+    omaha_versions_map = cls._OmahaVersionsMap()
+    versions_map = {}
+    for platform in cls._REF_BUILD_PLATFORMS:
+      omaha_platform = cls._OMAHA_PLATFORM_MAP[platform]
+      if omaha_platform in omaha_versions_map:
+        versions_map[platform] = omaha_versions_map[omaha_platform]
+    return versions_map
+
+  @classmethod
+  def _OmahaReport(cls):
+    url ='https://omahaproxy.appspot.com/all?channel=stable'
+    lines = urllib2.urlopen(url).readlines()
+    return [l.split(',') for l in lines]
+
+  @classmethod
+  def _OmahaVersionsMap(cls):
+    platforms = cls._OMAHA_PLATFORMS
+    rows = cls._OmahaReport()
+    if (len(rows) < 1 or
+        not rows[0][0:3] == ['os', 'channel', 'current_version']):
+      _ReportValueError('Omaha report is not in the expected form: %s.'
+                        % rows)
+    versions_map = {}
+    for row in rows[1:]:
+      if row[1] != 'stable':
+        _ReportValueError('Omaha report contains a line with the channel %s'
+                          % row[1])
+      if row[0] in platforms:
+        versions_map[row[0]] = row[2]
+
+    if not all(platform in versions_map for platform in platforms):
+      _ReportValueError('Omaha report did not contain all desired platforms')
+    return versions_map
+
+  @classmethod
+  def _CurrentRefBuildsMap(cls):
+    #TODO(aiolos): Add logic for pulling the current reference build versions.
+    # Return an empty dictionary to force an update until we store the builds in
+    # cloud storage.
+    return {}
 
   @staticmethod
   def _GetCmdStatusAndOutput(args, cwd=None, shell=False):
@@ -149,24 +215,25 @@ class BuildUpdater(object):
     return BuildUpdater._CHROME_PLATFORM_FILES_MAP[platform]
 
   def _DownloadBuilds(self):
-    for platform in self._platforms:
+    for platform in self._platform_to_version_map:
+      version = self._platform_to_version_map[platform]
       for filename in self._GetPlatformFiles(platform):
         output = os.path.join('dl', platform,
                               '%s_%s_%s' % (platform,
-                                            self._version,
+                                            version,
                                             filename))
         if os.path.exists(output):
           logging.info('%s alread exists, skipping download', output)
           continue
-        version = self._FindBuildVersion(platform, self._version, filename)
-        if not version:
+        build_version = self._FindBuildVersion(platform, version, filename)
+        if not build_version:
           logging.critical('Failed to find %s build for r%s\n', platform,
-                           self._version)
+                           version)
           sys.exit(1)
         dirname = os.path.dirname(output)
         if dirname and not os.path.exists(dirname):
           os.makedirs(dirname)
-        url = self._GetBuildUrl(platform, version, filename)
+        url = self._GetBuildUrl(platform, build_version, filename)
         self._DownloadFile(url, output)
 
   def _DownloadFile(self, url, output):
@@ -227,7 +294,7 @@ class BuildUpdater(object):
         os.remove(os.path.join(root, f))
 
   def _ExtractBuilds(self):
-    for platform in self._platforms:
+    for platform in self._platform_to_version_map:
       if os.path.exists('tmp_unzip'):
         os.path.unlink('tmp_unzip')
       dest_dir = os.path.join('reference_builds', 'reference_builds',
@@ -266,30 +333,13 @@ class BuildUpdater(object):
     self._SvnAddAndRemove()
 
 
-def ParseOptions(argv):
-  parser = optparse.OptionParser()
-  parser.set_usage('Usage: %prog VERSION [-p PLATFORMS]')
-  parser.add_option('-p', dest='platforms',
-                    default='Win,Mac,Linux,Linux_x64',
-                    help='Comma separated list of platforms to download '
-                         '(as defined by the chromium builders).')
-
-  options, args = parser.parse_args(argv)
-  if len(args) != 2:
-    parser.print_help()
-    sys.exit(1)
-  version = args[1]
-
-  return version, options
-
-
-def main(argv):
+def main():
   logging.getLogger().setLevel(logging.DEBUG)
-  version, options = ParseOptions(argv)
-  b = BuildUpdater(version, options)
+  #TODO(aiolos): check that there are no options passed (argparse).
+  b = BuildUpdater()
   b.DownloadAndUpdateBuilds()
   logging.info('Successfully updated reference builds. Move to '
                'reference_builds/reference_builds and make a change with gcl.')
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  main()
