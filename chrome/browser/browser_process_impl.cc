@@ -469,8 +469,10 @@ void BrowserProcessImpl::EndSession() {
   for (size_t i = 0; i < profiles.size(); ++i) {
     Profile* profile = profiles[i];
     profile->SetExitType(Profile::EXIT_SESSION_ENDED);
-
-    rundown_counter->Post(profile->GetIOTaskRunner().get());
+    if (profile->GetPrefs()) {
+      profile->GetPrefs()->CommitPendingWrite();
+      rundown_counter->Post(profile->GetIOTaskRunner().get());
+    }
   }
 
   // Tell the metrics service it was cleanly shutdown.

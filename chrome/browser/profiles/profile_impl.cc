@@ -918,10 +918,6 @@ void ProfileImpl::SetExitType(ExitType exit_type) {
   if (exit_type == EXIT_CRASHED || current_exit_type == EXIT_CRASHED) {
     prefs_->SetString(prefs::kSessionExitType,
                       ExitTypeToSessionTypePrefValue(exit_type));
-
-    // NOTE: If you change what thread this writes on, be sure and update
-    // chrome::SessionEnding().
-    prefs_->CommitPendingWrite();
   }
 }
 
