@@ -181,8 +181,26 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
   if (!DrawsContent())
     return skia::RefPtr<SkPicture>();
 
-  int width = bounds().width();
-  int height = bounds().height();
+  gfx::Size layer_size = bounds();
+  const LayerTreeSettings& settings = layer_tree_host()->settings();
+
+  if (settings.use_display_lists) {
+    scoped_ptr<RecordingSource> recording_source;
+    recording_source.reset(
+        new DisplayListRecordingSource(settings.default_tile_grid_size));
+    Region recording_invalidation;
+    recording_source->UpdateAndExpandInvalidation(
+        client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
+        update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
+
+    scoped_refptr<RasterSource> raster_source =
+        recording_source->CreateRasterSource(false);
+
+    return raster_source->GetFlattenedPicture();
+  }
+
+  int width = layer_size.width();
+  int height = layer_size.height();
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(width, height, nullptr, 0);
