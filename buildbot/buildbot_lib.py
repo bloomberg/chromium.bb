@@ -7,6 +7,7 @@ import optparse
 import os.path
 import shutil
 import subprocess
+import stat
 import sys
 import time
 import traceback
@@ -291,13 +292,10 @@ def TryToCleanPath(path, file_name_filter=lambda fn: True):
   if os.path.exists(path):
     if file_name_filter(path):
       print 'Trying to remove %s' % path
-      if os.path.isdir(path):
-        shutil.rmtree(path, ignore_errors=True)
-      else:
-        try:
-          os.remove(path)
-        except Exception:
-          pass
+      try:
+        RemovePath(path)
+      except Exception:
+        print 'Failed to remove %s' % path
     else:
       print 'Skipping %s' % path
 
@@ -331,10 +329,18 @@ def Retry(op, *args):
     op(*args)
 
 
+def PermissionsFixOnError(func, path, exc_info):
+  if not os.access(path, os.W_OK):
+    os.chmod(path, stat.S_IWUSR)
+    func(path)
+  else:
+    raise
+
+
 def _RemoveDirectory(path):
   print 'Removing %s' % path
   if os.path.exists(path):
-    shutil.rmtree(path)
+    shutil.rmtree(path, onerror=PermissionsFixOnError)
     print '    Succeeded.'
   else:
     print '    Path does not exist, nothing to do.'
@@ -346,6 +352,15 @@ def RemoveDirectory(path):
   Does not mask failures, although it does retry a few times on Windows.
   """
   Retry(_RemoveDirectory, path)
+
+
+def RemovePath(path):
+  """Remove a path, file or directory."""
+  if os.path.isdir(path):
+    RemoveDirectory(path)
+  else:
+    os.chmod(path, stat.S_IWUSR)
+    os.remove(path)
 
 
 # This is a sanity check so Command can print out better error information.

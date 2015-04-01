@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.platform
@@ -405,9 +406,28 @@ def Main():
     tempdrive, _ = os.path.splitdrive(env['TEMP'])
     if tempdrive != filedrive:
       env['TEMP'] = filedrive + '\\temp'
-      env['TMP'] = env['TEMP']
       if not os.path.exists(env['TEMP']):
         os.mkdir(env['TEMP'])
+
+  # Ensure a temp directory exists.
+  if 'TEMP' not in env:
+    env['TEMP'] = tempfile.gettempdir()
+
+  # Isolate build's temp directory to a particular location so we can clobber
+  # the whole thing predictably and so we have a record of who's leaking
+  # temporary files.
+  nacl_tmp = os.path.join(env['TEMP'], 'nacl_tmp')
+  if not os.path.exists(nacl_tmp):
+    os.mkdir(nacl_tmp)
+  env['TEMP'] = os.path.join(nacl_tmp, builder)
+  if not os.path.exists(env['TEMP']):
+    os.mkdir(env['TEMP'])
+
+  # Set all temp directory variants to the same thing.
+  env['TMPDIR'] = env['TEMP']
+  env['TMP'] = env['TEMP']
+  print 'TEMP=%s' % env['TEMP']
+  sys.stdout.flush()
 
   # Run through runtest.py to get upload of perf data.
   build_properties = {
@@ -459,6 +479,7 @@ def Main():
     ])
 
   print "%s runs: %s\n" % (builder, cmd)
+  sys.stdout.flush()
   retcode = subprocess.call(cmd, env=env, shell=True)
   sys.exit(retcode)
 
