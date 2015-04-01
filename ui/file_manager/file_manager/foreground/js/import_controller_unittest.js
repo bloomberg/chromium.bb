@@ -26,6 +26,9 @@ var destinationVolume;
 /** @type {!importer.TestCommandWidget} */
 var widget;
 
+/** @type {!DirectoryEntry} */
+var nonDcimDirectory;
+
 /**
  * @enum {string}
  */
@@ -46,6 +49,10 @@ function setUp() {
   new MockChromeStorageAPI();
 
   widget = new importer.TestCommandWidget();
+
+  nonDcimDirectory = new MockDirectoryEntry(
+      new MockFileSystem('testFs'),
+      '/jellybeans/');
 
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
@@ -95,24 +102,25 @@ function testVolumeUnmount_InvalidatesScans(callback) {
       ],
       '/DCIM');
 
-  environment.directoryChangedListener_(EMPTY_EVENT);
+  var dcim = environment.getCurrentDirectory();
+
+  environment.directoryChangedListener(EMPTY_EVENT);
   var promise = widget.updateResolver.promise.then(
+      function() {
+        // Reset the promise so we can wait on a second widget update.
+        widget.resetPromises();
+        environment.setCurrentDirectory(nonDcimDirectory);
+        environment.simulateUnmount();
+
+        environment.setCurrentDirectory(dcim);
+        environment.directoryChangedListener(EMPTY_EVENT);
+        // Return the new promise, so subsequent "thens" only
+        // fire once the widget has been updated again.
+        return widget.updateResolver.promise;
+      }).then(
           function() {
-            // Reset the promise so we can wait on a second widget update.
-            widget.resetPromises();
-
-            // Faux unmount the volume, then request an update again.
-            // A fresh new scan should be started.
-            environment.simulateUnmount();
-
-            environment.directoryChangedListener_(EMPTY_EVENT);
-            // Return the new promise, so subsequent "thens" only
-            // fire once the widget has been updated again.
-            return widget.updateResolver.promise;
-          }).then(
-            function() {
-              mediaScanner.assertScanCount(2);
-            });
+            mediaScanner.assertScanCount(2);
+          });
 
   reportPromise(promise, callback);
 }
@@ -128,8 +136,69 @@ function testDirectoryChange_TriggersUpdate(callback) {
       ],
       '/DCIM');
 
-  environment.directoryChangedListener_(EMPTY_EVENT);
+  environment.directoryChangedListener(EMPTY_EVENT);
   reportPromise(widget.updateResolver.promise, callback);
+}
+
+function testDirectoryChange_CancelsScan(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  environment.directoryChangedListener(EMPTY_EVENT);
+  var promise = widget.updateResolver.promise.then(
+      function() {
+        // Reset the promise so we can wait on a second widget update.
+        widget.resetPromises();
+        environment.setCurrentDirectory(nonDcimDirectory);
+        environment.directoryChangedListener(EMPTY_EVENT);
+      }).then(
+          function() {
+            mediaScanner.assertScanCount(1);
+            mediaScanner.assertLastScanCanceled();
+          });
+
+  reportPromise(promise, callback);
+}
+
+function testWindowClose_CancelsScan(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  environment.directoryChangedListener(EMPTY_EVENT);
+  var promise = widget.updateResolver.promise.then(
+      function() {
+        // Reset the promise so we can wait on a second widget update.
+        widget.resetPromises();
+        environment.windowCloseListener();
+      }).then(
+          function() {
+            mediaScanner.assertScanCount(1);
+            mediaScanner.assertLastScanCanceled();
+          });
+
+  reportPromise(promise, callback);
 }
 
 function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir() {
@@ -148,7 +217,7 @@ function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir() {
       new MockFileSystem('testFs'),
       '/DCIM/');
 
-  environment.directoryChangedListener_(event);
+  environment.directoryChangedListener(event);
   assertTrue(widget.detailsVisible);
 }
 
@@ -170,7 +239,7 @@ function testDirectoryChange_DetailsPanelVisibility_SubsequentChangeDir() {
   // Any previous dir at all will skip the new window logic.
   event.previousDirEntry = event.newDirEntry;
 
-  environment.directoryChangedListener_(event);
+  environment.directoryChangedListener(event);
   assertFalse(widget.detailsVisible);
 }
 
@@ -185,7 +254,14 @@ function testSelectionChange_TriggersUpdate(callback) {
       ],
       '/DCIM');
 
-  environment.selectionChangedListener_();
+  var fileSystem = new MockFileSystem('testFs');
+  // ensure there is some content in the scan so the code that depends
+  // on this state doesn't croak which it finds it missing.
+  environment.selection.push(
+      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+
+  environment.selectionChangedListener();
+  mediaScanner.finalizeScans();
   reportPromise(widget.updateResolver.promise, callback);
 }
 
@@ -206,7 +282,7 @@ function testFinalizeScans_TriggersUpdate(callback) {
   mediaScanner.fileEntries.push(
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
-  environment.directoryChangedListener_(EMPTY_EVENT);  // initiates a scan.
+  environment.directoryChangedListener(EMPTY_EVENT);  // initiates a scan.
   widget.resetPromises();
   mediaScanner.finalizeScans();
 
@@ -263,19 +339,19 @@ function startImport(clickSource) {
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
   // First we need to force the controller into a scanning state.
-  environment.directoryChangedListener_(EMPTY_EVENT);
+  environment.directoryChangedListener(EMPTY_EVENT);
 
   return widget.updateResolver.promise.then(
-          function() {
-            widget.resetPromises();
-            mediaScanner.finalizeScans();
-            return widget.updateResolver.promise.then(
-                function() {
-                  widget.resetPromises();
-                  widget.click(clickSource);
-                  return mediaImporter.importResolver.promise;
-                });
-          });
+      function() {
+        widget.resetPromises();
+        mediaScanner.finalizeScans();
+        return widget.updateResolver.promise.then(
+            function() {
+              widget.resetPromises();
+              widget.click(clickSource);
+              return mediaImporter.importResolver.promise;
+            });
+      });
 }
 
 /**
@@ -394,14 +470,17 @@ TestControllerEnvironment = function(volumeInfo, directory) {
   /** @private {!DirectoryEntry} */
   this.directory_ = directory;
 
-  /** @private {function(string)} */
-  this.volumeUnmountListener_;
+  /** @public {function()} */
+  this.windowCloseListener;
 
-  /** @private {function()} */
-  this.directoryChangedListener_;
+  /** @public {function(string)} */
+  this.volumeUnmountListener;
 
-  /** @private {function()} */
-  this.selectionChangedListener_;
+  /** @public {function()} */
+  this.directoryChangedListener;
+
+  /** @public {function()} */
+  this.selectionChangedListener;
 
   /** @public {!Entry} */
   this.selection = [];
@@ -455,21 +534,27 @@ TestControllerEnvironment.prototype.getFreeStorageSpace =
 };
 
 /** @override */
+TestControllerEnvironment.prototype.addWindowCloseListener =
+    function(listener) {
+  this.windowCloseListener = listener;
+};
+
+/** @override */
 TestControllerEnvironment.prototype.addVolumeUnmountListener =
     function(listener) {
-  this.volumeUnmountListener_ = listener;
+  this.volumeUnmountListener = listener;
 };
 
 /** @override */
 TestControllerEnvironment.prototype.addDirectoryChangedListener =
     function(listener) {
-  this.directoryChangedListener_ = listener;
+  this.directoryChangedListener = listener;
 };
 
 /** @override */
 TestControllerEnvironment.prototype.addSelectionChangedListener =
     function(listener) {
-  this.selectionChangedListener_ = listener;
+  this.selectionChangedListener = listener;
 };
 
 /** @override */
@@ -493,7 +578,7 @@ TestControllerEnvironment.prototype.showImportRoot = function() {
  * Simulates an unmount event.
  */
 TestControllerEnvironment.prototype.simulateUnmount = function() {
-  this.volumeUnmountListener_(this.volumeInfo_.volumeId);
+  this.volumeUnmountListener(this.volumeInfo_.volumeId);
 };
 
 /**

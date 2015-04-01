@@ -103,10 +103,12 @@ importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
 /** @override */
 importer.DefaultMediaScanner.prototype.scanDirectory = function(directory) {
   var scan = this.createScanResult_();
+  console.info(scan.name + ': Scanning directory ' + directory.fullPath);
+
   var watcher = this.watcherFactory_(
       /** @this {importer.DefaultMediaScanner} */
       function() {
-        scan.invalidateScan();
+        scan.cancel();
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
       }.bind(this));
 
@@ -119,6 +121,7 @@ importer.DefaultMediaScanner.prototype.scanDirectory = function(directory) {
       .then(
           /** @this {importer.DefaultMediaScanner} */
           function() {
+            console.info(scan.name + ': Finished.');
             this.notify_(importer.ScanEvent.FINALIZED, scan);
           }.bind(this));
 
@@ -131,10 +134,14 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
     throw new Error('Cannot scan empty list.');
   }
   var scan = this.createScanResult_();
+  console.info(
+      scan.name + ': Scanning fixed set of ' +
+      entries.length + ' entries.');
+
   var watcher = this.watcherFactory_(
       /** @this {importer.DefaultMediaScanner} */
       function() {
-        scan.invalidateScan();
+        scan.cancel();
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
       }.bind(this));
 
@@ -148,6 +155,7 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
       .then(
           /** @this {importer.DefaultMediaScanner} */
           function() {
+            console.info(scan.name + ': Finished.');
             this.notify_(importer.ScanEvent.FINALIZED, scan);
           }.bind(this));
 
@@ -160,7 +168,8 @@ importer.DefaultMediaScanner.SCAN_BATCH_SIZE = 1;
 /**
  * @param {!importer.DefaultScanResult} scan
  * @param  {!Array<!FileEntry>} entries
- * @return {!Promise} Resolves when scanning is finished.
+ * @return {!Promise} Resolves when scanning is finished normally
+ *     or canceled.
  * @private
  */
 importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
@@ -172,20 +181,32 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
    *     to process.
    * @return {!Promise}
    */
-  var scanChunk = function(begin) {
+  var scanBatch = function(begin) {
+    if (scan.canceled()) {
+      console.debug(
+          scan.name + ': Skipping remaining ' +
+          (entries.length - begin) +
+          ' entries. Scan was canceled.');
+      return Promise.resolve();
+    }
+
     // the second arg to slice is an exclusive end index, so we +1 batch size.
-    var end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE + 1;
+    var end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE;
+    console.log(scan.name + ': Processing batch ' + begin + '-' + (end - 1));
+    var batch = entries.slice(begin, end);
+
     return Promise.all(
-        entries.slice(begin, end).map(handleFileEntry))
+        batch.map(handleFileEntry))
         .then(
+            /** @this {importer.DefaultMediaScanner} */
             function() {
               if (end < entries.length) {
-                return scanChunk(end);
+                return scanBatch(end);
               }
             });
   };
 
-  return scanChunk(0);
+  return scanBatch(0);
 };
 
 /**
@@ -321,9 +342,16 @@ importer.ScanResult = function() {};
 importer.ScanResult.prototype.isFinal;
 
 /**
- * @return {boolean} true if scanning is invalidated.
+ * Notifies the scan to stop working. Some in progress work
+ * may continue, but no new work will be undertaken.
  */
-importer.ScanResult.prototype.isInvalidated;
+importer.ScanResult.prototype.cancel;
+
+/**
+ * @return {boolean} True if the scan has been canceled. Some
+ * work started prior to cancelation may still be ongoing.
+ */
+importer.ScanResult.prototype.canceled;
 
 /**
  * Returns all files entries discovered so far. The list will be
@@ -335,7 +363,8 @@ importer.ScanResult.prototype.isInvalidated;
 importer.ScanResult.prototype.getFileEntries;
 
 /**
- * Returns a promise that fires when scanning is complete.
+ * Returns a promise that fires when scanning is finished
+ * normally or has been canceled.
  *
  * @return {!Promise<!importer.ScanResult>}
  */
@@ -363,6 +392,9 @@ importer.ScanResult.Statistics;
  * <p>The scan is complete, and the object will become static once the
  * {@code whenFinal} promise resolves.
  *
+ * Note that classes implementing this should provide a read-only
+ * {@code name} field.
+ *
  * @constructor
  * @struct
  * @implements {importer.ScanResult}
@@ -371,6 +403,8 @@ importer.ScanResult.Statistics;
  *     generator used to dedupe within the scan results itself.
  */
 importer.DefaultScanResult = function(hashGenerator) {
+  /** @private {number} */
+  this.scanId_ = importer.generateId();
 
   /** @private {function(!FileEntry): !Promise.<string>} */
   this.createHashcode_ = hashGenerator;
@@ -410,7 +444,7 @@ importer.DefaultScanResult = function(hashGenerator) {
   /**
    * @private {boolean}
    */
-  this.invalidated_ = false;
+  this.canceled_ = false;
 
   /** @private {!importer.Resolver.<!importer.ScanResult>} */
   this.resolver_ = new importer.Resolver();
@@ -418,6 +452,8 @@ importer.DefaultScanResult = function(hashGenerator) {
 
 /** @struct */
 importer.DefaultScanResult.prototype = {
+  /** @return {string} */
+  get name() { return 'ScanResult(' + this.scanId_ + ')' },
 
   /** @return {function()} */
   get resolve() { return this.resolver_.resolve.bind(null, this); },
@@ -431,10 +467,6 @@ importer.DefaultScanResult.prototype.isFinal = function() {
   return this.resolver_.settled;
 };
 
-importer.DefaultScanResult.prototype.isInvalidated = function() {
-  return this.invalidated_;
-};
-
 /** @override */
 importer.DefaultScanResult.prototype.getFileEntries = function() {
   return this.fileEntries_;
@@ -445,11 +477,14 @@ importer.DefaultScanResult.prototype.whenFinal = function() {
   return this.resolver_.promise;
 };
 
-/**
- * Invalidates this scan.
- */
-importer.DefaultScanResult.prototype.invalidateScan = function() {
-  this.invalidated_ = true;
+/** @override */
+importer.DefaultScanResult.prototype.cancel = function() {
+  this.canceled_ = true;
+};
+
+/** @override */
+importer.DefaultScanResult.prototype.canceled = function() {
+  return this.canceled_;
 };
 
 /**
