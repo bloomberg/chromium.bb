@@ -16,11 +16,26 @@ void WebSocketExtensionParser::Parse(const char* data, size_t size) {
   current_ = data;
   end_ = data + size;
   has_error_ = false;
+  extensions_.clear();
 
-  ConsumeExtension(&extension_);
-  if (has_error_) return;
-  ConsumeSpaces();
-  has_error_ = has_error_ || (current_ != end_);
+  while (true) {
+    WebSocketExtension extension;
+    ConsumeExtension(&extension);
+    if (has_error_)
+      break;
+    extensions_.push_back(extension);
+
+    ConsumeSpaces();
+    DCHECK(!has_error_);
+
+    if (!ConsumeIfMatch(',')) {
+      break;
+    }
+  }
+
+  has_error_ = has_error_ || current_ != end_;
+  if (has_error_)
+    extensions_.clear();
 }
 
 void WebSocketExtensionParser::Consume(char c) {

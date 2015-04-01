@@ -303,47 +303,51 @@ bool ValidatePerMessageDeflateExtension(const WebSocketExtension& extension,
 }
 
 bool ValidateExtensions(const HttpResponseHeaders* headers,
-                        const std::vector<std::string>& requested_extensions,
-                        std::string* extensions,
+                        std::string* accepted_extensions_descriptor,
                         std::string* failure_message,
                         WebSocketExtensionParams* params) {
   void* state = nullptr;
-  std::string value;
-  std::vector<std::string> accepted_extensions;
+  std::string header_value;
+  std::vector<std::string> header_values;
   // TODO(ricea): If adding support for additional extensions, generalise this
   // code.
   bool seen_permessage_deflate = false;
-  while (headers->EnumerateHeader(
-             &state, websockets::kSecWebSocketExtensions, &value)) {
+  while (headers->EnumerateHeader(&state, websockets::kSecWebSocketExtensions,
+                                  &header_value)) {
     WebSocketExtensionParser parser;
-    parser.Parse(value);
+    parser.Parse(header_value);
     if (parser.has_error()) {
       // TODO(yhirano) Set appropriate failure message.
       *failure_message =
           "'Sec-WebSocket-Extensions' header value is "
           "rejected by the parser: " +
-          value;
+          header_value;
       return false;
     }
-    if (parser.extension().name() == "permessage-deflate") {
-      if (seen_permessage_deflate) {
-        *failure_message = "Received duplicate permessage-deflate response";
+
+    const std::vector<WebSocketExtension>& extensions = parser.extensions();
+    for (const auto& extension : extensions) {
+      if (extension.name() == "permessage-deflate") {
+        if (seen_permessage_deflate) {
+          *failure_message = "Received duplicate permessage-deflate response";
+          return false;
+        }
+        seen_permessage_deflate = true;
+
+        if (!ValidatePerMessageDeflateExtension(extension, failure_message,
+                                                params)) {
+          return false;
+        }
+        header_values.push_back(header_value);
+      } else {
+        *failure_message = "Found an unsupported extension '" +
+                           extension.name() +
+                           "' in 'Sec-WebSocket-Extensions' header";
         return false;
       }
-      seen_permessage_deflate = true;
-      if (!ValidatePerMessageDeflateExtension(
-              parser.extension(), failure_message, params))
-        return false;
-    } else {
-      *failure_message =
-          "Found an unsupported extension '" +
-          parser.extension().name() +
-          "' in 'Sec-WebSocket-Extensions' header";
-      return false;
     }
-    accepted_extensions.push_back(value);
   }
-  *extensions = JoinString(accepted_extensions, ", ");
+  *accepted_extensions_descriptor = JoinString(header_values, ", ");
   return true;
 }
 
@@ -636,7 +640,6 @@ int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
                           &sub_protocol_,
                           &failure_message) &&
       ValidateExtensions(headers,
-                         requested_extensions_,
                          &extensions_,
                          &failure_message,
                          extension_params_.get())) {

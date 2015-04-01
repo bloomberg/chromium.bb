@@ -18,6 +18,7 @@ TEST(WebSocketExtensionParserTest, ParseEmpty) {
   parser.Parse("", 0);
 
   EXPECT_TRUE(parser.has_error());
+  EXPECT_EQ(0U, parser.extensions().size());
 }
 
 TEST(WebSocketExtensionParserTest, ParseSimple) {
@@ -27,7 +28,27 @@ TEST(WebSocketExtensionParserTest, ParseSimple) {
   parser.Parse("foo");
 
   ASSERT_FALSE(parser.has_error());
-  EXPECT_TRUE(expected.Equals(parser.extension()));
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
+}
+
+TEST(WebSocketExtensionParserTest, ParseMoreThanOnce) {
+  WebSocketExtensionParser parser;
+  WebSocketExtension expected("foo");
+
+  parser.Parse("foo");
+  ASSERT_FALSE(parser.has_error());
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
+
+  parser.Parse("");
+  EXPECT_TRUE(parser.has_error());
+  EXPECT_EQ(0U, parser.extensions().size());
+
+  parser.Parse("foo");
+  ASSERT_FALSE(parser.has_error());
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
 
 TEST(WebSocketExtensionParserTest, ParseOneExtensionWithOneParamWithoutValue) {
@@ -38,7 +59,8 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithOneParamWithoutValue) {
   parser.Parse("\tfoo ; bar");
 
   ASSERT_FALSE(parser.has_error());
-  EXPECT_TRUE(expected.Equals(parser.extension()));
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
 
 TEST(WebSocketExtensionParserTest, ParseOneExtensionWithOneParamWithValue) {
@@ -49,7 +71,8 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithOneParamWithValue) {
   parser.Parse("foo ; bar= baz\t");
 
   ASSERT_FALSE(parser.has_error());
-  EXPECT_TRUE(expected.Equals(parser.extension()));
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
 
 TEST(WebSocketExtensionParserTest, ParseOneExtensionWithParams) {
@@ -61,48 +84,72 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithParams) {
   parser.Parse("foo ; bar= baz;\t \thoge\t\t=fuga");
 
   ASSERT_FALSE(parser.has_error());
-  EXPECT_TRUE(expected.Equals(parser.extension()));
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
+}
+
+TEST(WebSocketExtensionParserTest, ParseTwoExtensions) {
+  WebSocketExtensionParser parser;
+
+  WebSocketExtension expected0("foo");
+  expected0.Add(WebSocketExtension::Parameter("alpha", "x"));
+
+  WebSocketExtension expected1("bar");
+  expected1.Add(WebSocketExtension::Parameter("beta", "y"));
+
+  parser.Parse(" foo ; alpha = x , bar ; beta = y ");
+
+  ASSERT_FALSE(parser.has_error());
+  ASSERT_EQ(2U, parser.extensions().size());
+
+  EXPECT_TRUE(expected0.Equals(parser.extensions()[0]));
+  EXPECT_TRUE(expected1.Equals(parser.extensions()[1]));
 }
 
 TEST(WebSocketExtensionParserTest, InvalidPatterns) {
   const char* const patterns[] = {
-    "fo\ao",  // control in extension name
-    "fo\x01o",  // control in extension name
-    "fo<o",  // separator in extension name
-    "foo/",  // separator in extension name
-    ";bar",  // empty extension name
-    "foo bar",  // missing ';'
-    "foo;",  // extension parameter without name and value
-    "foo; b\ar",  // control in parameter name
-    "foo; b\x7fr",  // control in parameter name
-    "foo; b[r",  // separator in parameter name
-    "foo; ba:",  // separator in parameter name
-    "foo; =baz",  // empty parameter name
-    "foo; bar=",  // empty parameter value
-    "foo; =",  // empty parameter name and value
-    "foo; bar=b\x02z",  // control in parameter value
-    "foo; bar=b@z",  // separator in parameter value
-    "foo; bar=b\\z",  // separator in parameter value
-    "foo; bar=b?z",  // separator in parameter value
-    "\"foo\"",  // quoted extension name
-    "foo; \"bar\"",  // quoted parameter name
-    "foo; bar=\"\a2\"",  // control in quoted parameter value
-    "foo; bar=\"b@z\"",  // separator in quoted parameter value
-    "foo; bar=\"b\\\\z\"",  // separator in quoted parameter value
-    "foo; bar=\"\"",  // quoted empty parameter value
-    "foo; bar=\"baz",  // unterminated quoted string
-    "foo; bar=\"baz \"",  // space in quoted string
-    "foo; bar baz",  // mising '='
-    "foo; bar - baz",  // '-' instead of '=' (note: "foo; bar-baz" is valid).
-    "foo; bar=\r\nbaz",  // CRNL not followed by a space
-    "foo; bar=\r\n baz",  // CRNL followed by a space
-    "foo, bar"  // multiple extensions
+      ",",                    // just a comma
+      " , ",                  // just a comma with surrounding spaces
+      "foo,",                 // second extension is incomplete (empty)
+      "foo , ",               // second extension is incomplete (space)
+      "foo,;",                // second extension is incomplete (semicolon)
+      "fo\ao",                // control in extension name
+      "fo\x01o",              // control in extension name
+      "fo<o",                 // separator in extension name
+      "foo/",                 // separator in extension name
+      ";bar",                 // empty extension name
+      "foo bar",              // missing ';'
+      "foo;",                 // extension parameter without name and value
+      "foo; b\ar",            // control in parameter name
+      "foo; b\x7fr",          // control in parameter name
+      "foo; b[r",             // separator in parameter name
+      "foo; ba:",             // separator in parameter name
+      "foo; =baz",            // empty parameter name
+      "foo; bar=",            // empty parameter value
+      "foo; =",               // empty parameter name and value
+      "foo; bar=b\x02z",      // control in parameter value
+      "foo; bar=b@z",         // separator in parameter value
+      "foo; bar=b\\z",        // separator in parameter value
+      "foo; bar=b?z",         // separator in parameter value
+      "\"foo\"",              // quoted extension name
+      "foo; \"bar\"",         // quoted parameter name
+      "foo; bar=\"\a2\"",     // control in quoted parameter value
+      "foo; bar=\"b@z\"",     // separator in quoted parameter value
+      "foo; bar=\"b\\\\z\"",  // separator in quoted parameter value
+      "foo; bar=\"\"",        // quoted empty parameter value
+      "foo; bar=\"baz",       // unterminated quoted string
+      "foo; bar=\"baz \"",    // space in quoted string
+      "foo; bar baz",         // mising '='
+      "foo; bar - baz",  // '-' instead of '=' (note: "foo; bar-baz" is valid).
+      "foo; bar=\r\nbaz",   // CRNL not followed by a space
+      "foo; bar=\r\n baz",  // CRNL followed by a space
   };
 
   for (size_t i = 0; i < arraysize(patterns); ++i) {
     WebSocketExtensionParser parser;
     parser.Parse(patterns[i]);
     EXPECT_TRUE(parser.has_error());
+    EXPECT_EQ(0U, parser.extensions().size());
   }
 }
 
@@ -114,7 +161,8 @@ TEST(WebSocketExtensionParserTest, QuotedParameterValue) {
   parser.Parse("foo; bar = \"ba\\z\" ");
 
   ASSERT_FALSE(parser.has_error());
-  EXPECT_TRUE(expected.Equals(parser.extension()));
+  ASSERT_EQ(1U, parser.extensions().size());
+  EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
 
 }  // namespace

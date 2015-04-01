@@ -57,7 +57,7 @@ class WebSocketEncoder {
   //
   // TODO(tyoshino): Consider using a struct than taking a lot of pointers for
   // output.
-  static void ParseExtensions(const std::string& extensions,
+  static void ParseExtensions(const std::string& header_value,
                               bool* deflate,
                               bool* has_client_window_bits,
                               int* client_window_bits,

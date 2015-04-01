@@ -233,7 +233,7 @@ WebSocketEncoder* WebSocketEncoder::CreateClient(
 }
 
 // static
-void WebSocketEncoder::ParseExtensions(const std::string& extensions,
+void WebSocketEncoder::ParseExtensions(const std::string& header_value,
                                        bool* deflate,
                                        bool* has_client_window_bits,
                                        int* client_window_bits,
@@ -247,40 +247,51 @@ void WebSocketEncoder::ParseExtensions(const std::string& extensions,
   *client_no_context_takeover = false;
   *server_no_context_takeover = false;
 
-  if (extensions.empty())
+  if (header_value.empty())
     return;
 
-  // TODO(dgozman): split extensions header if another extension is introduced.
   WebSocketExtensionParser parser;
-  parser.Parse(extensions);
+  parser.Parse(header_value);
   if (parser.has_error())
     return;
-  if (parser.extension().name() != "permessage-deflate")
-    return;
+  const std::vector<WebSocketExtension>& extensions = parser.extensions();
+  // TODO(tyoshino): Fail if this method is used for parsing a response and
+  // there are multiple permessage-deflate extensions or there are any unknown
+  // extensions.
+  for (const auto& extension : extensions) {
+    if (extension.name() != "permessage-deflate") {
+      continue;
+    }
 
-  const std::vector<WebSocketExtension::Parameter>& parameters =
-      parser.extension().parameters();
-  for (const auto& param : parameters) {
-    const std::string& name = param.name();
-    if (name == "client_max_window_bits") {
-      *has_client_window_bits = true;
-      if (param.HasValue()) {
+    const std::vector<WebSocketExtension::Parameter>& parameters =
+        extension.parameters();
+    for (const auto& param : parameters) {
+      const std::string& name = param.name();
+      // TODO(tyoshino): Fail the connection when an invalid value is given.
+      if (name == "client_max_window_bits") {
+        *has_client_window_bits = true;
+        if (param.HasValue()) {
+          int bits = 0;
+          if (base::StringToInt(param.value(), &bits) && bits >= 8 &&
+              bits <= 15) {
+            *client_window_bits = bits;
+          }
+        }
+      }
+      if (name == "server_max_window_bits" && param.HasValue()) {
         int bits = 0;
         if (base::StringToInt(param.value(), &bits) && bits >= 8 && bits <= 15)
-          *client_window_bits = bits;
+          *server_window_bits = bits;
       }
+      if (name == "client_no_context_takeover")
+        *client_no_context_takeover = true;
+      if (name == "server_no_context_takeover")
+        *server_no_context_takeover = true;
     }
-    if (name == "server_max_window_bits" && param.HasValue()) {
-      int bits = 0;
-      if (base::StringToInt(param.value(), &bits) && bits >= 8 && bits <= 15)
-        *server_window_bits = bits;
-    }
-    if (name == "client_no_context_takeover")
-      *client_no_context_takeover = true;
-    if (name == "server_no_context_takeover")
-      *server_no_context_takeover = true;
+    *deflate = true;
+
+    break;
   }
-  *deflate = true;
 }
 
 WebSocketEncoder::WebSocketEncoder(bool is_server) : is_server_(is_server) {
