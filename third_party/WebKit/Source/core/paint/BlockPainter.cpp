@@ -5,15 +5,10 @@
 #include "config.h"
 #include "core/paint/BlockPainter.h"
 
-#include "core/editing/Caret.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
@@ -25,8 +20,6 @@
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
