@@ -106,6 +106,7 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     case WebURLRequest::RequestContextAudio:
     case WebURLRequest::RequestContextFavicon:
     case WebURLRequest::RequestContextImage:
+    case WebURLRequest::RequestContextPlugin:
     case WebURLRequest::RequestContextVideo:
         return ContextTypeOptionallyBlockable;
 
@@ -140,7 +141,6 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
     case WebURLRequest::RequestContextDownload:
     case WebURLRequest::RequestContextInternal:
-    case WebURLRequest::RequestContextPlugin:
     case WebURLRequest::RequestContextPrefetch:
         return ContextTypeShouldBeBlockable;
 
