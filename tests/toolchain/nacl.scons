@@ -673,3 +673,26 @@ if (env.Bit('build_x86_32') and env.Bit('bitcode') and
       node,
       ['nonpexe_tests', 'small_tests', 'toolchain_tests'],
       'run_stackalign_test')
+
+alt_env = env.Clone()
+if ((alt_env.Bit('bitcode') and alt_env.SetNonStableBitcodeIfAllowed())
+    or alt_env.Bit('nacl_clang')):
+  # We want to enable optimizations, to ensure "used" entrypoints
+  # are kept.
+  alt_env.Append(CFLAGS=['-O3'])
+  alt_env.Append(CCFLAGS=['-O3'])
+  alt_env.Append(LINKFLAGS=['-O3'])
+
+  exe = alt_env.ComponentProgram(
+      'llvm_used_globals',
+      ['llvm_used_globals.cc'],
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+  c_file = alt_env.File('llvm_used_globals.cc')
+  node = alt_env.CommandTestFileDumpCheck('llvm_used_globals_objdump.out',
+                                            exe,
+                                            c_file,
+                                            '-d')
+  alt_env.AddNodeToTestSuite(node,
+                               ['small_tests', 'toolchain_tests'],
+                               'run_llvm_used_globals_objdump_test')
