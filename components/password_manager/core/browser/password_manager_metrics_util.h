@@ -57,6 +57,16 @@ enum UIDismissalReason {
   NOT_DISPLAYED
 };
 
+enum FormDeserializationStatus {
+  LOGIN_DATABASE_SUCCESS,
+  LOGIN_DATABASE_FAILURE,
+  LIBSECRET_SUCCESS,
+  LIBSECRET_FAILURE,
+  GNOME_SUCCESS,
+  GNOME_FAILURE,
+  NUM_DESERIALIZATION_STATUSES
+};
+
 // We monitor the performance of the save password heuristic for a handful of
 // domains. For privacy reasons we are not reporting UMA signals by domain, but
 // by a domain group. A domain group can contain multiple domains, and a domain
@@ -101,6 +111,9 @@ void LogUIDismissalReason(ResponseType type);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
+
+// Log if a saved FormData was deserialized correctly.
+void LogFormDataDeserializationStatus(FormDeserializationStatus status);
 
 }  // namespace metrics_util
 

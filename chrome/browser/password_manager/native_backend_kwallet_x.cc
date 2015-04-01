@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -267,6 +268,11 @@ void AppendSecondToFirst(ScopedVector<autofill::PasswordForm>* first,
   first->reserve(first->size() + second.size());
   first->insert(first->end(), second.begin(), second.end());
   second.weak_clear();
+}
+
+void UMALogDeserializationStatus(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.KWalletDeserializationStatus",
+                        success);
 }
 
 }  // namespace
@@ -894,9 +900,12 @@ ScopedVector<autofill::PasswordForm> NativeBackendKWallet::DeserializeValue(
   }
 
   ScopedVector<autofill::PasswordForm> forms;
+  bool success = true;
   if (version > 0) {
     // In current pickles, we expect 64-bit sizes. Failure is an error.
-    DeserializeValueSize(signon_realm, iter, version, false, false, &forms);
+    success = DeserializeValueSize(
+        signon_realm, iter, version, false, false, &forms);
+    UMALogDeserializationStatus(success);
     return forms.Pass();
   }
 
@@ -907,8 +916,10 @@ ScopedVector<autofill::PasswordForm> NativeBackendKWallet::DeserializeValue(
     // Try again with the opposite architecture. Note that we do this even on
     // 32-bit machines, in case we're reading a 64-bit pickle. (Probably rare,
     // since mostly we expect upgrades, not downgrades, but both are possible.)
-    DeserializeValueSize(signon_realm, iter, version, !size_32, false, &forms);
+    success = DeserializeValueSize(
+        signon_realm, iter, version, !size_32, false, &forms);
   }
+  UMALogDeserializationStatus(success);
   return forms.Pass();
 }
 

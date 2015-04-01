@@ -165,6 +165,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
 bool DeserializeFormFieldData(PickleIterator* iter,
                               FormFieldData* field_data) {
   int version;
+  FormFieldData temp_form_field_data;
   if (!iter->ReadInt(&version)) {
     LOG(ERROR) << "Bad pickle of FormFieldData, no version present";
     return false;
@@ -172,17 +173,17 @@ bool DeserializeFormFieldData(PickleIterator* iter,
 
   switch (version) {
     case 1: {
-      if (!DeserializeCommonSection1(iter, field_data) ||
-          !DeserializeCommonSection2(iter, field_data)) {
+      if (!DeserializeCommonSection1(iter, &temp_form_field_data) ||
+          !DeserializeCommonSection2(iter, &temp_form_field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
       break;
     }
     case 2: {
-      if (!DeserializeCommonSection1(iter, field_data) ||
-          !DeserializeVersion2Specific(iter, field_data) ||
-          !DeserializeCommonSection2(iter, field_data)) {
+      if (!DeserializeCommonSection1(iter, &temp_form_field_data) ||
+          !DeserializeVersion2Specific(iter, &temp_form_field_data) ||
+          !DeserializeCommonSection2(iter, &temp_form_field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
@@ -193,6 +194,7 @@ bool DeserializeFormFieldData(PickleIterator* iter,
       return false;
     }
   }
+  *field_data = temp_form_field_data;
   return true;
 }
 

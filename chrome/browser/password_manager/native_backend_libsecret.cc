@@ -14,10 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
+using namespace password_manager::metrics_util;
 
 namespace {
 const char kEmptyString[] = "";
@@ -190,8 +192,14 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           GetUintFromAttributes(attrs, "generation_upload_status"));
-  DeserializeFormDataFromBase64String(
-      GetStringFromAttributes(attrs, "form_data"), &form->form_data);
+  base::StringPiece encoded_form_data =
+      GetStringFromAttributes(attrs, "form_data");
+  if (!encoded_form_data.empty()) {
+    bool success = DeserializeFormDataFromBase64String(encoded_form_data,
+                                                       &form->form_data);
+    FormDeserializationStatus status = success ? GNOME_SUCCESS : GNOME_FAILURE;
+    LogFormDataDeserializationStatus(status);
+  }
   return form.Pass();
 }
 

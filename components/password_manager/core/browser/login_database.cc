@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "sql/connection.h"
@@ -717,7 +718,12 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
         static_cast<const char*>(s.ColumnBlob(COLUMN_FORM_DATA)),
         s.ColumnByteLength(COLUMN_FORM_DATA));
     PickleIterator form_data_iter(form_data_pickle);
-    autofill::DeserializeFormData(&form_data_iter, &form->form_data);
+    bool success =
+        autofill::DeserializeFormData(&form_data_iter, &form->form_data);
+    metrics_util::FormDeserializationStatus status =
+        success ? metrics_util::LOGIN_DATABASE_SUCCESS
+                : metrics_util::LOGIN_DATABASE_FAILURE;
+    metrics_util::LogFormDataDeserializationStatus(status);
   }
   form->date_synced =
       base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_SYNCED));

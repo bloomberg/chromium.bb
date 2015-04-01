@@ -23,6 +23,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -30,6 +31,7 @@ using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
+using namespace password_manager::metrics_util;
 
 namespace {
 const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
@@ -158,8 +160,12 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           uint_attr_map["generation_upload_status"]);
-  DeserializeFormDataFromBase64String(string_attr_map["form_data"],
-      &form->form_data);
+  if (!string_attr_map["form_data"].empty()) {
+    bool success = DeserializeFormDataFromBase64String(
+        string_attr_map["form_data"], &form->form_data);
+    FormDeserializationStatus status = success ? GNOME_SUCCESS : GNOME_FAILURE;
+    LogFormDataDeserializationStatus(status);
+  }
   return form.Pass();
 }
 

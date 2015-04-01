@@ -148,6 +148,11 @@ void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
                             NUM_DISPLAY_DISPOSITIONS);
 }
 
+void LogFormDataDeserializationStatus(FormDeserializationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.FormDataDeserializationStatus",
+                            status, NUM_DESERIALIZATION_STATUSES);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

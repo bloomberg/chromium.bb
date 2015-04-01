@@ -89,4 +89,20 @@ TEST(FormFieldDataTest, DeserializeVersion1) {
   EXPECT_TRUE(actual.SameFieldAs(data));
 }
 
+// Verify that if the data isn't valid, the FormFieldData isn't populated
+// during deserialization.
+TEST(FormFieldDataTest, DeserializeBadData) {
+  Pickle pickle;
+  pickle.WriteInt(255);
+  pickle.WriteString16(base::ASCIIToUTF16("random"));
+  pickle.WriteString16(base::ASCIIToUTF16("data"));
+
+  PickleIterator iter(pickle);
+  FormFieldData actual;
+  EXPECT_FALSE(DeserializeFormFieldData(&iter, &actual));
+
+  FormFieldData empty;
+  EXPECT_TRUE(actual.SameFieldAs(empty));
+}
+
 }  // namespace autofill

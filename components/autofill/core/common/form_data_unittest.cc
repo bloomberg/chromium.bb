@@ -145,6 +145,9 @@ TEST(FormDataTest, SerializeIncorrectFormatAndDeserialize) {
   PickleIterator iter(pickle);
   FormData actual;
   EXPECT_FALSE(DeserializeFormData(&iter, &actual));
+
+  FormData empty;
+  EXPECT_TRUE(actual.SameFormAs(empty));
 }
 
 TEST(FormDataTest, SerializeAndDeserializeInStrings) {
