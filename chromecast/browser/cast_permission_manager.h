@@ -39,6 +39,12 @@ class CastPermissionManager : public content::PermissionManager {
   void RegisterPermissionUsage(content::PermissionType permission,
                                const GURL& requesting_origin,
                                const GURL& embedding_origin) override;
+  int SubscribePermissionStatusChange(
+      content::PermissionType permission,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const base::Callback<void(content::PermissionStatus)>& callback) override;
+  void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastPermissionManager);

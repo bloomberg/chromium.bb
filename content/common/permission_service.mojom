@@ -24,4 +24,13 @@ interface PermissionService {
     => (PermissionStatus status);
   RevokePermission(PermissionName permission, string origin)
     => (PermissionStatus status);
+
+  // Runs the callback next time there is a permission status change for the
+  // given { permission, origin }. Callers of this method will have to call it
+  // again if they want to keep listening to the changes. To prevent race
+  // conditions, the caller must pass the last known value.
+  GetNextPermissionChange(PermissionName permission,
+                          string origin,
+                          PermissionStatus last_known_status)
+    => (PermissionStatus status);
 };

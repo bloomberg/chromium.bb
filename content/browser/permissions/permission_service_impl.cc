@@ -139,8 +139,7 @@ void PermissionServiceImpl::HasPermission(
     const mojo::Callback<void(PermissionStatus)>& callback) {
   DCHECK(context_->GetBrowserContext());
 
-  callback.Run(GetPermissionStatus(PermissionNameToPermissionType(permission),
-                                   GURL(origin)));
+  callback.Run(GetPermissionStatusFromName(permission, GURL(origin)));
 }
 
 void PermissionServiceImpl::RevokePermission(
@@ -149,7 +148,8 @@ void PermissionServiceImpl::RevokePermission(
     const mojo::Callback<void(PermissionStatus)>& callback) {
   GURL origin_url(origin);
   PermissionType permission_type = PermissionNameToPermissionType(permission);
-  PermissionStatus status = GetPermissionStatus(permission_type, origin_url);
+  PermissionStatus status = GetPermissionStatusFromType(permission_type,
+                                                        origin_url);
 
   // Resetting the permission should only be possible if the permission is
   // already granted.
@@ -160,15 +160,55 @@ void PermissionServiceImpl::RevokePermission(
 
   ResetPermissionStatus(permission_type, origin_url);
 
-  callback.Run(GetPermissionStatus(permission_type, origin_url));
+  callback.Run(GetPermissionStatusFromType(permission_type, origin_url));
 }
 
-PermissionStatus PermissionServiceImpl::GetPermissionStatus(PermissionType type,
-                                                            GURL origin) {
+void PermissionServiceImpl::GetNextPermissionChange(
+    PermissionName permission,
+    const mojo::String& origin,
+    PermissionStatus last_known_status,
+    const mojo::Callback<void(PermissionStatus)>& callback) {
+  PermissionStatus current_status =
+      GetPermissionStatusFromName(permission, GURL(origin));
+  if (current_status != last_known_status) {
+    callback.Run(current_status);
+    return;
+  }
+
+  BrowserContext* browser_context = context_->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!browser_context->GetPermissionManager()) {
+    callback.Run(current_status);
+    return;
+  }
+
+  int* subscription_id = new int();
+
+  GURL embedding_origin = context_->GetEmbeddingOrigin();
+  *subscription_id =
+      browser_context->GetPermissionManager()->SubscribePermissionStatusChange(
+          PermissionNameToPermissionType(permission),
+          GURL(origin),
+          // If the embedding_origin is empty, we,ll use the |origin| instead.
+          embedding_origin.is_empty() ? GURL(origin) : embedding_origin,
+          base::Bind(&PermissionServiceImpl::OnPermissionStatusChanged,
+                     weak_factory_.GetWeakPtr(),
+                     callback,
+                     base::Owned(subscription_id)));
+}
+
+PermissionStatus PermissionServiceImpl::GetPermissionStatusFromName(
+    PermissionName permission, const GURL& origin) {
+  return GetPermissionStatusFromType(PermissionNameToPermissionType(permission),
+                                     origin);
+}
+
+PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
+    PermissionType type, const GURL& origin) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
   if (!browser_context->GetPermissionManager())
-    return content::PERMISSION_STATUS_DENIED;
+    return PERMISSION_STATUS_DENIED;
 
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
@@ -177,7 +217,7 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatus(PermissionType type,
 }
 
 void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
-                                                  GURL origin) {
+                                                  const GURL& origin) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
   if (!browser_context->GetPermissionManager())
@@ -187,6 +227,20 @@ void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
   GURL embedding_origin = context_->GetEmbeddingOrigin();
   browser_context->GetPermissionManager()->ResetPermission(
       type, origin, embedding_origin.is_empty() ? origin : embedding_origin);
+}
+
+void PermissionServiceImpl::OnPermissionStatusChanged(
+    const mojo::Callback<void(PermissionStatus)>& callback,
+    const int* subscription_id,
+    PermissionStatus status) {
+  callback.Run(status);
+
+  BrowserContext* browser_context = context_->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!browser_context->GetPermissionManager())
+    return;
+  browser_context->GetPermissionManager()->UnsubscribePermissionStatusChange(
+      *subscription_id);
 }
 
 }  // namespace content

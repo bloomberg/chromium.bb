@@ -56,5 +56,17 @@ void CastPermissionManager::RegisterPermissionUsage(
     const GURL& embedding_origin) {
 }
 
+int CastPermissionManager::SubscribePermissionStatusChange(
+    content::PermissionType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const base::Callback<void(content::PermissionStatus)>& callback) {
+  return -1;
+}
+
+void CastPermissionManager::UnsubscribePermissionStatusChange(
+    int subscription_id) {
+}
+
 }  // namespace shell
 }  // namespace chromecast

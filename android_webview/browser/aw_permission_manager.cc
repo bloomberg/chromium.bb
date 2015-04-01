@@ -124,4 +124,16 @@ void AwPermissionManager::RegisterPermissionUsage(
     const GURL& embedding_origin) {
 }
 
+int AwPermissionManager::SubscribePermissionStatusChange(
+    content::PermissionType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const base::Callback<void(content::PermissionStatus)>& callback) {
+  return -1;
+}
+
+void AwPermissionManager::UnsubscribePermissionStatusChange(
+    int subscription_id) {
+}
+
 }  // namespace android_webview

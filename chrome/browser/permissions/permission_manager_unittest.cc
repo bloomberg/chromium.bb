@@ -32,13 +32,31 @@ class PermissionManagerTestingProfile final : public TestingProfile {
 
 class PermissionManagerTest : public testing::Test {
  public:
-  PermissionManagerTest() : url_("https://example.com") {}
+  void OnPermissionChange(content::PermissionStatus permission) {
+    callback_called_ = true;
+    callback_result_ = permission;
+  }
+
+ protected:
+  PermissionManagerTest()
+      : url_("https://example.com"),
+        other_url_("https://foo.com"),
+        callback_called_(false),
+        callback_result_(content::PERMISSION_STATUS_ASK) {
+  }
+
+  PermissionManager* GetPermissionManager() {
+    return profile_.GetPermissionManager();
+  }
+
+  HostContentSettingsMap* GetHostContentSettingsMap() {
+    return profile_.GetHostContentSettingsMap();
+  }
 
   void CheckPermissionStatus(PermissionType type,
                              PermissionStatus expected) {
-    EXPECT_EQ(expected,
-              profile_.GetPermissionManager()->GetPermissionStatus(
-                  type, url_.GetOrigin(), url_.GetOrigin()));
+    EXPECT_EQ(expected, GetPermissionManager()->GetPermissionStatus(
+                            type, url_.GetOrigin(), url_.GetOrigin()));
   }
 
   void SetPermission(ContentSettingsType type, ContentSetting value) {
@@ -48,8 +66,32 @@ class PermissionManagerTest : public testing::Test {
         type, std::string(), value);
   }
 
+  const GURL& url() const {
+    return url_;
+  }
+
+  const GURL& other_url() const {
+    return other_url_;
+  }
+
+  bool callback_called() const {
+    return callback_called_;
+  }
+
+  content::PermissionStatus callback_result() const {
+    return callback_result_;
+  }
+
+  void Reset() {
+    callback_called_ = false;
+    callback_result_ = content::PERMISSION_STATUS_ASK;
+  }
+
  private:
   const GURL url_;
+  const GURL other_url_;
+  bool callback_called_;
+  content::PermissionStatus callback_result_;
   content::TestBrowserThreadBundle thread_bundle_;
   PermissionManagerTestingProfile profile_;
 };
@@ -92,4 +134,218 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                         content::PERMISSION_STATUS_GRANTED);
 #endif
+}
+
+TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(content::PERMISSION_STATUS_GRANTED, callback_result());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, DifferentTypeChangeDoesNotNotify) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_FALSE(callback_called());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, ChangeAfterUnsubscribeDoesNotNotify) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_FALSE(callback_called());
+}
+
+TEST_F(PermissionManagerTest, DifferentPrimaryPatternDoesNotNotify) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(other_url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_FALSE(callback_called());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, DifferentSecondaryPatternDoesNotNotify) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(other_url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_FALSE(callback_called());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, WildCardPatternNotifies) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(content::PERMISSION_STATUS_GRANTED, callback_result());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, ClearSettingsNotifies) {
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(content::PERMISSION_STATUS_ASK, callback_result());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, NewValueCorrectlyPassed) {
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(content::PERMISSION_STATUS_DENIED, callback_result());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_FALSE(callback_called());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, ChangesBackAndForth) {
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ASK);
+
+  int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(content::PERMISSION_STATUS_GRANTED, callback_result());
+
+  Reset();
+
+  GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      ContentSettingsPattern::FromURLNoWildcard(url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ASK);
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(content::PERMISSION_STATUS_ASK, callback_result());
+
+  GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }

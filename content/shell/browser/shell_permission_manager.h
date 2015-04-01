@@ -37,6 +37,12 @@ class ShellPermissionManager : public PermissionManager {
   void RegisterPermissionUsage(PermissionType permission,
                                const GURL& requesting_origin,
                                const GURL& embedding_origin) override;
+  int SubscribePermissionStatusChange(
+      PermissionType permission,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const base::Callback<void(PermissionStatus)>& callback) override;
+  void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellPermissionManager);

@@ -18,7 +18,6 @@
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"

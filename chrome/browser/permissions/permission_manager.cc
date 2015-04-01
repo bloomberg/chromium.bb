@@ -77,11 +77,21 @@ void PermissionStatusCallbackWrapper(
 
 }  // anonymous namespace
 
+struct PermissionManager::Subscription {
+  content::PermissionType permission;
+  GURL requesting_origin;
+  GURL embedding_origin;
+  base::Callback<void(content::PermissionStatus)> callback;
+  ContentSetting current_value;
+};
+
 PermissionManager::PermissionManager(Profile* profile)
     : profile_(profile) {
 }
 
 PermissionManager::~PermissionManager() {
+  if (!subscriptions_.IsEmpty())
+    profile_->GetHostContentSettingsMap()->RemoveObserver(this);
 }
 
 void PermissionManager::RequestPermission(
@@ -162,4 +172,64 @@ void PermissionManager::RegisterPermissionUsage(
       requesting_origin,
       embedding_origin,
       PermissionTypeToContentSetting(permission));
+}
+
+int PermissionManager::SubscribePermissionStatusChange(
+    content::PermissionType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const base::Callback<void(content::PermissionStatus)>& callback) {
+  if (subscriptions_.IsEmpty())
+    profile_->GetHostContentSettingsMap()->AddObserver(this);
+
+  Subscription* subscription = new Subscription();
+  subscription->permission = permission;
+  subscription->requesting_origin = requesting_origin;
+  subscription->embedding_origin = embedding_origin;
+  subscription->callback = callback;
+  subscription->current_value = PermissionContext::Get(profile_, permission)
+      ->GetPermissionStatus(subscription->requesting_origin,
+                            subscription->embedding_origin);
+
+  return subscriptions_.Add(subscription);
+}
+
+void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
+  // Whether |subscription_id| is known will be checked by the Remove() call.
+  subscriptions_.Remove(subscription_id);
+
+  if (subscriptions_.IsEmpty())
+    profile_->GetHostContentSettingsMap()->RemoveObserver(this);
+}
+
+void PermissionManager::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  for (SubscriptionsMap::iterator iter(&subscriptions_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    Subscription* subscription = iter.GetCurrentValue();
+    if (PermissionTypeToContentSetting(subscription->permission) !=
+        content_type) {
+      continue;
+    }
+
+    if (primary_pattern.IsValid() &&
+        !primary_pattern.Matches(subscription->requesting_origin))
+      continue;
+    if (secondary_pattern.IsValid() &&
+        !secondary_pattern.Matches(subscription->embedding_origin))
+      continue;
+
+    ContentSetting new_value =
+        PermissionContext::Get(profile_, subscription->permission)
+            ->GetPermissionStatus(subscription->requesting_origin,
+                                  subscription->embedding_origin);
+    if (subscription->current_value == new_value)
+      continue;
+
+    subscription->current_value = new_value;
+    subscription->callback.Run(ContentSettingToPermissionStatus(new_value));
+  }
 }

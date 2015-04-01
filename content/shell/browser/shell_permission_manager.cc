@@ -53,4 +53,16 @@ void ShellPermissionManager::RegisterPermissionUsage(
     const GURL& embedding_origin) {
 }
 
+int ShellPermissionManager::SubscribePermissionStatusChange(
+    PermissionType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const base::Callback<void(PermissionStatus)>& callback) {
+  return -1;
+}
+
+void ShellPermissionManager::UnsubscribePermissionStatusChange(
+    int subscription_id) {
+}
+
 }  // namespace content

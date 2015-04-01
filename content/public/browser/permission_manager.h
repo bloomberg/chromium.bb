@@ -43,6 +43,17 @@ class CONTENT_EXPORT PermissionManager {
   virtual void RegisterPermissionUsage(PermissionType permission,
                                        const GURL& requesting_origin,
                                        const GURL& embedding_origin) = 0;
+
+  // Runs the given |callback| whenever the |permission| associated with the
+  // pair { requesting_origin, embedding_origin } changes.
+  // Returns the subscription_id to be used to unsubscribe.
+  virtual int SubscribePermissionStatusChange(
+      PermissionType permission,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const base::Callback<void(PermissionStatus)>& callback) = 0;
+
+  virtual void UnsubscribePermissionStatusChange(int subscription_id) = 0;
 };
 
 }  // namespace content
