@@ -72,17 +72,6 @@ _CONTROL_CHARGING_COMMANDS = [
   },
 ]
 
-# This must be done in a single shell command.
-_RESTART_ADBD_SCRIPT = """
-    function restart() {
-      stop adbd
-      start adbd
-    }
-
-    restart &
-"""
-
-
 @decorators.WithExplicitTimeoutAndRetries(
     _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
 def GetAVDs():
@@ -393,12 +382,6 @@ class DeviceUtils(object):
     timeout_retry.WaitFor(boot_completed)
     if wifi:
       timeout_retry.WaitFor(wifi_enabled)
-
-  @decorators.WithTimeoutAndRetriesFromInstance()
-  def RestartAdbd(self, timeout=None, retries=None):
-    self.RunShellCommand(['sh', '-c', _RESTART_ADBD_SCRIPT],
-                         as_root=True, check_return=True)
-    self.adb.WaitForDevice()
 
   REBOOT_DEFAULT_TIMEOUT = 10 * _DEFAULT_TIMEOUT
   REBOOT_DEFAULT_RETRIES = _DEFAULT_RETRIES

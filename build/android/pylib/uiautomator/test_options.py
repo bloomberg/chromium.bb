@@ -8,6 +8,7 @@ import collections
 
 UIAutomatorOptions = collections.namedtuple('UIAutomatorOptions', [
     'tool',
+    'cleanup_test_files',
     'annotations',
     'exclude_annotations',
     'test_filter',

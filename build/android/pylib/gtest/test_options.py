@@ -8,6 +8,7 @@ import collections
 
 GTestOptions = collections.namedtuple('GTestOptions', [
     'tool',
+    'cleanup_test_files',
     'gtest_filter',
     'run_disabled',
     'test_arguments',

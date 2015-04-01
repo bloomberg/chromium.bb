@@ -34,14 +34,13 @@ def CleanupLeftoverProcesses():
   """Clean up the test environment, restarting fresh adb and HTTP daemons."""
   _KillWebServers()
   device_utils.RestartServer()
-
-  def cleanup_device(d):
-    d.RestartAdbd()
-    try:
-      d.EnableRoot()
-    except device_errors.CommandFailedError as e:
-      logging.error(str(e))
-    d.WaitUntilFullyBooted()
-
-  device_utils.DeviceUtils.parallel().pMap(cleanup_device)
+  p = device_utils.DeviceUtils.parallel()
+  p.old_interface.RestartAdbdOnDevice()
+  try:
+    p.EnableRoot()
+  except device_errors.CommandFailedError as e:
+    # TODO(jbudorick) Handle this exception appropriately after interface
+    #                 conversions are finished.
+    logging.error(str(e))
+  p.WaitUntilFullyBooted()
 

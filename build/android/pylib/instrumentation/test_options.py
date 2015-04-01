@@ -8,6 +8,7 @@ import collections
 
 InstrumentationOptions = collections.namedtuple('InstrumentationOptions', [
     'tool',
+    'cleanup_test_files',
     'annotations',
     'exclude_annotations',
     'test_filter',
