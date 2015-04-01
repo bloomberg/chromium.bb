@@ -37416,7 +37416,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.AllResponses">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of all network responses received by a renderer. Each response is
     corresponding to one URL requested by a renderer. Incremented when the first
@@ -37425,14 +37425,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.BrowsingInstanceCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of all current BrowsingInstances.  Recorded once per UMA ping.
   </summary>
 </histogram>
 
 <histogram name="SiteIsolation.CurrentRendererProcessCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of all renderer processes, including WebUI and extensions.
     Recorded once per UMA ping.
@@ -37440,7 +37440,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateAllSitesProcessCountEstimate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The upper bound of the predicted renderer process count if we isolated all
     sites, subject to the process limit.  Recorded once per UMA ping.
@@ -37448,7 +37448,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateAllSitesProcessCountLowerBound">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The lower bound of the predicted renderer process count if we isolated all
     sites, subject to the process limit.  Happens to be the number of unique
@@ -37457,7 +37457,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateAllSitesProcessCountNoLimit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The predicted renderer process count if we isolated all sites and if there
     were no process limit.  Recorded once per UMA ping.
@@ -37465,7 +37465,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateAllSitesTotalProcessCountEstimate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The predicted total process count if we isolated all sites, subject to the
     process limit.  Recorded once per UMA ping.
@@ -37473,7 +37473,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateHttpsSitesProcessCountEstimate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The upper bound of the predicted renderer process count if we isolated only
     HTTPS (not HTTP) sites, subject to the process limit.  Recorded once per UMA
@@ -37482,7 +37482,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateHttpsSitesProcessCountLowerBound">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The lower bound of the predicted renderer process count if we isolated only
     HTTPS (not HTTP) sites, subject to the process limit.  Happens to be the
@@ -37491,7 +37491,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateHttpsSitesProcessCountNoLimit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The predicted renderer process count if we isolated only HTTPS (not HTTP)
     sites and if there were no process limit.  Recorded once per UMA ping.
@@ -37499,7 +37499,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.IsolateHttpsSitesTotalProcessCountEstimate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The predicted total process count if we isolated only HTTPS (not HTTP)
     sites, subject to the process limit.  Recorded once per UMA ping.
@@ -37507,7 +37507,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.DataLength" units="byte">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The number of bytes in the first network packet for a response with headers
     that imply potential illegal cross-site access. Recorded when the first
@@ -37516,7 +37516,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.Blocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of blocked cross-site document responses due to having HTML
     content type header and contents sniffed as HTML. Sampled with value of 1
@@ -37525,7 +37525,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.Blocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to their HTML contents. Sampled with value
@@ -37535,7 +37535,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.) among blocked
@@ -37546,7 +37546,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to having HTML content type and nosniff
@@ -37557,7 +37557,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37568,7 +37568,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.NotBlocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of not blocked responses despite having an HTML content type
     header due to the failure of content sniffing. Sampled with value 1 when the
@@ -37577,7 +37577,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.NotBlocked.MaybeJS">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses that may be parsed as JavaScript among not blocked
     responses. Sampled with value 1 when the first network packet of a response
@@ -37586,7 +37586,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.Blocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of blocked cross-site document responses due to having JSON
     content type header and contents sniffed as JSON. Sampled with value 1 when
@@ -37595,7 +37595,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.Blocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to their JSON contents. Sampled with value
@@ -37605,7 +37605,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37616,7 +37616,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to having JSON content type and nosniff
@@ -37627,7 +37627,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37638,7 +37638,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.NotBlocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of not blocked responses despite having an JSON content type
     header due to the failure of content sniffing. Sampled with value 1 when the
@@ -37647,7 +37647,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.NotBlocked.MaybeJS">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses that may be parsed as JavaScript among not blocked
     responses with a JSON content type header. Sampled with value 1 when the
@@ -37656,7 +37656,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.MimeType" enum="SiteIsolationMimeType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     MIME type codes for content type header values of potentially cross-site
     document responses, excluding same-site or not http(s) urls. Sampled with a
@@ -37666,7 +37666,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.HTML.Blocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of blocked cross-site document responses due to having Plain
     content type header and contents sniffed as HTML. Sampled with value 1 when
@@ -37675,7 +37675,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     responses due to their Plain.HTML contents. Sampled with value 1 when the
@@ -37685,7 +37685,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37696,7 +37696,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.JSON.Blocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of blocked cross-site document responses due to having Plain
     content type header and contents sniffed as JSON. Sampled with value 1 when
@@ -37705,7 +37705,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to their Plain.JSON contents. Sampled with
@@ -37716,7 +37716,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37728,7 +37728,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram
     name="SiteIsolation.XSD.Plain.NoSniffBlocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to having Plain content type and nosniff
@@ -37739,7 +37739,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37750,7 +37750,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.NotBlocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of not blocked responses despite having an Plain content type
     header due to the failure of content sniffing. Sampled with value 1 when the
@@ -37759,7 +37759,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.NotBlocked.MaybeJS">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses that may be parsed as JavaScript among not blocked
     responses with a Plain content type header. Sampled with value 1 when the
@@ -37768,7 +37768,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.XML.Blocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of blocked cross-site document responses due to having Plain
     content type header and contents sniffed as XML. Sampled with value 1 when
@@ -37777,7 +37777,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.XML.Blocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to their Plain.XML contents. Sampled with
@@ -37788,7 +37788,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with renderable HTTP status codes sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37799,7 +37799,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.Blocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of blocked cross-site document responses due to having XML content
     type header and contents sniffed as XML. Sampled with value 1 when the first
@@ -37808,7 +37808,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.Blocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with nonrenderable HTTP status codes among blocked
     cross-site document responses due to their XML contents. Sampled with value
@@ -37818,7 +37818,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.XML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with renderable HTTP status codes sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37829,7 +37829,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.NonRenderableStatusCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a nonrenderable HTTP status code among blocked
     cross-site document responses due to having XML content type and nosniff
@@ -37840,7 +37840,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
@@ -37851,7 +37851,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.NotBlocked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of not blocked responses despite having an XML content type header
     due to the failure of content sniffing. Sampled with value 1 when the first
@@ -37860,7 +37860,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.NotBlocked.MaybeJS">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>creis@chromium.org</owner>
   <summary>
     The count of responses that may be parsed as JavaScript among not blocked
     responses with an XML content type. Sampled with value 1 when the first
