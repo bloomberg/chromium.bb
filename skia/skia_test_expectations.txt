@@ -48,4 +48,6 @@
 #
 # START OVERRIDES HERE
 
+Bug(senorblanco) virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
