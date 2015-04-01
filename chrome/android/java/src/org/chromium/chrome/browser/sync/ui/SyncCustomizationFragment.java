@@ -11,11 +11,8 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -35,7 +32,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
@@ -43,7 +39,6 @@ import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
-import org.chromium.chrome.browser.sync.SyncStartupHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
@@ -69,7 +64,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     public static final String FRAGMENT_CUSTOM_PASSWORD = "custom_password";
     @VisibleForTesting
     public static final String FRAGMENT_PASSWORD_TYPE = "password_type";
-    private static final String FRAGMENT_SPINNER = "spinner";
 
     @VisibleForTesting
     public static final String PREFERENCE_SYNC_EVERYTHING = "sync_everything";
@@ -95,8 +89,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     private ChromeSwitchPreference mSyncSwitchPreference;
     private AndroidSyncSettings mAndroidSyncSettings;
 
-    private AndroidSyncSettings.AndroidSyncSettingsObserver mAndroidSyncSettingsObserver;
-
     @VisibleForTesting
     public static final String[] PREFS_TO_SAVE = {
         PREFERENCE_SYNC_EVERYTHING,
@@ -119,17 +111,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     private Preference mManageSyncData;
     private CheckBoxPreference[] mAllTypes;
     private boolean mCheckboxesInitialized;
-
-    /**
-     * Transitional flag required to support clients that haven't been upgraded to keystore based
-     * encryption. For these users, password sync cannot be disabled.
-     */
-    private boolean mPasswordSyncConfigurable;
-
-    /**
-     * Helper object that notifies us once sync startup has completed.
-     */
-    private SyncStartupHelper mSyncStartupHelper;
 
     private ProfileSyncService mProfileSyncService;
 
@@ -163,19 +144,9 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             type.setOnPreferenceChangeListener(this);
         }
 
-        // Disable the UI until the sync backend is initialized.
-        if (!mProfileSyncService.isSyncInitialized()) {
-            // Display a loading dialog until showConfigure() is called.
-            if (savedInstanceState == null) {
-                displaySpinnerDialog();
-            }
-        }
         ChildAccountService.getInstance(getActivity()).waitUntilFinished();
 
         mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
-        boolean isSyncEnabled = mAndroidSyncSettings.isSyncEnabled();
-        mSyncSwitchPreference.setChecked(isSyncEnabled);
-        mSyncSwitchPreference.setEnabled(canDisableSync());
         mSyncSwitchPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -186,19 +157,17 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
                 } else {
                     syncController.stop();
                 }
+                // Must be done asynchronously because the switch state isn't updated
+                // until after this function exits.
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
-                        updateDataTypeState();
+                        updateSyncStateFromSwitch();
                     }
                 });
                 return true;
             }
         });
-
-        mPasswordSyncConfigurable = mProfileSyncService.isSyncInitialized()
-                && mProfileSyncService.isCryptographerReady();
-        updateDataTypeState();
 
         return view;
     }
@@ -250,111 +219,76 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         return mSyncSwitchPreference;
     }
 
-
-    // Utility routine to dispose of our SyncStartupHelper once it is no longer
-    // needed.
-    private void destroySyncStartupHelper() {
-        if (mSyncStartupHelper != null) {
-            mSyncStartupHelper.destroy();
-            mSyncStartupHelper = null;
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
-        // This flag prevents sync from actually syncing when the backend is initialized.
+        // This prevents sync from actually syncing until the dialog is closed.
         mProfileSyncService.setSetupInProgress(true);
-        mSyncStartupHelper = new SyncStartupHelper(
-                mProfileSyncService,
-                new SyncStartupHelper.Delegate() {
-                    @Override
-                    public void startupComplete() {
-                        destroySyncStartupHelper();
-                        showConfigure();
-                    }
-
-                    @Override
-                    public void startupFailed() {
-                        destroySyncStartupHelper();
-                        closeDialogIfOpen(FRAGMENT_SPINNER);
-                        getActivity().finish();
-                    }
-                });
-        // Startup the sync backend. When sync is initialized, the startupComplete()
-        // callback will be invoked to allow us to display our UI.
-        mSyncStartupHelper.startSync();
         mProfileSyncService.addSyncStateChangedListener(this);
-        // We need to act on Android sync state being changed from somewhere else.
-        mAndroidSyncSettingsObserver =  new AndroidSyncSettingsObserver();
-        mAndroidSyncSettings.registerObserver(mAndroidSyncSettingsObserver);
+        updateSyncState();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mSyncStartupHelper != null) {
-            destroySyncStartupHelper();
-        }
-        // Sync is already started. If we're closing this activity, apply our configuration
-        // changes and tell sync that the user is done configuring sync.
+        mProfileSyncService.removeSyncStateChangedListener(this);
+        // If this activity is closing, apply configuration changes and tell sync that
+        // the user is done configuring sync.
         if (!getActivity().isChangingConfigurations()) {
-            if (mSyncSwitchPreference.isChecked()) {
+            // Only save state if the switch and external state match. If a stop and clear comes
+            // while the dialog is open, this will be false and settings won't be saved.
+            if (mSyncSwitchPreference.isChecked() && mAndroidSyncSettings.isSyncEnabled()) {
                 // Save the new data type state.
                 configureSyncDataTypes();
                 // Inform sync that the user has finished setting up sync at least once.
                 mProfileSyncService.setSyncSetupCompleted();
-            } else {
-                // Since we start the sync backend when we open this dialog, shut it down here.
-                SyncController.get(getActivity()).stop();
             }
-            // Setup is no longer in progress. This was preventing sync from actually running
-            // while the backend was up.
+            // Setup is done. This was preventing sync from turning on even if it was enabled.
             mProfileSyncService.setSetupInProgress(false);
         }
-        if (mAndroidSyncSettingsObserver != null) {
-            mAndroidSyncSettings.unregisterObserver(mAndroidSyncSettingsObserver);
-        }
-        mProfileSyncService.removeSyncStateChangedListener(this);
     }
 
-    public void showConfigure() {
-        closeDialogIfOpen(FRAGMENT_SPINNER);
-        closeDialogIfOpen(FRAGMENT_CUSTOM_PASSWORD);
-        closeDialogIfOpen(FRAGMENT_ENTER_PASSWORD);
+    /**
+     * Update the state of all settings from sync.
+     *
+     * This sets the state of the sync switch from external sync state and then calls
+     * updateSyncStateFromSwitch, which uses that as its source of truth.
+     */
+    private void updateSyncState() {
+        boolean isSyncEnabled = mAndroidSyncSettings.isSyncEnabled();
+        mSyncSwitchPreference.setChecked(isSyncEnabled);
+        mSyncSwitchPreference.setEnabled(canDisableSync());
+        updateSyncStateFromSwitch();
+    }
 
-        assert mProfileSyncService.isSyncInitialized();
-        if (!mProfileSyncService.isSyncInitialized()) {
-            // Asserts could be disabled on devices and there could be a crash when
-            // toggling sync on/off. http://crbug.com/344524
-            return;
-        }
-        // Clear out any previous passphrase error.
-        updateEncryptionState();
-
-        // We don't have any previously-saved checkbox states, so let's initialize from
-        // the current sync state - does nothing if we already set the states, so we
-        // don't clobber the user settings after the fragment is paused/resumed.
-        Set<ModelType> syncTypes = mProfileSyncService.getPreferredDataTypes();
-        if (!mCheckboxesInitialized) {
-            mCheckboxesInitialized = true;
-            mSyncEverything.setChecked(mProfileSyncService.hasKeepEverythingSynced());
-            mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
-            mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARK));
-            mSyncOmnibox.setChecked(syncTypes.contains(ModelType.TYPED_URL));
-            mSyncPasswords.setChecked(mPasswordSyncConfigurable
-                    && syncTypes.contains(ModelType.PASSWORD));
-            mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
-        }
+    /**
+     * Update the state of settings using the switch state to determine if sync is enabled.
+     */
+    private void updateSyncStateFromSwitch() {
+        updateSyncEverythingState();
         updateDataTypeState();
+        updateEncryptionState();
     }
 
+    /**
+     * Update the encryption state.
+     *
+     * If sync's backend is initialized, the button is enabled and the dialog will present the
+     * valid encryption options for the user. Otherwise, any encryption dialogs will be closed
+     * and the button will be disabled because the backend is needed in order to know and
+     * modify the encryption state.
+     */
     private void updateEncryptionState() {
+        boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
+        boolean isSyncInitialized = mProfileSyncService.isSyncInitialized();
+        mSyncEncryption.setEnabled(isSyncEnabled && isSyncInitialized);
         mSyncEncryption.setSummary(null);
-        if (!mProfileSyncService.isSyncInitialized()) {
-            // We can not inspect passphrase state if sync is not initialized. This case happens
-            // whenever the user turns off sync from the customization screen. In this case, it
-            // makes sense to leave the summary as empty, since we really have no idea.
+        if (!isSyncInitialized) {
+            // If sync is not initialized, encryption state is unavailable and can't be changed.
+            // Leave the button disabled and the summary empty. Additionally, close the dialogs in
+            // case they were open when a stop and clear comes.
+            closeDialogIfOpen(FRAGMENT_CUSTOM_PASSWORD);
+            closeDialogIfOpen(FRAGMENT_ENTER_PASSWORD);
             return;
         }
         if (mProfileSyncService.isPassphraseRequiredForDecryption() && isAdded()) {
@@ -366,7 +300,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
                         errorSummary(getString(R.string.sync_need_password)));
             }
         }
-        mPasswordSyncConfigurable = mProfileSyncService.isCryptographerReady();
     }
 
     /**
@@ -395,10 +328,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         if (mSyncAutofill.isChecked()) types.add(ModelType.AUTOFILL);
         if (mSyncBookmarks.isChecked()) types.add(ModelType.BOOKMARK);
         if (mSyncOmnibox.isChecked()) types.add(ModelType.TYPED_URL);
-        if (mSyncPasswords.isChecked()) {
-            assert mPasswordSyncConfigurable;
-            types.add(ModelType.PASSWORD);
-        }
+        if (mSyncPasswords.isChecked()) types.add(ModelType.PASSWORD);
         if (mSyncRecentTabs.isChecked()) types.add(ModelType.PROXY_TABS);
         return types;
     }
@@ -426,13 +356,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         dialog.show(ft, FRAGMENT_CUSTOM_PASSWORD);
     }
 
-    private void displaySpinnerDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        SpinnerDialogFragment dialog = new SpinnerDialogFragment();
-        dialog.setTargetFragment(this, 0);
-        dialog.show(ft, FRAGMENT_SPINNER);
-    }
-
     private void closeDialogIfOpen(String tag) {
         DialogFragment df = (DialogFragment) getFragmentManager().findFragmentByTag(tag);
         if (df != null) {
@@ -448,7 +371,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             // apply our encryption configuration changes.
             configureSyncDataTypes();
             // Re-display our config UI to properly reflect the new state.
-            showConfigure();
+            updateSyncState();
         }
     }
 
@@ -494,7 +417,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     private void handleDecryption(String passphrase) {
         if (!passphrase.isEmpty() && mProfileSyncService.setDecryptionPassphrase(passphrase)) {
             // Update our configuration UI.
-            showConfigure();
+            updateSyncState();
         } else {
             // Let the user know that the passphrase was not valid.
             notifyInvalidPassphrase();
@@ -600,40 +523,63 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
                 .createAccountFromName(getArguments().getString(ARGUMENT_ACCOUNT));
     }
 
-    private static class SpinnerDialogFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            ProgressDialog dialog = new ProgressDialog(getActivity());
-            dialog.setMessage(getResources().getString(R.string.sync_loading));
-            return dialog;
-        }
-
-        @Override
-        public void onCancel(DialogInterface dialog) {
-            super.onCancel(dialog);
-            ((SyncCustomizationFragment) getTargetFragment()).getActivity().finish();
-        }
+    /**
+     * Update the state of the sync everything switch.
+     *
+     * If sync is on, load the pref from native. Otherwise display sync everything as on but
+     * disable the switch.
+     */
+    private void updateSyncEverythingState() {
+        boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
+        mSyncEverything.setEnabled(isSyncEnabled);
+        mSyncEverything.setChecked(!isSyncEnabled
+                || mProfileSyncService.hasKeepEverythingSynced());
     }
 
+    /**
+     * Update the data type switch state.
+     *
+     * If sync is on, load the prefs from native. Otherwise, all data types are disabled and
+     * checked. Note that the Password data type will be shown as disabled and unchecked between
+     * sync being turned on and the backend initialization completing.
+     */
     private void updateDataTypeState() {
-        boolean syncEnabled = mSyncSwitchPreference.isChecked();
-        mSyncEverything.setEnabled(syncEnabled);
-        mSyncEncryption.setEnabled(syncEnabled);
-
+        boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
         boolean syncEverything = mSyncEverything.isChecked();
+        boolean passwordSyncConfigurable = mProfileSyncService.isSyncInitialized()
+                && mProfileSyncService.isCryptographerReady();
         for (CheckBoxPreference pref : mAllTypes) {
-            boolean canSyncType = pref != mSyncPasswords || mPasswordSyncConfigurable;
+            boolean canSyncType = pref != mSyncPasswords || passwordSyncConfigurable;
 
-            if (syncEverything) pref.setChecked(canSyncType);
+            if (!isSyncEnabled) {
+                pref.setChecked(true);
+            } else if (syncEverything) {
+                pref.setChecked(canSyncType);
+            }
 
-            pref.setEnabled(syncEnabled && !syncEverything && canSyncType);
+            pref.setEnabled(isSyncEnabled && !syncEverything && canSyncType);
+        }
+        if (isSyncEnabled && !syncEverything) {
+            Set<ModelType> syncTypes = mProfileSyncService.getPreferredDataTypes();
+            mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
+            mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARK));
+            mSyncOmnibox.setChecked(syncTypes.contains(ModelType.TYPED_URL));
+            mSyncPasswords.setChecked(passwordSyncConfigurable
+                    && syncTypes.contains(ModelType.PASSWORD));
+            mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
         }
     }
 
+    /**
+     * Listen to sync state changes.
+     *
+     * If the user has just turned on sync, this listener is needed in order to enable
+     * the encryption settings once the backend has initialized.
+     */
     @Override
     public void syncStateChanged() {
-        updateEncryptionState();
-        updateDataTypeState();
+        // Update all because Password syncability is also affected by the backend.
+        updateSyncStateFromSwitch();
     }
 
     /**
@@ -646,27 +592,10 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
                 || !canDisableSync()) {
             return false;
         }
-
+        SyncController.get(getActivity()).stop();
         mSyncSwitchPreference.setChecked(false);
-        mSyncEverything.setChecked(true);
-        updateDataTypeState();
+        // setChecked doesn't trigger the callback, so update manually.
+        updateSyncStateFromSwitch();
         return true;
-    }
-
-    private class AndroidSyncSettingsObserver
-            implements AndroidSyncSettings.AndroidSyncSettingsObserver {
-
-        @Override
-        public void androidSyncSettingsChanged() {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // Sync can be turned off externally (for example from the Google Dashboard)
-                    // while this fragment is showing, so we need to act on that.
-                    boolean enabled = mAndroidSyncSettings.isSyncEnabled();
-                    mSyncSwitchPreference.setChecked(enabled);
-                }
-            });
-        }
     }
 }
