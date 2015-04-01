@@ -112,7 +112,9 @@ void KillPluginOnIOThread(int child_id) {
           base::Bind(&DumpAndTerminatePluginInBlockingPool,
                      base::Owned(new base::win::ScopedHandle(handle))));
 #else
-      base::KillProcess(data.handle, content::RESULT_CODE_HUNG, false);
+      base::Process process =
+          base::Process::DeprecatedGetProcessFromHandle(data.handle);
+      process.Terminate(content::RESULT_CODE_HUNG, false);
 #endif
       break;
     }

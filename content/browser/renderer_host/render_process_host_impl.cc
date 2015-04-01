@@ -1437,7 +1437,10 @@ bool RenderProcessHostImpl::Shutdown(int exit_code, bool wait) {
   StopChildProcess(GetHandle());
   return true;
 #else
-  return base::KillProcess(GetHandle(), exit_code, wait);
+  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting())
+    return false;
+
+  return child_process_launcher_->GetProcess().Terminate(exit_code, wait);
 #endif
 }
 

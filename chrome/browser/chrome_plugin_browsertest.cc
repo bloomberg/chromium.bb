@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -171,7 +171,9 @@ class ChromePluginTest : public InProcessBrowserTest {
           iter.GetData().process_type != content::PROCESS_TYPE_PPAPI_PLUGIN) {
         continue;
       }
-      base::KillProcess(iter.GetData().handle, 0, true);
+      base::Process process = base::Process::DeprecatedGetProcessFromHandle(
+          iter.GetData().handle);
+      process.Terminate(0, true);
       found = true;
     }
     ASSERT_TRUE(found) << "Didn't find Flash process!";

@@ -12,8 +12,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/threading/thread.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
@@ -144,7 +144,8 @@ void ProcessProxy::Close() {
   callback_ = ProcessOutputCallback();
   callback_runner_ = NULL;
 
-  base::KillProcess(pid_, 0, true /* wait */);
+  base::Process process = base::Process::DeprecatedGetProcessFromHandle(pid_);
+  process.Terminate(0, true /* wait */);
 
   // TODO(tbarzic): What if this fails?
   StopWatching();

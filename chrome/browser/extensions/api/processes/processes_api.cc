@@ -640,8 +640,9 @@ void TerminateFunction::TerminateProcess() {
     if (model->IsResourceFirstInGroup(i)) {
       if (process_id_ == model->GetUniqueChildProcessId(i)) {
         found = true;
-        killed = base::KillProcess(model->GetProcess(i),
-            content::RESULT_CODE_KILLED, true);
+        base::Process process =
+            base::Process::DeprecatedGetProcessFromHandle(model->GetProcess(i));
+        killed = process.Terminate(content::RESULT_CODE_KILLED, true);
         UMA_HISTOGRAM_COUNTS("ChildProcess.KilledByExtensionAPI", 1);
         break;
       }

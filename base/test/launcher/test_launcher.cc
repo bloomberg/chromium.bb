@@ -310,7 +310,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
     // Ensure that the process terminates.
-    KillProcess(process.Handle(), -1, true);
+    process.Terminate(-1, true);
   }
 
   {

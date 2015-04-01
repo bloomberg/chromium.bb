@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "base/process/process.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -2664,9 +2665,9 @@ IN_PROC_BROWSER_TEST_F(
       rules_registry_id, "ui").get());
 
   // Kill the embedder's render process, so the webview will go as well.
-  content::RenderProcessHost* host =
-      embedder_web_contents->GetRenderProcessHost();
-  base::KillProcess(host->GetHandle(), 0, false);
+  base::Process process = base::Process::DeprecatedGetProcessFromHandle(
+        embedder_web_contents->GetRenderProcessHost()->GetHandle());
+  process.Terminate(0, false);
   observer->WaitForEmbedderRenderProcessTerminate();
 
   EXPECT_FALSE(registry_service->GetRulesRegistry(

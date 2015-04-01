@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/threading/thread.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
 
@@ -132,7 +133,9 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
       output_received_ = true;
       EXPECT_EQ(type, "stdout");
       EXPECT_EQ(output, "p");
-      base::KillProcess(pid_, 0 , true);
+      base::Process process =
+          base::Process::DeprecatedGetProcessFromHandle(pid_);
+      process.Terminate(0, true);
       return;
     }
     EXPECT_EQ("exit", type);
@@ -197,8 +200,11 @@ class ProcessProxyTest : public testing::Test {
 
     base::TerminationStatus status = base::GetTerminationStatus(pid_, NULL);
     EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING, status);
-    if (status == base::TERMINATION_STATUS_STILL_RUNNING)
-      base::KillProcess(pid_, 0, true);
+    if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+      base::Process process =
+          base::Process::DeprecatedGetProcessFromHandle(pid_);
+      process.Terminate(0, true);
+    }
 
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());

@@ -1549,10 +1549,13 @@ bool TaskManager::IsBrowserProcess(int index) const {
 }
 
 void TaskManager::KillProcess(int index) {
-  base::ProcessHandle process = model_->GetProcess(index);
-  DCHECK(process);
-  if (process != base::GetCurrentProcessHandle())
-    base::KillProcess(process, content::RESULT_CODE_KILLED, false);
+  base::ProcessHandle process_handle = model_->GetProcess(index);
+  DCHECK(process_handle);
+  if (process_handle != base::GetCurrentProcessHandle()) {
+    base::Process process =
+        base::Process::DeprecatedGetProcessFromHandle(process_handle);
+    process.Terminate(content::RESULT_CODE_KILLED, false);
+  }
 }
 
 void TaskManager::ActivateProcess(int index) {

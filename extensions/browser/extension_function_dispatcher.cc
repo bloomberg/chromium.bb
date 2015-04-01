@@ -84,19 +84,19 @@ base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 // Kills the specified process because it sends us a malformed message.
 // Track the specific function's |histogram_value|, as this may indicate a bug
 // in that API's implementation on the renderer.
-void KillBadMessageSender(base::ProcessHandle process,
+void KillBadMessageSender(const base::Process& process,
                           functions::HistogramValue histogram_value) {
   NOTREACHED();
   content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
   UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",
                             histogram_value, functions::ENUM_BOUNDARY);
-  if (process)
-    base::KillProcess(process, content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  if (process.IsValid())
+    process.Terminate(content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 
 void CommonResponseCallback(IPC::Sender* ipc_sender,
                             int routing_id,
-                            base::ProcessHandle peer_process,
+                            const base::Process& peer_process,
                             int request_id,
                             ExtensionFunction::ResponseType type,
                             const base::ListValue& results,
@@ -136,8 +136,10 @@ void IOThreadResponseCallback(
   if (!ipc_sender.get())
     return;
 
-  CommonResponseCallback(ipc_sender.get(), routing_id, ipc_sender->PeerHandle(),
-                         request_id, type, results, error, histogram_value);
+  base::Process peer_process =
+      base::Process::DeprecatedGetProcessFromHandle(ipc_sender->PeerHandle());
+  CommonResponseCallback(ipc_sender.get(), routing_id, peer_process, request_id,
+                         type, results, error, histogram_value);
 }
 
 }  // namespace
@@ -184,9 +186,11 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
                                     const base::ListValue& results,
                                     const std::string& error,
                                     functions::HistogramValue histogram_value) {
+    base::Process process = base::Process::DeprecatedGetProcessFromHandle(
+        render_view_host_->GetProcess()->GetHandle());
     CommonResponseCallback(render_view_host_, render_view_host_->GetRoutingID(),
-                           render_view_host_->GetProcess()->GetHandle(),
-                           request_id, type, results, error, histogram_value);
+                           process, request_id, type, results, error,
+                           histogram_value);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;

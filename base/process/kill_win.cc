@@ -81,7 +81,7 @@ void TimerExpiredTask::KillProcess() {
   // terminates.  We just care that it eventually terminates, and that's what
   // TerminateProcess should do for us. Don't check for the result code since
   // it fails quite often. This should be investigated eventually.
-  base::KillProcess(process_.Handle(), kProcessKilledExitCode, false);
+  process_.Terminate(kProcessKilledExitCode, false);
 
   // Now, just cleanup as if the process exited normally.
   OnObjectSignaled(process_.Handle());

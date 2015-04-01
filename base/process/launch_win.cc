@@ -219,7 +219,8 @@ Process LaunchProcess(const string16& cmdline,
     if (0 == AssignProcessToJobObject(options.job_handle,
                                       process_info.process_handle())) {
       DLOG(ERROR) << "Could not AssignProcessToObject.";
-      KillProcess(process_info.process_handle(), kProcessKilledExitCode, true);
+      Process scoped_process(process_info.TakeProcessHandle());
+      scoped_process.Terminate(kProcessKilledExitCode, true);
       return Process();
     }
 
