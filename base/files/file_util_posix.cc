@@ -57,7 +57,6 @@
 
 namespace base {
 
-#if !defined(OS_NACL_NONSFI)
 namespace {
 
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
@@ -80,6 +79,7 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
 }
 #endif  // !(defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL))
 
+#if !defined(OS_NACL_NONSFI)
 // Helper for NormalizeFilePath(), defined below.
 bool RealPath(const FilePath& path, FilePath* real_path) {
   ThreadRestrictions::AssertIOAllowed();  // For realpath().
@@ -182,9 +182,11 @@ bool DetermineDevShmExecutable() {
   return result;
 }
 #endif  // defined(OS_LINUX)
+#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace
 
+#if !defined(OS_NACL_NONSFI)
 FilePath MakeAbsoluteFilePath(const FilePath& input) {
   ThreadRestrictions::AssertIOAllowed();
   char full_path[PATH_MAX];
@@ -363,6 +365,7 @@ bool PathIsWritable(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
   return access(path.value().c_str(), W_OK) == 0;
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 bool DirectoryExists(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
@@ -371,7 +374,6 @@ bool DirectoryExists(const FilePath& path) {
     return S_ISDIR(file_info.st_mode);
   return false;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool ReadFromFD(int fd, char* buffer, size_t bytes) {
   size_t total_read = 0;
