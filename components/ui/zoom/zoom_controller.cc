@@ -243,8 +243,10 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
     }
     case ZOOM_MODE_DISABLED: {
       // The page needs to be zoomed back to default before disabling the zoom
+      double new_zoom_level = GetDefaultZoomLevel();
+      event_data_->new_zoom_level = new_zoom_level;
       zoom_map->SetTemporaryZoomLevel(render_process_id, render_view_id,
-                                      GetDefaultZoomLevel());
+                                      new_zoom_level);
       break;
     }
   }

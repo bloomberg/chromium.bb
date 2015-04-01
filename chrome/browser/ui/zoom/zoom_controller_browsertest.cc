@@ -243,6 +243,28 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
   zoom_change_watcher.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ObserveDisabledModeEvent) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+
+  double default_zoom_level = zoom_controller->GetDefaultZoomLevel();
+  double new_zoom_level = default_zoom_level + 1.0;
+  zoom_controller->SetZoomLevel(new_zoom_level);
+
+  ZoomController::ZoomChangedEventData zoom_change_data(
+      web_contents,
+      new_zoom_level,
+      default_zoom_level,
+      ZoomController::ZOOM_MODE_DISABLED,
+      true);
+  ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
+  zoom_controller->SetZoomMode(ZoomController::ZOOM_MODE_DISABLED);
+  zoom_change_watcher.Wait();
+}
+
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, PerTabModeResetSendsEvent) {
   TestResetOnNavigation(ZoomController::ZOOM_MODE_ISOLATED);
 }

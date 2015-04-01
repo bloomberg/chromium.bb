@@ -2170,10 +2170,7 @@ function testDisabledZoomMode() {
 
   var zoomchanged = false;
   var zoomchangeListener = function(e) {
-    // TODO (paulmeyer): This is currently broken because ZoomObservers do not
-    // get the correct new zoom level when changing the zoom mode to
-    // 'disabled'. Will add back in after http://crbug.com/472621 is fixed.
-    //embedder.test.assertEq(e.newZoomFactor, 1);
+    embedder.test.assertEq(e.newZoomFactor, 1);
     zoomchanged = true;
   };
 
