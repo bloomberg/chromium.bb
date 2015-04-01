@@ -72,8 +72,10 @@ CONSOLE MESSAGE: line 12: function Object() { [native code] }
 CONSOLE MESSAGE: line 13: function Object() { [native code] }
 CONSOLE MESSAGE: line 12: [object Object]
 CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: function () {}
-CONSOLE MESSAGE: line 13: function () {}
+CONSOLE MESSAGE: line 12: function ( /**/ foo/**/, /*/**/bar,
+    /**/baz) {}
+CONSOLE MESSAGE: line 13: function ( /**/ foo/**/, /*/**/bar,
+    /**/baz) {}
 CONSOLE MESSAGE: line 12: 42
 CONSOLE MESSAGE: line 13: 42
 CONSOLE MESSAGE: line 12: abc
@@ -276,7 +278,7 @@ console-format.html:13 [Array[1]]
     length: 1
     __proto__: Array[0]
 globals[22]
-[function()]
+[anonymous()]
 console-format.html:12 Object {bar: "bar"}
     bar: "bar"
     __proto__: Object
@@ -364,13 +366,13 @@ Object {}
     valueOf: function valueOf() { [native code] }
     get __proto__: function __proto__() { [native code] }
     set __proto__: function __proto__() { [native code] }
-console-format.html:12 arrayLikeFunction()
+console-format.html:12 arrayLikeFunction(foo, bar, baz)
 console-format.html:13 [function]
-    0: function () {}
+    0: function ( /**/ foo/**/, /*/**/bar,
     length: 1
     __proto__: Array[0]
 globals[30]
-arrayLikeFunction()
+arrayLikeFunction(foo, bar, baz)
 console-format.html:12 Number {[[PrimitiveValue]]: 42}
 console-format.html:13 [Number]
     0: Number

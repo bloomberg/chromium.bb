@@ -59,13 +59,13 @@ function onload()
     });
     var negZero = 1 / Number.NEGATIVE_INFINITY;
     var textNode = document.getElementById("x").nextSibling;
-    var arrayLikeFunction = function() {};
+    var arrayLikeFunction = function( /**/ foo/**/, /*/**/bar,
+    /**/baz) {};
     arrayLikeFunction.splice = function() {};
     var smallTypedArray = new Uint8Array(new ArrayBuffer(400));
     smallTypedArray["foo"] = "bar";
     var bigTypedArray = new Uint8Array(new ArrayBuffer(400 * 1000 * 1000));
     bigTypedArray["FAIL"] = "FAIL: Object.getOwnPropertyNames() should not have been run";
-
     globals = [
         regex1, regex2, str, str2, error, errorWithMessage, node, func, multilinefunc, num, linkify,
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
