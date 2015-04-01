@@ -20,9 +20,10 @@ ChromeFallbackIconClientFactory::~ChromeFallbackIconClientFactory() {
 }
 
 // static
-FallbackIconClient* ChromeFallbackIconClientFactory::GetForBrowserContext(
+favicon::FallbackIconClient*
+ChromeFallbackIconClientFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<FallbackIconClient*>(
+  return static_cast<favicon::FallbackIconClient*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 

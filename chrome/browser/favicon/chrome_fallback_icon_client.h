@@ -15,7 +15,7 @@
 class GURL;
 
 // ChromeFallbackIconClient implements the FallbackIconClient interface.
-class ChromeFallbackIconClient : public FallbackIconClient {
+class ChromeFallbackIconClient : public favicon::FallbackIconClient {
  public:
   ChromeFallbackIconClient();
   ~ChromeFallbackIconClient() override;

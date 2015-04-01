@@ -9,17 +9,19 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class FallbackIconService;
-
 namespace content {
 class BrowserContext;
+}
+
+namespace favicon {
+class FallbackIconService;
 }
 
 // Singleton that owns all FallbackIconService and associates them with
 // BrowserContext instances.
 class FallbackIconServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static FallbackIconService* GetForBrowserContext(
+  static favicon::FallbackIconService* GetForBrowserContext(
       content::BrowserContext* context);
 
   static FallbackIconServiceFactory* GetInstance();

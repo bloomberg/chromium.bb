@@ -13,6 +13,8 @@
 
 class GURL;
 
+namespace favicon {
+
 // This class abstracts operations that depend on the embedder's environment,
 // e.g. Chrome.
 class FallbackIconClient : public KeyedService {
@@ -26,5 +28,7 @@ class FallbackIconClient : public KeyedService {
  protected:
   ~FallbackIconClient() override {}
 };
+
+}  // namespace favicon
 
 #endif  // COMPONENTS_FAVICON_CORE_FALLBACK_ICON_CLIENT_H_

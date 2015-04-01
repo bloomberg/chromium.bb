@@ -89,7 +89,7 @@ void MostVisitedHandler::RegisterMessages() {
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  FallbackIconService* fallback_icon_service =
+  favicon::FallbackIconService* fallback_icon_service =
       FallbackIconServiceFactory::GetForBrowserContext(profile);
 
   // Register chrome://large-icon as a data source for large icons.

@@ -10,11 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/url_data_source.h"
 
-class FallbackIconService;
 class GURL;
 
 namespace favicon_base {
 struct FallbackIconStyle;
+}
+
+namespace favicon {
+class FallbackIconService;
 }
 
 // FallbackIconSource services explicit chrome:// requests for fallback icons.
@@ -50,7 +53,8 @@ struct FallbackIconStyle;
 class FallbackIconSource : public content::URLDataSource {
  public:
   // |fallback_icon_service| is owned by caller, and may be null.
-  explicit FallbackIconSource(FallbackIconService* fallback_icon_service);
+  explicit FallbackIconSource(
+      favicon::FallbackIconService* fallback_icon_service);
 
   ~FallbackIconSource() override;
 
@@ -76,7 +80,7 @@ class FallbackIconSource : public content::URLDataSource {
   void SendDefaultResponse(
       const content::URLDataSource::GotDataCallback& callback);
 
-  FallbackIconService* fallback_icon_service_;
+  favicon::FallbackIconService* fallback_icon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackIconSource);
 };

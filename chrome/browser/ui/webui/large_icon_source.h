@@ -13,9 +13,8 @@
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/url_data_source.h"
 
-class FallbackIconService;
-
 namespace favicon {
+class FallbackIconService;
 class FaviconService;
 }
 
@@ -37,7 +36,7 @@ class LargeIconSource : public content::URLDataSource {
   // |favicon_service| and |fallback_icon_service| are owned by caller and may
   // be null.
   LargeIconSource(favicon::FaviconService* favicon_service,
-                  FallbackIconService* fallback_icon_service);
+                  favicon::FallbackIconService* fallback_icon_service);
 
   ~LargeIconSource() override;
 
@@ -82,7 +81,7 @@ class LargeIconSource : public content::URLDataSource {
 
   favicon::FaviconService* favicon_service_;
 
-  FallbackIconService* fallback_icon_service_;
+  favicon::FallbackIconService* fallback_icon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconSource);
 };

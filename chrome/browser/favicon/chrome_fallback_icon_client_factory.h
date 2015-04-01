@@ -9,10 +9,12 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class FallbackIconClient;
-
 namespace content {
 class BrowserContext;
+}
+
+namespace favicon {
+class FallbackIconClient;
 }
 
 // Singleton that owns all ChromeFallbackIconClients and associates them with
@@ -22,7 +24,7 @@ class ChromeFallbackIconClientFactory
  public:
   // Returns the instance of FallbackIconClient associated with this profile
   // (creating one if none exists).
-  static FallbackIconClient* GetForBrowserContext(
+  static favicon::FallbackIconClient* GetForBrowserContext(
       content::BrowserContext* context);
 
   // Returns an instance of the factory singleton.

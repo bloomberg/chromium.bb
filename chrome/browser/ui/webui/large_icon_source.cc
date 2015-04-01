@@ -38,8 +38,9 @@ LargeIconSource::IconRequest::IconRequest(
 LargeIconSource::IconRequest::~IconRequest() {
 }
 
-LargeIconSource::LargeIconSource(favicon::FaviconService* favicon_service,
-                                 FallbackIconService* fallback_icon_service)
+LargeIconSource::LargeIconSource(
+    favicon::FaviconService* favicon_service,
+    favicon::FallbackIconService* fallback_icon_service)
     : favicon_service_(favicon_service),
       fallback_icon_service_(fallback_icon_service) {
 }

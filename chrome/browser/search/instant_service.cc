@@ -134,7 +134,7 @@ InstantService::InstantService(Profile* profile)
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  FallbackIconService* fallback_icon_service =
+  favicon::FallbackIconService* fallback_icon_service =
       FallbackIconServiceFactory::GetForBrowserContext(profile_);
 
   content::URLDataSource::Add(profile_,

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class FallbackIconClient;
 class GURL;
 
 namespace gfx {
@@ -20,6 +19,10 @@ class Canvas;
 namespace favicon_base {
 struct FallbackIconStyle;
 }
+
+namespace favicon {
+
+class FallbackIconClient;
 
 // A service to provide methods to render fallback favicons.
 class FallbackIconService : public KeyedService {
@@ -46,5 +49,7 @@ class FallbackIconService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(FallbackIconService);
 };
+
+}  // namespace favicon
 
 #endif  // COMPONENTS_FAVICON_CORE_FALLBACK_ICON_SERVICE_H_

@@ -17,7 +17,7 @@
 #include "url/gurl.h"
 
 FallbackIconSource::FallbackIconSource(
-    FallbackIconService* fallback_icon_service)
+    favicon::FallbackIconService* fallback_icon_service)
     : fallback_icon_service_(fallback_icon_service) {
 }
 

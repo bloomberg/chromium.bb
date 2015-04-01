@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+namespace favicon {
 namespace {
 
 // Arbitrary maximum icon size, can be reasonably increased if needed.
@@ -81,3 +82,5 @@ void FallbackIconService::DrawFallbackIcon(
       gfx::Rect(kOffsetX, kOffsetY, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
+
+}  // namespace favicon

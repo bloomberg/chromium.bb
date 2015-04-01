@@ -11,9 +11,9 @@
 #include "content/public/browser/browser_context.h"
 
 // static
-FallbackIconService* FallbackIconServiceFactory::GetForBrowserContext(
+favicon::FallbackIconService* FallbackIconServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<FallbackIconService*>(
+  return static_cast<favicon::FallbackIconService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
@@ -33,9 +33,9 @@ FallbackIconServiceFactory::~FallbackIconServiceFactory() {}
 
 KeyedService* FallbackIconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  FallbackIconClient* fallback_icon_client =
+  favicon::FallbackIconClient* fallback_icon_client =
       ChromeFallbackIconClientFactory::GetForBrowserContext(context);
-  return new FallbackIconService(fallback_icon_client);
+  return new favicon::FallbackIconService(fallback_icon_client);
 }
 
 bool FallbackIconServiceFactory::ServiceIsNULLWhileTesting() const {
