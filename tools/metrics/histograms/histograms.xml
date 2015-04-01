@@ -27889,6 +27889,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Plugin.SyncMessageTime" units="ms">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Roundtrip times for synchronous IPC calls from the renderer to NPAPI plugin
+    processes.
+  </summary>
+</histogram>
+
 <histogram name="Power.BacklightLevelOnAC" units="%">
   <owner>derat@chromium.org</owner>
   <summary>
