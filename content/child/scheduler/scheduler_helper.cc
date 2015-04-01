@@ -267,7 +267,7 @@ bool SchedulerHelper::IsInIdlePeriod(IdlePeriodState state) {
 }
 
 bool SchedulerHelper::CanExceedIdleDeadlineIfRequired() const {
-  TRACE_EVENT_BEGIN0(tracing_category_, "CanExceedIdleDeadlineIfRequired");
+  TRACE_EVENT0(tracing_category_, "CanExceedIdleDeadlineIfRequired");
   CheckOnValidThread();
   return idle_period_state_ ==
          IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;
