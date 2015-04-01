@@ -164,6 +164,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
+#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
@@ -419,7 +420,12 @@ protected:
 #endif
         context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
         context.clip(pageRect);
-        frame()->view()->paintContents(&context, pageRect);
+
+        {
+            DisplayItemListContextRecorder contextRecorder(context);
+            frame()->view()->paintContents(&contextRecorder.context(), pageRect);
+        }
+
         outputLinkAndLinkedDestinations(context, pageRect);
         context.restore();
         return scale;
