@@ -19,8 +19,6 @@ from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
-from chromite.lib import gdata_lib
-from chromite.scripts import gather_builder_stats
 
 
 # These are the preferred base URLs we use to canonicalize bugs/CLs.
@@ -32,21 +30,9 @@ EXTERNAL_CL_BASE_URL = 'crosreview.com/'
 
 class CLStatsEngine(object):
   """Engine to generate stats about CL actions taken by the Commit Queue."""
-  PATCH_HANDLING_TIME_SUMMARY_KEY = 'patch_handling_time'
-  SUMMARY_SPREADSHEET_COLUMNS = {
-      PATCH_HANDLING_TIME_SUMMARY_KEY: ('PatchHistogram', 1)}
-  COL_FAILURE_CATEGORY = 'failure category'
-  COL_FAILURE_BLAME = 'bug or bad CL'
-  REASON_BAD_CL = 'Bad CL'
-  BOT_TYPE = constants.CQ
-  GET_SHEETS_VERSION = False
 
-  def __init__(self, email, db, ss_key=gather_builder_stats.CQ_SS_KEY,
-               annotations_from_cidb=False):
-    self.email = email
+  def __init__(self, db):
     self.db = db
-    self.ss_key = ss_key
-    self.annotations_from_cidb = annotations_from_cidb
     self.actions = []
     self.builds = []
     self.per_patch_actions = {}
@@ -55,30 +41,6 @@ class CLStatsEngine(object):
     self.blames = {}
     self.summary = {}
     self.builds_by_build_id = {}
-
-  def GatherFailureReasonsFromSpreadSheet(self, creds):
-    """Gather the reasons why our builds failed and the blamed bugs or CLs.
-
-    Args:
-      creds: A gdata_lib.Creds object.
-    """
-    data_table = gather_builder_stats.CQMasterStats.TABLE_CLASS()
-    uploader = gather_builder_stats.SSUploader(creds, self.ss_key)
-    ss_failure_category = gdata_lib.PrepColNameForSS(self.COL_FAILURE_CATEGORY)
-    ss_failure_blame = gdata_lib.PrepColNameForSS(self.COL_FAILURE_BLAME)
-    rows = uploader.GetRowCacheByCol(data_table.WORKSHEET_NAME,
-                                     data_table.COL_BUILD_NUMBER)
-    for b in self.builds:
-      build_number = b['build_number']
-      try:
-        row = rows[str(build_number)]
-      except KeyError:
-        self.reasons[build_number] = ['None']
-        self.blames[build_number] = []
-      else:
-        self.reasons[build_number] = [str(row[ss_failure_category])]
-        self.blames[build_number] = self.ProcessBlameString(
-            str(row[ss_failure_blame]))
 
   def GatherBuildAnnotations(self):
     """Gather the failure annotations for builds from cidb."""
@@ -181,7 +143,7 @@ class CLStatsEngine(object):
     return urls
 
   def Gather(self, start_date, end_date, sort_by_build_number=True,
-             starting_build_number=None, creds=None):
+             starting_build_number=None):
     """Fetches build data and failure reasons.
 
     Args:
@@ -193,7 +155,6 @@ class CLStatsEngine(object):
           sorted by build number.
       starting_build_number: (optional) The lowest build number from the CQ to
           include in the results.
-      creds: Login credentials as returned by gather_builder_stats.PrepareCreds.
     """
     logging.info('Gathering data for %s from %s until %s', constants.CQ_MASTER,
                  start_date, end_date)
@@ -213,10 +174,7 @@ class CLStatsEngine(object):
       self.builds.sort(key=lambda x: x['build_number'])
 
     self.actions = self.db.GetActionHistory(start_date, end_date)
-    if self.annotations_from_cidb:
-      self.GatherBuildAnnotations()
-    else:
-      self.GatherFailureReasonsFromSpreadSheet(creds)
+    self.GatherBuildAnnotations()
 
     self.builds_by_build_id.update(
         {b['id'] : b for b in self.builds})
@@ -508,7 +466,7 @@ class CLStatsEngine(object):
         'good_patch_rejection_count': dict(good_patch_rejection_count),
         'false_rejection_rate': false_rejection_rate,
         'median_handling_time': numpy.median(patch_handle_times),
-        self.PATCH_HANDLING_TIME_SUMMARY_KEY: patch_handle_times,
+        'patch_handling_time': patch_handle_times,
         'bad_cl_candidates': bad_cl_candidates,
         'unique_blames_change_count': len(unique_cl_blames),
     }
@@ -622,10 +580,6 @@ def _CheckOptions(options):
                   options.start_date)
     return False
 
-  if not options.email and not options.annotations_from_cidb:
-    logging.error('--email is required if not using --annotations-from-cidb.')
-    return False
-
   return True
 
 
@@ -654,17 +608,6 @@ def GetParser():
                                          '(inclusive).')
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
-  parser.add_argument('--annotations-from-cidb', action='store_true',
-                      default=False,
-                      help='Gather annotations from CIDB (experimental)')
-
-  # TODO(pprabhu) Remove the following options once we move off of
-  # gather_builder_stats.
-  group = parser.add_argument_group('Deprecated options. Will disappear soon')
-  group.add_argument('--email', action='store', type=str, default=None,
-                     help='Specify email for Google Sheets account to use.')
-  group.add_argument('--override-ss-key', action='store', default=None,
-                     dest='ss_key', help='Override spreadsheet key.')
   return parser
 
 
@@ -694,19 +637,7 @@ def main(argv):
     else:
       start_date = end_date - datetime.timedelta(days=1)
 
-  # TODO(pprabhu) Remove this once we remove the dependence on spreadsheet.
-  if not options.annotations_from_cidb:
-    creds = gather_builder_stats.PrepareCreds(options.email)
-  else:
-    creds = None
-
-  # CL stats engine uses the CQ spreadsheet to fetch failure reasons
-  cl_stats_engine = CLStatsEngine(
-      options.email,
-      db=db,
-      ss_key=options.ss_key or gather_builder_stats.CQ_SS_KEY,
-      annotations_from_cidb=options.annotations_from_cidb)
+  cl_stats_engine = CLStatsEngine(db)
   cl_stats_engine.Gather(start_date, end_date,
-                         starting_build_number=options.starting_build,
-                         creds=creds)
+                         starting_build_number=options.starting_build)
   cl_stats_engine.Summarize()

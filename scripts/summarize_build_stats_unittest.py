@@ -15,13 +15,11 @@ from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
-from chromite.scripts import gather_builder_stats
 from chromite.scripts import summarize_build_stats
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 
 
-REASON_BAD_CL = summarize_build_stats.CLStatsEngine.REASON_BAD_CL
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
 
@@ -32,15 +30,11 @@ class TestCLActionLogic(cros_test_lib.TestCase):
   def setUp(self):
     self.fake_db = fake_cidb.FakeCIDBConnection()
 
-  def _getTestBuildData(self, cq):
-    """Generate a return test data.
+  def _PopulateFakeCidbWithTestData(self, cq):
+    """Generate test data and insert it in the the fake cidb object.
 
     Args:
       cq: Whether this is a CQ run. If False, this is a Pre-CQ run.
-
-    Returns:
-      A list of metadata_lib.BuildData objects to use as
-      test data for CL action summary logic.
     """
     # Mock patches for test data.
     c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
@@ -60,7 +54,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                   else constants.PRE_CQ_GROUP_CONFIG)
 
     # pylint: disable=bad-continuation
-    TEST_METADATA = [
+    test_metadata = [
       # Build 1 picks up no patches.
       metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 1,
@@ -101,7 +95,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
           ).RecordCLAction(c4p2, constants.CL_ACTION_KICKED_OUT, t.next()),
     ]
     if cq:
-      TEST_METADATA += [
+      test_metadata += [
         # Build 4 picks up c1p1, c2p2, c3p2, c4p1 and submits the first three.
         # c4p2 is submitted without being tested.
         # So  c1p1 should be detected as a 1-time rejected good patch,
@@ -123,7 +117,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
             ).RecordCLAction(c4p2, constants.CL_ACTION_SUBMITTED, t.next()),
       ]
     else:
-      TEST_METADATA += [
+      test_metadata += [
         metadata_lib.CBuildbotMetadata(
             ).UpdateWithDict({'build-number' : 5,
                               'bot-config' : bot_config,
@@ -143,13 +137,13 @@ class TestCLActionLogic(cros_test_lib.TestCase):
       ]
     # pylint: enable=bad-continuation
 
-    # TEST_METADATA should not be guaranteed to be ordered by build number
+    # test_metadata should not be guaranteed to be ordered by build number
     # so shuffle it, but use the same seed each time so that unit test is
     # deterministic.
     random.seed(0)
-    random.shuffle(TEST_METADATA)
+    random.shuffle(test_metadata)
 
-    for m in TEST_METADATA:
+    for m in test_metadata:
       build_id = self.fake_db.InsertBuild(
           m.GetValue('bot-config'), constants.WATERFALL_INTERNAL,
           m.GetValue('build-number'), m.GetValue('bot-config'),
@@ -160,25 +154,16 @@ class TestCLActionLogic(cros_test_lib.TestCase):
         actions.append(clactions.CLAction.FromMetadataEntry(action_metadata))
       self.fake_db.InsertCLActions(build_id, actions)
 
-    # Wrap the test metadata into BuildData objects.
-    TEST_BUILDDATA = [metadata_lib.BuildData('', d.GetDict())
-                      for d in TEST_METADATA]
-
-    return TEST_BUILDDATA
-
   def testCLStatsEngineSummary(self):
     with cros_build_lib.ContextManagerStack() as stack:
-      pre_cq_builddata = self._getTestBuildData(cq=False)
-      cq_builddata = self._getTestBuildData(cq=True)
-      stack.Add(mock.patch.object, gather_builder_stats.StatsManager,
-                '_FetchBuildData', side_effect=[cq_builddata, pre_cq_builddata])
-      stack.Add(mock.patch.object, gather_builder_stats, 'PrepareCreds')
+      self._PopulateFakeCidbWithTestData(cq=False)
+      self._PopulateFakeCidbWithTestData(cq=True)
       stack.Add(mock.patch.object, summarize_build_stats.CLStatsEngine,
-                'GatherFailureReasonsFromSpreadSheet')
-      cl_stats = summarize_build_stats.CLStatsEngine('foo@bar.com',
-                                                     self.fake_db)
+                'GatherBuildAnnotations')
+      cl_stats = summarize_build_stats.CLStatsEngine(self.fake_db)
       cl_stats.Gather(datetime.date.today(), datetime.date.today())
-      cl_stats.reasons = {1: '', 2: '', 3: REASON_BAD_CL, 4: REASON_BAD_CL}
+      cl_stats.reasons = {1: '', 2: '', 3: constants.FAILURE_CATEGORY_BAD_CL,
+                          4: constants.FAILURE_CATEGORY_BAD_CL}
       cl_stats.blames = {1: '', 2: '', 3: 'crosreview.com/1',
                          4: 'crosreview.com/1'}
       summary = cl_stats.Summarize()
