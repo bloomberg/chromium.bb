@@ -69,6 +69,15 @@ dictionary MyDictBig {
   long unsetLong;
 };
 
+/* TREE
+ *Dictionary(MyDictRequired)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ */
+dictionary MyDictRequired {
+  required long setLong;
+};
 
 /* ERROR Unexpected "{" after keyword "dictionary". */
 dictionary {

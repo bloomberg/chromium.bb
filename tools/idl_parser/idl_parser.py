@@ -309,10 +309,15 @@ class IDLParser(object):
 
   # [13]
   def p_DictionaryMember(self, p):
-    """DictionaryMember : Type identifier Default ';'"""
-    p[0] = self.BuildNamed('Key', p, 2, ListFromConcat(p[1], p[3]))
+    """DictionaryMember : Required Type identifier Default ';'"""
+    p[0] = self.BuildNamed('Key', p, 3, ListFromConcat(p[1], p[2], p[4]))
 
-  # [14] NOT IMPLEMENTED (Required)
+  # [14]
+  def p_Required(self, p):
+    """Required : REQUIRED
+                |"""
+    if len(p) > 1:
+      p[0] = self.BuildTrue('REQUIRED')
 
   # [15]
   def p_PartialDictionary(self, p):
