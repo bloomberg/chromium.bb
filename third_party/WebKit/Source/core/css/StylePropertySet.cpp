@@ -334,7 +334,7 @@ bool MutableStylePropertySet::setProperty(CSSPropertyID propertyID, CSSValueID i
     return true;
 }
 
-void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet)
+void MutableStylePropertySet::parseDeclarationList(const String& styleDeclaration, StyleSheetContents* contextStyleSheet)
 {
     m_propertyVector.clear();
 
@@ -345,7 +345,7 @@ void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, S
     }
 
     CSSParser parser(context);
-    parser.parseDeclaration(this, styleDeclaration, 0, contextStyleSheet);
+    parser.parseDeclarationList(this, styleDeclaration, 0, contextStyleSheet);
 }
 
 void MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProperty, 256>& properties)

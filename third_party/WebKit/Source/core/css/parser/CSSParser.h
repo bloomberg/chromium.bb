@@ -17,7 +17,7 @@ class CSSParser {
 public:
     explicit CSSParser(const CSSParserContext&);
 
-    bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
+    bool parseDeclarationList(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     void parseSelector(const String&, CSSSelectorList&);
 
     // As well as regular rules, allows @import and @namespace but not @charset

@@ -23,11 +23,11 @@ CSSParser::CSSParser(const CSSParserContext& context)
 {
 }
 
-bool CSSParser::parseDeclaration(MutableStylePropertySet* propertySet, const String& declaration, CSSParserObserver* observer, StyleSheetContents* styleSheet)
+bool CSSParser::parseDeclarationList(MutableStylePropertySet* propertySet, const String& declaration, CSSParserObserver* observer, StyleSheetContents* styleSheet)
 {
     // FIXME: Add inspector observer support in the new CSS parser
     if (!observer && RuntimeEnabledFeatures::newCSSParserEnabled())
-        return CSSParserImpl::parseDeclaration(propertySet, declaration, m_bisonParser.m_context);
+        return CSSParserImpl::parseDeclarationList(propertySet, declaration, m_bisonParser.m_context);
     return m_bisonParser.parseDeclaration(propertySet, declaration, observer, styleSheet);
 }
 

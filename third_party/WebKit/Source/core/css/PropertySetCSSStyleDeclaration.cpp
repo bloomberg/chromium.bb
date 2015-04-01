@@ -160,13 +160,12 @@ String AbstractPropertySetCSSStyleDeclaration::cssText() const
     return propertySet().asText();
 }
 
-void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, ExceptionState& exceptionState)
+void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, ExceptionState&)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    // FIXME: Detect syntax errors and set exceptionState.
-    propertySet().parseDeclaration(text, contextStyleSheet());
+    propertySet().parseDeclarationList(text, contextStyleSheet());
 
     didMutate(PropertyChanged);
 

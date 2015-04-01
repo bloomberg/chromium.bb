@@ -3352,7 +3352,7 @@ inline void Element::setInlineStyleFromString(const AtomicString& newStyleString
         inlineStyle = CSSParser::parseInlineStyleDeclaration(newStyleString, this);
     } else {
         ASSERT(inlineStyle->isMutable());
-        static_cast<MutableStylePropertySet*>(inlineStyle.get())->parseDeclaration(newStyleString, document().elementSheet().contents());
+        static_cast<MutableStylePropertySet*>(inlineStyle.get())->parseDeclarationList(newStyleString, document().elementSheet().contents());
     }
 }
 

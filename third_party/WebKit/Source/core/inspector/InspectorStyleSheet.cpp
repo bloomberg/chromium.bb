@@ -343,7 +343,7 @@ void StyleSheetHandler::endComment(unsigned offset)
     // no comments are encountered (will not need m_document and m_styleSheetContents).
     StyleSheetHandler handler(commentText, m_document, m_styleSheetContents, &sourceData);
     RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
-    m_commentParser.parseDeclaration(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
+    m_commentParser.parseDeclarationList(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
     WillBeHeapVector<CSSPropertySourceData>& commentPropertyData = sourceData.first()->styleSourceData->propertyData;
     if (commentPropertyData.size() != 1)
         return;
@@ -579,7 +579,7 @@ bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmit
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
     String declarationText = propertyText + (canOmitSemicolon ? ";" : " ") + bogusPropertyName + ": none";
     StyleSheetHandler handler(declarationText, ownerDocument(), styleSheetContents.get(), &sourceData);
-    CSSParser(parserContextForDocument(ownerDocument())).parseDeclaration(tempMutableStyle.get(), declarationText, &handler, styleSheetContents.get());
+    CSSParser(parserContextForDocument(ownerDocument())).parseDeclarationList(tempMutableStyle.get(), declarationText, &handler, styleSheetContents.get());
     WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.first()->styleSourceData->propertyData;
     unsigned propertyCount = propertyData.size();
 
@@ -1985,7 +1985,7 @@ PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::get
     RefPtrWillBeRawPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
     RuleSourceDataList ruleSourceDataResult;
     StyleSheetHandler handler(m_styleText, &m_element->document(), m_element->document().elementSheet().contents(), &ruleSourceDataResult);
-    CSSParser(parserContextForDocument(&m_element->document())).parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet().contents());
+    CSSParser(parserContextForDocument(&m_element->document())).parseDeclarationList(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet().contents());
     return ruleSourceDataResult.first().release();
 }
 

@@ -85,7 +85,7 @@ PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseInlineStyl
     return createStylePropertySet(parser.m_parsedProperties, mode);
 }
 
-bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const String& string, const CSSParserContext& context)
+bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration, const String& string, const CSSParserContext& context)
 {
     CSSParserImpl parser(context);
     StyleRule::Type ruleType = StyleRule::Style;

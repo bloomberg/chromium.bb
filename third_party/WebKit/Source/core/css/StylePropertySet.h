@@ -215,7 +215,7 @@ public:
     void mergeAndOverrideOnConflict(const StylePropertySet*);
 
     void clear();
-    void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
+    void parseDeclarationList(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
     int findPropertyIndex(CSSPropertyID) const;
