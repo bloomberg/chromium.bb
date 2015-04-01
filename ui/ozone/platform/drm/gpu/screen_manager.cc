@@ -14,6 +14,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_console_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
+#include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
@@ -71,6 +72,7 @@ ScreenManager::ScreenManager(ScanoutBufferGenerator* buffer_generator)
 }
 
 ScreenManager::~ScreenManager() {
+  DCHECK(window_map_.empty());
 }
 
 void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
@@ -184,6 +186,29 @@ HardwareDisplayController* ScreenManager::GetDisplayController(
   if (it != controllers_.end())
     return *it;
 
+  return nullptr;
+}
+
+void ScreenManager::AddWindow(gfx::AcceleratedWidget widget,
+                              scoped_ptr<DrmWindow> window) {
+  std::pair<WidgetToWindowMap::iterator, bool> result =
+      window_map_.add(widget, window.Pass());
+  DCHECK(result.second) << "Window already added.";
+}
+
+scoped_ptr<DrmWindow> ScreenManager::RemoveWindow(
+    gfx::AcceleratedWidget widget) {
+  scoped_ptr<DrmWindow> window = window_map_.take_and_erase(widget);
+  DCHECK(window) << "Attempting to remove non-existing window for " << widget;
+  return window.Pass();
+}
+
+DrmWindow* ScreenManager::GetWindow(gfx::AcceleratedWidget widget) {
+  WidgetToWindowMap::iterator it = window_map_.find(widget);
+  if (it != window_map_.end())
+    return it->second;
+
+  NOTREACHED() << "Attempting to get non-existing window for " << widget;
   return nullptr;
 }
 

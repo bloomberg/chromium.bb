@@ -15,7 +15,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_surface.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/drm_window_manager.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/test/mock_drm_device.h"
@@ -60,7 +59,6 @@ class DrmWindowTest : public testing::Test {
   scoped_ptr<ui::DrmBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
-  scoped_ptr<ui::DrmWindowManager> window_delegate_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DrmWindowTest);
@@ -76,20 +74,18 @@ void DrmWindowTest::SetUp() {
       drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
 
   drm_device_manager_.reset(new ui::DrmDeviceManager(drm_));
-  window_delegate_manager_.reset(new ui::DrmWindowManager());
 
   scoped_ptr<ui::DrmWindow> window_delegate(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
   window_delegate->Initialize();
   window_delegate->OnBoundsChanged(
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
-  window_delegate_manager_->AddWindowDelegate(kDefaultWidgetHandle,
-                                              window_delegate.Pass());
+  screen_manager_->AddWindow(kDefaultWidgetHandle, window_delegate.Pass());
 }
 
 void DrmWindowTest::TearDown() {
   scoped_ptr<ui::DrmWindow> delegate =
-      window_delegate_manager_->RemoveWindowDelegate(kDefaultWidgetHandle);
+      screen_manager_->RemoveWindow(kDefaultWidgetHandle);
   delegate->Shutdown();
   message_loop_.reset();
 }
@@ -103,7 +99,7 @@ TEST_F(DrmWindowTest, SetCursorImage) {
 
   std::vector<SkBitmap> cursor_bitmaps;
   cursor_bitmaps.push_back(image);
-  window_delegate_manager_->GetWindowDelegate(kDefaultWidgetHandle)
+  screen_manager_->GetWindow(kDefaultWidgetHandle)
       ->SetCursor(cursor_bitmaps, gfx::Point(4, 2), 0);
 
   SkBitmap cursor;
@@ -135,7 +131,7 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
       gfx::Point(0, kDefaultMode.vdisplay), kDefaultMode);
 
   // Move window to the display on the new device.
-  window_delegate_manager_->GetWindowDelegate(kDefaultWidgetHandle)
+  screen_manager_->GetWindow(kDefaultWidgetHandle)
       ->OnBoundsChanged(gfx::Rect(0, kDefaultMode.vdisplay,
                                   kDefaultMode.hdisplay,
                                   kDefaultMode.vdisplay));

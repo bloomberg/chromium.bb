@@ -12,7 +12,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/drm_window_manager.h"
+#include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
 
@@ -31,10 +31,10 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
       OnFilterAddedCallback;
 
   DrmGpuPlatformSupportMessageFilter(
-      DrmWindowManager* window_manager,
+      ScreenManager* screen_manager,
       const OnFilterAddedCallback& on_filter_added_callback,
       IPC::Listener* main_thread_listener)
-      : window_manager_(window_manager),
+      : screen_manager_(screen_manager),
         on_filter_added_callback_(on_filter_added_callback),
         main_thread_listener_(main_thread_listener),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -105,14 +105,14 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
   ~DrmGpuPlatformSupportMessageFilter() override {}
 
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location) {
-    window_manager_->GetWindowDelegate(widget)->MoveCursor(location);
+    screen_manager_->GetWindow(widget)->MoveCursor(location);
   }
 
   void OnCursorSet(gfx::AcceleratedWidget widget,
                    const std::vector<SkBitmap>& bitmaps,
                    const gfx::Point& location,
                    int frame_delay_ms) {
-    window_manager_->GetWindowDelegate(widget)
+    screen_manager_->GetWindow(widget)
         ->SetCursorWithoutAnimations(bitmaps, location);
   }
 
@@ -153,7 +153,7 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     cursor_animating_ = frame_delay_ms != 0;
   }
 
-  DrmWindowManager* window_manager_;
+  ScreenManager* screen_manager_;
   OnFilterAddedCallback on_filter_added_callback_;
   IPC::Listener* main_thread_listener_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
@@ -165,16 +165,14 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 
 DrmGpuPlatformSupport::DrmGpuPlatformSupport(
     DrmDeviceManager* drm_device_manager,
-    DrmWindowManager* window_manager,
     ScreenManager* screen_manager,
     scoped_ptr<DrmGpuDisplayManager> ndd)
     : sender_(NULL),
       drm_device_manager_(drm_device_manager),
-      window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
   filter_ = new DrmGpuPlatformSupportMessageFilter(
-      window_manager, base::Bind(&DrmGpuPlatformSupport::SetIOTaskRunner,
+      screen_manager, base::Bind(&DrmGpuPlatformSupport::SetIOTaskRunner,
                                  base::Unretained(this)),
       this);
 }
@@ -231,32 +229,31 @@ void DrmGpuPlatformSupport::OnCreateWindowDelegate(
   scoped_ptr<DrmWindow> delegate(
       new DrmWindow(widget, drm_device_manager_, screen_manager_));
   delegate->Initialize();
-  window_manager_->AddWindowDelegate(widget, delegate.Pass());
+  screen_manager_->AddWindow(widget, delegate.Pass());
 }
 
 void DrmGpuPlatformSupport::OnDestroyWindowDelegate(
     gfx::AcceleratedWidget widget) {
-  scoped_ptr<DrmWindow> delegate =
-      window_manager_->RemoveWindowDelegate(widget);
+  scoped_ptr<DrmWindow> delegate = screen_manager_->RemoveWindow(widget);
   delegate->Shutdown();
 }
 
 void DrmGpuPlatformSupport::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
                                                   const gfx::Rect& bounds) {
-  window_manager_->GetWindowDelegate(widget)->OnBoundsChanged(bounds);
+  screen_manager_->GetWindow(widget)->OnBoundsChanged(bounds);
 }
 
 void DrmGpuPlatformSupport::OnCursorSet(gfx::AcceleratedWidget widget,
                                         const std::vector<SkBitmap>& bitmaps,
                                         const gfx::Point& location,
                                         int frame_delay_ms) {
-  window_manager_->GetWindowDelegate(widget)
+  screen_manager_->GetWindow(widget)
       ->SetCursor(bitmaps, location, frame_delay_ms);
 }
 
 void DrmGpuPlatformSupport::OnCursorMove(gfx::AcceleratedWidget widget,
                                          const gfx::Point& location) {
-  window_manager_->GetWindowDelegate(widget)->MoveCursor(location);
+  screen_manager_->GetWindow(widget)->MoveCursor(location);
 }
 
 void DrmGpuPlatformSupport::OnRefreshNativeDisplays() {

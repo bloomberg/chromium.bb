@@ -31,7 +31,6 @@ class DrmDeviceManager;
 class DrmGpuDisplayManager;
 class DrmSurfaceFactory;
 class DrmWindow;
-class DrmWindowManager;
 class ScreenManager;
 
 struct DisplayMode_Params;
@@ -40,7 +39,6 @@ struct DisplaySnapshot_Params;
 class DrmGpuPlatformSupport : public GpuPlatformSupport {
  public:
   DrmGpuPlatformSupport(DrmDeviceManager* drm_device_manager,
-                        DrmWindowManager* window_manager,
                         ScreenManager* screen_manager,
                         scoped_ptr<DrmGpuDisplayManager> ndd);
   ~DrmGpuPlatformSupport() override;
@@ -83,7 +81,6 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
 
   IPC::Sender* sender_;                   // Not owned.
   DrmDeviceManager* drm_device_manager_;  // Not owned.
-  DrmWindowManager* window_manager_;      // Not owned.
   ScreenManager* screen_manager_;         // Not owned.
 
   scoped_ptr<DrmGpuDisplayManager> ndd_;

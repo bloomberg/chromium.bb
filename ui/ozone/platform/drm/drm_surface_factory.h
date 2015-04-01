@@ -10,7 +10,7 @@
 
 namespace ui {
 
-class DrmWindowManager;
+class ScreenManager;
 class SurfaceOzoneCanvas;
 
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
@@ -18,7 +18,7 @@ class SurfaceOzoneCanvas;
 // path.
 class DrmSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  DrmSurfaceFactory(DrmWindowManager* window_manager);
+  DrmSurfaceFactory(ScreenManager* screen_manager);
   ~DrmSurfaceFactory() override;
 
   // SurfaceFactoryOzone:
@@ -29,7 +29,7 @@ class DrmSurfaceFactory : public SurfaceFactoryOzone {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
  protected:
-  DrmWindowManager* window_manager_;  // Not owned.
+  ScreenManager* screen_manager_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(DrmSurfaceFactory);
 };

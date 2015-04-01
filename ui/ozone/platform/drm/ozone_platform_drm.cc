@@ -20,7 +20,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_platform_support.h"
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/drm_window_manager.h"
 #include "ui/ozone/platform/drm/gpu/gpu_lock.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/host/display_manager.h"
@@ -53,7 +52,6 @@ class OzonePlatformDrm : public OzonePlatform {
       : drm_(new DrmDevice(GetPrimaryDisplayCardPath())),
         buffer_generator_(new DrmBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
-        window_delegate_manager_(),
         device_manager_(CreateDeviceManager()) {}
   ~OzonePlatformDrm() override {}
 
@@ -105,14 +103,12 @@ class OzonePlatformDrm : public OzonePlatform {
     display_manager_.reset(new DisplayManager());
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
-    surface_factory_ozone_.reset(
-        new DrmSurfaceFactory(&window_delegate_manager_));
+    surface_factory_ozone_.reset(new DrmSurfaceFactory(screen_manager_.get()));
     scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
         screen_manager_.get(), drm_,
         scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
-        drm_device_manager_.get(), &window_delegate_manager_,
-        screen_manager_.get(), ndd.Pass()));
+        drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
@@ -142,7 +138,6 @@ class OzonePlatformDrm : public OzonePlatform {
   scoped_ptr<DrmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
-  DrmWindowManager window_delegate_manager_;
 
   // Objects in the "Browser" process.
   scoped_ptr<DeviceManager> device_manager_;

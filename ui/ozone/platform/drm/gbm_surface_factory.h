@@ -11,8 +11,8 @@ namespace ui {
 
 class DrmDeviceManager;
 class DrmWindow;
-class DrmWindowManager;
 class GbmDevice;
+class ScreenManager;
 
 class GbmSurfaceFactory : public DrmSurfaceFactory {
  public:
@@ -20,7 +20,7 @@ class GbmSurfaceFactory : public DrmSurfaceFactory {
   ~GbmSurfaceFactory() override;
 
   void InitializeGpu(DrmDeviceManager* drm_device_manager,
-                     DrmWindowManager* window_manager);
+                     ScreenManager* screen_manager);
 
   // DrmSurfaceFactory:
   intptr_t GetNativeDisplay() override;

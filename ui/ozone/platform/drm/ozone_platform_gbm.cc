@@ -21,7 +21,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_platform_support.h"
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
-#include "ui/ozone/platform/drm/gpu/drm_window_manager.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface.h"
@@ -188,18 +187,16 @@ class OzonePlatformGbm : public OzonePlatform {
     // configuration can still use the primary display.
     ForceInitializationOfPrimaryDisplay(gbm_, screen_manager_.get());
 
-    window_delegate_manager_.reset(new DrmWindowManager());
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
     surface_factory_ozone_->InitializeGpu(drm_device_manager_.get(),
-                                          window_delegate_manager_.get());
+                                          screen_manager_.get());
     scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
         screen_manager_.get(), gbm_,
         scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator())));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
-        drm_device_manager_.get(), window_delegate_manager_.get(),
-        screen_manager_.get(), ndd.Pass()));
+        drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
   }
 
  private:
@@ -215,7 +212,6 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<DrmWindowManager> window_delegate_manager_;
 
   // Objects in the Browser process.
   base::FilePath primary_graphics_card_path_;

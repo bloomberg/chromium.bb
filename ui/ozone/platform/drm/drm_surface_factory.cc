@@ -10,14 +10,14 @@
 #include "ui/ozone/platform/drm/gpu/drm_surface.h"
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/drm_window_manager.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
+#include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
 
-DrmSurfaceFactory::DrmSurfaceFactory(DrmWindowManager* window_manager)
-    : window_manager_(window_manager) {
+DrmSurfaceFactory::DrmSurfaceFactory(ScreenManager* screen_manager)
+    : screen_manager_(screen_manager) {
 }
 
 DrmSurfaceFactory::~DrmSurfaceFactory() {
@@ -25,8 +25,7 @@ DrmSurfaceFactory::~DrmSurfaceFactory() {
 
 scoped_ptr<ui::SurfaceOzoneCanvas> DrmSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
-  return make_scoped_ptr(
-      new DrmSurface(window_manager_->GetWindowDelegate(widget)));
+  return make_scoped_ptr(new DrmSurface(screen_manager_->GetWindow(widget)));
 }
 
 bool DrmSurfaceFactory::LoadEGLGLES2Bindings(

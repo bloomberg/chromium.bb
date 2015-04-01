@@ -12,12 +12,12 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/drm_window_manager.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
+#include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -77,9 +77,9 @@ GbmSurfaceFactory::~GbmSurfaceFactory() {
 }
 
 void GbmSurfaceFactory::InitializeGpu(DrmDeviceManager* drm_device_manager,
-                                      DrmWindowManager* window_manager) {
+                                      ScreenManager* screen_manager) {
   drm_device_manager_ = drm_device_manager;
-  window_manager_ = window_manager;
+  screen_manager_ = screen_manager;
 }
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
@@ -137,7 +137,7 @@ scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
   DCHECK(gbm);
 
   scoped_ptr<GbmSurface> surface(
-      new GbmSurface(window_manager_->GetWindowDelegate(widget), gbm));
+      new GbmSurface(screen_manager_->GetWindow(widget), gbm));
   if (!surface->Initialize())
     return nullptr;
 
@@ -150,8 +150,8 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
   if (!allow_surfaceless_)
     return nullptr;
 
-  return make_scoped_ptr(new GbmSurfaceless(
-      window_manager_->GetWindowDelegate(widget), drm_device_manager_));
+  return make_scoped_ptr(new GbmSurfaceless(screen_manager_->GetWindow(widget),
+                                            drm_device_manager_));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
@@ -198,7 +198,7 @@ bool GbmSurfaceFactory::ScheduleOverlayPlane(
     return false;
   }
   HardwareDisplayController* hdc =
-      window_manager_->GetWindowDelegate(widget)->GetController();
+      screen_manager_->GetWindow(widget)->GetController();
   if (!hdc)
     return true;
 
