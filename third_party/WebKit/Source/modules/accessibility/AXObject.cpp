@@ -354,6 +354,14 @@ bool AXObject::isClickable() const
     }
 }
 
+bool AXObject::isReadOnly() const
+{
+    if (node())
+        return !node()->hasEditableStyle();
+
+    return true;
+}
+
 bool AXObject::accessibilityIsIgnored() const
 {
     updateCachedAttributeValuesIfNeeded();

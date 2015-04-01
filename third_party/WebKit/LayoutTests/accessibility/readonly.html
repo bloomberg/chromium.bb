@@ -62,6 +62,12 @@ if (window.testRunner && window.accessibilityController) {
     check("aria-link1", true);
     check("contenteditable_root1", false);
     check("contenteditable_button1", false);
+
+    // An additional check for a mock AX object.
+    var axSelect = accessibilityController.accessibleElementById('combobox1');
+    var axMenuListPopup = axSelect.childAtIndex(0);
+    shouldBe("axMenuListPopup.role", "\"AXRole: AXMenuListPopup\"");
+    shouldBe("axMenuListPopup.isReadOnly", "true");
 }
 
 </script>
