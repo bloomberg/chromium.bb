@@ -13,16 +13,16 @@ class WorkerObjectProxy;
 
 class CompositorWorkerThread final : public WorkerThread {
 public:
-    static PassRefPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    static PassRefPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtr<WorkerThreadStartupData>);
     virtual ~CompositorWorkerThread();
 
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
 private:
-    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtr<WorkerThreadStartupData>);
 
     // WorkerThread:
-    PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) override;
+    PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
 
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;

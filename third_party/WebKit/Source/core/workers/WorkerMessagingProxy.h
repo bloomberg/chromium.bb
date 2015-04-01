@@ -80,7 +80,7 @@ public:
 protected:
     virtual ~WorkerMessagingProxy();
 
-    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData>);
 
     PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
     WorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }

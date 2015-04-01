@@ -45,7 +45,7 @@ class DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
-    static PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>, double timeOrigin);
+    static PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
     virtual ~DedicatedWorkerGlobalScope();
 
     virtual bool isDedicatedWorkerGlobalScope() const override { return true; }

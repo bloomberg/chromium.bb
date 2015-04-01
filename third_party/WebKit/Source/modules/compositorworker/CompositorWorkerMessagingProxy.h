@@ -16,7 +16,7 @@ public:
 protected:
     virtual ~CompositorWorkerMessagingProxy();
 
-    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData>);
 };
 
 } // namespace blink

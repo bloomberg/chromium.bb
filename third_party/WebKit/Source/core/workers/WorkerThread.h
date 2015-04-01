@@ -110,10 +110,10 @@ public:
     void setWorkerInspectorController(WorkerInspectorController*);
 
 protected:
-    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 
     // Factory method for creating a new worker context for the thread.
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) = 0;
+    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
 
     virtual void postInitialize() { }
 
@@ -147,7 +147,7 @@ private:
 
     Mutex m_threadCreationMutex;
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
-    OwnPtrWillBePersistent<WorkerThreadStartupData> m_startupData;
+    OwnPtr<WorkerThreadStartupData> m_startupData;
 
     v8::Isolate* m_isolate;
     OwnPtr<V8IsolateInterruptor> m_interruptor;

@@ -56,7 +56,7 @@ typedef RequestOrUSVString RequestInfo;
 class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    static PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
 
     virtual ~ServiceWorkerGlobalScope();
     virtual bool isServiceWorkerGlobalScope() const override { return true; }

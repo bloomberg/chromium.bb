@@ -122,7 +122,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     Document* document = toDocument(m_executionContext.get());
     SecurityOrigin* starterOrigin = document->securityOrigin();
 
-    OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), starterOrigin, m_workerClients.release());
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), starterOrigin, m_workerClients.release());
     double originTime = document->loader() ? document->loader()->timing().referenceMonotonicTime() : monotonicallyIncreasingTime();
 
     m_loaderProxy = WorkerLoaderProxy::create(this);
@@ -215,7 +215,7 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<WorkerThread> workerTh
     m_queuedEarlyTasks.clear();
 }
 
-PassRefPtr<WorkerThread> WorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<WorkerThread> WorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime, startupData);
 }

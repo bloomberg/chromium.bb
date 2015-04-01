@@ -13,13 +13,13 @@
 
 namespace blink {
 
-PassRefPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     ASSERT(isMainThread());
     return adoptRef(new CompositorWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin, startupData));
 }
 
-CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
     : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
@@ -30,7 +30,7 @@ CompositorWorkerThread::~CompositorWorkerThread()
 {
 }
 
-PassRefPtrWillBeRawPtr<WorkerGlobalScope> CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<WorkerGlobalScope> CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return CompositorWorkerGlobalScope::create(this, startupData, m_timeOrigin);
 }

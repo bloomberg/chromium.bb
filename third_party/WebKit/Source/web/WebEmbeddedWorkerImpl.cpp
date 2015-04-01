@@ -416,7 +416,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     document->initContentSecurityPolicy(m_mainScriptLoader->releaseContentSecurityPolicy());
 
     KURL scriptURL = m_mainScriptLoader->url();
-    OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData =
+    OwnPtr<WorkerThreadStartupData> startupData =
         WorkerThreadStartupData::create(
             scriptURL,
             m_workerStartData.userAgent,

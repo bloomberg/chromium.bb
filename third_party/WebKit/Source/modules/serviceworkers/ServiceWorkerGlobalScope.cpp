@@ -77,8 +77,10 @@ private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
-PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
+    // Note: startupData is finalized on return. After the relevant parts has been
+    // passed along to the created 'context'.
     RefPtrWillBeRawPtr<ServiceWorkerGlobalScope> context = adoptRefWillBeNoop(new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_starterOrigin, startupData->m_workerClients.release()));
 
     context->setV8CacheOptions(startupData->m_v8CacheOptions);

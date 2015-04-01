@@ -783,6 +783,7 @@ public:
 #define RawPtrWillBeMember blink::Member
 #define RawPtrWillBePersistent blink::Persistent
 #define RawPtrWillBeWeakMember blink::WeakMember
+#define OwnPtrWillBeCrossThreadPersistent blink::CrossThreadPersistent
 #define OwnPtrWillBeMember blink::Member
 #define OwnPtrWillBePersistent blink::Persistent
 #define OwnPtrWillBeRawPtr WTF::RawPtr
@@ -861,6 +862,7 @@ template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 #define RawPtrWillBeMember WTF::RawPtr
 #define RawPtrWillBePersistent WTF::RawPtr
 #define RawPtrWillBeWeakMember WTF::RawPtr
+#define OwnPtrWillBeCrossThreadPersistent WTF::OwnPtr
 #define OwnPtrWillBeMember WTF::OwnPtr
 #define OwnPtrWillBePersistent WTF::OwnPtr
 #define OwnPtrWillBeRawPtr WTF::OwnPtr

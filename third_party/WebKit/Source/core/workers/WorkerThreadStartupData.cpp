@@ -53,9 +53,4 @@ WorkerThreadStartupData::~WorkerThreadStartupData()
 {
 }
 
-DEFINE_TRACE(WorkerThreadStartupData)
-{
-    visitor->trace(m_workerClients);
-}
-
 } // namespace blink

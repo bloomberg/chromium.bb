@@ -39,14 +39,14 @@ class WorkerThreadStartupData;
 
 class ServiceWorkerThread final : public WorkerThread {
 public:
-    static PassRefPtr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    static PassRefPtr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
     virtual ~ServiceWorkerThread();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) override;
+    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
 
 private:
-    ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 };
 
 } // namespace blink

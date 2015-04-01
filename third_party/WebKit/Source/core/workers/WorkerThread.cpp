@@ -51,8 +51,6 @@
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
-#include <utility>
-
 namespace blink {
 
 namespace {
@@ -257,7 +255,7 @@ private:
     WorkerThread* m_thread;
 };
 
-WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
     : m_terminated(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)

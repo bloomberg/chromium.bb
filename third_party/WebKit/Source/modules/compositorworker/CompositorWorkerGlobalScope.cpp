@@ -13,8 +13,10 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> CompositorWorkerGlobalScope::create(CompositorWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData, double timeOrigin)
+PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> CompositorWorkerGlobalScope::create(CompositorWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData, double timeOrigin)
 {
+    // Note: startupData is finalized on return. After the relevant parts has been
+    // passed along to the created 'context'.
     RefPtrWillBeRawPtr<CompositorWorkerGlobalScope> context = adoptRefWillBeNoop(new CompositorWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin, startupData->m_starterOrigin, startupData->m_workerClients.release()));
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
     return context.release();

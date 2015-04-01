@@ -19,7 +19,7 @@ CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy()
 {
 }
 
-PassRefPtr<WorkerThread> CompositorWorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<WorkerThread> CompositorWorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return CompositorWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime, startupData);
 }
