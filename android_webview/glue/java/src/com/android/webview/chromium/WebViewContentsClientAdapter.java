@@ -622,15 +622,41 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    /**
+     * Returns true if a method with a given name and parameters is declared in a subclass
+     * of a given baseclass.
+     */
+    private static <T> boolean isMethodDeclaredInSubClass(Class<T> baseClass,
+            Class<? extends T> subClass, String name, Class<?>... parameterTypes) {
+        try {
+            return !subClass.getMethod(name, parameterTypes).getDeclaringClass().equals(baseClass);
+        } catch (SecurityException e) {
+            return false;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
     @Override
     public void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onGeolocationPermissionsShowPrompt");
-            if (mWebChromeClient != null) {
-                if (TRACE) Log.d(TAG, "onGeolocationPermissionsShowPrompt");
-                mWebChromeClient.onGeolocationPermissionsShowPrompt(origin, callback);
+            if (mWebChromeClient == null) {
+                callback.invoke(origin, false, false);
+                return;
             }
+            if (!isMethodDeclaredInSubClass(WebChromeClient.class,
+                                            mWebChromeClient.getClass(),
+                                            "onGeolocationPermissionsShowPrompt",
+                                            String.class,
+                                            GeolocationPermissions.Callback.class)) {
+                // This is only required for pre-M versions of android.
+                callback.invoke(origin, false, false);
+                return;
+            }
+            if (TRACE) Log.d(TAG, "onGeolocationPermissionsShowPrompt");
+            mWebChromeClient.onGeolocationPermissionsShowPrompt(origin, callback);
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onGeolocationPermissionsShowPrompt");
         }
