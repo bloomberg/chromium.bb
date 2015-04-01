@@ -3,14 +3,6 @@ if (self.importScripts) {
 }
 
 test(function() {
-    function size(headers) {
-      var count = 0;
-      for (var header of headers) {
-        ++count;
-      }
-      return count;
-    }
-
     var expectedValueMap = {
       'content-language': 'ja',
       'content-type': 'text/html; charset=UTF-8',
@@ -187,30 +179,6 @@ test(function() {
     // Throw errors
     INVALID_HEADER_NAMES.forEach(function(name) {
         assert_throws({name: 'TypeError'},
-                      function() { headers.append(name, 'a'); },
-                      'Headers.append with an invalid name (' + name +
-                      ') should throw');
-        assert_throws({name: 'TypeError'},
-                      function() { headers.delete(name); },
-                      'Headers.delete with an invalid name (' + name +
-                      ') should throw');
-        assert_throws({name: 'TypeError'},
-                      function() { headers.get(name); },
-                      'Headers.get with an invalid name (' + name +
-                      ') should throw');
-        assert_throws({name: 'TypeError'},
-                      function() { headers.getAll(name); },
-                      'Headers.getAll with an invalid name (' + name +
-                      ') should throw');
-        assert_throws({name: 'TypeError'},
-                      function() { headers.has(name); },
-                      'Headers.has with an invalid name (' + name +
-                      ') should throw');
-        assert_throws({name: 'TypeError'},
-                      function() { headers.set(name, 'a'); },
-                      'Headers.set with an invalid name (' + name +
-                      ') should throw');
-        assert_throws({name: 'TypeError'},
                       function() {
                         var obj = {};
                         obj[name] = 'a';
@@ -224,37 +192,8 @@ test(function() {
                       ') should throw');
       });
 
-    // Test guard is none for set/append/delete
-    headers = new Headers({'a': 'b'});
-    FORBIDDEN_HEADERS.concat(FORBIDDEN_RESPONSE_HEADERS)
-      .map(function(name) {return [name, 'test'];})
-      .concat(SIMPLE_HEADERS)
-      .concat(NON_SIMPLE_HEADERS)
-      .forEach(function(header) {
-          headers.append(header[0], header[1]);
-          assert_equals(size(headers), 2,
-                        'headers.append should accept ' +
-                        'header name: ' + header[0]);
-          assert_equals(headers.get(header[0]),
-                        header[1],
-                        header[0] + ' of headers should match');
-          headers.set(header[0], 'test2');
-          assert_equals(headers.get(header[0]),
-                        'test2',
-                        header[0] + ' of headers should match');
-          headers.delete(header[0]);
-          assert_equals(size(headers), 1,
-                        'headers.delete should accept ' +
-                        'header name: ' + header[0]);
-        });
 
     INVALID_HEADER_VALUES.forEach(function(value) {
-        assert_throws({name: 'TypeError'},
-                      function() { headers.append('a', value); },
-                      'Headers.append with an invalid value should throw');
-        assert_throws({name: 'TypeError'},
-                      function() { headers.set('a', value); },
-                      'Headers.set with an invalid value should throw');
         assert_throws({name: 'TypeError'},
                       function() { var headers = new Headers({'a': value}); },
                       'new Headers with an invalid value should throw');

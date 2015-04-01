@@ -8,14 +8,6 @@ if (self.importScripts) {
 var base_url = '../resources/filtered-response.php';
 var other_url = OTHER_ORIGIN + '/fetch/resources/filtered-response.php';
 
-function size(headers) {
-  var count = 0;
-  for (var header of headers) {
-    ++count;
-  }
-  return count;
-}
-
 function check_headers(headers,
                        headers_must_exist,
                        headers_must_not_exist,

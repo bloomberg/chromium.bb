@@ -111,6 +111,15 @@ var VALID_TOKENS = FORBIDDEN_METHODS
   .concat(OTHER_VALID_METHOD_NAMES);
 
 // Header names and values.
+// Header names are divided into the following mutually-exclusive categories:
+// - not a name (INVALID_HEADER_NAMES)
+// - forbidden header names (FORBIDDEN_HEADER_NAMES)
+// - forbidden response header names (FORBIDDEN_RESPONSE_HEADER_NAMES)
+// - names of simple headers, except for "Content-Type" (SIMPLE_HEADER_NAMES)
+// - "Content-Type" (CONTENT_TYPE): This can be
+//   a simple header if the header value is in SIMPLE_HEADER_CONTENT_TYPE_VALUES
+//   or not if the header value is in NON_SIMPLE_HEADER_CONTENT_TYPE_VALUES.
+// - others (NON_SIMPLE_HEADER_NAMES)
 
 // A header name must match token in RFC 2616.
 // Fetch API Spec: https://fetch.spec.whatwg.org/#concept-header-name
@@ -121,26 +130,30 @@ var INVALID_HEADER_VALUES = [
   'test\r', 'test\n', 'test\r\n', 'test\0',
   '\0'.repeat(100000), '\r\n'.repeat(50000), 'x'.repeat(100000) + '\0'];
 
-var FORBIDDEN_HEADERS =
+var FORBIDDEN_HEADER_NAMES =
   ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers',
    'Access-Control-Request-Method', 'Connection', 'Content-Length',
    'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Host', 'Keep-Alive',
    'Origin', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade',
    'User-Agent', 'Via', 'Proxy-', 'Sec-', 'Proxy-FooBar', 'Sec-FooBar'];
-var FORBIDDEN_RESPONSE_HEADERS = ['Set-Cookie', 'Set-Cookie2'];
-var SIMPLE_HEADERS =
-  [['Accept', '*'], ['Accept-Language', 'ru'], ['Content-Language', 'ru'],
-   ['Content-Type', 'application/x-www-form-urlencoded'],
-   ['Content-Type', 'multipart/form-data'],
+var FORBIDDEN_RESPONSE_HEADER_NAMES =
+  ['Set-Cookie', 'Set-Cookie2',
+   'set-cookie', 'set-cookie2',
+   'set-cOokie', 'set-cOokie2',
+   'sEt-cookie', 'sEt-cookie2'];
+var SIMPLE_HEADER_NAMES = ['Accept', 'Accept-Language', 'Content-Language'];
+var CONTENT_TYPE = 'Content-Type';
+var NON_SIMPLE_HEADER_NAMES = ['X-Fetch-Test', 'X-Fetch-Test2'];
+
+var SIMPLE_HEADER_CONTENT_TYPE_VALUES =
+  ['application/x-www-form-urlencoded',
+   'multipart/form-data',
    // MIME types are case-insensitive.
-   ['Content-Type', 'multiPart/foRm-data'],
+   'multiPart/foRm-data',
    // MIME-type parameters are ignored when determining simple headers.
-   ['Content-Type', 'multiPart/foRm-data;charset=utf-8'],
-   ['Content-Type', 'text/plain']];
-var NON_SIMPLE_HEADERS =
-  [['X-Fetch-Test', 'test'],
-   ['X-Fetch-Test2', 'test2'],
-   ['Content-Type', 'foo/bar']];
+   'multiPart/foRm-data;charset=utf-8',
+   'text/plain'];
+var NON_SIMPLE_HEADER_CONTENT_TYPE_VALUES = ['foo/bar'];
 
 // ResponseInit's statusText must match Reason-Phrase.
 // https://fetch.spec.whatwg.org/#dom-response Step 2.
@@ -168,6 +181,14 @@ var VALID_REASON_PHRASE = [
   // Valid strings.
   '', '0123456789', '404 Not Found', 'HTTP/1.1 404 Not Found', 'AZ\u00ffaz',
   'x'.repeat(100000)];
+
+function size(headers) {
+  var count = 0;
+  for (var header of headers) {
+    ++count;
+  }
+  return count;
+}
 
 function testBlockMixedContent(mode) {
   promise_test(function(t) {
