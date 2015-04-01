@@ -10,6 +10,7 @@ import itertools
 import mock
 import sys
 
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -21,6 +22,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
+from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import patch_unittest
 
@@ -181,21 +183,15 @@ class MasterSlaveSyncCompletionStageTest(
 
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake unified master configuration."""
-    orig_config = completion_stages.cbuildbot_config.config
-    try:
-      test_config = self._GetTestConfig()
-      completion_stages.cbuildbot_config.config = test_config
-      stage = self.ConstructStage()
-
-      p = stage._GetSlaveConfigs()
-      self.assertTrue(test_config['test3'] in p)
-      self.assertTrue(test_config['test5'] in p)
-      self.assertFalse(test_config['test1'] in p)
-      self.assertFalse(test_config['test2'] in p)
-      self.assertFalse(test_config['test4'] in p)
-
-    finally:
-      completion_stages.cbuildbot_config.config = orig_config
+    test_config = self._GetTestConfig()
+    self.PatchObject(cbuildbot_config, 'config', test_config)
+    stage = self.ConstructStage()
+    p = stage._GetSlaveConfigs()
+    self.assertTrue(test_config['test3'] in p)
+    self.assertTrue(test_config['test5'] in p)
+    self.assertFalse(test_config['test1'] in p)
+    self.assertFalse(test_config['test2'] in p)
+    self.assertFalse(test_config['test4'] in p)
 
   def testIsFailureFatal(self):
     """Tests the correctness of the _IsFailureFatal method"""
@@ -284,14 +280,9 @@ class CanaryCompletionStageTest(
         'bar timed out; foo1,foo2 and 3 others failed')
 
 
-class CommitQueueCompletionStageTest(
+class BaseCommitQueueCompletionStageTest(
     generic_stages_unittest.AbstractStageTest, patch_unittest.MockPatchBase):
-  """Tests how CQ master handles changes in CommitQueueCompletionStage."""
-  BOT_ID = 'master-paladin'
-
-  def _Prepare(self, bot_id=BOT_ID, **kwargs):
-    super(CommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
-    self.assertTrue(self._run.config['master'])
+  """Tests how CQ handles changes in CommitQueueCompletionStage."""
 
   def setUp(self):
     self.build_type = constants.PFQ_TYPE
@@ -316,6 +307,8 @@ class CommitQueueCompletionStageTest(
                      '_GetSlaveMappingAndCLActions',
                      return_value=(dict(), []))
     self.PatchObject(clactions, 'GetRelevantChangesForBuilds')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_RecordIrrelevantChanges')
 
   # pylint: disable=W0221
   def ConstructStage(self, tree_was_open=True):
@@ -339,8 +332,8 @@ class CommitQueueCompletionStageTest(
   def VerifyStage(self, failing, inflight, handle_failure=True,
                   handle_timeout=False, sane_tot=True, submit_partial=False,
                   alert=False, stage=None, all_slaves=None, slave_stages=None,
-                  do_submit_partial=True):
-    """Runs and Verifies CQMasterHandleFailure.
+                  do_submit_partial=True, build_passed=False):
+    """Runs and Verifies PerformStage.
 
     Args:
       failing: The names of the builders that failed.
@@ -354,12 +347,35 @@ class CommitQueueCompletionStageTest(
       all_slaves: Optional set of all slave configs.
       slave_stages: Optional list of slave stages.
       do_submit_partial: If True, assert that there was no call to
-                     SubmitPartialPool.
+                         SubmitPartialPool.
+      build_passed: Whether the build passed or failed.
     """
     if not stage:
       stage = self.ConstructStage()
 
-    all_slaves = all_slaves or set(failing + inflight)
+    # Setup the stage to look at the specified configs.
+    all_slaves = list(all_slaves or set(failing + inflight))
+    configs = [cbuildbot_config._config(name=x) for x in all_slaves]
+    self.PatchObject(stage, '_GetSlaveConfigs', return_value=configs)
+
+    # Setup builder statuses.
+    stage._run.attrs.manifest_manager = mock.MagicMock()
+    statuses = {}
+    for x in failing:
+      statuses[x] = manifest_version.BuilderStatus(
+          constants.BUILDER_STATUS_FAILED, message=None)
+    for x in inflight:
+      statuses[x] = manifest_version.BuilderStatus(
+          constants.BUILDER_STATUS_INFLIGHT, message=None)
+    if self._run.config.master:
+      self.PatchObject(stage._run.attrs.manifest_manager, 'GetBuildersStatus',
+                       return_value=statuses)
+    else:
+      self.PatchObject(stage, '_GetLocalBuildStatus', return_value=statuses)
+
+    # Setup DB and provide list of slave stages.
+    mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
     if slave_stages is None:
       slave_stages = []
       critical_stages = (
@@ -368,7 +384,10 @@ class CommitQueueCompletionStageTest(
         slave_stages.append({'name': stage_name,
                              'build_config': slave,
                              'status': constants.BUILDER_STATUS_PASSED})
+    self.PatchObject(mock_cidb, 'GetSlaveStages', return_value=slave_stages)
 
+
+    # Set up SubmitPartialPool to provide a list of changes to look at.
     if submit_partial:
       spmock = self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
                                 return_value=self.other_changes)
@@ -378,23 +397,63 @@ class CommitQueueCompletionStageTest(
                                 return_value=self.changes)
       handlefailure_changes = self.changes
 
-    stage.CQMasterHandleFailure(failing, inflight, [], all_slaves, slave_stages)
+    # Track whether 'HandleSuccess' is called.
+    success_mock = self.PatchObject(stage, 'HandleSuccess')
+
+    # Actually run the stage.
+    if build_passed:
+      stage.PerformStage()
+    else:
+      with self.assertRaises(completion_stages.ImportantBuilderFailedException):
+        stage.PerformStage()
 
     # Verify the calls.
-    self.tot_sanity_mock.assert_called_once_with(mock.ANY, mock.ANY)
-    if alert:
-      self.alert_email_mock.called_once_with(
-          mock.ANY, mock.ANY, mock.ANY, mock.ANY)
+    self.assertEqual(success_mock.called, build_passed)
 
-    self.assertEqual(do_submit_partial, spmock.called)
+    if not build_passed and self._run.config.master:
+      self.tot_sanity_mock.assert_called_once_with(mock.ANY, mock.ANY)
 
-    if handle_failure:
-      stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-          mock.ANY, no_stat=[], sanity=sane_tot, changes=handlefailure_changes)
+      if alert:
+        self.alert_email_mock.called_once_with(
+            mock.ANY, mock.ANY, mock.ANY, mock.ANY)
 
-    if handle_timeout:
-      stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
-          sanity=mock.ANY, changes=self.changes)
+      self.assertEqual(do_submit_partial, spmock.called)
+
+      if handle_failure:
+        stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
+            mock.ANY, no_stat=set([]), sanity=sane_tot,
+            changes=handlefailure_changes)
+
+      if handle_timeout:
+        stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
+            sanity=mock.ANY, changes=self.changes)
+
+
+# pylint: disable=too-many-ancestors
+class SlaveCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
+  """Tests how CQ a slave handles changes in CommitQueueCompletionStage."""
+  BOT_ID = 'x86-mario-paladin'
+
+  def testSuccess(self):
+    """Test the slave succeeding."""
+    self.VerifyStage([], [], build_passed=True)
+
+  def testFail(self):
+    """Test the slave failing."""
+    self.VerifyStage(['foo'], [], build_passed=False)
+
+  def testTimeout(self):
+    """Test the slave timing out."""
+    self.VerifyStage([], ['foo'], build_passed=False)
+
+
+class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
+  """Tests how CQ master handles changes in CommitQueueCompletionStage."""
+  BOT_ID = 'master-paladin'
+
+  def _Prepare(self, bot_id=BOT_ID, **kwargs):
+    super(MasterCommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
+    self.assertTrue(self._run.config['master'])
 
   def testNoInflightBuildersWithInfraFail(self):
     """Test case where there are no inflight builders but are infra failures."""
@@ -410,22 +469,34 @@ class CommitQueueCompletionStageTest(
 
   def testMissingCriticalStage(self):
     """Test case where a slave failed to run a critical stage."""
-    self.VerifyStage(set(), set(), all_slaves=set(['foo']), slave_stages=[],
+    self.VerifyStage(['foo'], [], slave_stages=[],
                      do_submit_partial=False)
 
   def testFailedCriticalStage(self):
     """Test case where a slave failed a critical stage."""
     fake_stages = [{'name': 'CommitQueueSync', 'build_config': 'foo',
                     'status': constants.BUILDER_STATUS_FAILED}]
-    self.VerifyStage(set(), set(), all_slaves=set(['foo']),
+    self.VerifyStage(['foo'], [],
                      slave_stages=fake_stages, do_submit_partial=False)
 
   def testMissingCriticalStageOnSanitySlave(self):
     """Test case where a sanity slave failed to run a critical stage."""
     stage = self.ConstructStage()
+    fake_stages = [{'name': 'CommitQueueSync', 'build_config': 'foo',
+                    'status': constants.BUILDER_STATUS_PASSED}]
     stage._run.config.sanity_check_slaves = ['sanity']
-    self.VerifyStage(set(), set(), all_slaves=set(['sanity']), slave_stages=[],
+    self.VerifyStage(['sanity', 'foo'], [], slave_stages=fake_stages,
                      do_submit_partial=True, stage=stage)
+
+  def testMissingCriticalStageOnTimedOutSanitySlave(self):
+    """Test case where a sanity slave failed to run a critical stage."""
+    stage = self.ConstructStage()
+    fake_stages = [{'name': 'CommitQueueSync', 'build_config': 'foo',
+                    'status': constants.BUILDER_STATUS_PASSED}]
+    stage._run.config.sanity_check_slaves = ['sanity']
+    self.VerifyStage(['foo'], ['sanity'], slave_stages=fake_stages,
+                     do_submit_partial=True, stage=stage,
+                     handle_failure=False, handle_timeout=True)
 
   def testNoInflightBuildersWithNoneFailureMessages(self):
     """Test case where failed builders reported NoneType messages."""
@@ -452,6 +523,18 @@ class CommitQueueCompletionStageTest(
     # An alert is sent, since we have an inflight build still.
     self.VerifyStage(failing, inflight, handle_failure=False,
                      handle_timeout=True, alert=True)
+
+  def testSanityFailed(self):
+    """Test case where the sanity builder failed."""
+    stage = self.ConstructStage()
+    stage._run.config.sanity_check_slaves = ['sanity']
+    self.VerifyStage(['sanity'], [], build_passed=True)
+
+  def testSanityTimeout(self):
+    """Test case where the sanity builder timed out."""
+    stage = self.ConstructStage()
+    stage._run.config.sanity_check_slaves = ['sanity']
+    self.VerifyStage([], ['sanity'], build_passed=True)
 
   def testGetRelevantChangesForSlave(self):
     """Tests the logic of GetRelevantChangesForSlaves()."""

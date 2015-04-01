@@ -385,12 +385,23 @@ class CBuildBotTest(cros_test_lib.TestCase):
   def testGetSlaves(self):
     """Make sure every master has a sane list of slaves"""
     for build_name, config in cbuildbot_config.config.iteritems():
-      if config['master']:
+      if config.master:
         configs = cbuildbot_config.GetSlavesForMaster(config)
         self.assertEqual(
             len(map(repr, configs)), len(set(map(repr, configs))),
             'Duplicate board in slaves of %s will cause upload prebuilts'
             ' failures' % build_name)
+
+        # Our logic for calculating what slaves have completed their critical
+        # stages will break if the master is considered a slave of itself,
+        # because db.GetSlaveStages(...) doesn't include master stages.
+        if config.build_type == constants.PALADIN_TYPE:
+          self.assertEquals(
+              config.boards, [],
+              'Master paladin %s cannot have boards.' % build_name)
+          self.assertNotIn(
+              build_name, [x.name for x in configs],
+              'Master paladin %s cannot be a slave of itself.' % build_name)
 
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""

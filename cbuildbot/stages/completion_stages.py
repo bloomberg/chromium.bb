@@ -227,8 +227,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
         sync_stages.MasterSlaveLKGMSyncStage.sub_manager.PromoteCandidate()
 
-  # pylint: disable=unused-argument
-  def HandleFailure(self, failing, inflight, no_stat, all_slaves):
+  def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure.
 
     This function is called whenever the cbuildbot run fails.
@@ -239,7 +238,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       failing: The names of the failing builders.
       inflight: The names of the builders that are still running.
       no_stat: Set of builder names of slave builders that had status None.
-      all_slaves: Set of all important slave config names.
     """
     if failing or inflight or no_stat:
       cros_build_lib.PrintBuildbotStepWarnings()
@@ -278,7 +276,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
                   if status.Failed())
     inflight = set(builder for builder, status in statuses.iteritems()
                    if status.Inflight())
-    all_slaves = set(statuses.keys())
 
     # If all the failing or inflight builders were sanity checkers
     # then ignore the failure.
@@ -286,7 +283,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     if fatal:
       self._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)
-      self.HandleFailure(failing, inflight, no_stat, all_slaves)
+      self.HandleFailure(failing, inflight, no_stat)
       raise ImportantBuilderFailedException()
     else:
       self.HandleSuccess()
@@ -298,7 +295,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       failing: Set of builder names of slave builders that failed.
       inflight: Set of builder names of slave builders that are inflight
       no_stat: Set of builder names of slave builders that had status None.
-      all_slaves: Set of all important slave config names.
 
     Returns:
       True if any of the failing or inflight builders are not sanity check
@@ -374,21 +370,20 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
   """Collect build slave statuses and handle the failures."""
 
-  def HandleFailure(self, failing, inflight, no_stat, all_slaves):
+  def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Canary builders.
 
     Args:
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
-      all_slaves: Set of all important slave config names.
     """
     # Print out the status about what builds failed or not.
     MasterSlaveSyncCompletionStage.HandleFailure(
-        self, failing, inflight, no_stat, all_slaves)
+        self, failing, inflight, no_stat)
 
     if self._run.config.master:
-      self.CanaryMasterHandleFailure(failing, inflight, no_stat, all_slaves)
+      self.CanaryMasterHandleFailure(failing, inflight, no_stat)
 
   def SendCanaryFailureAlert(self, failing, inflight, no_stat):
     """Send an alert email to summarize canary failures.
@@ -447,15 +442,13 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
                                                  status))
     return '; '.join(messages)
 
-  # pylint: disable=unused-argument
-  def CanaryMasterHandleFailure(self, failing, inflight, no_stat, all_slaves):
+  def CanaryMasterHandleFailure(self, failing, inflight, no_stat):
     """Handles the failure by sending out an alert email.
 
     Args:
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
-      all_slaves: Set of all important slave config names.
     """
     if self._run.manifest_branch == 'master':
       self.SendCanaryFailureAlert(failing, inflight, no_stat)
@@ -507,7 +500,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       chroot_manager = chroot_lib.ChrootManager(self._build_root)
       chroot_manager.SetChrootVersion(version)
 
-  def HandleFailure(self, failing, inflight, no_stat, all_slaves):
+  def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Commit Queue.
 
     This function performs any tasks that need to happen when the Commit Queue
@@ -522,18 +515,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
-      all_slaves: Set of all important slave config names.
     """
     # Print out the status about what builds failed or not.
     MasterSlaveSyncCompletionStage.HandleFailure(
-        self, failing, inflight, no_stat, all_slaves)
+        self, failing, inflight, no_stat)
 
     if self._run.config.master:
-      build_id, db = self._run.GetCIDBHandle()
-      assert db, 'No database connection to use.'
-      slave_stages = db.GetSlaveStages(build_id)
-      self.CQMasterHandleFailure(failing, inflight, no_stat, all_slaves,
-                                 slave_stages)
+      self.CQMasterHandleFailure(failing, inflight, no_stat)
 
   def _GetSlaveMappingAndCLActions(self, changes):
     """Query CIDB to for slaves and CL actions.
@@ -593,19 +581,26 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     return changes_by_config
 
-  def _ShouldSubmitPartialPool(self, all_slaves, slave_stages):
+  def _ShouldSubmitPartialPool(self):
     """Determine whether we should attempt or skip SubmitPartialPool.
 
-    Args:
-      all_slaves: Set of config names for all important slaves that test
-                  patches (does not include sanity-check slaves).
-      slave_stages: Set of all slave build stages, as returned by cidb.
-
     Returns:
-      True if all slaves from |all_slaves| ran and completed all critical
-      stages, and hence it is safe to attempt SubmitPartialPool. False
+      True if all important, non-sanity-check slaves ran and completed all
+      critical stages, and hence it is safe to attempt SubmitPartialPool. False
       otherwise.
     """
+    # sanity_check_slaves should not block board-aware submission, since they do
+    # not actually apply test patches.
+    sanity_check_slaves = set(self._run.config.sanity_check_slaves)
+    all_slaves = set([x.name for x in self._GetSlaveConfigs()])
+    all_slaves -= sanity_check_slaves
+    assert self._run.config.name not in all_slaves
+
+    # Get slave stages.
+    build_id, db = self._run.GetCIDBHandle()
+    assert db, 'No database connection to use.'
+    slave_stages = db.GetSlaveStages(build_id)
+
     should_submit = True
     ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
                          constants.BUILDER_STATUS_SKIPPED,)
@@ -627,8 +622,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     return should_submit
 
-  def CQMasterHandleFailure(self, failing, inflight, no_stat, all_slaves,
-                            slave_stages):
+  def CQMasterHandleFailure(self, failing, inflight, no_stat):
     """Handle changes in the validation pool upon build failure or timeout.
 
     This function determines whether to reject CLs and what CLs to
@@ -639,20 +633,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
-      all_slaves: Set of all important slave config names.
-      slave_stages: List of all slave stages, as returned by
-                    cidb.GetSlaveStages
     """
     messages = self._GetFailedMessages(failing)
     self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
 
     changes = self.sync_stage.pool.changes
 
-    sanity_check_slaves = set(self._run.config.sanity_check_slaves)
-    # sanity_check_slaves should not block board-aware submission, since they do
-    # not actually apply test patches.
-    do_partial_submission = self._ShouldSubmitPartialPool(
-        all_slaves - sanity_check_slaves, slave_stages)
+    do_partial_submission = self._ShouldSubmitPartialPool()
 
     if do_partial_submission:
       changes_by_config = self.GetRelevantChangesForSlaves(changes, no_stat)
@@ -670,6 +657,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
              'board-aware submission. See %s' % self.ConstructDashboardURL())
       tree_status.SendHealthAlert(self._run, title, msg)
 
+    sanity_check_slaves = set(self._run.config.sanity_check_slaves)
     tot_sanity = self._ToTSanity(sanity_check_slaves, self._slave_statuses)
 
     if not tot_sanity:

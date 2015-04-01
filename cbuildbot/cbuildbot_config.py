@@ -275,6 +275,8 @@ def GetSlavesForMaster(master_config, options=None):
   if options is not None and options.remote_trybot:
     return slave_configs
 
+  # TODO(davidjames): In CIDB the master isn't considered a slave of itself, so
+  # we probably shouldn't consider it a slave here either.
   for build_config in all_configs.itervalues():
     if (build_config['important'] and
         build_config['manifest_version'] and
