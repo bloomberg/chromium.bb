@@ -11,6 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -678,6 +681,26 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
   }
 
   client_->PasswordWasAutofilled(best_matches);
+}
+
+void PasswordManager::ProcessAutofillPredictions(
+    password_manager::PasswordManagerDriver* driver,
+    const std::vector<autofill::FormStructure*>& forms) {
+  // Leave only forms that contain fields that are useful for password manager.
+  std::map<autofill::FormData, autofill::FormFieldData> predictions;
+  for (autofill::FormStructure* form : forms) {
+    for (std::vector<autofill::AutofillField*>::const_iterator field =
+             form->begin();
+         field != form->end(); ++field) {
+      if ((*field)->server_type() == autofill::USERNAME ||
+          (*field)->server_type() == autofill::USERNAME_AND_EMAIL_ADDRESS) {
+        predictions[form->ToFormData()] = *(*field);
+      }
+    }
+  }
+  if (predictions.empty())
+    return;
+  driver->AutofillDataReceived(predictions);
 }
 
 }  // namespace password_manager

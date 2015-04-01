@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -106,6 +107,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   typedef std::map<blink::WebElement, int> LoginToPasswordInfoKeyMap;
   typedef std::map<blink::WebInputElement, blink::WebInputElement>
       PasswordToLoginMap;
+  using FormDataFieldDataMap =
+      std::map<autofill::FormData, autofill::FormFieldData>;
 
   // This class keeps track of autofilled password input elements and makes sure
   // the autofilled password value is not accessible to JavaScript code until
@@ -177,6 +180,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // RenderView IPC handlers:
   void OnFillPasswordForm(int key, const PasswordFormFillData& form_data);
   void OnSetLoggingState(bool active);
+  void OnAutofillUsernameDataReceived(const FormDataFieldDataMap& predictions);
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
@@ -277,6 +281,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // True indicates that there is a command line flag to enable showing of
   // save password prompt on in-page navigations.
   bool save_password_on_in_page_navigation_;
+
+  // Contains server predictions for which field is the username field for forms
+  // on the page.
+  FormDataFieldDataMap form_predictions_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 

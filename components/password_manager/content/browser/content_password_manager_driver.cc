@@ -67,6 +67,13 @@ void ContentPasswordManagerDriver::AccountCreationFormsFound(
                                                           forms));
 }
 
+void ContentPasswordManagerDriver::AutofillDataReceived(
+    const std::map<autofill::FormData, autofill::FormFieldData>& predictions) {
+  content::RenderFrameHost* host = render_frame_host_;
+  host->Send(new AutofillMsg_AutofillUsernameDataReceived(host->GetRoutingID(),
+                                                          predictions));
+}
+
 void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
     const base::string16& password) {
   content::RenderFrameHost* host = render_frame_host_;

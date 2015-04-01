@@ -42,7 +42,7 @@ void TestAutofillDriver::SendFormDataToRenderer(int query_id,
 void TestAutofillDriver::PingRenderer() {
 }
 
-void TestAutofillDriver::DetectAccountCreationForms(
+void TestAutofillDriver::PropagateAutofillPredictions(
     const std::vector<autofill::FormStructure*>& forms) {
 }
 

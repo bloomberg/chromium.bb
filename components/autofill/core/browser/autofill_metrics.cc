@@ -35,6 +35,7 @@ enum FieldTypeGroupForMetrics {
   GROUP_CREDIT_CARD_TYPE,
   GROUP_PASSWORD,
   GROUP_ADDRESS_LINE_3,
+  GROUP_USERNAME,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -151,6 +152,10 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
 
     case PASSWORD_FIELD:
       group = GROUP_PASSWORD;
+      break;
+
+    case USERNAME_FIELD:
+      group = GROUP_USERNAME;
       break;
 
     case TRANSACTION:

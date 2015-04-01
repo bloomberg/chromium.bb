@@ -166,7 +166,11 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
 
   result |= RESULT_ORIGINS_MATCH;
 
-  if (form.username_element == observed_form_.username_element &&
+  // Autofill predictions can overwrite our default username selection so
+  // if this form was parsed with autofill predictions then allow the username
+  // element to be different.
+  if ((form.was_parsed_using_autofill_predictions ||
+       form.username_element == observed_form_.username_element) &&
       form.password_element == observed_form_.password_element) {
     result |= RESULT_HTML_ATTRIBUTES_MATCH;
   }
@@ -336,6 +340,8 @@ void PasswordFormManager::ProvisionallySave(
     // User typed in a new, unknown username.
     user_action_ = kUserActionOverrideUsernameAndPassword;
     pending_credentials_ = observed_form_;
+    if (credentials.was_parsed_using_autofill_predictions)
+      pending_credentials_.username_element = credentials.username_element;
     pending_credentials_.username_value = credentials.username_value;
     pending_credentials_.other_possible_usernames =
         credentials.other_possible_usernames;

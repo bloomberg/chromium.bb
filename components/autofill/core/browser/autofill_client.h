@@ -156,9 +156,9 @@ class AutofillClient {
   // Whether the Autocomplete feature of Autofill should be enabled.
   virtual bool IsAutocompleteEnabled() = 0;
 
-  // Pass the form structures to the password generation manager to detect
-  // account creation forms.
-  virtual void DetectAccountCreationForms(
+  // Pass the form structures to the password manager to choose correct username
+  // and to the password generation manager to detect account creation forms.
+  virtual void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
       const std::vector<autofill::FormStructure*>& forms) = 0;
 

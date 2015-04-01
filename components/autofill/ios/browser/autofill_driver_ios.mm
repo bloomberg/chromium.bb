@@ -70,9 +70,9 @@ void AutofillDriverIOS::SendFormDataToRenderer(
 void AutofillDriverIOS::PingRenderer() {
 }
 
-void AutofillDriverIOS::DetectAccountCreationForms(
+void AutofillDriverIOS::PropagateAutofillPredictions(
     const std::vector<autofill::FormStructure*>& forms) {
-  autofill_manager_.client()->DetectAccountCreationForms(nullptr, forms);
+  autofill_manager_.client()->PropagateAutofillPredictions(nullptr, forms);
 };
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(

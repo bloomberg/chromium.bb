@@ -1043,4 +1043,49 @@ TEST_F(PasswordManagerTest, SavingSignupForms_NoActionMatch) {
   form_to_save->Save();
 }
 
+TEST_F(PasswordManagerTest, FormSubmittedChangedWithAutofillResponse) {
+  // This tests verifies that if the observed forms and provisionally saved
+  // differ in the choice of the username, the saving still succeeds, as long as
+  // the changed form is marked "parsed using autofill predictions".
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  // The initial load.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // The initial layout.
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Simulate that based on autofill server username prediction, the username
+  // of the form changed from the default candidate("Email") to something else.
+  // Set the parsed_using_autofill_predictions bit to true to make sure that
+  // choice of username is accepted by PasswordManager, otherwise the the form
+  // will be rejected as not equal to the observed one. Note that during
+  // initial parsing we don't have autofill server predictions yet, that's why
+  // observed form and submitted form may be different.
+  form.username_element = ASCIIToUTF16("Username");
+  form.was_parsed_using_autofill_predictions = true;
+  // And the form submit contract is to call ProvisionallySavePassword.
+  manager()->ProvisionallySavePassword(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSavePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  // The post-navigation load.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  ASSERT_TRUE(form_to_save);
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
+}
+
 }  // namespace password_manager

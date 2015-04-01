@@ -86,10 +86,10 @@ void ContentAutofillDriver::PingRenderer() {
       new AutofillMsg_Ping(render_frame_host_->GetRoutingID()));
 }
 
-void ContentAutofillDriver::DetectAccountCreationForms(
+void ContentAutofillDriver::PropagateAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
-  autofill_manager_->client()->DetectAccountCreationForms(render_frame_host_,
-                                                          forms);
+  autofill_manager_->client()->PropagateAutofillPredictions(render_frame_host_,
+                                                            forms);
 }
 
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(

@@ -160,7 +160,7 @@ bool AwAutofillClient::IsAutocompleteEnabled() {
   return GetSaveFormData();
 }
 
-void AwAutofillClient::DetectAccountCreationForms(
+void AwAutofillClient::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
     const std::vector<autofill::FormStructure*>& forms) {
 

@@ -102,6 +102,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebFormElement::AutocompleteResult,
     blink::WebFormElement::AutocompleteResultErrorInvalid)
 
+// IPC_MESSAGE macros fail on the std::map, when expanding. We need to define
+// a type to avoid that.
+using FormDataFieldDataMap =
+    std::map<autofill::FormData, autofill::FormFieldData>;
+
 // Autofill messages sent from the browser to the renderer.
 
 // Tells the render frame that a user gesture was observed somewhere in the tab
@@ -194,6 +199,12 @@ IPC_MESSAGE_ROUTED3(AutofillMsg_RequestAutocompleteResult,
 // and there are fields classified as ACCOUNT_CREATION_PASSWORD in the response.
 IPC_MESSAGE_ROUTED1(AutofillMsg_AccountCreationFormsDetected,
                     std::vector<autofill::FormData> /* forms */)
+
+// Sent when Autofill manager gets the query response from the Autofill server
+// which contains information about username fields for some forms.
+// |predictions| maps forms to their username fields.
+IPC_MESSAGE_ROUTED1(AutofillMsg_AutofillUsernameDataReceived,
+                    FormDataFieldDataMap /* predictions */)
 
 // Autofill messages sent from the renderer to the browser.
 

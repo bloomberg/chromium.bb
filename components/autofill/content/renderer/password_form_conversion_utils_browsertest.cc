@@ -134,7 +134,7 @@ class PasswordFormConversionUtilsTest : public content::RenderViewTest {
         input_element->setActivatedSubmit(true);
     }
 
-    *password_form = CreatePasswordForm(forms[0], nullptr);
+    *password_form = CreatePasswordForm(forms[0], nullptr, nullptr);
   }
 
  private:

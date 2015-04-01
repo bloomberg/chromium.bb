@@ -875,8 +875,8 @@ void PasswordAutofillAgent::XHRSucceeded() {
       continue;
     }
 
-    scoped_ptr<PasswordForm> password_form(
-        CreatePasswordForm(form, &nonscript_modified_values_));
+    scoped_ptr<PasswordForm> password_form(CreatePasswordForm(
+        form, &nonscript_modified_values_, &form_predictions_));
     if (password_form.get()) {
       if (provisionally_saved_form_->action == password_form->action) {
         // Form still exists, no save required.
@@ -944,7 +944,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         continue;
     }
 
-    scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form, nullptr));
+    scoped_ptr<PasswordForm> password_form(
+        CreatePasswordForm(form, nullptr, &form_predictions_));
     if (password_form.get()) {
       if (logger) {
         logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
@@ -975,6 +976,8 @@ bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PasswordAutofillAgent, message)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_SetLoggingState, OnSetLoggingState)
+    IPC_MESSAGE_HANDLER(AutofillMsg_AutofillUsernameDataReceived,
+                        OnAutofillUsernameDataReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1067,7 +1070,8 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
     LogHTMLForm(logger.get(), Logger::STRING_HTML_FORM_FOR_SUBMIT, form);
   }
 
-  scoped_ptr<PasswordForm> submitted_form = CreatePasswordForm(form, nullptr);
+  scoped_ptr<PasswordForm> submitted_form =
+      CreatePasswordForm(form, nullptr, &form_predictions_);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
@@ -1152,8 +1156,8 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
           LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE,
                       form_element);
         }
-        scoped_ptr<PasswordForm> password_form(
-            CreatePasswordForm(form_element, &nonscript_modified_values_));
+        scoped_ptr<PasswordForm> password_form(CreatePasswordForm(
+            form_element, &nonscript_modified_values_, &form_predictions_));
         if (password_form.get() && !password_form->username_value.empty() &&
             FormContainsNonDefaultPasswordValue(*password_form, form_element)) {
           password_forms_found = true;
@@ -1241,6 +1245,11 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
 void PasswordAutofillAgent::OnSetLoggingState(bool active) {
   logging_state_active_ = active;
+}
+
+void PasswordAutofillAgent::OnAutofillUsernameDataReceived(
+    const FormDataFieldDataMap& predictions) {
+  form_predictions_ = predictions;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1393,8 +1402,8 @@ void PasswordAutofillAgent::ClearPreview(
 void PasswordAutofillAgent::ProvisionallySavePassword(
     const blink::WebFormElement& form,
     ProvisionallySaveRestriction restriction) {
-  scoped_ptr<PasswordForm> password_form(
-      CreatePasswordForm(form, &nonscript_modified_values_));
+  scoped_ptr<PasswordForm> password_form(CreatePasswordForm(
+      form, &nonscript_modified_values_, &form_predictions_));
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&
                          password_form->new_password_value.empty())) {

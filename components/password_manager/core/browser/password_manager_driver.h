@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_DRIVER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_DRIVER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -14,6 +15,7 @@
 namespace autofill {
 class AutofillManager;
 struct FormData;
+struct FormFieldData;
 struct PasswordForm;
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -43,6 +45,11 @@ class PasswordManagerDriver
   // Notifies the driver that account creation |forms| were found.
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) = 0;
+
+  // Notifies the driver that account creation |forms| were found.
+  virtual void AutofillDataReceived(
+      const std::map<autofill::FormData, autofill::FormFieldData>&
+          predictions) {}
 
   // Notifies the driver that the user has accepted a generated password.
   virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;

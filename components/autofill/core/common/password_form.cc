@@ -55,6 +55,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   std::ostringstream layout_string_stream;
   layout_string_stream << form.layout;
   target->SetString("layout", layout_string_stream.str());
+  target->SetBoolean("was_parsed_using_autofill_predictions",
+                     form.was_parsed_using_autofill_predictions);
 }
 
 }  // namespace
@@ -70,7 +72,8 @@ PasswordForm::PasswordForm()
       times_used(0),
       generation_upload_status(NO_SIGNAL_SENT),
       skip_zero_click(false),
-      layout(Layout::LAYOUT_OTHER) {
+      layout(Layout::LAYOUT_OTHER),
+      was_parsed_using_autofill_predictions(false) {
 }
 
 PasswordForm::~PasswordForm() {
@@ -109,7 +112,9 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       avatar_url == form.avatar_url &&
       federation_url == form.federation_url &&
       skip_zero_click == form.skip_zero_click &&
-      layout == form.layout;
+      layout == form.layout &&
+      was_parsed_using_autofill_predictions ==
+          form.was_parsed_using_autofill_predictions;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

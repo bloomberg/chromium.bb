@@ -4,10 +4,13 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -177,6 +180,42 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   return true;
 }
 
+void FindPredictedUsernameElement(
+    const WebFormElement& form,
+    const std::map<autofill::FormData, autofill::FormFieldData>&
+        form_predictions,
+    WebVector<WebFormControlElement>* control_elements,
+    WebInputElement* predicted_username_element) {
+  FormData form_data;
+  if (!WebFormElementToFormData(form, WebFormControlElement(), REQUIRE_NONE,
+                                EXTRACT_NONE, &form_data, nullptr))
+    return;
+
+  // Prediction forms are not user submitted, but |form| can be user submitted.
+  // We don't care about this flag for finding predictions, so set it to false.
+  form_data.user_submitted = false;
+  auto predictions_iterator = form_predictions.find(form_data);
+  if (predictions_iterator == form_predictions.end())
+    return;
+
+  std::vector<blink::WebFormControlElement> autofillable_elements =
+      ExtractAutofillableElementsFromSet(*control_elements, REQUIRE_NONE);
+  DCHECK_EQ(autofillable_elements.size(), form_data.fields.size());
+
+  const autofill::FormFieldData& username_field = predictions_iterator->second;
+  autofill::FormFieldData form_field;
+  for (size_t i = 0; i < autofillable_elements.size(); ++i) {
+    if (form_data.fields[i].SameFieldAs(username_field)) {
+      WebInputElement* input_element =
+          toWebInputElement(&autofillable_elements[i]);
+      if (input_element) {
+        *predicted_username_element = *input_element;
+      }
+      break;
+    }
+  }
+}
+
 // Get information about a login form encapsulated in a PasswordForm struct.
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
@@ -185,7 +224,9 @@ void GetPasswordForm(
     const WebFormElement& form,
     PasswordForm* password_form,
     const std::map<const blink::WebInputElement, blink::WebString>*
-        nonscript_modified_values) {
+        nonscript_modified_values,
+    const std::map<autofill::FormData, autofill::FormFieldData>*
+        form_predictions) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
   password_form->username_marked_by_site = false;
@@ -275,6 +316,27 @@ void GetPasswordForm(
   }
   password_form->layout = SequenceToLayout(layout_sequence);
 
+  WebInputElement predicted_username_element;
+  if (form_predictions) {
+    FindPredictedUsernameElement(form, *form_predictions, &control_elements,
+                                 &predicted_username_element);
+  }
+  // Let server predictions override the selection of the username field. This
+  // allows instant adjusting without changing Chromium code.
+  if (!predicted_username_element.isNull() &&
+      username_element != predicted_username_element) {
+    auto it =
+        find(other_possible_usernames.begin(), other_possible_usernames.end(),
+             predicted_username_element.value());
+    if (it != other_possible_usernames.end())
+      other_possible_usernames.erase(it);
+    if (!username_element.isNull()) {
+      other_possible_usernames.push_back(username_element.value());
+    }
+    username_element = predicted_username_element;
+    password_form->was_parsed_using_autofill_predictions = true;
+  }
+
   if (!username_element.isNull()) {
     password_form->username_element = username_element.nameForAutofill();
     base::string16 username_value = username_element.value();
@@ -353,12 +415,15 @@ void GetPasswordForm(
 scoped_ptr<PasswordForm> CreatePasswordForm(
     const WebFormElement& web_form,
     const std::map<const blink::WebInputElement, blink::WebString>*
-        nonscript_modified_values) {
+        nonscript_modified_values,
+    const std::map<autofill::FormData, autofill::FormFieldData>*
+        form_predictions) {
   if (web_form.isNull())
     return scoped_ptr<PasswordForm>();
 
   scoped_ptr<PasswordForm> password_form(new PasswordForm());
-  GetPasswordForm(web_form, password_form.get(), nonscript_modified_values);
+  GetPasswordForm(web_form, password_form.get(), nonscript_modified_values,
+                  form_predictions);
 
   if (!password_form->action.is_valid())
     return scoped_ptr<PasswordForm>();

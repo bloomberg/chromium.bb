@@ -87,7 +87,7 @@ bool TestAutofillClient::IsAutocompleteEnabled() {
   return true;
 }
 
-void TestAutofillClient::DetectAccountCreationForms(
+void TestAutofillClient::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
     const std::vector<autofill::FormStructure*>& forms) {
 }

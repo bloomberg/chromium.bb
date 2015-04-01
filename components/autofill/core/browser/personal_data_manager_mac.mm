@@ -395,6 +395,7 @@ bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
     case CREDIT_CARD:
     case PASSWORD_FIELD:
     case TRANSACTION:
+    case USERNAME_FIELD:
       return false;
   }
 

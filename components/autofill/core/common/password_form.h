@@ -256,6 +256,9 @@ struct PasswordForm {
   // The layout as determined during parsing. Default value is LAYOUT_OTHER.
   Layout layout;
 
+  // If true, this form was parsed using Autofill predictions.
+  bool was_parsed_using_autofill_predictions;
+
   // Returns true if this match was found using public suffix matching.
   bool IsPublicSuffixMatch() const;
 

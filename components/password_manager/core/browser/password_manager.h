@@ -25,6 +25,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace autofill {
+class FormStructure;
+}
+
 namespace password_manager {
 
 class BrowserSavePasswordProgressLogger;
@@ -107,6 +111,10 @@ class PasswordManager : public LoginModel {
   // positive in password saving, update http://crbug.com/357696.
   void OnInPageNavigation(password_manager::PasswordManagerDriver* driver,
                           const autofill::PasswordForm& password_form);
+
+  void ProcessAutofillPredictions(
+      password_manager::PasswordManagerDriver* driver,
+      const std::vector<autofill::FormStructure*>& forms);
 
   PasswordManagerClient* client() { return client_; }
 
