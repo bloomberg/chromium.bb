@@ -147,6 +147,9 @@ cr.define('cr.login', function() {
         this.onHeadersReceived_.bind(this),
         {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
         ['responseHeaders']);
+    this.webview_.contextMenus.onShow.addListener(function(e) {
+      e.preventDefault();
+    });
     window.addEventListener(
         'message', this.onMessageFromWebview_.bind(this), false);
     window.addEventListener(
