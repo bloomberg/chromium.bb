@@ -24,9 +24,11 @@
 
 #include "core/dom/Position.h"
 #include "core/editing/TextAffinity.h"
+#include "core/editing/VisibleSelection.h"
 
 namespace blink {
 
+class Document;
 class FrameSelection;
 
 class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
@@ -36,14 +38,12 @@ public:
         return adoptPtrWillBeNoop(new PendingSelection);
     }
 
-    Position start() const { return m_start; }
-    Position end() const { return m_end; }
-    Position extent() const { return m_extent; }
-    EAffinity affinity() const { return m_affinity; }
     bool hasPendingSelection() const { return m_hasPendingSelection; }
-    bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
     void setSelection(const FrameSelection&);
     void clear();
+
+    bool isInDocument(const Document&) const;
+    VisibleSelection calcVisibleSelection() const;
 
     DECLARE_TRACE();
 

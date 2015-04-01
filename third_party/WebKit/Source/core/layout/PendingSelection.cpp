@@ -21,7 +21,11 @@
 #include "config.h"
 #include "core/layout/PendingSelection.h"
 
+#include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/html/HTMLTextFormControlElement.h"
 
 namespace blink {
 
@@ -51,6 +55,42 @@ void PendingSelection::clear()
     m_extent.clear();
     m_affinity = SEL_DEFAULT_AFFINITY;
     m_shouldShowBlockCursor = false;
+}
+
+bool PendingSelection::isInDocument(const Document& document) const
+{
+    if (m_start.isNotNull() && (!m_start.inDocument() || m_start.document() != document))
+        return false;
+    if (m_end.isNotNull() && (!m_end.inDocument() || m_end.document() != document))
+        return false;
+    if (m_extent.isNotNull() && (!m_extent.inDocument() || m_extent.document() != document))
+        return false;
+    return true;
+}
+
+VisibleSelection PendingSelection::calcVisibleSelection() const
+{
+    SelectionType selectionType = VisibleSelection::selectionType(m_start, m_end);
+
+    Position start = m_start;
+    Position end = m_end;
+
+    bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, m_affinity));
+    VisibleSelection selection;
+    if (enclosingTextFormControl(start)) {
+        Position endPosition = paintBlockCursor ? m_extent.next() : m_end;
+        selection.setWithoutValidation(start, endPosition);
+        return selection;
+    }
+
+    VisiblePosition visibleStart = VisiblePosition(start, selectionType == SelectionType::RangeSelection ? DOWNSTREAM : m_affinity);
+    if (paintBlockCursor) {
+        VisiblePosition visibleExtent(end, m_affinity);
+        visibleExtent = visibleExtent.next(CanSkipOverEditingBoundary);
+        return VisibleSelection(visibleStart, visibleExtent);
+    }
+    VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? UPSTREAM : m_affinity);
+    return VisibleSelection(visibleStart, visibleEnd);
 }
 
 DEFINE_TRACE(PendingSelection)
