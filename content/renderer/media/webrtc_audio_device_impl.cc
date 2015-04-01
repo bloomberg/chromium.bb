@@ -64,15 +64,17 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                        int sample_rate,
                                        int audio_delay_milliseconds,
                                        base::TimeDelta* current_time) {
-  render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
-
   {
     base::AutoLock auto_lock(lock_);
+    if (!playing_) {
+      return;
+    }
     DCHECK(audio_transport_callback_);
     // Store the reported audio delay locally.
     output_delay_ms_ = audio_delay_milliseconds;
   }
 
+  render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
   int frames_per_10_ms = (sample_rate / 100);
   int bytes_per_sample = sizeof(render_buffer_[0]);
   const int bytes_per_10_ms =
