@@ -68,6 +68,12 @@ BrowserPpapiHostImpl::~BrowserPpapiHostImpl() {
   // Notify the filter so it won't foward messages to us.
   message_filter_->OnHostDestroyed();
 
+  // Notify instance observers about our impending destruction.
+  for (auto& instance_data : instance_map_) {
+    FOR_EACH_OBSERVER(InstanceObserver, instance_data.second->observer_list,
+                      OnHostDestroyed());
+  }
+
   // Delete the host explicitly first. This shutdown will destroy the
   // resources, which may want to do cleanup in their destructors and expect
   // their pointers to us to be valid.

@@ -38,6 +38,9 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     // Called when the plugin instance is throttled or unthrottled because of
     // the Plugin Power Saver feature. Invoked on the IO thread.
     virtual void OnThrottleStateChanged(bool is_throttled) = 0;
+
+    // Called right before the instance is destroyed.
+    virtual void OnHostDestroyed() = 0;
   };
 
   // The creator is responsible for calling set_plugin_process as soon as it is

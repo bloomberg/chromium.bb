@@ -82,6 +82,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
 
   // BrowserPpapiHostImpl::InstanceObserver overrides.
   void OnThrottleStateChanged(bool is_throttled) override;
+  void OnHostDestroyed() override;
 
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& net_addr);

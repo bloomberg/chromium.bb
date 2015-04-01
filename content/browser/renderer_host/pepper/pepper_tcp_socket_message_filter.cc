@@ -117,7 +117,8 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
 }
 
 PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
-  host_->RemoveInstanceObserver(instance_, this);
+  if (host_)
+    host_->RemoveInstanceObserver(instance_, this);
   if (socket_)
     socket_->Close();
   if (ssl_socket_)
@@ -184,6 +185,11 @@ void PepperTCPSocketMessageFilter::OnThrottleStateChanged(bool is_throttled) {
     DCHECK(!read_buffer_);
     pending_read_on_unthrottle_ = false;
   }
+}
+
+void PepperTCPSocketMessageFilter::OnHostDestroyed() {
+  host_->RemoveInstanceObserver(instance_, this);
+  host_ = nullptr;
 }
 
 int32_t PepperTCPSocketMessageFilter::OnMsgBind(
@@ -873,7 +879,7 @@ void PepperTCPSocketMessageFilter::OnReadCompleted(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(read_buffer_.get());
 
-  if (host_->IsThrottled(instance_)) {
+  if (host_ && host_->IsThrottled(instance_)) {
     pending_read_on_unthrottle_ = true;
     pending_read_reply_message_context_ = context;
     pending_read_net_result_ = net_result;
