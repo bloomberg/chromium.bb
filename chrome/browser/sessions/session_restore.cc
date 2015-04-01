@@ -92,7 +92,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
         urls_to_open_(urls_to_open),
         active_window_id_(0),
         restore_started_(base::TimeTicks::Now()),
-        browser_shown_(false),
         on_session_restored_callbacks_(callbacks) {
     // For sanity's sake, if |browser| is non-null: force |host_desktop_type| to
     // be the same as |browser|'s desktop type.
@@ -328,12 +327,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   void OnGotSession(ScopedVector<sessions::SessionWindow> windows,
                     SessionID::id_type active_window_id) {
-    base::TimeDelta time_to_got_sessions =
-        base::TimeTicks::Now() - restore_started_;
-    UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.TimeToGotSessions",
-                               time_to_got_sessions,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromSeconds(1000), 100);
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-GotSession", false);
@@ -364,12 +357,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                  SessionID::id_type active_window_id,
                                  std::vector<WebContents*>* created_contents) {
     DVLOG(1) << "ProcessSessionWindows " << windows->size();
-    base::TimeDelta time_to_process_sessions =
-        base::TimeTicks::Now() - restore_started_;
-    UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.TimeToProcessSessions",
-                               time_to_process_sessions,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromSeconds(1000), 100);
 
     if (windows->empty()) {
       // Restore was unsuccessful. The DOM storage system can also delete its
@@ -640,16 +627,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
     browser->tab_strip_model()->GetActiveWebContents()->SetInitialFocus();
-
-    if (!browser_shown_) {
-      browser_shown_ = true;
-      base::TimeDelta time_to_first_show =
-          base::TimeTicks::Now() - restore_started_;
-      UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.TimeToFirstShow",
-                                 time_to_first_show,
-                                 base::TimeDelta::FromMilliseconds(10),
-                                 base::TimeDelta::FromSeconds(1000), 100);
-    }
   }
 
   // Appends the urls in |urls| to |browser|.
@@ -724,9 +701,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   // The time we started the restore.
   base::TimeTicks restore_started_;
-
-  // Set to true after the first browser is shown.
-  bool browser_shown_;
 
   // List of callbacks for session restore notification.
   SessionRestore::CallbackList* on_session_restored_callbacks_;
