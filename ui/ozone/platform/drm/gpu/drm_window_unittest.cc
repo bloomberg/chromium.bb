@@ -44,6 +44,15 @@ std::vector<skia::RefPtr<SkSurface>> GetCursorBuffers(
   return cursor_buffers;
 }
 
+SkBitmap AllocateBitmap(const gfx::Size& size) {
+  SkBitmap image;
+  SkImageInfo info = SkImageInfo::Make(size.width(), size.height(),
+                                       kN32_SkColorType, kPremul_SkAlphaType);
+  image.allocPixels(info);
+  image.eraseColor(SK_ColorWHITE);
+  return image;
+}
+
 }  // namespace
 
 class DrmWindowTest : public testing::Test {
@@ -91,16 +100,10 @@ void DrmWindowTest::TearDown() {
 }
 
 TEST_F(DrmWindowTest, SetCursorImage) {
-  SkBitmap image;
-  SkImageInfo info =
-      SkImageInfo::Make(6, 4, kN32_SkColorType, kPremul_SkAlphaType);
-  image.allocPixels(info);
-  image.eraseColor(SK_ColorWHITE);
-
-  std::vector<SkBitmap> cursor_bitmaps;
-  cursor_bitmaps.push_back(image);
+  const gfx::Size cursor_size(6, 4);
   screen_manager_->GetWindow(kDefaultWidgetHandle)
-      ->SetCursor(cursor_bitmaps, gfx::Point(4, 2), 0);
+      ->SetCursor(std::vector<SkBitmap>(1, AllocateBitmap(cursor_size)),
+                  gfx::Point(4, 2), 0);
 
   SkBitmap cursor;
   std::vector<skia::RefPtr<SkSurface>> cursor_buffers = GetCursorBuffers(drm_);
@@ -113,7 +116,7 @@ TEST_F(DrmWindowTest, SetCursorImage) {
   // Check that the frontbuffer is displaying the right image as set above.
   for (int i = 0; i < cursor.height(); ++i) {
     for (int j = 0; j < cursor.width(); ++j) {
-      if (j < info.width() && i < info.height())
+      if (j < cursor_size.width() && i < cursor_size.height())
         EXPECT_EQ(SK_ColorWHITE, cursor.getColor(j, i));
       else
         EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
@@ -123,6 +126,11 @@ TEST_F(DrmWindowTest, SetCursorImage) {
 }
 
 TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
+  const gfx::Size cursor_size(6, 4);
+  screen_manager_->GetWindow(kDefaultWidgetHandle)
+      ->SetCursor(std::vector<SkBitmap>(1, AllocateBitmap(cursor_size)),
+                  gfx::Point(4, 2), 0);
+
   // Add another device.
   scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice();
   screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);
@@ -137,4 +145,6 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
                                   kDefaultMode.vdisplay));
 
   EXPECT_EQ(2u, GetCursorBuffers(drm).size());
+  // Make sure the cursor is showing on the new display.
+  EXPECT_NE(0u, drm->get_cursor_handle_for_crtc(kDefaultCrtc));
 }

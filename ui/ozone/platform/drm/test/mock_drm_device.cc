@@ -49,6 +49,8 @@ MockDrmDevice::MockDrmDevice()
       remove_framebuffer_call_count_(0),
       page_flip_call_count_(0),
       overlay_flip_call_count_(0),
+      overlay_clear_call_count_(0),
+      allocate_buffer_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
@@ -69,6 +71,7 @@ MockDrmDevice::MockDrmDevice(bool use_sync_flips,
       page_flip_call_count_(0),
       overlay_flip_call_count_(0),
       overlay_clear_call_count_(0),
+      allocate_buffer_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
@@ -183,6 +186,7 @@ ScopedDrmPropertyBlobPtr MockDrmDevice::GetPropertyBlob(
 bool MockDrmDevice::SetCursor(uint32_t crtc_id,
                               uint32_t handle,
                               const gfx::Size& size) {
+  crtc_cursor_map_[crtc_id] = handle;
   return true;
 }
 
@@ -194,10 +198,11 @@ bool MockDrmDevice::CreateDumbBuffer(const SkImageInfo& info,
                                      uint32_t* handle,
                                      uint32_t* stride,
                                      void** pixels) {
+  allocate_buffer_count_++;
   if (!create_dumb_buffer_expectation_)
     return false;
 
-  *handle = 0;
+  *handle = allocate_buffer_count_;
   *stride = info.minRowBytes();
   *pixels = new char[info.getSafeSize(*stride)];
   buffers_.push_back(

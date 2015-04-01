@@ -44,14 +44,9 @@ class DrmCursor : public CursorDelegateEvdev {
   void OnWindowRemoved(gfx::AcceleratedWidget window);
 
   // Handle window bounds changes.
-  void PrepareForBoundsChange(gfx::AcceleratedWidget window);
   void CommitBoundsChange(gfx::AcceleratedWidget window,
                           const gfx::Rect& new_display_bounds_in_screen,
                           const gfx::Rect& new_confined_bounds);
-
-  // Confines the cursor to |confined_bounds| for |window|.
-  void ConfineCursorToBounds(gfx::AcceleratedWidget window,
-                             const gfx::Rect& bounds);
 
   // CursorDelegateEvdev:
   void MoveCursorTo(gfx::AcceleratedWidget window,

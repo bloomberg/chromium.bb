@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
-#include "ui/ozone/platform/drm/gpu/display_change_observer.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -75,8 +74,9 @@ class OZONE_EXPORT ScreenManager {
   // called only if a valid window has been associated with |widget|.
   DrmWindow* GetWindow(gfx::AcceleratedWidget widget);
 
-  void AddObserver(DisplayChangeObserver* observer);
-  void RemoveObserver(DisplayChangeObserver* observer);
+  // Updates the mapping between display controllers and windows such that a
+  // controller will be associated with at most one window.
+  void UpdateControllerToWindowMapping();
 
  private:
   typedef ScopedVector<HardwareDisplayController> HardwareDisplayControllers;
@@ -89,6 +89,12 @@ class OZONE_EXPORT ScreenManager {
   HardwareDisplayControllers::iterator FindDisplayController(
       const scoped_refptr<DrmDevice>& drm,
       uint32_t crtc);
+
+  bool ActualConfigureDisplayController(const scoped_refptr<DrmDevice>& drm,
+                                        uint32_t crtc,
+                                        uint32_t connector,
+                                        const gfx::Point& origin,
+                                        const drmModeModeInfo& mode);
 
   // Returns an iterator into |controllers_| for the controller located at
   // |origin|.
@@ -109,13 +115,13 @@ class OZONE_EXPORT ScreenManager {
                         uint32_t crtc,
                         uint32_t connector);
 
+  DrmWindow* FindWindowAt(const gfx::Rect& bounds) const;
+
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
   // List of display controllers (active and disabled).
   HardwareDisplayControllers controllers_;
 
   WidgetToWindowMap window_map_;
-
-  ObserverList<DisplayChangeObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenManager);
 };

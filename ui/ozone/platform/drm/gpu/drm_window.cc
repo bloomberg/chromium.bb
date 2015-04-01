@@ -61,12 +61,10 @@ void DrmWindow::Initialize() {
   TRACE_EVENT1("drm", "DrmWindow::Initialize", "widget", widget_);
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
-  screen_manager_->AddObserver(this);
 }
 
 void DrmWindow::Shutdown() {
   TRACE_EVENT1("drm", "DrmWindow::Shutdown", "widget", widget_);
-  screen_manager_->RemoveObserver(this);
   device_manager_->RemoveDrmDevice(widget_);
 }
 
@@ -82,9 +80,7 @@ void DrmWindow::OnBoundsChanged(const gfx::Rect& bounds) {
   TRACE_EVENT2("drm", "DrmWindow::OnBoundsChanged", "widget", widget_, "bounds",
                bounds.ToString());
   bounds_ = bounds;
-  controller_ = screen_manager_->GetDisplayController(bounds);
-  UpdateWidgetToDrmDeviceMapping();
-  UpdateCursorBuffers();
+  screen_manager_->UpdateControllerToWindowMapping();
 }
 
 void DrmWindow::SetCursor(const std::vector<SkBitmap>& bitmaps,
@@ -120,35 +116,6 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
     controller_->MoveCursor(location);
 }
 
-void DrmWindow::OnDisplayChanged(HardwareDisplayController* controller) {
-  DCHECK(controller);
-
-  // If we have a new controller we need to re-allocate the buffers.
-  bool should_allocate_cursor_buffers = controller_ != controller;
-
-  gfx::Rect controller_bounds =
-      gfx::Rect(controller->origin(), controller->GetModeSize());
-  if (controller_) {
-    if (controller_ != controller)
-      return;
-
-    if (controller->IsDisabled() || bounds_ != controller_bounds)
-      controller_ = nullptr;
-  } else {
-    if (bounds_ == controller_bounds && !controller->IsDisabled())
-      controller_ = controller;
-  }
-
-  UpdateWidgetToDrmDeviceMapping();
-  if (should_allocate_cursor_buffers)
-    UpdateCursorBuffers();
-}
-
-void DrmWindow::OnDisplayRemoved(HardwareDisplayController* controller) {
-  if (controller_ == controller)
-    controller_ = nullptr;
-}
-
 void DrmWindow::ResetCursor(bool bitmap_only) {
   if (!controller_)
     return;
@@ -176,12 +143,17 @@ void DrmWindow::OnCursorAnimationTimeout() {
   ResetCursor(true);
 }
 
-void DrmWindow::UpdateWidgetToDrmDeviceMapping() {
-  scoped_refptr<DrmDevice> drm = nullptr;
-  if (controller_)
-    drm = controller_->GetAllocationDrmDevice();
+void DrmWindow::SetController(HardwareDisplayController* controller) {
+  if (controller_ == controller)
+    return;
 
-  device_manager_->UpdateDrmDevice(widget_, drm);
+  controller_ = controller;
+  device_manager_->UpdateDrmDevice(
+      widget_, controller ? controller->GetAllocationDrmDevice() : nullptr);
+
+  UpdateCursorBuffers();
+  // We changed displays, so we want to update the cursor as well.
+  ResetCursor(false /* bitmap_only */);
 }
 
 void DrmWindow::UpdateCursorBuffers() {

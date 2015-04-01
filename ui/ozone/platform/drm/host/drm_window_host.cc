@@ -115,7 +115,7 @@ void DrmWindowHost::ConfineCursorToBounds(const gfx::Rect& bounds) {
     return;
 
   cursor_confined_bounds_ = bounds;
-  cursor_->ConfineCursorToBounds(widget_, bounds);
+  cursor_->CommitBoundsChange(widget_, bounds_, bounds);
 }
 
 bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
@@ -176,16 +176,16 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
 void DrmWindowHost::OnChannelEstablished() {
   sender_->Send(new OzoneGpuMsg_CreateWindowDelegate(widget_));
   SendBoundsChange();
-  cursor_->ConfineCursorToBounds(widget_, GetCursorConfinedBounds());
 }
 
 void DrmWindowHost::OnChannelDestroyed() {
 }
 
 void DrmWindowHost::SendBoundsChange() {
-  cursor_->PrepareForBoundsChange(widget_);
-  sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
+  // Update the cursor before the window so that the cursor stays within the
+  // window bounds when the window size shrinks.
   cursor_->CommitBoundsChange(widget_, bounds_, GetCursorConfinedBounds());
+  sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
 }
 
 }  // namespace ui

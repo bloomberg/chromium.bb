@@ -5,6 +5,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/test/mock_drm_device.h"
@@ -19,32 +21,6 @@ const uint32_t kPrimaryCrtc = 1;
 const uint32_t kPrimaryConnector = 2;
 const uint32_t kSecondaryCrtc = 3;
 const uint32_t kSecondaryConnector = 4;
-
-class TestDisplayChangeObserver : public ui::DisplayChangeObserver {
- public:
-  TestDisplayChangeObserver()
-      : num_displays_changed_(0), num_displays_removed_(0) {}
-
-  ~TestDisplayChangeObserver() override {}
-
-  int num_displays_changed() const { return num_displays_changed_; }
-  int num_displays_removed() const { return num_displays_removed_; }
-
-  // TestDisplayChangeObserver:
-  void OnDisplayChanged(ui::HardwareDisplayController* controller) override {
-    num_displays_changed_++;
-  }
-
-  void OnDisplayRemoved(ui::HardwareDisplayController* controller) override {
-    num_displays_removed_++;
-  }
-
- private:
-  int num_displays_changed_;
-  int num_displays_removed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayChangeObserver);
-};
 
 }  // namespace
 
@@ -67,10 +43,8 @@ class ScreenManagerTest : public testing::Test {
     drm_ = new ui::MockDrmDevice();
     buffer_generator_.reset(new ui::DrmBufferGenerator());
     screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
-    screen_manager_->AddObserver(&observer_);
   }
   void TearDown() override {
-    screen_manager_->RemoveObserver(&observer_);
     screen_manager_.reset();
     drm_ = nullptr;
   }
@@ -79,8 +53,6 @@ class ScreenManagerTest : public testing::Test {
   scoped_refptr<ui::MockDrmDevice> drm_;
   scoped_ptr<ui::DrmBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
-
-  TestDisplayChangeObserver observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerTest);
@@ -132,13 +104,9 @@ TEST_F(ScreenManagerTest, CheckControllerAfterItIsRemoved) {
   screen_manager_->ConfigureDisplayController(
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
-  EXPECT_EQ(1, observer_.num_displays_changed());
-  EXPECT_EQ(0, observer_.num_displays_removed());
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
 
   screen_manager_->RemoveDisplayController(drm_, kPrimaryCrtc);
-  EXPECT_EQ(1, observer_.num_displays_changed());
-  EXPECT_EQ(1, observer_.num_displays_removed());
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
 }
 
@@ -156,9 +124,6 @@ TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
   // Should reuse existing framebuffer.
   EXPECT_EQ(framebuffer, drm_->current_framebuffer());
 
-  EXPECT_EQ(2, observer_.num_displays_changed());
-  EXPECT_EQ(0, observer_.num_displays_removed());
-
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
@@ -173,9 +138,6 @@ TEST_F(ScreenManagerTest, CheckChangingMode) {
   screen_manager_->ConfigureDisplayController(
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       new_mode);
-
-  EXPECT_EQ(2, observer_.num_displays_changed());
-  EXPECT_EQ(0, observer_.num_displays_removed());
 
   gfx::Rect new_bounds(0, 0, new_mode.hdisplay, new_mode.vdisplay);
   EXPECT_TRUE(screen_manager_->GetDisplayController(new_bounds));
@@ -197,8 +159,6 @@ TEST_F(ScreenManagerTest, CheckForControllersInMirroredMode) {
       drm_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  EXPECT_EQ(2, observer_.num_displays_changed());
-  EXPECT_EQ(1, observer_.num_displays_removed());
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
@@ -247,15 +207,10 @@ TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
       drm_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  EXPECT_EQ(2, observer_.num_displays_changed());
-  EXPECT_EQ(1, observer_.num_displays_removed());
-
   screen_manager_->RemoveDisplayController(drm_, kSecondaryCrtc);
   EXPECT_TRUE(screen_manager_->ConfigureDisplayController(
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode));
-  EXPECT_EQ(3, observer_.num_displays_changed());
-  EXPECT_EQ(1, observer_.num_displays_removed());
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
@@ -350,4 +305,72 @@ TEST_F(ScreenManagerTest,
   EXPECT_NE(controller1, controller2);
   EXPECT_EQ(drm_, controller1->crtc_controllers()[0]->drm());
   EXPECT_EQ(drm2, controller2->crtc_controllers()[0]->drm());
+}
+
+TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
+  ui::DrmDeviceManager device_manager(drm_);
+  scoped_ptr<ui::DrmWindow> window(
+      new ui::DrmWindow(1, &device_manager, screen_manager_.get()));
+  window->Initialize();
+  window->OnBoundsChanged(GetPrimaryBounds());
+  screen_manager_->AddWindow(1, window.Pass());
+
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  EXPECT_TRUE(screen_manager_->GetWindow(1)->GetController());
+
+  window = screen_manager_->RemoveWindow(1);
+  window->Shutdown();
+}
+
+TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithDifferentBounds) {
+  ui::DrmDeviceManager device_manager(drm_);
+  scoped_ptr<ui::DrmWindow> window(
+      new ui::DrmWindow(1, &device_manager, screen_manager_.get()));
+  window->Initialize();
+  gfx::Rect new_bounds = GetPrimaryBounds();
+  new_bounds.Inset(0, 0, 1, 1);
+  window->OnBoundsChanged(new_bounds);
+  screen_manager_->AddWindow(1, window.Pass());
+
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  EXPECT_FALSE(screen_manager_->GetWindow(1)->GetController());
+
+  window = screen_manager_->RemoveWindow(1);
+  window->Shutdown();
+}
+
+TEST_F(ScreenManagerTest,
+       CheckControllerToWindowMappingWithOverlappingWindows) {
+  ui::DrmDeviceManager device_manager(drm_);
+  const size_t kWindowCount = 2;
+  for (size_t i = 1; i < kWindowCount + 1; ++i) {
+    scoped_ptr<ui::DrmWindow> window(
+        new ui::DrmWindow(1, &device_manager, screen_manager_.get()));
+    window->Initialize();
+    window->OnBoundsChanged(GetPrimaryBounds());
+    screen_manager_->AddWindow(i, window.Pass());
+  }
+
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  bool window1_has_controller = screen_manager_->GetWindow(1)->GetController();
+  bool window2_has_controller = screen_manager_->GetWindow(2)->GetController();
+  // Only one of the windows can have a controller.
+  EXPECT_TRUE(window1_has_controller ^ window2_has_controller);
+
+  for (size_t i = 1; i < kWindowCount + 1; ++i) {
+    scoped_ptr<ui::DrmWindow> window = screen_manager_->RemoveWindow(i);
+    window->Shutdown();
+  }
 }

@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
-#include "ui/ozone/platform/drm/gpu/display_change_observer.h"
 
 class SkBitmap;
 
@@ -34,13 +33,15 @@ class ScreenManager;
 // A window is associated with the display whose bounds contains the window
 // bounds. If there's no suitable display, the window is disconnected and its
 // contents will not be visible.
-class OZONE_EXPORT DrmWindow : public DisplayChangeObserver {
+class OZONE_EXPORT DrmWindow {
  public:
   DrmWindow(gfx::AcceleratedWidget widget,
             DrmDeviceManager* device_manager,
             ScreenManager* screen_manager);
 
-  ~DrmWindow() override;
+  ~DrmWindow();
+
+  gfx::Rect bounds() const { return bounds_; }
 
   void Initialize();
 
@@ -52,6 +53,8 @@ class OZONE_EXPORT DrmWindow : public DisplayChangeObserver {
   // Returns the current controller the window is displaying on. Callers should
   // not cache the result as the controller may change as the window is moved.
   HardwareDisplayController* GetController();
+
+  void SetController(HardwareDisplayController* controller);
 
   // Called when the window is resized/moved.
   void OnBoundsChanged(const gfx::Rect& bounds);
@@ -70,18 +73,12 @@ class OZONE_EXPORT DrmWindow : public DisplayChangeObserver {
   // Move the HW cursor to the specified location.
   void MoveCursor(const gfx::Point& location);
 
-  // DisplayChangeObserver:
-  void OnDisplayChanged(HardwareDisplayController* controller) override;
-  void OnDisplayRemoved(HardwareDisplayController* controller) override;
-
  private:
   // Draw the last set cursor & update the cursor plane.
   void ResetCursor(bool bitmap_only);
 
   // Draw next frame in an animated cursor.
   void OnCursorAnimationTimeout();
-
-  void UpdateWidgetToDrmDeviceMapping();
 
   // When |controller_| changes this is called to reallocate the cursor buffers
   // since the allocation DRM device may have changed.

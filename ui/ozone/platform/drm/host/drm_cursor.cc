@@ -85,20 +85,6 @@ void DrmCursor::OnWindowRemoved(gfx::AcceleratedWidget window) {
   }
 }
 
-void DrmCursor::PrepareForBoundsChange(gfx::AcceleratedWidget window) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  base::AutoLock lock(state_.lock);
-
-  // Bounds changes can reparent the window to a different display, so
-  // we hide prior to the change so that we avoid leaving a cursor
-  // behind on the old display.
-  // TODO(spang): The GPU-side code should handle this.
-  if (state_.window == window)
-    SendCursorHideLocked();
-
-  // The cursor will be shown and moved in CommitBoundsChange().
-}
-
 void DrmCursor::CommitBoundsChange(
     gfx::AcceleratedWidget window,
     const gfx::Rect& new_display_bounds_in_screen,
@@ -108,17 +94,6 @@ void DrmCursor::CommitBoundsChange(
   if (state_.window == window) {
     state_.display_bounds_in_screen = new_display_bounds_in_screen;
     state_.confined_bounds = new_confined_bounds;
-    SetCursorLocationLocked(state_.location);
-    SendCursorShowLocked();
-  }
-}
-
-void DrmCursor::ConfineCursorToBounds(gfx::AcceleratedWidget window,
-                                      const gfx::Rect& bounds) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  base::AutoLock lock(state_.lock);
-  if (state_.window == window) {
-    state_.confined_bounds = bounds;
     SetCursorLocationLocked(state_.location);
     SendCursorShowLocked();
   }

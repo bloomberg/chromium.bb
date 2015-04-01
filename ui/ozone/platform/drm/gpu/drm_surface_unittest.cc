@@ -43,7 +43,6 @@ class DrmSurfaceTest : public testing::Test {
   scoped_ptr<ui::DrmBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
-  scoped_ptr<ui::DrmWindow> window_delegate_;
   scoped_ptr<ui::DrmSurface> surface_;
 
  private:
@@ -62,20 +61,24 @@ void DrmSurfaceTest::SetUp() {
       drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
 
   drm_device_manager_.reset(new ui::DrmDeviceManager(drm_));
-  window_delegate_.reset(new ui::DrmWindow(
+  scoped_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
-  window_delegate_->Initialize();
-  window_delegate_->OnBoundsChanged(
+  window->Initialize();
+  window->OnBoundsChanged(
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
+  screen_manager_->AddWindow(kDefaultWidgetHandle, window.Pass());
 
-  surface_.reset(new ui::DrmSurface(window_delegate_.get()));
+  surface_.reset(
+      new ui::DrmSurface(screen_manager_->GetWindow(kDefaultWidgetHandle)));
   surface_->ResizeCanvas(
       gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay));
 }
 
 void DrmSurfaceTest::TearDown() {
   surface_.reset();
-  window_delegate_->Shutdown();
+  scoped_ptr<ui::DrmWindow> window =
+      screen_manager_->RemoveWindow(kDefaultWidgetHandle);
+  window->Shutdown();
   drm_ = nullptr;
   message_loop_.reset();
 }

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_TEST_MOCK_DRM_DEVICE_H_
 #define UI_OZONE_PLATFORM_DRM_TEST_MOCK_DRM_DEVICE_H_
 
+#include <map>
 #include <queue>
 #include <vector>
 
@@ -49,6 +50,11 @@ class MockDrmDevice : public ui::DrmDevice {
 
   const std::vector<skia::RefPtr<SkSurface>> buffers() const {
     return buffers_;
+  }
+
+  uint32_t get_cursor_handle_for_crtc(uint32_t crtc) const {
+    const auto it = crtc_cursor_map_.find(crtc);
+    return it != crtc_cursor_map_.end() ? it->second : 0;
   }
 
   void RunCallbacks();
@@ -115,6 +121,7 @@ class MockDrmDevice : public ui::DrmDevice {
   int page_flip_call_count_;
   int overlay_flip_call_count_;
   int overlay_clear_call_count_;
+  int allocate_buffer_count_;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
@@ -126,6 +133,8 @@ class MockDrmDevice : public ui::DrmDevice {
   uint32_t current_framebuffer_;
 
   std::vector<skia::RefPtr<SkSurface>> buffers_;
+
+  std::map<uint32_t, uint32_t> crtc_cursor_map_;
 
   std::queue<PageFlipCallback> callbacks_;
 

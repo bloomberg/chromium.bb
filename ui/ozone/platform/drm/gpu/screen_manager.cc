@@ -99,14 +99,27 @@ void ScreenManager::RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
     bool is_mirrored = (*it)->IsMirrored();
     (*it)->RemoveCrtc(drm, crtc);
     if (!is_mirrored) {
-      FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
-                        OnDisplayRemoved(*it));
+      UpdateControllerToWindowMapping();
       controllers_.erase(it);
     }
   }
 }
 
 bool ScreenManager::ConfigureDisplayController(
+    const scoped_refptr<DrmDevice>& drm,
+    uint32_t crtc,
+    uint32_t connector,
+    const gfx::Point& origin,
+    const drmModeModeInfo& mode) {
+  bool status =
+      ActualConfigureDisplayController(drm, crtc, connector, origin, mode);
+  if (status)
+    UpdateControllerToWindowMapping();
+
+  return status;
+}
+
+bool ScreenManager::ActualConfigureDisplayController(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t crtc,
     uint32_t connector,
@@ -134,9 +147,6 @@ bool ScreenManager::ConfigureDisplayController(
 
     // Just re-enable the controller to re-use the current state.
     bool enabled = controller->Enable();
-    FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
-                      OnDisplayChanged(controller));
-
     return enabled;
   }
 
@@ -172,6 +182,7 @@ bool ScreenManager::DisableDisplayController(
     }
 
     (*it)->Disable();
+    UpdateControllerToWindowMapping();
     return true;
   }
 
@@ -194,12 +205,14 @@ void ScreenManager::AddWindow(gfx::AcceleratedWidget widget,
   std::pair<WidgetToWindowMap::iterator, bool> result =
       window_map_.add(widget, window.Pass());
   DCHECK(result.second) << "Window already added.";
+  UpdateControllerToWindowMapping();
 }
 
 scoped_ptr<DrmWindow> ScreenManager::RemoveWindow(
     gfx::AcceleratedWidget widget) {
   scoped_ptr<DrmWindow> window = window_map_.take_and_erase(widget);
   DCHECK(window) << "Attempting to remove non-existing window for " << widget;
+  UpdateControllerToWindowMapping();
   return window.Pass();
 }
 
@@ -210,14 +223,6 @@ DrmWindow* ScreenManager::GetWindow(gfx::AcceleratedWidget widget) {
 
   NOTREACHED() << "Attempting to get non-existing window for " << widget;
   return nullptr;
-}
-
-void ScreenManager::AddObserver(DisplayChangeObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ScreenManager::RemoveObserver(DisplayChangeObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 ScreenManager::HardwareDisplayControllers::iterator
@@ -268,8 +273,6 @@ bool ScreenManager::ModesetDisplayController(
     return false;
   }
 
-  FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
-                    OnDisplayChanged(controller));
   return true;
 }
 
@@ -281,10 +284,6 @@ bool ScreenManager::HandleMirrorMode(
     uint32_t connector) {
   (*mirror)->AddCrtc((*original)->RemoveCrtc(drm, crtc));
   if ((*mirror)->Enable()) {
-    FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
-                      OnDisplayRemoved(*original));
-    FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
-                      OnDisplayChanged(*mirror));
     controllers_.erase(original);
     return true;
   }
@@ -297,6 +296,41 @@ bool ScreenManager::HandleMirrorMode(
   (*original)->AddCrtc((*mirror)->RemoveCrtc(drm, crtc));
   (*original)->Enable();
   return false;
+}
+
+void ScreenManager::UpdateControllerToWindowMapping() {
+  std::map<DrmWindow*, HardwareDisplayController*> window_to_controller_map;
+  // First create a unique mapping between a window and a controller. Note, a
+  // controller may be associated with at most 1 window.
+  for (HardwareDisplayController* controller : controllers_) {
+    if (controller->IsDisabled())
+      continue;
+
+    DrmWindow* window = FindWindowAt(
+        gfx::Rect(controller->origin(), controller->GetModeSize()));
+    if (!window)
+      continue;
+
+    window_to_controller_map[window] = controller;
+  }
+
+  // Apply the new mapping to all windows.
+  for (auto pair : window_map_) {
+    auto it = window_to_controller_map.find(pair.second);
+    if (it != window_to_controller_map.end())
+      pair.second->SetController(it->second);
+    else
+      pair.second->SetController(nullptr);
+  }
+}
+
+DrmWindow* ScreenManager::FindWindowAt(const gfx::Rect& bounds) const {
+  for (auto pair : window_map_) {
+    if (pair.second->bounds() == bounds)
+      return pair.second;
+  }
+
+  return nullptr;
 }
 
 }  // namespace ui
