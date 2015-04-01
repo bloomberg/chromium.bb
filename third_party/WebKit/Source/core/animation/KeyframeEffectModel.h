@@ -77,7 +77,7 @@ public:
 
     using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
     const KeyframeVector& getFrames() const { return m_keyframes; }
-    // FIXME: Implement setFrames()
+    void setFrames(KeyframeVector& keyframes);
 
     const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(CSSPropertyID id) const
     {

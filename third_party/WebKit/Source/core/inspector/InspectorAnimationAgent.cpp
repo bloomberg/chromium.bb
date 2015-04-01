@@ -265,11 +265,32 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     if (!player)
         return;
 
-    RefPtrWillBeRawPtr<AnimationNodeTiming> timing = player->source()->timing();
-    UnrestrictedDoubleOrString unrestrictedDuration;
-    unrestrictedDuration.setUnrestrictedDouble(duration);
-    timing->setDuration(unrestrictedDuration);
-    timing->setDelay(delay);
+    AnimationType type = m_idToAnimationType.get(playerId);
+    if (type == AnimationType::CSSTransition) {
+        Animation* animation = toAnimation(player->source());
+        KeyframeEffectModelBase* effect = toKeyframeEffectModelBase(animation->effect());
+        const AnimatableValueKeyframeEffectModel* oldEffect = toAnimatableValueKeyframeEffectModel(effect);
+        // Refer to CSSAnimations::calculateTransitionUpdateForProperty() for the structure of transitions.
+        const KeyframeVector& frames = oldEffect->getFrames();
+        ASSERT(frames.size() == 3);
+        KeyframeVector newFrames;
+        for (int i = 0; i < 3; i++)
+            newFrames.append(toAnimatableValueKeyframe(frames[i]->clone().get()));
+        // Update delay, represented by the distance between the first two keyframes.
+        newFrames[1]->setOffset(delay / (delay + duration));
+        effect->setFrames(newFrames);
+
+        RefPtrWillBeRawPtr<AnimationNodeTiming> timing = player->source()->timing();
+        UnrestrictedDoubleOrString unrestrictedDuration;
+        unrestrictedDuration.setUnrestrictedDouble(duration + delay);
+        timing->setDuration(unrestrictedDuration);
+    } else if (type == AnimationType::WebAnimation) {
+        RefPtrWillBeRawPtr<AnimationNodeTiming> timing = player->source()->timing();
+        UnrestrictedDoubleOrString unrestrictedDuration;
+        unrestrictedDuration.setUnrestrictedDouble(duration);
+        timing->setDuration(unrestrictedDuration);
+        timing->setDelay(delay);
+    }
 }
 
 void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer* player)

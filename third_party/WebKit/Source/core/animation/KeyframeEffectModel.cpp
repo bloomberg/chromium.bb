@@ -55,6 +55,14 @@ PropertySet KeyframeEffectModelBase::properties() const
     return result;
 }
 
+void KeyframeEffectModelBase::setFrames(KeyframeVector& keyframes)
+{
+    // TODO(samli): Should also notify/invalidate the player
+    m_keyframes = keyframes;
+    m_keyframeGroups = nullptr;
+    m_interpolationEffect = nullptr;
+}
+
 void KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result) const
 {
     ASSERT(iteration >= 0);
