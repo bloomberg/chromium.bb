@@ -222,6 +222,42 @@ TEST_F(HostResolverMojoTest, Basic) {
   EXPECT_FALSE(request.is_my_ip_address);
 }
 
+TEST_F(HostResolverMojoTest, ResolveCachedResult) {
+  AddressList address_list;
+  IPAddressNumber address_number;
+  ASSERT_TRUE(ParseIPLiteralToNumber("1.2.3.4", &address_number));
+  address_list.push_back(IPEndPoint(address_number, 12345));
+  address_list.push_back(
+      IPEndPoint(ConvertIPv4NumberToIPv6Number(address_number), 12345));
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  HostResolver::RequestInfo request_info(
+      HostPortPair::FromString("example.com:12345"));
+  AddressList result;
+  ASSERT_EQ(OK, Resolve(request_info, &result));
+  ASSERT_EQ(1u, mock_resolver_->requests().size());
+
+  result.clear();
+  request_info.set_host_port_pair(HostPortPair::FromString("example.com:6789"));
+  EXPECT_EQ(OK, Resolve(request_info, &result));
+  ASSERT_EQ(2u, result.size());
+  address_list.clear();
+  address_list.push_back(IPEndPoint(address_number, 6789));
+  address_list.push_back(
+      IPEndPoint(ConvertIPv4NumberToIPv6Number(address_number), 6789));
+  EXPECT_EQ(address_list[0], result[0]);
+  EXPECT_EQ(address_list[1], result[1]);
+  EXPECT_EQ(1u, mock_resolver_->requests().size());
+
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  result.clear();
+  request_info.set_allow_cached_response(false);
+  EXPECT_EQ(OK, Resolve(request_info, &result));
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(address_list[0], result[0]);
+  EXPECT_EQ(address_list[1], result[1]);
+  EXPECT_EQ(2u, mock_resolver_->requests().size());
+}
+
 TEST_F(HostResolverMojoTest, Multiple) {
   AddressList address_list;
   IPAddressNumber address_number;
@@ -348,13 +384,61 @@ TEST_F(HostResolverMojoTest, DestroyClient) {
   waiter_.WaitForEvent(ConnectionErrorSource::RESOLVER);
 }
 
-TEST_F(HostResolverMojoTest, ResolveFromCache) {
+TEST_F(HostResolverMojoTest, ResolveFromCache_Miss) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:8080"));
   AddressList result;
   EXPECT_EQ(ERR_DNS_CACHE_MISS,
             resolver_->ResolveFromCache(request_info, &result, BoundNetLog()));
   EXPECT_TRUE(result.empty());
+}
+
+TEST_F(HostResolverMojoTest, ResolveFromCache_Hit) {
+  AddressList address_list;
+  IPAddressNumber address_number;
+  ASSERT_TRUE(ParseIPLiteralToNumber("1.2.3.4", &address_number));
+  address_list.push_back(IPEndPoint(address_number, 12345));
+  address_list.push_back(
+      IPEndPoint(ConvertIPv4NumberToIPv6Number(address_number), 12345));
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  HostResolver::RequestInfo request_info(
+      HostPortPair::FromString("example.com:12345"));
+  AddressList result;
+  ASSERT_EQ(OK, Resolve(request_info, &result));
+  EXPECT_EQ(1u, mock_resolver_->requests().size());
+
+  result.clear();
+  EXPECT_EQ(OK,
+            resolver_->ResolveFromCache(request_info, &result, BoundNetLog()));
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(address_list[0], result[0]);
+  EXPECT_EQ(address_list[1], result[1]);
+  EXPECT_EQ(1u, mock_resolver_->requests().size());
+}
+
+TEST_F(HostResolverMojoTest, ResolveFromCache_CacheNotAllowed) {
+  AddressList address_list;
+  IPAddressNumber address_number;
+  ASSERT_TRUE(ParseIPLiteralToNumber("1.2.3.4", &address_number));
+  address_list.push_back(IPEndPoint(address_number, 12345));
+  address_list.push_back(
+      IPEndPoint(ConvertIPv4NumberToIPv6Number(address_number), 12345));
+  mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
+  HostResolver::RequestInfo request_info(
+      HostPortPair::FromString("example.com:12345"));
+  AddressList result;
+  ASSERT_EQ(OK, Resolve(request_info, &result));
+  EXPECT_EQ(1u, mock_resolver_->requests().size());
+
+  result.clear();
+  request_info.set_allow_cached_response(false);
+  EXPECT_EQ(ERR_DNS_CACHE_MISS,
+            resolver_->ResolveFromCache(request_info, &result, BoundNetLog()));
+  EXPECT_TRUE(result.empty());
+}
+
+TEST_F(HostResolverMojoTest, GetHostCache) {
+  EXPECT_TRUE(resolver_->GetHostCache());
 }
 
 }  // namespace net

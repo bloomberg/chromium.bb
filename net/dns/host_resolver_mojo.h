@@ -6,7 +6,9 @@
 #define NET_DNS_HOST_RESOLVER_MOJO_H_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
@@ -34,6 +36,7 @@ class HostResolverMojo : public HostResolver, public mojo::ErrorHandler {
                        AddressList* addresses,
                        const BoundNetLog& source_net_log) override;
   void CancelRequest(RequestHandle req) override;
+  HostCache* GetHostCache() override;
 
  private:
   class Job;
@@ -41,9 +44,16 @@ class HostResolverMojo : public HostResolver, public mojo::ErrorHandler {
   // mojo::ErrorHandler override.
   void OnConnectionError() override;
 
+  int ResolveFromCacheInternal(const RequestInfo& info,
+                               const HostCache::Key& key,
+                               AddressList* addresses);
+
   interfaces::HostResolverPtr resolver_;
 
   const base::Closure disconnect_callback_;
+
+  scoped_ptr<HostCache> host_cache_;
+  base::WeakPtrFactory<HostCache> host_cache_weak_factory_;
 
   base::ThreadChecker thread_checker_;
 
