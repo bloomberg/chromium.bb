@@ -778,7 +778,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             int template_id, const base::string16& message) {
           return ChromePluginPlaceholder::CreateBlockedPlugin(
               render_frame, frame, params, info, identifier, group_name,
-              template_id, message, std::string(), GURL());
+              template_id, message, PlaceholderPosterInfo());
         };
     switch (status_value) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
@@ -858,9 +858,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (info.name == ASCIIToUTF16(content::kFlashPluginName))
           TrackPosterParamPresence(params, power_saver_enabled);
 
-        std::string poster_attribute;
-        if (power_saver_enabled)
-          poster_attribute = GetPluginInstancePosterAttribute(params);
+        PlaceholderPosterInfo poster_info;
+        if (power_saver_enabled) {
+          poster_info.poster_attribute =
+              GetPluginInstancePosterAttribute(params);
+          poster_info.base_url = frame->document().url();
+        }
 
         // Delay loading plugins if prerendering.
         // TODO(mmenke):  In the case of prerendering, feed into
@@ -869,13 +872,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         bool is_prerendering =
             prerender::PrerenderHelper::IsPrerendering(render_frame);
         if (blocked_for_background_tab || is_prerendering ||
-            !poster_attribute.empty()) {
+            !poster_info.poster_attribute.empty()) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
               render_frame, frame, params, info, identifier, group_name,
-              poster_attribute.empty() ? IDR_BLOCKED_PLUGIN_HTML
-                                       : IDR_PLUGIN_POSTER_HTML,
+              poster_info.poster_attribute.empty() ? IDR_BLOCKED_PLUGIN_HTML
+                                                   : IDR_PLUGIN_POSTER_HTML,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
-              poster_attribute, frame->document().url());
+              poster_info);
           placeholder->set_blocked_for_background_tab(
               blocked_for_background_tab);
           placeholder->set_blocked_for_prerendering(is_prerendering);

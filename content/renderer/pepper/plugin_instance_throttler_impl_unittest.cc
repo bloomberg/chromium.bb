@@ -36,12 +36,9 @@ class PluginInstanceThrottlerImplTest
   }
 
   void SetUp() override {
-    blink::WebRect rect;
-    rect.width = 100;
-    rect.height = 100;
     throttler_.reset(new PluginInstanceThrottlerImpl);
     throttler_->Initialize(nullptr, GURL("http://example.com"),
-                           "Shockwave Flash", rect);
+                           "Shockwave Flash", gfx::Size(100, 100));
     throttler_->AddObserver(this);
   }
 

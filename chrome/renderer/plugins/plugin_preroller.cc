@@ -58,10 +58,14 @@ void PluginPreroller::OnThrottleStateChange() {
   if (!throttler_->IsThrottled())
     return;
 
+  PlaceholderPosterInfo poster_info;
+  poster_info.poster_attribute = keyframe_data_url_.spec();
+  poster_info.custom_poster_size = throttler_->GetSize();
+
   ChromePluginPlaceholder* placeholder =
       ChromePluginPlaceholder::CreateBlockedPlugin(
           render_frame(), frame_, params_, info_, identifier_, name_,
-          IDR_PLUGIN_POSTER_HTML, message_, keyframe_data_url_.spec(), GURL());
+          IDR_PLUGIN_POSTER_HTML, message_, poster_info);
   placeholder->SetPremadePlugin(throttler_);
   placeholder->set_power_saver_enabled(true);
   placeholder->set_allow_loading(true);

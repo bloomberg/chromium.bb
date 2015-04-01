@@ -178,7 +178,7 @@ void PepperWebPluginImpl::updateGeometry(
     std::vector<gfx::Rect> cut_outs;
     for (size_t i = 0; i < cut_outs_rects.size(); ++i)
       cut_outs.push_back(cut_outs_rects[i]);
-    instance_->ViewChanged(plugin_rect_, clip_rect, cut_outs);
+    instance_->ViewChanged(plugin_rect_, clip_rect, unobscured_rect, cut_outs);
   }
 }
 

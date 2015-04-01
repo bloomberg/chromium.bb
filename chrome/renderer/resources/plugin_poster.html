@@ -48,6 +48,12 @@ document.onkeydown = function(e) {
   z-index: 1;
 }
 
+#inner_container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
 #inner {
   margin-top: -25px;
 }
@@ -59,8 +65,11 @@ document.onkeydown = function(e) {
   <div i18n-values="title:name" id="outer" onclick="plugin.load()">
     <img id="poster" i18n-values="srcset:poster">
     <div id="shielding">
-      <div id="inner">
-        <div><img id="plugin_icon" src="plugin_power_saver_play.png" /></div>
+      <div id="inner_container"
+           i18n-values=".style.width:visibleWidth;.style.height:visibleHeight">
+        <div id="inner">
+          <img id="plugin_icon" src="plugin_power_saver_play.png" />
+        </div>
       </div>
     </div>
   </div>

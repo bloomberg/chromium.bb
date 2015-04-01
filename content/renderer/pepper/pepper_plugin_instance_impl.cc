@@ -809,19 +809,9 @@ bool PepperPluginInstanceImpl::Initialize(
   if (!render_frame_)
     return false;
 
-  if (is_flash_plugin_ && RenderThread::Get()) {
-    RenderThread::Get()->RecordAction(
-        base::UserMetricsAction("Flash.PluginInstanceCreated"));
-    blink::WebRect bounds = container()->element().boundsInViewportSpace();
-    RecordFlashSizeMetric(bounds.width, bounds.height);
-  }
-
   if (throttler) {
     throttler_ = throttler.Pass();
     throttler_->AddObserver(this);
-    throttler_->Initialize(render_frame_, plugin_url_.GetOrigin(),
-                           module()->name(),
-                           container()->element().boundsInViewportSpace());
   }
 
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);
@@ -1233,8 +1223,9 @@ PP_Var PepperPluginInstanceImpl::GetInstanceObject(v8::Isolate* isolate) {
 }
 
 void PepperPluginInstanceImpl::ViewChanged(
-    const gfx::Rect& position,
+    const gfx::Rect& window,
     const gfx::Rect& clip,
+    const gfx::Rect& unobscured,
     const std::vector<gfx::Rect>& cut_outs_rects) {
   // WebKit can give weird (x,y) positions for empty clip rects (since the
   // position technically doesn't matter). But we want to make these
@@ -1244,9 +1235,11 @@ void PepperPluginInstanceImpl::ViewChanged(
   if (!clip.IsEmpty())
     new_clip = clip;
 
+  unobscured_rect_ = unobscured;
+
   cut_outs_rects_ = cut_outs_rects;
 
-  view_data_.rect = PP_FromGfxRect(position);
+  view_data_.rect = PP_FromGfxRect(window);
   view_data_.clip_rect = PP_FromGfxRect(clip);
   view_data_.device_scale = container_->deviceScaleFactor();
   view_data_.css_scale =
@@ -1288,7 +1281,12 @@ void PepperPluginInstanceImpl::ViewChanged(
 
   UpdateFlashFullscreenState(fullscreen_container_ != NULL);
 
-  SendDidChangeView();
+  // During plugin initialization, there are often re-layouts. Avoid sending
+  // intermediate sizes the plugin and throttler.
+  if (sent_initial_did_change_view_)
+    SendDidChangeView();
+  else
+    ScheduleAsyncDidChangeView();
 }
 
 void PepperPluginInstanceImpl::SetWebKitFocus(bool has_focus) {
@@ -1624,9 +1622,28 @@ void PepperPluginInstanceImpl::SendAsyncDidChangeView() {
 }
 
 void PepperPluginInstanceImpl::SendDidChangeView() {
+  // An asynchronous view update is scheduled. Skip sending this update.
+  if (view_change_weak_ptr_factory_.HasWeakPtrs())
+    return;
+
   // Don't send DidChangeView to crashed plugins.
   if (module()->is_crashed())
     return;
+
+  // During the first view update, initialize the throttler.
+  if (!sent_initial_did_change_view_) {
+    if (is_flash_plugin_ && RenderThread::Get()) {
+      RenderThread::Get()->RecordAction(
+          base::UserMetricsAction("Flash.PluginInstanceCreated"));
+      RecordFlashSizeMetric(unobscured_rect_.width(),
+                            unobscured_rect_.height());
+    }
+
+    if (throttler_) {
+      throttler_->Initialize(render_frame_, plugin_url_.GetOrigin(),
+                             module()->name(), unobscured_rect_.size());
+    }
+  }
 
   ppapi::ViewData view_data = view_data_;
 
@@ -1640,9 +1657,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
     view_data.clip_rect.size.height = 0;
   }
 
-  if (view_change_weak_ptr_factory_.HasWeakPtrs() ||
-      (sent_initial_did_change_view_ &&
-       last_sent_view_data_.Equals(view_data)))
+  if (sent_initial_did_change_view_ && last_sent_view_data_.Equals(view_data))
     return;  // Nothing to update.
 
   sent_initial_did_change_view_ = true;

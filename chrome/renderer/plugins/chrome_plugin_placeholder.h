@@ -9,7 +9,24 @@
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_process_observer.h"
 
+namespace gfx {
+class Size;
+}
+
 struct ChromeViewHostMsg_GetPluginInfo_Status;
+
+// This contains information specifying the poster image of plugin placeholders.
+// The default constructor specifies no poster image.
+struct PlaceholderPosterInfo {
+  // The poster image specified in image 'srcset' attribute format.
+  std::string poster_attribute;
+
+  // Used to resolve relative paths in |poster_attribute|.
+  GURL base_url;
+
+  // Specify this to provide partially obscured plugins a centered poster image.
+  gfx::Size custom_poster_size;
+};
 
 class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
                                 public content::RenderProcessObserver,
@@ -17,8 +34,6 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
  public:
   static const char kPluginPlaceholderDataURL[];
 
-  // If |poster_attribute| contains relative paths, |base_url| must be
-  // non-empty. This is so the placeholder can resolve the relative paths.
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
@@ -28,8 +43,7 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
       const base::string16& name,
       int resource_id,
       const base::string16& message,
-      const std::string& poster_attribute,
-      const GURL& base_url);
+      const PlaceholderPosterInfo& poster_info);
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(

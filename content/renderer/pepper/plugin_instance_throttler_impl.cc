@@ -110,6 +110,10 @@ blink::WebPlugin* PluginInstanceThrottlerImpl::GetWebPlugin() const {
   return web_plugin_;
 }
 
+const gfx::Size& PluginInstanceThrottlerImpl::GetSize() const {
+  return unobscured_size_;
+}
+
 void PluginInstanceThrottlerImpl::NotifyAudioThrottled() {
   audio_throttled_ = true;
   audio_throttled_frame_timeout_.Reset();
@@ -124,13 +128,16 @@ void PluginInstanceThrottlerImpl::Initialize(
     RenderFrameImpl* frame,
     const GURL& content_origin,
     const std::string& plugin_module_name,
-    const blink::WebRect& bounds) {
+    const gfx::Size& unobscured_size) {
+  unobscured_size_ = unobscured_size;
+
   // |frame| may be nullptr in tests.
   if (frame) {
     PluginPowerSaverHelper* helper = frame->plugin_power_saver_helper();
     bool cross_origin_main_content = false;
     if (!helper->ShouldThrottleContent(content_origin, plugin_module_name,
-                                       bounds.width, bounds.height,
+                                       unobscured_size.width(),
+                                       unobscured_size.height(),
                                        &cross_origin_main_content)) {
       state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
 

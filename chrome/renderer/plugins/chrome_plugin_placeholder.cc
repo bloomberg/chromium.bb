@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/prerender_messages.h"
@@ -27,6 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/url_util.h"
 
 using base::UserMetricsAction;
@@ -143,16 +145,24 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     const base::string16& name,
     int template_id,
     const base::string16& message,
-    const std::string& poster_attribute,
-    const GURL& base_url) {
+    const PlaceholderPosterInfo& poster_info) {
   base::DictionaryValue values;
   values.SetString("message", message);
   values.SetString("name", name);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
-  if (!poster_attribute.empty()) {
-    values.SetString("poster", poster_attribute);
-    values.SetString("baseurl", base_url.spec());
+  if (!poster_info.poster_attribute.empty()) {
+    values.SetString("poster", poster_info.poster_attribute);
+    values.SetString("baseurl", poster_info.base_url.spec());
+
+    if (!poster_info.custom_poster_size.IsEmpty()) {
+      values.SetString(
+          "visibleWidth",
+          base::IntToString(poster_info.custom_poster_size.width()) + "px");
+      values.SetString(
+          "visibleHeight",
+          base::IntToString(poster_info.custom_poster_size.height()) + "px");
+    }
   }
 
   const base::StringPiece template_html(
@@ -167,7 +177,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
       render_frame, frame, params, html_data, name);
 
 #if defined(ENABLE_PLUGINS)
-  if (!poster_attribute.empty())
+  if (!poster_info.poster_attribute.empty())
     blocked_plugin->BlockForPowerSaverPoster();
 #endif
   blocked_plugin->SetPluginInfo(info);
