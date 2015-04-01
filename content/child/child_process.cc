@@ -48,7 +48,7 @@ ChildProcess::ChildProcess()
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
 #if defined(OS_ANDROID)
-  io_thread_.SetPriority(base::kThreadPriority_Display);
+  io_thread_.SetPriority(base::ThreadPriority::DISPLAY);
 #endif
 }
 

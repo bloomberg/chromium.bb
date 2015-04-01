@@ -353,7 +353,7 @@ void WASAPIAudioInputStream::Run() {
   ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 
   // Increase the thread priority.
-  capture_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
+  capture_thread_->SetThreadPriority(base::ThreadPriority::REALTIME_AUDIO);
 
   // Enable MMCSS to ensure that this thread receives prioritized access to
   // CPU resources.

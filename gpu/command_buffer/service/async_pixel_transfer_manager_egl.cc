@@ -90,7 +90,7 @@ class TransferThread : public base::Thread {
   TransferThread() : base::Thread(kAsyncTransferThreadName) {
     Start();
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    SetPriority(base::kThreadPriority_Background);
+    SetPriority(base::ThreadPriority::BACKGROUND);
 #endif
   }
   ~TransferThread() override { Stop(); }
@@ -466,14 +466,14 @@ bool AsyncPixelTransferDelegateEGL::TransferIsInProgress() {
 void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion() {
   if (state_->TransferIsInProgress()) {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Display);
+    g_transfer_thread.Pointer()->SetPriority(base::ThreadPriority::DISPLAY);
 #endif
 
     state_->WaitForTransferCompletion();
     DCHECK(!state_->TransferIsInProgress());
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Background);
+    g_transfer_thread.Pointer()->SetPriority(base::ThreadPriority::BACKGROUND);
 #endif
   }
 }

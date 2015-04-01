@@ -27,7 +27,7 @@ ThreadPriority NiceValueToThreadPriority(int nice_value) {
       return pair.priority;
   }
   NOTREACHED() << "Unknown nice value";
-  return kThreadPriority_Normal;
+  return ThreadPriority::NORMAL;
 }
 
 }  // namespace internal

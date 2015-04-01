@@ -1036,10 +1036,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_ANDROID)
   // Up the priority of anything that touches with display tasks
   // (this thread is UI thread, and io_thread_ is for IPCs).
-  io_thread_->SetPriority(base::kThreadPriority_Display);
-  base::PlatformThread::SetThreadPriority(
-      base::PlatformThread::CurrentHandle(),
-      base::kThreadPriority_Display);
+  io_thread_->SetPriority(base::ThreadPriority::DISPLAY);
+  base::PlatformThread::SetThreadPriority(base::PlatformThread::CurrentHandle(),
+                                          base::ThreadPriority::DISPLAY);
 
   // On Android, GLSurface::InitializeOneOff() must be called before
   // initalizing the GpuDataManagerImpl as it uses the GL bindings.

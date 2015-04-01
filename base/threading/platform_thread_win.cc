@@ -237,17 +237,17 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
 
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {
-    case kThreadPriority_Normal:
+    case ThreadPriority::BACKGROUND:
+      desired_priority = THREAD_PRIORITY_LOWEST;
+      break;
+    case ThreadPriority::NORMAL:
       desired_priority = THREAD_PRIORITY_NORMAL;
       break;
-    case kThreadPriority_RealtimeAudio:
-      desired_priority = THREAD_PRIORITY_TIME_CRITICAL;
-      break;
-    case kThreadPriority_Display:
+    case ThreadPriority::DISPLAY:
       desired_priority = THREAD_PRIORITY_ABOVE_NORMAL;
       break;
-    case kThreadPriority_Background:
-      desired_priority = THREAD_PRIORITY_LOWEST;
+    case ThreadPriority::REALTIME_AUDIO:
+      desired_priority = THREAD_PRIORITY_TIME_CRITICAL;
       break;
     default:
       NOTREACHED() << "Unknown priority.";
@@ -269,19 +269,19 @@ ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
 
   int priority = ::GetThreadPriority(handle.handle_);
   switch (priority) {
-    case THREAD_PRIORITY_NORMAL:
-      return kThreadPriority_Normal;
-    case THREAD_PRIORITY_TIME_CRITICAL:
-      return kThreadPriority_RealtimeAudio;
-    case THREAD_PRIORITY_ABOVE_NORMAL:
-      return kThreadPriority_Display;
     case THREAD_PRIORITY_LOWEST:
-      return kThreadPriority_Background;
+      return ThreadPriority::BACKGROUND;
+    case THREAD_PRIORITY_NORMAL:
+      return ThreadPriority::NORMAL;
+    case THREAD_PRIORITY_ABOVE_NORMAL:
+      return ThreadPriority::DISPLAY;
+    case THREAD_PRIORITY_TIME_CRITICAL:
+      return ThreadPriority::REALTIME_AUDIO;
     case THREAD_PRIORITY_ERROR_RETURN:
       DPCHECK(false) << "GetThreadPriority error";  // Falls through.
     default:
       NOTREACHED() << "Unexpected priority: " << priority;
-      return kThreadPriority_Normal;
+      return ThreadPriority::NORMAL;
   }
 }
 

@@ -47,7 +47,7 @@ class TransferThread : public base::Thread {
         initialized_(false) {
     Start();
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    SetPriority(base::kThreadPriority_Background);
+    SetPriority(base::ThreadPriority::BACKGROUND);
 #endif
   }
 

@@ -39,7 +39,7 @@ struct ThreadParams {
   ThreadParams()
       : delegate(NULL),
         joinable(false),
-        priority(kThreadPriority_Normal),
+        priority(ThreadPriority::NORMAL),
         handle(NULL),
         handle_set(false, false) {
   }
@@ -59,7 +59,7 @@ void* ThreadFunc(void* params) {
   if (!thread_params->joinable)
     base::ThreadRestrictions::SetSingletonAllowed(false);
 
-  if (thread_params->priority != kThreadPriority_Normal) {
+  if (thread_params->priority != ThreadPriority::NORMAL) {
     PlatformThread::SetThreadPriority(PlatformThread::CurrentHandle(),
                                       thread_params->priority);
   }
@@ -201,7 +201,7 @@ bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
                             PlatformThreadHandle* thread_handle) {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   return CreateThread(stack_size, true /* joinable thread */,
-                      delegate, thread_handle, kThreadPriority_Normal);
+                      delegate, thread_handle, ThreadPriority::NORMAL);
 }
 
 // static
@@ -219,7 +219,7 @@ bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
 
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   bool result = CreateThread(stack_size, false /* non-joinable thread */,
-                             delegate, &unused, kThreadPriority_Normal);
+                             delegate, &unused, ThreadPriority::NORMAL);
   return result;
 }
 
@@ -265,7 +265,7 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
 ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
-  return kThreadPriority_Normal;
+  return ThreadPriority::NORMAL;
 #else
   // Mirrors SetThreadPriority()'s implementation.
   ThreadPriority platform_specific_priority;
@@ -283,7 +283,7 @@ ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
       getpriority(PRIO_PROCESS, handle.id_ == current_id ? 0 : handle.id_);
   if (errno != 0) {
     DVPLOG(1) << "Failed to get nice value of thread (" << handle.id_ << ")";
-    return kThreadPriority_Normal;
+    return ThreadPriority::NORMAL;
   }
 
   return internal::NiceValueToThreadPriority(nice_value);

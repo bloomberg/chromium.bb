@@ -671,7 +671,7 @@ void RenderThreadImpl::Init() {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
       if (!command_line.HasSwitch(
               switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
-        raster_thread->SetThreadPriority(base::kThreadPriority_Background);
+        raster_thread->SetThreadPriority(base::ThreadPriority::BACKGROUND);
       }
 #endif
       compositor_raster_threads_.push_back(raster_thread.Pass());
@@ -1036,7 +1036,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       compositor_thread_.reset(new base::Thread("Compositor"));
       compositor_thread_->Start();
 #if defined(OS_ANDROID)
-      compositor_thread_->SetPriority(base::kThreadPriority_Display);
+      compositor_thread_->SetPriority(base::ThreadPriority::DISPLAY);
 #endif
       compositor_message_loop_proxy_ =
           compositor_thread_->message_loop_proxy();

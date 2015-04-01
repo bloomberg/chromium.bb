@@ -38,17 +38,17 @@ namespace internal {
 // We use -6 for display, but we may want to split this into urgent (-8) and
 // non-urgent (-4).
 const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
-    {kThreadPriority_RealtimeAudio, -16},
-    {kThreadPriority_Background, 10},
-    {kThreadPriority_Normal, 0},
-    {kThreadPriority_Display, -6},
+    {ThreadPriority::BACKGROUND, 10},
+    {ThreadPriority::NORMAL, 0},
+    {ThreadPriority::DISPLAY, -6},
+    {ThreadPriority::REALTIME_AUDIO, -16},
 };
 
 bool SetThreadPriorityForPlatform(PlatformThreadHandle handle,
                                   ThreadPriority priority) {
   // On Android, we set the Audio priority through JNI as Audio priority
   // will also allow the process to run while it is backgrounded.
-  if (priority == kThreadPriority_RealtimeAudio) {
+  if (priority == ThreadPriority::REALTIME_AUDIO) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
     return true;
@@ -89,7 +89,7 @@ void InitOnThread() {
   // Threads on linux/android may inherit their priority from the thread
   // where they were created. This sets all new threads to the default.
   PlatformThread::SetThreadPriority(PlatformThread::CurrentHandle(),
-                                    kThreadPriority_Normal);
+                                    ThreadPriority::NORMAL);
 }
 
 void TerminateOnThread() {

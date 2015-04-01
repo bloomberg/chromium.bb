@@ -175,12 +175,14 @@ const ThreadPriority kThreadPriorityTestValues[] = {
 // on POSIX as it at least provides coverage for running this code under
 // "normal" priority.
 #if !defined(OS_POSIX)
-    kThreadPriority_RealtimeAudio,
-    kThreadPriority_Display,
-    kThreadPriority_Background,
+    ThreadPriority::DISPLAY,
+    ThreadPriority::REALTIME_AUDIO,
+    // Keep BACKGROUND second to last to test backgrounding from other
+    // priorities.
+    ThreadPriority::BACKGROUND,
 #endif  // !defined(OS_POSIX)
-    // Keep normal last to test unbackgrounding.
-    kThreadPriority_Normal
+    // Keep NORMAL last to test unbackgrounding.
+    ThreadPriority::NORMAL
 };
 
 }  // namespace
@@ -192,7 +194,7 @@ TEST(PlatformThreadTest, ThreadPriorityOtherThread) {
   PlatformThreadHandle current_handle(PlatformThread::CurrentHandle());
 
   // Confirm that the current thread's priority is as expected.
-  EXPECT_EQ(kThreadPriority_Normal,
+  EXPECT_EQ(ThreadPriority::NORMAL,
             PlatformThread::GetThreadPriority(current_handle));
 
   // Create a test thread.
@@ -204,7 +206,7 @@ TEST(PlatformThreadTest, ThreadPriorityOtherThread) {
   EXPECT_NE(thread.thread_id(), PlatformThread::CurrentId());
 
   // New threads should get normal priority by default.
-  EXPECT_EQ(kThreadPriority_Normal, PlatformThread::GetThreadPriority(handle));
+  EXPECT_EQ(ThreadPriority::NORMAL, PlatformThread::GetThreadPriority(handle));
 
   // Toggle each supported priority on the test thread and confirm it only
   // affects it (and not the current thread).
@@ -217,7 +219,7 @@ TEST(PlatformThreadTest, ThreadPriorityOtherThread) {
               PlatformThread::GetThreadPriority(handle));
 
     // Make sure the current thread was otherwise unaffected.
-    EXPECT_EQ(kThreadPriority_Normal,
+    EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetThreadPriority(current_handle));
   }
 
@@ -233,7 +235,7 @@ TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
   PlatformThreadHandle current_handle(PlatformThread::CurrentHandle());
 
   // Confirm that the current thread's priority is as expected.
-  EXPECT_EQ(kThreadPriority_Normal,
+  EXPECT_EQ(ThreadPriority::NORMAL,
             PlatformThread::GetThreadPriority(current_handle));
 
   // Create a test thread for verification purposes only.
@@ -245,7 +247,7 @@ TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
   EXPECT_NE(thread.thread_id(), PlatformThread::CurrentId());
 
   // Confirm that the new thread's priority is as expected.
-  EXPECT_EQ(kThreadPriority_Normal, PlatformThread::GetThreadPriority(handle));
+  EXPECT_EQ(ThreadPriority::NORMAL, PlatformThread::GetThreadPriority(handle));
 
   // Toggle each supported priority on the current thread and confirm it only
   // affects it (and not the test thread).
@@ -259,12 +261,12 @@ TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
               PlatformThread::GetThreadPriority(current_handle));
 
     // Make sure the test thread was otherwise unaffected.
-    EXPECT_EQ(kThreadPriority_Normal,
+    EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetThreadPriority(handle));
   }
 
   // Restore current thread priority for follow-up tests.
-  PlatformThread::SetThreadPriority(current_handle, kThreadPriority_Normal);
+  PlatformThread::SetThreadPriority(current_handle, ThreadPriority::NORMAL);
 
   thread.MarkForTermination();
   PlatformThread::Join(handle);

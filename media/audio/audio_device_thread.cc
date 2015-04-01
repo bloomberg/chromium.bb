@@ -115,7 +115,7 @@ void AudioDeviceThread::Thread::Start() {
   AddRef();
 
   PlatformThread::CreateWithPriority(0, this, &thread_,
-                                     base::kThreadPriority_RealtimeAudio);
+                                     base::ThreadPriority::REALTIME_AUDIO);
   CHECK(!thread_.is_null());
 }
 

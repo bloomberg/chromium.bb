@@ -110,15 +110,17 @@ class PlatformThreadHandle {
 
 const PlatformThreadId kInvalidThreadId(0);
 
-// Valid values for SetThreadPriority()
-enum ThreadPriority {
-  kThreadPriority_Normal,
-  // Suitable for low-latency, glitch-resistant audio.
-  kThreadPriority_RealtimeAudio,
-  // Suitable for threads which generate data for the display (at ~60Hz).
-  kThreadPriority_Display,
+// Valid values for SetThreadPriority(), listed in increasing order of
+// importance.
+enum class ThreadPriority {
   // Suitable for threads that shouldn't disrupt high priority work.
-  kThreadPriority_Background
+  BACKGROUND,
+  // Default priority level.
+  NORMAL,
+  // Suitable for threads which generate data for the display (at ~60Hz).
+  DISPLAY,
+  // Suitable for low-latency, glitch-resistant audio.
+  REALTIME_AUDIO,
 };
 
 // A namespace for low-level thread functions.

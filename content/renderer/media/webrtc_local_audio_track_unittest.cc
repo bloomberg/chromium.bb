@@ -66,7 +66,7 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
 
   void Start() {
     base::PlatformThread::CreateWithPriority(
-        0, this, &thread_, base::kThreadPriority_RealtimeAudio);
+        0, this, &thread_, base::ThreadPriority::REALTIME_AUDIO);
     CHECK(!thread_.is_null());
   }
 
