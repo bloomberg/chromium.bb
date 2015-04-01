@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
@@ -23,9 +22,8 @@ class RenderFrameImpl;
 // DevToolsAgent belongs to the inspectable RenderFrameImpl and communicates
 // with WebDevToolsAgent. There is a corresponding DevToolsAgentHost
 // on the browser side.
-class CONTENT_EXPORT DevToolsAgent
-    : public RenderFrameObserver,
-      NON_EXPORTED_BASE(public blink::WebDevToolsAgentClient) {
+class DevToolsAgent : public RenderFrameObserver,
+                      public blink::WebDevToolsAgentClient {
  public:
   explicit DevToolsAgent(RenderFrameImpl* frame);
   ~DevToolsAgent() override;
@@ -45,11 +43,8 @@ class CONTENT_EXPORT DevToolsAgent
   bool IsAttached();
 
  private:
-  friend class DevToolsAgentTest;
-
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void WidgetWillClose() override;
 
   // WebDevToolsAgentClient implementation.
   void sendProtocolMessage(int call_id,
@@ -77,7 +72,6 @@ class CONTENT_EXPORT DevToolsAgent
   bool is_attached_;
   bool is_devtools_client_;
   bool paused_in_mouse_move_;
-  bool paused_;
   RenderFrameImpl* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);

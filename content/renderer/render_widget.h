@@ -380,7 +380,6 @@ class CONTENT_EXPORT RenderWidget
   void FlushPendingInputEventAck();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const blink::WebRect& pos);
-  void NotifyOnClose();
 
   // Resizes the render widget.
   void Resize(const gfx::Size& new_size,
