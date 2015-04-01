@@ -223,6 +223,8 @@ const wchar_t kLaunchModeValue[] = L"launch_mode";
 // This is used by breakpad and the metrics reporting.
 const wchar_t kBrowserCrashDumpAttemptsRegistryPath[] =
     L"Software\\" PRODUCT_STRING_PATH L"\\BrowserCrashDumpAttempts";
+const wchar_t kBrowserCrashDumpAttemptsRegistryPathSxS[] =
+    L"Software\\" PRODUCT_STRING_PATH L"\\BrowserCrashDumpAttemptsSxS";
 // This is used by browser exit code metrics reporting.
 const wchar_t kBrowserExitCodesRegistryPath[] =
     L"Software\\" PRODUCT_STRING_PATH L"\\BrowserExitCodes";
