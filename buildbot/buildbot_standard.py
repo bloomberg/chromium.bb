@@ -142,53 +142,12 @@ def BuildScript(status, context):
     EnsureDirectoryExists(tmp_dir)
     print 'Cleaning up the contents of %s...' % tmp_dir
     # Only delete files and directories like:
-    #   */nacl_tmp/*
-    # TODO(bradnelson): Drop this after a bit.
-    # Also drop files and directories like these to cleanup current state:
-    #   */nacl_tmp*
-    #   */nacl*
-    #   83C4.tmp
-    #   .org.chromium.Chromium.EQrEzl
-    #   tmp_platform*
-    #   tmp_mmap*
-    #   tmp_pwrite*
-    #   tmp_syscalls*
-    #   workdir*
-    #   nacl_chrome_download_*
-    #   browserprofile_*
-    #   tmp*.lnk
+    # a) C:\temp\83C4.tmp
+    # b) /tmp/.org.chromium.Chromium.EQrEzl
     file_name_re = re.compile(
-        r'[\\/\A]('
-        r'tmp_nacl[\\/].+|'
-        r'tmp_nacl.+|'
-        r'nacl.+|'
-        r'[0-9a-fA-F]+\.tmp|'
-        r'\.org\.chrom\w+\.Chrom\w+\.[^\\/]+|'
-        r'tmp_platform[^\\/]+|'
-        r'tmp_mmap[^\\/]+|'
-        r'tmp_pwrite[^\\/]+|'
-        r'tmp_syscalls[^\\/]+|'
-        r'workdir[^\\/]+|'
-        r'nacl_chrome_download_[^\\/]+|'
-        r'browserprofile_[^\\/]+|'
-        r'tmp[^\\/]\.lnk+'
-        r')$')
+        r'[\\/]([0-9a-fA-F]+\.tmp|\.org\.chrom\w+\.Chrom\w+\..+)$')
     file_name_filter = lambda fn: file_name_re.search(fn) is not None
-
-    # Clean nacl_tmp/* separately, so we get a list of leaks.
-    nacl_tmp = os.path.join(tmp_dir, 'nacl_tmp')
-    if os.path.exists(nacl_tmp):
-      for d in os.listdir(nacl_tmp):
-        path = os.path.join(nacl_tmp, d)
-        TryToCleanContents(path, file_name_filter)
-        os.rmdir(path)
-      os.rmdir(nacl_tmp)
-    # Clean /tmp so we get a list of what's accumulating.
     TryToCleanContents(tmp_dir, file_name_filter)
-
-    # Recreate TEMP, as it may have been clobbered.
-    if not os.path.exists(os.environ['TEMP']):
-      os.makedirs(os.environ['TEMP'])
 
     # Mac has an additional temporary directory; clean it up.
     # TODO(bradnelson): Fix Mac Chromium so that these temp files are created
