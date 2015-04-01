@@ -43,7 +43,7 @@ class Tokenizer {
 
  private:
   // InputFile must outlive the tokenizer and all generated tokens.
-  explicit Tokenizer(const InputFile* input_file, Err* err);
+  Tokenizer(const InputFile* input_file, Err* err);
   ~Tokenizer();
 
   std::vector<Token> Run();

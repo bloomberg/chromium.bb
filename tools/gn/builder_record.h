@@ -37,7 +37,6 @@ class BuilderRecord {
     ITEM_TOOLCHAIN
   };
 
-  //BuilderRecord();
   BuilderRecord(ItemType type, const Label& label);
   ~BuilderRecord();
 

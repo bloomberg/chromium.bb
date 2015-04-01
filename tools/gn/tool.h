@@ -162,7 +162,7 @@ class Tool {
     return substitution_bits_;
   }
 
- public:
+ private:
   SubstitutionPattern command_;
   std::string default_output_extension_;
   SubstitutionPattern depfile_;

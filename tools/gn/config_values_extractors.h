@@ -80,7 +80,7 @@ inline void ConfigValuesToStream(
   const std::vector<T>& v = (values.*getter)();
   for (size_t i = 0; i < v.size(); i++)
     writer(v[i], out);
-};
+}
 
 // Writes a given config value that applies to a given target. This collects
 // all values from the target itself and all configs that apply, and writes
