@@ -25,12 +25,6 @@ namespace media {
 // Time interval to update media time.
 const int kTimeUpdateIntervalMs = 50;
 
-static void AddLogEntry(const scoped_refptr<MediaLog>& media_log,
-                        MediaLog::MediaLogLevel level,
-                        const std::string& message) {
-  media_log->AddEvent(media_log->CreateLogEvent(level, message));
-}
-
 static void PaintNothing(const scoped_refptr<VideoFrame>& frame) {
 }
 
@@ -50,15 +44,15 @@ MojoRendererService::MojoRendererService()
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       task_runner, audio_renderer_sink_.get(),
       renderer_config->GetAudioDecoders(task_runner,
-                                        base::Bind(&AddLogEntry, media_log))
-          .Pass(),
+                                        base::Bind(&MediaLog::AddLogEvent,
+                                                   media_log)).Pass(),
       renderer_config->GetAudioHardwareConfig(), media_log));
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       task_runner,
       renderer_config->GetVideoDecoders(task_runner,
-                                        base::Bind(&AddLogEntry, media_log))
-          .Pass(),
+                                        base::Bind(&MediaLog::AddLogEvent,
+                                                   media_log)).Pass(),
       true, media_log));
 
   // Create renderer.

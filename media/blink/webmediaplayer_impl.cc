@@ -103,12 +103,6 @@ STATIC_ASSERT_MATCHING_ENUM(UseCredentials);
   (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
   BindToCurrentLoop(base::Bind(function, AsWeakPtr(), arg1)))
 
-static void AddLogEntry(const scoped_refptr<MediaLog>& media_log,
-                        MediaLog::MediaLogLevel level,
-                        const std::string& message) {
-  media_log->AddEvent(media_log->CreateLogEvent(level, message));
-}
-
 static blink::WebEncryptedMediaInitDataType ConvertInitDataType(
     const std::string& init_data_type) {
   if (init_data_type == "cenc")
@@ -837,7 +831,7 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
 void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   client_->mediaSourceOpened(new WebMediaSourceImpl(
-      chunk_demuxer_, base::Bind(&AddLogEntry, media_log_)));
+      chunk_demuxer_, base::Bind(&MediaLog::AddLogEvent, media_log_)));
 }
 
 void WebMediaPlayerImpl::OnAddTextTrack(
@@ -907,7 +901,7 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
-    mse_log_cb = base::Bind(&AddLogEntry, media_log_);
+    mse_log_cb = base::Bind(&MediaLog::AddLogEvent, media_log_);
 
     chunk_demuxer_ = new ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),

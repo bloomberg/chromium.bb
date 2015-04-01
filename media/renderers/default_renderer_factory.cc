@@ -23,15 +23,6 @@
 
 namespace media {
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
-
-static void AddLogEntry(const scoped_refptr<MediaLog>& media_log,
-                        MediaLog::MediaLogLevel level,
-                        const std::string& message) {
-  media_log->AddEvent(media_log->CreateLogEvent(level, message));
-}
-#endif
-
 DefaultRendererFactory::DefaultRendererFactory(
     const scoped_refptr<MediaLog>& media_log,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
@@ -55,7 +46,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(new FFmpegAudioDecoder(
-      media_task_runner, base::Bind(&AddLogEntry, media_log_)));
+      media_task_runner, base::Bind(&MediaLog::AddLogEvent, media_log_)));
 #endif
 
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
