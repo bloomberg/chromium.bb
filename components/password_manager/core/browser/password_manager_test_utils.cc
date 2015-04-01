@@ -4,7 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 
-#include <set>
+#include <algorithm>
+#include <ostream>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,38 +54,40 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
   return form.Pass();
 }
 
-typedef std::set<const autofill::PasswordForm*> SetOfForms;
-
-bool ContainsSamePasswordFormsPtr(const std::vector<PasswordForm*>& first,
-                                  const std::vector<PasswordForm*>& second) {
-  if (first.size() != second.size())
-    return false;
-
-  // TODO(cramya): As per b/7079906, the STLport of Android causes a crash
-  // if we use expectations(first.begin(), first.end()) to copy a vector
-  // into a set rather than std::copy that is used below.
-  // Need to revert this once STLport is fixed.
-  SetOfForms expectations;
-  std::copy(first.begin(), first.end(),
-            std::inserter(expectations, expectations.begin()));
-  for (unsigned int i = 0; i < second.size(); ++i) {
-    const PasswordForm* actual = second[i];
-    bool found_match = false;
-    for (SetOfForms::iterator it = expectations.begin();
-         it != expectations.end(); ++it) {
-      const PasswordForm* expected = *it;
-      if (*expected == *actual) {
-        found_match = true;
-        expectations.erase(it);
-        break;
+bool ContainsEqualPasswordFormsUnordered(
+    const std::vector<PasswordForm*>& expectations,
+    const std::vector<PasswordForm*>& actual_values,
+    std::ostream* mismatch_output) {
+  std::vector<PasswordForm*> remaining_expectations(expectations.begin(),
+                                                    expectations.end());
+  bool had_mismatched_actual_form = false;
+  for (const PasswordForm* actual : actual_values) {
+    auto it_matching_expectation = std::find_if(
+        remaining_expectations.begin(), remaining_expectations.end(),
+        [actual](PasswordForm* expected) { return *expected == *actual; });
+    if (it_matching_expectation != remaining_expectations.end()) {
+      // Erase the matched expectation by moving the last element to its place.
+      *it_matching_expectation = remaining_expectations.back();
+      remaining_expectations.pop_back();
+    } else {
+      if (mismatch_output) {
+        *mismatch_output << std::endl
+                         << "Unmatched actual form:" << std::endl
+                         << *actual;
       }
-    }
-    if (!found_match) {
-      LOG(ERROR) << "No match for:" << std::endl << *actual;
-      return false;
+      had_mismatched_actual_form = true;
     }
   }
-  return true;
+
+  if (mismatch_output) {
+    for (const PasswordForm* remaining_expected_form : remaining_expectations) {
+      *mismatch_output << std::endl
+                       << "Unmatched expected form:" << std::endl
+                       << *remaining_expected_form;
+    }
+  }
+
+  return !had_mismatched_actual_form && remaining_expectations.empty();
 }
 
 }  // namespace password_manager

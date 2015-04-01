@@ -216,14 +216,17 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   MockPasswordStoreConsumer consumer;
   testing::InSequence s;
-  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
-                            ContainsSamePasswordForms(www_google_expected)))
+  EXPECT_CALL(consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(www_google_expected)))
       .RetiresOnSaturation();
   EXPECT_CALL(consumer,
-              OnGetPasswordStoreResultsConstRef(ContainsSamePasswordForms(
-                  accounts_google_expected))).RetiresOnSaturation();
-  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
-                            ContainsSamePasswordForms(bar_example_expected)))
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(accounts_google_expected)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(bar_example_expected)))
       .RetiresOnSaturation();
 
   store->GetLogins(www_google, PasswordStore::ALLOW_PROMPT, &consumer);
@@ -323,7 +326,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
 
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
-                  ContainsSamePasswordForms(expected_results.get())));
+                  UnorderedPasswordFormElementsAre(expected_results.get())));
   store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
@@ -426,7 +429,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
 
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
-                  ContainsSamePasswordForms(expected_results.get())));
+                  UnorderedPasswordFormElementsAre(expected_results.get())));
+
   store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();

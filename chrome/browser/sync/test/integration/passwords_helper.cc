@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 
+#include <sstream>
+
 #include "base/compiler_specific.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -138,19 +140,16 @@ bool ProfileContainsSamePasswordFormsAsVerifier(int index) {
       GetLogins(GetVerifierPasswordStore());
   ScopedVector<PasswordForm> forms = GetLogins(GetPasswordStore(index));
   ClearSyncDateField(&forms.get());
-  bool result = password_manager::ContainsSamePasswordFormsPtr(
-      verifier_forms.get(), forms.get());
-  if (!result) {
-    VLOG(1) << "Password forms in Verifier Profile:";
-    for (const PasswordForm* form : verifier_forms) {
-      VLOG(1) << *form;
-    }
-    VLOG(1) << "Password forms in Profile" << index << ":";
-    for (const PasswordForm* form : forms) {
-      VLOG(1) << *form;
-    }
+
+  std::ostringstream mismatch_details_stream;
+  bool is_matching = password_manager::ContainsEqualPasswordFormsUnordered(
+      verifier_forms.get(), forms.get(), &mismatch_details_stream);
+  if (!is_matching) {
+    VLOG(1) << "Profile " << index
+            << " does not contain the same Password forms as Verifier Profile.";
+    VLOG(1) << mismatch_details_stream.str();
   }
-  return result;
+  return is_matching;
 }
 
 bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
@@ -158,19 +157,18 @@ bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
   ScopedVector<PasswordForm> forms_b = GetLogins(GetPasswordStore(index_b));
   ClearSyncDateField(&forms_a.get());
   ClearSyncDateField(&forms_b.get());
-  bool result = password_manager::ContainsSamePasswordFormsPtr(forms_a.get(),
-                                                               forms_b.get());
-  if (!result) {
-    VLOG(1) << "Password forms in Profile" << index_a << ":";
-    for (const PasswordForm* form : forms_a) {
-      VLOG(1) << *form;
-    }
-    VLOG(1) << "Password forms in Profile" << index_b << ":";
-    for (const PasswordForm* form : forms_b) {
-      VLOG(1) << *form;
-    }
+
+  std::ostringstream mismatch_details_stream;
+  bool is_matching = password_manager::ContainsEqualPasswordFormsUnordered(
+      forms_a.get(), forms_b.get(), &mismatch_details_stream);
+  if (!is_matching) {
+    VLOG(1) << "Password forms in Profile " << index_a
+            << " (listed as 'expected forms' below)"
+            << " do not match those in Profile " << index_b
+            << " (listed as 'actual forms' below)";
+    VLOG(1) << mismatch_details_stream.str();
   }
-  return result;
+  return is_matching;
 }
 
 bool AllProfilesContainSamePasswordFormsAsVerifier() {

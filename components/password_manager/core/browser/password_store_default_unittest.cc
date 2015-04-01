@@ -131,7 +131,8 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 
   // We expect to get the same data back, even though it's not all ASCII.
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
-                            ContainsSamePasswordForms(expected_forms.get())));
+                            password_manager::UnorderedPasswordFormElementsAre(
+                                expected_forms.get())));
   store->GetAutofillableLogins(&consumer);
 
   base::MessageLoop::current()->RunUntilIdle();

@@ -26,9 +26,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using password_manager::ContainsSamePasswordForms;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
+using password_manager::UnorderedPasswordFormElementsAre;
 using testing::ElementsAreArray;
 using testing::IsEmpty;
 
@@ -417,17 +417,19 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   MockPasswordStoreConsumer consumer;
 
   // The autofillable forms should have been migrated to the native backend.
-  EXPECT_CALL(consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  ContainsSamePasswordForms(expected_autofillable.get())));
+  EXPECT_CALL(
+      consumer,
+      OnGetPasswordStoreResultsConstRef(
+          UnorderedPasswordFormElementsAre(expected_autofillable.get())));
 
   store->GetAutofillableLogins(&consumer);
   base::RunLoop().RunUntilIdle();
 
   // The blacklisted forms should have been migrated to the native backend.
-  EXPECT_CALL(consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  ContainsSamePasswordForms(expected_blacklisted.get())));
+  EXPECT_CALL(
+      consumer,
+      OnGetPasswordStoreResultsConstRef(
+          UnorderedPasswordFormElementsAre(expected_blacklisted.get())));
 
   store->GetBlacklistLogins(&consumer);
   base::RunLoop().RunUntilIdle();
@@ -439,8 +441,9 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
     EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(IsEmpty()));
   } else {
     // The autofillable logins should still be in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(ContainsSamePasswordForms(
-                               expected_autofillable.get())));
+    EXPECT_CALL(ld_return,
+                OnLoginDatabaseQueryDone(UnorderedPasswordFormElementsAre(
+                    expected_autofillable.get())));
   }
 
   LoginDatabaseQueryCallback(store->login_db(), true, &ld_return);
@@ -453,8 +456,9 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
     EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(IsEmpty()));
   } else {
     // The blacklisted logins should still be in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(ContainsSamePasswordForms(
-                               expected_blacklisted.get())));
+    EXPECT_CALL(ld_return,
+                OnLoginDatabaseQueryDone(UnorderedPasswordFormElementsAre(
+                    expected_blacklisted.get())));
   }
 
   LoginDatabaseQueryCallback(store->login_db(), false, &ld_return);
