@@ -114,6 +114,7 @@ static void GetOrigins(JNIEnv* env,
       case CONTENT_SETTINGS_TYPE_FULLSCREEN:
         Java_WebsitePreferenceBridge_insertFullscreenInfoIntoList(
             env, list, jorigin.obj(), jembedder.obj());
+        break;
       default:
         DCHECK(false);
         break;
