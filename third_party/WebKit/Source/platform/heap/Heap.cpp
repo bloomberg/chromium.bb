@@ -609,31 +609,56 @@ Address BaseHeap::lazySweep(size_t allocationSize, size_t gcInfoIndex)
     return result;
 }
 
+void BaseHeap::sweepUnsweptPage()
+{
+    BasePage* page = m_firstUnsweptPage;
+    if (page->isEmpty()) {
+        page->unlink(&m_firstUnsweptPage);
+        page->removeFromHeap();
+    } else {
+        // Sweep a page and move the page from m_firstUnsweptPages to
+        // m_firstPages.
+        page->sweep();
+        page->unlink(&m_firstUnsweptPage);
+        page->link(&m_firstPage);
+        page->markAsSwept();
+    }
+}
+
+bool BaseHeap::lazySweepWithDeadline(double deadlineSeconds)
+{
+    // It might be heavy to call Platform::current()->monotonicallyIncreasingTime()
+    // per page (i.e., 128 KB sweep or one LargeObject sweep), so we check
+    // the deadline per 10 pages.
+    static const int deadlineCheckInterval = 10;
+
+    RELEASE_ASSERT(threadState()->isSweepingInProgress());
+    ASSERT(threadState()->sweepForbidden());
+    ASSERT(!threadState()->isMainThread() || ScriptForbiddenScope::isScriptForbidden());
+
+    int pageCount = 1;
+    while (m_firstUnsweptPage) {
+        sweepUnsweptPage();
+        if (pageCount % deadlineCheckInterval == 0) {
+            if (deadlineSeconds <= Platform::current()->monotonicallyIncreasingTime()) {
+                // Deadline has come.
+                return !m_firstUnsweptPage;
+            }
+        }
+        pageCount++;
+    }
+    return true;
+}
+
 void BaseHeap::completeSweep()
 {
     RELEASE_ASSERT(threadState()->isSweepingInProgress());
     ASSERT(threadState()->sweepForbidden());
-
-    if (threadState()->isMainThread())
-        ScriptForbiddenScope::enter();
+    ASSERT(!threadState()->isMainThread() || ScriptForbiddenScope::isScriptForbidden());
 
     while (m_firstUnsweptPage) {
-        BasePage* page = m_firstUnsweptPage;
-        if (page->isEmpty()) {
-            page->unlink(&m_firstUnsweptPage);
-            page->removeFromHeap();
-        } else {
-            // Sweep a page and move the page from m_firstUnsweptPages to
-            // m_firstPages.
-            page->sweep();
-            page->unlink(&m_firstUnsweptPage);
-            page->link(&m_firstPage);
-            page->markAsSwept();
-        }
+        sweepUnsweptPage();
     }
-
-    if (threadState()->isMainThread())
-        ScriptForbiddenScope::exit();
 }
 
 NormalPageHeap::NormalPageHeap(ThreadState* state, int index)

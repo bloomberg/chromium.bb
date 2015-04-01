@@ -337,10 +337,10 @@ public:
     void didV8GC();
 
     void performIdleGC(double deadlineSeconds);
-    void performIdleCompleteSweep(double deadlineSeconds);
+    void performIdleLazySweep(double deadlineSeconds);
 
     void scheduleIdleGC();
-    void scheduleIdleCompleteSweep();
+    void scheduleIdleLazySweep();
     void schedulePreciseGC();
     void scheduleGCIfNeeded();
     void setGCState(GCState);
@@ -544,6 +544,7 @@ public:
     size_t objectPayloadSizeForTesting();
 
     void preSweep();
+    void postSweep();
     void prepareHeapForTermination();
 
     // Request to call a pref-finalizer of the target object before the object

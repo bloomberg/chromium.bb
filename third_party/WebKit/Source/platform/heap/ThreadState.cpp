@@ -606,13 +606,46 @@ void ThreadState::performIdleGC(double deadlineSeconds)
     Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep, Heap::IdleGC);
 }
 
-void ThreadState::performIdleCompleteSweep(double deadlineSeconds)
+void ThreadState::performIdleLazySweep(double deadlineSeconds)
 {
     ASSERT(isMainThread());
-    // The completeSweep() does nothing if the sweeping is already done.
-    // TODO(haraken): Split the sweeping task into chunks so that each chunk fits
-    // in the deadlineSeconds.
-    completeSweep();
+
+    // If we are not in a sweeping phase, there is nothing to do here.
+    if (!isSweepingInProgress())
+        return;
+
+    // This check is here to prevent performIdleLazySweep() from being called
+    // recursively. I'm not sure if it can happen but it would be safer to have
+    // the check just in case.
+    if (sweepForbidden())
+        return;
+
+    bool sweepCompleted = true;
+    ThreadState::SweepForbiddenScope scope(this);
+    {
+        if (isMainThread())
+            ScriptForbiddenScope::enter();
+
+        for (int i = 0; i < NumberOfHeaps; i++) {
+            // lazySweepWithDeadline() won't check the deadline until it sweeps
+            // 10 pages. So we give a small slack for safety.
+            double slack = 0.001;
+            double remainingBudget = deadlineSeconds - slack - Platform::current()->monotonicallyIncreasingTime();
+            if (remainingBudget <= 0 || !m_heaps[i]->lazySweepWithDeadline(deadlineSeconds)) {
+                // We couldn't finish the sweeping within the deadline.
+                // We request another idle task for the remaining sweeping.
+                scheduleIdleLazySweep();
+                sweepCompleted = false;
+                break;
+            }
+        }
+
+        if (isMainThread())
+            ScriptForbiddenScope::exit();
+    }
+
+    if (sweepCompleted)
+        postSweep();
 }
 
 void ThreadState::scheduleIdleGC()
@@ -630,18 +663,15 @@ void ThreadState::scheduleIdleGC()
     setGCState(IdleGCScheduled);
 }
 
-void ThreadState::scheduleIdleCompleteSweep()
+void ThreadState::scheduleIdleLazySweep()
 {
     // Idle complete sweep is supported only in the main thread.
     if (!isMainThread())
         return;
 
-    // TODO(haraken): Temporarily disable complete sweeping in idle tasks
-    // because it turned out that it has a risk of violating the idle task
-    // deadline and thus regressing queueing_durations. We'll enable this
-    // once we finish collecting performance numbers.
-#if 0
-    Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleCompleteSweep, this));
+    // TODO(haraken): Remove this. Lazy sweeping is not yet enabled in non-oilpan builds.
+#if ENABLE(OILPAN)
+    Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleLazySweep, this));
 #endif
 }
 
@@ -784,6 +814,9 @@ void ThreadState::completeSweep()
 
     ThreadState::SweepForbiddenScope scope(this);
     {
+        if (isMainThread())
+            ScriptForbiddenScope::enter();
+
         TRACE_EVENT0("blink_gc", "ThreadState::completeSweep");
         double timeStamp = WTF::currentTimeMS();
 
@@ -793,8 +826,16 @@ void ThreadState::completeSweep()
         if (Platform::current()) {
             Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
         }
+
+        if (isMainThread())
+            ScriptForbiddenScope::exit();
     }
 
+    postSweep();
+}
+
+void ThreadState::postSweep()
+{
     if (isMainThread() && m_allocatedObjectSizeBeforeGC) {
         // FIXME: Heap::markedObjectSize() may not be accurate because other
         // threads may not have finished sweeping.
@@ -1056,7 +1097,7 @@ void ThreadState::preSweep()
     } else {
         // The default behavior is lazy sweeping.
         setGCState(Sweeping);
-        scheduleIdleCompleteSweep();
+        scheduleIdleLazySweep();
     }
 #else
     // FIXME: For now, we disable lazy sweeping in non-oilpan builds

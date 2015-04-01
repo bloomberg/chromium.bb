@@ -743,6 +743,10 @@ public:
     void prepareHeapForTermination();
     void prepareForSweep();
     Address lazySweep(size_t, size_t gcInfoIndex);
+    void sweepUnsweptPage();
+    // Returns true if we have swept all pages within the deadline.
+    // Returns false otherwise.
+    bool lazySweepWithDeadline(double deadlineSeconds);
     void completeSweep();
 
     ThreadState* threadState() { return m_threadState; }
