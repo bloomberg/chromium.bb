@@ -8817,6 +8817,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.EventlessEventPages">
+  <owner>yoz@chromium.org</owner>
+  <summary>
+    The number of extensions with event pages that have no registered event
+    listeners at browser startup. (This may indicate something has gone wrong;
+    such event pages will never get started.)
+  </summary>
+</histogram>
+
 <histogram name="Extensions.EventPageActiveTime" units="milliseconds">
   <obsolete>
     Replaced by Extensions.EventPageActiveTime2.
