@@ -23,10 +23,13 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/StyleElement.h"
+#include "core/events/EventSender.h"
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+typedef EventSender<SVGStyleElement> SVGStyleEventSender;
 
 class SVGStyleElement final : public SVGElement
                             , public StyleElement {
@@ -50,6 +53,8 @@ public:
     virtual String title() const override;
     void setTitle(const AtomicString&);
 
+    void dispatchPendingEvent(SVGStyleEventSender*);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -67,6 +72,7 @@ private:
     virtual bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
     virtual void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
     virtual Timer<SVGElement>* svgLoadEventTimer() override { return &m_svgLoadEventTimer; }
+    void sendSVGErrorEventAsynchronously();
 
     Timer<SVGElement> m_svgLoadEventTimer;
 };

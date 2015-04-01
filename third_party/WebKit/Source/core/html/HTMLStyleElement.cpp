@@ -143,9 +143,10 @@ void HTMLStyleElement::dispatchPendingEvent(StyleEventSender* eventSender)
 
 void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus errorStatus)
 {
-    if (m_firedLoad)
+    bool isLoadEvent = errorStatus == NoErrorLoadingSubresource;
+    if (m_firedLoad && isLoadEvent)
         return;
-    m_loadedSheet = (errorStatus == NoErrorLoadingSubresource);
+    m_loadedSheet = isLoadEvent;
     styleLoadEventSender().dispatchEventSoon(this);
     m_firedLoad = true;
 }

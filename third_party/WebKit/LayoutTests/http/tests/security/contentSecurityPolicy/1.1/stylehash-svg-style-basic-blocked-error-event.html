@@ -1,35 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Style element has error on bad style hash</title>
+    <title>SVG Style element has error on bad style hash</title>
     <meta http-equiv="Content-Security-Policy" content="style-src 'sha1-pfeR5wMA6np45oqDTP6Pj3tLpJo='">
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
     <script>
-        function styleError() {
-            var color = window.getComputedStyle(document.querySelector('p')).color;
-            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green.");
-            done();
-        }
-    </script>
-    <style>p { color: green; }</style>
-    <style onerror="styleError();">p { color: red; }</style>
-</head>
-    <script>
         function verifyStep1() {
             var color = window.getComputedStyle(document.querySelector('p')).color;
-            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green after initial style.");
+            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green after initial svg style.");
         }
 
         function setupStep2() {
-            var sty = document.createElement("style");
+            var e = document.getElementById("svgelement");
+            var sty = document.createElementNS("http://www.w3.org/2000/svg", "style");
             sty.innerHTML = "p { color: red; }";
             sty.onerror = styleError;
-            document.body.appendChild(sty);
+            e.appendChild(sty);
         }
         function verifyStep2() {
             var color = window.getComputedStyle(document.querySelector('p')).color;
-            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green after inserted style.");
+            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green after inserted svg style.");
         }
 
         function setupStep3() {
@@ -38,7 +29,7 @@
         }
         function verifyStep3() {
             var color = window.getComputedStyle(document.querySelector('p')).color;
-            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green after changing style.");
+            assert_equals(color, "rgb(0, 128, 0)", "The color of the paragraph is still green after changing svg style.");
             test.done();
         }
 
@@ -58,8 +49,10 @@
     </script>
 </head>
 <body>
-    <style>p { color: green; }</style>
-    <style id="style1" onerror="styleError();">p { color: red; }</style>
-    <p>A test paragraph</p>
+    <svg id="svgelement" xmlns="http://www.w3.org/2000/svg" width="800" height="100">
+        <style>p { color: green; }</style>
+        <style id="style1" onerror="styleError();">p { color: red; }</style>
+        <p>A test paragraph</p>
+    </svg>
 </body>
 </html>
