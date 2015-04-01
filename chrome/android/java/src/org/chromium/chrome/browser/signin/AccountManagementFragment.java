@@ -286,10 +286,13 @@ public class AccountManagementFragment extends PreferenceFragment
                 public boolean onPreferenceClick(Preference preference) {
                     if (!PrefServiceBridge.getInstance().isIncognitoModeEnabled()) return false;
 
+                    AccountManagementFragmentDelegate delegate = getDelegate();
+                    // The delegate is set as part of deferred startup, so it might be null.
+                    if (delegate == null) return false;
                     AccountManagementScreenHelper.logEvent(
                             ProfileAccountManagementMetrics.GO_INCOGNITO,
                             mGaiaServiceType);
-                    getDelegate().openIncognitoTab(getActivity());
+                    delegate.openIncognitoTab(getActivity());
                     if (isAdded()) getActivity().finish();
 
                     return true;
@@ -391,7 +394,10 @@ public class AccountManagementFragment extends PreferenceFragment
                                 mGaiaServiceType);
 
                         if (AndroidSyncSettings.get(activity).isMasterSyncEnabled()) {
-                            getDelegate().openSyncCustomizationFragment(activity, account);
+                            AccountManagementFragmentDelegate delegate = getDelegate();
+                            // The delegate is set as part of deferred startup, so it might be null.
+                            if (delegate == null) return false;
+                            delegate.openSyncCustomizationFragment(activity, account);
                         } else {
                             Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
                             intent.putExtra("account_types", new String[]{"com.google"});
@@ -434,7 +440,10 @@ public class AccountManagementFragment extends PreferenceFragment
         // we do not hit a native crash.
         if (!ChromeSigninController.get(getActivity()).isSignedIn()) return;
 
-        getDelegate().openSignOutDialog(getActivity());
+        AccountManagementFragmentDelegate delegate = getDelegate();
+        // The delegate is set as part of deferred startup, so it might be null.
+        if (delegate == null) return;
+        delegate.openSignOutDialog(getActivity());
         AccountManagementScreenHelper.logEvent(
                 ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
                 mGaiaServiceType);
