@@ -558,23 +558,6 @@ crbug.com/443242 http/tests/w3c/webperf/submission/Google/HighResolutionTime/wor
 crbug.com/465864 fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
 crbug.com/465864 fast/js/mozilla/strict/15.3.5.1.html [ Pass Failure ]
 crbug.com/465864 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ Pass Failure ]
-crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-186.html [ Pass Failure ]
-crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-187.html [ Pass Failure ]
-crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-191.html [ Pass Failure ]
-crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-194.html [ Pass Failure ]
-crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-201.html [ Pass Failure ]
-crbug.com/465864 ietestcenter/Javascript/15.3.3.2-1.html [ Pass Failure ]
-
-crbug.com/472267 ietestcenter/Javascript/15.2.3.2-1.html [ Pass Failure ]
-
-crbug.com/472189 ietestcenter/Javascript/15.2.3.3-1.html [ Pass Failure ]
-
-crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-12.html [ Pass Failure ]
-crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-13.html [ Pass Failure ]
-crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-14.html [ Pass Failure ]
-crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-15.html [ Pass Failure ]
-crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-16.html [ Pass Failure ]
-crbug.com/472297 ietestcenter/Javascript/15.2.3.2-2-17.html [ Pass Failure ]
 
 crbug.com/316148 crbug.com/465864 http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Failure Crash ]
 crbug.com/398295 [ Debug ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
@@ -1545,12 +1528,6 @@ crbug.com/116710 compositing/perpendicular-layer-sorting.html [ NeedsManualRebas
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsManualRebaseline ]
-
-# Updating Javascript spec.
-crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
-crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebaseline ]
-crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ NeedsManualRebaseline ]
-crbug.com/422199 ietestcenter/Javascript/15.2.3.4-1.html [ NeedsManualRebaseline ]
 
 crbug.com/435867 [ Linux Win ] webaudio/scriptprocessornode-detached-no-crash.html [ Pass Crash ]
 

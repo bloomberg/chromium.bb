@@ -166,7 +166,6 @@ class SharderTests(unittest.TestCase):
         "fast/css/display-none-inline-style-change-crash.html",
         "http/tests/xmlhttprequest/supported-xml-content-types.html",
         "dom/html/level2/html/HTMLAnchorElement03.html",
-        "ietestcenter/Javascript/11.1.5_4-4-c-1.html",
         "dom/html/level2/html/HTMLAnchorElement06.html",
         "perf/object-keys.html",
         "virtual/threaded/dir/test.html",
@@ -210,8 +209,7 @@ class SharderTests(unittest.TestCase):
              ('animations', ['animations/keyframes.html']),
              ('dom/html/level2/html', ['dom/html/level2/html/HTMLAnchorElement03.html',
                                       'dom/html/level2/html/HTMLAnchorElement06.html']),
-             ('fast/css', ['fast/css/display-none-inline-style-change-crash.html']),
-             ('ietestcenter/Javascript', ['ietestcenter/Javascript/11.1.5_4-4-c-1.html'])])
+             ('fast/css', ['fast/css/display-none-inline-style-change-crash.html'])])
 
     def test_shard_every_file(self):
         locked, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2, run_singly=False)
@@ -229,7 +227,6 @@ class SharderTests(unittest.TestCase):
              ('.', ['animations/keyframes.html']),
              ('.', ['fast/css/display-none-inline-style-change-crash.html']),
              ('.', ['dom/html/level2/html/HTMLAnchorElement03.html']),
-             ('.', ['ietestcenter/Javascript/11.1.5_4-4-c-1.html']),
              ('.', ['dom/html/level2/html/HTMLAnchorElement06.html'])])
 
     def test_shard_in_two(self):
@@ -246,7 +243,6 @@ class SharderTests(unittest.TestCase):
               ['animations/keyframes.html',
                'fast/css/display-none-inline-style-change-crash.html',
                'dom/html/level2/html/HTMLAnchorElement03.html',
-               'ietestcenter/Javascript/11.1.5_4-4-c-1.html',
                'dom/html/level2/html/HTMLAnchorElement06.html',
                'virtual/threaded/dir/test.html',
                'virtual/threaded/fast/foo/test.html'])])
