@@ -691,6 +691,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.NumberOfVisibleWindowsInPrimaryDisplay" units="Windows">
+  <owner>tdanderson@google.com</owner>
+  <owner>bruthig@google.com</owner>
+  <summary>
+    An upper bound on the number of windows visible to the user on the primary
+    display. Determined by processing the windows in increasing z-order and
+    counting all non-minimized windows until a maximized or fullscreen window is
+    processed. This metric is logged periodically every 30 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ShelfAlignmentOverTime" enum="ShelfAlignmentValue">
   <owner>kuscher@google.com</owner>
   <summary>
