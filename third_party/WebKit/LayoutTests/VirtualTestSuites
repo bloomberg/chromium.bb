@@ -229,6 +229,108 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/box-decoration-break",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/box-sizing",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/compact",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/compositorworker",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/constructors",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/cpu",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/css3-text",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/css-generated-content",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/css-intrinsic-dimensions",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/doctypes",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/domurl",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/eventsource",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/files",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/filesystem",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/flexbox",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/hidpi",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/history",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "paint",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
@@ -330,6 +432,36 @@
   {
     "prefix": "slimmingpaint",
     "base": "fast/cookies",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/alignment",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/animation",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/autoresize",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/beacon",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/body-propagation",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
   },
