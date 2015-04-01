@@ -11,7 +11,6 @@ import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.SparseArray;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -23,10 +22,12 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
+import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -99,10 +100,10 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         runJavaScriptCodeInCurrentTab("showNotification(\"" + title + "\", " + options + ");");
         assertTrue(waitForNotificationManagerMutation());
 
-        SparseArray<Notification> notifications = mMockNotificationManager.getNotifications();
+        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
         assertEquals(1, notifications.size());
 
-        return notifications.valueAt(0);
+        return notifications.get(0).notification;
     }
 
     /**
@@ -272,8 +273,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         // event. This will eventually bubble up to a call to cancel() in the NotificationManager.
         assertTrue(waitForNotificationManagerMutation());
 
-        SparseArray<Notification> notifications = mMockNotificationManager.getNotifications();
-        assertEquals(0, notifications.size());
+        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
+        assertTrue(notifications.isEmpty());
     }
 
     /**
@@ -286,18 +287,83 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     public void testNotificationTagReplacement() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
-        Notification notification = showAndGetNotification("MyNotification", "{tag: 'myTag'}");
+        runJavaScriptCodeInCurrentTab("showNotification('MyNotification', {tag: 'myTag'});");
+        assertTrue(waitForNotificationManagerMutation());
+        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
+        String tag = notifications.get(0).tag;
+        int id = notifications.get(0).id;
 
-        // Show the second notification with the same tag. We can't use showAndGetNotification for
-        // this purpose since a second notification would be shown.
         runJavaScriptCodeInCurrentTab("showNotification('SecondNotification', {tag: 'myTag'});");
         assertTrue(waitForNotificationManagerMutation());
 
         // Verify that the notification was successfully replaced.
-        SparseArray<Notification> notifications = mMockNotificationManager.getNotifications();
+        notifications = mMockNotificationManager.getNotifications();
         assertEquals(1, notifications.size());
         assertEquals("SecondNotification",
-                notifications.valueAt(0).extras.getString(Notification.EXTRA_TITLE));
+                notifications.get(0).notification.extras.getString(Notification.EXTRA_TITLE));
+
+        // Verify that for replaced notifications their tag was the same.
+        assertEquals(tag, notifications.get(0).tag);
+
+        // Verify that as always, the same integer is used, also for replaced notifications.
+        assertEquals(id, notifications.get(0).id);
+        assertEquals(NotificationUIManager.PLATFORM_ID, notifications.get(0).id);
+    }
+
+    /**
+     * Verifies that multiple notifications without a tag can be opened and closed without
+     * affecting eachother.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testShowAndCloseMultipleNotifications() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        // Open the first notification and verify it is displayed.
+        runJavaScriptCodeInCurrentTab("showNotification('One');");
+        assertTrue(waitForNotificationManagerMutation());
+        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
+        assertEquals(1, notifications.size());
+        Notification notificationOne = notifications.get(0).notification;
+        assertEquals("One", notificationOne.extras.getString(Notification.EXTRA_TITLE));
+
+        // Open the second notification and verify it is displayed.
+        runJavaScriptCodeInCurrentTab("showNotification('Two');");
+        assertTrue(waitForNotificationManagerMutation());
+        notifications = mMockNotificationManager.getNotifications();
+        assertEquals(2, notifications.size());
+        Notification notificationTwo = notifications.get(1).notification;
+        assertEquals("Two", notificationTwo.extras.getString(Notification.EXTRA_TITLE));
+
+        // The same integer id is always used as it is not needed for uniqueness, we rely on the tag
+        // for uniqueness when the replacement behavior is not needed.
+        assertEquals(NotificationUIManager.PLATFORM_ID, notifications.get(0).id);
+        assertEquals(NotificationUIManager.PLATFORM_ID, notifications.get(1).id);
+
+        // As these notifications were not meant to replace eachother, they must not have the same
+        // tag internally.
+        assertFalse(notifications.get(0).tag.equals(notifications.get(1).tag));
+
+        // Verify that the PendingIntent for content and delete is different for each notification.
+        assertFalse(notificationOne.contentIntent.equals(notificationTwo.contentIntent));
+        assertFalse(notificationOne.deleteIntent.equals(notificationTwo.deleteIntent));
+
+        // Close the first notification and verify that only the second remains.
+        // Sending the content intent resembles touching the notification. In response tho this the
+        // notificationclick event is fired. The test service worker will close the notification
+        // upon receiving the event.
+        notificationOne.contentIntent.send();
+        assertTrue(waitForNotificationManagerMutation());
+        notifications = mMockNotificationManager.getNotifications();
+        assertEquals(1, notifications.size());
+        assertEquals("Two",
+                notifications.get(0).notification.extras.getString(Notification.EXTRA_TITLE));
+
+        // Close the last notification and verify that none remain.
+        notifications.get(0).notification.contentIntent.send();
+        assertTrue(waitForNotificationManagerMutation());
+        notifications = mMockNotificationManager.getNotifications();
+        assertTrue(notifications.isEmpty());
     }
 
     /**

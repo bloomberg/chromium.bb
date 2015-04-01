@@ -5,39 +5,57 @@
 package org.chromium.chrome.test.util.browser.notifications;
 
 import android.app.Notification;
-import android.util.SparseArray;
 
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Mocked implementation of the NotificationManagerProxy. Imitates behavior of the Android
  * notification manager, and provides access to the displayed notifications for tests.
  */
 public class MockNotificationManagerProxy implements NotificationManagerProxy {
-    private final SparseArray<Notification> mNotifications;
+    private static final String KEY_SEPARATOR = ":";
 
-    // Mapping between a textual tag and the index of the associated notification in
-    // the |mNotifications| sparse array.
-    private final Map<String, Integer> mTags;
+    /**
+     * Holds a notification and the arguments passed to #notify and #cancel.
+     */
+    public static class NotificationEntry {
+        public final Notification notification;
+        public final String tag;
+        public final int id;
+
+        NotificationEntry(Notification notification, String tag, int id) {
+            this.notification = notification;
+            this.tag = tag;
+            this.id = id;
+        }
+    }
+
+    // Maps (id:tag) to a NotificationEntry.
+    private final Map<String, NotificationEntry> mNotifications;
 
     private int mMutationCount;
 
     public MockNotificationManagerProxy() {
-        mNotifications = new SparseArray<>();
-        mTags = new HashMap<>();
+        mNotifications = new LinkedHashMap<>();
         mMutationCount = 0;
     }
 
     /**
-     * Returns the notifications currently managed by the mocked notification manager.
+     * Returns the notifications currently managed by the mocked notification manager, in the order
+     * in which they were shown, together with their associated tag and id. The list is not updated
+     * when the internal data structure changes.
      *
-     * @return Sparse array of the managed notifications.
+     * @return List of the managed notifications.
      */
-    public SparseArray<Notification> getNotifications() {
-        return mNotifications;
+    public List<NotificationEntry> getNotifications() {
+        return new ArrayList<NotificationEntry>(mNotifications.values());
     }
 
     /**
@@ -56,59 +74,41 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
 
     @Override
     public void cancel(int id) {
-        if (mNotifications.indexOfKey(id) < 0) {
-            throw new RuntimeException("Invalid notification id supplied.");
-        }
-
-        mNotifications.delete(id);
-        mMutationCount++;
+        cancel(null /* tag */, id);
     }
 
     @Override
-    public void cancel(String tag, int id) {
-        if (!mTags.containsKey(tag)) {
-            throw new RuntimeException("Invalid notification tag supplied.");
+    public void cancel(@Nullable String tag, int id) {
+        String key = makeKey(id, tag);
+
+        if (!mNotifications.containsKey(key)) {
+            throw new RuntimeException("Invalid pair of notification tag and id supplied.");
         }
 
-        int notificationId = mTags.get(tag);
-        if (notificationId != id) {
-            throw new RuntimeException("Mismatch in notification ids for the given tag.");
-        }
-
-        mTags.remove(tag);
-
-        assert mNotifications.indexOfKey(id) >= 0;
-        mNotifications.delete(id);
-
+        mNotifications.remove(key);
         mMutationCount++;
     }
 
     @Override
     public void cancelAll() {
         mNotifications.clear();
-        mTags.clear();
-
         mMutationCount++;
     }
 
     @Override
     public void notify(int id, Notification notification) {
-        mNotifications.put(id, notification);
-        mMutationCount++;
+        notify(null /* tag */, id, notification);
     }
 
     @Override
-    public void notify(String tag, int id, Notification notification) {
-        if (mTags.containsKey(tag)) {
-            int notificationId = mTags.get(tag);
-
-            assert mNotifications.indexOfKey(notificationId) >= 0;
-            mNotifications.delete(notificationId);
-        }
-
-        mNotifications.put(id, notification);
-        mTags.put(tag, id);
-
+    public void notify(@Nullable String tag, int id, Notification notification) {
+        mNotifications.put(makeKey(id, tag), new NotificationEntry(notification, tag, id));
         mMutationCount++;
+    }
+
+    private static String makeKey(int id, @Nullable String tag) {
+        String key = Integer.toString(id);
+        if (tag != null) key += KEY_SEPARATOR + tag;
+        return key;
     }
 }
