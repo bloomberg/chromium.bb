@@ -950,6 +950,21 @@ bool LayoutObject::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
     return false;
 }
 
+FloatRect LayoutObject::absoluteBoundingBoxFloatRect() const
+{
+    Vector<FloatQuad> quads;
+    absoluteQuads(quads);
+
+    size_t n = quads.size();
+    if (n == 0)
+        return FloatRect();
+
+    FloatRect result = quads[0].boundingBox();
+    for (size_t i = 1; i < n; ++i)
+        result.unite(quads[i].boundingBox());
+    return result;
+}
+
 IntRect LayoutObject::absoluteBoundingBoxRect() const
 {
     Vector<FloatQuad> quads;

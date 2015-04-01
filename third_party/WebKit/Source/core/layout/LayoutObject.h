@@ -795,6 +795,10 @@ public:
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
+    FloatRect absoluteBoundingBoxFloatRect() const;
+    // This returns an IntRect enclosing this object. If this object has an
+    // integral size and the position has fractional values, the resultant
+    // IntRect can be larger than the integral size.
     IntRect absoluteBoundingBoxRect() const;
     // FIXME: This function should go away eventually
     IntRect absoluteBoundingBoxRectIgnoringTransforms() const;

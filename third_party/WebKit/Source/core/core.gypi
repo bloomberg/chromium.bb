@@ -3784,6 +3784,7 @@
             'html/track/vtt/VTTScannerTest.cpp',
             'layout/LayoutBlockTest.cpp',
             'layout/LayoutInlineTest.cpp',
+            'layout/LayoutMenuListTest.cpp',
             'layout/LayoutMultiColumnFlowThreadTest.cpp',
             'layout/LayoutObjectTest.cpp',
             'layout/LayoutPartTest.cpp',

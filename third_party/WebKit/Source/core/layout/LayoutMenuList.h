@@ -133,6 +133,9 @@ private:
 
     RefPtrWillBePersistent<PopupMenu> m_popup;
     bool m_popupIsVisible;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class LayoutMenuListTest_ElementRectRelativeToViewport_Test;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, isMenuList());
