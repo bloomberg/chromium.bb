@@ -733,7 +733,15 @@ bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
-  return needs_animate_ || needs_redraw_;
+  // TODO(mithro): Remove background animation ticking. crbug.com/371747
+  if (needs_animate_)
+    return true;
+
+  // Only background tick for animations - not draws, which will never happen.
+  if (!visible_)
+    return false;
+
+  return needs_redraw_;
 }
 
 // These are cases where we are very likely to draw soon, but might not

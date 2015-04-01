@@ -104,9 +104,17 @@ class StateMachine : public SchedulerStateMachine {
     return output_surface_state_;
   }
 
+  void SetNeedsCommitForTest(bool needs_commit) {
+    needs_commit_ = needs_commit;
+  }
+
   bool NeedsCommit() const { return needs_commit_; }
 
-  void SetNeedsRedraw(bool b) { needs_redraw_ = b; }
+  void SetNeedsAnimateForTest(bool needs_animate) {
+    needs_animate_ = needs_animate;
+  }
+
+  void SetNeedsRedraw(bool needs_redraw) { needs_redraw_ = needs_redraw; }
 
   void SetNeedsForcedRedrawForTimeout(bool b) {
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
@@ -135,6 +143,56 @@ class StateMachine : public SchedulerStateMachine {
   using SchedulerStateMachine::ProactiveBeginFrameWanted;
   using SchedulerStateMachine::UpdateStateOnCommit;
 };
+
+TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION)
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
+
+  // Don't request BeginFrames if we are idle.
+  state.SetVisible(true);
+  state.SetNeedsRedraw(false);
+  state.SetNeedsAnimateForTest(false);
+  EXPECT_FALSE(state.BeginFrameNeeded());
+
+  // Request BeginFrames if we are ready to draw.
+  state.SetVisible(true);
+  state.SetNeedsRedraw(true);
+  state.SetNeedsAnimateForTest(false);
+  EXPECT_TRUE(state.BeginFrameNeeded());
+
+  // Don't background tick for needs_redraw.
+  state.SetVisible(false);
+  state.SetNeedsRedraw(true);
+  state.SetNeedsAnimateForTest(false);
+  EXPECT_FALSE(state.BeginFrameNeeded());
+
+  // Background tick for animations.
+  state.SetVisible(false);
+  state.SetNeedsRedraw(false);
+  state.SetNeedsAnimateForTest(true);
+  EXPECT_TRUE(state.BeginFrameNeeded());
+
+  // Proactively request BeginFrames when commit is pending.
+  state.SetVisible(true);
+  state.SetNeedsRedraw(false);
+  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsCommitForTest(true);
+  EXPECT_TRUE(state.BeginFrameNeeded());
+
+  // Don't request BeginFrames when commit is pending if
+  // we are currently deferring commits.
+  state.SetVisible(true);
+  state.SetNeedsRedraw(false);
+  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsCommitForTest(true);
+  state.SetDeferCommits(true);
+  EXPECT_FALSE(state.BeginFrameNeeded());
+}
 
 TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
   SchedulerSettings default_scheduler_settings;
