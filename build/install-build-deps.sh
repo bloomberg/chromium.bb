@@ -360,7 +360,7 @@ if test "$do_inst_lib32" = "1" || test "$do_inst_nacl" = "1"; then
     sudo dpkg --add-architecture i386
   fi
 fi
-#sudo apt-get update
+sudo apt-get update
 
 # We initially run "apt-get" with the --reinstall option and parse its output.
 # This way, we can find all the packages that need to be newly installed
