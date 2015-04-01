@@ -20,9 +20,6 @@ namespace favicon {
 // e.g. Chrome.
 class FaviconClient : public KeyedService {
  public:
-  // Returns true if the specified URL is bookmarked.
-  virtual bool IsBookmarked(const GURL& url) = 0;
-
   // Returns true if the specified URL is a native application page URL.
   // If this returns true the favicon for the page must be fetched using
   // GetFaviconForNativeApplicationURL().

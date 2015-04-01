@@ -5,7 +5,6 @@
 #include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +14,6 @@ ChromeFaviconClientFactory::ChromeFaviconClientFactory()
     : BrowserContextKeyedServiceFactory(
           "ChromeFaviconClient",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(BookmarkModelFactory::GetInstance());
 }
 
 ChromeFaviconClientFactory::~ChromeFaviconClientFactory() {
@@ -35,9 +33,7 @@ ChromeFaviconClientFactory* ChromeFaviconClientFactory::GetInstance() {
 
 KeyedService* ChromeFaviconClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new ChromeFaviconClient(profile,
-                                 BookmarkModelFactory::GetForProfile(profile));
+  return new ChromeFaviconClient(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* ChromeFaviconClientFactory::GetBrowserContextToUse(

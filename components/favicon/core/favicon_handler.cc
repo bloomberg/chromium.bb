@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
-#include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
@@ -199,7 +198,6 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 ////////////////////////////////////////////////////////////////////////////////
 
 FaviconHandler::FaviconHandler(FaviconService* service,
-                               FaviconClient* client,
                                FaviconDriver* driver,
                                Type handler_type,
                                bool download_largest_icon)
@@ -209,7 +207,6 @@ FaviconHandler::FaviconHandler(FaviconService* service,
       icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
       download_largest_icon_(download_largest_icon),
       service_(service),
-      client_(client),
       driver_(driver) {
   DCHECK(driver_);
 }
@@ -524,8 +521,8 @@ bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
   if (!driver_->IsOffTheRecord())
     return true;
 
-  // Otherwise store the favicon if the page is bookmarked.
-  return client_->IsBookmarked(url);
+  // Always save favicon if the page is bookmarked.
+  return driver_->IsBookmarked(url);
 }
 
 int FaviconHandler::GetMaximalIconSize(favicon_base::IconType icon_type) {

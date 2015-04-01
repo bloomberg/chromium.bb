@@ -18,13 +18,11 @@ class BookmarkModel;
 // ChromeFaviconClient implements the the FaviconClient interface.
 class ChromeFaviconClient : public favicon::FaviconClient {
  public:
-  ChromeFaviconClient(Profile* profile,
-                      bookmarks::BookmarkModel* bookmark_model);
+  explicit ChromeFaviconClient(Profile* profile);
   ~ChromeFaviconClient() override;
 
  private:
   // favicon::FaviconClient implementation:
-  bool IsBookmarked(const GURL& url) override;
   bool IsNativeApplicationURL(const GURL& url) override;
   base::CancelableTaskTracker::TaskId GetFaviconForNativeApplicationURL(
       const GURL& url,
@@ -33,7 +31,6 @@ class ChromeFaviconClient : public favicon::FaviconClient {
       base::CancelableTaskTracker* tracker) override;
 
   Profile* profile_;
-  bookmarks::BookmarkModel* bookmark_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFaviconClient);
 };

@@ -28,7 +28,6 @@ struct FaviconStatus;
 }
 
 namespace favicon {
-class FaviconClient;
 class FaviconDriverObserver;
 class FaviconHandler;
 }
@@ -81,6 +80,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // favicon::FaviconDriver methods.
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
+  bool IsBookmarked(const GURL& url) override;
   const gfx::Image GetActiveFaviconImage() override;
   const GURL GetActiveFaviconURL() override;
   bool GetActiveFaviconValidity() override;
@@ -125,8 +125,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
   content::FaviconStatus& GetFaviconStatus();
 
   Profile* profile_;
-
-  favicon::FaviconClient* client_;
 
   std::vector<content::FaviconURL> favicon_urls_;
 

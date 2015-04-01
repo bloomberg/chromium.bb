@@ -5,17 +5,16 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/favicon/chrome_favicon_client.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/content/favicon_url_util.h"
-#include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
@@ -62,20 +61,17 @@ const bool kDownloadLargestIcon = false;
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
-  client_ = ChromeFaviconClientFactory::GetForProfile(profile_);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   favicon_handler_.reset(new favicon::FaviconHandler(
-      service, client_, this, favicon::FaviconHandler::FAVICON,
-      kDownloadLargestIcon));
+      service, this, favicon::FaviconHandler::FAVICON, kDownloadLargestIcon));
   if (chrome::kEnableTouchIcon) {
     touch_icon_handler_.reset(new favicon::FaviconHandler(
-        service, client_, this, favicon::FaviconHandler::TOUCH,
-        kDownloadLargestIcon));
+        service, this, favicon::FaviconHandler::TOUCH, kDownloadLargestIcon));
   }
   if (IsIconNTPEnabled()) {
     large_icon_handler_.reset(new favicon::FaviconHandler(
-        service, client_, this, favicon::FaviconHandler::LARGE, true));
+        service, this, favicon::FaviconHandler::LARGE, true));
   }
 }
 
@@ -192,6 +188,13 @@ int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
 bool FaviconTabHelper::IsOffTheRecord() {
   DCHECK(web_contents());
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
+
+bool FaviconTabHelper::IsBookmarked(const GURL& url) {
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfileIfExists(
+          profile_->GetOriginalProfile());
+  return bookmark_model && bookmark_model->IsBookmarked(url);
 }
 
 const gfx::Image FaviconTabHelper::GetActiveFaviconImage() {

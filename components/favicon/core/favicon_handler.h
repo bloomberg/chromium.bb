@@ -29,7 +29,6 @@ class RefCountedMemory;
 
 namespace favicon {
 
-class FaviconClient;
 class FaviconDriver;
 class FaviconService;
 
@@ -84,7 +83,6 @@ class FaviconHandler {
   enum Type { FAVICON, TOUCH, LARGE };
 
   FaviconHandler(FaviconService* service,
-                 FaviconClient* client,
                  FaviconDriver* driver,
                  Type handler_type,
                  bool download_largest_icon);
@@ -302,11 +300,8 @@ class FaviconHandler {
   // testing.
   FaviconService* service_;
 
-  // The client which implements embedder-specific Favicon operations.
-  FaviconClient* client_;  // weak
-
-  // This handler's driver.
-  FaviconDriver* driver_;  // weak
+  // This handler's driver, owns this object.
+  FaviconDriver* driver_;
 
   // Best image we've seen so far.  As images are downloaded from the page they
   // are stored here. When there is an exact match, or no more images are

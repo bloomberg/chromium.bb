@@ -24,17 +24,10 @@ void RunFaviconCallbackIfNotCanceled(
 
 }  // namespace
 
-ChromeFaviconClient::ChromeFaviconClient(
-    Profile* profile,
-    bookmarks::BookmarkModel* bookmark_model)
-    : profile_(profile), bookmark_model_(bookmark_model) {
+ChromeFaviconClient::ChromeFaviconClient(Profile* profile) : profile_(profile) {
 }
 
 ChromeFaviconClient::~ChromeFaviconClient() {
-}
-
-bool ChromeFaviconClient::IsBookmarked(const GURL& url) {
-  return bookmark_model_ && bookmark_model_->IsBookmarked(url);
 }
 
 bool ChromeFaviconClient::IsNativeApplicationURL(const GURL& url) {

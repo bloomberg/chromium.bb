@@ -33,6 +33,9 @@ class FaviconDriver {
   // Returns whether the user is operating in an off-the-record context.
   virtual bool IsOffTheRecord() = 0;
 
+  // Returns whether |url| is bookmarked.
+  virtual bool IsBookmarked(const GURL& url) = 0;
+
   // Returns the bitmap of the current page's favicon. Requires GetActiveURL()
   // to be valid.
   virtual const gfx::Image GetActiveFaviconImage() = 0;
