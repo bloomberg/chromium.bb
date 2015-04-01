@@ -22299,6 +22299,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DarkResumeScanNumRetries">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of times a dark resume scan is
+    retried in a single dark resume.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.DarkResumeScanRetryResult"
+    enum="DarkResumeScanRetryResult">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks whether dark resume scan retries led to
+    the system suspending from dark resume in a connected state. This metric is
+    only recorded in dark resumes when at least one dark resume scan retry was
+    launched.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.DeviceConnectionStatus" enum="ConnectionStatus">
   <owner>zqiu@chromium.org</owner>
   <summary>
@@ -46920,6 +46939,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="First Run"/>
   <int value="1" label="Day Elapsed"/>
   <int value="2" label="Clock Changed"/>
+</enum>
+
+<enum name="DarkResumeScanRetryResult" type="int">
+  <int value="0" label="Not Connected"/>
+  <int value="1" label="Connected"/>
 </enum>
 
 <enum name="DarkResumeUnmatchedScanResultReceived" type="int">
