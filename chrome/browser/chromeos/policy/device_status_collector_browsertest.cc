@@ -44,6 +44,10 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "policy/proto/device_management_backend.pb.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/mount_points.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -61,6 +65,7 @@ namespace {
 const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
 const char kKioskAccountId[] = "kiosk_user@localhost";
 const char kKioskAppId[] = "kiosk_app_id";
+const char kExternalMountPoint[] = "/a/b/c";
 
 scoped_ptr<content::Geoposition> mock_position_to_return_next;
 
@@ -261,6 +266,19 @@ class DeviceStatusCollectorTest : public testing::Test {
     EXPECT_CALL(*mock_disk_mount_manager, mount_points())
         .WillRepeatedly(ReturnRef(mount_point_map_));
 
+    // Setup a fake file system that should show up in mount points.
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        "c", storage::kFileSystemTypeNativeLocal,
+        storage::FileSystemMountOption(),
+        base::FilePath(FILE_PATH_LITERAL(kExternalMountPoint)));
+
+    // Just verify that we are properly setting the mount points.
+    std::vector<storage::MountPoints::MountPointInfo> external_mount_points;
+    storage::ExternalMountPoints::GetSystemInstance()->AddMountPointInfosTo(
+        &external_mount_points);
+    EXPECT_FALSE(external_mount_points.empty());
+
     // DiskMountManager takes ownership of the MockDiskMountManager.
     DiskMountManager::InitializeForTesting(mock_disk_mount_manager.release());
     TestingDeviceStatusCollector::RegisterPrefs(prefs_.registry());
@@ -289,6 +307,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     // Finish pending tasks.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     message_loop_.RunUntilIdle();
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     DiskMountManager::Shutdown();
 
     // Restore the real DeviceSettingsProvider.
@@ -795,14 +814,17 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   for (const auto& mount_info :
            DiskMountManager::GetInstance()->mount_points()) {
     expected_mount_points.push_back(mount_info.first);
+  }
+  expected_mount_points.push_back(kExternalMountPoint);
+
+  for (const std::string& mount_point : expected_mount_points) {
     em::VolumeInfo info;
-    info.set_volume_id(mount_info.first);
+    info.set_volume_id(mount_point);
     // Just put unique numbers in for storage_total/free.
     info.set_storage_total(size++);
     info.set_storage_free(size++);
     expected_volume_info.push_back(info);
   }
-
   EXPECT_FALSE(expected_volume_info.empty());
 
   RestartStatusCollector(base::Bind(&GetFakeVolumeInfo, expected_volume_info));

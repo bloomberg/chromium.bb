@@ -47,6 +47,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "policy/proto/device_management_backend.pb.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using base::Time;
@@ -440,7 +441,14 @@ void DeviceStatusCollector::SampleHardwareStatus() {
     return;
 
   // Create list of mounted disk volumes to query status.
+  std::vector<storage::MountPoints::MountPointInfo> external_mount_points;
+  storage::ExternalMountPoints::GetSystemInstance()->AddMountPointInfosTo(
+      &external_mount_points);
+
   std::vector<std::string> mount_points;
+  for (const auto& info : external_mount_points)
+    mount_points.push_back(info.path.value());
+
   for (const auto& mount_info :
            chromeos::disks::DiskMountManager::GetInstance()->mount_points()) {
     // Extract a list of mount points to populate.
