@@ -177,11 +177,7 @@ ListPicker.prototype._fixWindowSize = function() {
     var maxHeight = this._selectElement.offsetHeight;
     this._selectElement.style.height = "0";
     var heightOutsideOfContent = this._selectElement.offsetHeight - this._selectElement.clientHeight;
-    var desiredWindowHeight = this._selectElement.scrollHeight + heightOutsideOfContent;
-    this._selectElement.style.height = desiredWindowHeight + "px";
-    // scrollHeight returns floored value so we needed this check.
-    if (this._hasVerticalScrollbar())
-        desiredWindowHeight += 1;
+    var desiredWindowHeight = Math.round(this._calculateScrollHeight() + heightOutsideOfContent);
     if (desiredWindowHeight > maxHeight)
         desiredWindowHeight = maxHeight;
     var desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width, this._selectElement.offsetWidth);
@@ -192,8 +188,20 @@ ListPicker.prototype._fixWindowSize = function() {
     setWindowRect(windowRect);
 };
 
-ListPicker.prototype._hasVerticalScrollbar = function() {
-    return this._selectElement.scrollWidth > this._selectElement.clientWidth;
+ListPicker.prototype._calculateScrollHeight = function() {
+    // Element.scrollHeight returns an integer value but this calculate the
+    // actual fractional value.
+    var top = Infinity;
+    var bottom = -Infinity;
+    for (var i = 0; i < this._selectElement.children.length; i++) {
+        var rect = this._selectElement.children[i].getBoundingClientRect();
+        // Skip hidden elements.
+        if (rect.width === 0 && rect.height === 0)
+            continue;
+        top = Math.min(top, rect.top);
+        bottom = Math.max(bottom, rect.bottom);
+    }
+    return Math.max(bottom - top, 0);
 };
 
 ListPicker.prototype._listItemCount = function() {
