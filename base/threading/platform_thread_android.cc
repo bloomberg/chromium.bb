@@ -44,8 +44,8 @@ const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
     {kThreadPriority_Display, -6},
 };
 
-bool HandleSetThreadPriorityForPlatform(PlatformThreadHandle handle,
-                                        ThreadPriority priority) {
+bool SetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                  ThreadPriority priority) {
   // On Android, we set the Audio priority through JNI as Audio priority
   // will also allow the process to run while it is backgrounded.
   if (priority == kThreadPriority_RealtimeAudio) {
@@ -53,6 +53,12 @@ bool HandleSetThreadPriorityForPlatform(PlatformThreadHandle handle,
     Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
     return true;
   }
+  return false;
+}
+
+bool GetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                  ThreadPriority* priority) {
+  NOTIMPLEMENTED();
   return false;
 }
 

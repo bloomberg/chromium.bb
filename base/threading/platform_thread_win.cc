@@ -126,18 +126,17 @@ bool CreateThreadInternal(size_t stack_size,
 
 // static
 PlatformThreadId PlatformThread::CurrentId() {
-  return GetCurrentThreadId();
+  return ::GetCurrentThreadId();
 }
 
 // static
 PlatformThreadRef PlatformThread::CurrentRef() {
-  return PlatformThreadRef(GetCurrentThreadId());
+  return PlatformThreadRef(::GetCurrentThreadId());
 }
 
 // static
 PlatformThreadHandle PlatformThread::CurrentHandle() {
-  NOTIMPLEMENTED(); // See OpenThread()
-  return PlatformThreadHandle();
+  return PlatformThreadHandle(::GetCurrentThread());
 }
 
 // static
@@ -234,16 +233,55 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
 // static
 void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
+  DCHECK(!handle.is_null());
+
+  int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {
     case kThreadPriority_Normal:
-      ::SetThreadPriority(handle.handle_, THREAD_PRIORITY_NORMAL);
+      desired_priority = THREAD_PRIORITY_NORMAL;
       break;
     case kThreadPriority_RealtimeAudio:
-      ::SetThreadPriority(handle.handle_, THREAD_PRIORITY_TIME_CRITICAL);
+      desired_priority = THREAD_PRIORITY_TIME_CRITICAL;
+      break;
+    case kThreadPriority_Display:
+      desired_priority = THREAD_PRIORITY_ABOVE_NORMAL;
+      break;
+    case kThreadPriority_Background:
+      desired_priority = THREAD_PRIORITY_LOWEST;
       break;
     default:
       NOTREACHED() << "Unknown priority.";
       break;
+  }
+  DCHECK_NE(desired_priority, THREAD_PRIORITY_ERROR_RETURN);
+
+#ifndef NDEBUG
+  const BOOL success =
+#endif
+      ::SetThreadPriority(handle.handle_, desired_priority);
+  DPLOG_IF(ERROR, !success) << "Failed to set thread priority to "
+                            << desired_priority;
+}
+
+// static
+ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
+  DCHECK(!handle.is_null());
+
+  int priority = ::GetThreadPriority(handle.handle_);
+  switch (priority) {
+    case THREAD_PRIORITY_NORMAL:
+      return kThreadPriority_Normal;
+    case THREAD_PRIORITY_TIME_CRITICAL:
+      return kThreadPriority_RealtimeAudio;
+    case THREAD_PRIORITY_ABOVE_NORMAL:
+      return kThreadPriority_Display;
+    case THREAD_PRIORITY_LOWEST:
+      return kThreadPriority_Background;
+    case THREAD_PRIORITY_ERROR_RETURN:
+      DPCHECK(false) << "GetThreadPriority error";  // Falls through.
+    default:
+      NOTREACHED() << "Unexpected priority: " << priority;
+      return kThreadPriority_Normal;
   }
 }
 

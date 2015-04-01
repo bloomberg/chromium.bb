@@ -173,6 +173,12 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
   }
 }
 
+// static
+ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
+  NOTIMPLEMENTED();
+  return kThreadPriority_Normal;
+}
+
 size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
 #if defined(OS_IOS)
   return 0;

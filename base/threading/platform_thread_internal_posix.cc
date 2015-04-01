@@ -20,6 +20,16 @@ int ThreadPriorityToNiceValue(ThreadPriority priority) {
   return 0;
 }
 
+ThreadPriority NiceValueToThreadPriority(int nice_value) {
+  for (const ThreadPriorityToNiceValuePair& pair :
+       kThreadPriorityToNiceValueMap) {
+    if (pair.nice_value == nice_value)
+      return pair.priority;
+  }
+  NOTREACHED() << "Unknown nice value";
+  return kThreadPriority_Normal;
+}
+
 }  // namespace internal
 
 }  // namespace base

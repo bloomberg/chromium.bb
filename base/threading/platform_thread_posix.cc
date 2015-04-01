@@ -232,13 +232,16 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   CHECK_EQ(0, pthread_join(thread_handle.handle_, NULL));
 }
 
-// Mac has its own SetThreadPriority() implementation.
+// Mac has its own Set/GetThreadPriority() implementations.
 #if !defined(OS_MACOSX)
+
 // static
 void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
-#if !defined(OS_NACL)
-  if (internal::HandleSetThreadPriorityForPlatform(handle, priority))
+#if defined(OS_NACL)
+  NOTIMPLEMENTED();
+#else
+  if (internal::SetThreadPriorityForPlatform(handle, priority))
     return;
 
   // setpriority(2) should change the whole thread group's (i.e. process)
@@ -255,8 +258,38 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
     DVPLOG(1) << "Failed to set nice value of thread (" << handle.id_ << ") to "
               << nice_setting;
   }
+#endif  // defined(OS_NACL)
+}
+
+// static
+ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
+#if defined(OS_NACL)
+  NOTIMPLEMENTED();
+  return kThreadPriority_Normal;
+#else
+  // Mirrors SetThreadPriority()'s implementation.
+  ThreadPriority platform_specific_priority;
+  if (internal::GetThreadPriorityForPlatform(handle,
+                                             &platform_specific_priority)) {
+    return platform_specific_priority;
+  }
+
+  DCHECK_NE(handle.id_, kInvalidThreadId);
+  const PlatformThreadId current_id = PlatformThread::CurrentId();
+  // Need to clear errno before calling getpriority():
+  // http://man7.org/linux/man-pages/man2/getpriority.2.html
+  errno = 0;
+  int nice_value =
+      getpriority(PRIO_PROCESS, handle.id_ == current_id ? 0 : handle.id_);
+  if (errno != 0) {
+    DVPLOG(1) << "Failed to get nice value of thread (" << handle.id_ << ")";
+    return kThreadPriority_Normal;
+  }
+
+  return internal::NiceValueToThreadPriority(nice_value);
 #endif  // !defined(OS_NACL)
 }
+
 #endif  // !defined(OS_MACOSX)
 
 }  // namespace base

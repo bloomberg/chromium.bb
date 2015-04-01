@@ -21,12 +21,22 @@ extern const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4];
 // implementation of kThreadPriorityToNiceValueMap.
 int ThreadPriorityToNiceValue(ThreadPriority priority);
 
+// Returns the ThreadPrioirty matching |nice_value| based on the platform-
+// specific implementation of kThreadPriorityToNiceValueMap.
+ThreadPriority NiceValueToThreadPriority(int nice_value);
+
 // Allows platform specific tweaks to the generic POSIX solution for
 // SetThreadPriority. Returns true if the platform-specific implementation
 // handled this |priority| change, false if the generic implementation should
 // instead proceed.
-bool HandleSetThreadPriorityForPlatform(PlatformThreadHandle handle,
-                                        ThreadPriority priority);
+bool SetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                  ThreadPriority priority);
+
+// Returns true if there is a platform-specific ThreadPriority set on |handle|
+// (and returns the actual ThreadPriority via |priority|). Returns false
+// otherwise, leaving |priority| untouched.
+bool GetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                  ThreadPriority* priority);
 
 }  // namespace internal
 
