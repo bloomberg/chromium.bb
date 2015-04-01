@@ -202,6 +202,24 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   iaccessible->get_accName(childid_self, name_bstr.Receive());
   base::win::ScopedBstr value_bstr;
   iaccessible->get_accValue(childid_self, value_bstr.Receive());
+  base::win::ScopedVariant state;
+  iaccessible->get_accState(childid_self, state.Receive());
+  int ia_state = V_I4(state.ptr());
+
+  // Avoid flakiness. The "offscreen" state depends on whether the browser
+  // window is frontmost or not, and "hottracked" depends on whether the
+  // mouse cursor happens to be over the element.
+  ia_state &= (~STATE_SYSTEM_OFFSCREEN & ~STATE_SYSTEM_HOTTRACKED);
+
+  // The "readonly" state is set on almost every node and doesn't typically
+  // change, so filter it out to keep the output less verbose.
+  ia_state &= ~STATE_SYSTEM_READONLY;
+
+  AccessibleStates ia2_state = 0;
+  base::win::ScopedComPtr<IAccessible2> iaccessible2;
+  hr = QueryIAccessible2(iaccessible.get(), iaccessible2.Receive());
+  if (SUCCEEDED(hr))
+    iaccessible2->get_states(&ia2_state);
 
   std::string log = base::StringPrintf(
       "%s on role=%s", event_str.c_str(), RoleVariantToString(role).c_str());
@@ -209,11 +227,15 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
   if (value_bstr.Length() > 0)
     log += base::StringPrintf(" value=\"%s\"", BstrToUTF8(value_bstr).c_str());
+  log += " ";
+  log += base::UTF16ToUTF8(IAccessibleStateToString(ia_state));
+  log += " ";
+  log += base::UTF16ToUTF8(IAccessible2StateToString(ia2_state));
 
   // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was
   // inserted or removed and include that in the log.
-  IAccessibleText* accessible_text;
-  hr = QueryIAccessibleText(iaccessible.get(), &accessible_text);
+  base::win::ScopedComPtr<IAccessibleText> accessible_text;
+  hr = QueryIAccessibleText(iaccessible.get(), accessible_text.Receive());
   if (SUCCEEDED(hr)) {
     if (event == IA2_EVENT_TEXT_REMOVED) {
       IA2TextSegment old_text;
@@ -235,6 +257,8 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     }
   }
 
+  log = base::UTF16ToUTF8(
+      base::CollapseWhitespace(base::UTF8ToUTF16(log), true));
   event_logs_.push_back(log);
 }
 
