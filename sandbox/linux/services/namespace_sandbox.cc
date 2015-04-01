@@ -5,6 +5,7 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 
 #include <sched.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -17,9 +18,11 @@
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_utils.h"
 
 namespace sandbox {
@@ -61,6 +64,20 @@ void SetEnvironForNamespaceType(base::EnvironmentMap* environ,
 const char kSandboxUSERNSEnvironmentVarName[] = "SBX_USER_NS";
 const char kSandboxPIDNSEnvironmentVarName[] = "SBX_PID_NS";
 const char kSandboxNETNSEnvironmentVarName[] = "SBX_NET_NS";
+
+// Linux supports up to 64 signals. This should be updated if that ever changes.
+int g_signal_exit_codes[64];
+
+void TerminationSignalHandler(int sig) {
+  // Return a special exit code so that the process is detected as terminated by
+  // a signal.
+  const size_t sig_idx = static_cast<size_t>(sig);
+  if (sig_idx < arraysize(g_signal_exit_codes)) {
+    _exit(g_signal_exit_codes[sig_idx]);
+  }
+
+  _exit(NamespaceSandbox::kDefaultExitCode);
+}
 
 }  // namespace
 
@@ -108,6 +125,65 @@ base::Process NamespaceSandbox::LaunchProcess(
   }
 
   return base::LaunchProcess(argv, launch_options);
+}
+
+// static
+pid_t NamespaceSandbox::ForkInNewPidNamespace(bool drop_capabilities_in_child) {
+  const pid_t pid =
+      base::ForkWithFlags(CLONE_NEWPID | SIGCHLD, nullptr, nullptr);
+  if (pid < 0) {
+    return pid;
+  }
+
+  if (pid == 0) {
+    DCHECK_EQ(1, getpid());
+    if (drop_capabilities_in_child) {
+      // Since we just forked, we are single-threaded, so this should be safe.
+      CHECK(Credentials::DropAllCapabilitiesOnCurrentThread());
+    }
+    return 0;
+  }
+
+  return pid;
+}
+
+// static
+void NamespaceSandbox::InstallDefaultTerminationSignalHandlers() {
+  static const int kDefaultTermSignals[] = {
+      SIGHUP, SIGINT, SIGABRT, SIGQUIT, SIGPIPE, SIGTERM, SIGUSR1, SIGUSR2,
+  };
+
+  for (const int sig : kDefaultTermSignals) {
+    InstallTerminationSignalHandler(sig, kDefaultExitCode);
+  }
+}
+
+// static
+bool NamespaceSandbox::InstallTerminationSignalHandler(
+    int sig,
+    int exit_code) {
+  struct sigaction old_action;
+  PCHECK(sigaction(sig, nullptr, &old_action) == 0);
+
+  if (old_action.sa_flags & SA_SIGINFO &&
+      old_action.sa_sigaction != nullptr) {
+    return false;
+  } else if (old_action.sa_handler != SIG_DFL) {
+    return false;
+  }
+
+  const size_t sig_idx = static_cast<size_t>(sig);
+  CHECK_LT(sig_idx, arraysize(g_signal_exit_codes));
+
+  DCHECK_GE(exit_code, 0);
+  DCHECK_LT(exit_code, 256);
+
+  g_signal_exit_codes[sig_idx] = exit_code;
+
+  struct sigaction action = {};
+  action.sa_handler = &TerminationSignalHandler;
+  PCHECK(sigaction(sig, &action, nullptr) == 0);
+  return true;
 }
 
 // static

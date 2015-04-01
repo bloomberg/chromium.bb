@@ -22,18 +22,18 @@
 
 namespace sandbox {
 
-// For brevity, we only expose enums for the subset of capabilities we use.
-// This can be expanded as the need arises.
-enum class LinuxCapability {
-  kCapSysChroot,
-  kCapSysAdmin,
-};
-
 // This class should be used to manipulate the current process' credentials.
 // It is currently a stub used to manipulate POSIX.1e capabilities as
 // implemented by the Linux kernel.
 class SANDBOX_EXPORT Credentials {
  public:
+  // For brevity, we only expose enums for the subset of capabilities we use.
+  // This can be expanded as the need arises.
+  enum class Capability {
+    SYS_CHROOT,
+    SYS_ADMIN,
+  };
+
   // Drop all capabilities in the effective, inheritable and permitted sets for
   // the current thread. For security reasons, since capabilities are
   // per-thread, the caller is responsible for ensuring it is single-threaded
@@ -46,12 +46,20 @@ class SANDBOX_EXPORT Credentials {
   // Sets the effective and permitted capability sets for the current thread to
   // the list of capabiltiies in |caps|. All other capability flags are cleared.
   static bool SetCapabilities(int proc_fd,
-                              const std::vector<LinuxCapability>& caps)
+                              const std::vector<Capability>& caps)
       WARN_UNUSED_RESULT;
+
+  // Versions of the above functions which do not check that the process is
+  // single-threaded. After calling these functions, capabilities of other
+  // threads will not be changed. This is dangerous, do not use unless you nkow
+  // what you are doing.
+  static bool DropAllCapabilitiesOnCurrentThread() WARN_UNUSED_RESULT;
+  static bool SetCapabilitiesOnCurrentThread(
+      const std::vector<Capability>& caps) WARN_UNUSED_RESULT;
 
   // Returns true if the current thread has either the effective, permitted, or
   // inheritable flag set for the given capability.
-  static bool HasCapability(LinuxCapability cap);
+  static bool HasCapability(Capability cap);
 
   // Return true iff there is any capability in any of the capabilities sets
   // of the current thread.
