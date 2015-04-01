@@ -12,12 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -325,7 +325,7 @@ class DataReductionProxyTestContext {
 
   // Obtains a callback for notifying that the Data Reduction Proxy is no
   // longer reachable.
-  DataReductionProxyUsageStats::UnreachableCallback
+  DataReductionProxyBypassStats::UnreachableCallback
   unreachable_callback() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {

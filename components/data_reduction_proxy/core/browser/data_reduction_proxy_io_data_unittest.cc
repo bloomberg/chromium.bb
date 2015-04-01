@@ -114,13 +114,13 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       base::Bind(&DataReductionProxyIODataTest::RequestCallback,
                  base::Unretained(this)), nullptr);
   EXPECT_EQ(1, wrapped_network_delegate->created_requests());
-  EXPECT_EQ(nullptr, io_data->usage_stats());
+  EXPECT_EQ(nullptr, io_data->bypass_stats());
 
   // Creating a second delegate with bypass statistics tracking should result
   // in usage stats being created.
   io_data->CreateNetworkDelegate(make_scoped_ptr(new CountingNetworkDelegate()),
                                  true);
-  EXPECT_NE(nullptr, io_data->usage_stats());
+  EXPECT_NE(nullptr, io_data->bypass_stats());
 
   // The Data Reduction Proxy isn't actually enabled here.
   io_data->InitOnUIThread(prefs());

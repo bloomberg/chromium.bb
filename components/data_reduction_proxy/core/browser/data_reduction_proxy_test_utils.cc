@@ -567,7 +567,7 @@ DataReductionProxyTestContext::test_config_client() {
       io_data_->config_client());
 }
 
-DataReductionProxyUsageStats::UnreachableCallback
+DataReductionProxyBypassStats::UnreachableCallback
 DataReductionProxyTestContext::unreachable_callback() const {
   return base::Bind(&DataReductionProxySettings::SetUnreachable,
                     base::Unretained(settings_.get()));

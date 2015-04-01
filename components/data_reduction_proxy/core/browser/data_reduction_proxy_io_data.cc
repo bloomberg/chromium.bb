@@ -9,6 +9,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -19,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -115,7 +115,7 @@ scoped_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return make_scoped_ptr(new DataReductionProxyInterceptor(
-      config_.get(), usage_stats_.get(), event_store_.get()));
+      config_.get(), bypass_stats_.get(), event_store_.get()));
 }
 
 scoped_ptr<DataReductionProxyNetworkDelegate>
@@ -127,12 +127,12 @@ DataReductionProxyIOData::CreateNetworkDelegate(
       new DataReductionProxyNetworkDelegate(
           wrapped_network_delegate.Pass(), config_.get(),
           request_options_.get(), configurator_.get()));
-  if (track_proxy_bypass_statistics && !usage_stats_) {
-    usage_stats_.reset(new DataReductionProxyUsageStats(
+  if (track_proxy_bypass_statistics && !bypass_stats_) {
+    bypass_stats_.reset(new DataReductionProxyBypassStats(
         config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
                                   base::Unretained(this)), ui_task_runner_));
     network_delegate->InitIODataAndUMA(ui_task_runner_, this, &enabled_,
-                                       usage_stats_.get());
+                                       bypass_stats_.get());
   }
   return network_delegate.Pass();
 }

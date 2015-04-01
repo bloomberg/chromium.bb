@@ -5,7 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -18,9 +18,9 @@ namespace data_reduction_proxy {
 
 DataReductionProxyInterceptor::DataReductionProxyInterceptor(
     DataReductionProxyConfig* config,
-    DataReductionProxyUsageStats* stats,
+    DataReductionProxyBypassStats* stats,
     DataReductionProxyEventStore* event_store)
-    : usage_stats_(stats),
+    : bypass_stats_(stats),
       bypass_protocol_(
           new DataReductionProxyBypassProtocol(config, event_store)) {
 }
@@ -56,8 +56,8 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
   DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
   bool should_retry = bypass_protocol_->MaybeBypassProxyAndPrepareToRetry(
       request, &bypass_type);
-  if (usage_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
-    usage_stats_->SetBypassType(bypass_type);
+  if (bypass_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
+    bypass_stats_->SetBypassType(bypass_type);
   if (!should_retry)
     return nullptr;
   // Returning non-NULL has the effect of restarting the request with the

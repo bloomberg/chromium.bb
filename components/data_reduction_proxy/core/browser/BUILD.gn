@@ -6,6 +6,8 @@ static_library("browser") {
   sources = [
     "data_reduction_proxy_bypass_protocol.cc",
     "data_reduction_proxy_bypass_protocol.h",
+    "data_reduction_proxy_bypass_stats.cc",
+    "data_reduction_proxy_bypass_stats.h",
     "data_reduction_proxy_config.cc",
     "data_reduction_proxy_config.h",
     "data_reduction_proxy_config_service_client.cc",
@@ -37,8 +39,6 @@ static_library("browser") {
     "data_reduction_proxy_statistics_prefs.h",
     "data_reduction_proxy_tamper_detection.cc",
     "data_reduction_proxy_tamper_detection.h",
-    "data_reduction_proxy_usage_stats.cc",
-    "data_reduction_proxy_usage_stats.h",
   ]
 
   deps = [
@@ -90,6 +90,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "data_reduction_proxy_bypass_protocol_unittest.cc",
+    "data_reduction_proxy_bypass_stats_unittest.cc",
     "data_reduction_proxy_config_service_client_unittest.cc",
     "data_reduction_proxy_config_unittest.cc",
     "data_reduction_proxy_configurator_unittest.cc",
@@ -99,7 +100,6 @@ source_set("unit_tests") {
     "data_reduction_proxy_prefs_unittest.cc",
     "data_reduction_proxy_request_options_unittest.cc",
     "data_reduction_proxy_settings_unittest.cc",
-    "data_reduction_proxy_usage_stats_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

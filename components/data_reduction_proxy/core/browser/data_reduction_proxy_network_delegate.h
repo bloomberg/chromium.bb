@@ -43,7 +43,7 @@ class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyUsageStats;
+class DataReductionProxyBypassStats;
 
 // DataReductionProxyNetworkDelegate is a LayeredNetworkDelegate that wraps a
 // NetworkDelegate and adds Data Reduction Proxy specific logic.
@@ -72,7 +72,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyIOData* io_data,
       BooleanPrefMember* data_reduction_proxy_enabled,
-      DataReductionProxyUsageStats* usage_stats);
+      DataReductionProxyBypassStats* bypass_stats);
 
   // Creates a |Value| summary of the state of the network session. The caller
   // is responsible for deleting the returned value.
@@ -139,7 +139,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;
 
-  DataReductionProxyUsageStats* data_reduction_proxy_usage_stats_;
+  DataReductionProxyBypassStats* data_reduction_proxy_bypass_stats_;
 
   DataReductionProxyRequestOptions* data_reduction_proxy_request_options_;
 

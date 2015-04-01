@@ -11,10 +11,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/base/completion_callback.h"
@@ -118,14 +118,14 @@ class DataReductionProxyProtocolTest : public testing::Test {
     // This is needed to prevent the test context from adding language headers
     // to requests.
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
-    usage_stats_.reset(new DataReductionProxyUsageStats(
+    bypass_stats_.reset(new DataReductionProxyBypassStats(
         test_context_->config(),
         test_context_->unreachable_callback(),
         test_context_->task_runner()));
 
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(test_context_->config(),
-                                          usage_stats_.get(),
+                                          bypass_stats_.get(),
                                           test_context_->event_store());
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
@@ -330,7 +330,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
   scoped_ptr<net::TestNetworkDelegate> network_delegate_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
-  scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
+  scoped_ptr<DataReductionProxyBypassStats> bypass_stats_;
   net::StaticHttpUserAgentSettings http_user_agent_settings_;
 
   scoped_ptr<net::URLRequestInterceptingJobFactory> job_factory_;
@@ -759,7 +759,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
                       tests[i].generate_response_error,
                       tests[i].expected_bad_proxy_count,
                       tests[i].expect_response_body);
-    EXPECT_EQ(tests[i].expected_bypass_type, usage_stats_->GetBypassType());
+    EXPECT_EQ(tests[i].expected_bypass_type, bypass_stats_->GetBypassType());
     // We should also observe the bad proxy in the retry list.
     TestBadProxies(tests[i].expected_bad_proxy_count,
                    tests[i].expected_duration,
@@ -794,7 +794,7 @@ TEST_F(DataReductionProxyProtocolTest,
                     false /* generate_response_error */,
                     0u /* expected_bad_proxy_count */,
                     true /* expect_response_body */);
-  EXPECT_EQ(BYPASS_EVENT_TYPE_MAX, usage_stats_->GetBypassType());
+  EXPECT_EQ(BYPASS_EVENT_TYPE_MAX, bypass_stats_->GetBypassType());
   TestBadProxies(0u, -1, primary, fallback);
 
   // This non-4xx response without the DRP via header should not cause a bypass
@@ -805,7 +805,7 @@ TEST_F(DataReductionProxyProtocolTest,
                     false /* generate_response_error */,
                     0u /* expected_bad_proxy_count */,
                     true /* expect_response_body */);
-  EXPECT_EQ(BYPASS_EVENT_TYPE_MAX, usage_stats_->GetBypassType());
+  EXPECT_EQ(BYPASS_EVENT_TYPE_MAX, bypass_stats_->GetBypassType());
   TestBadProxies(0u, -1, primary, fallback);
 
   // The first response after a network change is missing the DRP via header, so
@@ -819,7 +819,7 @@ TEST_F(DataReductionProxyProtocolTest,
                     1u /* expected_bad_proxy_count */,
                     true /* expect_response_body */);
   EXPECT_EQ(BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-            usage_stats_->GetBypassType());
+            bypass_stats_->GetBypassType());
   TestBadProxies(1u, 0, primary, fallback);
 }
 

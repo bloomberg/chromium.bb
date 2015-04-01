@@ -12,7 +12,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyBypassProtocol;
 class DataReductionProxyConfig;
 class DataReductionProxyEventStore;
-class DataReductionProxyUsageStats;
+class DataReductionProxyBypassStats;
 
 // Used to intercept responses that contain explicit and implicit signals
 // to bypass the Data Reduction Proxy. If the proxy should be bypassed,
@@ -23,7 +23,7 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
   // Constructs the interceptor. |config|, |stats|, and |event_store| must
   // outlive |this|. |stats| may be NULL.
   DataReductionProxyInterceptor(DataReductionProxyConfig* config,
-                                DataReductionProxyUsageStats* stats,
+                                DataReductionProxyBypassStats* stats,
                                 DataReductionProxyEventStore* event_store);
 
   // Destroys the interceptor.
@@ -57,7 +57,7 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request, net::NetworkDelegate* network_delegate) const;
 
   // Must outlive |this| if non-NULL.
-  DataReductionProxyUsageStats* usage_stats_;
+  DataReductionProxyBypassStats* bypass_stats_;
 
   // Object responsible for identifying cases when a response should cause the
   // data reduction proxy to be bypassed, and for triggering proxy bypasses in

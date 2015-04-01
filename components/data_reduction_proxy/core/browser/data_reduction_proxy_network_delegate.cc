@@ -11,13 +11,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -87,7 +87,7 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       original_content_length_(0),
       data_reduction_proxy_enabled_(NULL),
       data_reduction_proxy_config_(config),
-      data_reduction_proxy_usage_stats_(NULL),
+      data_reduction_proxy_bypass_stats_(NULL),
       data_reduction_proxy_request_options_(request_options),
       configurator_(configurator) {
   DCHECK(data_reduction_proxy_config_);
@@ -101,13 +101,13 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     DataReductionProxyIOData* io_data,
     BooleanPrefMember* data_reduction_proxy_enabled,
-    DataReductionProxyUsageStats* usage_stats) {
+    DataReductionProxyBypassStats* bypass_stats) {
   DCHECK(data_reduction_proxy_enabled);
-  DCHECK(usage_stats);
+  DCHECK(bypass_stats);
   ui_task_runner_ = ui_task_runner;
   data_reduction_proxy_io_data_ = io_data;
   data_reduction_proxy_enabled_ = data_reduction_proxy_enabled;
-  data_reduction_proxy_usage_stats_ = usage_stats;
+  data_reduction_proxy_bypass_stats_ = bypass_stats;
 }
 
 base::Value*
@@ -136,8 +136,8 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
 void DataReductionProxyNetworkDelegate::OnProxyFallbackInternal(
     const net::ProxyServer& bad_proxy,
     int net_error) {
-  if (data_reduction_proxy_usage_stats_) {
-    data_reduction_proxy_usage_stats_->OnProxyFallback(
+  if (data_reduction_proxy_bypass_stats_) {
+    data_reduction_proxy_bypass_stats_->OnProxyFallback(
         bad_proxy, net_error);
   }
 }
@@ -156,8 +156,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     net::URLRequest* request,
     bool started) {
   DCHECK(request);
-  if (data_reduction_proxy_usage_stats_)
-    data_reduction_proxy_usage_stats_->OnUrlRequestCompleted(request, started);
+  if (data_reduction_proxy_bypass_stats_)
+    data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started);
 
   // Only record for http or https urls.
   bool is_http = request->url().SchemeIs("http");
@@ -198,8 +198,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                                   freshness_lifetime);
 
     if (data_reduction_proxy_enabled_ &&
-        data_reduction_proxy_usage_stats_) {
-      data_reduction_proxy_usage_stats_->RecordBytesHistograms(
+        data_reduction_proxy_bypass_stats_) {
+      data_reduction_proxy_bypass_stats_->RecordBytesHistograms(
           *request,
           *data_reduction_proxy_enabled_,
           configurator_->GetProxyConfigOnIOThread());

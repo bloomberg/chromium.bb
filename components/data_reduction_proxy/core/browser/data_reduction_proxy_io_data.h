@@ -26,7 +26,7 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyService;
 class DataReductionProxyStatisticsPrefs;
-class DataReductionProxyUsageStats;
+class DataReductionProxyBypassStats;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
@@ -100,8 +100,8 @@ class DataReductionProxyIOData {
   }
 
   // Used for testing.
-  DataReductionProxyUsageStats* usage_stats() const {
-    return usage_stats_.get();
+  DataReductionProxyBypassStats* bypass_stats() const {
+    return bypass_stats_.get();
   }
 
   DataReductionProxyDebugUIService* debug_ui_service() const {
@@ -146,7 +146,7 @@ class DataReductionProxyIOData {
   base::WeakPtr<DataReductionProxyService> service_;
 
   // Tracker of various metrics to be reported in UMA.
-  scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
+  scoped_ptr<DataReductionProxyBypassStats> bypass_stats_;
 
   // Constructs credentials suitable for authenticating the client.
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;

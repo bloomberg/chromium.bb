@@ -94,6 +94,8 @@
         "data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h",
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_config.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_config.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.cc',
@@ -124,8 +126,6 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.cc',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h',
       ],
     },
     {

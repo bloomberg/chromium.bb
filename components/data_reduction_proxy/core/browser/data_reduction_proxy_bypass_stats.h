@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_USAGE_STATS_H_
-#define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_USAGE_STATS_H_
+#ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_STATS_H_
+#define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_STATS_H_
 
 #include "base/callback.h"
 #include "base/prefs/pref_member.h"
@@ -24,8 +24,7 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
 
-// TODO(bengr): Rename as DataReductionProxyBypassStats.
-class DataReductionProxyUsageStats
+class DataReductionProxyBypassStats
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   typedef base::Callback<void(bool /* unreachable */)> UnreachableCallback;
@@ -50,15 +49,15 @@ class DataReductionProxyUsageStats
   // hook to inform the user that the Data Reduction Proxy is unreachable, which
   // occurs on the UI thread, hence the |ui_task_runner|.
   // |config| must not be null.
-  DataReductionProxyUsageStats(
+  DataReductionProxyBypassStats(
       DataReductionProxyConfig* config,
       UnreachableCallback unreachable_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
-  ~DataReductionProxyUsageStats() override;
+  ~DataReductionProxyBypassStats() override;
 
   // Callback intended to be called from |DataReductionProxyNetworkDelegate|
-  // when a request completes. This method is used to gather usage stats.
+  // when a request completes. This method is used to gather bypass stats.
   void OnUrlRequestCompleted(const net::URLRequest* request, bool started);
 
   // Records the last bypass reason to |bypass_type_| and sets
@@ -87,8 +86,8 @@ class DataReductionProxyUsageStats
                          int net_error);
 
  private:
-  friend class DataReductionProxyUsageStatsTest;
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyUsageStatsTest,
+  friend class DataReductionProxyBypassStatsTest;
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyBypassStatsTest,
                            RecordMissingViaHeaderBytes);
 
   enum BypassedBytesType {
@@ -165,9 +164,9 @@ class DataReductionProxyUsageStats
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyUsageStats);
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyBypassStats);
 };
 
 }  // namespace data_reduction_proxy
 
-#endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_USAGE_STATS_H_
+#endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_STATS_H_

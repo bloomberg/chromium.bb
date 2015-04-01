@@ -6,8 +6,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -113,7 +113,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   // via header, so detect and report cases where the via header is missing.
   const net::ProxyServer& second =
       data_reduction_proxy_type_info.proxy_servers.second;
-  DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
+  DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
       second.is_valid() && !second.host_port_pair().IsEmpty(),
       response_headers);
 
@@ -169,7 +169,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   if (!config_->IsProxyBypassed(
           request->context()->proxy_service()->proxy_retry_info(), proxy_server,
           NULL)) {
-    DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
+    DataReductionProxyBypassStats::RecordDataReductionProxyBypassInfo(
         second.is_valid() && !second.host_port_pair().IsEmpty(),
         data_reduction_proxy_info.bypass_all,
         proxy_server,

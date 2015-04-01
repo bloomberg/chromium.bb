@@ -3012,7 +3012,7 @@
    bug_388668
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN20data_reduction_proxy69DataReductionProxyUsageStatsTest_isDataReductionProxyUnreachable_Test8TestBodyEv
+   fun:_ZN20data_reduction_proxy69DataReductionProxyBypassStatsTest_isDataReductionProxyUnreachable_Test8TestBodyEv
 }
 {
    bug_392912
