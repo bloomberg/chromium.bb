@@ -1843,6 +1843,10 @@ crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-con
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-nocors-other-https.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-other-https.html [ Slow ]
 
+crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-lr.html [ Skip ]
+crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-rl.html [ Skip ]
+crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Skip ]
+
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-2x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-change-resource-dpr.html [ Pass Failure ]
