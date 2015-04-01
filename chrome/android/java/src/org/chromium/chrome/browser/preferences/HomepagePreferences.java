@@ -144,8 +144,7 @@ public class HomepagePreferences extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        mHomepageManager.setPrefHomepageCustomUri(
-                UrlUtilities.fixUrl(UrlUtilities.fixupUrl(mCustomUriCache)));
+        mHomepageManager.setPrefHomepageCustomUri(UrlUtilities.fixupUrl(mCustomUriCache));
     }
 
 }

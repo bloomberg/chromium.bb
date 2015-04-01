@@ -118,51 +118,16 @@ public class UrlUtilities {
     }
 
     /**
-     * @param uri A URI to repair.
+     * Refer to url_fixer::FixupURL.
      *
-     * @return A String representation of a URI that will be valid for loading in a ContentView.
-     */
-    public static String fixUrl(String uri) {
-        if (uri == null) return null;
-
-        try {
-            String fixedUri = uri.trim();
-            if (fixedUri.indexOf("://") == 0) {
-                return "http" + fixedUri;
-            }
-            if (fixedUri.indexOf(":") == -1) {
-                return "http://" + fixedUri;
-            }
-
-            URI parsed = new URI(fixedUri);
-            if (parsed.getScheme() == null) {
-                parsed = new URI(
-                        "http",
-                        null,  // userInfo
-                        parsed.getHost(),
-                        parsed.getPort(),
-                        parsed.getRawPath(),
-                        parsed.getRawQuery(),
-                        parsed.getRawFragment());
-            }
-            return parsed.toString();
-        } catch (URISyntaxException e) {
-            // Can't do anything.
-            return uri;
-        }
-    }
-
-    /**
-     * Refer to UrlFixerUpper::FixupURL.
-     *
-     * Compare to {@link #fixUrl(String)}, This fixes URL more aggressively including Chrome
-     * specific cases. For example, "about:" becomes "chrome://version/". However, this is not a
-     * superset of {@link #fixUrl(String)} either. For example, this function doesn't do anything
-     * with "://mail.google.com:/", while the other one prepends "http". Also, for
-     * "//mail.google.com:/", this function prepends "file" while the other one prepends "http".
+     * Given a URL-like string, returns a real URL or null. For example:
+     *  - "google.com" -> "http://google.com/"
+     *  - "about:" -> "chrome://version/"
+     *  - "//mail.google.com:/" -> "file:///mail.google.com:/"
+     *  - "..." -> null
      */
     public static String fixupUrl(String uri) {
-        if (TextUtils.isEmpty(uri)) return uri;
+        if (TextUtils.isEmpty(uri)) return null;
         return nativeFixupUrl(uri, null);
     }
 

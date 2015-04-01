@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class UrlUtilitiesTest extends InstrumentationTestCase {
     @SmallTest
@@ -69,29 +68,6 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
         assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("inline:skates.co.uk"));
         assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("javascript:alert(1)"));
         assertFalse(UrlUtilities.isValidForIntentFallbackNavigation(""));
-    }
-
-    @SmallTest
-    public void testFixUrl() throws URISyntaxException {
-        try {
-            URI uri;
-            uri = new URI(UrlUtilities.fixUrl("google.com"));
-            assertTrue("http".equals(uri.getScheme()));
-            uri = new URI(UrlUtilities.fixUrl("\n://user:pass@example.com:80/"));
-            assertTrue("http".equals(uri.getScheme()));
-            uri = new URI(UrlUtilities.fixUrl("inline:google.com"));
-            assertTrue("inline".equals(uri.getScheme()));
-            uri = new URI(UrlUtilities.fixUrl("chrome:user:pass@google:443/leg:foot"));
-            assertTrue("chrome".equals(uri.getScheme()));
-            uri = new URI(UrlUtilities.fixUrl("https://mail.google.com:/"));
-            assertTrue("https".equals(uri.getScheme()));
-            uri = new URI(UrlUtilities.fixUrl("://mail.google.com:/"));
-            assertTrue("http".equals(uri.getScheme()));
-            uri = new URI(UrlUtilities.fixUrl("//mail.google.com:/"));
-            assertTrue("http".equals(uri.getScheme()));
-        } catch (URISyntaxException e) {
-            assertFalse(true);
-        }
     }
 
     @SmallTest
