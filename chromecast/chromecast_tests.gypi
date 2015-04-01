@@ -48,12 +48,11 @@
               # timeout to 75s from 45s to allow it to pass (b/19821476)
               # ProxyScriptFetcherImplTest.HttpMimeType is flaking (b/19848784)
              'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=75000',
-              # Disable OutOfMemoryDeathTest.ViaSharedLibraries due to gTrusty eglibc incompatibility (crbug/428211)
               # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
               # Disable ProcessUtilTest.* (need to define OS_ANDROID)
               # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
               # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
-              'base_unittests --gtest_filter=-OutOfMemoryDeathTest.ViaSharedLibraries:ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo',
+              'base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo',
               # DesktopCaptureDeviceTest.*: No capture device on Eureka
               # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
               # Disable GpuDataManagerImplPrivateTest.SetGLStrings and
@@ -83,9 +82,6 @@
         }, { # else "x86" or "android"
           'variables': {
             'filters': [
-              # Disable OutOfMemoryDeathTest.ViaSharedLibraries due to gTrusty eglibc incompatibility
-              # See: crbug/428211
-              'base_unittests --gtest_filter=-OutOfMemoryDeathTest.ViaSharedLibraries',
               # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)
               'media_unittests --gtest_filter=-PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM',
             ],
