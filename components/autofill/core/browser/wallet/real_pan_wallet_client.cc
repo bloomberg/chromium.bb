@@ -225,7 +225,16 @@ void RealPanWalletClient::CreateRequest() {
   base::DictionaryValue request_dict;
   request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
   request_dict.SetString("credit_card_id", card_.server_id());
-  request_dict.SetString("risk_data_base64", response_.risk_data);
+  scoped_ptr<base::DictionaryValue> risk_data(new base::DictionaryValue());
+  if (response_.providing_risk_advisory_data) {
+    risk_data->SetString("message_type", "RISK_ADVISORY_DATA");
+    risk_data->SetString("encoding_type", "BASE_64_URL");
+  } else {
+    risk_data->SetString("message_type", "BROWSER_NATIVE_FINGERPRINTING");
+    risk_data->SetString("encoding_type", "BASE_64");
+  }
+  risk_data->SetString("value", response_.risk_data);
+  request_dict.Set("risk_data_encoded", risk_data.Pass());
   request_dict.Set("context", make_scoped_ptr(new base::DictionaryValue()));
 
   int value = 0;
