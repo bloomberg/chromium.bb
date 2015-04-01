@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/time/time.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 
@@ -67,6 +68,7 @@ class EasyUnlockServiceRegular : public EasyUnlockService,
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
   void OnWillFinalizeUnlock(bool success) override;
+  void OnSuspendDone() override;
 
   // ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(
@@ -74,6 +76,7 @@ class EasyUnlockServiceRegular : public EasyUnlockService,
   void OnScreenDidUnlock(
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnFocusedUserChanged(const std::string& user_id) override;
+
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
@@ -115,6 +118,12 @@ class EasyUnlockServiceRegular : public EasyUnlockService,
   // the screen unlocks. Used to distinguish Easy Unlock-powered unlocks from
   // password-based unlocks for metrics.
   bool will_unlock_using_easy_unlock_;
+
+  // The timestamp for the most recent time when the lock screen was shown. The
+  // lock screen is typically shown when the user awakens her computer from
+  // sleep -- e.g. by opening the lid -- but can also be shown if the screen is
+  // locked but the computer does not go to sleep.
+  base::TimeTicks lock_screen_last_shown_timestamp_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 

@@ -7,10 +7,18 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
+void RecordEasyUnlockSigninDuration(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("EasyUnlock.AuthEvent.SignIn.Duration", duration);
+}
+
 void RecordEasyUnlockSigninEvent(EasyUnlockAuthEvent event) {
   DCHECK_LT(event, EASY_UNLOCK_AUTH_EVENT_COUNT);
   UMA_HISTOGRAM_ENUMERATION("EasyUnlock.AuthEvent.SignIn", event,
                             EASY_UNLOCK_AUTH_EVENT_COUNT);
+}
+
+void RecordEasyUnlockScreenUnlockDuration(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("EasyUnlock.AuthEvent.Unlock.Duration", duration);
 }
 
 void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event) {

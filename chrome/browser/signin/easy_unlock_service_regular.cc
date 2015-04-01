@@ -52,6 +52,7 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(Profile* profile)
     : EasyUnlockService(profile),
       turn_off_flow_status_(EasyUnlockService::IDLE),
       will_unlock_using_easy_unlock_(false),
+      lock_screen_last_shown_timestamp_(base::TimeTicks::Now()),
       weak_ptr_factory_(this) {
 }
 
@@ -321,9 +322,14 @@ void EasyUnlockServiceRegular::OnWillFinalizeUnlock(bool success) {
   will_unlock_using_easy_unlock_ = success;
 }
 
+void EasyUnlockServiceRegular::OnSuspendDone() {
+  lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
+}
+
 void EasyUnlockServiceRegular::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   will_unlock_using_easy_unlock_ = false;
+  lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
 }
 
 void EasyUnlockServiceRegular::OnScreenDidUnlock(
@@ -340,6 +346,11 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
             ? EASY_UNLOCK_SUCCESS
             : GetPasswordAuthEvent();
     RecordEasyUnlockScreenUnlockEvent(event);
+
+    if (will_unlock_using_easy_unlock_) {
+      RecordEasyUnlockScreenUnlockDuration(
+          base::TimeTicks::Now() - lock_screen_last_shown_timestamp_);
+    }
   }
 
   will_unlock_using_easy_unlock_ = false;

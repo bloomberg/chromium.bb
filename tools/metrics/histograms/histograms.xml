@@ -6583,6 +6583,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.AuthEvent.SignIn.Duration" units="ms">
+  <owner>isherman@google.com</owner>
+  <owner>tengs@google.com</owner>
+  <owner>xiaowenx@google.com</owner>
+  <summary>
+    Measures the time elapsed between the user focusing her user pod and signing
+    in using Smart Lock.
+  </summary>
+</histogram>
+
 <histogram name="EasyUnlock.AuthEvent.Unlock" enum="EasyUnlockAuthEvent">
   <owner>isherman@google.com</owner>
   <owner>xiaowenx@google.com</owner>
@@ -6592,6 +6602,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Lock unlock attempt succeeded or failed; or if a password fallback was used,
     the reason why. Recorded upon an unlock attempt for users who have the Smart
     Lock feature enabled.
+  </summary>
+</histogram>
+
+<histogram name="EasyUnlock.AuthEvent.Unlock.Duration" units="ms">
+  <owner>isherman@google.com</owner>
+  <owner>tengs@google.com</owner>
+  <owner>xiaowenx@google.com</owner>
+  <summary>
+    Measures the time elapsed between the lock screen being shown and the user
+    unlocking the device using Smart Lock. The lock screen is typically shown
+    when the user opens her Chromebook's lid (or otherwise wakes the computer),
+    but can also be shown when the user manually locks the device.
   </summary>
 </histogram>
 

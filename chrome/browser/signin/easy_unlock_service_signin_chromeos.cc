@@ -96,6 +96,7 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
     : EasyUnlockService(profile),
       allow_cryptohome_backoff_(true),
       service_active_(false),
+      user_pod_last_focused_timestamp_(base::TimeTicks::Now()),
       weak_ptr_factory_(this) {
 }
 
@@ -181,6 +182,10 @@ void EasyUnlockServiceSignin::RecordEasySignInOutcome(
 
   RecordEasyUnlockSigninEvent(
       success ? EASY_UNLOCK_SUCCESS : EASY_UNLOCK_FAILURE);
+  if (success) {
+    RecordEasyUnlockSigninDuration(
+        base::TimeTicks::Now() - user_pod_last_focused_timestamp_);
+  }
   DVLOG(1) << "Easy sign-in " << (success ? "success" : "failure");
 }
 
@@ -247,6 +252,10 @@ void EasyUnlockServiceSignin::OnWillFinalizeUnlock(bool success) {
   NOTREACHED();
 }
 
+void EasyUnlockServiceSignin::OnSuspendDone() {
+  // Ignored.
+}
+
 void EasyUnlockServiceSignin::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   // In production code, the screen type should always be the signin screen; but
@@ -256,6 +265,7 @@ void EasyUnlockServiceSignin::OnScreenDidLock(
 
   // Update initial UI is when the account picker on login screen is ready.
   ShowInitialUserState();
+  user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
 }
 
 void EasyUnlockServiceSignin::OnScreenDidUnlock(
@@ -279,6 +289,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
   // user data has been updated.
   bool should_update_app_state = user_id_.empty() != user_id.empty();
   user_id_ = user_id;
+  user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
 
   ResetScreenlockState();
   ShowInitialUserState();

@@ -227,6 +227,7 @@ class EasyUnlockService::PowerMonitor
         base::Bind(&PowerMonitor::ResetWakingUp,
                    weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(5));
+    service_->OnSuspendDone();
     service_->UpdateAppState();
     // Note that |this| may get deleted after |UpdateAppState| is called.
   }

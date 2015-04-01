@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
 #define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
 
+namespace base {
+class TimeDelta;
+}
+
 // Tracking login events for Easy unlock metrics.
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
@@ -69,7 +73,9 @@ enum EasyUnlockTrialRunEvent {
   EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT  // Must be the last entry.
 };
 
+void RecordEasyUnlockSigninDuration(const base::TimeDelta& duration);
 void RecordEasyUnlockSigninEvent(EasyUnlockAuthEvent event);
+void RecordEasyUnlockScreenUnlockDuration(const base::TimeDelta& duration);
 void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event);
 void RecordEasyUnlockTrialRunEvent(EasyUnlockTrialRunEvent event);
 

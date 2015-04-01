@@ -232,6 +232,9 @@ class EasyUnlockService : public KeyedService {
   // Unlock, just before the screen is unlocked.
   virtual void OnWillFinalizeUnlock(bool success) = 0;
 
+  // Called when the local device resumes after a suspend.
+  virtual void OnSuspendDone() = 0;
+
   // KeyedService override:
   void Shutdown() override;
 
