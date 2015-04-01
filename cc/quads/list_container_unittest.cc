@@ -54,16 +54,22 @@ class SimpleDrawQuadConstructMagicNumberTwo : public SimpleDrawQuad {
   }
 };
 
-class MockDrawQuad : public DrawQuad {
+class MockDrawQuad : public SimpleDrawQuadConstructMagicNumberOne {
  public:
   ~MockDrawQuad() override { Destruct(); }
-  void IterateResources(const ResourceIteratorCallback& callback) override {}
-  void ExtendValue(base::trace_event::TracedValue* value) const override {}
   MOCK_METHOD0(Destruct, void());
 };
 
+class MockDrawQuadSubclass : public MockDrawQuad {
+ public:
+  MockDrawQuadSubclass() { set_value(kMagicNumberToUseForDrawQuadTwo); }
+};
+
+const size_t kLargestQuadSize =
+    std::max(LargestDrawQuadSize(), sizeof(MockDrawQuadSubclass));
+
 TEST(ListContainerTest, ConstructorCalledInAllocateAndConstruct) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
 
   size_t size = 2;
   SimpleDrawQuadConstructMagicNumberOne* dq_1 =
@@ -80,7 +86,7 @@ TEST(ListContainerTest, ConstructorCalledInAllocateAndConstruct) {
 }
 
 TEST(ListContainerTest, DestructorCalled) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
 
   size_t size = 1;
   MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
@@ -91,7 +97,7 @@ TEST(ListContainerTest, DestructorCalled) {
 }
 
 TEST(ListContainerTest, DestructorCalledOnceWhenClear) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
   size_t size = 1;
   MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
 
@@ -112,8 +118,34 @@ TEST(ListContainerTest, DestructorCalledOnceWhenClear) {
   separator.Call();
 }
 
+TEST(ListContainerTest, ReplaceExistingElement) {
+  ListContainer<DrawQuad> list(kLargestQuadSize);
+  size_t size = 1;
+  MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
+
+  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(dq_1, list.front());
+
+  // Make sure destructor is called once during clear, and won't be called
+  // again.
+  testing::MockFunction<void()> separator;
+  {
+    testing::InSequence s;
+    EXPECT_CALL(*dq_1, Destruct());
+    EXPECT_CALL(separator, Call());
+    EXPECT_CALL(*dq_1, Destruct()).Times(0);
+  }
+
+  list.ReplaceExistingElement<MockDrawQuadSubclass>(list.begin());
+  EXPECT_EQ(kMagicNumberToUseForDrawQuadTwo, dq_1->get_value());
+  separator.Call();
+
+  EXPECT_CALL(*dq_1, Destruct());
+  list.clear();
+}
+
 TEST(ListContainerTest, DestructorCalledOnceWhenErase) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
   size_t size = 1;
   MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
 
@@ -434,7 +466,7 @@ TEST(ListContainerTest, SimpleReverseInsertionSharedQuadState) {
 }
 
 TEST(ListContainerTest, SimpleDeletion) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
   std::vector<SimpleDrawQuad*> sdq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {
@@ -456,7 +488,7 @@ TEST(ListContainerTest, SimpleDeletion) {
 }
 
 TEST(ListContainerTest, SimpleIterationAndManipulation) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
   std::vector<SimpleDrawQuad*> sdq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {
@@ -481,7 +513,7 @@ TEST(ListContainerTest, SimpleIterationAndManipulation) {
 }
 
 TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDrawQuad) {
-  ListContainer<DrawQuad> list(LargestDrawQuadSize());
+  ListContainer<DrawQuad> list(kLargestQuadSize);
   std::vector<SimpleDrawQuad*> dq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {

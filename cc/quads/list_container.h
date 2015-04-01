@@ -209,6 +209,12 @@ class CC_EXPORT ListContainer {
     return new (Allocate(sizeof(DerivedElementType)))
         DerivedElementType(*source);
   }
+  // Construct a new element on top of an existing one.
+  template <typename DerivedElementType>
+  DerivedElementType* ReplaceExistingElement(Iterator at) {
+    at->~BaseElementType();
+    return new (*at) DerivedElementType();
+  }
 
   size_t size() const;
   bool empty() const;

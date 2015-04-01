@@ -10,14 +10,14 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/overlay_candidate.h"
 #include "cc/output/overlay_processor.h"
+#include "cc/output/overlay_strategy_common.h"
 #include "cc/quads/render_pass.h"
 
 namespace cc {
-class OverlayCandidateValidator;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 
-class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
+class CC_EXPORT OverlayStrategySingleOnTop : public OverlayStrategyCommon {
  public:
   OverlayStrategySingleOnTop(OverlayCandidateValidator* capability_checker,
                              ResourceProvider* resource_provider);
@@ -25,21 +25,6 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
                OverlayCandidateList* candidate_list) override;
 
  private:
-  bool IsOverlayQuad(const DrawQuad* draw_quad);
-  bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
-                            OverlayCandidate* quad_info);
-
-  // Returns true if |draw_quad| will not block quads underneath from becoming
-  // an overlay.
-  bool IsInvisibleQuad(const DrawQuad* draw_quad);
-
-  bool GetTextureQuadInfo(const TextureDrawQuad& quad,
-                          OverlayCandidate* quad_info);
-  bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
-                        OverlayCandidate* quad_info);
-
-  OverlayCandidateValidator* capability_checker_;
-  ResourceProvider* resource_provider_;
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategySingleOnTop);
 };
 
