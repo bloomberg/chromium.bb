@@ -25,8 +25,6 @@
 #include "config.h"
 #include "core/html/HTMLViewSourceDocument.h"
 
-#include "core/HTMLNames.h"
-#include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBRElement.h"
@@ -40,7 +38,6 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
 #include "core/html/HTMLTableSectionElement.h"
-#include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLViewSourceParser.h"
 
 namespace blink {
