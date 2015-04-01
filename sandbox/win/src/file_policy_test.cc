@@ -9,6 +9,7 @@
 #include <winioctl.h>
 
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox.h"
@@ -109,7 +110,7 @@ SBOX_TESTS_COMMAND int File_CreateSys32(int argc, wchar_t **argv) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   base::string16 file(argv[0]);
-  if (0 != _wcsnicmp(file.c_str(), kNTObjManPrefix, kNTObjManPrefixLen))
+  if (0 != _wcsnicmp(file.c_str(), kNTDevicePrefix, kNTDevicePrefixLen))
     file = MakePathToSys(argv[0], true);
 
   UNICODE_STRING object_name;
@@ -279,6 +280,9 @@ TEST(FilePolicyTest, AllowNtCreateCalc) {
 }
 
 TEST(FilePolicyTest, AllowNtCreateWithNativePath) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
   base::string16 calc = MakePathToSys(L"calc.exe", false);
   base::string16 nt_path;
   ASSERT_TRUE(GetNtPathFromWin32Path(calc, &nt_path));
@@ -326,6 +330,34 @@ TEST(FilePolicyTest, AllowReadOnly) {
   // Verify that we really have write access to the file.
   runner.SetTestState(BEFORE_REVERT);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command_write));
+
+  DeleteFile(temp_file_name);
+}
+
+// Tests support of "\\\\.\\DeviceName" kind of paths.
+TEST(FilePolicyTest, AllowImplicitDeviceName) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  TestRunner runner;
+
+  wchar_t temp_directory[MAX_PATH];
+  wchar_t temp_file_name[MAX_PATH];
+  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0u);
+
+  std::wstring path;
+  EXPECT_TRUE(ConvertToLongPath(temp_file_name, &path));
+  EXPECT_TRUE(GetNtPathFromWin32Path(path, &path));
+  path = path.substr(sandbox::kNTDevicePrefixLen);
+
+  wchar_t command[MAX_PATH + 20] = {0};
+  wsprintf(command, L"File_Create Read \"\\\\.\\%ls\"", path.c_str());
+  path = std::wstring(kNTPrefix) + path;
+
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
+  EXPECT_TRUE(runner.AddFsRule(TargetPolicy::FILES_ALLOW_ANY, path.c_str()));
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command));
 
   DeleteFile(temp_file_name);
 }

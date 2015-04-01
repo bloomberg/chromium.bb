@@ -17,8 +17,8 @@ namespace sandbox {
 const wchar_t kNTPrefix[] = L"\\??\\";
 const size_t kNTPrefixLen = arraysize(kNTPrefix) - 1;
 
-const wchar_t kNTObjManPrefix[] = L"\\Device\\";
-const size_t kNTObjManPrefixLen = arraysize(kNTObjManPrefix) - 1;
+const wchar_t kNTDevicePrefix[] = L"\\Device\\";
+const size_t kNTDevicePrefixLen = arraysize(kNTDevicePrefix) - 1;
 
 // Automatically acquires and releases a lock when the object is
 // is destroyed.
