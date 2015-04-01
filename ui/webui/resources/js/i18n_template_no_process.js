@@ -111,7 +111,7 @@ var i18nTemplate = (function() {
   };
 
   var attributeNames = Object.keys(handlers);
-  var selector = '[' + attributeNames.join('],[') + ']';
+  var selector = 'html /deep/ [' + attributeNames.join('],[') + ']';
 
   /**
    * Processes a DOM tree with the {@code dictionary} map.

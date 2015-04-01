@@ -15,6 +15,7 @@ without changes to the corresponding grd file. -->
     <includes>
       <include name="IDR_WEBUI_I18N_PROCESS_JS" file="js/i18n_process.js" type="BINDATA" />
       <include name="IDR_WEBUI_I18N_TEMPLATE2_JS" file="js/i18n_template2.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_WEBUI_I18N_TEMPLATE_POLYMER_JS" file="js/i18n_template_polymer.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_ANALYTICS_JS" file="js/analytics.js" flattenhtml="true" type="BINDATA" />
       <!-- Roboto Font -->
