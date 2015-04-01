@@ -161,11 +161,29 @@ void HitTestResult::setToShadowHostIfInClosedShadowRoot()
     }
 }
 
+// With PseudoElements the DOM tree and Layout tree can differ. When you attach
+// a, first-letter for example, into the DOM we walk down the Layout
+// tree to find the correct insertion point for the LayoutObject. But, this
+// means if we ask for the parentOrShadowHost Node from the first-letter
+// pseudo element we will get some arbitrary ancestor of the LayoutObject.
+//
+// For hit testing, we need the parent Node of the LayoutObject for the
+// first-letter pseudo element. So, by walking up the Layout tree we know
+// we will get the parent and not some other ancestor.
+static Node* findAssociatedNodeForPseudoElement(Node& n)
+{
+    ASSERT(n.isPseudoElement());
+    ASSERT(n.layoutObject());
+    ASSERT(n.layoutObject()->parent());
+
+    return n.layoutObject()->parent()->node();
+}
+
 void HitTestResult::setInnerNode(Node* n)
 {
     m_innerPossiblyPseudoNode = n;
     if (n && n->isPseudoElement())
-        n = n->parentOrShadowHostNode();
+        n = findAssociatedNodeForPseudoElement(*n);
     m_innerNode = n;
 }
 

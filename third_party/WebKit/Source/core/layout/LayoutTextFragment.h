@@ -78,6 +78,7 @@ private:
     virtual UChar previousCharacter() const override;
 
     Text* associatedTextNode() const;
+    void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
     unsigned m_start;
     unsigned m_end;

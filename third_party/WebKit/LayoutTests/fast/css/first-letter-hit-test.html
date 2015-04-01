@@ -1,0 +1,28 @@
+<!doctype html>
+<script src="../../resources/js-test.js"></script>
+<style>
+#tab:first-letter {
+  text-transform: uppercase;
+}
+#tab {
+  display: block;
+}
+</style>
+<div>
+  <span id="tab"><a id='a'>H</a></span>
+</div>
+
+<script>
+function calculateOffset(elem) {
+  var result = {top: 0, left: 0};
+  for (; elem; elem = elem.offsetParent) {
+    result.left += elem.offsetLeft;
+    result.top += elem.offsetTop;
+  }
+  return result;
+}
+
+offset = calculateOffset(document.getElementById('tab'));
+shouldBe('document.elementFromPoint(offset.left + 5, offset.top + 5).id', "'a'");
+
+</script>
