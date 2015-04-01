@@ -28,6 +28,7 @@ class WebSecurityOrigin;
 }
 
 namespace content {
+class RenderFrame;
 class RenderView;
 }
 
@@ -79,23 +80,45 @@ class ScriptContextSet {
   ScriptContext* GetByV8Context(const v8::Handle<v8::Context>& context) const;
 
   // Synchronously runs |callback| with each ScriptContext that belongs to
-  // |extension_id| in |render_view|.
+  // |extension_id| in |restrict_to_render_view|.
   //
-  // An empty |extension_id| will match all extensions, and a NULL |render_view|
-  // will match all render views, but try to use the inline variants of these
-  // methods instead.
+  // An empty |extension_id| will match all extensions, and a NULL
+  // |restrict_to_render_view| will match all render views, but try to use the
+  // inline variants of these methods instead.
   void ForEach(const std::string& extension_id,
-               content::RenderView* render_view,
+               content::RenderView* restrict_to_render_view,
                const base::Callback<void(ScriptContext*)>& callback) const;
   // ForEach which matches all extensions.
-  void ForEach(content::RenderView* render_view,
+  void ForEach(content::RenderView* restrict_to_render_view,
                const base::Callback<void(ScriptContext*)>& callback) const {
-    ForEach("", render_view, callback);
+    ForEach("", restrict_to_render_view, callback);
   }
   // ForEach which matches all render views.
   void ForEach(const std::string& extension_id,
                const base::Callback<void(ScriptContext*)>& callback) const {
     ForEach(extension_id, NULL, callback);
+  }
+
+  // Asynchronously runs |callback| with each ScriptContext that belongs to
+  // |extension_id| in |restrict_to_render_frame|.
+  // Running may be postponed if context is suspended.
+  // If context or render frame is destroyed before context resumed then
+  // |callback| won't be run.
+  void RequestRunForEach(
+      const std::string& extension_id,
+      content::RenderFrame* restrict_to_render_frame,
+      const base::Callback<void(ScriptContext*)>& callback) const;
+  // RequestRunForEach matches all extensions.
+  void RequestRunForEach(
+      content::RenderFrame* restrict_to_render_frame,
+      const base::Callback<void(ScriptContext*)>& callback) const {
+    RequestRunForEach("", restrict_to_render_frame, callback);
+  }
+  // RequestRunForEach matches all render frames.
+  void RequestRunForEach(
+      const std::string& extension_id,
+      const base::Callback<void(ScriptContext*)>& callback) const {
+    RequestRunForEach(extension_id, nullptr, callback);
   }
 
   // Cleans up contexts belonging to an unloaded extension.
@@ -126,6 +149,12 @@ class ScriptContextSet {
   // This is a helper designed to be used by OnExtensionUnloaded with ForEach.
   void DispatchOnUnloadEventAndRemove(std::set<ScriptContext*>* out,
                                       ScriptContext* context);
+
+  // Common implementation of ForEach methods.
+  void ForEachImpl(const std::string& extension_id,
+                   content::RenderView* restrict_to_render_view,
+                   const base::Callback<void(ScriptContext*)>& callback,
+                   bool run_asynchronously) const;
 
   // Weak reference to all installed Extensions.
   ExtensionSet* extensions_;

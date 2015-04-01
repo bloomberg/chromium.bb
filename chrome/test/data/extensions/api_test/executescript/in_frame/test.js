@@ -30,11 +30,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         });
       };
       chrome.runtime.onConnect.addListener(eventListener);
-      chrome.tabs.executeScript(tabId, script_file, pass(function() {
-        assertEq(counter, 5);
-        assertEq(totalTitles, 'frametest0test1test2test3');
-        chrome.runtime.onConnect.removeListener(eventListener);
-      }));
+      chrome.tabs.executeScript(tabId, script_file, function() {
+        setTimeout(pass(function() {
+          assertEq(counter, 5);
+          assertEq(totalTitles, 'frametest0test1test2test3');
+          chrome.runtime.onConnect.removeListener(eventListener);
+        }), 0);
+      });
     },
 
     function insertCSSTextInAllFramesShouldSucceed() {
@@ -54,12 +56,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         var script_file = {};
         script_file.file = 'script.js';
         script_file.allFrames = true;
-        chrome.tabs.executeScript(tabId, script_file,
-          pass(function() {
-            assertEq(newStyle, 'nonenonenonenone');
-            assertEq(counter, 4);
-            chrome.runtime.onConnect.removeListener(eventListener);
-        }));
+        chrome.tabs.executeScript(tabId, script_file, function() {
+            setTimeout(pass(function() {
+              assertEq(newStyle, 'nonenonenonenone');
+              assertEq(counter, 4);
+              chrome.runtime.onConnect.removeListener(eventListener);
+            }), 0);
+        });
       });
     }
   ]);

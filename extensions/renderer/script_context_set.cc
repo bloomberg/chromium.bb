@@ -6,16 +6,51 @@
 
 #include "base/message_loop/message_loop.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection.h"
+#include "third_party/WebKit/public/platform/WebSuspendableTask.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
+
+namespace {
+
+// This class inherits content::RenderFrameObserver for tracking when render
+// frame goes away.
+class BlinkTaskRunner : public blink::WebSuspendableTask,
+                        public content::RenderFrameObserver {
+ public:
+  BlinkTaskRunner(content::RenderFrame* render_frame,
+                  ScriptContext* context,
+                  const base::Callback<void(ScriptContext*)>& callback)
+      : RenderFrameObserver(render_frame),
+        context_(context),
+        callback_(callback) {}
+
+  void run() override {
+    if (render_frame() && context_->is_valid())
+      callback_.Run(context_);
+  }
+
+ private:
+  ScriptContext* context_;
+  base::Callback<void(ScriptContext*)> callback_;
+
+  // Overriden to avoid being destroyed when RenderFrame goes away.
+  // BlinkTaskRunner objects are owned by WebLocalFrame.
+  void OnDestruct() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkTaskRunner);
+};
+
+}  // namespace
 
 ScriptContextSet::ScriptContextSet(ExtensionSet* extensions,
                                    ExtensionIdSet* active_extension_ids)
@@ -81,32 +116,19 @@ ScriptContext* ScriptContextSet::GetByV8Context(
 
 void ScriptContextSet::ForEach(
     const std::string& extension_id,
-    content::RenderView* render_view,
+    content::RenderView* restrict_to_render_view,
     const base::Callback<void(ScriptContext*)>& callback) const {
-  // We copy the context list, because calling into javascript may modify it
-  // out from under us.
-  std::set<ScriptContext*> contexts_copy = contexts_;
+  ForEachImpl(extension_id, restrict_to_render_view, callback, false);
+}
 
-  for (ScriptContext* context : contexts_copy) {
-    // For the same reason as above, contexts may become invalid while we run.
-    if (!context->is_valid())
-      continue;
-
-    if (!extension_id.empty()) {
-      const Extension* extension = context->extension();
-      if (!extension || (extension_id != extension->id()))
-        continue;
-    }
-
-    content::RenderView* context_render_view = context->GetRenderView();
-    if (!context_render_view)
-      continue;
-
-    if (render_view && render_view != context_render_view)
-      continue;
-
-    callback.Run(context);
-  }
+void ScriptContextSet::RequestRunForEach(
+    const std::string& extension_id,
+    content::RenderFrame* restrict_to_render_frame,
+    const base::Callback<void(ScriptContext*)>& callback) const {
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
+  ForEachImpl(extension_id, restrict_to_render_view, callback, true);
 }
 
 std::set<ScriptContext*> ScriptContextSet::OnExtensionUnloaded(
@@ -207,6 +229,51 @@ void ScriptContextSet::DispatchOnUnloadEventAndRemove(
   context->DispatchOnUnloadEvent();
   Remove(context);  // deleted asynchronously
   out->insert(context);
+}
+
+void ScriptContextSet::ForEachImpl(
+    const std::string& extension_id,
+    content::RenderView* restrict_to_render_view,
+    const base::Callback<void(ScriptContext*)>& callback,
+    bool run_asynchronously) const {
+  // We copy the context list, because calling into javascript may modify it
+  // out from under us.
+  std::set<ScriptContext*> contexts_copy = contexts_;
+  for (ScriptContext* context : contexts_copy) {
+    // For the same reason as above, contexts may become invalid while we run.
+    if (!context->is_valid())
+      continue;
+
+    if (!extension_id.empty()) {
+      const Extension* extension = context->extension();
+      if (!extension || (extension_id != extension->id()))
+        continue;
+    }
+
+    content::RenderView* context_render_view = context->GetRenderView();
+    if (!context_render_view)
+      continue;
+
+    if (restrict_to_render_view &&
+        restrict_to_render_view != context_render_view)
+      continue;
+
+    content::RenderFrame* context_render_frame = context->GetRenderFrame();
+    if (!context_render_frame)
+      continue;
+
+    if (run_asynchronously) {
+      blink::WebLocalFrame* web_local_frame =
+          context_render_frame->GetWebFrame();
+      if (!web_local_frame)
+        continue;
+      // WebLocalFrame takes BlinkTaskRunner ownership.
+      web_local_frame->requestRunTask(
+          new BlinkTaskRunner(context_render_frame, context, callback));
+    } else {
+      callback.Run(context);
+    }
+  }
 }
 
 }  // namespace extensions
