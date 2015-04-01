@@ -74,6 +74,9 @@ declare_args() {
   enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
 
   enable_remoting = !is_ios && !is_android
+
+  # Enable hole punching for the protected video.
+  enable_video_hole = is_android
 }
 
 # Additional dependent variables -----------------------------------------------
