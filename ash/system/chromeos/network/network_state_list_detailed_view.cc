@@ -47,6 +47,7 @@
 #include "ui/chromeos/network/network_list.h"
 #include "ui/chromeos/network/network_list_view_base.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -466,6 +467,8 @@ void NetworkStateListDetailedView::CreateSettingsEntry() {
     if (show_settings) {
       settings_ = new TrayPopupLabelButton(
           this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS));
+      if (list_type_ == LIST_TYPE_VPN)
+        settings_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     }
   } else {
     // Allow users to change proxy settings only when not logged in.
