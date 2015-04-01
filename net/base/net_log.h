@@ -9,20 +9,10 @@
 
 #include "build/build_config.h"
 
-// TODO(eroman): Temporary while investigating crbug.com/467797.
-//               Note base::Debug::StackTrace() is not supported in NACL builds
-//               so conditionally disabled it there.
-#ifndef OS_NACL
-#define TEMP_INSTRUMENTATION_467797
-#endif
-
 #include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#ifdef TEMP_INSTRUMENTATION_467797
-#include "base/debug/stack_trace.h"
-#endif
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -401,29 +391,24 @@ class NET_EXPORT BoundNetLog {
   NetLog* net_log() const { return net_log_; }
 
  private:
-#ifdef TEMP_INSTRUMENTATION_467797
-  // TODO(eroman): Temporary while investigating crbug.com/467797
+  // TODO(eroman): Temporary until crbug.com/467797 is solved.
   enum Liveness {
     ALIVE = 0xCA11AB13,
     DEAD = 0xDEADBEEF,
   };
-#endif
 
   BoundNetLog(const NetLog::Source& source, NetLog* net_log)
       : source_(source), net_log_(net_log) {
   }
 
-  // TODO(eroman): Temporary while investigating crbug.com/467797
+  // TODO(eroman): Temporary until crbug.com/467797 is solved.
   void CrashIfInvalid() const;
 
   NetLog::Source source_;
   NetLog* net_log_;
 
-#ifdef TEMP_INSTRUMENTATION_467797
-  // TODO(eroman): Temporary while investigating crbug.com/467797
+  // TODO(eroman): Temporary until crbug.com/467797 is solved.
   Liveness liveness_ = ALIVE;
-  base::debug::StackTrace stack_trace_;
-#endif
 };
 
 }  // namespace net

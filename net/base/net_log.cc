@@ -5,9 +5,7 @@
 #include "net/base/net_log.h"
 
 #include "base/bind.h"
-#ifdef TEMP_INSTRUMENTATION_467797
 #include "base/debug/alias.h"
-#endif
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -402,15 +400,7 @@ void NetLog::AddEntry(EventType type,
 }
 
 BoundNetLog::~BoundNetLog() {
-#ifdef TEMP_INSTRUMENTATION_467797
   liveness_ = DEAD;
-  stack_trace_ = base::debug::StackTrace();
-
-  // Probably not necessary, but just in case compiler tries to optimize out the
-  // writes to liveness_ and stack_trace_.
-  base::debug::Alias(&liveness_);
-  base::debug::Alias(&stack_trace_);
-#endif
 }
 
 void BoundNetLog::AddEntry(NetLog::EventType type,
@@ -516,21 +506,13 @@ BoundNetLog BoundNetLog::Make(NetLog* net_log,
 }
 
 void BoundNetLog::CrashIfInvalid() const {
-#ifdef TEMP_INSTRUMENTATION_467797
   Liveness liveness = liveness_;
 
   if (liveness == ALIVE)
     return;
 
-  // Copy relevant variables onto the stack to guarantee they will be available
-  // in minidumps, and then crash.
-  base::debug::StackTrace stack_trace = stack_trace_;
-
   base::debug::Alias(&liveness);
-  base::debug::Alias(&stack_trace);
-
   CHECK_EQ(ALIVE, liveness);
-#endif
 }
 
 }  // namespace net
