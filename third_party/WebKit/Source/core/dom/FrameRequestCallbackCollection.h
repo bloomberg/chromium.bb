@@ -13,10 +13,11 @@ class ExecutionContext;
 class FrameRequestCallback;
 
 class FrameRequestCallbackCollection final {
+    DISALLOW_ALLOCATION();
 public:
     explicit FrameRequestCallbackCollection(ExecutionContext*);
 
-    typedef int CallbackId;
+    using CallbackId = int;
     CallbackId registerCallback(FrameRequestCallback*);
     void cancelCallback(CallbackId);
     void executeCallbacks(double highResNowMs, double highResNowMsLegacy);
@@ -26,13 +27,13 @@ public:
     DECLARE_TRACE();
 
 private:
-    typedef PersistentHeapVectorWillBeHeapVector<Member<FrameRequestCallback>> CallbackList;
+    using CallbackList = PersistentHeapVectorWillBeHeapVector<Member<FrameRequestCallback>>;
     CallbackList m_callbacks;
     CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
 
     CallbackId m_nextCallbackId = 0;
 
-    ExecutionContext* m_context = nullptr;
+    RawPtrWillBeMember<ExecutionContext> m_context;
 };
 
 } // namespace blink
