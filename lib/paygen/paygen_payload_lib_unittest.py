@@ -13,8 +13,6 @@ import shutil
 import tempfile
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_image
-from chromite.lib import cros_image_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -263,21 +261,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                                  test_extract_file], cwd=test_work_dir)
       self.mox.StubOutWithMock(shutil, 'move')
       shutil.move(os.path.join(test_work_dir, test_extract_file), image_file)
-
-    self.mox.StubOutWithMock(cros_build_lib, 'SudoRunCommand')
-    self.mox.StubOutWithMock(cros_image, 'LoopbackPartitions')
-
-    fake_kern_part_file = tempfile.NamedTemporaryFile(prefix='fake_kern_part',
-                                                      suffix='_p4')
-    fake_kern_part = fake_kern_part_file.name
-    osutils.WriteFile(fake_kern_part, 'a' * (65536 * 2))
-
-    dummy_parts = cros_image_unittest.LoopbackPartitions(
-        part_count=12, part_overrides={4: fake_kern_part})
-    generator_dir = os.path.join(test_work_dir, 'au-generator')
-    cros_image.LoopbackPartitions(
-        image_file, util_path=generator_dir).AndReturn(dummy_parts)
-    cros_build_lib.SudoRunCommand(['chmod', 'a+r', fake_kern_part])
 
     # Run the test.
     self.mox.ReplayAll()
