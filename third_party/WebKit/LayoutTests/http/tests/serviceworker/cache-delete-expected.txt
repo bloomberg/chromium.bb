@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS Service Worker: Cache.delete 
-PASS Cache.delete with no arguments 
-PASS Cache.delete called with a string URL 
-FAIL Cache.delete called with a Request object promise_test: Unhandled rejection with value: object "TypeError: Request method 'POST' is unsupported"
-FAIL Cache.delete with a Request object containing used body promise_test: Unhandled rejection with value: object "TypeError: Request method 'POST' is unsupported"
-PASS Cache.delete with a non-existent entry 
-Harness: the test ran to completion.
-
