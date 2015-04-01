@@ -6,7 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [12, 10, 15, 15]
+        [3, 4, 55, 29]
+      ],
+      "paintInvalidationClients": [
+        "LayoutButton BUTTON"
       ]
     }
   ]

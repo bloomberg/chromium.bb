@@ -6,7 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [12, 10, 15, 15]
+        [6, 7, 22, 22]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow INPUT"
       ]
     }
   ]
