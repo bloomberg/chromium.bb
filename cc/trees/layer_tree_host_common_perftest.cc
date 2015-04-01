@@ -86,6 +86,7 @@ class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
 
     do {
       bool can_render_to_separate_surface = true;
+      bool verify_property_trees = false;
       int max_texture_size = 8096;
       RenderSurfaceLayerList update_list;
       LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
@@ -102,8 +103,7 @@ class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
           layer_tree_host()
               ->settings()
               .layer_transforms_should_scale_layer_contents,
-          layer_tree_host()->settings().verify_property_trees,
-          &update_list, 0);
+          verify_property_trees, &update_list, 0);
       LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
       timer_.NextLap();
@@ -144,6 +144,7 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
                                 LayerTreeImpl* active_tree,
                                 LayerTreeHostImpl* host_impl) {
     LayerImplList update_list;
+    bool verify_property_trees = false;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         active_tree->root_layer(), active_tree->DrawViewportSize(),
         host_impl->DrawTransform(), active_tree->device_scale_factor(),
@@ -155,8 +156,7 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
         host_impl->settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        host_impl->settings().verify_property_trees,
-        &update_list, 0);
+        verify_property_trees, &update_list, 0);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 };
