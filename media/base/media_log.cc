@@ -236,13 +236,10 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
   return event.Pass();
 }
 
-scoped_ptr<MediaLogEvent> MediaLog::CreateLogEvent(MediaLogLevel level,
-                                                   const std::string& message) {
-  const MediaLogEvent::Type type = MediaLogLevelToEventType(level);
-  const std::string param = MediaLogLevelToString(level);
-  scoped_ptr<MediaLogEvent> event(CreateEvent(type));
-  event->params.SetString(param, message);
-  return event.Pass();
+void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {
+  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogLevelToEventType(level)));
+  event->params.SetString(MediaLogLevelToString(level), message);
+  AddEvent(event.Pass());
 }
 
 void MediaLog::SetStringProperty(
