@@ -1,2 +1,2 @@
-# This suite runs the tests in fast/forms/text with --enable-slimming-paint
+# This suite runs the tests in fast/forms with --enable-slimming-paint
 # The slimming paint project is described here: http://www.chromium.org/blink/slimming-paint

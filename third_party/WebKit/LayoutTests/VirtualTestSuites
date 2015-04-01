@@ -157,13 +157,7 @@
   },
   {
     "prefix": "slimmingpaint",
-    "base": "fast/forms/file",
-    "args": ["--enable-slimming-paint"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "fast/forms/text",
+    "base": "fast/forms",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
   },
