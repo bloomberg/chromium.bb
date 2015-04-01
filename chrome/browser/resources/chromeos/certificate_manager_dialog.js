@@ -41,7 +41,7 @@ function load() {
 
   PageManager.isDialog = true;
   CertificateManager.getInstance().setIsKiosk(true);
-  certificateManager.getInstance().initializePage();
+  CertificateManager.getInstance().initializePage();
   PageManager.registerOverlay(AlertOverlay.getInstance(),
       CertificateManager.getInstance());
   PageManager.registerOverlay(CertificateBackupOverlay.getInstance(),
