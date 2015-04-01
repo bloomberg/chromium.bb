@@ -741,10 +741,10 @@ base::Process StartSandboxedProcess(
       // cause for lowbox/createprocess errors.
       sandbox::PolicyBase* policy_base =
           static_cast<sandbox::PolicyBase*>(policy);
-      if (policy_base->GetLowBoxSid()) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Lowbox.Launch.Error",
-                                    last_error);
-      }
+      UMA_HISTOGRAM_SPARSE_SLOWLY(policy_base->GetLowBoxSid() ?
+                                      "Process.Sandbox.Lowbox.Launch.Error" :
+                                      "Process.Sandbox.Launch.Error",
+                                  last_error);
     } else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
     return base::Process();
