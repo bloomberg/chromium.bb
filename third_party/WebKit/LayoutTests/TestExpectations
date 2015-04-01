@@ -1948,11 +1948,6 @@ crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/fake-italic.h
 
 crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
-crbug.com/471177 virtual/slimmingpaint/paint/invalidation/animated-gif-offscreen.html [ NeedsRebaseline ]
-crbug.com/471177 paint/invalidation/animated-gif-offscreen.html [ NeedsRebaseline ]
-crbug.com/471177 virtual/slimmingpaint/paint/invalidation/animated-gif.html [ NeedsRebaseline ]
-crbug.com/471177 paint/invalidation/animated-gif.html [ NeedsRebaseline ]
-
 crbug.com/471093 [ Win Debug ] inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
 
 crbug.com/471375 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]

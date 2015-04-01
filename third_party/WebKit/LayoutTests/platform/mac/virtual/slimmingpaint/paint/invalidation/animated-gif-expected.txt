@@ -8,13 +8,14 @@
       "repaintRects": [
         [8, 8, 2000, 54],
         [8, 8, 50, 50],
+        [8, 8, 50, 50],
         [8, 8, 50, 50]
       ],
       "paintInvalidationClients": [
-        "LayoutImage IMG id='targetImage'",
         "InlineBox",
         "RootInlineBox",
         "LayoutBlockFlow DIV",
+        "LayoutImage IMG id='targetImage'",
         "LayoutImage IMG id='targetImage'",
         "LayoutImage IMG id='targetImage'"
       ]

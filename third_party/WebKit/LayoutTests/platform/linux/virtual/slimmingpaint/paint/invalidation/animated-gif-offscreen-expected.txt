@@ -10,7 +10,6 @@
         [8, 8, 50, 50]
       ],
       "paintInvalidationClients": [
-        "LayoutImage IMG id='targetImage'",
         "InlineBox",
         "RootInlineBox",
         "LayoutBlockFlow DIV",
