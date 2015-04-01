@@ -497,6 +497,9 @@ struct FaviconBitmap {
   // Time at which |bitmap_data| was last updated.
   base::Time last_updated;
 
+  // Time at which |bitmap_data| was last requested.
+  base::Time last_requested;
+
   // The bits of the bitmap.
   scoped_refptr<base::RefCountedMemory> bitmap_data;
 

@@ -58,14 +58,17 @@ namespace history {
 //                    the |id| field in the appropriate row in the |favicons|
 //                    table.
 //
-//  id                Unique ID.
-//  icon_id           The ID of the favicon that the bitmap is associated to.
-//  last_updated      The time at which this favicon was inserted into the
+//   id               Unique ID.
+//   icon_id          The ID of the favicon that the bitmap is associated to.
+//   last_updated     The time at which this favicon was inserted into the
 //                    table. This is used to determine if it needs to be
 //                    redownloaded from the web.
-//  image_data        PNG encoded data of the favicon.
-//  width             Pixel width of |image_data|.
-//  height            Pixel height of |image_data|.
+//   image_data       PNG encoded data of the favicon.
+//   width            Pixel width of |image_data|.
+//   height           Pixel height of |image_data|.
+//   last_requested   The time at which this bitmap was last requested. This is
+//                    used to determine the priority with which the bitmap
+//                    should be retained on cleanup.
 
 namespace {
 
@@ -77,6 +80,7 @@ namespace {
 // fatal (in fact, very old data may be expired immediately at startup
 // anyhow).
 
+// Version 8: ???????? by rogerm@chromium.org on 2015-??-??
 // Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
 // Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
 // Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12 (deprecated)
@@ -86,8 +90,8 @@ namespace {
 // Version number of the database.
 // NOTE(shess): When changing the version, add a new golden file for
 // the new version and a test to verify that Init() works with it.
-const int kCurrentVersionNumber = 7;
-const int kCompatibleVersionNumber = 7;
+const int kCurrentVersionNumber = 8;
+const int kCompatibleVersionNumber = 8;
 const int kDeprecatedVersionNumber = 5;  // and earlier.
 
 void FillIconMapping(const sql::Statement& statement,
@@ -310,7 +314,10 @@ bool InitTables(sql::Connection* db) {
       "last_updated INTEGER DEFAULT 0,"
       "image_data BLOB,"
       "width INTEGER DEFAULT 0,"
-      "height INTEGER DEFAULT 0"
+      "height INTEGER DEFAULT 0,"
+      // This field is at the end so that fresh tables and migrated tables have
+      // the same layout.
+      "last_requested INTEGER DEFAULT 0"
       ")";
   if (!db->Execute(kFaviconBitmapsSql))
     return false;
@@ -396,7 +403,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // NOTE(shess): This code is currently specific to the version
   // number.  I am working on simplifying things to loosen the
   // dependency, meanwhile contact me if you need to bump the version.
-  DCHECK_EQ(7, kCurrentVersionNumber);
+  DCHECK_EQ(8, kCurrentVersionNumber);
 
   // TODO(shess): Reset back after?
   db->reset_error_callback();
@@ -448,9 +455,8 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     return;
   }
 
-  // Earlier versions have been handled or deprecated, later versions should be
-  // impossible.
-  if (version != 7) {
+  // Earlier versions have been handled or deprecated.
+  if (version < 7) {
     sql::Recovery::Unrecoverable(recovery.Pass());
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
     return;
@@ -670,8 +676,8 @@ bool ThumbnailDatabase::GetFaviconBitmaps(
     std::vector<FaviconBitmap>* favicon_bitmaps) {
   DCHECK(icon_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id, last_updated, image_data, width, height FROM favicon_bitmaps "
-      "WHERE icon_id=?"));
+      "SELECT id, last_updated, image_data, width, height, last_requested "
+      "FROM favicon_bitmaps WHERE icon_id=?"));
   statement.BindInt64(0, icon_id);
 
   bool result = false;
@@ -692,6 +698,8 @@ bool ThumbnailDatabase::GetFaviconBitmaps(
     }
     favicon_bitmap.pixel_size = gfx::Size(statement.ColumnInt(3),
                                           statement.ColumnInt(4));
+    favicon_bitmap.last_requested =
+        base::Time::FromInternalValue(statement.ColumnInt64(5));
     favicon_bitmaps->push_back(favicon_bitmap);
   }
   return result;
@@ -700,12 +708,13 @@ bool ThumbnailDatabase::GetFaviconBitmaps(
 bool ThumbnailDatabase::GetFaviconBitmap(
     FaviconBitmapID bitmap_id,
     base::Time* last_updated,
+    base::Time* last_requested,
     scoped_refptr<base::RefCountedMemory>* png_icon_data,
     gfx::Size* pixel_size) {
   DCHECK(bitmap_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT last_updated, image_data, width, height FROM favicon_bitmaps "
-      "WHERE id=?"));
+      "SELECT last_updated, image_data, width, height, last_requested "
+      "FROM favicon_bitmaps WHERE id=?"));
   statement.BindInt64(0, bitmap_id);
 
   if (!statement.Step())
@@ -724,6 +733,10 @@ bool ThumbnailDatabase::GetFaviconBitmap(
     *pixel_size = gfx::Size(statement.ColumnInt(2),
                             statement.ColumnInt(3));
   }
+
+  if (last_requested)
+    *last_requested = base::Time::FromInternalValue(statement.ColumnInt64(4));
+
   return true;
 }
 
@@ -777,6 +790,17 @@ bool ThumbnailDatabase::SetFaviconBitmapLastUpdateTime(
   DCHECK(bitmap_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicon_bitmaps SET last_updated=? WHERE id=?"));
+  statement.BindInt64(0, time.ToInternalValue());
+  statement.BindInt64(1, bitmap_id);
+  return statement.Run();
+}
+
+bool ThumbnailDatabase::SetFaviconBitmapLastRequestedTime(
+    FaviconBitmapID bitmap_id,
+    base::Time time) {
+  DCHECK(bitmap_id);
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE favicon_bitmaps SET last_requested=? WHERE id=?"));
   statement.BindInt64(0, time.ToInternalValue());
   statement.BindInt64(1, bitmap_id);
   return statement.Run();
@@ -1090,9 +1114,9 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
       "ALTER TABLE favicon_bitmaps RENAME TO old_favicon_bitmaps";
   const char kCopyFaviconBitmaps[] =
       "INSERT INTO favicon_bitmaps "
-      "  (icon_id, last_updated, image_data, width, height) "
+      "  (icon_id, last_updated, image_data, width, height, last_requested) "
       "SELECT mapping.new_icon_id, old.last_updated, "
-      "    old.image_data, old.width, old.height "
+      "    old.image_data, old.width, old.height, old.last_requested "
       "FROM old_favicon_bitmaps AS old "
       "JOIN temp.icon_id_mapping AS mapping "
       "ON (old.icon_id = mapping.old_icon_id)";
@@ -1193,8 +1217,7 @@ sql::InitStatus ThumbnailDatabase::InitImpl(const base::FilePath& db_name) {
   base::mac::SetFileBackupExclusion(db_name);
 #endif
 
-  // thumbnails table has been obsolete for a long time, remove any
-  // detrious.
+  // thumbnails table has been obsolete for a long time, remove any detritus.
   ignore_result(db_.Execute("DROP TABLE IF EXISTS thumbnails"));
 
   // At some point, operations involving temporary tables weren't done
@@ -1243,6 +1266,12 @@ sql::InitStatus ThumbnailDatabase::InitImpl(const base::FilePath& db_name) {
   if (cur_version == 6) {
     ++cur_version;
     if (!UpgradeToVersion7())
+      return CantUpgradeToVersion(cur_version);
+  }
+
+  if (cur_version == 7) {
+    ++cur_version;
+    if (!UpgradeToVersion8())
       return CantUpgradeToVersion(cur_version);
   }
 
@@ -1297,6 +1326,18 @@ bool ThumbnailDatabase::UpgradeToVersion7() {
 
   meta_table_.SetVersionNumber(7);
   meta_table_.SetCompatibleVersionNumber(std::min(7, kCompatibleVersionNumber));
+  return true;
+}
+
+bool ThumbnailDatabase::UpgradeToVersion8() {
+  // Add the last_requested column to the favicon_bitmaps table.
+  const char kFaviconBitmapsAddLastRequestedSql[] =
+      "ALTER TABLE favicon_bitmaps ADD COLUMN last_requested INTEGER DEFAULT 0";
+  if (!db_.Execute(kFaviconBitmapsAddLastRequestedSql))
+    return false;
+
+  meta_table_.SetVersionNumber(8);
+  meta_table_.SetCompatibleVersionNumber(std::min(8, kCompatibleVersionNumber));
   return true;
 }
 

@@ -82,6 +82,7 @@ class ThumbnailDatabase {
   // bitmap at |bitmap_id|. Returns true if successful.
   bool GetFaviconBitmap(FaviconBitmapID bitmap_id,
                         base::Time* last_updated,
+                        base::Time* last_requested,
                         scoped_refptr<base::RefCountedMemory>* png_icon_data,
                         gfx::Size* pixel_size);
 
@@ -110,6 +111,11 @@ class ThumbnailDatabase {
   // Returns true if successful.
   bool SetFaviconBitmapLastUpdateTime(FaviconBitmapID bitmap_id,
                                       base::Time time);
+
+  // Sets the last requested time for the favicon bitmap at |bitmap_id|.
+  // Returns true if successful.
+  bool SetFaviconBitmapLastRequestedTime(FaviconBitmapID bitmap_id,
+                                         base::Time time);
 
   // Deletes the favicon bitmap with |bitmap_id|.
   // Returns true if successful.
@@ -241,6 +247,7 @@ class ThumbnailDatabase {
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version5);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version6);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version7);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version8);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, WildSchema);
 
   // Open database on a given filename. If the file does not exist,
@@ -263,6 +270,9 @@ class ThumbnailDatabase {
 
   // Removes sizes column.
   bool UpgradeToVersion7();
+
+  // Adds support for bitmap usage tracking.
+  bool UpgradeToVersion8();
 
   // Returns true if the |favicons| database is missing a column.
   bool IsFaviconDBStructureIncorrect();

@@ -1818,9 +1818,9 @@ TEST_F(HistoryBackendTest, SetFaviconsDeleteBitmaps) {
   scoped_refptr<base::RefCountedMemory> bitmap_data_out;
   gfx::Size pixel_size_out;
   EXPECT_FALSE(backend_->thumbnail_db_->GetFaviconBitmap(small_bitmap_id,
-      NULL, &bitmap_data_out, &pixel_size_out));
+      NULL, NULL, &bitmap_data_out, &pixel_size_out));
   EXPECT_TRUE(backend_->thumbnail_db_->GetFaviconBitmap(large_bitmap_id,
-      NULL, &bitmap_data_out, &pixel_size_out));
+      NULL, NULL, &bitmap_data_out, &pixel_size_out));
   EXPECT_TRUE(BitmapColorEqual(SK_ColorWHITE, bitmap_data_out));
   EXPECT_EQ(kLargeSize, pixel_size_out);
 

@@ -1529,7 +1529,8 @@ void HistoryBackend::GetLargestFaviconForURL(
   favicon_base::FaviconRawBitmapResult bitmap_result;
   bitmap_result.icon_url = icon_url;
   bitmap_result.icon_type = icon_type;
-  if (!thumbnail_db_->GetFaviconBitmap(largest_icon.bitmap_id, &last_updated,
+  if (!thumbnail_db_->GetFaviconBitmap(largest_icon.bitmap_id,
+                                       &last_updated, nullptr,
                                        &bitmap_result.bitmap_data,
                                        &bitmap_result.pixel_size)) {
     return;
@@ -1966,8 +1967,8 @@ bool HistoryBackend::IsFaviconBitmapDataEqual(
     return false;
 
   scoped_refptr<base::RefCountedMemory> original_bitmap_data;
-  thumbnail_db_->GetFaviconBitmap(bitmap_id, nullptr, &original_bitmap_data,
-                                  nullptr);
+  thumbnail_db_->GetFaviconBitmap(bitmap_id, nullptr, nullptr,
+                                  &original_bitmap_data, nullptr);
   return new_bitmap_data->Equals(original_bitmap_data);
 }
 
@@ -2056,7 +2057,7 @@ bool HistoryBackend::GetFaviconBitmapResultsForBestMatch(
     bitmap_result.icon_url = icon_url;
     bitmap_result.icon_type = icon_type;
     if (!thumbnail_db_->GetFaviconBitmap(best_bitmap_ids[i], &last_updated,
-                                         &bitmap_result.bitmap_data,
+                                         nullptr, &bitmap_result.bitmap_data,
                                          &bitmap_result.pixel_size)) {
       return false;
     }
