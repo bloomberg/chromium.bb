@@ -7,7 +7,6 @@
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#import "ios/web/public/web_state/js/crw_js_early_script_manager.h"
 
 @implementation JsAutofillManager
 
@@ -46,10 +45,6 @@
 
 - (NSString*)presenceBeacon {
   return @"__gCrWeb.autofill";
-}
-
-- (NSArray*)directDependencies {
-  return @[ [CRWJSEarlyScriptManager class] ];
 }
 
 - (void)fillActiveFormField:(NSString*)dataString

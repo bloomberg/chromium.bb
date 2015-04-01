@@ -8,7 +8,6 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/web/public/web_state/js/crw_js_early_script_manager.h"
 
 namespace {
 // Santizies |str| and wraps it in quotes so it can be injected safely in
@@ -30,10 +29,6 @@ NSString* JSONEscape(NSString* str) {
 
 - (NSString*)presenceBeacon {
   return @"__gCrWeb.suggestion";
-}
-
-- (NSArray*)directDependencies {
-  return @[ [CRWJSEarlyScriptManager class] ];
 }
 
 - (void)selectNextElement {

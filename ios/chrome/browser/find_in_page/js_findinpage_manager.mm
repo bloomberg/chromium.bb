@@ -14,7 +14,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
-#import "ios/web/public/web_state/js/crw_js_early_script_manager.h"
 
 namespace {
 
@@ -269,10 +268,6 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (NSString*)presenceBeacon {
   return kFindInPageBeacon;
-}
-
-- (NSArray*)directDependencies {
-  return @[ [CRWJSEarlyScriptManager class] ];
 }
 
 @end
