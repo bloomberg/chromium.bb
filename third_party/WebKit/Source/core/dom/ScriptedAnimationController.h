@@ -26,6 +26,7 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
@@ -39,8 +40,8 @@ namespace blink {
 class Document;
 class Event;
 class EventTarget;
+class FrameRequestCallback;
 class MediaQueryListListener;
-class RequestAnimationFrameCallback;
 
 class ScriptedAnimationController : public RefCountedWillBeGarbageCollected<ScriptedAnimationController> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedAnimationController);
@@ -55,7 +56,7 @@ public:
 
     typedef int CallbackId;
 
-    int registerCallback(RequestAnimationFrameCallback*);
+    int registerCallback(FrameRequestCallback*);
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
 
@@ -76,12 +77,8 @@ private:
     void executeCallbacks(double monotonicTimeNow);
     void callMediaQueryListListeners();
 
-    typedef PersistentHeapVectorWillBeHeapVector<Member<RequestAnimationFrameCallback>> CallbackList;
-    CallbackList m_callbacks;
-    CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
-
     RawPtrWillBeMember<Document> m_document;
-    CallbackId m_nextCallbackId;
+    FrameRequestCallbackCollection m_callbackCollection;
     int m_suspendCount;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_eventQueue;
     WillBeHeapListHashSet<std::pair<RawPtrWillBeMember<const EventTarget>, const StringImpl*>> m_perFrameEvents;

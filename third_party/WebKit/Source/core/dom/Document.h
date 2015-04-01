@@ -105,6 +105,7 @@ class FloatRect;
 class FormController;
 class Frame;
 class FrameHost;
+class FrameRequestCallback;
 class FrameView;
 class HTMLAllCollection;
 class HTMLCanvasElement;
@@ -134,7 +135,6 @@ class ProcessingInstruction;
 class QualifiedName;
 class Range;
 class LayoutView;
-class RequestAnimationFrameCallback;
 class ResourceFetcher;
 class SVGDocumentExtensions;
 class SVGUseElement;
@@ -949,7 +949,7 @@ public:
 
     const DocumentTiming& timing() const { return m_documentTiming; }
 
-    int requestAnimationFrame(RequestAnimationFrameCallback*);
+    int requestAnimationFrame(FrameRequestCallback*);
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 

@@ -327,13 +327,13 @@ PassRefPtrWillBeRawPtr<CSSRuleList> RemoteDOMWindow::getMatchedCSSRules(Element*
     return nullptr;
 }
 
-int RemoteDOMWindow::requestAnimationFrame(RequestAnimationFrameCallback*)
+int RemoteDOMWindow::requestAnimationFrame(FrameRequestCallback*)
 {
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-int RemoteDOMWindow::webkitRequestAnimationFrame(RequestAnimationFrameCallback*)
+int RemoteDOMWindow::webkitRequestAnimationFrame(FrameRequestCallback*)
 {
     ASSERT_NOT_REACHED();
     return 0;

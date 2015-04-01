@@ -36,7 +36,7 @@
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/dom/FrameRequestCallback.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"
 #include "core/events/HashChangeEvent.h"
@@ -1340,7 +1340,7 @@ void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeig
     host->chrome().setWindowRect(adjustWindowRect(*frame(), update));
 }
 
-int LocalDOMWindow::requestAnimationFrame(RequestAnimationFrameCallback* callback)
+int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback)
 {
     callback->m_useLegacyTimeBase = false;
     if (Document* d = document())
@@ -1348,7 +1348,7 @@ int LocalDOMWindow::requestAnimationFrame(RequestAnimationFrameCallback* callbac
     return 0;
 }
 
-int LocalDOMWindow::webkitRequestAnimationFrame(RequestAnimationFrameCallback* callback)
+int LocalDOMWindow::webkitRequestAnimationFrame(FrameRequestCallback* callback)
 {
     callback->m_useLegacyTimeBase = true;
     if (Document* d = document())

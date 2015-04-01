@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,8 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-callback interface RequestAnimationFrameCallback{
-    // highResTime is passed as high resolution timestamp, see
-    // http://www.w3.org/TR/hr-time/ for details.
-    void handleEvent(double highResTime);
+#ifndef FrameRequestCallback_h
+#define FrameRequestCallback_h
+
+#include "platform/heap/Handle.h"
+
+namespace blink {
+
+class FrameRequestCallback : public GarbageCollectedFinalized<FrameRequestCallback> {
+public:
+    virtual ~FrameRequestCallback() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    virtual void handleEvent(double highResTimeMs) = 0;
+
+    int m_id;
+    bool m_cancelled;
+    bool m_useLegacyTimeBase;
 };
+
+}
+
+#endif // FrameRequestCallback_h

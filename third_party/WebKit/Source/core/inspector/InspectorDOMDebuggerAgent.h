@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class Document;
 class Element;
 class Event;
 class EventListener;
@@ -88,9 +87,9 @@ public:
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
     void willFireTimer(ExecutionContext*, int timerId);
-    void didRequestAnimationFrame(Document*, int callbackId);
-    void didCancelAnimationFrame(Document*, int callbackId);
-    void willFireAnimationFrame(Document*, int callbackId);
+    void didRequestAnimationFrame(ExecutionContext*, int callbackId);
+    void didCancelAnimationFrame(ExecutionContext*, int callbackId);
+    void willFireAnimationFrame(ExecutionContext*, int callbackId);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
     void didFireWebGLError(const String& errorName);

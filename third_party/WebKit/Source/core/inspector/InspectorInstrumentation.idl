@@ -339,13 +339,13 @@ interface InspectorInstrumentation {
     void willDestroyResource(Resource* cachedResource);
 
     [AsyncCallTracker, DOMDebugger]
-    void didRequestAnimationFrame([Keep] Document*, int callbackId);
+    void didRequestAnimationFrame([Keep] ExecutionContext*, int callbackId);
 
     [AsyncCallTracker, DOMDebugger]
-    void didCancelAnimationFrame([Keep] Document*, int callbackId);
+    void didCancelAnimationFrame([Keep] ExecutionContext*, int callbackId);
 
     [AsyncCallTracker, DOMDebugger]
-    InspectorInstrumentationCookie willFireAnimationFrame([Keep] Document*, int callbackId);
+    InspectorInstrumentationCookie willFireAnimationFrame([Keep] ExecutionContext*, int callbackId);
 
     [AsyncCallTracker, Inline=FastReturn]
     void didFireAnimationFrame(const InspectorInstrumentationCookie&);

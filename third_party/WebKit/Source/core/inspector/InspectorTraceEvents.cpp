@@ -426,11 +426,14 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerFireEvent::data(E
     return genericTimerData(context, timerId);
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::data(Document* document, int callbackId)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::data(ExecutionContext* context, int callbackId)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("id", callbackId);
-    value->setString("frame", toHexString(document->frame()));
+    if (context->isDocument())
+        value->setString("frame", toHexString(toDocument(context)->frame()));
+    else if (context->isWorkerGlobalScope())
+        value->setString("worker", toHexString(toWorkerGlobalScope(context)));
     setCallStack(value.get());
     return value.release();
 }

@@ -28,7 +28,7 @@
 
 #include "core/css/MediaQueryListListener.h"
 #include "core/dom/Document.h"
-#include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/dom/FrameRequestCallback.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
@@ -46,7 +46,7 @@ std::pair<EventTarget*, StringImpl*> eventTargetKey(const Event* event)
 
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
     : m_document(document)
-    , m_nextCallbackId(0)
+    , m_callbackCollection(document)
     , m_suspendCount(0)
 {
 }
@@ -56,9 +56,8 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedAnimationController);
 DEFINE_TRACE(ScriptedAnimationController)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_callbacks);
-    visitor->trace(m_callbacksToInvoke);
     visitor->trace(m_document);
+    visitor->trace(m_callbackCollection);
     visitor->trace(m_eventQueue);
     visitor->trace(m_mediaQueryListListeners);
     visitor->trace(m_perFrameEvents);
@@ -85,39 +84,16 @@ void ScriptedAnimationController::dispatchEventsAndCallbacksForPrinting()
     callMediaQueryListListeners();
 }
 
-ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(RequestAnimationFrameCallback* callback)
+ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(FrameRequestCallback* callback)
 {
-    ScriptedAnimationController::CallbackId id = ++m_nextCallbackId;
-    callback->m_cancelled = false;
-    callback->m_id = id;
-    m_callbacks.append(callback);
+    CallbackId id = m_callbackCollection.registerCallback(callback);
     scheduleAnimationIfNeeded();
-
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RequestAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_document, id));
-    InspectorInstrumentation::didRequestAnimationFrame(m_document, id);
-
     return id;
 }
 
 void ScriptedAnimationController::cancelCallback(CallbackId id)
 {
-    for (size_t i = 0; i < m_callbacks.size(); ++i) {
-        if (m_callbacks[i]->m_id == id) {
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_document, id));
-            InspectorInstrumentation::didCancelAnimationFrame(m_document, id);
-            m_callbacks.remove(i);
-            return;
-        }
-    }
-    for (size_t i = 0; i < m_callbacksToInvoke.size(); ++i) {
-        if (m_callbacksToInvoke[i]->m_id == id) {
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_document, id));
-            InspectorInstrumentation::didCancelAnimationFrame(m_document, id);
-            m_callbacksToInvoke[i]->m_cancelled = true;
-            // will be removed at the end of executeCallbacks()
-            return;
-        }
-    }
+    m_callbackCollection.cancelCallback(id);
 }
 
 void ScriptedAnimationController::dispatchEvents(const AtomicString& eventInterfaceFilter)
@@ -162,27 +138,7 @@ void ScriptedAnimationController::executeCallbacks(double monotonicTimeNow)
 
     double highResNowMs = 1000.0 * m_document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(monotonicTimeNow);
     double legacyHighResNowMs = 1000.0 * m_document->loader()->timing().monotonicTimeToPseudoWallTime(monotonicTimeNow);
-
-    // First, generate a list of callbacks to consider.  Callbacks registered from this point
-    // on are considered only for the "next" frame, not this one.
-    ASSERT(m_callbacksToInvoke.isEmpty());
-    m_callbacksToInvoke.swap(m_callbacks);
-
-    for (size_t i = 0; i < m_callbacksToInvoke.size(); ++i) {
-        RequestAnimationFrameCallback* callback = m_callbacksToInvoke[i].get();
-        if (!callback->m_cancelled) {
-            TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FireAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_document, callback->m_id));
-            InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireAnimationFrame(m_document, callback->m_id);
-            if (callback->m_useLegacyTimeBase)
-                callback->handleEvent(legacyHighResNowMs);
-            else
-                callback->handleEvent(highResNowMs);
-            InspectorInstrumentation::didFireAnimationFrame(cookie);
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
-        }
-    }
-
-    m_callbacksToInvoke.clear();
+    m_callbackCollection.executeCallbacks(highResNowMs, legacyHighResNowMs);
 }
 
 void ScriptedAnimationController::callMediaQueryListListeners()
@@ -197,7 +153,7 @@ void ScriptedAnimationController::callMediaQueryListListeners()
 
 void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)
 {
-    if (!m_callbacks.size() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
+    if (m_callbackCollection.isEmpty() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
         return;
 
     if (m_suspendCount)
@@ -242,7 +198,7 @@ void ScriptedAnimationController::scheduleAnimationIfNeeded()
     if (m_suspendCount)
         return;
 
-    if (!m_callbacks.size() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
+    if (m_callbackCollection.isEmpty() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
         return;
 
     if (FrameView* frameView = m_document->view())

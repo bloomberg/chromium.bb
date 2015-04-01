@@ -488,17 +488,17 @@ void InspectorDOMDebuggerAgent::didRejectPromise()
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(promiseRejectedEventName, 0), true);
 }
 
-void InspectorDOMDebuggerAgent::didRequestAnimationFrame(Document*, int)
+void InspectorDOMDebuggerAgent::didRequestAnimationFrame(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(requestAnimationFrameEventName, 0), true);
 }
 
-void InspectorDOMDebuggerAgent::didCancelAnimationFrame(Document*, int)
+void InspectorDOMDebuggerAgent::didCancelAnimationFrame(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(cancelAnimationFrameEventName, 0), true);
 }
 
-void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document*, int)
+void InspectorDOMDebuggerAgent::willFireAnimationFrame(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(animationFrameFiredEventName, 0), false);
 }

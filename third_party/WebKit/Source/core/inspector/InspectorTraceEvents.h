@@ -155,7 +155,7 @@ public:
 
 class InspectorAnimationFrameEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, int callbackId);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int callbackId);
 };
 
 class InspectorWebSocketCreateEvent {

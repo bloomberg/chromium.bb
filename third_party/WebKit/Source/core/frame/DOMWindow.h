@@ -26,11 +26,11 @@ class DOMWindowCSS;
 class Document;
 class Element;
 class Frame;
+class FrameRequestCallback;
 class History;
 class LocalDOMWindow;
 class MediaQueryList;
 class Navigator;
-class RequestAnimationFrameCallback;
 class Screen;
 class ScrollToOptions;
 class SerializedScriptValue;
@@ -167,8 +167,8 @@ public:
     virtual PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const = 0;
 
     // WebKit animation extensions
-    virtual int requestAnimationFrame(RequestAnimationFrameCallback*) = 0;
-    virtual int webkitRequestAnimationFrame(RequestAnimationFrameCallback*) = 0;
+    virtual int requestAnimationFrame(FrameRequestCallback*) = 0;
+    virtual int webkitRequestAnimationFrame(FrameRequestCallback*) = 0;
     virtual void cancelAnimationFrame(int id) = 0;
 
     void captureEvents() { }

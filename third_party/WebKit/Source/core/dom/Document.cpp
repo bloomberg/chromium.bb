@@ -75,6 +75,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/FrameRequestCallback.h"
 #include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/Microtask.h"
 #include "core/dom/MutationObserver.h"
@@ -87,7 +88,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/SelectorQuery.h"
@@ -5077,7 +5077,7 @@ ScriptedAnimationController& Document::ensureScriptedAnimationController()
     return *m_scriptedAnimationController;
 }
 
-int Document::requestAnimationFrame(RequestAnimationFrameCallback* callback)
+int Document::requestAnimationFrame(FrameRequestCallback* callback)
 {
     return ensureScriptedAnimationController().registerCallback(callback);
 }
