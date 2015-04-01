@@ -458,13 +458,6 @@
                     func: function(mk) { return mk.createSession('persistent-license'); },
                     isNotSupportedAllowed: true
                 },
-                {
-                    // Since this is optional, some Clear Key implementations
-                    // will succeed, others will return a "NotSupportedError".
-                    // Both are allowed results.
-                    func: function(mk) { return mk.createSession('persistent-release-message'); },
-                    isNotSupportedAllowed: true
-                },
                 // Try additional parameter, which should be ignored.
                 {
                     func: function(mk) { return mk.createSession('temporary', 'extra'); },

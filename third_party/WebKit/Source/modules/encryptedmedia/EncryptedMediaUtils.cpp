@@ -11,7 +11,6 @@ namespace {
 
 const char kTemporary[] = "temporary";
 const char kPersistentLicense[] = "persistent-license";
-const char kPersistentReleaseMessage[] = "persistent-release-message";
 
 } // namespace
 
@@ -53,8 +52,6 @@ WebEncryptedMediaSessionType EncryptedMediaUtils::convertToSessionType(const Str
         return WebEncryptedMediaSessionType::Temporary;
     if (sessionType == kPersistentLicense)
         return WebEncryptedMediaSessionType::PersistentLicense;
-    if (sessionType == kPersistentReleaseMessage)
-        return WebEncryptedMediaSessionType::PersistentReleaseMessage;
 
     // |sessionType| is not restricted in the idl, so anything is possible.
     return WebEncryptedMediaSessionType::Unknown;
@@ -67,8 +64,8 @@ String EncryptedMediaUtils::convertFromSessionType(WebEncryptedMediaSessionType 
         return kTemporary;
     case WebEncryptedMediaSessionType::PersistentLicense:
         return kPersistentLicense;
+    // FIXME: Remove once removed from Chromium (crbug.com/448888).
     case WebEncryptedMediaSessionType::PersistentReleaseMessage:
-        return kPersistentReleaseMessage;
     case WebEncryptedMediaSessionType::Unknown:
         // Chromium should not use Unknown.
         ASSERT_NOT_REACHED();
