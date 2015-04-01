@@ -81,6 +81,12 @@ FileGrid.decorate = function(
 };
 
 /**
+ * Grid size.
+ * @const {number}
+ */
+FileGrid.GridSize = 180; // px
+
+/**
  * Sets list thumbnail loader.
  * @param {ListThumbnailLoader} listThumbnailLoader A list thumbnail loader.
  * @private
@@ -108,12 +114,16 @@ FileGrid.prototype.setListThumbnailLoader = function(listThumbnailLoader) {
  */
 FileGrid.prototype.onThumbnailLoaded_ = function(event) {
   var listItem = this.getListItemByIndex(event.index);
-  if (listItem) {
+  var entry = listItem && this.dataModel.item(listItem.listIndex);
+  if (entry) {
     var box = listItem.querySelector('.img-container');
     if (box) {
       FileGrid.setThumbnailImage_(
           assertInstanceof(box, HTMLDivElement),
+          entry,
           event.dataUrl,
+          event.width,
+          event.height,
           /* should animate */ true);
     }
   }
@@ -481,9 +491,13 @@ FileGrid.prototype.decorateThumbnailBox_ = function(box, entry) {
   // Set thumbnail if it's already in cache.
   if (this.listThumbnailLoader_ &&
       this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
+    var thumbnailData = this.listThumbnailLoader_.getThumbnailFromCache(entry);
     FileGrid.setThumbnailImage_(
         box,
-        this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl,
+        entry,
+        thumbnailData.dataUrl,
+        thumbnailData.width,
+        thumbnailData.height,
         /* should not animate */ false);
   } else {
     var mediaType = FileType.getMediaType(entry);
@@ -521,16 +535,28 @@ FileGrid.prototype.setImportStatusVisible = function(visible) {
 /**
  * Sets thumbnail image to the box.
  * @param {!HTMLDivElement} box A div element to hold thumbnails.
+ * @param {Entry!} entry An entry of the thumbnail.
  * @param {string} dataUrl Data url of thumbnail.
+ * @param {number} width Width of thumbnail.
+ * @param {number} height Height of thumbnail.
  * @param {boolean} shouldAnimate Whether the thumbanil is shown with animation
  *     or not.
  * @private
  */
-FileGrid.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
+FileGrid.setThumbnailImage_ = function(
+    box, entry, dataUrl, width, height, shouldAnimate) {
   var oldThumbnails = box.querySelectorAll('.thumbnail');
 
   var thumbnail = box.ownerDocument.createElement('div');
   thumbnail.classList.add('thumbnail');
+
+  // If the image is JPEG or the thumbnail is larger than the grid size, resize
+  // it to cover the thumbnail box.
+  var type = FileType.getType(entry);
+  if ((type.type === 'image' && type.subtype === 'JPEG') ||
+      width > FileGrid.GridSize || height > FileGrid.GridSize)
+    thumbnail.style.backgroundSize = 'cover';
+
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
   thumbnail.addEventListener('webkitAnimationEnd', function() {
     // Remove animation css once animation is completed in order not to animate

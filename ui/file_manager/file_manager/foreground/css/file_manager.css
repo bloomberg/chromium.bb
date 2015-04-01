@@ -1091,7 +1091,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
   -webkit-user-drag: none;
   background-color: rgb(230, 230, 230);
   background-position: center;
-  background-size: cover;
+  background-repeat: no-repeat;
   height: 100%;
   opacity: 1;
   position: absolute;
