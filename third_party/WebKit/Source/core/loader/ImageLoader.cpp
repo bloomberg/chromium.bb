@@ -289,8 +289,11 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     }
 
     ImageResource* oldImage = m_image.get();
-    if (newImage != oldImage) {
-        sourceImageChanged();
+    if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage() && newImage == oldImage) {
+        toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
+    } else {
+        if (newImage != oldImage)
+            sourceImageChanged();
 
         if (m_hasPendingLoadEvent) {
             loadEventSender().cancelEvent(this);
@@ -318,8 +321,6 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
 
         if (oldImage)
             oldImage->removeClient(this);
-    } else if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage()) {
-        toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
     }
 
     if (LayoutImageResource* imageResource = layoutImageResource())
