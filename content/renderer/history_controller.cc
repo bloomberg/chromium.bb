@@ -149,6 +149,8 @@ void HistoryController::UpdateForInitialLoadInChildFrame(
   }
   RenderFrameImpl* parent =
       RenderFrameImpl::FromWebFrame(frame->GetWebFrame()->parent());
+  if (!parent)
+    return;
   if (HistoryEntry::HistoryNode* parent_history_node =
           current_entry_->GetHistoryNodeForFrame(parent)) {
     parent_history_node->AddChild(item, frame->GetRoutingID());

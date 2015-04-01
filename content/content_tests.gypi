@@ -250,6 +250,7 @@
       'renderer/devtools/v8_sampling_profiler_browsertest.cc',
       'renderer/gin_browsertest.cc',
       'renderer/mouse_lock_dispatcher_browsertest.cc',
+      'renderer/render_frame_impl_browsertest.cc',
       'renderer/render_thread_impl_browsertest.cc',
       'renderer/render_view_browsertest.cc',
       'renderer/render_view_browsertest_mac.mm',

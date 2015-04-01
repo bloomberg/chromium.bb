@@ -556,6 +556,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 
  private:
+  friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
   friend class RendererAccessibilityTest;
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
