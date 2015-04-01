@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<title>Service Worker: Fails to activate</title>
+<script src="resources/test-helpers.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<script>
+promise_test(function(t) {
+    var scope = 'resources/fail-activation';
+    var script = 'resources/fail-activation-worker.js';
+    var registration;
+    var frame;
+
+    function wait_for_controllerchange(sw) {
+      return new Promise(function(resolve) {
+          sw.addEventListener('controllerchange', function() {
+              resolve(sw.controller);
+            });
+        });
+    }
+
+    return service_worker_unregister(t, scope)
+      .then(function() {
+          return with_iframe(scope);
+        })
+      .then(function(f) {
+          frame = f;
+          return navigator.serviceWorker.register(script, {scope:scope});
+        })
+      .then(function(r) {
+          registration = r;
+          // Expect activation to begin.
+          // "Notify Controller Change" and "Update State" queue tasks on
+          // separate queues, so there is no expected ordering.
+          var sw = frame.contentWindow.navigator.serviceWorker;
+          return Promise.all([
+            wait_for_controllerchange(sw),
+            wait_for_state(t, registration.installing, 'activating'),
+          ]);
+        })
+      .then(function(results) {
+          var controller = results[0];
+          assert_equals(controller.scriptURL, normalizeURL(script),
+                        'controller should be set');
+          assert_equals(registration.active.scriptURL, normalizeURL(script),
+                        'active should be set');
+
+          // Expect activation to fail.
+          var sw = frame.contentWindow.navigator.serviceWorker;
+          return Promise.all([
+            wait_for_controllerchange(sw),
+            wait_for_state(t, registration.active, 'redundant')
+          ]);
+        })
+      .then(function(results) {
+          var controller = results[0];
+          assert_equals(controller, null, 'controller should be null');
+          assert_equals(registration.active, null, 'active should be null');
+          frame.remove();
+          service_worker_unregister_and_done(t, scope);
+        })
+  }, 'claim then fail activation');
+</script>
