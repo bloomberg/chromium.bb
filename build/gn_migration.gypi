@@ -56,6 +56,7 @@
         '../chrome/chrome.gyp:chromedriver_unittests',
         '../chrome/chrome.gyp:interactive_ui_tests',
         '../chrome/chrome.gyp:load_library_perf_tests',
+        '../chrome/chrome.gyp:performance_browser_tests',
         '../chrome/chrome.gyp:service_discovery_sniffer',
         '../chrome/chrome.gyp:sync_integration_tests',
         '../chrome/chrome.gyp:sync_performance_tests',
@@ -293,6 +294,7 @@
             '../chrome/chrome.gyp:chromedriver',
             '../chrome/chrome.gyp:chromedriver_unitests',
             '../chrome/chrome.gyp:interactive_ui_tests',
+            '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:sync_integration_tests',
             '../chrome/chrome.gyp:unit_tests',
             '../extensions/extensions_tests.gyp:extensions_browsertests',
@@ -415,7 +417,6 @@
       'conditions': [
         ['OS=="linux"', {
           'dependencies': [
-            '../chrome/chrome.gyp:performance_browser_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',

@@ -252,6 +252,7 @@ group("gn_all") {
       "//cc:cc_perftests",
       "//chrome/test:chrome_app_unittests",
       "//chrome/test:load_library_perf_tests",
+      "//chrome/test:performance_browser_tests",
       "//chrome/test:sync_performance_tests",
       "//chrome/test/chromedriver:chromedriver",
       "//chrome/test/chromedriver:chromedriver_tests",
