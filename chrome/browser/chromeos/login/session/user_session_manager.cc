@@ -803,12 +803,21 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
   user_context_ = user_context;
   has_auth_cookies_ = has_auth_cookies;
   InitSessionRestoreStrategy();
+  StoreUserContextDataBeforeProfileIsCreated();
 }
 
 void UserSessionManager::PreStartSession() {
   // Switch log file as soon as possible.
   if (base::SysInfo::IsRunningOnChromeOS())
     logging::RedirectChromeLogging(*(base::CommandLine::ForCurrentProcess()));
+}
+
+void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
+  // Store obfuscated GAIA ID.
+  if (!user_context_.GetGaiaID().empty()) {
+    user_manager::UserManager::Get()->UpdateGaiaID(user_context_.GetUserID(),
+                                                   user_context_.GetGaiaID());
+  }
 }
 
 void UserSessionManager::StartCrosSession() {

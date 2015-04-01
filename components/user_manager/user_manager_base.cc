@@ -74,11 +74,13 @@ const char kLastActiveUser[] = "LastActiveUser";
 // placed in this list.
 const char kKnownUsers[] = "KnownUsers";
 
-// Key of obfuscated GAIA id value.
-const char kGAIAIdKey[] = "gaia_id";
+// Known user preferences keys (stored in Local State).
 
 // Key of canonical e-mail value.
 const char kCanonicalEmail[] = "email";
+
+// Key of obfuscated GAIA id value.
+const char kGAIAIdKey[] = "gaia_id";
 
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
@@ -1015,6 +1017,35 @@ void UserManagerBase::UpdateKnownUserPrefs(const UserID& user_id,
   new_value->MergeDictionary(&values);
   UpdateIdentity(user_id, *new_value);
   update->Append(new_value.release());
+}
+
+bool UserManagerBase::GetKnownUserStringPref(const UserID& user_id,
+                                             const std::string& path,
+                                             std::string* out_value) {
+  const base::DictionaryValue* user_pref_dict = nullptr;
+  if (!FindKnownUserPrefs(user_id, &user_pref_dict))
+    return false;
+
+  return user_pref_dict->GetString(path, out_value);
+}
+
+void UserManagerBase::SetKnownUserStringPref(const UserID& user_id,
+                                             const std::string& path,
+                                             const std::string& in_value) {
+  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  base::DictionaryValue dict;
+  dict.SetString(path, in_value);
+  UpdateKnownUserPrefs(user_id, dict, false);
+}
+
+void UserManagerBase::UpdateGaiaID(const UserID& user_id,
+                                   const std::string& gaia_id) {
+  SetKnownUserStringPref(user_id, kGAIAIdKey, gaia_id);
+}
+
+bool UserManagerBase::FindGaiaID(const UserID& user_id,
+                                 std::string* out_value) {
+  return GetKnownUserStringPref(user_id, kGAIAIdKey, out_value);
 }
 
 User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(

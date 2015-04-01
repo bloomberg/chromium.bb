@@ -61,6 +61,8 @@ cr.define('cr.login', function() {
    * @const
    */
   var SUPPORTED_PARAMS = [
+    'gaiaId',           // Obfuscated GAIA ID to skip the email prompt page
+                        // during the re-auth flow.
     'gaiaUrl',          // Gaia url to use.
     'gaiaPath',         // Gaia path to use without a leading slash.
     'hl',               // Language code for the user interface.
@@ -233,6 +235,8 @@ cr.define('cr.login', function() {
     }
     if (data.hl)
       url = appendParam(url, 'hl', data.hl);
+    if (data.gaiaId)
+      url = appendParam(url, 'user_id', data.gaiaId);
     if (data.email)
       url = appendParam(url, 'Email', data.email);
     if (this.isConstrainedWindow_)

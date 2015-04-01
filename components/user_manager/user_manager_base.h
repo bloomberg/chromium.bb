@@ -110,6 +110,14 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void UpdateKnownUserPrefs(const UserID& user_id,
                             const base::DictionaryValue& values,
                             bool clear) override;
+  bool GetKnownUserStringPref(const UserID& user_id,
+                              const std::string& path,
+                              std::string* out_value) override;
+  void SetKnownUserStringPref(const UserID& user_id,
+                              const std::string& path,
+                              const std::string& in_value) override;
+  void UpdateGaiaID(const UserID& user_id, const std::string& gaia_id) override;
+  bool FindGaiaID(const UserID& user_id, std::string* out_value) override;
 
   virtual void SetIsCurrentUserNew(bool is_new);
 

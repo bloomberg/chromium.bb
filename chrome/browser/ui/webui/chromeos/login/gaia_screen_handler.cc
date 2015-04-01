@@ -195,6 +195,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   params.SetBoolean("passwordChanged", context.password_changed);
   params.SetBoolean("isShowUsers", context.show_users);
   params.SetBoolean("useOffline", context.use_offline);
+  params.SetString("gaiaId", context.gaia_id);
   params.SetString("email", context.email);
   params.SetBoolean("isEnrollingConsumerManagement",
                     is_enrolling_consumer_management);
@@ -832,6 +833,11 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   context.use_offline = offline;
   context.email = populated_email_;
   context.is_enrolling_consumer_management = is_enrolling_consumer_management_;
+
+  std::string gaia_id;
+  if (user_manager::UserManager::Get()->FindGaiaID(context.email, &gaia_id))
+    context.gaia_id = gaia_id;
+
   if (Delegate()) {
     context.show_users = Delegate()->IsShowUsers();
     context.has_users = !Delegate()->GetUsers().empty();

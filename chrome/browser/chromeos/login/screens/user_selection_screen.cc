@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "components/user_manager/user_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -31,6 +32,7 @@ namespace {
 
 // User dictionary keys.
 const char kKeyUsername[] = "username";
+const char kKeyGaiaID[] = "gaiaId";
 const char kKeyDisplayName[] = "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyEnterpriseDomain[] = "enterpriseDomain";
@@ -138,7 +140,7 @@ void UserSelectionScreen::FillUserDictionary(
     AuthType auth_type,
     const std::vector<std::string>* public_session_recommended_locales,
     base::DictionaryValue* user_dict) {
-  const std::string& user_id = user->email();
+  const user_manager::UserID user_id = user->email();
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   const bool is_legacy_supervised_user =
@@ -156,7 +158,31 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 
-  // Fill in multi-profiles related fields.
+  FillMultiProfileUserPrefs(user, user_dict, is_signin_to_add);
+  FillKnownUserPrefs(user, user_dict);
+
+  if (is_public_session) {
+    AddPublicSessionDetailsToUserDictionaryEntry(
+        user_dict, public_session_recommended_locales);
+  }
+}
+
+// static
+void UserSelectionScreen::FillKnownUserPrefs(user_manager::User* user,
+                                             base::DictionaryValue* user_dict) {
+  std::string gaia_id;
+  if (user_manager::UserManager::Get()->FindGaiaID(user->email(), &gaia_id)) {
+    user_dict->SetString(kKeyGaiaID, gaia_id);
+  }
+}
+
+// static
+void UserSelectionScreen::FillMultiProfileUserPrefs(
+    user_manager::User* user,
+    base::DictionaryValue* user_dict,
+    bool is_signin_to_add) {
+  const std::string& user_id = user->email();
+
   if (is_signin_to_add) {
     MultiProfileUserController* multi_profile_user_controller =
         ChromeUserManager::Get()->GetMultiProfileUserController();
@@ -176,12 +202,6 @@ void UserSelectionScreen::FillUserDictionary(
     user_dict->SetString(kKeyMultiProfilesPolicy, behavior);
   } else {
     user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
-  }
-
-  if (is_public_session) {
-    AddPublicSessionDetailsToUserDictionaryEntry(
-        user_dict,
-        public_session_recommended_locales);
   }
 }
 
@@ -365,6 +385,7 @@ void UserSelectionScreen::SendUserList() {
                        public_session_recommended_locales,
                        user_dict);
     bool signed_in = (*it)->is_logged_in();
+
     // Single user check here is necessary because owner info might not be
     // available when running into login screen on first boot.
     // See http://crosbug.com/12723

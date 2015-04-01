@@ -92,6 +92,15 @@ class UserSelectionScreen : public ui::UserActivityObserver,
       const std::vector<std::string>* public_session_recommended_locales,
       base::DictionaryValue* user_dict);
 
+  // Fills |user_dict| with |user| known preferences.
+  static void FillKnownUserPrefs(user_manager::User* user,
+                                 base::DictionaryValue* user_dict);
+
+  // Fills |user_dict| with |user| multi-profile related preferences.
+  static void FillMultiProfileUserPrefs(user_manager::User* user,
+                                        base::DictionaryValue* user_dict,
+                                        bool is_signin_to_add);
+
   // Determines if user auth status requires online sign in.
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 

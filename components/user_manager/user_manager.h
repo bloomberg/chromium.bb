@@ -326,6 +326,27 @@ class USER_MANAGER_EXPORT UserManager {
                                     const base::DictionaryValue& values,
                                     bool clear) = 0;
 
+  // Returns true if |user_id| preference by |path| does exist,
+  // fills in |out_value|. Otherwise returns false.
+  virtual bool GetKnownUserStringPref(const UserID& user_id,
+                                      const std::string& path,
+                                      std::string* out_value) = 0;
+
+  // Updates user identified by |user_id| GAIA ID preference.
+  virtual void SetKnownUserStringPref(const UserID& user_id,
+                                      const std::string& path,
+                                      const std::string& in_value) = 0;
+
+  // Updates |gaia_id| for user with |user_id|.
+  // TODO(antrim): Update this once UserID contains GAIA ID.
+  virtual void UpdateGaiaID(const UserID& user_id,
+                            const std::string& gaia_id) = 0;
+
+  // Find GAIA ID for user with |user_id|, fill in |out_value| and return true
+  // if GAIA ID was found or false otherwise.
+  // TODO(antrim): Update this once UserID contains GAIA ID.
+  virtual bool FindGaiaID(const UserID& user_id, std::string* out_value) = 0;
+
  protected:
   // Sets UserManager instance.
   static void SetInstance(UserManager* user_manager);

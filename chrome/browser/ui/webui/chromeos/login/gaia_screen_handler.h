@@ -38,7 +38,7 @@ struct GaiaContext {
   // True if password was changed for the current user.
   bool password_changed;
 
-  // True if user pods can be displyed.
+  // True if user pods can be displayed.
   bool show_users;
 
   // Whether Gaia should be loaded in offline mode.
@@ -47,8 +47,11 @@ struct GaiaContext {
   // True if user list is non-empty.
   bool has_users;
 
-  // Email of current user.
+  // Email of the current user.
   std::string email;
+
+  // GAIA ID of the current user.
+  std::string gaia_id;
 
   // Whether consumer management enrollment is in progress.
   bool is_enrolling_consumer_management;

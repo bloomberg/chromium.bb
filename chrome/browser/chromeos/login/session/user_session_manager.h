@@ -261,6 +261,12 @@ class UserSessionManager
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);
   void PreStartSession();
+
+  // Store any useful UserContext data early on when profile has not been
+  // created yet and user services were not yet initialized. Can store
+  // information in Local State like GAIA ID.
+  void StoreUserContextDataBeforeProfileIsCreated();
+
   void StartCrosSession();
   void NotifyUserLoggedIn();
   void PrepareProfile();
