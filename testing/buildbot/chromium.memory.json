@@ -164,6 +164,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {

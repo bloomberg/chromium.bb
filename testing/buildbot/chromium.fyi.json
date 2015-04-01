@@ -216,6 +216,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -1608,6 +1611,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -1770,9 +1776,6 @@
   "Linux Trusty (32)": {
     "gtest_tests": [
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "accessibility_unittests"
       },
       {
@@ -1944,6 +1947,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_unittests"
       },
       {
@@ -2106,9 +2112,6 @@
   "Linux Trusty (dbg)(32)": {
     "gtest_tests": [
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "accessibility_unittests"
       },
       {
