@@ -319,9 +319,9 @@ const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";
 // Screenshot testing: specifies the directoru where artifacts will be stored.
 const char kArtifactsDir[] = "artifacts-dir";
 
-// Bypass proxy for captive portal authorization.
-const char kEnableCaptivePortalBypassProxyOption[] =
-    "enable-captive-portal-bypass-proxy-option";
+// Disable bypass proxy for captive portal authorization.
+const char kDisableCaptivePortalBypassProxy[] =
+    "disable-captive-portal-bypass-proxy";
 
 // Disable automatic timezone update.
 const char kDisableTimeZoneTrackingOption[] =

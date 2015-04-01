@@ -106,7 +106,7 @@ CHROMEOS_EXPORT extern const char kSystemDevMode[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
 CHROMEOS_EXPORT extern const char kTestMetronomeTimer[];
 CHROMEOS_EXPORT extern const char kWakeOnPackets[];
-CHROMEOS_EXPORT extern const char kEnableCaptivePortalBypassProxyOption[];
+CHROMEOS_EXPORT extern const char kDisableCaptivePortalBypassProxy[];
 CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];
 CHROMEOS_EXPORT extern const char kEnableOAuthTokenHandlers[];
 CHROMEOS_EXPORT extern const char kDisableWebviewSigninFlow[];

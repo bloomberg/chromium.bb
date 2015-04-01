@@ -2105,11 +2105,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-    "enable-captive-portal-bypass-proxy",
-    IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME,
-    IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION,
+    "disable-captive-portal-bypass-proxy",
+    IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME,
+    IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalBypassProxyOption)
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableCaptivePortalBypassProxy)
   },
   {
     "disable-roboto-font-ui",

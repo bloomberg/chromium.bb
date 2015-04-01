@@ -228,13 +228,6 @@ class NetworkPortalDetectorImplBrowserTestIgnoreProxy
   NetworkPortalDetectorImplBrowserTestIgnoreProxy()
       : NetworkPortalDetectorImplBrowserTest() {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    NetworkPortalDetectorImplBrowserTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitch(
-        chromeos::switches::kEnableCaptivePortalBypassProxyOption);
-  }
-
  protected:
   void TestImpl(const bool preference_value);
 

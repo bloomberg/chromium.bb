@@ -14571,11 +14571,11 @@ Do you accept?
         <message name="IDS_FLAGS_ENABLE_GESTURE_DELETION_DESCRIPTION" desc="Description of about::flags option to enable gesture deletion for the virtual keyboard">
           Enable gesture deletion for the virtual keyboard.
         </message>
-        <message name="IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to enable bypass proxy for captive portal authorization on Chrome OS.">
-          Enable bypass proxy for Captive Portal Authorization
+        <message name="IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to disable bypass proxy for captive portal authorization on Chrome OS.">
+          Disable bypass proxy for Captive Portal Authorization
         </message>
-        <message name="IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option to enable bypass proxy for captive portal authorization on Chrome OS.">
-          If proxy is configured, it usually prevents from authorization on different captive portals. This flag enables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
+        <message name="IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option to disable bypass proxy for captive portal authorization on Chrome OS.">
+          If proxy is configured, it usually prevents from authorization on different captive portals. This flag disables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
         </message>
 
         <message name="IDS_FLAGS_DISABLE_ROBOTO_FONT_UI_NAME" desc="Name of about::flags option to disable Roboto fonts in the Chrome OS UI.">
