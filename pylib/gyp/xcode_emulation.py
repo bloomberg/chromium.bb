@@ -525,6 +525,13 @@ class XcodeSettings(object):
     if self._Test('GCC_WARN_ABOUT_MISSING_NEWLINE', 'YES', default='NO'):
       cflags.append('-Wnewline-eof')
 
+    # In Xcode, this is only activated when GCC_COMPILER_VERSION is clang or
+    # llvm-gcc. It also requires a fairly recent libtool, and
+    # if the system clang isn't used, DYLD_LIBRARY_PATH needs to contain the
+    # path to the libLTO.dylib that matches the used clang.
+    if self._Test('LLVM_LTO', 'YES', default='NO'):
+      cflags.append('-flto')
+
     self._AppendPlatformVersionMinFlags(cflags)
 
     # TODO:
