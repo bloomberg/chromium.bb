@@ -665,6 +665,8 @@
       'browser/ui/cocoa/simple_message_box_mac.mm',
       'browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.h',
       'browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.mm',
+      'browser/ui/cocoa/spinner_view.h',
+      'browser/ui/cocoa/spinner_view.mm',
       'browser/ui/cocoa/sprite_view.h',
       'browser/ui/cocoa/sprite_view.mm',
       'browser/ui/cocoa/ssl_client_certificate_selector_cocoa.h',

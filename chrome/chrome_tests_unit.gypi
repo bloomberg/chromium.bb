@@ -484,6 +484,7 @@
       'browser/ui/cocoa/profiles/user_manager_mac_unittest.mm',
       'browser/ui/cocoa/run_loop_testing_unittest.mm',
       'browser/ui/cocoa/screen_capture_notification_ui_cocoa_unittest.mm',
+      'browser/ui/cocoa/spinner_view_unittest.mm',
       'browser/ui/cocoa/sprite_view_unittest.mm',
       'browser/ui/cocoa/status_bubble_mac_unittest.mm',
       'browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm',
