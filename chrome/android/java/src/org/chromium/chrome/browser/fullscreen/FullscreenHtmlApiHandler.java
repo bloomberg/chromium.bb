@@ -251,6 +251,7 @@ public class FullscreenHtmlApiHandler {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             systemUiVisibility &= ~SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             systemUiVisibility &= ~SYSTEM_UI_FLAG_FULLSCREEN;
+            systemUiVisibility &= ~getExtraFullscreenUIFlags();
         } else {
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             mWindow.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -299,6 +300,7 @@ public class FullscreenHtmlApiHandler {
             } else {
                 systemUiVisibility |= SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             }
+            systemUiVisibility |= getExtraFullscreenUIFlags();
         } else {
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             mWindow.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -420,5 +422,19 @@ public class FullscreenHtmlApiHandler {
         if (mTabInFullscreen == null || !mIsPersistentMode || !hasWindowFocus) return;
         mHandler.sendEmptyMessageDelayed(
                 MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS, ANDROID_CONTROLS_SHOW_DURATION_MS);
+    }
+
+    /*
+     * Helper method to return extra fullscreen UI flags for Kitkat devices.
+     * @return fullscreen flags to be applied to system UI visibility.
+     */
+    private int getExtraFullscreenUIFlags() {
+        int flags = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+        return flags;
     }
 }
