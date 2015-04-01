@@ -2764,9 +2764,7 @@ def SetUpLinuxEnvMips(env):
                 LD=os.path.join(tc_dir, 'mipsel-linux-gnu-ld'),
                 ASFLAGS=[],
                 LIBPATH=['${LIB_DIR}',
-                         jail + '/sysroot/usr/lib'],
-                LINKFLAGS=['-T',
-                    os.path.join(jail, 'ld_script_mips_trusted')]
+                         jail + '/sysroot/usr/lib']
                 )
 
     env.Append(LIBS=['rt', 'dl', 'pthread'],
