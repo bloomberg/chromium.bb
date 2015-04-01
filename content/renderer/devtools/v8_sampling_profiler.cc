@@ -360,6 +360,9 @@ scoped_refptr<ConvertableToTraceFormat> Sampler::JitCodeEventToTraceFormat(
       data->SetString("code_start", PtrToString(event->code_start));
       data->SetInteger("code_len", static_cast<unsigned>(event->code_len));
       data->SetString("name", std::string(event->name.str, event->name.len));
+      if (!event->script.IsEmpty()) {
+        data->SetInteger("script_id", event->script->GetId());
+      }
       return data;
     }
 
