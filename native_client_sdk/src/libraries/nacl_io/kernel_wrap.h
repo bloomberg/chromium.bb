@@ -13,6 +13,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
+#include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"

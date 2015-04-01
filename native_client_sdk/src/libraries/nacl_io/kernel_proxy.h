@@ -14,7 +14,6 @@
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/nacl_io.h"
-#include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
