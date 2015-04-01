@@ -7,9 +7,8 @@ The first ServiceWorker is activated.
 
 Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
 activated
-running
-/inspector/service-workers/resources/changing-worker.php
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
 
 ============================
@@ -19,15 +18,13 @@ The second Serviceworker is installed.
 
 Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
 installed
-running
-/inspector/service-workers/resources/changing-worker.php
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
 
 activated
-running
-/inspector/service-workers/resources/changing-worker.php
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
 
 ============================
@@ -37,9 +34,8 @@ The first ServiceWorker worker became redundant and stopped.
 
 Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
 activated
-running
-/inspector/service-workers/resources/changing-worker.php
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
 
 ============================
@@ -49,9 +45,8 @@ DevTools frontend is reopened.
 
 Scope: /inspector/service-workers/resources/service-worker-redundant-scope/
 activated
-running
-/inspector/service-workers/resources/changing-worker.php
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
 
 ============================

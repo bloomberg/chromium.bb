@@ -11,9 +11,8 @@ Register ServiceWorker for scope1
 
 Scope: /inspector/service-workers/resources/scope1/
 activated
-running
-/inspector/service-workers/resources/service-worker-empty.js
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/service-worker-empty.js
 LAST-MODIFIED
 RESPONSE-TIME
 
@@ -24,17 +23,15 @@ Register ServiceWorker for scope2
 
 Scope: /inspector/service-workers/resources/scope1/
 activated
-running
-/inspector/service-workers/resources/service-worker-empty.js
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/service-worker-empty.js
 LAST-MODIFIED
 RESPONSE-TIME
 
 Scope: /inspector/service-workers/resources/scope2/
 activated
-running
-/inspector/service-workers/resources/service-worker-empty.js
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/service-worker-empty.js
 LAST-MODIFIED
 RESPONSE-TIME
 
@@ -45,17 +42,15 @@ Unegister ServiceWorker for scope1
 
 Scope: /inspector/service-workers/resources/scope1/ - deleted
 redundant
-running
-/inspector/service-workers/resources/service-worker-empty.js
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/service-worker-empty.js
 LAST-MODIFIED
 RESPONSE-TIME
 
 Scope: /inspector/service-workers/resources/scope2/
 activated
-running
-/inspector/service-workers/resources/service-worker-empty.js
-inspect
+inspectrunning
+Script: /inspector/service-workers/resources/service-worker-empty.js
 LAST-MODIFIED
 RESPONSE-TIME
 
