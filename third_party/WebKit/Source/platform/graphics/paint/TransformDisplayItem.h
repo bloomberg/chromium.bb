@@ -23,7 +23,7 @@ public:
         : PairedBeginDisplayItem(client, BeginTransform)
         , m_transform(transform) { }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
@@ -41,7 +41,7 @@ public:
     EndTransformDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndTransform) { }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

@@ -20,7 +20,7 @@ public:
         return adoptPtr(new DrawingDisplayItem(client, type, picture));
     }
 
-    virtual void replay(GraphicsContext*);
+    virtual void replay(GraphicsContext&);
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
     virtual bool drawsContent() const override;
 

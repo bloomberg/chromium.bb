@@ -53,7 +53,7 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(LayoutObject& layoutObject, con
         ASSERT(m_paintInfo.context->displayItemList());
         m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
     } else {
-        clipDisplayItem->replay(paintInfo.context);
+        clipDisplayItem->replay(*paintInfo.context);
     }
 }
 
@@ -66,7 +66,7 @@ RoundedInnerRectClipper::~RoundedInnerRectClipper()
         m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
         EndClipDisplayItem endClipDisplayItem(m_layoutObject, endType);
-        endClipDisplayItem.replay(m_paintInfo.context);
+        endClipDisplayItem.replay(*m_paintInfo.context);
     }
 }
 

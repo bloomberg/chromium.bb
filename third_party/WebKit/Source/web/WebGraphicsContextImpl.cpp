@@ -30,7 +30,7 @@ WebCanvas* WebGraphicsContextImpl::beginDrawing(const WebFloatRect& bounds)
     ASSERT(!m_hasBegunDrawing);
     m_hasBegunDrawing = true;
 #endif
-    m_drawingRecorder = adoptPtr(new DrawingRecorder(&m_graphicsContext, m_client, m_type, bounds));
+    m_drawingRecorder = adoptPtr(new DrawingRecorder(m_graphicsContext, m_client, m_type, bounds));
 
     ASSERT(!m_drawingRecorder->canUseCachedDrawing());
 

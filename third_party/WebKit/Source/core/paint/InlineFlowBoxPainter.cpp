@@ -61,7 +61,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             }
         }
     } else if (paintInfo.phase == PaintPhaseMask) {
-        DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), pixelSnappedIntRect(overflowRect));
+        DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), pixelSnappedIntRect(overflowRect));
         if (!recorder.canUseCachedDrawing())
             paintMask(paintInfo, paintOffset);
         return;
@@ -240,7 +240,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     LayoutRect adjustedClipRect;
     BorderPaintingType borderPaintingType = getBorderPaintType(adjustedFrameRect, adjustedClipRect);
 
-    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(adjustedClipRect));
+    DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(adjustedClipRect));
     if (recorder.canUseCachedDrawing())
         return;
 

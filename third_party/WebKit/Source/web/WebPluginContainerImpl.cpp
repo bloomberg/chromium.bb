@@ -120,7 +120,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect
     if (!frameRect().intersects(rect))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, rect);
+    LayoutObjectDrawingRecorder drawingRecorder(*context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, rect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

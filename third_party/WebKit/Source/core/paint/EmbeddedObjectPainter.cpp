@@ -46,7 +46,7 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo, const Layo
     GraphicsContext* context = paintInfo.context;
     FloatRect contentRect = m_layoutEmbeddedObject.contentBoxRect();
     contentRect.moveBy(roundedIntPoint(paintOffset));
-    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutEmbeddedObject, paintInfo.phase, contentRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutEmbeddedObject, paintInfo.phase, contentRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

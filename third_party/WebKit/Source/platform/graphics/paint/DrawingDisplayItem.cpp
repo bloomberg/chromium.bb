@@ -10,9 +10,9 @@
 
 namespace blink {
 
-void DrawingDisplayItem::replay(GraphicsContext* context)
+void DrawingDisplayItem::replay(GraphicsContext& context)
 {
-    context->drawPicture(m_picture.get());
+    context.drawPicture(m_picture.get());
 }
 
 void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const

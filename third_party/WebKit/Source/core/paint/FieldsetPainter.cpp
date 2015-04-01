@@ -36,7 +36,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
         paintRect.setX(paintRect.x() + xOff);
     }
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset, paintInfo.phase, pixelSnappedIntRect(paintOffset, paintRect.size()));
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFieldset, paintInfo.phase, pixelSnappedIntRect(paintOffset, paintRect.size()));
     if (recorder.canUseCachedDrawing())
         return;
 

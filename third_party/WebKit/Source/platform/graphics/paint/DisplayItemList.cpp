@@ -292,7 +292,7 @@ void DisplayItemList::showDebugData() const
 
 #endif // ifndef NDEBUG
 
-void DisplayItemList::replay(GraphicsContext* context)
+void DisplayItemList::replay(GraphicsContext& context)
 {
     TRACE_EVENT0("blink,benchmark", "DisplayItemList::replay");
     updatePaintList();

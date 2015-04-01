@@ -118,7 +118,7 @@ bool LayoutScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContex
 
 void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClientWrapper& displayItemClient, const IntRect& cornerRect)
 {
-    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(*context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
     // FIXME: Implement.
     if (!recorder.canUseCachedDrawing())
         context->fillRect(cornerRect, Color::white);
@@ -151,7 +151,7 @@ void LayoutScrollbarTheme::paintThumb(GraphicsContext* context, ScrollbarThemeCl
 
 void LayoutScrollbarTheme::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    DrawingRecorder recorder(context, *scrollbar, DisplayItem::ScrollbarTickMark, rect);
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickMark, rect);
     if (!recorder.canUseCachedDrawing())
         ScrollbarTheme::theme()->paintTickmarks(context, scrollbar, rect);
 }

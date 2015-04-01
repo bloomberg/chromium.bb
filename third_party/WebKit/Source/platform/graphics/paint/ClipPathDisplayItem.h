@@ -25,7 +25,7 @@ public:
         , m_clipPath(clipPath)
         , m_windRule(windRule) { }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
@@ -47,7 +47,7 @@ public:
     EndClipPathDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndClipPath) { }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

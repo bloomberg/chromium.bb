@@ -21,7 +21,7 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemCl
         m_context.displayItemList()->add(BeginClipPathDisplayItem::create(m_client, clipPath, windRule));
     } else {
         BeginClipPathDisplayItem clipPathDisplayItem(m_client, clipPath, windRule);
-        clipPathDisplayItem.replay(&m_context);
+        clipPathDisplayItem.replay(m_context);
     }
 }
 
@@ -32,7 +32,7 @@ ClipPathRecorder::~ClipPathRecorder()
         m_context.displayItemList()->add(EndClipPathDisplayItem::create(m_client));
     } else {
         EndClipPathDisplayItem endClipPathDisplayItem(m_client);
-        endClipPathDisplayItem.replay(&m_context);
+        endClipPathDisplayItem.replay(m_context);
     }
 }
 

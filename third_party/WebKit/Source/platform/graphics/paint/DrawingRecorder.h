@@ -20,7 +20,7 @@ class GraphicsContext;
 
 class PLATFORM_EXPORT DrawingRecorder {
 public:
-    DrawingRecorder(GraphicsContext*, const DisplayItemClientWrapper&, DisplayItem::Type, const FloatRect& bounds);
+    DrawingRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const FloatRect& bounds);
     ~DrawingRecorder();
 
     bool canUseCachedDrawing() const
@@ -32,7 +32,7 @@ public:
     }
 
 private:
-    GraphicsContext* m_context;
+    GraphicsContext& m_context;
     DisplayItemClientWrapper m_displayItemClient;
     const DisplayItem::Type m_displayItemType;
     bool m_canUseCachedDrawing;

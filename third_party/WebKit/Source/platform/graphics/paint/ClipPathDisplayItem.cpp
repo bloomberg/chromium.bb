@@ -12,10 +12,10 @@
 
 namespace blink {
 
-void BeginClipPathDisplayItem::replay(GraphicsContext* context)
+void BeginClipPathDisplayItem::replay(GraphicsContext& context)
 {
-    context->save();
-    context->clipPath(m_clipPath, m_windRule);
+    context.save();
+    context.clipPath(m_clipPath, m_windRule);
 }
 
 void BeginClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
@@ -26,9 +26,9 @@ void BeginClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* li
     list->appendClipPathItem(path, SkRegion::kIntersect_Op, true);
 }
 
-void EndClipPathDisplayItem::replay(GraphicsContext* context)
+void EndClipPathDisplayItem::replay(GraphicsContext& context)
 {
-    context->restore();
+    context.restore();
 }
 
 void EndClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const

@@ -12,14 +12,14 @@
 
 namespace blink {
 
-ClipRecorder::ClipRecorder(const DisplayItemClientWrapper& client, GraphicsContext* context, DisplayItem::Type type, const LayoutRect& clipRect, SkRegion::Op operation)
+ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type, const LayoutRect& clipRect, SkRegion::Op operation)
     : m_client(client)
     , m_context(context)
     , m_type(type)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_context->displayItemList());
-        m_context->displayItemList()->add(ClipDisplayItem::create(m_client, type, pixelSnappedIntRect(clipRect), operation));
+        ASSERT(m_context.displayItemList());
+        m_context.displayItemList()->add(ClipDisplayItem::create(m_client, type, pixelSnappedIntRect(clipRect), operation));
     } else {
         ClipDisplayItem clipDisplayItem(m_client, type, pixelSnappedIntRect(clipRect), operation);
         clipDisplayItem.replay(m_context);
@@ -30,8 +30,8 @@ ClipRecorder::~ClipRecorder()
 {
     DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_type);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_context->displayItemList());
-        m_context->displayItemList()->add(EndClipDisplayItem::create(m_client, endType));
+        ASSERT(m_context.displayItemList());
+        m_context.displayItemList()->add(EndClipDisplayItem::create(m_client, endType));
     } else {
         EndClipDisplayItem endClipDisplayItem(m_client, endType);
         endClipDisplayItem.replay(m_context);

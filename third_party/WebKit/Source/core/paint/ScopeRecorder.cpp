@@ -12,8 +12,8 @@
 
 namespace blink {
 
-ScopeRecorder::ScopeRecorder(GraphicsContext* context, const LayoutObject& object)
-    : m_displayItemList(context->displayItemList())
+ScopeRecorder::ScopeRecorder(GraphicsContext& context, const LayoutObject& object)
+    : m_displayItemList(context.displayItemList())
     , m_object(object)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())

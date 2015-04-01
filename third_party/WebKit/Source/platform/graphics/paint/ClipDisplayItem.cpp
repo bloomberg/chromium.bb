@@ -12,12 +12,12 @@
 
 namespace blink {
 
-void ClipDisplayItem::replay(GraphicsContext* context)
+void ClipDisplayItem::replay(GraphicsContext& context)
 {
-    context->save();
-    context->clipRect(m_clipRect, NotAntiAliased, m_operation);
+    context.save();
+    context.clipRect(m_clipRect, NotAntiAliased, m_operation);
     for (FloatRoundedRect roundedRect : m_roundedRectClips)
-        context->clipRoundedRect(roundedRect, m_operation);
+        context.clipRoundedRect(roundedRect, m_operation);
 }
 
 void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
@@ -42,9 +42,9 @@ void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
     list->appendClipItem(m_clipRect, webRoundedRects);
 }
 
-void EndClipDisplayItem::replay(GraphicsContext* context)
+void EndClipDisplayItem::replay(GraphicsContext& context)
 {
-    context->restore();
+    context.restore();
 }
 
 void EndClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const

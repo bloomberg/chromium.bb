@@ -53,7 +53,7 @@ bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
 {
     DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
-    DrawingRecorder recorder(graphicsContext, *scrollbar, displayItemType, damageRect);
+    DrawingRecorder recorder(*graphicsContext, *scrollbar, displayItemType, damageRect);
     if (recorder.canUseCachedDrawing())
         return false;
     return paintInternal(scrollbar, graphicsContext, damageRect);
@@ -219,7 +219,7 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayIt
     if (cornerRect.isEmpty())
         return;
 
-    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(*context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
     if (recorder.canUseCachedDrawing())
         return;
 

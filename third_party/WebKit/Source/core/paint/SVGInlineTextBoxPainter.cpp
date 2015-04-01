@@ -59,7 +59,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     const ComputedStyle& style = parentRenderer.styleRef();
 
     {
-        DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintInfo.rect);
+        DrawingRecorder recorder(*paintInfo.context, m_svgInlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintInfo.rect);
         if (!recorder.canUseCachedDrawing()) {
             InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
                 paintInfo.context, FloatPoint(paintOffset), style,

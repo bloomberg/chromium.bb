@@ -11,10 +11,10 @@
 
 namespace blink {
 
-void BeginScrollDisplayItem::replay(GraphicsContext* context)
+void BeginScrollDisplayItem::replay(GraphicsContext& context)
 {
-    context->save();
-    context->translate(-m_currentOffset.width(), -m_currentOffset.height());
+    context.save();
+    context.translate(-m_currentOffset.width(), -m_currentOffset.height());
 }
 
 void BeginScrollDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
@@ -23,9 +23,9 @@ void BeginScrollDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list
     list->appendScrollItem(m_currentOffset, scrollContainerId);
 }
 
-void EndScrollDisplayItem::replay(GraphicsContext* context)
+void EndScrollDisplayItem::replay(GraphicsContext& context)
 {
-    context->restore();
+    context.restore();
 }
 
 void EndScrollDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const

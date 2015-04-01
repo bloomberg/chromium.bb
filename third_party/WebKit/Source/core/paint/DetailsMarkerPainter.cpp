@@ -28,7 +28,7 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
         return;
 
-    LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect);
+    LayoutObjectDrawingRecorder renderDrawingRecorder(*paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect);
     if (renderDrawingRecorder.canUseCachedDrawing())
         return;
 

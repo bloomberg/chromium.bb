@@ -56,7 +56,7 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
         size_t count = collapsedBorders.size();
         for (size_t i = 0; i < count; ++i) {
-            ScopeRecorder scopeRecorder(info.context, m_layoutTable);
+            ScopeRecorder scopeRecorder(*info.context, m_layoutTable);
             // FIXME: pass this value into children rather than storing temporarily on the LayoutTable object.
             m_layoutTable.setCurrentBorderValue(&collapsedBorders[i]);
             for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {
@@ -92,7 +92,7 @@ void TablePainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& pain
 
     LayoutRect rect(paintOffset, m_layoutTable.size());
     m_layoutTable.subtractCaptionRect(rect);
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTable, paintInfo.phase, pixelSnappedIntRect(rect));
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTable, paintInfo.phase, pixelSnappedIntRect(rect));
     if (!recorder.canUseCachedDrawing())
         BoxPainter(m_layoutTable).paintMaskImages(paintInfo, rect);
 }

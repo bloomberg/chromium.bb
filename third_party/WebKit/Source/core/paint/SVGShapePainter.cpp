@@ -59,7 +59,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     {
         SVGPaintContext paintContext(m_renderSVGShape, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
+            LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 const SVGComputedStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
 

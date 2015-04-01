@@ -187,7 +187,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     }
 
     if (displayItemList)
-        displayItemList->replay(&recordingContext);
+        displayItemList->replay(recordingContext);
     return recordingContext.endRecording();
 }
 

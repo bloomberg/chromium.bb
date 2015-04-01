@@ -29,7 +29,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
             m_renderFileUploadControl.size() + LayoutSize(0, -m_renderFileUploadControl.borderWidth() + buttonShadowHeight)));
         if (clipRect.isEmpty())
             return;
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderFileUploadControl, paintInfo.context, DisplayItem::ClipFileUploadControlRect, LayoutRect(clipRect)));
+        clipRecorder = adoptPtr(new ClipRecorder(*paintInfo.context, m_renderFileUploadControl, DisplayItem::ClipFileUploadControlRect, LayoutRect(clipRect)));
     }
 
     if (paintInfo.phase == PaintPhaseForeground) {
@@ -66,7 +66,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
             textWidth, m_renderFileUploadControl.style()->fontMetrics().height());
 
         // Draw the filename.
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_renderFileUploadControl, paintInfo.phase, textRunPaintInfo.bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_renderFileUploadControl, paintInfo.phase, textRunPaintInfo.bounds);
         if (!recorder.canUseCachedDrawing()) {
             paintInfo.context->setFillColor(m_renderFileUploadControl.resolveColor(CSSPropertyColor));
             paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));

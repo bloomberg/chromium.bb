@@ -253,7 +253,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     }
 
     if (displayItemList)
-        displayItemList->replay(&recordingContext);
+        displayItemList->replay(recordingContext);
 
     RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
 
@@ -294,12 +294,12 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         DisplayItemListContextRecorder contextRecorder(recordingContext);
         GraphicsContext& paintContext = contextRecorder.context();
 
-        ClipRecorder clipRecorder(*this, &paintContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
+        ClipRecorder clipRecorder(paintContext, *this, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;
         if (hasCompositing || opacity < 1)
-            compositingRecorder = adoptPtr(new CompositingRecorder(&paintContext, *this, compositeOp, opacity));
+            compositingRecorder = adoptPtr(new CompositingRecorder(paintContext, *this, compositeOp, opacity));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.

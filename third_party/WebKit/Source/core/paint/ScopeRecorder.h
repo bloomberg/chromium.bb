@@ -15,7 +15,7 @@ class LayoutObject;
 
 class ScopeRecorder {
 public:
-    ScopeRecorder(GraphicsContext*, const LayoutObject&);
+    ScopeRecorder(GraphicsContext&, const LayoutObject&);
     ~ScopeRecorder();
 
 private:

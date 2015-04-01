@@ -41,7 +41,7 @@ public:
     bool clientCacheIsValid(DisplayItemClient) const;
 
     // Plays back the current PaintList() into the given context.
-    void replay(GraphicsContext*);
+    void replay(GraphicsContext&);
 
 #if ENABLE(ASSERT)
     size_t newPaintsSize() const { return m_newPaints.size(); }

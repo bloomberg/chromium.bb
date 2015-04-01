@@ -54,7 +54,7 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
     paintingInfo.clipToDirtyRect = false;
 
     if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
-        m_clipRecorder = adoptPtr(new LayerClipRecorder(layer.layoutObject(), context, DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
+        m_clipRecorder = adoptPtr(new LayerClipRecorder(*context, *layer.layoutObject(), DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
     }
 
     ASSERT(m_layoutObject);
@@ -69,7 +69,7 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
     } else {
         OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds);
 
-        filterDisplayItem->replay(context);
+        filterDisplayItem->replay(*context);
     }
 
     m_filterInProgress = true;
@@ -85,7 +85,7 @@ FilterPainter::~FilterPainter()
         ASSERT(m_context->displayItemList());
         m_context->displayItemList()->add(endFilterDisplayItem.release());
     } else {
-        endFilterDisplayItem->replay(m_context);
+        endFilterDisplayItem->replay(*m_context);
     }
 }
 

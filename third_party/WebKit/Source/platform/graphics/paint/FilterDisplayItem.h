@@ -29,7 +29,7 @@ public:
         return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds, filterOperations));
     }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
     virtual bool drawsContent() const override;
 
@@ -58,7 +58,7 @@ public:
     EndFilterDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFilter) { }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

@@ -57,7 +57,7 @@ class TestDisplayItem : public DisplayItem {
 public:
     TestDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
-    virtual void replay(GraphicsContext*) override final { ASSERT_NOT_REACHED(); }
+    virtual void replay(GraphicsContext&) override final { ASSERT_NOT_REACHED(); }
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
 };
 
@@ -84,7 +84,7 @@ public:
 
 void drawRect(GraphicsContext& context, LayoutObject& layoutObject, PaintPhase phase, const FloatRect& bound)
 {
-    LayoutObjectDrawingRecorder drawingRecorder(&context, layoutObject, phase, bound);
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject, phase, bound);
     if (drawingRecorder.canUseCachedDrawing())
         return;
     IntRect rect(0, 0, 10, 10);
@@ -95,7 +95,7 @@ void drawClippedRect(GraphicsContext& context, LayoutBoxModelObject& layoutObjec
 {
     LayoutRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
-    LayerClipRecorder layerClipRecorder(&layoutObject, &context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
+    LayerClipRecorder layerClipRecorder(context, layoutObject, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
     drawRect(context, layoutObject, phase, bound);
 }
 
@@ -340,7 +340,7 @@ TEST_F(ViewDisplayListTest, UpdateClip)
 
     ClipRect firstClipRect(LayoutRect(1, 1, 2, 2));
     {
-        LayerClipRecorder layerClipRecorder(&firstLayoutObject, &context, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
+        LayerClipRecorder layerClipRecorder(context, firstLayoutObject, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
         drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
@@ -365,7 +365,7 @@ TEST_F(ViewDisplayListTest, UpdateClip)
     drawRect(context, firstLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     ClipRect secondClipRect(LayoutRect(1, 1, 2, 2));
     {
-        LayerClipRecorder layerClipRecorder(&secondLayoutObject, &context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
+        LayerClipRecorder layerClipRecorder(context, secondLayoutObject, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(context, secondLayoutObject, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
     rootDisplayItemList().endNewPaints();
@@ -519,25 +519,25 @@ TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     {
-        SubtreeRecorder r(&context, container1, PaintPhaseBlockBackground);
+        SubtreeRecorder r(context, container1, PaintPhaseBlockBackground);
         r.begin();
         drawRect(context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
         drawRect(context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     }
     {
-        SubtreeRecorder r(&context, container1, PaintPhaseForeground);
+        SubtreeRecorder r(context, container1, PaintPhaseForeground);
         r.begin();
         drawRect(context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
         drawRect(context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
     }
     {
-        SubtreeRecorder r(&context, container2, PaintPhaseBlockBackground);
+        SubtreeRecorder r(context, container2, PaintPhaseBlockBackground);
         r.begin();
         drawRect(context, container2, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
         drawRect(context, content2, PaintPhaseBlockBackground, FloatRect(100, 200, 50, 200));
     }
     {
-        SubtreeRecorder r(&context, container2, PaintPhaseForeground);
+        SubtreeRecorder r(context, container2, PaintPhaseForeground);
         r.begin();
         drawRect(context, content2, PaintPhaseForeground, FloatRect(100, 200, 50, 200));
         drawRect(context, container2, PaintPhaseForeground, FloatRect(100, 200, 100, 100));
@@ -569,23 +569,23 @@ TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
     // and at the same time container2 is scrolled out of viewport and content2 is invalidated.
     rootDisplayItemList().invalidate(content2.displayItemClient());
     {
-        SubtreeRecorder r(&context, container2, PaintPhaseBlockBackground);
+        SubtreeRecorder r(context, container2, PaintPhaseBlockBackground);
     }
     EXPECT_EQ((size_t)1, newPaintListBeforeUpdate().size());
     EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
     {
-        SubtreeRecorder r(&context, container2, PaintPhaseForeground);
+        SubtreeRecorder r(context, container2, PaintPhaseForeground);
     }
     EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
     EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
     {
-        SubtreeRecorder r(&context, container1, PaintPhaseBlockBackground);
+        SubtreeRecorder r(context, container1, PaintPhaseBlockBackground);
         r.begin();
         drawRect(context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
         drawRect(context, content1, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     }
     {
-        SubtreeRecorder r(&context, container1, PaintPhaseForeground);
+        SubtreeRecorder r(context, container1, PaintPhaseForeground);
         r.begin();
         drawRect(context, content1, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
         drawRect(context, container1, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
@@ -625,11 +625,11 @@ TEST_F(ViewDisplayListTest, Scope)
     FloatRect rect3(200, 100, 50, 50);
     drawRect(context, multicol, PaintPhaseBlockBackground, FloatRect(100, 200, 100, 100));
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect1);
     }
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect2);
     }
     rootDisplayItemList().endNewPaints();
@@ -644,11 +644,11 @@ TEST_F(ViewDisplayListTest, Scope)
     // Draw again with nothing invalidated.
     drawRect(context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect1);
     }
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect2);
     }
     EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
@@ -667,15 +667,15 @@ TEST_F(ViewDisplayListTest, Scope)
     rootDisplayItemList().invalidate(content.displayItemClient());
     drawRect(context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect1);
     }
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect2);
     }
     {
-        ScopeRecorder r(&context, multicol);
+        ScopeRecorder r(context, multicol);
         drawRect(context, content, PaintPhaseForeground, rect3);
     }
     // We should repaint everything on invalidation of the scope container.

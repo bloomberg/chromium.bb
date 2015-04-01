@@ -129,7 +129,7 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
         context->displayItemList()->add(BeginClipPathDisplayItem::create(layoutObject, clipPath, clipRule));
     } else {
         BeginClipPathDisplayItem clipPathDisplayItem(layoutObject, clipPath, clipRule);
-        clipPathDisplayItem.replay(context);
+        clipPathDisplayItem.replay(*context);
     }
 
     return true;
@@ -199,7 +199,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
     }
 
     if (displayItemList)
-        displayItemList->replay(&context);
+        displayItemList->replay(context);
     m_clipContentPicture = context.endRecording();
     return m_clipContentPicture;
 }

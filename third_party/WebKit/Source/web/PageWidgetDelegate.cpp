@@ -89,13 +89,13 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
         IntRect dirtyRect(rect);
         FrameView* view = root.view();
         if (view) {
-            ClipRecorder clipRecorder(root, &paintContext, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
+            ClipRecorder clipRecorder(paintContext, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
             view->paint(&paintContext, dirtyRect);
             if (overlays)
                 overlays->paintWebFrame(paintContext);
         } else {
-            DrawingRecorder drawingRecorder(&paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+            DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
             if (!drawingRecorder.canUseCachedDrawing())
                 paintContext.fillRect(dirtyRect, Color::white);
         }

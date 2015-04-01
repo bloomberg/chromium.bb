@@ -32,7 +32,7 @@ void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         DeprecatedPaintLayerPainter(*m_renderReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
     } else if (paintInfo.phase == PaintPhaseMask) {
         LayoutRect paintRect(adjustedPaintOffset, m_renderReplica.size());
-        LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_renderReplica, paintInfo.phase, paintRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_renderReplica, paintInfo.phase, paintRect);
         if (!drawingRecorder.canUseCachedDrawing())
             m_renderReplica.paintMask(paintInfo, adjustedPaintOffset);
     }

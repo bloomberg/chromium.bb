@@ -30,7 +30,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (!styleToUse.hasOutline())
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, visualOverflowBounds);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, visualOverflowBounds);
     if (recorder.canUseCachedDrawing())
         return;
 

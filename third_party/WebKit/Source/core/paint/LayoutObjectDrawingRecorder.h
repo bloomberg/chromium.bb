@@ -18,13 +18,13 @@ class LayoutObject;
 
 class LayoutObjectDrawingRecorder {
 public:
-    LayoutObjectDrawingRecorder(GraphicsContext* context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
         : m_drawingRecorder(context, layoutObject, displayItemType, pixelSnappedIntRect(clip)) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext* context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
         : m_drawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext* context, const LayoutObject& layoutObject, DisplayItem::Type type, const FloatRect& clip)
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type type, const FloatRect& clip)
         : m_drawingRecorder(context, layoutObject, type, clip) { }
 
     bool canUseCachedDrawing() const { return m_drawingRecorder.canUseCachedDrawing(); }

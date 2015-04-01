@@ -45,7 +45,7 @@ SVGPaintContext::~SVGPaintContext()
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->filter() == m_filter);
 
-        LayoutObjectDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
+        LayoutObjectDrawingRecorder recorder(*m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
         if (!recorder.canUseCachedDrawing())
             SVGFilterPainter(*m_filter).finishEffect(*m_object, m_originalPaintInfo->context);
 
@@ -98,7 +98,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
         return false;
 
     if (!isIsolationInstalled() && SVGLayoutSupport::isIsolationRequired(m_object))
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object, SkXfermode::kSrcOver_Mode, 1));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(*m_paintInfo.context, *m_object, SkXfermode::kSrcOver_Mode, 1));
 
     return true;
 }
@@ -117,7 +117,7 @@ void SVGPaintContext::applyCompositingIfNecessary()
         style.blendMode() : WebBlendModeNormal;
     if (opacity < 1 || blendMode != WebBlendModeNormal) {
         m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, *m_object, m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, *m_object,
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(*m_paintInfo.context, *m_object,
             WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode), opacity));
     }
 }

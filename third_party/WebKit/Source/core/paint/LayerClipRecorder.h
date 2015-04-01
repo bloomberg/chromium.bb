@@ -33,17 +33,17 @@ public:
     // same time we pass a fragmentOffset, so that we can translate from flow thread coordinates to
     // visual coordinates. This may look rather confusing/redundant, but it is needed for rounded
     // border clipping. Would be nice to clean up this.
-    explicit LayerClipRecorder(const LayoutBoxModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&, const DeprecatedPaintLayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+    explicit LayerClipRecorder(GraphicsContext&, const LayoutBoxModelObject&, DisplayItem::Type, const ClipRect&, const DeprecatedPaintLayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
 
     ~LayerClipRecorder();
 
 private:
 
-    void collectRoundedRectClips(DeprecatedPaintLayer&, const DeprecatedPaintLayerPaintingInfo& localPaintingInfo, GraphicsContext*, const LayoutPoint& fragmentOffset, PaintLayerFlags,
+    void collectRoundedRectClips(DeprecatedPaintLayer&, const DeprecatedPaintLayerPaintingInfo& localPaintingInfo, GraphicsContext&, const LayoutPoint& fragmentOffset, PaintLayerFlags,
         BorderRadiusClippingRule, Vector<FloatRoundedRect>& roundedRectClips);
 
-    GraphicsContext* m_graphicsContext;
-    const LayoutBoxModelObject* m_layoutObject;
+    GraphicsContext& m_graphicsContext;
+    const LayoutBoxModelObject& m_layoutObject;
     DisplayItem::Type m_clipType;
 };
 

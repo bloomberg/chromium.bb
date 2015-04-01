@@ -62,8 +62,9 @@ BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutP
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());
         m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
-    } else
-        clipDisplayItem->replay(paintInfo.context);
+    } else {
+        clipDisplayItem->replay(*paintInfo.context);
+    }
 
     m_pushedClip = true;
 }
@@ -82,7 +83,7 @@ BoxClipper::~BoxClipper()
         m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
         EndClipDisplayItem endClipDisplayItem(m_box, endType);
-        endClipDisplayItem.replay(m_paintInfo.context);
+        endClipDisplayItem.replay(*m_paintInfo.context);
     }
 }
 

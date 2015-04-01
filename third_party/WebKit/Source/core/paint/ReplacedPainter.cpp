@@ -33,7 +33,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
-        LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, visualOverflowRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutReplaced, paintInfo.phase, visualOverflowRect);
         if (!drawingRecorder.canUseCachedDrawing())
             m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
         return;
@@ -89,7 +89,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         selectionPaintingRect.moveBy(adjustedPaintOffset);
         IntRect selectionPaintingIntRect = pixelSnappedIntRect(selectionPaintingRect);
 
-        LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutReplaced, DisplayItem::SelectionTint, selectionPaintingIntRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutReplaced, DisplayItem::SelectionTint, selectionPaintingIntRect);
         if (drawingRecorder.canUseCachedDrawing())
             return;
         paintInfo.context->fillRect(selectionPaintingIntRect, m_layoutReplaced.selectionBackgroundColor());

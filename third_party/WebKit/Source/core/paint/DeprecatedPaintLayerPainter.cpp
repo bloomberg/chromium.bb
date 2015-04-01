@@ -97,7 +97,7 @@ void DeprecatedPaintLayerPainter::paintLayerContentsAndReflection(GraphicsContex
 
     // Paint the reflection first if we have one.
     if (m_renderLayer.reflectionInfo()) {
-        ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
+        ScopeRecorder scopeRecorder(*context, *m_renderLayer.layoutObject());
         m_renderLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags | PaintLayerPaintingReflection);
     }
 
@@ -214,11 +214,11 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
     // FIXME: this should be unified further into DeprecatedPaintLayer::paintsWithTransparency().
     bool shouldCompositeForBlendMode = (!m_renderLayer.layoutObject()->isDocumentElement() || m_renderLayer.layoutObject()->isSVGRoot()) && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
     if (shouldCompositeForBlendMode || m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
-        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, DisplayItem::TransparencyClip,
+        clipRecorder = adoptPtr(new LayerClipRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::TransparencyClip,
             m_renderLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
             &paintingInfo, LayoutPoint(), paintFlags));
 
-        compositingRecorder = adoptPtr(new CompositingRecorder(context, *m_renderLayer.layoutObject(),
+        compositingRecorder = adoptPtr(new CompositingRecorder(*context, *m_renderLayer.layoutObject(),
             WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_renderLayer.layoutObject()->style()->blendMode()),
             m_renderLayer.layoutObject()->opacity()));
     }
@@ -372,7 +372,7 @@ void DeprecatedPaintLayerPainter::paintLayerWithTransform(GraphicsContext* conte
     for (const auto& fragment: fragments) {
         OwnPtr<ScopeRecorder> scopeRecorder;
         if (needsScope)
-            scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+            scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
         OwnPtr<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
             ClipRect clipRectForFragment(ancestorBackgroundClipRect);
@@ -381,7 +381,7 @@ void DeprecatedPaintLayerPainter::paintLayerWithTransform(GraphicsContext* conte
             if (clipRectForFragment.isEmpty())
                 continue;
             if (needsToClip(paintingInfo, clipRectForFragment))
-                clipRecorder = adoptPtr(new LayerClipRecorder(parentLayer->layoutObject(), context, DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
+                clipRecorder = adoptPtr(new LayerClipRecorder(*context, *parentLayer->layoutObject(), DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
         }
 
         paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
@@ -463,12 +463,12 @@ void DeprecatedPaintLayerPainter::paintOverflowControlsForFragments(const Deprec
     for (auto& fragment : layerFragments) {
         OwnPtr<ScopeRecorder> scopeRecorder;
         if (needsScope)
-            scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+            scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
 
         OwnPtr<LayerClipRecorder> clipRecorder;
 
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
-            clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
+            clipRecorder = adoptPtr(new LayerClipRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
         }
         if (DeprecatedPaintLayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
             ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
@@ -564,7 +564,7 @@ void DeprecatedPaintLayerPainter::paintChildLayerIntoColumns(GraphicsContext* co
         if (!localDirtyRect.isEmpty()) {
             // Each strip pushes a clip, since column boxes are specified as being
             // like overflow:hidden.
-            ClipRecorder clipRecorder(*m_renderLayer.layoutObject(), context, DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
+            ClipRecorder clipRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
 
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.
@@ -629,7 +629,7 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
             break;
         }
 
-        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));
+        clipRecorder = adoptPtr(new LayerClipRecorder(*context, *m_renderLayer.layoutObject(), clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));
     }
 
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->layoutObject());
@@ -644,7 +644,7 @@ void DeprecatedPaintLayerPainter::paintBackgroundForFragments(const DeprecatedPa
     for (auto& fragment: layerFragments) {
         OwnPtr<ScopeRecorder> scopeRecorder;
         if (needsScope)
-            scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+            scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
         paintFragmentWithPhase(PaintPhaseBlockBackground, fragment, context, fragment.backgroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
@@ -658,7 +658,7 @@ void DeprecatedPaintLayerPainter::paintForegroundForFragments(const DeprecatedPa
     ClipState clipState = HasNotClipped;
     OwnPtr<LayerClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
-        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags));
+        clipRecorder = adoptPtr(new LayerClipRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags));
         clipState = HasClipped;
     }
 
@@ -682,7 +682,7 @@ void DeprecatedPaintLayerPainter::paintForegroundForFragmentsWithPhase(PaintPhas
         if (!fragment.foregroundRect.isEmpty()) {
             OwnPtr<ScopeRecorder> scopeRecorder;
             if (needsScope)
-                scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+                scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
             paintFragmentWithPhase(phase, fragment, context, fragment.foregroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
         }
     }
@@ -696,7 +696,7 @@ void DeprecatedPaintLayerPainter::paintOutlineForFragments(const DeprecatedPaint
         if (!fragment.outlineRect.isEmpty()) {
             OwnPtr<ScopeRecorder> scopeRecorder;
             if (needsScope)
-                scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+                scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
             paintFragmentWithPhase(PaintPhaseSelfOutline, fragment, context, fragment.outlineRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
         }
     }
@@ -709,7 +709,7 @@ void DeprecatedPaintLayerPainter::paintMaskForFragments(const DeprecatedPaintLay
     for (auto& fragment: layerFragments) {
         OwnPtr<ScopeRecorder> scopeRecorder;
         if (needsScope)
-            scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+            scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
         paintFragmentWithPhase(PaintPhaseMask, fragment, context, fragment.backgroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
@@ -721,7 +721,7 @@ void DeprecatedPaintLayerPainter::paintChildClippingMaskForFragments(const Depre
     for (auto& fragment: layerFragments) {
         OwnPtr<ScopeRecorder> scopeRecorder;
         if (needsScope)
-            scopeRecorder = adoptPtr(new ScopeRecorder(context, *m_renderLayer.layoutObject()));
+            scopeRecorder = adoptPtr(new ScopeRecorder(*context, *m_renderLayer.layoutObject()));
         paintFragmentWithPhase(PaintPhaseClippingMask, fragment, context, fragment.foregroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }

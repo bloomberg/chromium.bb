@@ -2163,7 +2163,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
                 context->displayItemList()->add(clipDisplayItem.release());
             } else {
-                clipDisplayItem->replay(context);
+                clipDisplayItem->replay(*context);
             }
         }
         DeprecatedPaintLayerPainter(*paintInfo.renderLayer).paintLayer(context, paintingInfo, paintLayerFlags);
@@ -2173,7 +2173,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
                 context->displayItemList()->add(endClipDisplayItem.release());
             } else {
-                endClipDisplayItem->replay(context);
+                endClipDisplayItem->replay(*context);
             }
         }
     }

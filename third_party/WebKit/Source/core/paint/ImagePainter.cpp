@@ -60,7 +60,7 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
 
     IntRect focusRect = m_layoutImage.absoluteContentBox();
 
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 
@@ -90,7 +90,7 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
             // Draw an outline rect where the image should be.
             IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_layoutImage.borderLeft() + m_layoutImage.paddingLeft(), paintOffset.y() + m_layoutImage.borderTop() + m_layoutImage.paddingTop(), cWidth, cHeight));
 
-            LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, paintRect);
+            LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, paintRect);
             if (drawingRecorder.canUseCachedDrawing())
                 return;
             context->setStrokeStyle(SolidStroke);
@@ -104,7 +104,7 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         LayoutRect paintRect = m_layoutImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
 
-        LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, contentRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, contentRect);
         if (drawingRecorder.canUseCachedDrawing())
             return;
         bool clip = !contentRect.contains(paintRect);

@@ -31,7 +31,7 @@ public:
         ASSERT(isClipType(type));
     }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     Vector<FloatRoundedRect>& roundedRectClips() { return m_roundedRectClips; }
@@ -59,7 +59,7 @@ public:
         ASSERT(isEndClipType(type));
     }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

@@ -46,7 +46,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     // Apply initial viewport clip.
     OwnPtr<ClipRecorder> clipRecorder;
     if (m_renderSVGRoot.shouldApplyViewportClip())
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderSVGRoot, paintInfoBeforeFiltering.context, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_renderSVGRoot.overflowClipRect(paintOffset)))));
+        clipRecorder = adoptPtr(new ClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_renderSVGRoot.overflowClipRect(paintOffset)))));
 
     // Convert from container offsets (html renderers) to a relative transform (svg renderers).
     // Transform from our paint container's coordinate system to our local coords.

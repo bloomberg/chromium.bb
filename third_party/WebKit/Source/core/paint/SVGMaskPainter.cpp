@@ -32,7 +32,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
         context->displayItemList()->add(BeginCompositingDisplayItem::create(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect));
     } else {
         BeginCompositingDisplayItem beginCompositingContent(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
-        beginCompositingContent.replay(context);
+        beginCompositingContent.replay(*context);
     }
 
     return true;
@@ -48,7 +48,7 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
     {
         ColorFilter maskLayerFilter = m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
             ? ColorFilterLuminanceToAlpha : ColorFilterNone;
-        CompositingRecorder maskCompositing(context, object, SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
+        CompositingRecorder maskCompositing(*context, object, SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
         drawMaskForLayoutObject(context, object, object.objectBoundingBox());
     }
 
@@ -57,7 +57,7 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
         context->displayItemList()->add(EndCompositingDisplayItem::create(object));
     } else {
         EndCompositingDisplayItem endCompositingContent(object);
-        endCompositingContent.replay(context);
+        endCompositingContent.replay(*context);
     }
 }
 
@@ -75,7 +75,7 @@ void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext* context, const Lay
         context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGMask, maskContentPicture));
     } else {
         DrawingDisplayItem maskPicture(layoutObject, DisplayItem::SVGMask, maskContentPicture);
-        maskPicture.replay(context);
+        maskPicture.replay(*context);
     }
 }
 

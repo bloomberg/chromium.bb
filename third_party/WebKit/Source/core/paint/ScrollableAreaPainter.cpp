@@ -33,7 +33,7 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
         return;
     }
 
-    DrawingRecorder recorder(context, m_scrollableArea, DisplayItem::Resizer, damageRect);
+    DrawingRecorder recorder(*context, m_scrollableArea, DisplayItem::Resizer, damageRect);
     if (recorder.canUseCachedDrawing())
         return;
 
@@ -174,7 +174,7 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
         return;
     }
 
-    DrawingRecorder recorder(context, m_scrollableArea, DisplayItem::ScrollbarCorner, damageRect);
+    DrawingRecorder recorder(*context, m_scrollableArea, DisplayItem::ScrollbarCorner, damageRect);
     if (recorder.canUseCachedDrawing())
         return;
 

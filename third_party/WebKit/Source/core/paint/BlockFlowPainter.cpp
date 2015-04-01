@@ -60,7 +60,7 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
             bounds = m_layoutBlockFlow.visualOverflowRect();
             bounds.moveBy(paintOffset);
         }
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
 
         LayoutRect gapRectsBounds = m_layoutBlockFlow.selectionGaps(&m_layoutBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight,
             recorder.canUseCachedDrawing() ? nullptr : &paintInfo);

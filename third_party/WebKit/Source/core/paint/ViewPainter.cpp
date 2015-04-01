@@ -30,7 +30,7 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             paintRect = m_layoutView.viewRect();
 
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutView, DisplayItem::ViewBackground, paintRect);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutView, DisplayItem::ViewBackground, paintRect);
         if (!recorder.canUseCachedDrawing())
             paintInfo.context->fillRect(paintRect, m_layoutView.frameView()->baseBackgroundColor());
     }
@@ -85,7 +85,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             paintRect = m_layoutView.viewRect();
 
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutView, DisplayItem::BoxDecorationBackground, m_layoutView.viewRect());
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutView, DisplayItem::BoxDecorationBackground, m_layoutView.viewRect());
         if (!recorder.canUseCachedDrawing()) {
             Color baseColor = m_layoutView.frameView()->baseBackgroundColor();
             paintInfo.context->fillRect(paintRect, baseColor, baseColor.alpha() ?

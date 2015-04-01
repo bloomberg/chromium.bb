@@ -368,7 +368,7 @@ void PopupContainer::paint(GraphicsContext* gc, const IntRect& paintRect)
 
 void PopupContainer::paintBorder(GraphicsContext* gc, const IntRect& rect)
 {
-    DrawingRecorder drawingRecorder(gc, *this, DisplayItem::PopupContainerBorder, boundsRect());
+    DrawingRecorder drawingRecorder(*gc, *this, DisplayItem::PopupContainerBorder, boundsRect());
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

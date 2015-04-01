@@ -36,7 +36,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (!paintInfo.rect.intersects(pixelSnappedOverflowRect))
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
     if (recorder.canUseCachedDrawing())
         return;
 

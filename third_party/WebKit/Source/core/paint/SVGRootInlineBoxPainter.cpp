@@ -25,7 +25,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     if (hasSelection) {
-        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.rect);
+        LayoutObjectDrawingRecorder recorder(*paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.rect);
         if (!recorder.canUseCachedDrawing()) {
             for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
                 if (child->isSVGInlineTextBox())

@@ -29,7 +29,7 @@ public:
         ASSERT(isFloatClipType(type));
     }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
@@ -54,7 +54,7 @@ public:
         ASSERT(isEndFloatClipType(type));
     }
 
-    virtual void replay(GraphicsContext*) override;
+    virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

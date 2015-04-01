@@ -159,7 +159,7 @@ public:
 
     virtual ~DisplayItem() { }
 
-    virtual void replay(GraphicsContext*) { }
+    virtual void replay(GraphicsContext&) { }
 
     DisplayItemClient client() const { return m_id.client; }
     Type type() const { return m_id.type; }

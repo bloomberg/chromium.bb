@@ -591,7 +591,7 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
         transform.translate(-paintingRect.x(), -paintingRect.y());
         TransformRecorder transformRecorder(paintContext, displayItemClient, transform);
 
-        ClipRecorder clipRecorder(displayItemClient, &paintContext, clipType,
+        ClipRecorder clipRecorder(paintContext, displayItemClient, clipType,
             LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
         m_view->paintContents(&paintContext, paintingRect);

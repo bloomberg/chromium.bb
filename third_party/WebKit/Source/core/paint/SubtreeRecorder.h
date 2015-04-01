@@ -20,7 +20,7 @@ class LayoutObject;
 // for the paint phase.
 class SubtreeRecorder {
 public:
-    SubtreeRecorder(GraphicsContext*, const LayoutObject& root, PaintPhase);
+    SubtreeRecorder(GraphicsContext&, const LayoutObject& root, PaintPhase);
 
     ~SubtreeRecorder();
 

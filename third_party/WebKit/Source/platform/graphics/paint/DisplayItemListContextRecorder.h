@@ -33,7 +33,7 @@ public:
             return;
 
         ASSERT(m_displayItemList);
-        m_displayItemList->replay(&m_initialContext);
+        m_displayItemList->replay(m_initialContext);
     }
 
     GraphicsContext& context() const { return m_displayItemList ? *m_displayItemListContext : m_initialContext; }

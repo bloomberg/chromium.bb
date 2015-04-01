@@ -357,7 +357,7 @@ void PopupListBox::typeAheadFind(const PlatformKeyboardEvent& event)
 
 void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
 {
-    ClipRecorder frameClip(*this, gc, DisplayItem::ClipPopupListBoxFrame, LayoutRect(frameRect()));
+    ClipRecorder frameClip(*gc, *this, DisplayItem::ClipPopupListBoxFrame, LayoutRect(frameRect()));
     TransformRecorder transformRecorder(*gc, *this, AffineTransform::translation(x(), y()));
     IntRect paintRect = intersection(rect, frameRect());
     paintRect.moveBy(-location());
@@ -370,7 +370,7 @@ void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
         // happens.
         if (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar())
             scrollOffset.expand(-verticalScrollbar()->width(), 0);
-        ScrollRecorder scroll(gc, *this, PaintPhase::PaintPhaseForeground, scrollOffset);
+        ScrollRecorder scroll(*gc, *this, PaintPhase::PaintPhaseForeground, scrollOffset);
         IntRect scrolledPaintRect = paintRect;
         scrolledPaintRect.move(scrollOffset);
 
@@ -380,7 +380,7 @@ void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
             paintRow(gc, scrolledPaintRect, i);
     } else {
         // Special case for an empty popup.
-        DrawingRecorder drawingRecorder(gc, *this, DisplayItem::PopupListBoxBackground, boundsRect());
+        DrawingRecorder drawingRecorder(*gc, *this, DisplayItem::PopupListBoxBackground, boundsRect());
         if (!drawingRecorder.canUseCachedDrawing())
             gc->fillRect(boundsRect(), Color::white);
     }
@@ -402,7 +402,7 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     if (!rowRect.intersects(rect))
         return;
 
-    DrawingRecorder drawingRecorder(gc, *m_items[rowIndex], DisplayItem::PopupListBoxRow, rowRect);
+    DrawingRecorder drawingRecorder(*gc, *m_items[rowIndex], DisplayItem::PopupListBoxRow, rowRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

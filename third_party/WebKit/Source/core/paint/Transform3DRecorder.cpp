@@ -28,7 +28,7 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, const Display
         m_context.displayItemList()->add(BeginTransform3DDisplayItem::create(m_client, m_type, transform));
     } else {
         BeginTransform3DDisplayItem beginTransform(m_client, m_type, transform);
-        beginTransform.replay(&m_context);
+        beginTransform.replay(m_context);
     }
 }
 
@@ -43,7 +43,7 @@ Transform3DRecorder::~Transform3DRecorder()
         m_context.displayItemList()->add(EndTransform3DDisplayItem::create(m_client, endType));
     } else {
         EndTransform3DDisplayItem endTransform(m_client, endType);
-        endTransform.replay(&m_context);
+        endTransform.replay(m_context);
     }
 }
 

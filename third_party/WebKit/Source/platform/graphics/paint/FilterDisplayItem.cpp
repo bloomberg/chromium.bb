@@ -33,15 +33,15 @@ static FloatRect mapImageFilterRect(SkImageFilter* filter, const FloatRect& boun
     return filterBounds;
 }
 
-void BeginFilterDisplayItem::replay(GraphicsContext* context)
+void BeginFilterDisplayItem::replay(GraphicsContext& context)
 {
-    context->save();
+    context.save();
 
     FloatRect imageFilterBounds = mapImageFilterRect(m_imageFilter.get(), m_bounds);
 
-    context->translate(m_bounds.x(), m_bounds.y());
-    context->beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter.get());
-    context->translate(-m_bounds.x(), -m_bounds.y());
+    context.translate(m_bounds.x(), m_bounds.y());
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter.get());
+    context.translate(-m_bounds.x(), -m_bounds.y());
 }
 
 void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
@@ -64,10 +64,10 @@ void BeginFilterDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& str
 }
 #endif
 
-void EndFilterDisplayItem::replay(GraphicsContext* context)
+void EndFilterDisplayItem::replay(GraphicsContext& context)
 {
-    context->endLayer();
-    context->restore();
+    context.endLayer();
+    context.restore();
 }
 
 void EndFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const

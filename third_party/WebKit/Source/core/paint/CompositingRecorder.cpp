@@ -13,7 +13,7 @@
 
 namespace blink {
 
-CompositingRecorder::CompositingRecorder(GraphicsContext* graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
+CompositingRecorder::CompositingRecorder(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
     : m_client(client)
     , m_graphicsContext(graphicsContext)
 {
@@ -25,22 +25,22 @@ CompositingRecorder::~CompositingRecorder()
     endCompositing(m_graphicsContext, m_client);
 }
 
-void CompositingRecorder::beginCompositing(GraphicsContext* graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
+void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(graphicsContext->displayItemList());
-        graphicsContext->displayItemList()->add(BeginCompositingDisplayItem::create(client, xferMode, opacity, bounds, colorFilter));
+        ASSERT(graphicsContext.displayItemList());
+        graphicsContext.displayItemList()->add(BeginCompositingDisplayItem::create(client, xferMode, opacity, bounds, colorFilter));
     } else {
         BeginCompositingDisplayItem beginCompositingDisplayItem(client, xferMode, opacity, bounds, colorFilter);
         beginCompositingDisplayItem.replay(graphicsContext);
     }
 }
 
-void CompositingRecorder::endCompositing(GraphicsContext* graphicsContext, const DisplayItemClientWrapper& client)
+void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(graphicsContext->displayItemList());
-        graphicsContext->displayItemList()->add(EndCompositingDisplayItem::create(client));
+        ASSERT(graphicsContext.displayItemList());
+        graphicsContext.displayItemList()->add(EndCompositingDisplayItem::create(client));
     } else {
         EndCompositingDisplayItem endCompositingDisplayItem(client);
         endCompositingDisplayItem.replay(graphicsContext);

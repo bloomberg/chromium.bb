@@ -13,8 +13,8 @@
 
 namespace blink {
 
-SubtreeRecorder::SubtreeRecorder(GraphicsContext* context, const LayoutObject& subtreeRoot, PaintPhase paintPhase)
-    : m_displayItemList(context->displayItemList())
+SubtreeRecorder::SubtreeRecorder(GraphicsContext& context, const LayoutObject& subtreeRoot, PaintPhase paintPhase)
+    : m_displayItemList(context.displayItemList())
     , m_subtreeRoot(subtreeRoot)
     , m_paintPhase(paintPhase)
     , m_begun(false)

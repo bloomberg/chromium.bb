@@ -106,7 +106,7 @@ public:
     {
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
         FloatRect rect(0, 0, size.width, size.height);
-        DrawingRecorder drawingRecorder(&graphicsContext, *this, DisplayItem::PageOverlay, rect);
+        DrawingRecorder drawingRecorder(graphicsContext, *this, DisplayItem::PageOverlay, rect);
         if (!drawingRecorder.canUseCachedDrawing())
             graphicsContext.fillRect(rect, m_color);
     }
@@ -203,7 +203,7 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
 
         GraphicsContext replayContext(&canvas, nullptr /* displayItemList */);
-        graphicsLayer->displayItemList()->replay(&replayContext);
+        graphicsLayer->displayItemList()->replay(replayContext);
     } else {
         GraphicsContext graphicsContext(&canvas, nullptr /* displayItemList */);
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));

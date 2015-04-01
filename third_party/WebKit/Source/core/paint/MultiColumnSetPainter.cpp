@@ -53,7 +53,7 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
 
     LayoutRect paintRect = m_renderMultiColumnSet.visualOverflowRect();
     paintRect.moveBy(paintOffset);
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_renderMultiColumnSet, DisplayItem::ColumnRules, paintRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_renderMultiColumnSet, DisplayItem::ColumnRules, paintRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

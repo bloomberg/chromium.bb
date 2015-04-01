@@ -288,7 +288,7 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
     if (m_displayItemList && contentsOpaque()) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         FloatRect rect(FloatPoint(), size());
-        DrawingRecorder recorder(&context, *this, DisplayItem::DebugRedFill, rect);
+        DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
         if (!recorder.canUseCachedDrawing())
             context.fillRect(rect, SK_ColorRED);
     }

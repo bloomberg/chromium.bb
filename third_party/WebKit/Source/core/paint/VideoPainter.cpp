@@ -32,7 +32,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     contentRect.moveBy(paintOffset);
     GraphicsContext* context = paintInfo.context;
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutVideo, paintInfo.phase, contentRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

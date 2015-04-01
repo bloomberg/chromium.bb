@@ -180,7 +180,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, paintPhase, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, paintPhase, bounds);
         if (!recorder.canUseCachedDrawing())
             m_layoutBlock.paintMask(paintInfo, paintOffset);
         return;
@@ -196,14 +196,14 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled()
             && m_layoutBlock.hasOverflowClip()
             && m_layoutBlock.layer()->scrollsOverflow()) {
-            scrollRecorder = adoptPtr(new ScrollRecorder(paintInfo.context, m_layoutBlock, paintPhase, m_layoutBlock.scrolledContentOffset()));
+            scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, m_layoutBlock, paintPhase, m_layoutBlock.scrolledContentOffset()));
         }
 
         if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
             && m_layoutBlock.style()->visibility() == VISIBLE
             && m_layoutBlock.hasColumns()
             && !paintInfo.paintRootBackgroundOnly()) {
-            LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
+            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
             if (!recorder.canUseCachedDrawing())
                 paintColumnRules(paintInfo, scrolledOffset);
         }
@@ -245,7 +245,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground && hasCaret()) {
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
         if (!recorder.canUseCachedDrawing())
             paintCarets(paintInfo, paintOffset);
     }
@@ -396,7 +396,7 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
     LayoutUnit colGap = m_layoutBlock.columnGap();
 
     for (unsigned i = 0; i < colCount; i++) {
-        ScopeRecorder scopeRecorder(paintInfo.context, m_layoutBlock);
+        ScopeRecorder scopeRecorder(*paintInfo.context, m_layoutBlock);
 
         // For each rect, we clip to the rect, and then we adjust our coords.
         LayoutRect colRect = m_layoutBlock.columnRectAt(colInfo, i);
@@ -426,7 +426,7 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
             // like overflow:hidden.
             // FIXME: Content and column rules that extend outside column boxes at the edges of the multi-column element
             // are clipped according to the 'overflow' property.
-            ClipRecorder clipRecorder(m_layoutBlock, paintInfo.context,
+            ClipRecorder clipRecorder(*paintInfo.context, m_layoutBlock,
                 DisplayItem::paintPhaseToClipColumnBoundsType(paintInfo.phase), LayoutRect(enclosingIntRect(clipRect)));
 
             // Adjust our x and y when painting.

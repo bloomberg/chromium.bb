@@ -13,14 +13,14 @@
 
 namespace blink {
 
-ScrollRecorder::ScrollRecorder(GraphicsContext* context, const DisplayItemClientWrapper& client, PaintPhase phase, const IntSize& currentOffset)
+ScrollRecorder::ScrollRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, PaintPhase phase, const IntSize& currentOffset)
     : m_client(client)
     , m_beginItemType(DisplayItem::paintPhaseToScrollType(phase))
     , m_context(context)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_context->displayItemList());
-        m_context->displayItemList()->add(BeginScrollDisplayItem::create(m_client, m_beginItemType, currentOffset));
+        ASSERT(m_context.displayItemList());
+        m_context.displayItemList()->add(BeginScrollDisplayItem::create(m_client, m_beginItemType, currentOffset));
     } else {
         BeginScrollDisplayItem scrollDisplayItem(m_client, m_beginItemType, currentOffset);
         scrollDisplayItem.replay(m_context);
@@ -31,8 +31,8 @@ ScrollRecorder::~ScrollRecorder()
 {
     DisplayItem::Type endItemType = DisplayItem::scrollTypeToEndScrollType(m_beginItemType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(m_context->displayItemList());
-        m_context->displayItemList()->add(EndScrollDisplayItem::create(m_client, endItemType));
+        ASSERT(m_context.displayItemList());
+        m_context.displayItemList()->add(EndScrollDisplayItem::create(m_client, endItemType));
     } else {
         EndScrollDisplayItem endScrollDisplayItem(m_client, endItemType);
         endScrollDisplayItem.replay(m_context);

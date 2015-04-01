@@ -135,7 +135,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!m_layoutTableCell.table()->currentBorderValue())
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, drawingCullRect);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, paintInfo.phase, drawingCullRect);
     if (recorder.canUseCachedDrawing())
         return;
 
@@ -229,7 +229,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
     if (recorder.canUseCachedDrawing())
         return;
 

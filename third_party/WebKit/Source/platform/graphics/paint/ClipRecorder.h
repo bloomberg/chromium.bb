@@ -16,11 +16,11 @@ class GraphicsContext;
 class PLATFORM_EXPORT ClipRecorder {
     WTF_MAKE_FAST_ALLOCATED(ClipRecorder);
 public:
-    ClipRecorder(const DisplayItemClientWrapper&, GraphicsContext*, DisplayItem::Type, const LayoutRect& clipRect, SkRegion::Op = SkRegion::kIntersect_Op);
+    ClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const LayoutRect& clipRect, SkRegion::Op = SkRegion::kIntersect_Op);
     ~ClipRecorder();
 private:
     DisplayItemClientWrapper m_client;
-    GraphicsContext* m_context;
+    GraphicsContext& m_context;
     DisplayItem::Type m_type;
 };
 

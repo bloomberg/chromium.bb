@@ -77,7 +77,7 @@ LayoutRect BoxPainter::scrolledBackgroundRect()
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
     if (recorder.canUseCachedDrawing())
         return;
 
@@ -541,7 +541,7 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
         return;
 
     IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset, m_layoutBox.size()));
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutBox, paintInfo.phase, paintRect);
+    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutBox, paintInfo.phase, paintRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

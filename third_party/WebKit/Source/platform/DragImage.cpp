@@ -175,7 +175,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
         GraphicsContext& paintContext = contextRecorder.context();
 
         IntRect rect(IntPoint(), imageSize);
-        DrawingRecorder drawingRecorder(&paintContext, *buffer, DisplayItem::DragImage, rect);
+        DrawingRecorder drawingRecorder(paintContext, *buffer, DisplayItem::DragImage, rect);
         if (!drawingRecorder.canUseCachedDrawing()) {
             paintContext.scale(deviceScaleFactor, deviceScaleFactor);
 

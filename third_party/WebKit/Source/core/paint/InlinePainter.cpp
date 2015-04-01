@@ -40,7 +40,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
             for (const auto& rect : focusRingRects)
                 focusRingBoundingRect.unite(rect);
 
-            LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, focusRingBoundingRect);
+            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, focusRingBoundingRect);
             if (recorder.canUseCachedDrawing())
                 return;
 
@@ -76,7 +76,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     }
     bounds.moveBy(paintOffset);
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
     if (recorder.canUseCachedDrawing())
         return;
 

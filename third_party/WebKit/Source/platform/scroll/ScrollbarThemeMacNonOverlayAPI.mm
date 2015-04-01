@@ -79,7 +79,7 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement()
 bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
     DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
-    DrawingRecorder recorder(context, *scrollbar, displayItemType, damageRect);
+    DrawingRecorder recorder(*context, *scrollbar, displayItemType, damageRect);
     if (recorder.canUseCachedDrawing())
         return false;
 

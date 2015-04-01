@@ -37,7 +37,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     {
         SVGPaintContext paintContext(m_renderSVGImage, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
+            LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
                     paintForeground(paintContext.paintInfo());

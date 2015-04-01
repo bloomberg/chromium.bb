@@ -68,7 +68,7 @@ bool SVGClipPainter::applyClippingToContext(const LayoutObject& target, const Fl
     clipperState = ClipperAppliedMask;
 
     // Begin compositing the clip mask.
-    CompositingRecorder::beginCompositing(context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(*context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     {
         TransformRecorder recorder(*context, target, animatedLocalTransform);
 
@@ -78,7 +78,7 @@ bool SVGClipPainter::applyClippingToContext(const LayoutObject& target, const Fl
         ClipperState clipPathClipperState = ClipperNotApplied;
         if (clipPathClipper && !SVGClipPainter(*clipPathClipper).applyClippingToContext(m_clip, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
             // End the clip mask's compositor.
-            CompositingRecorder::endCompositing(context, target);
+            CompositingRecorder::endCompositing(*context, target);
             return false;
         }
 
@@ -89,7 +89,7 @@ bool SVGClipPainter::applyClippingToContext(const LayoutObject& target, const Fl
     }
 
     // Masked content layer start.
-    CompositingRecorder::beginCompositing(context, target, SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(*context, target, SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
 
     return true;
 }
@@ -103,15 +103,15 @@ void SVGClipPainter::postApplyStatefulResource(const LayoutObject& target, Graph
             context->displayItemList()->add(EndClipPathDisplayItem::create(target));
         } else {
             EndClipPathDisplayItem endClipPathDisplayItem(target);
-            endClipPathDisplayItem.replay(context);
+            endClipPathDisplayItem.replay(*context);
         }
         break;
     case ClipperAppliedMask:
         // Transfer content -> clip mask (SrcIn)
-        CompositingRecorder::endCompositing(context, target);
+        CompositingRecorder::endCompositing(*context, target);
 
         // Transfer clip mask -> bg (SrcOver)
-        CompositingRecorder::endCompositing(context, target);
+        CompositingRecorder::endCompositing(*context, target);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -131,7 +131,7 @@ void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutO
         context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGClip, clipContentPicture));
     } else {
         DrawingDisplayItem clipPicture(layoutObject, DisplayItem::SVGClip, clipContentPicture);
-        clipPicture.replay(context);
+        clipPicture.replay(*context);
     }
 }
 
