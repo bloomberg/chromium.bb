@@ -141,23 +141,30 @@ TEST_F(InputConversionTest, ValueEmpty) {
 }
 
 TEST_F(InputConversionTest, ValueError) {
-  Err err;
-  std::string input("\n [ \"a\", 5\nfoo bar");
-  Value result = ConvertInputToValue(settings(), input, nullptr,
-                                     Value(nullptr, "value"), &err);
-  EXPECT_TRUE(err.has_error());
+  static const char* const kTests[] = {
+      "\n [ \"a\", 5\nfoo bar",
 
-  // Blocks not allowed.
-  input = "{ foo = 5 }";
-  result = ConvertInputToValue(settings(), input, nullptr,
-                               Value(nullptr, "value"), &err);
-  EXPECT_TRUE(err.has_error());
+      // Blocks not allowed.
+      "{ foo = 5 }",
 
-  // Function calls not allowed.
-  input = "print(5)";
-  result = ConvertInputToValue(settings(), input, nullptr,
-                               Value(nullptr, "value"), &err);
-  EXPECT_TRUE(err.has_error());
+      // Function calls not allowed.
+      "print(5)",
+
+      // Trailing junk not allowed.
+      "233105-1",
+
+      // Non-literals hidden in arrays are not allowed.
+      "[233105 - 1]",
+      "[rebase_path(\"//\")]",
+  };
+
+  for (auto test : kTests) {
+    Err err;
+    std::string input(test);
+    Value result = ConvertInputToValue(settings(), input, nullptr,
+                                       Value(nullptr, "value"), &err);
+    EXPECT_TRUE(err.has_error()) << test;
+  }
 }
 
 // Passing none or the empty string for input conversion should ignore the

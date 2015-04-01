@@ -176,7 +176,7 @@ ParserHelper Parser::expressions_[] = {
 Parser::Parser(const std::vector<Token>& tokens, Err* err)
     : err_(err), cur_(0) {
   for (const auto& token : tokens) {
-    switch(token.type()) {
+    switch (token.type()) {
       case Token::LINE_COMMENT:
         line_comment_tokens_.push_back(token);
         break;
@@ -206,7 +206,34 @@ scoped_ptr<ParseNode> Parser::Parse(const std::vector<Token>& tokens,
 scoped_ptr<ParseNode> Parser::ParseExpression(const std::vector<Token>& tokens,
                                               Err* err) {
   Parser p(tokens, err);
-  return p.ParseExpression().Pass();
+  scoped_ptr<ParseNode> expr = p.ParseExpression();
+  if (!p.at_end() && !err->has_error()) {
+    *err = Err(p.cur_token(), "Trailing garbage");
+    return nullptr;
+  }
+  return expr.Pass();
+}
+
+// static
+scoped_ptr<ParseNode> Parser::ParseValue(const std::vector<Token>& tokens,
+                                         Err* err) {
+  for (const Token& token : tokens) {
+    switch (token.type()) {
+      case Token::INTEGER:
+      case Token::STRING:
+      case Token::TRUE_TOKEN:
+      case Token::FALSE_TOKEN:
+      case Token::LEFT_BRACKET:
+      case Token::RIGHT_BRACKET:
+      case Token::COMMA:
+        continue;
+      default:
+        *err = Err(token, "Invalid token in literal value");
+        return nullptr;
+    }
+  }
+
+  return ParseExpression(tokens, err);
 }
 
 bool Parser::IsAssignment(const ParseNode* node) const {

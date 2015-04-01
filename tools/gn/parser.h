@@ -40,12 +40,16 @@ class Parser {
   static scoped_ptr<ParseNode> ParseExpression(const std::vector<Token>& tokens,
                                                Err* err);
 
-  scoped_ptr<ParseNode> ParseExpression();
+  // Alternative to parsing that assumes the input is a literal value.
+  static scoped_ptr<ParseNode> ParseValue(const std::vector<Token>& tokens,
+                                          Err* err);
 
  private:
   // Vector must be valid for lifetime of call.
   Parser(const std::vector<Token>& tokens, Err* err);
   ~Parser();
+
+  scoped_ptr<ParseNode> ParseExpression();
 
   // Parses an expression with the given precedence or higher.
   scoped_ptr<ParseNode> ParseExpression(int precedence);
