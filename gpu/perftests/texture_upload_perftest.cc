@@ -77,7 +77,7 @@ GLuint LoadShader(const GLenum type, const char* const src) {
     GLint len = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
     if (len > 1) {
-      scoped_ptr<char> error_log(new char[len]);
+      scoped_ptr<char[]> error_log(new char[len]);
       glGetShaderInfoLog(shader, len, NULL, error_log.get());
       LOG(ERROR) << "Error compiling shader: " << error_log.get();
     }
