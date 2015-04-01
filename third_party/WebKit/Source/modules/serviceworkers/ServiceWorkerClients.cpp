@@ -30,7 +30,7 @@ public:
         OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
         HeapVector<Member<ServiceWorkerClient>> clients;
         for (size_t i = 0; i < webClients->clients.size(); ++i) {
-            WebServiceWorkerClientInfo& client = webClients->clients[i];
+            const WebServiceWorkerClientInfo& client = webClients->clients[i];
             if (client.clientType == WebServiceWorkerClientTypeWindow)
                 clients.append(ServiceWorkerWindowClient::create(client));
             else
