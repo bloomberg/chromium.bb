@@ -47,6 +47,24 @@ bool SVGPathParser::initialCommandIsMoveTo()
     return command == PathSegMoveToAbs || command == PathSegMoveToRel;
 }
 
+bool SVGPathParser::parsePath()
+{
+    while (m_source->hasMoreData()) {
+        PathSegmentData segment = m_source->parseSegment();
+        if (segment.command == PathSegUnknown)
+            return false;
+
+        m_consumer->emitSegment(segment);
+
+        if (!m_consumer->continueConsuming())
+            return true;
+
+        if (m_source->hasMoreData())
+            m_consumer->incrementPathSegmentCount();
+    }
+    return true;
+}
+
 class NormalizingConsumer {
     STACK_ALLOCATED();
 public:
@@ -207,36 +225,6 @@ void NormalizingConsumer::emitSegment(PathSegmentData& segment)
     m_lastCommand = originalCommand;
 }
 
-bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, bool checkForInitialMoveTo)
-{
-    ASSERT(m_source);
-    ASSERT(m_consumer);
-
-    if (checkForInitialMoveTo && !initialCommandIsMoveTo())
-        return false;
-
-    NormalizingConsumer normalizer(m_consumer);
-
-    while (m_source->hasMoreData()) {
-        PathSegmentData segment = m_source->parseSegment();
-        if (segment.command == PathSegUnknown)
-            return false;
-
-        if (pathParsingMode == NormalizedParsing) {
-            normalizer.emitSegment(segment);
-        } else {
-            m_consumer->emitSegment(segment);
-        }
-
-        if (!m_consumer->continueConsuming())
-            return true;
-
-        if (m_source->hasMoreData())
-            m_consumer->incrementPathSegmentCount();
-    }
-    return true;
-}
-
 // This works by converting the SVG arc to "simple" beziers.
 // Partly adapted from Niko's code in kdelibs/kdecore/svgicons.
 // See also SVG implementation notes: http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
@@ -338,6 +326,26 @@ bool NormalizingConsumer::decomposeArcToCubic(const FloatPoint& currentPoint, co
         cubicSegment.targetPoint = pointTransform.mapPoint(targetPoint);
 
         m_consumer->emitSegment(cubicSegment);
+    }
+    return true;
+}
+
+bool SVGPathParser::parseAndNormalizePath()
+{
+    NormalizingConsumer normalizer(m_consumer);
+
+    while (m_source->hasMoreData()) {
+        PathSegmentData segment = m_source->parseSegment();
+        if (segment.command == PathSegUnknown)
+            return false;
+
+        normalizer.emitSegment(segment);
+
+        if (!m_consumer->continueConsuming())
+            return true;
+
+        if (m_source->hasMoreData())
+            m_consumer->incrementPathSegmentCount();
     }
     return true;
 }

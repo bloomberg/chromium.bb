@@ -43,12 +43,23 @@ public:
         ASSERT(m_consumer);
     }
 
-    bool parsePathDataFromSource(PathParsingMode, bool checkForInitialMoveTo = true);
+    bool parsePathDataFromSource(PathParsingMode pathParsingMode, bool checkForInitialMoveTo = true)
+    {
+        ASSERT(m_source);
+        ASSERT(m_consumer);
+        if (checkForInitialMoveTo && !initialCommandIsMoveTo())
+            return false;
+        if (pathParsingMode == NormalizedParsing)
+            return parseAndNormalizePath();
+        return parsePath();
+    }
 
     DECLARE_TRACE();
 
 private:
     bool initialCommandIsMoveTo();
+    bool parsePath();
+    bool parseAndNormalizePath();
 
     RawPtrWillBeMember<SVGPathSource> m_source;
     RawPtrWillBeMember<SVGPathConsumer> m_consumer;
