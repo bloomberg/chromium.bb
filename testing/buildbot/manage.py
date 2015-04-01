@@ -45,6 +45,9 @@ def main():
   group.add_argument(
       '-c', '--check', action='store_true', help='Only check the files')
   group.add_argument(
+      '--convert', action='store_true',
+      help='Convert a test to run on Swarming everywhere')
+  group.add_argument(
       '--remaining', action='store_true',
       help='Count the number of tests not yet running on Swarming')
   group.add_argument(
@@ -54,6 +57,9 @@ def main():
       help='The test name to print which configs to update; only to be used '
            'with --remaining')
   args = parser.parse_args()
+
+  if args.convert and not args.test_name:
+    parser.error('A test name is required with --convert')
 
   # Stats when running in --remaining mode;
   tests_location = collections.defaultdict(
@@ -90,12 +96,18 @@ def main():
               tests_location[name]['count_run_local'] += 1
               tests_location[name]['local_configs'].setdefault(
                   filename, []).append(builder)
+        elif args.convert:
+          for test in data['gtest_tests']:
+            if test['test'] != args.test_name:
+              continue
+            test.setdefault('swarming', {})['can_use_on_swarming_builders'] = (
+                True)
 
     expected = json.dumps(
         config, sort_keys=True, indent=2, separators=(',', ': ')) + '\n'
     if content != expected:
       result = 1
-      if args.write:
+      if args.write or args.convert:
         with open(filepath, 'wb') as f:
           f.write(expected)
         print('Updated %s' % filename)
