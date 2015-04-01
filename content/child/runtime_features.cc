@@ -193,6 +193,12 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnablePushMessagingHasPermission))
     WebRuntimeFeatures::enablePushMessagingHasPermission(true);
 
+  // Delete "StaleWhileRevalidate" line from chrome_browser_field_trials.cc
+  // when this experiment is done.
+  if (base::FieldTrialList::FindFullName("StaleWhileRevalidate") == "Enabled" ||
+      command_line.HasSwitch(switches::kEnableStaleWhileRevalidate))
+    WebRuntimeFeatures::enableStaleWhileRevalidateCacheControl(true);
+
   if (command_line.HasSwitch(switches::kDisableV8IdleTasks))
     WebRuntimeFeatures::enableV8IdleTasks(false);
   else

@@ -581,11 +581,6 @@ const char kDisableSettingsWindow[]          = "disable-settings-window";
 // Enable SPDY/4, aka HTTP/2. This is a temporary testing flag.
 const char kEnableSpdy4[]                   = "enable-spdy4";
 
-// Enables implementation of the Cache-Control: stale-while-revalidate directive
-// which permits servers to allow the use of stale resources while revalidation
-// proceeds in the background.
-const char kEnableStaleWhileRevalidate[]    = "enable-stale-while-revalidate";
-
 // Enables the suggestions service.
 const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 

@@ -1285,6 +1285,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSlimmingPaint,
     switches::kEnableSmoothScrolling,
+    switches::kEnableStaleWhileRevalidate,
     switches::kEnableStatsTable,
     switches::kEnableStrictSiteIsolation,
     switches::kEnableThreadedCompositing,

@@ -127,6 +127,7 @@ extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableSlimmingPaint[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableSpatialNavigation[];
+CONTENT_EXPORT extern const char kEnableStaleWhileRevalidate[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 CONTENT_EXPORT extern const char kEnableStrictMixedContentChecking[];
 CONTENT_EXPORT extern const char kEnableStrictPowerfulFeatureRestrictions[];
