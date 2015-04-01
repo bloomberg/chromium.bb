@@ -28,6 +28,22 @@ _NAMES_TO_DUMP = ['oilpan_precise_mark',
                   'oilpan_conservative_complete_sweep',
                   'oilpan_coalesce']
 
+def _GetGcType(args):
+  # Old style
+  if 'precise' in args:
+    if args['forced']:
+      return None
+    return 'precise' if args['precise'] else 'conservative'
+
+  if args['gcReason'] == 'ForcedGCForTesting':
+    return None
+  if args['gcReason'] == 'ConservativeGC':
+    return 'conservative'
+  if args['gcReason'] == 'PreciseGC':
+    return 'precise'
+  return None  # Unknown
+
+
 def _AddTracingResults(events, results):
   # Prepare
   values = {}
@@ -36,7 +52,6 @@ def _AddTracingResults(events, results):
 
   # Parse in time line
   gc_type = None
-  forced = False
   mark_time = 0
   lazy_sweep_time = 0
   complete_sweep_time = 0
@@ -46,13 +61,12 @@ def _AddTracingResults(events, results):
       values['oilpan_coalesce'].append(duration)
       continue
     if event.name == 'Heap::collectGarbage':
-      if not gc_type is None and not forced:
+      if not gc_type is None:
         values['oilpan_%s_mark' % gc_type].append(mark_time)
         values['oilpan_%s_lazy_sweep' % gc_type].append(lazy_sweep_time)
         values['oilpan_%s_complete_sweep' % gc_type].append(complete_sweep_time)
 
-      gc_type = 'precise' if event.args['precise'] else 'conservative'
-      forced = event.args['forced']
+      gc_type = _GetGcType(event.args)
       mark_time = duration
       lazy_sweep_time = 0
       complete_sweep_time = 0
@@ -64,7 +78,7 @@ def _AddTracingResults(events, results):
       complete_sweep_time += duration
       continue
 
-  if not gc_type is None and not forced:
+  if not gc_type is None:
     values['oilpan_%s_mark' % gc_type].append(mark_time)
     values['oilpan_%s_lazy_sweep' % gc_type].append(lazy_sweep_time)
     values['oilpan_%s_complete_sweep' % gc_type].append(complete_sweep_time)
