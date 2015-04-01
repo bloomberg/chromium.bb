@@ -298,11 +298,26 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
     ServiceWorkerStatusCode status) {
   if (!context_ || activating_version != active_version())
     return;
-  // TODO(kinuko,falken): For some error cases (e.g. ServiceWorker is
-  // unexpectedly terminated) we may want to retry sending the event again.
+  // "If activateFailed is true, then:..."
   if (status != SERVICE_WORKER_OK) {
-    // "11. If activateFailed is true, then:..."
+    // "Set registration's active worker to null." (The spec's step order may
+    // differ. It's OK because the other steps queue a task.)
     UnsetVersion(activating_version);
+
+    // "Run the Update State algorithm passing registration's active worker and
+    // 'redundant' as the arguments."
+    activating_version->SetStatus(ServiceWorkerVersion::REDUNDANT);
+
+    // "For each service worker client client whose active worker is
+    // registration's active worker..." set the active worker to null.
+    for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+             context_->GetProviderHostIterator();
+         !it->IsAtEnd(); it->Advance()) {
+      ServiceWorkerProviderHost* host = it->GetProviderHost();
+      if (host->controlling_version() == activating_version)
+        host->NotifyControllerActivationFailed();
+    }
+
     activating_version->Doom();
     if (!waiting_version()) {
       // Delete the records from the db.
@@ -320,8 +335,8 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
     return;
   }
 
-  // "12. Run the [[UpdateState]] algorithm passing registration.activeWorker
-  // and "activated" as the arguments."
+  // "Run the Update State algorithm passing registration's active worker and
+  // 'activated' as the arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   if (context_) {
     context_->storage()->UpdateToActiveState(

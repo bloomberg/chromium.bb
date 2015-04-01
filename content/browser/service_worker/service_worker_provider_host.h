@@ -108,8 +108,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ServiceWorkerProviderType provider_type() const { return provider_type_; }
   blink::WebServiceWorkerClientType client_type() const;
 
-  // Associates to |registration| to listen for its version change events.
-  void AssociateRegistration(ServiceWorkerRegistration* registration);
+  // Associates to |registration| to listen for its version change events and
+  // sets the controller. If |notify_controllerchange| is true, instructs the
+  // renderer to dispatch a 'controllerchange' event.
+  void AssociateRegistration(ServiceWorkerRegistration* registration,
+                             bool notify_controllerchange);
 
   // Clears the associated registration and stop listening to it.
   void DisassociateRegistration();
@@ -214,6 +217,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
 
+  void NotifyControllerActivationFailed();
+
  private:
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
@@ -242,8 +247,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
 
   // Sets the controller version field to |version| or if |version| is NULL,
-  // clears the field.
-  void SetControllerVersionAttribute(ServiceWorkerVersion* version);
+  // clears the field. If |notify_controllerchange| is true, instructs the
+  // renderer to dispatch a 'controller' change event.
+  void SetControllerVersionAttribute(ServiceWorkerVersion* version,
+                                     bool notify_controllerchange);
 
   void SendAssociateRegistrationMessage();
 
@@ -281,7 +288,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
-  bool is_claiming_;
 
   std::vector<base::Closure> queued_events_;
 

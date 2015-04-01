@@ -101,7 +101,8 @@ TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
 TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
   // Associating the registration will also increase the process refs for
   // the registration's pattern.
-  provider_host1_->AssociateRegistration(registration1_.get());
+  provider_host1_->AssociateRegistration(registration1_.get(),
+                                         false /* notify_controllerchange */);
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
   // Disassociating the registration shouldn't affect the process refs for

@@ -239,7 +239,8 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
 
   ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_);
 
-  provider_host_->AssociateRegistration(registration.get());
+  provider_host_->AssociateRegistration(registration.get(),
+                                        false /* notify_controllerchange */);
   job_->ForwardToServiceWorker();
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker",
@@ -264,7 +265,8 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
 
   ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_);
 
-  provider_host_->AssociateRegistration(registration);
+  provider_host_->AssociateRegistration(registration,
+                                        false /* notify_controllerchange */);
   job_->ForwardToServiceWorker();
 }
 

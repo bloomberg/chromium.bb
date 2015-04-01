@@ -66,7 +66,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         registration_.get(),
         version_.get(),
         base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-    provider_host_->AssociateRegistration(registration_.get());
+    provider_host_->AssociateRegistration(registration_.get(),
+                                          false /* notify_controllerchange */);
     base::RunLoop().RunUntilIdle();
   }
 

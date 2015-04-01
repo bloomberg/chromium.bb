@@ -156,7 +156,8 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
                                       helper_->context()->AsWeakPtr(),
                                       nullptr));
     provider_host->SetDocumentUrl(GURL("http://example.com/"));
-    provider_host->AssociateRegistration(registration_.get());
+    provider_host->AssociateRegistration(registration_.get(),
+                                         false /* notify_controllerchange */);
     registration_->SetActiveVersion(version_.get());
 
     ChromeBlobStorageContext* chrome_blob_storage_context =
