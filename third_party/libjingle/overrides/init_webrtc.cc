@@ -12,8 +12,8 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
-#include "webrtc/base/basictypes.h"
-#include "webrtc/base/logging.h"
+#include "third_party/webrtc/overrides/webrtc/base/basictypes.h"
+#include "third_party/webrtc/overrides/webrtc/base/logging.h"
 
 const unsigned char* GetCategoryGroupEnabled(const char* category_group) {
   return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);

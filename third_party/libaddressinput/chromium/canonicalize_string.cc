@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cpp/src/util/canonicalize_string.h"
+#include "third_party/libaddressinput/src/cpp/src/util/canonicalize_string.h"
 
 #include "base/logging.h"
-#include "cpp/include/libaddressinput/util/scoped_ptr.h"
 #include "third_party/icu/source/common/unicode/errorcode.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/util/scoped_ptr.h"
 
 namespace i18n {
 namespace addressinput {

@@ -18,7 +18,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "json/json.h"
 #include "liblouis_wrapper.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -27,6 +26,7 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "ppapi/utility/threading/simple_thread.h"
+#include "third_party/jsoncpp/source/include/json/json.h"
 #include "translation_params.h"
 
 namespace liblouis_nacl {

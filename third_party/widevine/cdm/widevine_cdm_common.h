@@ -5,8 +5,6 @@
 #ifndef WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 #define WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 
-#include "base/files/file_path.h"
-
 // This file defines constants common to all Widevine CDM versions.
 
 // Widevine CDM version contains 4 components, e.g. 1.4.0.195.

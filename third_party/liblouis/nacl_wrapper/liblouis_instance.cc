@@ -19,7 +19,7 @@
 #include <sys/mount.h>
 #include <vector>
 
-#include "nacl_io/nacl_io.h"
+#include "native_client_sdk/src/libraries/nacl_io/nacl_io.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
 

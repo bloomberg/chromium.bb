@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "allocator_shim/allocator_stub.h"
+#include "third_party/libjingle/overrides/allocator_shim/allocator_stub.h"
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 #error "The allocator stub isn't supported (or needed) on mac or android."

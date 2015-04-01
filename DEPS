@@ -495,6 +495,7 @@ deps_os = {
 
 include_rules = [
   # Everybody can use some things.
+  # NOTE: THIS HAS TO STAY IN SYNC WITH third_party/DEPS which disallows these.
   '+base',
   '+build',
   '+ipc',
@@ -512,14 +513,11 @@ include_rules = [
 # checkdeps.py shouldn't check include paths for files in these dirs:
 skip_child_includes = [
   'breakpad',
-  'delegate_execute',
-  'metro_driver',
   'native_client_sdk',
-  'o3d',
+  'out',
   'sdch',
   'skia',
   'testing',
-  'third_party',
   'v8',
   'win8',
 ]

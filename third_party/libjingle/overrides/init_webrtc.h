@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "allocator_shim/allocator_stub.h"
+#include "third_party/libjingle/overrides/allocator_shim/allocator_stub.h"
 #include "base/logging.h"
 #include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 

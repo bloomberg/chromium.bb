@@ -12,11 +12,11 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
-#include "liblouis_wrapper.h"
+#include "third_party/liblouis/nacl_wrapper/liblouis_wrapper.h"
 
 #include <cstddef>
 
-#include "liblouis/liblouis.h"
+#include "third_party/liblouis/overrides/liblouis/liblouis.h"
 
 namespace {
 

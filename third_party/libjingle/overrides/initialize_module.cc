@@ -6,14 +6,14 @@
 #include <math.h> // needed for _set_FMA3_enable
 #endif  // WIN && ARCH_CPU_X86_64
 
-#include "allocator_shim/allocator_stub.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "init_webrtc.h"
-#include "talk/media/webrtc/webrtcmediaengine.h"
-#include "webrtc/base/basictypes.h"
-#include "webrtc/base/logging.h"
+#include "third_party/libjingle/source/talk/media/webrtc/webrtcmediaengine.h"
+#include "third_party/libjingle/allocator_shim/allocator_stub.h"
+#include "third_party/libjingle/overrides/init_webrtc.h"
+#include "third_party/webrtc/base/basictypes.h"
+#include "third_party/webrtc/base/logging.h"
 
 #if !defined(LIBPEERCONNECTION_IMPLEMENTATION) || defined(LIBPEERCONNECTION_LIB)
 #error "Only compile the allocator proxy with the shared_library implementation"

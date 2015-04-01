@@ -48,6 +48,7 @@
             'overrides/liblouis',
             'src/liblouis',
             '.',
+            '../..',
           ],
           'direct_dependent_settings': {
             'include_dirs': [

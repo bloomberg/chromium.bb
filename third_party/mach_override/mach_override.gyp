@@ -60,6 +60,9 @@
             'mach_override.c',
             'mach_override.h',
           ],
+          'include_dirs': [
+            '../..',
+          ],
         },
       ],
     }],

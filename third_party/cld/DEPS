@@ -1,0 +1,14 @@
+include_rules = [
+  '+base',
+  '+cld',
+  '+testing',
+
+  # These are from code inside third_party/cld.
+  '+encodings',
+  '+languages',
+
+  # These are from third_party/cld.
+  '+i18n',  
+  '+unicode',
+  '+util',
+]
