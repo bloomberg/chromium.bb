@@ -37,8 +37,10 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
 
   void StartOrContinueDisplayLink();
   void StopDisplayLink();
-  void Tick(const CVTimeStamp* time);
+  void Tick(const CVTimeStamp& time);
 
+  // Called by the system on the display link thread, and posts a call to Tick
+  // to the UI thread.
   static CVReturn DisplayLinkCallback(
       CVDisplayLinkRef display_link,
       const CVTimeStamp* now,
@@ -47,23 +49,23 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
       CVOptionFlags* flags_out,
       void* context);
 
+  // This is called whenever the display is reconfigured, and marks that the
+  // vsync parameters must be recalculated.
+  static void DisplayReconfigurationCallBack(
+      CGDirectDisplayID display,
+      CGDisplayChangeSummaryFlags flags,
+      void* user_info);
+
   // The display that this display link is attached to.
   CGDirectDisplayID display_id_;
 
   // CVDisplayLink for querying VSync timing info.
   base::ScopedTypeRef<CVDisplayLinkRef> display_link_;
 
-  // Timer for stopping the display link if it has not been queried in
-  // the last second.
-  base::DelayTimer<DisplayLinkMac> stop_timer_;
-
   // VSync parameters computed during Tick.
   bool timebase_and_interval_valid_;
   base::TimeTicks timebase_;
   base::TimeDelta interval_;
-
-  // Lock for sharing data between UI thread and display-link thread.
-  base::Lock lock_;
 
   // Each display link instance consumes a non-negligible number of cycles, so
   // make all display links on the same screen share the same object.

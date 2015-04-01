@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/renderer_host/render_widget_resize_helper.h"
 
 namespace base {
 
@@ -63,64 +64,70 @@ DisplayLinkMac::DisplayLinkMac(
     base::ScopedTypeRef<CVDisplayLinkRef> display_link)
       : display_id_(display_id),
         display_link_(display_link),
-        stop_timer_(
-            FROM_HERE, base::TimeDelta::FromSeconds(1),
-            this, &DisplayLinkMac::StopDisplayLink),
         timebase_and_interval_valid_(false) {
   DCHECK(display_map_.Get().find(display_id) == display_map_.Get().end());
+  if (display_map_.Get().empty()) {
+    CGError register_error = CGDisplayRegisterReconfigurationCallback(
+        DisplayReconfigurationCallBack, nullptr);
+    DPLOG_IF(ERROR, register_error != kCGErrorSuccess)
+        << "CGDisplayRegisterReconfigurationCallback: "
+        << register_error;
+  }
   display_map_.Get().insert(std::make_pair(display_id_, this));
 }
 
 DisplayLinkMac::~DisplayLinkMac() {
-  if (CVDisplayLinkIsRunning(display_link_))
-    CVDisplayLinkStop(display_link_);
+  StopDisplayLink();
 
   DisplayMap::iterator found = display_map_.Get().find(display_id_);
   DCHECK(found != display_map_.Get().end());
   DCHECK(found->second == this);
   display_map_.Get().erase(found);
+  if (display_map_.Get().empty()) {
+    CGError remove_error = CGDisplayRemoveReconfigurationCallback(
+        DisplayReconfigurationCallBack, nullptr);
+    DPLOG_IF(ERROR, remove_error != kCGErrorSuccess)
+        << "CGDisplayRemoveReconfigurationCallback: "
+        << remove_error;
+  }
 }
 
 bool DisplayLinkMac::GetVSyncParameters(
     base::TimeTicks* timebase, base::TimeDelta* interval) {
-  StartOrContinueDisplayLink();
-
-  base::AutoLock lock(lock_);
-  if (!timebase_and_interval_valid_)
+  if (!timebase_and_interval_valid_) {
+    StartOrContinueDisplayLink();
     return false;
+  }
 
   *timebase = timebase_;
   *interval = interval_;
   return true;
 }
 
-void DisplayLinkMac::Tick(const CVTimeStamp* cv_time) {
-  TRACE_EVENT0("browser", "DisplayLinkMac::GetVSyncParameters");
-  base::AutoLock lock(lock_);
+void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
+  TRACE_EVENT0("browser", "DisplayLinkMac::Tick");
 
   // Verify that videoRefreshPeriod is 32 bits.
-  DCHECK((cv_time->videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
+  DCHECK((cv_time.videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
 
   // Verify that the numerator and denominator make some sense.
-  uint32 numerator = static_cast<uint32>(cv_time->videoRefreshPeriod);
-  uint32 denominator = cv_time->videoTimeScale;
+  uint32 numerator = static_cast<uint32>(cv_time.videoRefreshPeriod);
+  uint32 denominator = cv_time.videoTimeScale;
   if (numerator <= 0 || denominator <= 0) {
     LOG(WARNING) << "Unexpected numerator or denominator, bailing.";
     return;
   }
 
   timebase_ = base::TimeTicks::FromInternalValue(
-      cv_time->hostTime / 1000);
+      cv_time.hostTime / 1000);
   interval_ = base::TimeDelta::FromMicroseconds(
       1000000 * static_cast<int64>(numerator) / denominator);
   timebase_and_interval_valid_ = true;
+
+  StopDisplayLink();
 }
 
 void DisplayLinkMac::StartOrContinueDisplayLink() {
-  // Reset the timer, so that the display link won't be turned off for another
-  // second.
-  stop_timer_.Reset();
-
   if (CVDisplayLinkIsRunning(display_link_))
     return;
 
@@ -140,6 +147,7 @@ void DisplayLinkMac::StopDisplayLink() {
   }
 }
 
+// static
 CVReturn DisplayLinkMac::DisplayLinkCallback(
     CVDisplayLinkRef display_link,
     const CVTimeStamp* now,
@@ -147,9 +155,24 @@ CVReturn DisplayLinkMac::DisplayLinkCallback(
     CVOptionFlags flags_in,
     CVOptionFlags* flags_out,
     void* context) {
+  TRACE_EVENT0("browser", "DisplayLinkMac::DisplayLinkCallback");
   DisplayLinkMac* display_link_mac = static_cast<DisplayLinkMac*>(context);
-  display_link_mac->Tick(output_time);
+  RenderWidgetResizeHelper::Get()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&DisplayLinkMac::Tick, display_link_mac, *output_time));
   return kCVReturnSuccess;
+}
+
+// static
+void DisplayLinkMac::DisplayReconfigurationCallBack(
+    CGDirectDisplayID display,
+    CGDisplayChangeSummaryFlags flags,
+    void* user_info) {
+  DisplayMap::iterator found = display_map_.Get().find(display);
+  if (found == display_map_.Get().end())
+    return;
+  DisplayLinkMac* display_link_mac = found->second;
+  display_link_mac->timebase_and_interval_valid_ = false;
 }
 
 // static
