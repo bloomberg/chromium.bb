@@ -26,8 +26,12 @@
 namespace {
 
 const CGFloat kButtonGap = 6.0f;
-const CGFloat kDialogContentMinWidth = 210.0f;
 const CGFloat kCvcInputWidth = 64.0f;
+const CGFloat kDialogContentMinWidth = 210.0f;
+const CGFloat kInstructionsToTitleGap = 8.0f;
+const CGFloat kPermanentErrorExteriorPadding = 12.0f;
+const CGFloat kPermanentErrorHorizontalPadding = 16.0f;
+const CGFloat kPermanentErrorVerticalPadding = 12.0f;
 const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
 const SkColor kPermanentErrorBackgroundColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
 const ui::ResourceBundle::FontStyle kProgressFontStyle =
@@ -225,6 +229,9 @@ void CardUnmaskPromptViewBridge::PerformClose() {
       [permanentErrorBox_ setTitlePosition:NSNoTitle];
       [permanentErrorBox_ setFillColor:gfx::SkColorToCalibratedNSColor(
                                            kPermanentErrorBackgroundColor)];
+      [permanentErrorBox_
+          setContentViewMargins:NSMakeSize(kPermanentErrorHorizontalPadding,
+                                           kPermanentErrorVerticalPadding)];
 
       permanentErrorLabel_.reset([constrained_window::CreateLabel() retain]);
       [permanentErrorLabel_ setAutoresizingMask:NSViewWidthSizable];
@@ -357,59 +364,70 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   contentWidth = std::max(contentWidth, NSWidth([storageView_ frame]));
   contentWidth = std::max(contentWidth, kDialogContentMinWidth);
 
-  [storageView_
-      setFrameOrigin:NSMakePoint(0, chrome_style::kClientBottomPadding)];
+  CGFloat contentMinX = chrome_style::kHorizontalPadding;
+  CGFloat contentMaxX = contentMinX + contentWidth;
+  CGFloat dialogWidth = contentMaxX + chrome_style::kHorizontalPadding;
+
+  [storageView_ setFrameOrigin:NSMakePoint(contentMinX,
+                                           chrome_style::kClientBottomPadding)];
 
   CGFloat verifyMinY =
       storageView_ ? NSMaxY([storageView_ frame]) + chrome_style::kRowPadding
                    : chrome_style::kClientBottomPadding;
-  [verifyButton_ setFrameOrigin:
-      NSMakePoint(contentWidth - NSWidth([verifyButton_ frame]), verifyMinY)];
+  [verifyButton_
+      setFrameOrigin:NSMakePoint(contentMaxX - NSWidth([verifyButton_ frame]),
+                                 verifyMinY)];
 
   [cancelButton_
       setFrameOrigin:NSMakePoint(NSMinX([verifyButton_ frame]) - kButtonGap -
                                      NSWidth([cancelButton_ frame]),
                                  NSMinY([verifyButton_ frame]))];
 
-  [errorLabel_ setFrame:NSMakeRect(0, NSMaxY([cancelButton_ frame]) +
-                                          chrome_style::kRowPadding,
+  [errorLabel_ setFrame:NSMakeRect(contentMinX, NSMaxY([cancelButton_ frame]) +
+                                                    chrome_style::kRowPadding,
                                    contentWidth, 0)];
   cocoa_l10n_util::WrapOrSizeToFit(errorLabel_);
 
-  [inputRowView_ setFrameOrigin:NSMakePoint(0, NSMaxY([errorLabel_ frame]) +
-                                                   chrome_style::kRowPadding)];
+  [inputRowView_
+      setFrameOrigin:NSMakePoint(contentMinX, NSMaxY([errorLabel_ frame]) +
+                                                  chrome_style::kRowPadding)];
 
-  [instructionsLabel_ setFrame:NSMakeRect(0, NSMaxY([inputRowView_ frame]) +
-                                                 chrome_style::kRowPadding,
-                                          contentWidth, 0)];
+  [instructionsLabel_
+      setFrame:NSMakeRect(contentMinX, NSMaxY([inputRowView_ frame]) +
+                                           chrome_style::kRowPadding,
+                          contentWidth, 0)];
   cocoa_l10n_util::WrapOrSizeToFit(instructionsLabel_);
 
   // Layout permanent error box.
-  CGFloat minY = NSMaxY([instructionsLabel_ frame]) + chrome_style::kRowPadding;
+  CGFloat titleMinY;
   if (permanentErrorBox_ && ![permanentErrorBox_ isHidden]) {
-    [permanentErrorBox_ setFrame:NSMakeRect(0, minY, contentWidth, 0)];
+    [permanentErrorBox_
+        setFrame:NSMakeRect(0, NSMaxY([instructionsLabel_ frame]) +
+                                   kPermanentErrorExteriorPadding,
+                            dialogWidth, 0)];
     cocoa_l10n_util::WrapOrSizeToFit(permanentErrorLabel_);
     [permanentErrorBox_ sizeToFit];
-    minY = NSMaxY([permanentErrorBox_ frame]) + chrome_style::kRowPadding;
+    titleMinY =
+        NSMaxY([permanentErrorBox_ frame]) + kPermanentErrorExteriorPadding;
+  } else {
+    titleMinY = NSMaxY([instructionsLabel_ frame]) + kInstructionsToTitleGap;
   }
 
-  [titleLabel_ setFrameOrigin:NSMakePoint(0, minY)];
+  [titleLabel_ setFrameOrigin:NSMakePoint(contentMinX, titleMinY)];
 
   // Center progressOverlayLabel_ vertically within inputRowView_ frame.
   CGFloat progressHeight = ui::ResourceBundle::GetSharedInstance()
                                .GetFont(kProgressFontStyle)
                                .GetHeight();
   [progressOverlayLabel_
-      setFrame:NSMakeRect(0, ceil(NSMidY([inputRowView_ frame]) -
-                                  progressHeight / 2.0),
+      setFrame:NSMakeRect(contentMinX, ceil(NSMidY([inputRowView_ frame]) -
+                                            progressHeight / 2.0),
                           contentWidth, progressHeight)];
 
   // Set dialog size.
   [[self view]
-      setFrameSize:NSMakeSize(
-                       contentWidth + chrome_style::kHorizontalPadding * 2.0,
-                       NSMaxY([titleLabel_ frame]) +
-                           chrome_style::kTitleTopPadding)];
+      setFrameSize:NSMakeSize(dialogWidth, NSMaxY([titleLabel_ frame]) +
+                                               chrome_style::kTitleTopPadding)];
 
   NSRect frameRect =
       [[[self view] window] frameRectForContentRect:[[self view] frame]];
@@ -420,13 +438,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   autofill::CardUnmaskPromptController* controller = bridge_->GetController();
   DCHECK(controller);
 
-  base::scoped_nsobject<NSBox> mainView(
-      [[NSBox alloc] initWithFrame:NSZeroRect]);
-  [mainView setBoxType:NSBoxCustom];
-  [mainView setBorderType:NSNoBorder];
-  [mainView setTitlePosition:NSNoTitle];
-  [mainView
-      setContentViewMargins:NSMakeSize(chrome_style::kHorizontalPadding, 0)];
+  base::scoped_nsobject<NSView> mainView(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
 
   inputRowView_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
   [mainView addSubview:inputRowView_];
