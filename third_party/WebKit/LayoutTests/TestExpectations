@@ -911,6 +911,10 @@ crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects-iframes.h
 crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects.html [ Pass Failure ]
 crbug.com/393096 [ Win7 ] fast/flexbox/overhanging-floats-removed.html [ Failure Pass ]
 
+crbug.com/470713 virtual/slimmingpaint/fast/layers/opacity-stacking.html [ NeedsRebaseline ]
+crbug.com/470713 virtual/slimmingpaint/fast/layers/remove-layer-with-nested-stacking.html [ NeedsRebaseline ]
+crbug.com/470713 virtual/slimmingpaint/fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
+
 crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]

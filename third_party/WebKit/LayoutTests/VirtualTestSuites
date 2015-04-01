@@ -287,6 +287,12 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/layers",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/canvas",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
