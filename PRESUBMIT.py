@@ -403,9 +403,10 @@ def _CheckUmaHistogramChanges(input_api, output_api):
     if not histogram_name_found:
       unmatched_histograms.append(histogram_info)
 
+  histograms_xml_path = 'tools/metrics/histograms/histograms.xml'
   problems = []
   if unmatched_histograms:
-    with open('tools/metrics/histograms/histograms.xml') as histograms_xml:
+    with open(histograms_xml_path) as histograms_xml:
       for histogram_name, f, line_num in unmatched_histograms:
         histograms_xml.seek(0)
         histogram_name_found = False
@@ -421,7 +422,7 @@ def _CheckUmaHistogramChanges(input_api, output_api):
     return []
   return [output_api.PresubmitPromptWarning('Some UMA_HISTOGRAM lines have '
     'been modified and the associated histogram name has no match in either '
-    'metrics/histograms.xml or the modifications of it:',  problems)]
+    '%s or the modifications of it:' % (histograms_xml_path),  problems)]
 
 
 def _CheckNoNewWStrings(input_api, output_api):
