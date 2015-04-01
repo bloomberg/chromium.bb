@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//remoting/remoting_host.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_srcs.gni")
 import("//remoting/remoting_version.gni")
@@ -338,5 +339,77 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     }
 
     # TODO(GYP) More Windows remoting targets from remoting_host_win.gypi
+  }
+
+  if (enable_remoting_host) {
+    executable("remoting_start_host") {
+      sources = [
+        "setup/host_starter.cc",
+        "setup/host_starter.h",
+        "setup/start_host.cc",
+      ]
+
+      deps = [
+        "//remoting/host/setup",
+      ]
+
+      if (enable_webrtc) {
+        deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      }
+    }
+  }
+
+  if (enable_me2me_host) {
+    source_set("remoting_me2me_host_static") {
+      sources = [
+        "curtain_mode.h",
+        "curtain_mode_linux.cc",
+        "curtain_mode_mac.cc",
+        "curtain_mode_win.cc",
+        "pam_authorization_factory_posix.cc",
+        "pam_authorization_factory_posix.h",
+        "posix/signal_handler.cc",
+        "posix/signal_handler.h",
+        "remoting_me2me_host.cc",
+      ]
+
+      configs += [ "//remoting:version" ]
+
+      deps = [
+        "//base",
+        "//base:i18n",
+        "//components/policy",
+        "//components/policy:policy_component_common",
+        "//net",
+        "//remoting/base",
+        "//remoting/host",
+        "//remoting/proto",
+        "//third_party/webrtc/modules/desktop_capture",
+      ]
+
+      if (enable_webrtc) {
+        deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      }
+
+      if (is_linux) {
+        deps += [ "//build/config/linux/gtk" ]
+      }
+      if (is_linux || is_mac) {
+        libs = [ "pam" ]
+      }
+    }
+
+    if (!is_win) {
+      executable("remoting_me2me_host") {
+        sources = [
+          "host_main.cc",
+          "host_main.h",
+        ]
+
+        deps = [
+          ":remoting_me2me_host_static",
+        ]
+      }
+    }
   }
 }

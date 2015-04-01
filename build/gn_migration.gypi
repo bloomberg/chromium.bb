@@ -186,6 +186,11 @@
         ['chromeos== 1 or use_ash==1', {
           'dependencies': [
             '../components/components.gyp:session_manager_component',
+          ]
+        }],
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+             '../remoting/remoting.gyp:remoting_key_tester',
           ],
         }],
         ['disable_nacl==0 and disable_nacl_untrusted==0', {
@@ -206,6 +211,13 @@
         }],
         ['remoting==1', {
           'dependencies': [
+            '../remoting/remoting.gyp:remoting_host',
+            '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
+            '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
+            '../remoting/remoting.gyp:remoting_me2me_host',
+            '../remoting/remoting.gyp:remoting_native_messaging_manifests',
+            '../remoting/remoting.gyp:remoting_perftests',
+            '../remoting/remoting.gyp:remoting_start_host',
             '../remoting/remoting.gyp:remoting_unittests',
           ],
         }],
@@ -446,14 +458,7 @@
           'conditions': [
             ['remoting==1', {
               'dependencies': [
-                '../remoting/app_remoting_webapp.gyp:ar_sample_app',
-                '../remoting/remoting.gyp:remoting_host',
-                '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
-                '../remoting/remoting.gyp:remoting_me2me_host',
-                '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
-                '../remoting/remoting.gyp:remoting_native_messaging_manifests',
-                '../remoting/remoting.gyp:remoting_perftests',
-                '../remoting/remoting.gyp:remoting_start_host',
+                '../remoting/app_remoting_webapp.gyp:ar_sample_app',  # crbug.com/471916
               ],
               'conditions': [
                 ['disable_nacl==0 and disable_nacl_untrusted==0', {

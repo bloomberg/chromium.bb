@@ -301,6 +301,7 @@
           }],
         },  # end of target 'remoting_native_messaging_manifests'
         {
+          # GN target: //remoting/host:remoting_start_host
           'target_name': 'remoting_start_host',
           'type': 'executable',
           'dependencies': [
