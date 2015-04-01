@@ -202,8 +202,6 @@ void InspectorDebuggerAgent::disable()
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
     m_instrumentingAgents->setInspectorDebuggerAgent(0);
 
-    scriptDebugServer().clearBreakpoints();
-    scriptDebugServer().clearCompiledScripts();
     stopListeningScriptDebugServer();
     clear();
 

@@ -112,9 +112,10 @@ void ScriptDebugServer::enable()
 void ScriptDebugServer::disable()
 {
     ASSERT(enabled());
+    clearBreakpoints();
+    clearCompiledScripts();
     m_debuggerScript.Reset();
     v8::Debug::SetDebugEventListener(nullptr);
-    // FIXME: Remove all breakpoints set by the agent.
 }
 
 bool ScriptDebugServer::enabled() const
@@ -185,7 +186,6 @@ void ScriptDebugServer::removeBreakpoint(const String& breakpointId)
 
 void ScriptDebugServer::clearBreakpoints()
 {
-    ensureDebuggerScriptCompiled();
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);

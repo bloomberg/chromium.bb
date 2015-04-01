@@ -65,7 +65,6 @@ public:
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
-    void clearBreakpoints();
     void setBreakpointsActivated(bool activated);
 
     enum PauseOnExceptionsState {
@@ -114,7 +113,6 @@ public:
     v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
 
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
-    virtual void clearCompiledScripts();
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
 
     virtual void muteWarningsAndDeprecations() { }
@@ -125,6 +123,8 @@ public:
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
 
+    virtual void clearCompiledScripts();
+
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
     virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
     virtual void quitMessageLoopOnPause() = 0;
@@ -133,6 +133,7 @@ private:
     bool enabled() const;
     void ensureDebuggerScriptCompiled();
     v8::Local<v8::Object> debuggerScriptLocal() const;
+    void clearBreakpoints();
 
     void dispatchDidParseSource(ScriptDebugListener*, v8::Local<v8::Object> sourceObject, CompileResult);
 
