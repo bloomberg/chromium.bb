@@ -14,7 +14,7 @@ METADATA_IMAGE_NAME = 'cros-image'
 
 PROJECT = 'chromeos-bot'
 DEFAULT_BASE_IMAGE = 'ubuntu-14-04-server-v20150324'
-DEFAULT_IMAGE_NAME = 'chromeos-bot-v6'
+DEFAULT_IMAGE_NAME = 'chromeos-bot-v5'
 DEFAULT_ZONE = 'us-east1-a'
 DEFAULT_SCOPES = ('https://www.googleapis.com/auth/devstorage.full_control',
                   'https://www.googleapis.com/auth/gerritcodereview')
