@@ -28,9 +28,11 @@ var remoting = remoting || {};
  *     the reload button.
  * @param {function(!remoting.Error)} onError Function to call when an error
  *     occurs.
+ * @param {function(string)} handleConnect Function to call to connect to the
+ *     host with |hostId|.
  */
 remoting.HostList = function(table, noHosts, errorMsg, errorButton,
-                             loadingIndicator, onError) {
+                             loadingIndicator, onError, handleConnect) {
   /** @private {Element} */
   this.table_ = table;
   /**
@@ -45,7 +47,10 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   this.errorButton_ = errorButton;
   /** @private {HTMLElement} */
   this.loadingIndicator_ = loadingIndicator;
+  /** @private */
   this.onError_ = onError;
+  /** @private */
+  this.handleConnect_ = handleConnect;
 
   /** @private {Array<remoting.HostTableEntry>} */
   this.hostTableEntries_ = [];
@@ -57,8 +62,8 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   this.localHostSection_ = new remoting.LocalHostSection(
       /** @type {HTMLElement} */ (document.querySelector('.daemon-control')),
       new remoting.LocalHostSection.Controller(
-          this,
-          new remoting.HostSetupDialog(remoting.hostController, onError)));
+          this, new remoting.HostSetupDialog(remoting.hostController, onError),
+          handleConnect));
 
   /** @private {number} */
   this.webappMajorVersion_ = parseInt(chrome.runtime.getManifest().version, 10);
@@ -236,7 +241,7 @@ remoting.HostList.prototype.display = function() {
           (host.hostId != this.localHostSection_.getHostId())) {
         var hostTableEntry = new remoting.HostTableEntry(
             this.webappMajorVersion_,
-            remoting.connectMe2Me,
+            this.handleConnect_,
             this.renameHost.bind(this),
             this.deleteHost_.bind(this));
         hostTableEntry.setHost(host);

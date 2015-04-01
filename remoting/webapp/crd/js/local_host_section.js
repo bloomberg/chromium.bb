@@ -29,7 +29,7 @@ remoting.LocalHostSection = function(rootElement, controller) {
   /** @private */
   this.hostTableEntry_ = new remoting.HostTableEntry(
       parseInt(chrome.runtime.getManifest().version, 10),
-      remoting.connectMe2Me,
+      controller.connect.bind(controller),
       this.rename_.bind(this));
   hostContainer.appendChild(this.hostTableEntry_.element());
   this.hostTableEntry_.element().id = 'local-host-connect-button';
@@ -152,11 +152,17 @@ remoting.LocalHostSection.prototype.rename_ = function() {
  * @constructor
  * @param {remoting.HostList} hostList
  * @param {remoting.HostSetupDialog} setupDialog
+ * @param {function(string)} handleConnect  Function to call to connect to the
+ *     host with |hostId|.
  */
-remoting.LocalHostSection.Controller = function(hostList, setupDialog) {
+remoting.LocalHostSection.Controller =
+    function(hostList, setupDialog, handleConnect) {
   /** @private */
   this.hostList_ = hostList;
+  /** @private */
   this.setupDialog_ = setupDialog;
+  /** @private */
+  this.handleConnect_ = handleConnect;
 };
 
 remoting.LocalHostSection.Controller.prototype.start = function() {
@@ -174,6 +180,11 @@ remoting.LocalHostSection.Controller.prototype.changePIN = function() {
 /** @param {remoting.HostTableEntry} host */
 remoting.LocalHostSection.Controller.prototype.rename = function(host) {
   this.hostList_.renameHost(host);
+};
+
+/** @param {string} hostId */
+remoting.LocalHostSection.Controller.prototype.connect = function(hostId) {
+  this.handleConnect_(hostId);
 };
 
 }());

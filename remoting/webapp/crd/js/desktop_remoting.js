@@ -91,7 +91,7 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
                             remoting.app.disconnect.bind(remoting.app), false);
   }
 
-  remoting.initHostlist_();
+  remoting.initHostlist_(this.connectMe2Me_.bind(this));
 
   var homeFeedback = new remoting.MenuButton(
       document.getElementById('help-feedback-main'));
@@ -181,7 +181,6 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
     connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
   }
 
-  var sessionConnector = remoting.app.getSessionConnector();
   if (remoting.app.getConnectionMode() === remoting.Application.Mode.ME2ME) {
     if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
       this.sessionConnector_.registerProtocolExtension(
@@ -193,7 +192,7 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
   if (connectionInfo.session().hasCapability(
           remoting.ClientSession.Capability.VIDEO_RECORDER)) {
     var recorder = new remoting.VideoFrameRecorder();
-    sessionConnector.registerProtocolExtension(recorder);
+    this.sessionConnector_.registerProtocolExtension(recorder);
     this.connectedView_.setVideoFrameRecorder(recorder);
   }
 
@@ -355,4 +354,17 @@ remoting.DesktopRemoting.prototype.promptClose_ = function() {
 /** @returns {remoting.DesktopConnectedView} */
 remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
   return this.connectedView_;
+};
+
+/**
+ * Entry-point for Me2Me connections.
+ *
+ * @param {string} hostId The unique id of the host.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
+  var host = remoting.hostList.getHostForId(hostId);
+  var flow = new remoting.Me2MeConnectFlow(this.sessionConnector_, host);
+  flow.start();
 };

@@ -27,16 +27,3 @@ remoting.connectIT2Me = function() {
   });
 };
 
-/**
- * Entry-point for Me2Me connections, handling showing of the host-upgrade nag
- * dialog if necessary.
- *
- * @param {string} hostId The unique id of the host.
- * @return {void} Nothing.
- */
-remoting.connectMe2Me = function(hostId) {
-  var host = remoting.hostList.getHostForId(hostId);
-  var connector = remoting.app.getSessionConnector();
-  var flow = new remoting.Me2MeConnectFlow(connector, host);
-  flow.start();
-};

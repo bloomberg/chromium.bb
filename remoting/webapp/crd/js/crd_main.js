@@ -9,8 +9,11 @@ var remoting = remoting || {};
 
 /**
  * Initialize the host list.
+ *
+ * @param {function(string)} handleConnect Function to call to connect to the
+ *     host with |hostId|.
  */
-remoting.initHostlist_ = function() {
+remoting.initHostlist_ = function(handleConnect) {
   remoting.hostController = new remoting.HostController();
   remoting.hostList = new remoting.HostList(
       document.getElementById('host-list'),
@@ -18,43 +21,18 @@ remoting.initHostlist_ = function() {
       document.getElementById('host-list-error-message'),
       document.getElementById('host-list-refresh-failed-button'),
       document.getElementById('host-list-loading-indicator'),
-      remoting.showErrorMessage);
+      remoting.showErrorMessage,
+      handleConnect);
 
-  isHostModeSupported_().then(
-      /** @param {Boolean} supported */
-      function(supported) {
-        if (supported) {
-          var noShare = document.getElementById('unsupported-platform-message');
-          noShare.parentNode.removeChild(noShare);
-        } else {
-          var button = document.getElementById('share-button');
-          button.disabled = true;
-        }
-      });
-
-  /**
-   * @return {Promise} A promise that resolves to the id of the current
-   * containing tab/window.
-   */
-  var getCurrentId = function () {
-    if (base.isAppsV2()) {
-      return Promise.resolve(chrome.app.window.current().id);
+  isHostModeSupported_().then(function(/** boolean */ supported) {
+    if (supported) {
+      var noShare = document.getElementById('unsupported-platform-message');
+      noShare.parentNode.removeChild(noShare);
+    } else {
+      var button = document.getElementById('share-button');
+      button.disabled = true;
     }
-
-    /**
-     * @param {function(*=):void} resolve
-     * @param {function(*=):void} reject
-     */
-    return new Promise(function(resolve, reject) {
-      /** @param {chrome.Tab} tab */
-      chrome.tabs.getCurrent(function(tab){
-        if (tab) {
-          resolve(String(tab.id));
-        }
-        reject('Cannot retrieve the current tab.');
-      });
-    });
-  };
+  });
 
   var onLoad = function() {
     // Parse URL parameters.
@@ -62,7 +40,7 @@ remoting.initHostlist_ = function() {
     if ('mode' in urlParams) {
       if (urlParams['mode'] === 'me2me') {
         var hostId = urlParams['hostId'];
-        remoting.connectMe2Me(hostId);
+        handleConnect(hostId);
         return;
       }
     }
@@ -81,7 +59,6 @@ function isHostModeSupported_() {
   if (remoting.HostInstaller.canInstall()) {
     return Promise.resolve(true);
   }
-
   return remoting.HostInstaller.isInstalled();
 }
 
