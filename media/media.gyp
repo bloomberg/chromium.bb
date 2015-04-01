@@ -1905,10 +1905,16 @@
             'shared_memory_support',
           ],
           'defines': [
-            'MEDIA_IMPLEMENTATION',
+            'MEDIA_DISABLE_FFMPEG',
+            'MEDIA_DISABLE_LIBVPX',
             'MEDIA_FOR_CAST_IOS',
+            'MEDIA_IMPLEMENTATION',
           ],
           'direct_dependent_settings': {
+            'defines': [
+              'MEDIA_DISABLE_FFMPEG',
+              'MEDIA_DISABLE_LIBVPX',
+            ],
             'include_dirs': [
               '..',
             ],
@@ -1924,10 +1930,20 @@
             'base/mac/video_frame_mac.h',
             'base/mac/videotoolbox_glue.h',
             'base/mac/videotoolbox_glue.mm',
+            'base/simd/convert_rgb_to_yuv.h',
+            'base/simd/convert_rgb_to_yuv_c.cc',
+            'base/simd/convert_yuv_to_rgb.h',
+            'base/simd/convert_yuv_to_rgb_c.cc',
+            'base/simd/filter_yuv.h',
+            'base/simd/filter_yuv_c.cc',
             'base/video_frame.cc',
             'base/video_frame.h',
             'base/video_frame_metadata.cc',
             'base/video_frame_metadata.h',
+            'base/video_util.cc',
+            'base/video_util.h',
+            'base/yuv_convert.cc',
+            'base/yuv_convert.h',
           ],
           'link_settings': {
             'libraries': [

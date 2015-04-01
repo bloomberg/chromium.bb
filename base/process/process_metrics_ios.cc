@@ -6,6 +6,8 @@
 
 #include <mach/task.h>
 
+#include "base/logging.h"
+
 namespace base {
 
 namespace {
@@ -28,6 +30,11 @@ ProcessMetrics::~ProcessMetrics() {}
 // static
 ProcessMetrics* ProcessMetrics::CreateProcessMetrics(ProcessHandle process) {
   return new ProcessMetrics(process);
+}
+
+double ProcessMetrics::GetCPUUsage() {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 size_t ProcessMetrics::GetPagefileUsage() const {
@@ -67,6 +74,12 @@ void SetFdLimit(unsigned int max_descriptors) {
 
 size_t GetPageSize() {
   return getpagesize();
+}
+
+// Bytes committed by the system.
+size_t GetSystemCommitCharge() {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 }  // namespace base

@@ -320,6 +320,7 @@ component("base") {
     "message_loop/message_pump_win.h",
     "move.h",
     "native_library.h",
+    "native_library_ios.mm",
     "native_library_mac.mm",
     "native_library_posix.cc",
     "native_library_win.cc",

@@ -244,8 +244,9 @@ void InitializeCPUSpecificYUVConversions() {
   g_convert_yuva_to_argb_proc_ = ConvertYUVAToARGB_C;
   g_empty_register_state_proc_ = EmptyRegisterStateStub;
 
-  // Assembly code confuses MemorySanitizer.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(MEMORY_SANITIZER)
+  // Assembly code confuses MemorySanitizer. Also not available in iOS builds.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(MEMORY_SANITIZER) && \
+    !defined(OS_IOS)
   g_convert_yuva_to_argb_proc_ = ConvertYUVAToARGB_MMX;
 
 #if defined(MEDIA_MMX_INTRINSICS_AVAILABLE)
