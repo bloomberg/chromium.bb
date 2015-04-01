@@ -1066,12 +1066,13 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
 void ServiceWorkerVersion::OnGetClients(
     int request_id,
     const ServiceWorkerClientQueryOptions& options) {
+  TRACE_EVENT_ASYNC_BEGIN2(
+      "ServiceWorker", "ServiceWorkerVersion::OnGetClients", request_id,
+      "client_type", options.client_type, "include_uncontrolled",
+      options.include_uncontrolled);
+
   if (controllee_map_.empty() && !options.include_uncontrolled) {
-    if (running_status() == RUNNING) {
-      embedded_worker_->SendMessage(
-          ServiceWorkerMsg_DidGetClients(request_id,
-              std::vector<ServiceWorkerClientInfo>()));
-    }
+    OnGetClientsFinished(request_id, std::vector<ServiceWorkerClientInfo>());
     return;
   }
 
@@ -1084,6 +1085,18 @@ void ServiceWorkerVersion::OnGetClients(
 
   ServiceWorkerClients clients;
   GetNonWindowClients(request_id, options, &clients);
+  OnGetClientsFinished(request_id, clients);
+}
+
+void ServiceWorkerVersion::OnGetClientsFinished(
+    int request_id,
+    const ServiceWorkerClients& clients) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClients",
+                         request_id, "The number of clients", clients.size());
+
+  if (running_status() != RUNNING)
+    return;
   embedded_worker_->SendMessage(
       ServiceWorkerMsg_DidGetClients(request_id, clients));
 }
@@ -1422,7 +1435,7 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
 
 void ServiceWorkerVersion::OnFocusClientFinished(
     int request_id,
-    const std::string& cliend_uuid,
+    const std::string& client_uuid,
     const ServiceWorkerClientInfo& client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1430,7 +1443,7 @@ void ServiceWorkerVersion::OnFocusClientFinished(
     return;
 
   ServiceWorkerClientInfo client_info(client);
-  client_info.client_uuid = cliend_uuid;
+  client_info.client_uuid = client_uuid;
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
       request_id, client_info));
@@ -1530,9 +1543,6 @@ void ServiceWorkerVersion::GetWindowClients(
     const ServiceWorkerClientQueryOptions& options) {
   DCHECK(options.client_type == blink::WebServiceWorkerClientTypeWindow ||
          options.client_type == blink::WebServiceWorkerClientTypeAll);
-  TRACE_EVENT0("ServiceWorker", "ServiceWorkerVersion::GetWindowClients");
-
-  // 4.3.1 matchAll(options)
   std::vector<Tuple<int, int, std::string>> clients_info;
   if (!options.include_uncontrolled) {
     for (auto& controllee : controllee_map_)
@@ -1563,14 +1573,9 @@ void ServiceWorkerVersion::DidGetWindowClients(
     const ServiceWorkerClientQueryOptions& options,
     scoped_ptr<ServiceWorkerClients> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (running_status() != RUNNING)
-    return;
-
   if (options.client_type == blink::WebServiceWorkerClientTypeAll)
     GetNonWindowClients(request_id, options, clients.get());
-
-  embedded_worker_->SendMessage(
-      ServiceWorkerMsg_DidGetClients(request_id, *clients));
+  OnGetClientsFinished(request_id, *clients);
 }
 
 void ServiceWorkerVersion::GetNonWindowClients(

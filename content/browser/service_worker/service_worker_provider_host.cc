@@ -180,7 +180,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     return;  // Could be NULL in some tests.
 
   // SetController message should be sent only for controllees.
-  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
+  DCHECK(IsProviderForClient());
   Send(new ServiceWorkerMsg_SetControllerServiceWorker(
       render_thread_id_, provider_id(),
       CreateAndRegisterServiceWorkerHandle(version), notify_controllerchange));
@@ -206,6 +206,20 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
 
   running_hosted_version_ = live_version;
   return true;
+}
+
+bool ServiceWorkerProviderHost::IsProviderForClient() const {
+  switch (provider_type_) {
+    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
+    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
+    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
+      return true;
+    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+      return false;
+  }
+  NOTREACHED() << provider_type_;
+  return false;
 }
 
 blink::WebServiceWorkerClientType ServiceWorkerProviderHost::client_type()
@@ -247,7 +261,7 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
     return;
 
   // Disassociation message should be sent only for controllees.
-  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
+  DCHECK(IsProviderForClient());
   Send(new ServiceWorkerMsg_DisassociateRegistration(
       render_thread_id_, provider_id()));
 }
@@ -587,7 +601,7 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
       associated_registration_->active_version());
 
   // Association message should be sent only for controllees.
-  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
+  DCHECK(IsProviderForClient());
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
       render_thread_id_, provider_id(), handle->GetObjectInfo(), attrs));
 }

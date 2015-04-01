@@ -378,8 +378,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const StatusCallback& callback);
 
   // Message handlers.
+
+  // This corresponds to the spec's matchAll(options) steps.
   void OnGetClients(int request_id,
                     const ServiceWorkerClientQueryOptions& options);
+
   void OnActivateEventFinished(int request_id,
                                blink::WebServiceWorkerEventResult result);
   void OnInstallEventFinished(int request_id,
@@ -437,6 +440,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void GetNonWindowClients(int request_id,
                            const ServiceWorkerClientQueryOptions& options,
                            ServiceWorkerClients* clients);
+  void OnGetClientsFinished(int request_id,
+                            const ServiceWorkerClients& clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.

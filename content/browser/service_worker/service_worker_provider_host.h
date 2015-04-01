@@ -106,6 +106,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const GURL& topmost_frame_url() const { return topmost_frame_url_; }
 
   ServiceWorkerProviderType provider_type() const { return provider_type_; }
+  bool IsProviderForClient() const;
   blink::WebServiceWorkerClientType client_type() const;
 
   // Associates to |registration| to listen for its version change events and
