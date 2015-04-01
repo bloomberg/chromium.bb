@@ -323,6 +323,8 @@ FileType.isAudio = function(entry) {
 };
 
 /**
+ * Returns whether the |entry| is image file that can be opened in browser.
+ * Note that it returns false for RAW images.
  * @param {Entry} entry Reference to the file.
  * @return {boolean} True if image file.
  */
@@ -344,15 +346,6 @@ FileType.isVideo = function(entry) {
  */
 FileType.isRaw = function(entry) {
   return FileType.getMediaType(entry) === 'raw';
-};
-
-/**
- * Files with more pixels won't have preview.
- * @param {Entry} entry Reference to the file.
- * @return {boolean} True if image or video.
- */
-FileType.isImageOrVideo = function(entry) {
-  return FileType.isType(entry, ['image', 'video']);
 };
 
 /**

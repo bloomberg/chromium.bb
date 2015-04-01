@@ -676,8 +676,10 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
       (this.ownerDocument.createElement('div'));
 
   var icon = filelist.renderFileTypeIcon(this.ownerDocument, entry);
-  if (FileType.isImage(entry) || FileType.isVideo(entry))
+  if (FileType.isImage(entry) || FileType.isVideo(entry) ||
+      FileType.isRaw(entry)) {
     icon.appendChild(this.renderThumbnail_(entry));
+  }
   icon.appendChild(this.renderCheckmark_());
   label.appendChild(icon);
 
