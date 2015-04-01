@@ -24,6 +24,7 @@
       'source/src/lib_json/json_writer.cpp',
     ],
     'include_dirs': [
+      '../..',
       'overrides/include/',
       'source/include/',
       'source/src/lib_json/',
