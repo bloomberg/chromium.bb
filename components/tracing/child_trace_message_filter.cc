@@ -39,6 +39,10 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingMsg_GetTraceLogStatus, OnGetTraceLogStatus)
     IPC_MESSAGE_HANDLER(TracingMsg_SetWatchEvent, OnSetWatchEvent)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelWatchEvent, OnCancelWatchEvent)
+    IPC_MESSAGE_HANDLER(TracingMsg_ProcessMemoryDumpRequest,
+                        OnProcessMemoryDumpRequest)
+    IPC_MESSAGE_HANDLER(TracingMsg_GlobalMemoryDumpResponse,
+                        OnGlobalMemoryDumpResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -166,6 +170,35 @@ void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
 
   if (!has_more_events)
     sender_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
+}
+
+// Sent by the Browser's MemoryDumpManager when coordinating a global dump.
+void ChildTraceMessageFilter::OnProcessMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args) {
+  // TODO(primiano): create local dump and send a response back to the browser.
+  NOTIMPLEMENTED();
+}
+
+// Initiates a dump request, asking the Browser's MemoryDumpManager to
+// coordinate a global memory dump. The Browser's MDM will answer back with a
+// MemoryDumpResponse when all the child processes (including this one) have
+// dumped, or with a NACK (|success| == false) if the dump failed (e.g., due to
+// a collision with a concurrent request from another child process).
+void ChildTraceMessageFilter::SendGlobalMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::trace_event::MemoryDumpCallback& callback) {
+  // TODO(primiano): implement the logic to send the request to the browser
+  // process and keep track of that.
+  NOTIMPLEMENTED();
+}
+
+// Sent by the Browser's MemoryDumpManager in response of a dump request
+// initiated by this child process.
+void ChildTraceMessageFilter::OnGlobalMemoryDumpResponse(uint64 dump_guid,
+                                                         bool success) {
+  // TODO(primiano): implement the logic to handle the global response from
+  // the browser and clear up the bookkeeping.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace tracing

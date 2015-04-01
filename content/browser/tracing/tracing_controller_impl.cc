@@ -175,6 +175,7 @@ TracingControllerImpl::TracingControllerImpl()
 #endif
       is_recording_(TraceLog::GetInstance()->IsEnabled()),
       is_monitoring_(false) {
+  base::trace_event::MemoryDumpManager::GetInstance()->SetDelegate(this);
 }
 
 TracingControllerImpl::~TracingControllerImpl() {
@@ -877,6 +878,43 @@ void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui) {
   std::set<TracingUI*>::iterator it = tracing_uis_.find(tracing_ui);
   DCHECK(it != tracing_uis_.end());
   tracing_uis_.erase(it);
+}
+
+void TracingControllerImpl::RequestGlobalMemoryDump(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::trace_event::MemoryDumpCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::RequestGlobalMemoryDump,
+                   base::Unretained(this), args, callback));
+    return;
+  }
+  // TODO(primiano): send a local dump request to each of the child processes
+  // and do the bookkeeping to keep track of the outstanding requests.
+  // Also, at this point, this should check for collisions and bail out if a
+  // global dump is requested while another is already in progress.
+  NOTIMPLEMENTED();
+}
+
+void TracingControllerImpl::OnProcessMemoryDumpResponse(
+    TraceMessageFilter* trace_message_filter,
+    uint64 dump_guid,
+    bool success) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
+                   base::Unretained(this),
+                   make_scoped_refptr(trace_message_filter), dump_guid,
+                   success));
+    return;
+  }
+  // TODO(primiano): update the bookkeeping structs and, if this was the
+  // response from the last pending child, fire the completion callback, which
+  // in turn will cause a GlobalMemoryDumpResponse message to be sent back to
+  // the child, if this global dump was NOT initiated by the browser.
+  NOTIMPLEMENTED();
 }
 
 void TracingControllerImpl::OnMonitoringStateChanged(bool is_monitoring) {

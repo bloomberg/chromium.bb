@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "ipc/message_filter.h"
 
 namespace base {
@@ -24,6 +25,10 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
   bool OnMessageReceived(const IPC::Message& message) override;
+
+  void SendGlobalMemoryDumpRequest(
+      const base::trace_event::MemoryDumpRequestArgs& args,
+      const base::trace_event::MemoryDumpCallback& callback);
 
  protected:
   ~ChildTraceMessageFilter() override;
@@ -44,6 +49,9 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
                        const std::string& event_name);
   void OnCancelWatchEvent();
   void OnWatchEventMatched();
+  void OnProcessMemoryDumpRequest(
+      const base::trace_event::MemoryDumpRequestArgs& args);
+  void OnGlobalMemoryDumpResponse(uint64 dump_guid, bool success);
 
   // Callback from trace subsystem.
   void OnTraceDataCollected(

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace base {
@@ -22,7 +23,9 @@ namespace content {
 class TraceMessageFilter;
 class TracingUI;
 
-class TracingControllerImpl : public TracingController {
+class TracingControllerImpl
+    : public TracingController,
+      public base::trace_event::MemoryDumpManagerDelegate {
  public:
   static TracingControllerImpl* GetInstance();
 
@@ -53,6 +56,11 @@ class TracingControllerImpl : public TracingController {
 
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);
+
+  // base::trace_event::MemoryDumpManagerDelegate implementation.
+  void RequestGlobalMemoryDump(
+      const base::trace_event::MemoryDumpRequestArgs& args,
+      const base::trace_event::MemoryDumpCallback& callback) override;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > TraceMessageFilterSet;
@@ -119,7 +127,9 @@ class TracingControllerImpl : public TracingController {
 
   void OnTraceLogStatusReply(TraceMessageFilter* trace_message_filter,
                              const base::trace_event::TraceLogStatus& status);
-
+  void OnProcessMemoryDumpResponse(TraceMessageFilter* trace_message_filter,
+                                   uint64 dump_guid,
+                                   bool success);
   void OnWatchEventMatched();
 
   void SetEnabledOnFileThread(

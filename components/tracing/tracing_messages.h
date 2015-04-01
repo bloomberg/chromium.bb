@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/sync_socket.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -20,6 +21,15 @@ IPC_STRUCT_TRAITS_BEGIN(base::trace_event::TraceLogStatus)
 IPC_STRUCT_TRAITS_MEMBER(event_capacity)
 IPC_STRUCT_TRAITS_MEMBER(event_count)
 IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(base::trace_event::MemoryDumpRequestArgs)
+IPC_STRUCT_TRAITS_MEMBER(dump_guid)
+IPC_STRUCT_TRAITS_MEMBER(dump_type)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(
+    base::trace_event::MemoryDumpType,
+    static_cast<int>(base::trace_event::MemoryDumpType::LAST))
 
 // Sent to all child processes to enable trace event recording.
 IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
@@ -53,6 +63,16 @@ IPC_MESSAGE_CONTROL2(TracingMsg_SetWatchEvent,
 // Sent to all child processes to clear watch event.
 IPC_MESSAGE_CONTROL0(TracingMsg_CancelWatchEvent)
 
+// Sent to all child processes to request a local (current process) memory dump.
+IPC_MESSAGE_CONTROL1(TracingMsg_ProcessMemoryDumpRequest,
+                     base::trace_event::MemoryDumpRequestArgs)
+
+// Reply to TracingHostMsg_GlobalMemoryDumpRequest, sent by the browser process.
+// This is to get the result of a global dump initiated by a child process.
+IPC_MESSAGE_CONTROL2(TracingMsg_GlobalMemoryDumpResponse,
+                     uint64 /* dump_guid */,
+                     bool /* success */)
+
 // Sent everytime when a watch event is matched.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_WatchEventMatched)
 
@@ -79,3 +99,12 @@ IPC_MESSAGE_CONTROL1(TracingHostMsg_MonitoringTraceDataCollected,
 IPC_MESSAGE_CONTROL1(
     TracingHostMsg_TraceLogStatusReply,
     base::trace_event::TraceLogStatus /*status of the trace log*/)
+
+// Sent to the browser to initiate a global memory dump from a child process.
+IPC_MESSAGE_CONTROL1(TracingHostMsg_GlobalMemoryDumpRequest,
+                     base::trace_event::MemoryDumpRequestArgs)
+
+// Reply to TracingMsg_ProcessMemoryDumpRequest.
+IPC_MESSAGE_CONTROL2(TracingHostMsg_ProcessMemoryDumpResponse,
+                     uint64 /* dump_guid */,
+                     bool /* success */)

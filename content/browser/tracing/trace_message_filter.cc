@@ -51,6 +51,10 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnWatchEventMatched)
     IPC_MESSAGE_HANDLER(TracingHostMsg_TraceLogStatusReply,
                         OnTraceLogStatusReply)
+    IPC_MESSAGE_HANDLER(TracingHostMsg_GlobalMemoryDumpRequest,
+                        OnGlobalMemoryDumpRequest)
+    IPC_MESSAGE_HANDLER(TracingHostMsg_ProcessMemoryDumpResponse,
+                        OnProcessMemoryDumpResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -109,6 +113,18 @@ void TraceMessageFilter::SendCancelWatchEvent() {
   Send(new TracingMsg_CancelWatchEvent);
 }
 
+// Called by TracingControllerImpl, which handles the multiprocess coordination.
+void TraceMessageFilter::SendProcessMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args) {
+  Send(new TracingMsg_ProcessMemoryDumpRequest(args));
+}
+
+// Called by TracingControllerImpl, which handles the multiprocess coordination.
+void TraceMessageFilter::SendGlobalMemoryDumpResponse(uint64 dump_guid,
+                                                      bool success) {
+  Send(new TracingMsg_GlobalMemoryDumpResponse(dump_guid, success));
+}
+
 void TraceMessageFilter::OnChildSupportsTracing() {
   has_child_ = true;
   TracingControllerImpl::GetInstance()->AddTraceMessageFilter(this);
@@ -165,6 +181,19 @@ void TraceMessageFilter::OnTraceLogStatusReply(
   } else {
     NOTREACHED();
   }
+}
+
+void TraceMessageFilter::OnGlobalMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args) {
+  TracingControllerImpl::GetInstance()->RequestGlobalMemoryDump(
+      args,
+      base::Bind(&TraceMessageFilter::SendGlobalMemoryDumpResponse, this));
+}
+
+void TraceMessageFilter::OnProcessMemoryDumpResponse(uint64 dump_guid,
+                                                     bool success) {
+  TracingControllerImpl::GetInstance()->OnProcessMemoryDumpResponse(
+      this, dump_guid, success);
 }
 
 }  // namespace content
